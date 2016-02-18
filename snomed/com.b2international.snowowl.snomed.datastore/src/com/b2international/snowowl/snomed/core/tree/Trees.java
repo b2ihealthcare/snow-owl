@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -62,17 +61,17 @@ public class Trees {
 		return this;
 	}
 
-	public final Trees withDefaultTopLevelConcepts(final String branch) {
-		setTopLevelConcepts(getDefaultTopLevelConcepts(branch));
+	public final Trees withDefaultTopLevelConcepts(final String branch, final List<ExtendedLocale> locales) {
+		setTopLevelConcepts(getDefaultTopLevelConcepts(branch, locales));
 		return this;
 	}
 
-	private List<SnomedConceptIndexEntry> getDefaultTopLevelConcepts(final String branch) {
+	private List<SnomedConceptIndexEntry> getDefaultTopLevelConcepts(final String branch, final List<ExtendedLocale> locales) {
 		final ISnomedConcept root = SnomedRequests
 				.prepareGetConcept()
 				.setComponentId(Concepts.ROOT_CONCEPT)
 				.setExpand("pt(),descendants(form:\"inferred\",direct:true,expand(pt()))")
-				.setLocales(getLocales())
+				.setLocales(locales)
 				.build(branch)
 				.executeSync(getBus());
 
@@ -81,10 +80,6 @@ public class Trees {
 		requiredTreeItemConcepts.addAll(root.getDescendants().getItems());
 
 		return SnomedConceptIndexEntry.fromConcepts(requiredTreeItemConcepts);
-	}
-
-	private List<ExtendedLocale> getLocales() {
-		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
 	private IEventBus getBus() {

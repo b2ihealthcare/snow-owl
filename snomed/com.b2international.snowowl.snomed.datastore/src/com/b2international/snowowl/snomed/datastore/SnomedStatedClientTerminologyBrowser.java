@@ -67,7 +67,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 	protected TreeBuilder newTree(String branch, List<ExtendedLocale> locales) {
 		return new Trees()
 			.withStatedForm()
-			.withDefaultTopLevelConcepts(branch)
+			.withDefaultTopLevelConcepts(branch, locales)
 			.setBrowser(this)
 			.createTreeBuilder();
 	}
