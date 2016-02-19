@@ -30,6 +30,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -115,7 +116,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			addFilterClause(filter, SnomedMappings.memberRefSetType().createTermsFilter(types), Occur.MUST);
 		}
 		
-		if (!props.isEmpty()) {
+		if (!CompareUtils.isEmpty(props)) {
 			if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
 				final Collection<String> targetComponentIds = Collections.singleton((String) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT));
 				addFilterClause(filter, SnomedMappings.memberTargetComponentId().createTermsFilter(targetComponentIds), Occur.MUST);
