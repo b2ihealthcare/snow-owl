@@ -15,20 +15,26 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.AlphaNumericComparator;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.pcj.LongSets;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Ordering;
@@ -39,28 +45,27 @@ import bak.pcj.LongCollection;
 /**
  * @since 4.6
  */
-final class TreeBuilderImpl implements TreeBuilder {
+abstract class TreeBuilderImpl implements TreeBuilder {
 
-	private String form;
-	private BaseSnomedClientTerminologyBrowser browser;
 	private Collection<SnomedConceptIndexEntry> topLevelConcepts;
 	
 	TreeBuilderImpl() {}
 	
-	final void setForm(String form) {
-		this.form = checkNotNull(form);
-	}
+	abstract String getForm();
 	
-	final void setBrowser(BaseSnomedClientTerminologyBrowser browser) {
-		this.browser = checkNotNull(browser);
-	}
+	abstract BaseSnomedClientTerminologyBrowser getTerminologyBrowser();
 	
-	final void setTopLevelConcepts(Collection<SnomedConceptIndexEntry> topLevelConcepts) {
-		this.topLevelConcepts = checkNotNull(topLevelConcepts);
+	@Override
+	public final TreeBuilder withTopLevelConcepts(final Collection<SnomedConceptIndexEntry> topLevelConcepts) {
+		this.topLevelConcepts = topLevelConcepts;
+		return this;
 	}
 	
 	@Override
-	public TerminologyTree build(Iterable<SnomedConceptIndexEntry> nodes) {
+	public TerminologyTree build(final String branch, final Iterable<SnomedConceptIndexEntry> nodes) {
+		final Collection<SnomedConceptIndexEntry> topLevelConcepts = this.topLevelConcepts == null ? 
+				getDefaultTopLevelConcepts(branch) : this.topLevelConcepts;
+		
 		final Map<String, SnomedConceptIndexEntry> treeItemsById = newHashMap();
 		
 		// all matching concepts should be in the componentMap
@@ -138,15 +143,38 @@ final class TreeBuilderImpl implements TreeBuilder {
 		allRequiredComponents.remove(null);
 		
 		// fetch required data for all unknown items
-		for (SnomedConceptIndexEntry entry : browser.getComponents(allRequiredComponents)) {
+		for (SnomedConceptIndexEntry entry : getTerminologyBrowser().getComponents(allRequiredComponents)) {
 			treeItemsById.put(entry.getId(), entry);
 		}
 		
 		return new TerminologyTree(treeItemsById, subTypeMap, superTypeMap);
 	}
+	
+	private List<SnomedConceptIndexEntry> getDefaultTopLevelConcepts(final String branch) {
+		final ISnomedConcept root = SnomedRequests.prepareGetConcept()
+				.setComponentId(Concepts.ROOT_CONCEPT)
+				.setExpand(String.format("pt(),descendants(form:\"%s\",direct:true,expand(pt()))", getForm()))
+				.setLocales(getLocales())
+				.build(branch)
+				.executeSync(getBus());
+	
+		final Collection<ISnomedConcept> requiredTreeItemConcepts = newHashSet();
+		requiredTreeItemConcepts.add(root);
+		requiredTreeItemConcepts.addAll(root.getDescendants().getItems());
+	
+		return SnomedConceptIndexEntry.fromConcepts(requiredTreeItemConcepts);
+	}
+	
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+	}
+	
+	private IEventBus getBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
 
 	private LongCollection getParents(SnomedConceptIndexEntry entry) {
-		switch (form) {
+		switch (getForm()) {
 		case Trees.INFERRED_FORM: return entry.getParents();
 		case Trees.STATED_FORM: return entry.getStatedParents();
 		default: return null;
@@ -154,7 +182,7 @@ final class TreeBuilderImpl implements TreeBuilder {
 	}
 	
 	private LongCollection getAncestors(SnomedConceptIndexEntry entry) {
-		switch (form) {
+		switch (getForm()) {
 		case Trees.INFERRED_FORM: return entry.getAncestors();
 		case Trees.STATED_FORM: return entry.getStatedAncestors();
 		default: return null;
