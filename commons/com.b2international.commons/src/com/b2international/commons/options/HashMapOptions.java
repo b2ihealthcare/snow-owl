@@ -56,24 +56,24 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	}
 	
 	@Override
-	public Object get(String key) {
+	public final Object get(String key) {
 		return super.get(key);
 	}
 	
 	@Override
-	public boolean getBoolean(final String key) {
+	public final boolean getBoolean(final String key) {
 		final Boolean value = get(key, Boolean.class);
 		return value == null ? false : value;
 	}
 	
 	@Override
-	public String getString(final String key) {
+	public final String getString(final String key) {
 		return get(key, String.class);
 	}
 	
 	@Override
 	@Nullable
-	public <T> T get(@Nullable final String key, @Nullable final Class<T> expectedType) throws IllegalArgumentException {
+	public final <T> T get(@Nullable final String key, @Nullable final Class<T> expectedType) throws IllegalArgumentException {
 		if (key != null && expectedType != null) {
 			final Object value = get(key);
 			if (value != null) {
@@ -90,7 +90,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> Collection<T> getCollection(String key, Class<T> type) {
+	public final <T> Collection<T> getCollection(String key, Class<T> type) {
 		final Object value = get(key);
 		if (type.isInstance(value)) {
 			return Collections.singleton(type.cast(value));
@@ -109,7 +109,7 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> List<T> getList(String key, Class<T> type) {
+	public final <T> List<T> getList(String key, Class<T> type) {
 		final Object value = get(key);
 		if (type.isInstance(value)) {
 			return Collections.singletonList(type.cast(value));
@@ -126,8 +126,13 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 		}
 	}
 	
+	@Override
+	public final Options getOptions(String key) {
+		return containsKey(key) ? get(key, Options.class) : OptionsBuilder.newBuilder().build();
+	}
+	
 	@Nonnull
-	protected Iterable<String> toImmutableStringList(@Nullable final Iterable<Object> elements) {
+	protected final Iterable<String> toImmutableStringList(@Nullable final Iterable<Object> elements) {
 		if (elements == null) {
 			return Collections.emptyList();
 		}
