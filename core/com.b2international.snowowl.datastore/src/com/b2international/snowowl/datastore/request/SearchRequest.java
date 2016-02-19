@@ -129,6 +129,10 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return options.getList(key.name(), type);
 	}
 	
+	protected final Options getOptions(Enum<?> key) {
+		return options.getOptions(key.name());
+	}
+	
 	protected final Options expand() {
 		return get(OptionKey.EXPAND, Options.class);
 	}

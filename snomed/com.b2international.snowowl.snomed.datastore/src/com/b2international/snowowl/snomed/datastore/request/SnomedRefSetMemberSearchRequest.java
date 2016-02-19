@@ -32,6 +32,7 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.commons.options.Options;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -86,7 +87,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
 		final Collection<String> referencedComponentIds = getCollection(OptionKey.REFERENCED_COMPONENT, String.class);
 		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
-		final Map<String, Object> props = get(OptionKey.PROPS, Map.class);
+		final Options propsFilter = getOptions(OptionKey.PROPS);
 		
 		if (!referenceSetIds.isEmpty()) {
 			// if only one refset ID is defined, check if it's an ESCG expression and expand it, otherwise use as is
@@ -116,9 +117,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			addFilterClause(filter, SnomedMappings.memberRefSetType().createTermsFilter(types), Occur.MUST);
 		}
 		
-		if (!CompareUtils.isEmpty(props)) {
-			if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-				final Collection<String> targetComponentIds = Collections.singleton((String) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT));
+		if (!propsFilter.isEmpty()) {
+			if (propsFilter.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
+				final Collection<String> targetComponentIds = propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class);
 				addFilterClause(filter, SnomedMappings.memberTargetComponentId().createTermsFilter(targetComponentIds), Occur.MUST);
 			}
 		}
