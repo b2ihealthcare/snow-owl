@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.core.MetadataMixin;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.ConceptChangesMixin;
@@ -191,6 +192,11 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public IEventBus eventBus() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
+	}
+	
+	@Bean
+	public IRemoteJobManager jobManager() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IRemoteJobManager.class);
 	}
 	
 	@Override
