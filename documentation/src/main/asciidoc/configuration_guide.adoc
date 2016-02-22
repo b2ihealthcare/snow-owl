@@ -908,7 +908,13 @@ If omitted, then default strategy will be used.
 |enforceNamespace
 |
 |A SNOMED CT namespace identifier to use when generating new SNOMED CT component IDs regardless of the user defined namespace. Use INT keyword to enforce international IDs.
+
+|cisMaxConnections
+|100
+|Maximum number of simultaneous connections that Snow Owl can make to the CIS host via HTTP.
 |===
+
+
 
 --------------------------
 snomed:
@@ -923,6 +929,7 @@ snomed:
     cisNumberOfPollTries : 1
     cisTimeBetweenPollTries : 1000
     enforceNamespace: INT
+    cisMaxConnections: 100
   ...
 --------------------------
 
