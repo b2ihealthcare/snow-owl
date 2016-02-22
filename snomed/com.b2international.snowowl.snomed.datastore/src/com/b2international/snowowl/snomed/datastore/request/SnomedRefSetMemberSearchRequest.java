@@ -22,7 +22,9 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.FieldValueFilter;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -92,11 +94,14 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			addFilterClause(filter, SnomedMappings.memberRefSetType().createTermsFilter(types), Occur.MUST);
 		}
 		
-		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().and(SnomedMappings.memberReferencedComponentType().toExistsQuery());
+		addFilterClause(filter, new FieldValueFilter(SnomedMappings.memberReferencedComponentType().fieldName()),Occur.MUST);
+		
+		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery();
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		
-		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
+		final Query query = createConstantScoreQuery(
+				createFilteredQuery(queryBuilder.isEmpty() ? new MatchAllDocsQuery() : queryBuilder.matchAll(), filter));
 		final int totalHits = getTotalHits(searcher, query);
 
 		if (limit() < 1 || totalHits < 1) {
