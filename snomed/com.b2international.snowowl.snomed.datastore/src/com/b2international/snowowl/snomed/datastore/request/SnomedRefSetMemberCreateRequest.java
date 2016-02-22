@@ -128,9 +128,11 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 			// XXX referenced component ID for query type reference set cannot be defined, validate only if defined
 			// TODO support other terminologies when enabling mappings
 			SnomedIdentifiers.validate(referencedComponentId);
-			short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId);
+			final short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId);
 			if (refSet.getReferencedComponentType() != referencedComponentType) {
-				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", refSet.getIdentifierId(), referencedComponentId, referencedComponentType, refSet.getReferencedComponentType());
+				final String expectedType = SnomedTerminologyComponentConstants.getId(referencedComponentType);
+				final String actualType = SnomedTerminologyComponentConstants.getId(refSet.getReferencedComponentType());
+				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", refSet.getIdentifierId(), referencedComponentId, expectedType, actualType);
 			}
 		} else if (SnomedRefSetType.QUERY != type) {
 			throw new BadRequestException("'%s' cannot be null or empty for '%s' type reference sets.", SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, type);
