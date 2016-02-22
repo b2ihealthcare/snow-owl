@@ -1440,15 +1440,18 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @deprecated - use {@link ModulePreference} instead to get the module ID on client side
 	 */
 	public Concept getDefaultModuleConcept() {
-		if (null == moduleConcept) {
+		if (moduleConcept == null) {
 			for (String modulePreference : ModulePreference.getModulePreference()) {
+				if (moduleConcept != null) {
+					break;
+				}
 				try {
 					moduleConcept = getConcept(modulePreference);
 				} catch (ComponentNotFoundException e) {
 					// ignore and proceed to the next preference
 				}
 			}
-			if (null == moduleConcept) {
+			if (moduleConcept == null) {
 				LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
 			}
 		}
