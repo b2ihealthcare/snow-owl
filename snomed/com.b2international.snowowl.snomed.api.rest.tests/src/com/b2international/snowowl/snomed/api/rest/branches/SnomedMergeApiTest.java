@@ -21,25 +21,17 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchConflicts;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -238,7 +230,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptExists(testBranchPath.getParent(), "C2");
 		assertConceptNotExists(testBranchPath, "C2");
 
-		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new concept");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new concept");
 
 		assertConceptExists(testBranchPath, "C1");
 		assertConceptNotExists(testBranchPath.getParent(), "C1");
@@ -258,7 +250,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
 		assertDescriptionNotExists(testBranchPath, "D2");
 
-		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new description");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new description");
 
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
@@ -278,7 +270,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertRelationshipExists(testBranchPath.getParent(), "R2");
 		assertRelationshipNotExists(testBranchPath, "R2");
 
-		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new relationship");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new relationship");
 
 		assertRelationshipExists(testBranchPath, "R1");
 		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
@@ -403,7 +395,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
 		assertDescriptionNotExists(testBranchPath,"D2");
 
-		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
 
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
@@ -417,7 +409,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionCanBeUpdated(testBranchPath.getParent(), "D1", changesOnParent);
 		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnBranch);
 
-		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase conflicting description change");
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting description change");
 	}
 
 	@Test
@@ -464,102 +456,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
 		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
 
-		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
-	}
-
-	@Test
-	public void noRebaseLockedBranch() throws InterruptedException, TimeoutException, ExecutionException {
-		final IBranchPath siblingA = BranchPathUtils.createPath(testBranchPath, "A");
-		final IBranchPath siblingB = BranchPathUtils.createPath(testBranchPath, "B");
-		
-		givenBranchWithPath(testBranchPath);
-		givenBranchWithPath(siblingA);
-		givenBranchWithPath(siblingB);
-		
-		assertConceptCreated(testBranchPath, "C1");
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptNotExists(siblingA, "C1");
-		assertConceptNotExists(siblingB, "C1");
-		
-		/* 
-		 * XXX: RestAssured doesn't support parallel requests. Test may fail spuriously, or the request dump may not 
-		 * correspond to the actual cause of the failure (stack trace is preserved, though).
-		 */
-		final ExecutorService executor = Executors.newSingleThreadExecutor();
-		final Future<?> future = executor.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(100L);
-				} catch (InterruptedException e) {
-					fail("Interrupted while waiting in the asynchronous request thread.");
-				}
-
-				assertBranchConflicts(testBranchPath, siblingB, "Rebase sibling B");
-			}
-		});
-		
-		assertBranchCanBeRebased(siblingA, "Rebase sibling A");
-		
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptExists(siblingA, "C1");
-		assertConceptNotExists(siblingB, "C1");
-		
-		try {
-			future.get(100L, TimeUnit.MILLISECONDS);
-		} catch (ExecutionException e) {
-			if (e.getCause() instanceof AssertionError) {
-				throw (AssertionError) e.getCause();
-			} else {
-				throw e;
-			}
-		} finally {
-			executor.shutdownNow();
-		}
-	}
-	
-	@Test
-	public void noRebaseSameBranch() throws InterruptedException, TimeoutException, ExecutionException {
-		final IBranchPath siblingA = createNestedBranch("A");
-		
-		assertConceptCreated(testBranchPath, "C1");
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptNotExists(siblingA, "C1");
-
-		/* 
-		 * XXX: RestAssured doesn't support parallel requests. Test may fail spuriously, or the request dump may not 
-		 * correspond to the actual cause of the failure (stack trace is preserved, though).
-		 */
-		final ExecutorService executor = Executors.newSingleThreadExecutor();
-		final Future<?> future = executor.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(100L);
-				} catch (InterruptedException e) {
-					fail("Interrupted while waiting in the asynchronous request thread.");
-				}
-
-				assertBranchConflicts(testBranchPath, siblingA, "Rebase sibling A (again)");
-			}
-		});
-		
-		assertBranchCanBeRebased(siblingA, "Rebase sibling A");
-		
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptExists(siblingA, "C1");
-		
-		try {
-			future.get(100L, TimeUnit.MILLISECONDS);
-		} catch (ExecutionException e) {
-			if (e.getCause() instanceof AssertionError) {
-				throw (AssertionError) e.getCause();
-			} else {
-				throw e;
-			}
-		} finally {
-			executor.shutdownNow();
-		}
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
 	}
 
 	@Test
@@ -628,7 +525,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		 * not be promoted.
 		 */
 		assertBranchCanBeRebased(testBranchPath, "Rebase description dual deletion");
-		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge description dual deletion");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge description dual deletion");
 
 		assertDescriptionNotExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");

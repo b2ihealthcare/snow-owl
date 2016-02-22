@@ -22,8 +22,8 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenMergingOrRebasingBranches;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
@@ -503,8 +503,6 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void mergeWithNonExistentReview() {
 		givenBranchWithPath(testBranchPath);
-		whenMergingOrRebasingBranches(testBranchPath, testBranchPath.getParent(), "Merge commit", "abc")
-		.then()
-			.statusCode(400);
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge commit", "abc");
 	}
 }
