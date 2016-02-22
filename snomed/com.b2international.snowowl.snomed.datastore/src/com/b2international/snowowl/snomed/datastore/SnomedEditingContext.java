@@ -86,6 +86,7 @@ import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleas
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -836,11 +837,15 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @param characteristicType can be <tt>null</tt> then characteristicType will be Defining concept.
 	 * @param effectiveTime 
 	 * @return a valid relationship populated with default values and the specified properties
+	 * @deprecated - use {@link SnomedComponents#newRelationship()} instead
 	 */
 	public Relationship buildDefaultRelationship(Concept source, Concept type, Concept destination, Concept characteristicType) {
 		return buildDefaultRelationship(source, type, destination, characteristicType, getDefaultModuleConcept(), getDefaultNamespace());
 	}
 	
+	/**
+	 * @deprecated - use {@link SnomedComponents#newRelationship()} instead
+	 */
 	public Relationship buildDefaultRelationship(final Concept source, final Concept type, final Concept destination, Concept characteristicType, final Concept module, final String namespace) {
 		// default is stated
 		if (characteristicType == null) {
@@ -1552,28 +1557,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	public SnomedEditingContext setUniquenessCheckEnabled(boolean uniquenessCheckEnabled) {
 		this.uniquenessCheckEnabled = uniquenessCheckEnabled;
 		return this;
-	}
-
-	/**
-	 * This method makes a validation for a new Is-a relationship. If the destination concept is
-	 * a subtype of the source one, the return value is false, otherwise true.
-	 * 
-	 * @param source concept
-	 * @param destination concept
-	 * @return 
-	 */
-	public boolean isValidToAddIsARelationship(Concept source, Concept destination) {
-		if (source == null || destination == null) {
-			return false;
-		}
-		IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		Collection<SnomedConceptIndexEntry> allSubTypes = terminologyBrowser.getAllSubTypesById(source.getId());
-		for (SnomedConceptIndexEntry conceptMini : allSubTypes) {
-			if (conceptMini.getId().equals(destination.getId())) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**
