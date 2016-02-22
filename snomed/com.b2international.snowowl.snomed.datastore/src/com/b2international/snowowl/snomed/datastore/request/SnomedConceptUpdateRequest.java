@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -24,10 +26,12 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
@@ -116,28 +120,50 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		}
 	}
 
-	private boolean processInactivation(final TransactionContext context, final Concept concept, final Boolean newActive, final InactivationIndicator newInactivationIndicator) {
-
-		if (null != newInactivationIndicator) {
-			
-			if (null == newActive || !newActive) {
-				inactivateConcept(context, concept, newInactivationIndicator);
-			} else {
-				throw new BadRequestException("Bad");
+	// TODO merge with SnomedDescriptionUpdateRequest.updateInactivationIndicator
+	private boolean processInactivation(final TransactionContext context, final Concept concept, final Boolean inputStatus, final InactivationIndicator inputIndicator) {
+		final boolean status = inputStatus == null ? concept.isActive() : inputStatus;
+		final InactivationIndicator indicator = inputIndicator == null ? InactivationIndicator.RETIRED : inputIndicator; 
+		
+		if (!status && concept.isActive()) {
+			inactivateConcept(context, concept, indicator);
+			return true;
+		} else if (status && !concept.isActive()) {
+			if (inputIndicator != null) {
+				throw new BadRequestException("Cannot reactivate concept and retain or change its inactivation indicators in the same time");
 			}
-			
-		} else {
-			
-			if (null == newActive) {
-				return false;
-			} else if (!newActive) {
-				inactivateConcept(context, concept, InactivationIndicator.RETIRED);
-			} else {
-				reactivateConcept(context, concept);
+			reactivateConcept(context, concept);
+			return true;
+		} else if (!status && !concept.isActive()) {
+			// if the concept is already inactive, then check the current inactivation members
+			boolean found = false;
+			for (SnomedAttributeValueRefSetMember member : concept.getInactivationIndicatorRefSetMembers()) {
+				if (member.isActive() && member.getValueId().equals(indicator.getConceptId())) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				// remove or deactivate all currently active members
+				for (SnomedAttributeValueRefSetMember member : newArrayList(concept.getInactivationIndicatorRefSetMembers())) {
+					if (member.isActive()) {
+						SnomedModelExtensions.removeOrDeactivate(member);
+					}
+				}
+				// add the new member if not retired indicator
+				if (!InactivationIndicator.RETIRED.equals(indicator)) {
+					final SnomedAttributeValueRefSetMember member = SnomedComponents
+							.newAttributeValueMember()
+							.withReferencedComponent(concept.getId())
+							.withRefSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)
+							.withModule(concept.getModule().getId())
+							.withValueId(indicator.getConceptId())
+							.addTo(context);
+					concept.getInactivationIndicatorRefSetMembers().add(member);
+				}
 			}
 		}
-
-		return true;
+		return false;
 	}
 
 	private void inactivateConcept(final TransactionContext context, final Concept concept, final InactivationIndicator newInactivationIndicator) {

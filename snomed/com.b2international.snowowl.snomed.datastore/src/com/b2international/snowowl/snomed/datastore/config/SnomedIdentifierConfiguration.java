@@ -54,6 +54,9 @@ public class SnomedIdentifierConfiguration {
 	@JsonProperty(required = false)
 	private String enforceNamespace;
 	
+	@JsonProperty(required = false)
+	private int cisMaxConnections = 100;
+	
 	public IdGenerationStrategy getStrategy() {
 		return strategy;
 	}
@@ -124,6 +127,14 @@ public class SnomedIdentifierConfiguration {
 	
 	public void setEnforceNamespace(String enforceNamespace) {
 		this.enforceNamespace = enforceNamespace;
+	}
+
+	public int getCisMaxConnections() {
+		return cisMaxConnections ;
+	}
+	
+	public void setCisMaxConnections(int cisMaxConnections) {
+		this.cisMaxConnections = cisMaxConnections;
 	}
 
 }

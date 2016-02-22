@@ -25,11 +25,14 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -113,7 +116,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends
 		final List<ComponentValidationDiagnostic> diagnostics = Lists.newArrayList();
 		for (final SnomedRelationshipIndexEntry relationship : groupToRelationshipMultimap.values()) {
 			if (relationship.isActive() && !isUniqueWithinGroupPredicate.apply(relationship)) {
-				final String relationshipLabel = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, relationship.getId());
+				final String relationshipLabel = getRelationshipLabel(branchPath, relationship);
 				final String message = "'" + component.getLabel() + "' has a relationship '" + relationshipLabel 
 						+ "', which has a non-unique type within its group '" + relationship.getGroup() + "'.";
 				diagnostics.add(new ComponentValidationDiagnosticImpl(component.getId(), message, ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));
@@ -127,5 +130,17 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends
 		}
 		
 	}
-
+	
+	private String getRelationshipLabel(final IBranchPath branchPath, final SnomedRelationshipIndexEntry relationship) {
+		final ISnomedDescription pt = SnomedRequests.prepareGetConcept()
+				.setComponentId(relationship.getAttributeId())
+				.setExpand("pt()")
+				.setLocales(ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference())
+				.build(branchPath.getPath())
+				.executeSync(ApplicationContext.getInstance().getService(IEventBus.class))
+				.getPt();
+		
+		return pt == null ? relationship.getId() : pt.getTerm();
+	}
+	
 }
