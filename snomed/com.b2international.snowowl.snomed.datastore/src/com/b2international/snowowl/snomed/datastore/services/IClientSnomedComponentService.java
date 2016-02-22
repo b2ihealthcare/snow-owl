@@ -194,6 +194,7 @@ public interface IClientSnomedComponentService {
 	 * @param descriptionTypeId the description type IDs. Optional, if omitted the PT of the concept will be returned as the term.
 	 * @return a map of concept IDs and the associated description terms from a given type of descriptions.
 	 */
+	@Deprecated
 	Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId);
 	
 	/**
