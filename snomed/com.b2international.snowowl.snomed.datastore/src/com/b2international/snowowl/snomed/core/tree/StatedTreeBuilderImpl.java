@@ -15,22 +15,23 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedStatedClientTerminologyBrowser;
+
 /**
  * @since 4.6
  */
-public class Trees {
+final class StatedTreeBuilderImpl extends TreeBuilderImpl {
 
-	public static final String STATED_FORM = "stated";
-	public static final String INFERRED_FORM = "inferred";
-
-	Trees() {}
-
-	public static TreeBuilder newInferredTree() {
-		return new InferredTreeBuilderImpl();
+	@Override
+	final String getForm() {
+		return Trees.STATED_FORM;
 	}
 
-	public static TreeBuilder newStatedTree() {
-		return new StatedTreeBuilderImpl();
+	@Override
+	final BaseSnomedClientTerminologyBrowser getTerminologyBrowser() {
+		return ApplicationContext.getInstance().getService(SnomedStatedClientTerminologyBrowser.class);
 	}
 
 }

@@ -18,9 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
-import java.util.List;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -28,7 +26,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
+import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
@@ -64,8 +62,10 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 	}
 	
 	@Override
-	protected TreeBuilder newTree(String branch, List<ExtendedLocale> locales) {
-		return Trees.newStatedTree(branch, locales, this, getBus());
+	protected TerminologyTree newTree(String branch, Iterable<SnomedConceptIndexEntry> concepts) {
+		return Trees
+				.newStatedTree()
+				.build(branch, concepts);
 	}
 	
 	@Override

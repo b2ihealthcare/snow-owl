@@ -83,7 +83,7 @@ public final class Promise<T> extends AbstractFuture<T> {
 	}
 	
 	/**
-	 * Define what to do when the promise becomes resolved.
+	 * Define what to do when the promise becomes rejected.
 	 * 
 	 * @param then
 	 * @return
@@ -111,7 +111,7 @@ public final class Promise<T> extends AbstractFuture<T> {
 	}
 
 	/**
-	 * Define what to do when the promise becomes rejected.
+	 * Define what to do when the promise becomes resolved.
 	 * 
 	 * @param fail
 	 * @return

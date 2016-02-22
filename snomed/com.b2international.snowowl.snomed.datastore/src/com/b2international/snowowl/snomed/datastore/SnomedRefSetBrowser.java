@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -108,6 +109,7 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * @param identifierConceptId the reference set identifier concept ID.
 	 * @param conceptId the unique concept ID. 
 	 * @return {@code true} if the reference set has at least one active member referencing to the specified concept, otherwise returns with {@code false}.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	boolean isActiveMemberOf(final IBranchPath branchPath, final long identifierConceptId, final long conceptId);
 	
@@ -140,6 +142,7 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * Returns with all reference sets.
 	 * @param branchPath the branch path.
 	 * @return a collection of all existing reference sets.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchRefSet()}.
 	 */
 	Collection<SnomedRefSetIndexEntry> getAllReferenceSets(final IBranchPath branchPath);
 	
@@ -148,6 +151,7 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * @param branchPath the branch path.
 	 * @param conceptId the unique concept ID.
 	 * @return a collection of active members referring to the given concept.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	Collection<SnomedRefSetMemberIndexEntry> getActiveReferringMembers(final IBranchPath branchPath, final String conceptId);
 
@@ -156,6 +160,7 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * @param branchPath the branch path.
 	 * @param conceptId the unique concept ID.
 	 * @return a collection of all members referring to the given concept.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	Collection<SnomedRefSetMemberIndexEntry> getReferringMembers(final IBranchPath branchPath, final String conceptId);
 	
@@ -164,6 +169,7 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * @param branchPath the branch path.
 	 * @param referenceSetId the reference set identifier concept ID.
 	 * @return a collection of all reference set members of a reference set.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	Collection<SnomedRefSetMemberIndexEntry> getMembers(final IBranchPath branchPath, final String referenceSetId);
 	
@@ -172,6 +178,7 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * @param branchPath the branch path.
 	 * @param referenceSetId the reference set identifier concept ID.
 	 * @return a collection of active reference set members of a reference set.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	Collection<SnomedRefSetMemberIndexEntry> getActiveMembers(final IBranchPath branchPath, final String referenceSetId);
 	

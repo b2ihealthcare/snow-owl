@@ -17,20 +17,20 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.FieldValueFilter;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.pcj.LongSets;
@@ -124,11 +124,14 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 		}
 		
-		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().and(SnomedMappings.memberReferencedComponentType().toExistsQuery());
+		addFilterClause(filter, new FieldValueFilter(SnomedMappings.memberReferencedComponentType().fieldName()),Occur.MUST);
+	
+		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery();
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		
-		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
+		final Query query = createConstantScoreQuery(
+				createFilteredQuery(queryBuilder.isEmpty() ? new MatchAllDocsQuery() : queryBuilder.matchAll(), filter));
 		final int totalHits = getTotalHits(searcher, query);
 
 		if (limit() < 1 || totalHits < 1) {
