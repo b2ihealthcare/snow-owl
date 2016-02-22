@@ -24,19 +24,18 @@ import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -66,7 +65,7 @@ public class SnomedRefSetAutoMapper {
 		final List<ExtendedLocale> locales = ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 		final String userId = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getUserId();
-		final String branchPath = getTerminologyBrowser().getBranchPath().getPath();
+		final String branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
 		
 		for (final Entry<Integer, String> entry : values.entrySet()) {
 			
@@ -82,6 +81,7 @@ public class SnomedRefSetAutoMapper {
 						.filterByActive(true)
 						.filterByTerm(entry.getValue())
 						.filterByExtendedLocales(locales)
+						.filterByAncestor(topLevelConceptId)
 						.withSearchProfile(userId)
 						.withDoi()
 						.setExpand("pt()");
@@ -120,10 +120,6 @@ public class SnomedRefSetAutoMapper {
 		return resolvedValues;
 	}
 
-	protected boolean isValidCandidate(final SnomedConceptIndexEntry input, final int rowIndex) {
-		return getTerminologyBrowser().isSuperTypeOfById(topLevelConceptId, input.getId());
-	}
-	
 	protected Map<Integer, String> getValuesFromColumn(final int targetColumn) {
 		final Map<Integer, String> collectedValues = newHashMap();
 		for (final AutoMapEntry entry : model.getContent()) {
@@ -132,21 +128,10 @@ public class SnomedRefSetAutoMapper {
 		return collectedValues;
 	}
 	
-	private Optional<SnomedConceptIndexEntry> getCandidate(final Collection<SnomedConceptIndexEntry> candidates, final int rowIndex) {
-		if (StringUtils.isEmpty(topLevelConceptId)) {
-			return FluentIterable.from(candidates).first();
-		}
-		return FluentIterable.from(candidates).firstMatch(new Predicate<SnomedConceptIndexEntry>() {
-			@Override public boolean apply(final SnomedConceptIndexEntry input) {
-				return isValidCandidate(input, rowIndex);
-			}
-		});
+	protected Optional<SnomedConceptIndexEntry> getCandidate(final Collection<SnomedConceptIndexEntry> candidates, final int rowIndex) {
+		return FluentIterable.from(candidates).first();
 	}
 
-	private SnomedClientTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-	}
-	
 	private String getParsedValueSafe(final AutoMapEntry entry, final int index) {
 		return entry.getParsedValues().size() > index ? entry.getParsedValues().get(index) : "";
 	}
