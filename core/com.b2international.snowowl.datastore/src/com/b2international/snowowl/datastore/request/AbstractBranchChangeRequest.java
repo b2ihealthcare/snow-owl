@@ -21,14 +21,16 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
-import com.google.common.base.Strings;
 
 /**
  * @since 4.6
  */
-public abstract class AbstractBranchChangeRequest extends BaseRequest<RepositoryContext, Branch> {
+public abstract class AbstractBranchChangeRequest extends BaseRequest<RepositoryContext, Merge> {
 
 	protected final String sourcePath;
 	protected final String targetPath;
@@ -43,18 +45,18 @@ public abstract class AbstractBranchChangeRequest extends BaseRequest<Repository
 	}
 
 	@Override
-	public Branch execute(RepositoryContext context) {
+	public Merge execute(RepositoryContext context) {
+		
 		try {
 			final BranchManager branchManager = context.service(BranchManager.class);
-			final ReviewManager reviewManager = context.service(ReviewManager.class);
-			
 			final Branch source = branchManager.getBranch(sourcePath);
 			final Branch target = branchManager.getBranch(targetPath);
 			
 			if (reviewId != null) {
-				Review review = reviewManager.getReview(reviewId);
-				com.b2international.snowowl.datastore.review.BranchState sourceState = review.source();
-				com.b2international.snowowl.datastore.review.BranchState targetState = review.target();
+				final ReviewManager reviewManager = context.service(ReviewManager.class);
+				final Review review = reviewManager.getReview(reviewId);
+				final BranchState sourceState = review.source();
+				final BranchState targetState = review.target();
 				
 				if (!sourceState.matches(source)) {
 					throw new ConflictException("Source branch '%s' did not match with stored state on review identifier '%s'.", source.path(), reviewId);
@@ -65,18 +67,16 @@ public abstract class AbstractBranchChangeRequest extends BaseRequest<Repository
 				}
 			}
 			
-			return executeChange(context, source, target);
+			return context.service(MergeService.class).enqueue(sourcePath, targetPath, commitMessage, reviewId);
 						
 		} catch (NotFoundException e) {
 			throw e.toBadRequestException();
 		}
 	}
 
-	protected abstract Branch executeChange(RepositoryContext context, Branch source, Branch target);
-
 	@Override
-	protected Class<Branch> getReturnType() {
-		return Branch.class;
+	protected Class<Merge> getReturnType() {
+		return Merge.class;
 	}
 
 	@Override

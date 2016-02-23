@@ -17,34 +17,29 @@ package com.b2international.snowowl.datastore.request;
 
 import java.util.UUID;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeService;
 
 /**
  * @since 4.6
  */
-public class Merging {
+public class GetMergeRequest extends BaseRequest<RepositoryContext, Merge> {
 
-	private String repositoryId;
+	private UUID id;
 
-	Merging(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
-	
-	public CreateMergeRequestBuilder prepareCreate() {
-		return new CreateMergeRequestBuilder(repositoryId);
+	public GetMergeRequest(UUID id) {
+		this.id = id;
 	}
 
-	public Request<ServiceProvider, Merge> prepareGet(UUID id) {
-		return RepositoryRequests.wrap(repositoryId, new GetMergeRequest(id));
-	}
-	
-	public SearchMergeRequestBuilder prepareSearch() {
-		return new SearchMergeRequestBuilder(repositoryId);
+	@Override
+	public Merge execute(RepositoryContext context) {
+		return context.service(MergeService.class).getMerge(id);
 	}
 
-	public Request<ServiceProvider, Void> prepareDelete(UUID id) {
-		return RepositoryRequests.wrap(repositoryId, new DeleteMergeRequest(id));
+	@Override
+	protected Class<Merge> getReturnType() {
+		return Merge.class;
 	}
 }

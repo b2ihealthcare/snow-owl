@@ -15,36 +15,40 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
-
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeCollection;
 
 /**
  * @since 4.6
  */
-public class Merging {
+public class SearchMergeRequestBuilder {
 
-	private String repositoryId;
-
-	Merging(String repositoryId) {
+	private final String repositoryId;
+	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
+	
+	public SearchMergeRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
 	}
-	
-	public CreateMergeRequestBuilder prepareCreate() {
-		return new CreateMergeRequestBuilder(repositoryId);
+
+	public SearchMergeRequestBuilder withSource(String source) {
+		optionsBuilder.put("source", source);
+		return this;
 	}
 
-	public Request<ServiceProvider, Merge> prepareGet(UUID id) {
-		return RepositoryRequests.wrap(repositoryId, new GetMergeRequest(id));
-	}
-	
-	public SearchMergeRequestBuilder prepareSearch() {
-		return new SearchMergeRequestBuilder(repositoryId);
+	public SearchMergeRequestBuilder withTarget(String target) {
+		optionsBuilder.put("target", target);
+		return this;
 	}
 
-	public Request<ServiceProvider, Void> prepareDelete(UUID id) {
-		return RepositoryRequests.wrap(repositoryId, new DeleteMergeRequest(id));
+	public SearchMergeRequestBuilder withStatus(Merge.Status status) {
+		optionsBuilder.put("status", status);
+		return this;
+	}
+
+	public Request<ServiceProvider, MergeCollection> build() {
+		return RepositoryRequests.wrap(repositoryId, new SearchMergeRequest(optionsBuilder.build()));
 	}
 }

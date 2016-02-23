@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,16 @@
  */
 package com.b2international.snowowl.core.merge;
 
-import java.util.UUID;
+import java.util.List;
 
-import com.google.common.base.Predicate;
+import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
  * @since 4.6
  */
-public interface MergeService {
+public final class MergeCollection extends CollectionResource<Merge> {
 
-	Merge enqueue(String source, String target, String commitMessage, String reviewId);
-
-	Merge getMerge(UUID id);
-	
-	MergeCollection search(Predicate<Merge> query);
-	
-	void deleteMerge(UUID id);
+	public MergeCollection(List<Merge> items) {
+		super(items);
+	}
 }
