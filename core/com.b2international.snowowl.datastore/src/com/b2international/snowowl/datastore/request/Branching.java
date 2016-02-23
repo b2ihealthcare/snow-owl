@@ -51,10 +51,6 @@ public class Branching {
 		return RepositoryRequests.wrap(repositoryId, new ReadBranchChildrenRequest(path));
 	}
 	
-	public BranchMergeRequestBuilder prepareMerge() {
-		return new BranchMergeRequestBuilder(repositoryId);
-	}
-
 	public Request<ServiceProvider, Branch> prepareDelete(String branchPath) {
 		return RepositoryRequests.wrap(repositoryId, new DeleteBranchRequest(branchPath));
 	}
@@ -62,5 +58,4 @@ public class Branching {
 	public Request<ServiceProvider, Branch> prepareReopen(String branchPath) {
 		return RepositoryRequests.wrap(repositoryId, new ReopenBranchRequest(branchPath));
 	}
-	
 }
