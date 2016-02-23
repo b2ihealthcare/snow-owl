@@ -23,6 +23,7 @@ import static com.google.common.collect.Sets.difference;
 import static com.google.common.collect.Sets.intersection;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,8 @@ import com.google.common.base.Equivalence;
 import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
@@ -208,4 +211,12 @@ public abstract class Collections3 {
 	}
 	
 	private Collections3() { /*suppress instantiation*/ }
+
+	public static <T> Set<T> toImmutableSet(Iterable<T> values) {
+		return values != null ? ImmutableSet.copyOf(values) : Collections.<T>emptySet();
+	}
+	
+	public static <T> List<T> toImmutableList(Iterable<T> values) {
+		return values != null ? ImmutableList.copyOf(values) : Collections.<T>emptyList();
+	}
 }
