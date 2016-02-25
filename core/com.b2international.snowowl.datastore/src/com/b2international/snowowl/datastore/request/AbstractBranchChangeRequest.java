@@ -21,8 +21,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -30,14 +28,18 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
 /**
  * @since 4.6
  */
-public abstract class AbstractBranchChangeRequest extends BaseRequest<RepositoryContext, Merge> {
+public abstract class AbstractBranchChangeRequest<R> extends BaseRequest<RepositoryContext, R> {
 
+	private final Class<R> responseClass;
+	
 	protected final String sourcePath;
 	protected final String targetPath;
 	protected final String commitMessage;
 	protected final String reviewId;
 
-	protected AbstractBranchChangeRequest(String sourcePath, String targetPath, String commitMessage, String reviewId) {
+	protected AbstractBranchChangeRequest(Class<R> responseClass, String sourcePath, String targetPath, String commitMessage, String reviewId) {
+		this.responseClass = responseClass;
+		
 		this.sourcePath = sourcePath;
 		this.targetPath = targetPath;
 		this.commitMessage = commitMessage;
@@ -45,7 +47,7 @@ public abstract class AbstractBranchChangeRequest extends BaseRequest<Repository
 	}
 
 	@Override
-	public Merge execute(RepositoryContext context) {
+	public R execute(RepositoryContext context) {
 		
 		try {
 			final BranchManager branchManager = context.service(BranchManager.class);
@@ -67,16 +69,18 @@ public abstract class AbstractBranchChangeRequest extends BaseRequest<Repository
 				}
 			}
 			
-			return context.service(MergeService.class).enqueue(sourcePath, targetPath, commitMessage, reviewId);
+			return executePostChecks(context, source, target);
 						
 		} catch (NotFoundException e) {
 			throw e.toBadRequestException();
 		}
 	}
 
+	protected abstract R executePostChecks(RepositoryContext context, Branch source, Branch target);
+
 	@Override
-	protected Class<Merge> getReturnType() {
-		return Merge.class;
+	protected Class<R> getReturnType() {
+		return responseClass;
 	}
 
 	@Override

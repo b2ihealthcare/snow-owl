@@ -16,6 +16,9 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeService;
 import com.google.common.base.Strings;
 
 /**
@@ -30,7 +33,7 @@ import com.google.common.base.Strings;
  *
  * @since 4.6
  */
-public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
+public final class BranchRebaseRequest extends AbstractBranchChangeRequest<Merge> {
 
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
@@ -39,6 +42,11 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 	}
 
 	BranchRebaseRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId) {
-		super(sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
+		super(Merge.class, sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
+	}
+	
+	@Override
+	protected Merge executePostChecks(RepositoryContext context, Branch source, Branch target) {
+		return context.service(MergeService.class).enqueue(sourcePath, targetPath, commitMessage, reviewId);
 	}
 }
