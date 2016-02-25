@@ -1,12 +1,9 @@
 package org.protege.editor.core;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-
 
 /**
  * Author: Matthew Horridge<br>
@@ -26,30 +23,10 @@ public abstract class AbstractModelManager implements ModelManager {
 
     private static final Logger logger = Logger.getLogger(AbstractModelManager.class);
 
-    private List<ModelManagerListener> listeners;
-
     private Map<Object, Disposable> objects = new HashMap<Object, Disposable>();
 
 
     protected AbstractModelManager() {
-        listeners = new ArrayList<ModelManagerListener>();
-    }
-
-
-    public void addModelManagerListener(ModelManagerListener listener) {
-        listeners.add(listener);
-    }
-
-
-    public void removeModelManagerListener(ModelManagerListener listener) {
-        listeners.remove(listener);
-    }
-
-
-    public void fireModelManagerEvent(ModelManagerEvent event) {
-        for (ModelManagerListener listener : new ArrayList<ModelManagerListener>(listeners)) {
-            listener.handleEvent(event);
-        }
     }
 
 

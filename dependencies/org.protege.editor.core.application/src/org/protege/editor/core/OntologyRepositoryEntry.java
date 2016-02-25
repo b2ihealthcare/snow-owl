@@ -1,8 +1,8 @@
 package org.protege.editor.core;
 
-import java.net.URI;
-
 import org.protege.editor.core.editorkit.EditorKit;
+
+import java.net.URI;
 
 
 /**

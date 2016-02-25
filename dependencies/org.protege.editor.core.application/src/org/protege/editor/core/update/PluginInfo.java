@@ -1,11 +1,11 @@
 package org.protege.editor.core.update;
 
 
-import java.net.URL;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.protege.editor.core.plugin.PluginUtilities;
+
+import java.net.URL;
 
 
 /**
@@ -106,7 +106,10 @@ public class PluginInfo {
         this.label = label;
     }
 
-
+    /**
+     * Gets hold of the label.
+     * @return The label.  Not {@code null}.
+     */
     public String getLabel() {
         if (label == null){
             return id;
