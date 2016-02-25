@@ -78,7 +78,7 @@ public abstract class NodeTransformerImpl extends DiffTransformer implements Nod
 	}
 
 	private IBranchPath getBranchPath(final boolean patched, final IBranchPath branchPath) {
-		return patched ? branchPath : BranchPathUtils.convertIntoBasePath(branchPath);
+		return patched ? branchPath : BranchPathUtils.isMain(branchPath) ? branchPath : BranchPathUtils.convertIntoBasePath(branchPath);
 	}
 
 	/**
