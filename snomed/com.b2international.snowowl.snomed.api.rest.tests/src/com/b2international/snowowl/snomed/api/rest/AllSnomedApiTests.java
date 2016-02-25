@@ -63,7 +63,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
 	SnomedBrowserApiTest.class,
-	SnomedClassificationApiTest.class
+	// XXX reenable classification tests when we bumped owlapi to at least 3.4.4
+//	SnomedClassificationApiTest.class
 })
 public class AllSnomedApiTests {
 
