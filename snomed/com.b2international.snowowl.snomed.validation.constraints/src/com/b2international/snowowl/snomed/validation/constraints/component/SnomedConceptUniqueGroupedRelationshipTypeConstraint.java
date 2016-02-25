@@ -42,16 +42,15 @@ import com.google.common.collect.Multimap;
  * Active relationships must be of unique type within a relationship group.
  * 
  */
-public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends
-		ComponentValidationConstraint<SnomedConceptIndexEntry> {
+public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends ComponentValidationConstraint<SnomedConceptIndexEntry> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptUniqueGroupedRelationshipTypeConstraint";
 	
 	private static final class UniqueRelationshipTypePredicate implements Predicate<SnomedRelationshipIndexEntry> {
 		
-		private final Multimap<Byte, SnomedRelationshipIndexEntry> groupToRelationshipMultimap;
+		private final Multimap<Integer, SnomedRelationshipIndexEntry> groupToRelationshipMultimap;
 
-		private UniqueRelationshipTypePredicate(final Multimap<Byte, SnomedRelationshipIndexEntry> groupToRelationshipMultimap) {
+		private UniqueRelationshipTypePredicate(final Multimap<Integer, SnomedRelationshipIndexEntry> groupToRelationshipMultimap) {
 			this.groupToRelationshipMultimap = groupToRelationshipMultimap;
 		}
 		
@@ -103,7 +102,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends
 	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
 		final SnomedStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
 		final List<SnomedRelationshipIndexEntry> outboundStatements = statementBrowser.getOutboundStatements(branchPath, component);
-		final Multimap<Byte, SnomedRelationshipIndexEntry> groupToRelationshipMultimap = ArrayListMultimap.create();
+		final Multimap<Integer, SnomedRelationshipIndexEntry> groupToRelationshipMultimap = ArrayListMultimap.create();
 		// populate map by groups, omit inactive relationships and ungrouped relationships (if group equals with 0 -> relationship is ungrouped)
 		for (final SnomedRelationshipIndexEntry relationship : outboundStatements) {
 			if (relationship.isActive() && 0 < relationship.getGroup())
