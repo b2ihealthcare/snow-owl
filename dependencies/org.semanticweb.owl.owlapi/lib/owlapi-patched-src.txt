@@ -1,3 +1,0 @@
-NOTE: owlapi.patch has been applied on the released 3.2.2 sources.
-
-The only change which did not apply cleanly is in KRSS2OWLParser; you may see a discrepancy in line numbers in this class.
