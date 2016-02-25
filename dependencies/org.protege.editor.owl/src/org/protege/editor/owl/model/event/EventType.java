@@ -46,7 +46,7 @@ public enum EventType {
     REASONER_CHANGED,
 
     ABOUT_TO_CLASSIFY,
-
+    
     ONTOLOGY_CLASSIFIED,
 
     ONTOLOGY_CREATED,

@@ -1,22 +1,29 @@
 package org.protege.editor.owl.model.inference;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
+import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.util.Resettable;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.event.EventType;
+import org.protege.editor.owl.ui.explanation.io.InconsistentOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.reasoner.BufferingMode;
+import org.semanticweb.owlapi.reasoner.InconsistentOntologyException;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.NullReasonerProgressMonitor;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
 import org.semanticweb.owlapi.reasoner.ReasonerProgressMonitor;
 
 
@@ -48,6 +55,8 @@ public class OWLReasonerManagerImpl implements OWLReasonerManager {
     private ReasonerProgressMonitor reasonerProgressMonitor;
     private OWLReasonerExceptionHandler exceptionHandler;
     
+    private List<ReasonerFilter> reasonerFilters = new ArrayList<ReasonerFilter>();
+    
 
     public OWLReasonerManagerImpl(OWLModelManager owlModelManager) {
         this.owlModelManager = owlModelManager;
@@ -70,11 +79,14 @@ public class OWLReasonerManagerImpl implements OWLReasonerManager {
     }
 
 
-    public void dispose() {
+    public void dispose() throws Exception {
         if (preferences != null) {
             preferences.save();
         }
         clearAndDisposeReasoners();
+        if (reasonerProgressMonitor instanceof Disposable) {
+        	((Disposable) reasonerProgressMonitor).dispose();
+        }
     }
     
     private void clearAndDisposeReasoners() {
@@ -178,6 +190,21 @@ public class OWLReasonerManagerImpl implements OWLReasonerManager {
         return reasoner;
     }
     
+    public void killCurrentReasoner() {
+    	OWLReasoner reasoner = getCurrentReasoner();
+    	if (!(reasoner instanceof NoOpReasoner)) {
+        	try {
+        		reasoner.dispose();
+        	}
+        	catch (Exception ex) {
+        		ProtegeApplication.getErrorLog().logError(ex);
+        	}
+            synchronized (reasonerMap)  {
+            	reasonerMap.put(owlModelManager.getActiveOntology(), null);
+            }
+    	}
+    }
+    
     public boolean isClassificationInProgress() {
         synchronized (reasonerMap) {
             return classificationInProgress;
@@ -202,14 +229,24 @@ public class OWLReasonerManagerImpl implements OWLReasonerManager {
     		}
     		else {
                 OWLReasoner reasoner = getCurrentReasoner();
-                if (reasoner instanceof NoOpReasoner) {
-                	return ReasonerStatus.REASONER_NOT_INITIALIZED;
+                try {
+                	if (reasoner instanceof NoOpReasoner) {
+                		return ReasonerStatus.REASONER_NOT_INITIALIZED;
+                	}
+                	else if (!reasoner.isConsistent()) {
+                		return ReasonerStatus.INCONSISTENT;                	
+                	}
+                	else if (reasoner.getPendingChanges().isEmpty()) {
+                		return ReasonerStatus.INITIALIZED;
+                	}
+                	else {
+                		return ReasonerStatus.OUT_OF_SYNC;
+                	}
                 }
-                else if (reasoner.getPendingChanges().isEmpty()) {
-                	return ReasonerStatus.INITIALIZED;
-                }
-                else {
-                	return ReasonerStatus.OUT_OF_SYNC;
+                catch (Throwable t) {
+                	killCurrentReasoner();
+                	logger.warn("Protege terminated reasoner.");
+                	throw new ReasonerDiedException(t);
                 }
     		}
     	}
@@ -235,8 +272,15 @@ public class OWLReasonerManagerImpl implements OWLReasonerManager {
         Thread currentReasonerThread = new Thread(new ClassificationRunner(currentOntology, precompute), "Classification Thread");
         currentReasonerThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler(){
             public void uncaughtException(Thread thread, Throwable throwable) {
-                exceptionHandler.handle(throwable);
                 ProtegeApplication.getErrorLog().logError(throwable);
+            	try {
+            		if (getReasonerStatus() != ReasonerStatus.REASONER_NOT_INITIALIZED) {
+            			exceptionHandler.handle(throwable);
+            		}
+            	}
+            	catch (ReasonerDiedException died) {
+            		ReasonerUtilities.warnThatReasonerDied(null, died);
+            	}
             }
         });
         currentReasonerThread.start();
@@ -275,6 +319,21 @@ public class OWLReasonerManagerImpl implements OWLReasonerManager {
         }
     }
     
+    public void addReasonerFilter(ReasonerFilter filter) {
+        synchronized (reasonerMap) {
+            reasonerFilters.add(filter);
+        }
+    }
+    
+    private OWLOntology applyReasonerFilters(OWLOntology ontology) {
+        synchronized (reasonerMap) {
+            for (ReasonerFilter filter : reasonerFilters) {
+                ontology = filter.getFilteredOntology(ontology);
+            }
+        }
+        return ontology;
+    }
+    
     private class ClassificationRunner implements Runnable {
         private OWLOntology ontology;
         private Set<InferenceType> precompute;
@@ -288,47 +347,93 @@ public class OWLReasonerManagerImpl implements OWLReasonerManager {
         }
         
         public void run() {
+        	boolean inconsistencyFound = false;
+        	boolean reasonerChanged = false;
             try {
-                long start = System.currentTimeMillis();
-                if (runningReasoner instanceof NoOpReasoner) {
-                    runningReasoner = null;
+            	long start = System.currentTimeMillis();
+                reasonerChanged = ensureRunningReasonerInitialized();
+                if (runningReasoner != null) {
+                	precompute();
+                	logger.info(currentReasonerFactory.getReasonerName() + " classified in " + (System.currentTimeMillis()-start) + "ms");
                 }
-                if (runningReasoner != null && !runningReasoner.getPendingChanges().isEmpty()) {
-                    if (runningReasoner.getBufferingMode() == null 
-                            || runningReasoner.getBufferingMode() == BufferingMode.NON_BUFFERING) {
-                        runningReasoner.dispose();
-                        runningReasoner = null;
-                    }
-                    else {
-                        runningReasoner.flush();
-                    }
-                }
-                if (runningReasoner == null) {
-                	runningReasoner = ReasonerUtilities.createReasoner(ontology, currentReasonerFactory, reasonerProgressMonitor);
-                    owlModelManager.fireEvent(EventType.REASONER_CHANGED);
-                }
-                Set<InferenceType> precomputeThisRun  = EnumSet.noneOf(InferenceType.class);
-                precomputeThisRun.addAll(precompute);
-                precomputeThisRun.retainAll(runningReasoner.getPrecomputableInferenceTypes());
-                if (!precomputeThisRun.isEmpty()) {
-                	logger.info("Initializing the reasoner by performing the following steps:");
-                	for (InferenceType type : precompute) {
-                		logger.info("\t" + type);
-                	}
-                    runningReasoner.precomputeInferences(precomputeThisRun.toArray(new InferenceType[precomputeThisRun.size()]));
-
-                    String s = currentReasonerFactory.getReasonerName() + " classified in " + (System.currentTimeMillis()-start) + "ms";
-                    logger.info(s);
-                }
-
+            }
+            catch (ReasonerInterruptedException rie) {
+            	reasonerChanged = true;
+            	OWLReasoner reasonerInBadState = runningReasoner;
+            	runningReasoner = null;
+            	reasonerInBadState.dispose();
+            }
+            catch (InconsistentOntologyException ioe) {
+            	inconsistencyFound = true;
             }
             finally{
-                synchronized (reasonerMap) {
-                    reasonerMap.put(ontology, runningReasoner);
+            	if (runningReasoner != null) {
+            		synchronized (runningReasoner) {
+            			reasonerFilters.clear();
+            		}
+            	}
+            	installRunningReasoner(inconsistencyFound, reasonerChanged);
+            	if (reasonerProgressMonitor instanceof Resettable) {
+            		((Resettable) reasonerProgressMonitor).reset();
+            	}
+            }
+        }
+        
+        public boolean ensureRunningReasonerInitialized() {
+        	boolean reasonerChanged = false;
+            if (runningReasoner instanceof NoOpReasoner) {
+                runningReasoner = null;
+            }
+            if (runningReasoner != null && !runningReasoner.getPendingChanges().isEmpty()) {
+                if (runningReasoner.getBufferingMode() == null 
+                        || runningReasoner.getBufferingMode() == BufferingMode.NON_BUFFERING) {
+                    runningReasoner.dispose();
                     runningReasoner = null;
-                    classificationInProgress = false;
                 }
-                fireReclassified();
+                else {
+                    runningReasoner.flush();
+                }
+            }
+            if (runningReasoner == null) {
+            	runningReasoner = ReasonerUtilities.createReasoner(applyReasonerFilters(ontology), currentReasonerFactory, reasonerProgressMonitor);
+            	reasonerChanged = true;
+            }
+            if (runningReasoner == null) {
+            	classificationInProgress = false;
+            	ProtegeApplication.getErrorLog().logError(new Exception("Reasoner Initialization failed (ontology is probably inconsistent)"));
+            }
+            return reasonerChanged;
+        }
+        
+        public void precompute() {
+            Set<InferenceType> precomputeThisRun  = EnumSet.noneOf(InferenceType.class);
+            precomputeThisRun.addAll(precompute);
+            precomputeThisRun.retainAll(runningReasoner.getPrecomputableInferenceTypes());
+            if (!precomputeThisRun.isEmpty()) {
+            	logger.info("Initializing the reasoner by performing the following steps:");
+            	for (InferenceType type : precompute) {
+            		logger.info("\t" + type);
+            	}
+                runningReasoner.precomputeInferences(precomputeThisRun.toArray(new InferenceType[precomputeThisRun.size()]));
+            }
+        }
+        
+        public void installRunningReasoner(boolean inconsistencyFound, boolean reasonerChanged) {
+            synchronized (reasonerMap) {
+                reasonerMap.put(ontology, runningReasoner);
+                runningReasoner = null;
+                classificationInProgress = false;
+            }
+            if (reasonerChanged) {
+                SwingUtilities.invokeLater(new Runnable() {
+                	public void run() {
+                        owlModelManager.fireEvent(EventType.REASONER_CHANGED);
+                	}
+                });
+            }
+            fireReclassified();
+            if (inconsistencyFound) {
+            	InconsistentOntologyManager.get(owlModelManager).explain();
             }
         }
     }

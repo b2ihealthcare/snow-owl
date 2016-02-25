@@ -1,16 +1,13 @@
 package org.protege.editor.owl.ui.view.ontology;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
+import org.protege.editor.owl.ui.view.AbstractActiveOntologyViewComponent;
+import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
-import org.protege.editor.owl.ui.view.AbstractActiveOntologyViewComponent;
-import org.semanticweb.owlapi.model.OWLOntology;
 
 
 /**

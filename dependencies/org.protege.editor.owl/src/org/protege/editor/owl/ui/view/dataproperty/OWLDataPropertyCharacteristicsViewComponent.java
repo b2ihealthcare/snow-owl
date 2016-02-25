@@ -1,26 +1,14 @@
 package org.protege.editor.owl.ui.view.dataproperty;
 
-import java.awt.BorderLayout;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.util.FilteringOWLOntologyChangeListener;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JScrollPane;
-
-import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLFunctionalDataPropertyAxiom;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
-import org.semanticweb.owlapi.model.RemoveAxiom;
-import org.semanticweb.owlapi.util.FilteringOWLOntologyChangeListener;
 
 
 /**
@@ -48,7 +36,11 @@ public class OWLDataPropertyCharacteristicsViewComponent extends AbstractOWLData
 
     protected OWLDataProperty updateView(OWLDataProperty property) {
         prop = property;
+        checkBox.setEnabled(property != null);
         checkBox.setSelected(false);
+        if (property == null) {
+        	return null;
+        }
         for (OWLOntology ont : getOWLModelManager().getActiveOntologies()) {
             if (!ont.getFunctionalDataPropertyAxioms(prop).isEmpty()) {
                 checkBox.setSelected(true);

@@ -1,8 +1,5 @@
 package org.protege.editor.owl.ui.frame;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
@@ -12,34 +9,35 @@ import org.protege.editor.owl.ui.frame.cls.OWLDisjointClassesAxiomFrameSection;
 import org.protege.editor.owl.ui.frame.cls.OWLDisjointUnionAxiomFrameSection;
 import org.protege.editor.owl.ui.frame.cls.OWLEquivalentClassesAxiomFrameSection;
 import org.protege.editor.owl.ui.frame.cls.OWLSubClassAxiomFrameSection;
-import org.protege.editor.owl.ui.frame.dataproperty.OWLDataPropertyDomainFrameSection;
-import org.protege.editor.owl.ui.frame.dataproperty.OWLDataPropertyRangeFrameSection;
-import org.protege.editor.owl.ui.frame.dataproperty.OWLDisjointDataPropertiesFrameSection;
-import org.protege.editor.owl.ui.frame.dataproperty.OWLEquivalentDataPropertiesFrameSection;
-import org.protege.editor.owl.ui.frame.dataproperty.OWLSubDataPropertyAxiomSuperPropertyFrameSection;
-import org.protege.editor.owl.ui.frame.individual.OWLClassAssertionAxiomTypeFrameSection;
-import org.protege.editor.owl.ui.frame.individual.OWLDataPropertyAssertionAxiomFrameSection;
-import org.protege.editor.owl.ui.frame.individual.OWLDifferentIndividualsAxiomFrameSection;
-import org.protege.editor.owl.ui.frame.individual.OWLNegativeDataPropertyAssertionFrameSection;
-import org.protege.editor.owl.ui.frame.individual.OWLNegativeObjectPropertyAssertionFrameSection;
-import org.protege.editor.owl.ui.frame.individual.OWLObjectPropertyAssertionAxiomFrameSection;
-import org.protege.editor.owl.ui.frame.individual.OWLSameIndividualsAxiomFrameSection;
-import org.protege.editor.owl.ui.frame.objectproperty.OWLDisjointObjectPropertiesFrameSection;
-import org.protege.editor.owl.ui.frame.objectproperty.OWLEquivalentObjectPropertiesAxiomFrameSection;
-import org.protege.editor.owl.ui.frame.objectproperty.OWLObjectPropertyDomainFrameSection;
-import org.protege.editor.owl.ui.frame.objectproperty.OWLObjectPropertyRangeFrameSection;
-import org.protege.editor.owl.ui.frame.objectproperty.OWLPropertyChainAxiomFrameSection;
-import org.protege.editor.owl.ui.frame.objectproperty.OWLSubObjectPropertyAxiomSuperPropertyFrameSection;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDatatype;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLEntityVisitor;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLOntology;
+import org.protege.editor.owl.ui.frame.dataproperty.*;
+import org.protege.editor.owl.ui.frame.individual.*;
+import org.protege.editor.owl.ui.frame.objectproperty.*;
+import org.semanticweb.owlapi.model.*;
+
+import java.util.ArrayList;
+import java.util.List;
+/*
+ * Copyright (C) 2007, University of Manchester
+ *
+ * Modifications to the initial code base are copyright of their
+ * respective authors, or their employers as appropriate.  Authorship
+ * of the modifications may be determined from the ChangeLog placed at
+ * the end of this file.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 
 /**

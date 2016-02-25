@@ -1,13 +1,9 @@
 package org.protege.editor.owl.ui.frame;
 
-import java.util.List;
-
 import org.protege.editor.core.ui.list.MListItem;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
+
+import java.util.List;
 
 
 /**
@@ -24,7 +20,7 @@ public interface OWLFrameSectionRow<R, A extends OWLAxiom, E> extends OWLFrameOb
     /**
      * Gets the frame section which this row belongs to.
      */
-    OWLFrameSection getFrameSection();
+    OWLFrameSection<R,A,E> getFrameSection();
 
 
     /**

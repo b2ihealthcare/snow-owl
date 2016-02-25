@@ -1,8 +1,9 @@
 package org.protege.editor.owl.ui.prefix;
 
+import static org.protege.editor.owl.ui.prefix.PrefixMapperTableModel.Column;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableModel;
 
-import org.protege.editor.owl.ui.prefix.PrefixMapperTableModel.Column;
 import org.protege.editor.owl.ui.table.BasicOWLTable;
 import org.semanticweb.owlapi.vocab.PrefixOWLOntologyFormat;
 

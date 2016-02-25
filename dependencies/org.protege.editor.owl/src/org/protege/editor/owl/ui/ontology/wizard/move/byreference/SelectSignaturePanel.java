@@ -1,9 +1,32 @@
 package org.protege.editor.owl.ui.ontology.wizard.move.byreference;
 
-import java.awt.BorderLayout;
-
 import org.protege.editor.owl.ui.ontology.wizard.move.MoveAxiomsKitConfigurationPanel;
+import org.protege.editor.owl.ui.ontology.wizard.move.common.SignatureSelection;
 import org.protege.editor.owl.ui.selector.OWLEntitySelectorPanel;
+
+import java.awt.*;
+/*
+ * Copyright (C) 2008, University of Manchester
+ *
+ * Modifications to the initial code base are copyright of their
+ * respective authors, or their employers as appropriate.  Authorship
+ * of the modifications may be determined from the ChangeLog placed at
+ * the end of this file.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 
 /**
@@ -14,10 +37,10 @@ public class SelectSignaturePanel extends MoveAxiomsKitConfigurationPanel {
 
     private OWLEntitySelectorPanel selector;
 
-    private MoveAxiomsByReferenceKit kit;
+    private SignatureSelection kit;
 
 
-    public SelectSignaturePanel(MoveAxiomsByReferenceKit kit) {
+    public SelectSignaturePanel(SignatureSelection kit) {
         this.kit = kit;
     }
 
@@ -45,8 +68,7 @@ public class SelectSignaturePanel extends MoveAxiomsKitConfigurationPanel {
 
 
     public String getInstructions() {
-        return "Select entities in that will be used as a signature for your extraction." +
-               "\nAll axioms referencing entities in the signature will be selected by default.";
+        return "Select entities in that should be in the signature for the copy/move/delete operation.";
     }
 
 

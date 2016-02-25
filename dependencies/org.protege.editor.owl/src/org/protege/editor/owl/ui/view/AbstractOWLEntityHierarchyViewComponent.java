@@ -18,6 +18,7 @@ import javax.swing.tree.TreeCellRenderer;
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.core.ui.view.View;
 import org.protege.editor.owl.model.hierarchy.OWLObjectHierarchyProvider;
+import org.protege.editor.owl.model.util.OWLUtilities;
 import org.protege.editor.owl.ui.OWLObjectComparatorAdapter;
 import org.protege.editor.owl.ui.action.OWLObjectHierarchyDeleter;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
@@ -67,6 +68,11 @@ public abstract class AbstractOWLEntityHierarchyViewComponent<E extends OWLEntit
                     return 1;
                 }
                 else {
+                	boolean deprecated1 = OWLUtilities.isDeprecated(getOWLModelManager(), o1);
+                	boolean deprecated2 = OWLUtilities.isDeprecated(getOWLModelManager(), o2);
+                	if (deprecated1 != deprecated2) {
+                		return deprecated1 ? 1 : -1;
+                	}
                     return comp.compare(o1, o2);
                 }
             }

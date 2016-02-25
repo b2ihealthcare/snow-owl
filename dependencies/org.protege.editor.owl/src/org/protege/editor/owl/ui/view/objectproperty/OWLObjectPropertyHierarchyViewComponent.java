@@ -1,13 +1,13 @@
 package org.protege.editor.owl.ui.view.objectproperty;
 
-import javax.swing.Icon;
-
 import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
 import org.protege.editor.owl.model.hierarchy.OWLObjectHierarchyProvider;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.view.AbstractOWLPropertyHierarchyViewComponent;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLSubPropertyAxiom;
+
+import javax.swing.*;
 
 
 /**

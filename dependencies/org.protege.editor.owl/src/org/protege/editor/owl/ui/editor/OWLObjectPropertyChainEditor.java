@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.apache.log4j.Logger;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
@@ -44,12 +45,12 @@ public class OWLObjectPropertyChainEditor extends AbstractOWLObjectEditor<List<O
     public OWLObjectPropertyChainEditor(OWLEditorKit owlEditorKit) {
         this.owlEditorKit = owlEditorKit;
         final OWLExpressionChecker<List<OWLObjectPropertyExpression>> checker = owlEditorKit.getModelManager().getOWLExpressionCheckerFactory().getPropertyChainChecker();
-        editor = new ExpressionEditor<List<OWLObjectPropertyExpression>>(owlEditorKit, checker);
+        editor = new ExpressionEditor<List<OWLObjectPropertyExpression>>(owlEditorKit, checker);        
         Dimension prefSize = editor.getPreferredSize();
-        editor.setPreferredSize(new Dimension(350, prefSize.height));
+        editor.setPreferredSize(new Dimension(350, prefSize.height * 3));
         impliesLabel = new JLabel();
         panel = new JPanel(new BorderLayout(7, 7));
-        panel.add(editor);
+        panel.add(new JScrollPane(editor));
         panel.add(impliesLabel, BorderLayout.EAST);
     }
 

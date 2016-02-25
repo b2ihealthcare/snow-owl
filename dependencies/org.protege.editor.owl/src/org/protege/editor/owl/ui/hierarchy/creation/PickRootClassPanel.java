@@ -1,14 +1,13 @@
 package org.protege.editor.owl.ui.hierarchy.creation;
 
-import java.awt.BorderLayout;
-
-import javax.swing.JComponent;
-
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.AbstractOWLWizardPanel;
 import org.protege.editor.owl.ui.tree.OWLModelManagerTree;
 import org.semanticweb.owlapi.model.OWLClass;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 /**

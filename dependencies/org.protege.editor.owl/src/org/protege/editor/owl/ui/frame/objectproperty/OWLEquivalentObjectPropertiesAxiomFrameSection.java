@@ -16,6 +16,7 @@ import org.semanticweb.owlapi.model.OWLEquivalentObjectPropertiesAxiom;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.util.CollectionFactory;
 
 
@@ -27,7 +28,7 @@ import org.semanticweb.owlapi.util.CollectionFactory;
  */
 public class OWLEquivalentObjectPropertiesAxiomFrameSection extends AbstractOWLFrameSection<OWLObjectProperty, OWLEquivalentObjectPropertiesAxiom, OWLObjectPropertyExpression> {
 
-    public static final String LABEL = "Equivalent object properties";
+    public static final String LABEL = "Equivalent To";
 
     private Set<OWLEquivalentObjectPropertiesAxiom> added = new HashSet<OWLEquivalentObjectPropertiesAxiom>();
 
@@ -62,12 +63,15 @@ public class OWLEquivalentObjectPropertiesAxiomFrameSection extends AbstractOWLF
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_EQUIVALENT_OBJECT_PROPERTIES, 
                                                                   new Runnable() {
             public void run() {
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
                 Set<OWLObjectPropertyExpression> equivs = new HashSet<OWLObjectPropertyExpression>(getReasoner().getEquivalentObjectProperties(getRootObject()).getEntities());
                 equivs.remove(getRootObject());
-                if (!equivs.isEmpty()){
+                if (equivs.size() > 1) {
                     OWLEquivalentObjectPropertiesAxiom ax = getOWLDataFactory().getOWLEquivalentObjectPropertiesAxiom(equivs);
                     if (!added.contains(ax)) {
-                        addRow(new OWLEquivalentObjectPropertiesAxiomFrameSectionRow(getOWLEditorKit(),
+                        addInferredRowIfNontrivial(new OWLEquivalentObjectPropertiesAxiomFrameSectionRow(getOWLEditorKit(),
                                                                                      OWLEquivalentObjectPropertiesAxiomFrameSection.this,
                                                                                      null,
                                                                                      getRootObject(),
@@ -85,12 +89,6 @@ public class OWLEquivalentObjectPropertiesAxiomFrameSection extends AbstractOWLF
                                                                                                      object));
     }
 
-
-    public void visit(OWLEquivalentObjectPropertiesAxiom axiom) {
-        if (axiom.getProperties().contains(getRootObject())) {
-            reset();
-        }
-    }
 
 
     public OWLObjectEditor<OWLObjectPropertyExpression> getObjectEditor() {
@@ -110,11 +108,12 @@ public class OWLEquivalentObjectPropertiesAxiomFrameSection extends AbstractOWLF
     	super.handleEditingFinished(editedObjects);
     }
 
-
-    public void visit(OWLEquivalentDataPropertiesAxiom axiom) {
-        if (axiom.getProperties().contains(getRootObject())) {
-            reset();
-        }
+    
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLEquivalentObjectPropertiesAxiom &&
+    			((OWLEquivalentObjectPropertiesAxiom) change.getAxiom()).getProperties().contains(getRootObject());
     }
 
 

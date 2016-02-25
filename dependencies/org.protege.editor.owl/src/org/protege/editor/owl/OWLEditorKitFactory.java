@@ -1,13 +1,14 @@
 package org.protege.editor.owl;
 
-import java.io.File;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.io.File;
 
 import org.protege.editor.core.editorkit.EditorKit;
-import org.protege.editor.core.editorkit.EditorKitDescriptor;
 import org.protege.editor.core.editorkit.EditorKitFactory;
+import org.protege.editor.core.editorkit.EditorKitDescriptor;
+import org.protege.editor.core.ui.util.UIUtil;
 
 
 /**
@@ -35,7 +36,7 @@ public class OWLEditorKitFactory implements EditorKitFactory {
     }
 
 
-    public EditorKit createEditorKit() throws Exception {
+    public EditorKit createEditorKit() {
         return new OWLEditorKit(this);
     }
 
@@ -56,7 +57,7 @@ public class OWLEditorKitFactory implements EditorKitFactory {
         if(uri == null || uri.getScheme() == null) {
             return false;
         }
-        if (uri.getScheme().equals("file")) {
+        if (UIUtil.isLocalFile(uri)) {
             File file = new File(uri);
             return file.exists();
         }

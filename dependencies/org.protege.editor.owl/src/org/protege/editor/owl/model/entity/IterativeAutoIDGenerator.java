@@ -1,8 +1,8 @@
 package org.protege.editor.owl.model.entity;
 
-import java.util.Stack;
-
 import org.semanticweb.owlapi.model.OWLEntity;
+
+import java.util.Stack;
 
 /*
 * Copyright (C) 2007, University of Manchester
@@ -64,6 +64,10 @@ public class IterativeAutoIDGenerator extends AbstractIDGenerator implements Rev
     	long end = EntityCreationPreferences.getAutoIDEnd();
         if (end != -1 && id > end){
             throw new AutoIDException("You have run out of IDs for creating new entities - max = " + end);
+        }
+        if (EntityCreationPreferences.getSaveAutoIDStart()) {
+        	previousStartId = id + 1;
+        	EntityCreationPreferences.setAutoIDStart((int) (previousStartId));
         }
         return id++;
     }

@@ -11,10 +11,12 @@ import org.protege.editor.owl.ui.editor.OWLObjectPropertyEditor;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSection;
 import org.protege.editor.owl.ui.frame.OWLFrame;
 import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLInverseObjectPropertiesAxiom;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 
 /**
@@ -25,7 +27,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
  */
 public class OWLInverseObjectPropertiesAxiomFrameSection extends AbstractOWLFrameSection<OWLObjectProperty, OWLInverseObjectPropertiesAxiom, OWLObjectProperty> {
 
-    public static final String LABEL = "Inverse properties";
+    public static final String LABEL = "Inverse Of";
 
     private Set<OWLObjectPropertyExpression> added = new HashSet<OWLObjectPropertyExpression>();
 
@@ -61,16 +63,16 @@ public class OWLInverseObjectPropertiesAxiomFrameSection extends AbstractOWLFram
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_INVERSE_PROPERTIES, 
                                                                   new Runnable() {
             public void run() {
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
                 final Set<OWLObjectPropertyExpression> infInverses = new HashSet<OWLObjectPropertyExpression>(getReasoner().getInverseObjectProperties(getRootObject()).getEntities());
                 infInverses.removeAll(added);
                 for (OWLObjectPropertyExpression invProp : infInverses) {
-                	if (invProp.isAnonymous()) {
-                		break;
-                	}
                     final OWLInverseObjectPropertiesAxiom ax = getOWLDataFactory().getOWLInverseObjectPropertiesAxiom(
                             getRootObject(),
                             invProp);
-                        addRow(new OWLInverseObjectPropertiesAxiomFrameSectionRow(getOWLEditorKit(),
+                        addInferredRowIfNontrivial(new OWLInverseObjectPropertiesAxiomFrameSectionRow(getOWLEditorKit(),
                                                                                   OWLInverseObjectPropertiesAxiomFrameSection.this,
                                                                                   null,
                                                                                   getRootObject(),
@@ -90,11 +92,16 @@ public class OWLInverseObjectPropertiesAxiomFrameSection extends AbstractOWLFram
         return new OWLObjectPropertyEditor(getOWLEditorKit());
     }
 
-
-    public void visit(OWLInverseObjectPropertiesAxiom axiom) {
-        if (axiom.getProperties().contains(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	if (!change.isAxiomChange()) {
+    		return false;
+    	}
+    	OWLAxiom axiom = change.getAxiom();
+    	if (axiom instanceof OWLInverseObjectPropertiesAxiom) {
+    		return ((OWLInverseObjectPropertiesAxiom) axiom).getProperties().contains(getRootObject());
+    	}
+    	return false;
     }
 
 

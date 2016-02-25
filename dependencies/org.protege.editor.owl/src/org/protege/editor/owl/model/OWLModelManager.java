@@ -1,11 +1,5 @@
 package org.protege.editor.owl.model;
 
-import java.io.File;
-import java.net.URI;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
 import org.protege.editor.core.ModelManager;
 import org.protege.editor.owl.model.entity.OWLEntityFactory;
 import org.protege.editor.owl.model.event.EventType;
@@ -24,17 +18,14 @@ import org.protege.editor.owl.ui.explanation.ExplanationManager;
 import org.protege.editor.owl.ui.renderer.OWLModelManagerEntityRenderer;
 import org.protege.editor.owl.ui.renderer.OWLObjectRenderer;
 import org.protege.xmlcatalog.XMLCatalog;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyID;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+
+import java.io.File;
+import java.net.URI;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -74,10 +65,9 @@ public interface OWLModelManager extends ModelManager {
     /**
      * Remove the given ontology from the model manager.
      * Cannot remove the last ontology from the model manager.
-     *
      * @param ont the ontology to remove
      * @return false if the ontology cannot be removed
-     * (eg if it does not exist or is the last open ontology)
+     *         (eg if it does not exist or is the last open ontology)
      */
     boolean removeOntology(OWLOntology ont);
 
@@ -87,7 +77,8 @@ public interface OWLModelManager extends ModelManager {
      * specific.  For example, some implementations may choose to save the
      * active ontology, other implementations may choose to save all open
      * ontologies etc.
-     * @throws org.semanticweb.owlapi.model.OWLOntologyStorageException if a problem occurs during the save
+     * @throws org.semanticweb.owlapi.model.OWLOntologyStorageException
+     *          if a problem occurs during the save
      */
     void save() throws OWLOntologyStorageException;
 
@@ -95,18 +86,32 @@ public interface OWLModelManager extends ModelManager {
     /**
      * Save only the ontology specified
      * @param ont the ontology to save
-     * @throws org.semanticweb.owlapi.model.OWLOntologyStorageException if a problem occurs during the save
+     * @throws org.semanticweb.owlapi.model.OWLOntologyStorageException
+     *          if a problem occurs during the save
      */
     void save(OWLOntology ont) throws OWLOntologyStorageException;
 
 
     /**
-     * @deprecated - this method would require user interaction - use <code>OWLEditorKit.saveAs()</code> instead
      * @throws OWLOntologyStorageException if a problem occurs during the save
+     * @deprecated - this method would require user interaction - use <code>OWLEditorKit.saveAs()</code> instead
      */
     @Deprecated
     void saveAs() throws OWLOntologyStorageException;
 
+    /**
+     * Checks if the ontology has been changed since it was loaded or last saved.
+     * @param ontology
+     */
+    boolean isDirty(OWLOntology ontology);
+
+    /**
+     * This call is generally not recommended but there are occasions where
+     * a plugin knows that an ontology has been saved even though it has not been
+     * saved through the OWLModelManager save interface.
+     * @param ontology
+     */
+    void setClean(OWLOntology ontology);
 
     /**
      * Gets the ontologies that are loaded into this model.
@@ -180,7 +185,7 @@ public interface OWLModelManager extends ModelManager {
     OntologyCatalogManager getOntologyCatalogManager();
 
     ExplanationManager getExplanationManager();
-    
+
     void setExplanationManager(ExplanationManager explanations);
 
     OWLHierarchyManager getOWLHierarchyManager();
@@ -191,9 +196,9 @@ public interface OWLModelManager extends ModelManager {
 
     void setActiveOntologiesStrategy(OntologySelectionStrategy strategy);
 
-             
+
     void registerOntologySelectionStrategy(OntologySelectionStrategy strategy);
-    
+
 
     OntologySelectionStrategy getActiveOntologiesStrategy();
 
@@ -241,7 +246,7 @@ public interface OWLModelManager extends ModelManager {
     OWLModelManagerEntityRenderer getOWLEntityRenderer();
 
     void refreshRenderer();
-    
+
     /**
      * @deprecated Use refreshRenderer instead.
      */
@@ -265,10 +270,14 @@ public interface OWLModelManager extends ModelManager {
 
 
     OWLReasoner getReasoner();
-    
+
     ReasonerPreferences getReasonerPreferences();
 
-
+    /**
+     * Gets the physical URI for the specified ontology.
+     * @param ontology The ontology.
+     * @return The physical URI.
+     */
     URI getOntologyPhysicalURI(OWLOntology ontology);
 
 
@@ -304,6 +313,6 @@ public interface OWLModelManager extends ModelManager {
 
 
     void setLoadErrorHandler(OntologyLoadErrorHandler handler);
-    
+
     XMLCatalog addRootFolder(File dir);
 }

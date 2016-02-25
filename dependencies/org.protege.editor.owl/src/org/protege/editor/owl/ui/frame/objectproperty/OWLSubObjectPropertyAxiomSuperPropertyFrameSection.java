@@ -11,9 +11,11 @@ import org.protege.editor.owl.ui.editor.OWLObjectPropertyExpressionEditor;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSection;
 import org.protege.editor.owl.ui.frame.OWLFrame;
 import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
 
 
@@ -25,7 +27,7 @@ import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
  */
 public class OWLSubObjectPropertyAxiomSuperPropertyFrameSection extends AbstractOWLFrameSection<OWLObjectProperty, OWLSubObjectPropertyOfAxiom, OWLObjectPropertyExpression> {
 
-    public static final String LABEL = "Super properties";
+    public static final String LABEL = "SubProperty Of";
 
     Set<OWLObjectPropertyExpression> added = new HashSet<OWLObjectPropertyExpression>();
 
@@ -62,10 +64,12 @@ public class OWLSubObjectPropertyAxiomSuperPropertyFrameSection extends Abstract
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_SUPER_OBJECT_PROPERTIES,
                                                                   new Runnable() {
             public void run() {
-            	OWLObjectProperty topProperty  = getOWLModelManager().getOWLDataFactory().getOWLTopObjectProperty();
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
                 for (OWLObjectPropertyExpression infSup : getOWLModelManager().getReasoner().getSuperObjectProperties(getRootObject(),true).getFlattened()) {
-                    if (!added.contains(infSup) && !topProperty.equals(infSup)) {
-                        addRow(new OWLSubObjectPropertyAxiomSuperPropertyFrameSectionRow(getOWLEditorKit(),
+                    if (!added.contains(infSup)) {
+                        addInferredRowIfNontrivial(new OWLSubObjectPropertyAxiomSuperPropertyFrameSectionRow(getOWLEditorKit(),
                                                                                          OWLSubObjectPropertyAxiomSuperPropertyFrameSection.this,
                                                                                          null,
                                                                                          getRootObject(),
@@ -86,12 +90,17 @@ public class OWLSubObjectPropertyAxiomSuperPropertyFrameSection extends Abstract
     public OWLObjectEditor<OWLObjectPropertyExpression> getObjectEditor() {
         return new OWLObjectPropertyExpressionEditor(getOWLEditorKit());
     }
-
-
-    public void visit(OWLSubObjectPropertyOfAxiom axiom) {
-        if (axiom.getSubProperty().equals(getRootObject())) {
-            reset();
-        }
+    
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	if (!change.isAxiomChange()) {
+    		return false;
+    	}
+    	OWLAxiom axiom = change.getAxiom();
+    	if (axiom instanceof OWLSubObjectPropertyOfAxiom) {
+    		return ((OWLSubObjectPropertyOfAxiom) axiom).getSubProperty().equals(getRootObject());
+    	}
+    	return false;
     }
 
 

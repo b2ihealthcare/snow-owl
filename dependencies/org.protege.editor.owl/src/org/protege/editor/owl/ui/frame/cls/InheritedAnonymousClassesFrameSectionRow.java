@@ -1,6 +1,8 @@
 package org.protege.editor.owl.ui.frame.cls;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +29,7 @@ import org.semanticweb.owlapi.util.CollectionFactory;
  */
 public class InheritedAnonymousClassesFrameSectionRow extends AbstractOWLFrameSectionRow<OWLClass, OWLClassAxiom, OWLClassExpression> {
 
-    public InheritedAnonymousClassesFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection section,
+    public InheritedAnonymousClassesFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection<OWLClass, OWLClassAxiom, OWLClassExpression> section,
                                                     OWLOntology ontology, OWLClass rootObject, OWLClassAxiom axiom) {
         super(owlEditorKit, section, ontology, rootObject, axiom);
     }

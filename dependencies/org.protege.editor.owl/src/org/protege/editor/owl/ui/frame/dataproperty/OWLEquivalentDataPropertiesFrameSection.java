@@ -14,6 +14,7 @@ import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLEquivalentDataPropertiesAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.util.CollectionFactory;
 
 
@@ -25,7 +26,7 @@ import org.semanticweb.owlapi.util.CollectionFactory;
  */
 public class OWLEquivalentDataPropertiesFrameSection extends AbstractOWLFrameSection<OWLDataProperty, OWLEquivalentDataPropertiesAxiom, OWLDataProperty> {
 
-    public static final String LABEL = "Equivalent properties";
+    public static final String LABEL = "Equivalent To";
 
     private Set<OWLEquivalentDataPropertiesAxiom> added = new HashSet<OWLEquivalentDataPropertiesAxiom>();
 
@@ -79,6 +80,9 @@ public class OWLEquivalentDataPropertiesFrameSection extends AbstractOWLFrameSec
     protected void refillInferred() {
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_EQUIVALENT_DATATYPE_PROPERTIES, new Runnable() {
                 public void run() {
+                	if (!getOWLModelManager().getReasoner().isConsistent()) {
+                		return;
+                	}
                     Set<OWLDataProperty> equivs = new HashSet<OWLDataProperty>(getReasoner().getEquivalentDataProperties(getRootObject()).getEntities());
                     equivs.remove(getRootObject());
                     if (!equivs.isEmpty()){
@@ -95,12 +99,13 @@ public class OWLEquivalentDataPropertiesFrameSection extends AbstractOWLFrameSec
             });
     }
 
-
-    public void visit(OWLEquivalentDataPropertiesAxiom axiom) {
-        if (axiom.getProperties().contains(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLEquivalentDataPropertiesAxiom &&
+    			((OWLEquivalentDataPropertiesAxiom) change.getAxiom()).getProperties().contains(getRootObject());
     }
+
 
 
     public Comparator<OWLFrameSectionRow<OWLDataProperty, OWLEquivalentDataPropertiesAxiom, OWLDataProperty>> getRowComparator() {

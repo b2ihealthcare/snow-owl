@@ -1,13 +1,17 @@
 package org.protege.editor.owl.model.hierarchy;
 
+import org.apache.log4j.Logger;
+import org.protege.owlapi.model.WriteSafeOWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 /**
  * Author: Matthew Horridge<br>
@@ -26,17 +30,28 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 public abstract class AbstractOWLObjectHierarchyProvider<N extends OWLObject> implements OWLObjectHierarchyProvider<N> {
 
     private static final Logger logger = Logger.getLogger(AbstractOWLObjectHierarchyProvider.class);
+    
+    private volatile boolean fireEvents;
 
-
-    private boolean fireEvents;
-
+    /*
+     * The listeners object synchronizes the listeners data.
+     */
     private List<OWLObjectHierarchyProviderListener<N>> listeners;
 
-    private OWLOntologyManager manager;
+    private WriteSafeOWLOntologyManager manager;
 
 
+    /*
+     * If you expect this or any of its subclasses to be thread safe it must be a WriteSafeOWLOntologyManager.
+     * Ideally we would change the interface here but this might break some existing plugin code.  On the other hand,
+     * all Protege code will pass in a ProtegeOWLOntologyManager and Web-Protege will pass in another implementation of the 
+     * WriteSafeOWLOntologyManager.
+     */
     protected AbstractOWLObjectHierarchyProvider(OWLOntologyManager owlOntologyManager) {
-        this.manager = owlOntologyManager;
+        if (!(owlOntologyManager instanceof WriteSafeOWLOntologyManager)) { // I know this is ugly but it fixes problems elsewhere...
+        	throw new IllegalStateException("Hierarchy providers must have a thread safe ontology mananger.");
+        }
+        this.manager = (WriteSafeOWLOntologyManager) owlOntologyManager;
         listeners = new ArrayList<OWLObjectHierarchyProviderListener<N>>();
         fireEvents = true;
     }
@@ -45,17 +60,37 @@ public abstract class AbstractOWLObjectHierarchyProvider<N extends OWLObject> im
     public OWLOntologyManager getManager() {
         return manager;
     }
+    
+	protected ReentrantReadWriteLock getReadWriteLock() {
+		return manager.getReadWriteLock();
+	}
+	
+	protected ReadLock getReadLock() {
+		return manager.getReadLock();
+	}
+	
+	protected WriteLock getWriteLock() {
+		return manager.getWriteLock();		
+	}
 
 
     public void dispose() {
-        listeners.clear();
+    	synchronized (listeners) {
+    		listeners.clear();
+    	}
     }
 
 
     public Set<N> getAncestors(N object) {
-        Set<N> results = new HashSet<N>();
-        getAncestors(results, object);
-        return results;
+    	getReadLock().lock();
+    	try {
+    		Set<N> results = new HashSet<N>();
+    		getAncestors(results, object);
+    		return results;
+    	}
+    	finally {
+    		getReadLock().unlock();
+    	}
     }
 
 
@@ -70,9 +105,15 @@ public abstract class AbstractOWLObjectHierarchyProvider<N extends OWLObject> im
 
 
     public Set<N> getDescendants(N object) {
-        Set<N> results = new HashSet<N>();
-        getDescendants(results, object);
-        return results;
+    	getReadLock().lock();
+    	try {
+    		Set<N> results = new HashSet<N>();
+    		getDescendants(results, object);
+    		return results;
+    	}
+    	finally {
+    		getReadLock().unlock();
+    	}
     }
 
 
@@ -97,7 +138,13 @@ public abstract class AbstractOWLObjectHierarchyProvider<N extends OWLObject> im
      * @return A <code>Set</code> of <code>List</code>s of <code>N</code>s
      */
     public Set<List<N>> getPathsToRoot(N obj) {
-        return setOfPaths(obj, new HashSet<N>());
+    	getReadLock().lock();
+    	try { 	
+    		return setOfPaths(obj, new HashSet<N>());
+    	}
+    	finally {
+    		getReadLock().unlock();
+    	}
     }
 
 
@@ -135,39 +182,42 @@ public abstract class AbstractOWLObjectHierarchyProvider<N extends OWLObject> im
     ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    private Set<N> createSet() {
-        return new HashSet<N>();
-    }
-
-
     protected void setFireEvents(boolean b) {
         fireEvents = b;
     }
 
 
     public void addListener(OWLObjectHierarchyProviderListener<N> listener) {
-        listeners.add(listener);
+    	synchronized (listeners) {
+    		listeners.add(listener);
+    	}
     }
 
 
     public void removeListener(OWLObjectHierarchyProviderListener<N> listener) {
-        listeners.remove(listener);
+    	synchronized (listeners) {
+    		listeners.remove(listener);
+    	}
     }
 
+    private List<OWLObjectHierarchyProviderListener<N>> getListeners() {
+    	synchronized (listeners) {
+    		return new ArrayList<OWLObjectHierarchyProviderListener<N>>(listeners);
+    	}
+    }
 
     protected void fireNodeChanged(N node) {
         if (!fireEvents) {
             return;
         }
-        for (OWLObjectHierarchyProviderListener<N> listener : new ArrayList<OWLObjectHierarchyProviderListener<N>>(
-                listeners)) {
+        for (OWLObjectHierarchyProviderListener<N> listener : getListeners()) {
             try {
                 listener.nodeChanged(node);
             }
             catch (Throwable e) {
                 e.printStackTrace();
                 logger.warn(getClass().getName() + ": Listener" + listener + " has thrown an exception.  Removing bad listener!");
-                listeners.remove(listener);
+                removeListener(listener);
                 throw new RuntimeException(e);
             }
         }
@@ -178,8 +228,7 @@ public abstract class AbstractOWLObjectHierarchyProvider<N extends OWLObject> im
         if (!fireEvents) {
             return;
         }
-        for (OWLObjectHierarchyProviderListener<N> listener : new ArrayList<OWLObjectHierarchyProviderListener<N>>(
-                listeners)) {
+        for (OWLObjectHierarchyProviderListener<N> listener : getListeners()) {
             try {
                 listener.hierarchyChanged();
             }

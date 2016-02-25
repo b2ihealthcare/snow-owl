@@ -10,9 +10,11 @@ import org.protege.editor.owl.ui.frame.AbstractOWLFrameSection;
 import org.protege.editor.owl.ui.frame.OWLFrame;
 import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
 import org.semanticweb.owlapi.model.AxiomType;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLSubPropertyChainOfAxiom;
 
 
@@ -24,7 +26,7 @@ import org.semanticweb.owlapi.model.OWLSubPropertyChainOfAxiom;
  */
 public class OWLPropertyChainAxiomFrameSection extends AbstractOWLFrameSection<OWLObjectProperty, OWLSubPropertyChainOfAxiom, List<OWLObjectPropertyExpression>> {
 
-    public static final String LABEL = "Property chains";
+    public static final String LABEL = "SuperProperty Of (Chain)";
 
 
     public OWLPropertyChainAxiomFrameSection(OWLEditorKit owlEditorKit, OWLFrame<? extends OWLObjectProperty> frame) {
@@ -76,10 +78,15 @@ public class OWLPropertyChainAxiomFrameSection extends AbstractOWLFrameSection<O
         return null;
     }
 
-
-    public void visit(OWLSubPropertyChainOfAxiom axiom) {
-        if (axiom.getSuperProperty().equals(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	if (!change.isAxiomChange()) {
+    		return false;
+    	}
+    	OWLAxiom axiom = change.getAxiom();
+    	if (axiom instanceof OWLSubPropertyChainOfAxiom) {
+    		return ((OWLSubPropertyChainOfAxiom) axiom).getSuperProperty().equals(getRootObject());
+    	}
+    	return false;
     }
 }

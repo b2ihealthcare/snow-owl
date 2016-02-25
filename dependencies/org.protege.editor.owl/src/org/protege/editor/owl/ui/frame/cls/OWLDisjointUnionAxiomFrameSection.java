@@ -13,9 +13,10 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDisjointUnionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 public class OWLDisjointUnionAxiomFrameSection extends AbstractOWLFrameSection<OWLClass, OWLDisjointUnionAxiom, Set<OWLClassExpression>> {
-	public final static String LABEL = "Disjoint union of";
+	public final static String LABEL = "Disjoint Union Of";
 	
 	public OWLDisjointUnionAxiomFrameSection(OWLEditorKit editorKit, OWLFrame<OWLClass> frame) {
 		super(editorKit, LABEL, LABEL, frame);
@@ -43,12 +44,12 @@ public class OWLDisjointUnionAxiomFrameSection extends AbstractOWLFrameSection<O
     	Set<OWLClassExpression> disjoints = editor.getEditedObject();
     	return disjoints.size() >= 2;
     }
-    
+	
     @Override
-    public void visit(OWLDisjointUnionAxiom axiom) {
-    	if (axiom.getOWLClass().equals(getRootObject())) {
-    		reset();
-    	}
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLDisjointUnionAxiom &&
+    			((OWLDisjointUnionAxiom) change.getAxiom()).getOWLClass().equals(getRootObject());
     }
 
 	public Comparator<OWLFrameSectionRow<OWLClass, OWLDisjointUnionAxiom, Set<OWLClassExpression>>> getRowComparator() {

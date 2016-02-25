@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -35,10 +36,12 @@ import org.protege.editor.core.ui.list.MList;
 import org.protege.editor.core.ui.list.MListButton;
 import org.protege.editor.core.ui.list.MListItem;
 import org.protege.editor.core.ui.util.ComponentFactory;
+import org.protege.editor.core.ui.util.UIUtil;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.SaveConfirmationPanel;
+import org.protege.editor.owl.ui.renderer.OWLIconProvider;
 import org.protege.editor.owl.ui.renderer.OWLOntologyCellRenderer;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -114,7 +117,8 @@ public class PhysicalLocationPanel extends JPanel {
                 List<MListButton> buttons  = new ArrayList<MListButton>(super.getButtons(value));
                 buttons.add(reload);
                 OWLOntology ont = ((OntologyListItem)value).ont;
-                if (owlEditorKit.getModelManager().getOntologyPhysicalURI(ont).getScheme().equals("file")){
+                URI ontologyPhysicalURI = owlEditorKit.getModelManager().getOntologyPhysicalURI(ont);
+                if (UIUtil.isLocalFile(ontologyPhysicalURI)){
                     buttons.add(showFile);
                 }
                 if (owlEditorKit.getModelManager().getDirtyOntologies().contains(ont)){
@@ -194,7 +198,7 @@ public class PhysicalLocationPanel extends JPanel {
 
     private void handleShowFile(OWLOntology ont){
         URI physicalURI = owlEditorKit.getOWLModelManager().getOntologyPhysicalURI(ont);
-        if (!physicalURI.getScheme().equals("file")) {
+        if (!UIUtil.isLocalFile(physicalURI)) {
             throw new IllegalArgumentException("URI must be a file URI!");
         }
         try {
@@ -282,9 +286,14 @@ public class PhysicalLocationPanel extends JPanel {
             String label = OWLOntologyCellRenderer.getOntologyLabelText(ont, mngr);
 
             ontURILabel.setText(label);
+            
+            //2012.02.01 hilpold use Owl Icon Provider
+            OWLIconProvider owlICP = owlEditorKit.getWorkspace().getOWLIconProvider();
+            Icon ontIcon = owlICP.getIcon(ont);
+            ontURILabel.setIcon(ontIcon);
 
             final URI physicalURI = mngr.getOntologyPhysicalURI(ont);
-            if (physicalURI.getScheme().equals("file")) {
+            if (UIUtil.isLocalFile(physicalURI)) {
                 locURILabel.setText(new File(physicalURI).toString());
             }
             else {

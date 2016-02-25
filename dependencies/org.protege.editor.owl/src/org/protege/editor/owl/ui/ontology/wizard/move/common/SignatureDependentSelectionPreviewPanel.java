@@ -1,24 +1,5 @@
 package org.protege.editor.owl.ui.ontology.wizard.move.common;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import org.protege.editor.core.ui.list.RemovableObjectList;
 import org.protege.editor.core.ui.util.CheckList;
 import org.protege.editor.core.ui.util.ComponentFactory;
@@ -28,6 +9,41 @@ import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+/*
+ * Copyright (C) 2008, University of Manchester
+ *
+ * Modifications to the initial code base are copyright of their
+ * respective authors, or their employers as appropriate.  Authorship
+ * of the modifications may be determined from the ChangeLog placed at
+ * the end of this file.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 
 /**
@@ -108,7 +124,7 @@ public class SignatureDependentSelectionPreviewPanel extends MoveAxiomsKitConfig
             }
         });
 
-        previewTimer = new Timer(1200, new ActionListener() {
+        previewTimer = new Timer(500, new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 doPreviewUpdate();
@@ -129,7 +145,7 @@ public class SignatureDependentSelectionPreviewPanel extends MoveAxiomsKitConfig
 
 
     public String getInstructions() {
-        return "Confirm the signature for computing the module";
+        return "Confirm the signature";
     }
 
 
@@ -152,24 +168,19 @@ public class SignatureDependentSelectionPreviewPanel extends MoveAxiomsKitConfig
                 final Set<OWLAxiom> axioms = signatureSelection.getAxioms(sourceOntologies, entities);
                 final java.util.List<OWLAxiom> axs = new ArrayList<OWLAxiom>(new TreeSet<OWLAxiom>(axioms));
                 final int upperBound = 500 > axs.size() ? axs.size() : 500;
-//                System.out.println("Updating for sig: " + entities);
                 Runnable runnable = new Runnable() {
                     public void run() {
-//                        System.out.println("Filling list");
-                        previewLabel.setText("Axioms (showing " + upperBound + " out of " + axioms.size() + " in module)");
+                        previewLabel.setText("Axioms (showing " + upperBound + " out of " + axioms.size() + " axioms)");
                     }
                 };
 
 
                 SwingUtilities.invokeLater(runnable);
 
-//                System.out.println(axioms.size());
-
                 Runnable runnable2 = new Runnable() {
                     public void run() {
 
                         previewList.setListData(axs.subList(0, upperBound).toArray());
-//                        System.out.println("Done");
                     }
                 };
                 SwingUtilities.invokeLater(runnable2);

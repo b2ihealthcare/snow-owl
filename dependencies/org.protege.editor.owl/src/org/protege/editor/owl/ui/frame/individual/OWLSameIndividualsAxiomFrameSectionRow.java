@@ -1,9 +1,5 @@
 package org.protege.editor.owl.ui.frame.individual;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.editor.OWLIndividualSetEditor;
 import org.protege.editor.owl.ui.editor.OWLObjectEditor;
@@ -14,6 +10,10 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLSameIndividualAxiom;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 
 /**
  * Author: Matthew Horridge<br>
@@ -23,7 +23,8 @@ import org.semanticweb.owlapi.model.OWLSameIndividualAxiom;
  */
 public class OWLSameIndividualsAxiomFrameSectionRow extends AbstractOWLFrameSectionRow<OWLNamedIndividual, OWLSameIndividualAxiom, Set<OWLNamedIndividual>> {
 
-    public OWLSameIndividualsAxiomFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection section,
+    public OWLSameIndividualsAxiomFrameSectionRow(OWLEditorKit owlEditorKit, 
+    											  OWLFrameSection<OWLNamedIndividual, OWLSameIndividualAxiom, Set<OWLNamedIndividual>> section,
                                                   OWLOntology ontology, OWLNamedIndividual rootObject,
                                                   OWLSameIndividualAxiom axiom) {
         super(owlEditorKit, section, ontology, rootObject, axiom);

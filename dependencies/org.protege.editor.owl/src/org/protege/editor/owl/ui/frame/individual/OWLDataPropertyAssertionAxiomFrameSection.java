@@ -17,6 +17,7 @@ import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 
 /**
@@ -65,6 +66,9 @@ public class OWLDataPropertyAssertionAxiomFrameSection extends AbstractOWLFrameS
     protected void refillInferred() {
     	getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_DATA_PROPERTY_ASSERTIONS, new Runnable() {
     		public void run() {
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
     			if (!getRootObject().isAnonymous()){
     				for (OWLDataProperty dp : getReasoner().getRootOntology().getDataPropertiesInSignature(true)) {
     					Set<OWLLiteral> values = getReasoner().getDataPropertyValues(getRootObject().asOWLNamedIndividual(), dp);
@@ -112,10 +116,11 @@ public class OWLDataPropertyAssertionAxiomFrameSection extends AbstractOWLFrameS
         return null;
     }
 
-
-    public void visit(OWLDataPropertyAssertionAxiom axiom) {
-        if (axiom.getSubject().equals(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLDataPropertyAssertionAxiom &&
+    			((OWLDataPropertyAssertionAxiom) change.getAxiom()).getSubject().equals(getRootObject());
     }
+
 }

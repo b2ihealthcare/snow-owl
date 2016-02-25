@@ -4,10 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JCheckBox;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.AbstractOWLWizardPanel;
@@ -27,14 +27,17 @@ public abstract class OntologyImportPage extends AbstractOWLWizardPanel {
     
     @Override
     public void aboutToDisplayPanel() {
-        customizeImports.setSelected(getWizard().isCustomizeImports());
+    	if (customizeImports != null) {
+    		customizeImports.setSelected(getWizard().isCustomizeImports());
+    	}
         super.aboutToDisplayPanel();
     }
     
     public JComponent createCustomizedImportsComponent() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(customizeImports = new JCheckBox("Manually specify import declarations."));
+        customizeImports = new JCheckBox("Manually specify import declarations.");
+        panel.add(customizeImports);
         customizeImports.setAlignmentX(LEFT_ALIGNMENT);
         customizeImports.addActionListener(new ActionListener() {
 

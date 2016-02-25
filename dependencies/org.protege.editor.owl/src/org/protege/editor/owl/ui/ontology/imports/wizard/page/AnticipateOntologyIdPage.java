@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ui.util.UIUtil;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.library.folder.XmlBaseAlgorithm;
 import org.protege.editor.owl.model.repository.MasterOntologyIDExtractor;
@@ -33,8 +35,9 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
  * www.cs.man.ac.uk/~horridgm<br><br>
  */
 public class AnticipateOntologyIdPage extends AbstractOWLWizardPanel {
+	private static final long serialVersionUID = -1944232166721256262L;
 
-    public static final String ID = "AnticipateOntologyIdPage";
+	public static final String ID = "AnticipateOntologyIdPage";
 
     private JProgressBar progressBar;
 
@@ -71,11 +74,12 @@ public class AnticipateOntologyIdPage extends AbstractOWLWizardPanel {
     	        importOptions.add(id.getVersionIRI());
     	    }
     	}
-    	if (!parameters.getPhysicalLocation().getScheme().equals("file") && !importOptions.contains(parameters.getPhysicalLocation())) {
-    	    importOptions.add(IRI.create(parameters.getPhysicalLocation()));
+        URI physicalLocation = parameters.getPhysicalLocation();
+        if (!UIUtil.isLocalFile(physicalLocation) && !importOptions.contains(physicalLocation)) {
+    	    importOptions.add(IRI.create(physicalLocation));
     	}
-    	if (parameters.getPhysicalLocation().getScheme().equals("file") && importOptions.isEmpty()) {
-    	    File f = new File(parameters.getPhysicalLocation());
+    	if (UIUtil.isLocalFile(physicalLocation) && importOptions.isEmpty()) {
+    	    File f = new File(physicalLocation);
     	    
     	    Set<URI> bases = new XmlBaseAlgorithm().getSuggestions(f);
     	    if (bases.size()  == 1) {
@@ -83,12 +87,12 @@ public class AnticipateOntologyIdPage extends AbstractOWLWizardPanel {
     	    }
     	}
     	
-    	if (!wizard.isCustomizeImports() && importOptions.size() >  0) {
+    	if (!wizard.isImportsAreFinal() && !wizard.isCustomizeImports() && importOptions.size() >  0) {
     	    parameters.setImportLocation(importOptions.get(0));
     	    return false;
     	}
     	else {
-    	    return true;
+    	    return !wizard.isImportsAreFinal();
     	}
     }
 

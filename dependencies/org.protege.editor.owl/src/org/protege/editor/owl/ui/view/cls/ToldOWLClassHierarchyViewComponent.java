@@ -1,29 +1,24 @@
 package org.protege.editor.owl.ui.view.cls;
 
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
 import org.protege.editor.owl.model.hierarchy.OWLObjectHierarchyProvider;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.action.AbstractOWLTreeAction;
 import org.protege.editor.owl.ui.action.DeleteClassAction;
+import org.protege.editor.owl.ui.tree.OWLObjectTreeNode;
 import org.protege.editor.owl.ui.tree.OWLTreeDragAndDropHandler;
 import org.protege.editor.owl.ui.view.CreateNewChildTarget;
 import org.protege.editor.owl.ui.view.CreateNewSiblingTarget;
 import org.protege.editor.owl.ui.view.CreateNewTarget;
-import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
-import org.semanticweb.owlapi.model.RemoveAxiom;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLEntitySetProvider;
+
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -55,7 +50,9 @@ public class ToldOWLClassHierarchyViewComponent extends AbstractOWLClassHierarch
 
         addAction(new AbstractOWLTreeAction<OWLClass>("Add subclass", OWLIcons.getIcon("class.add.sub.png"),
                                                        getTree().getSelectionModel()){
-            public void actionPerformed(ActionEvent event) {
+        	private static final long serialVersionUID = -4067967212391062364L;
+			
+        	public void actionPerformed(ActionEvent event) {
                 createNewChild();
             }
             protected boolean canPerform(OWLClass cls) {
@@ -66,7 +63,9 @@ public class ToldOWLClassHierarchyViewComponent extends AbstractOWLClassHierarch
         addAction(new AbstractOWLTreeAction<OWLClass>("Add sibling class", OWLIcons.getIcon("class.add.sib.png"),
                                                  getTree().getSelectionModel()){
 
-            public void actionPerformed(ActionEvent event) {
+        	private static final long serialVersionUID = 9163133195546665441L;
+
+        	public void actionPerformed(ActionEvent event) {
                 createNewSibling();
             }
             protected boolean canPerform(OWLClass cls) {
@@ -103,8 +102,13 @@ public class ToldOWLClassHierarchyViewComponent extends AbstractOWLClassHierarch
             return;
         }
         List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
+        OWLDataFactory df = getOWLModelManager().getOWLDataFactory();
         changes.add(new AddAxiom(getOWLModelManager().getActiveOntology(),
-                                 getOWLModelManager().getOWLDataFactory().getOWLSubClassOfAxiom(child, parent)));
+                                 df.getOWLDeclarationAxiom(child)));
+        if (!df.getOWLThing().equals(parent)) {
+            changes.add(new AddAxiom(getOWLModelManager().getActiveOntology(),
+                                     df.getOWLSubClassOfAxiom(child, parent)));
+        }
         getOWLModelManager().applyChanges(changes);
     }
 
@@ -115,11 +119,13 @@ public class ToldOWLClassHierarchyViewComponent extends AbstractOWLClassHierarch
             return;
         }
         List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
-        changes.add(new AddAxiom(getOWLModelManager().getActiveOntology(),
-                                 df.getOWLSubClassOfAxiom(child, toParent)));
-
+        // remove before adding in case the user is moving to the same class (or we could check)
         changes.add(new RemoveAxiom(getOWLModelManager().getActiveOntology(),
-                                    df.getOWLSubClassOfAxiom(child, fromParent)));
+                					df.getOWLSubClassOfAxiom(child, fromParent)));
+        if (!df.getOWLThing().equals(toParent)) {
+            changes.add(new AddAxiom(getOWLModelManager().getActiveOntology(),
+                                     df.getOWLSubClassOfAxiom(child, toParent)));
+        }
         getOWLModelManager().applyChanges(changes);
     }
 
@@ -190,17 +196,21 @@ public class ToldOWLClassHierarchyViewComponent extends AbstractOWLClassHierarch
         // We need to apply the changes in the active ontology
         OWLEntityCreationSet<OWLClass> creationSet = getOWLWorkspace().createOWLClass();
         if (creationSet != null) {
-            // Combine the changes that are required to create the OWLClass, with the
+        	OWLObjectTreeNode<OWLClass> parentNode 
+        		= (OWLObjectTreeNode<OWLClass>) getTree().getSelectionPath().getParentPath().getLastPathComponent();
+            if (parentNode == null || parentNode.getOWLObject() == null) {
+            	return;
+            }
+        	OWLClass parentCls = parentNode.getOWLObject();
+        	
+        	// Combine the changes that are required to create the OWLClass, with the
             // changes that are required to make it a sibling class.
             List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
             changes.addAll(creationSet.getOntologyChanges());
             OWLModelManager mngr = getOWLModelManager();
             OWLDataFactory df = mngr.getOWLDataFactory();
-            for (OWLClass par : mngr.getOWLHierarchyManager().getOWLClassHierarchyProvider().getParents(cls)) {
-                if (!df.getOWLThing().equals(par)){
-                    OWLAxiom ax = df.getOWLSubClassOfAxiom(creationSet.getOWLEntity(), par);
-                    changes.add(new AddAxiom(mngr.getActiveOntology(), ax));
-                }
+            if (!df.getOWLThing().equals(parentCls)) {
+                changes.add(new AddAxiom(mngr.getActiveOntology(), df.getOWLSubClassOfAxiom(creationSet.getOWLEntity(), parentCls)));
             }
             mngr.applyChanges(changes);
             // Select the new class

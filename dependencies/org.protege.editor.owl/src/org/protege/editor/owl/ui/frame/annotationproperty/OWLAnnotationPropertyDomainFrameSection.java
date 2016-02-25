@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.ui.editor.IRIFromEntityEditor;
+import org.protege.editor.owl.ui.editor.OWLAnnotationPropertyDomainEditor;
 import org.protege.editor.owl.ui.editor.OWLObjectEditor;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSection;
 import org.protege.editor.owl.ui.frame.OWLFrame;
@@ -37,7 +37,7 @@ public class OWLAnnotationPropertyDomainFrameSection extends AbstractOWLFrameSec
 
     private Set<IRI> addedDomains = new HashSet<IRI>();
 
-    private IRIFromEntityEditor editor;
+    private OWLAnnotationPropertyDomainEditor editor;
 
 
     public OWLAnnotationPropertyDomainFrameSection(OWLEditorKit editorKit, OWLFrame<OWLAnnotationProperty> frame) {
@@ -57,7 +57,7 @@ public class OWLAnnotationPropertyDomainFrameSection extends AbstractOWLFrameSec
 
     public OWLObjectEditor<IRI> getObjectEditor() {
         if (editor == null){
-            editor = new IRIFromEntityEditor(getOWLEditorKit());
+            editor = new OWLAnnotationPropertyDomainEditor(getOWLEditorKit());
         }
         return editor;
     }
@@ -112,10 +112,10 @@ public class OWLAnnotationPropertyDomainFrameSection extends AbstractOWLFrameSec
         return null;
     }
 
-
-    public void visit(OWLAnnotationPropertyDomainAxiom axiom) {
-        if (axiom.getProperty().equals(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLAnnotationPropertyDomainAxiom &&
+    			((OWLAnnotationPropertyDomainAxiom) change.getAxiom()).getProperty().equals(getRootObject());
     }
 }

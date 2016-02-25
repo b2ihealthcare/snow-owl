@@ -79,6 +79,9 @@ public class OWLClassAssertionAxiomMembersSection extends AbstractOWLClassAxiomF
     protected void refillInferred() {
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERED_CLASS_MEMBERS, new Runnable() {
                 public void run() {
+                	if (!getOWLModelManager().getReasoner().isConsistent()) {
+                		return;
+                	}
                     final OWLDataFactory df = getOWLModelManager().getOWLDataFactory();
                     NodeSet<OWLNamedIndividual> instances = getOWLModelManager().getReasoner().getInstances(getRootObject(), false);
                     if (instances != null) {
@@ -148,11 +151,11 @@ public class OWLClassAssertionAxiomMembersSection extends AbstractOWLClassAxiomF
 			}
 		};
 	}
-
-
-    public void visit(OWLClassAssertionAxiom axiom) {
-		if (axiom.getClassExpression().equals(this.getRootObject())) {
-			this.reset();
-		}
+	
+	@Override
+	protected boolean isResettingChange(OWLOntologyChange change) {
+		return change.isAxiomChange() && 
+				change.getAxiom() instanceof OWLClassAssertionAxiom &&
+				((OWLClassAssertionAxiom) change.getAxiom()).getClassExpression().equals(getRootObject());
 	}
 }

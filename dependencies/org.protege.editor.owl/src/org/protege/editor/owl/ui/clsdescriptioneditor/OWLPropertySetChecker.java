@@ -1,7 +1,5 @@
 package org.protege.editor.owl.ui.clsdescriptioneditor;
 
-import java.util.Set;
-
 import org.coode.owlapi.manchesterowlsyntax.ManchesterOWLSyntaxEditorParser;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.classexpression.OWLExpressionParserException;
@@ -9,6 +7,8 @@ import org.protege.editor.owl.model.parser.ParserUtil;
 import org.protege.editor.owl.model.parser.ProtegeOWLEntityChecker;
 import org.semanticweb.owlapi.expression.ParserException;
 import org.semanticweb.owlapi.model.OWLPropertyExpression;
+
+import java.util.Set;
 
 
 /**
@@ -37,7 +37,10 @@ class OWLPropertySetChecker implements OWLExpressionChecker<Set<OWLPropertyExpre
         ManchesterOWLSyntaxEditorParser parser = new ManchesterOWLSyntaxEditorParser(mngr.getOWLDataFactory(), text);
         parser.setOWLEntityChecker(new ProtegeOWLEntityChecker(mngr.getOWLEntityFinder()));
         try {
-            return parser.parsePropertyList();
+        	/*
+        	 * Degenericized to be compatible with changing OWLAPI interfaces
+        	 */
+            return (Set) parser.parsePropertyList();
         }
         catch (ParserException e) {
             throw ParserUtil.convertException(e);

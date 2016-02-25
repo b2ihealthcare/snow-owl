@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.editor.OWLGeneralAxiomEditor;
 import org.protege.editor.owl.ui.editor.OWLObjectEditor;
@@ -19,7 +21,9 @@ import org.semanticweb.owlapi.model.OWLOntology;
  */
 public class OWLGeneralClassAxiomFrameSectionRow extends AbstractOWLFrameSectionRow<OWLOntology, OWLClassAxiom, OWLClassAxiom> {
 
-    public OWLGeneralClassAxiomFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection section, OWLOntology ontology,
+    public OWLGeneralClassAxiomFrameSectionRow(OWLEditorKit owlEditorKit, 
+    										   OWLFrameSection<OWLOntology, OWLClassAxiom, OWLClassAxiom> section, 
+    										   OWLOntology ontology,
                                                OWLOntology rootObject, OWLClassAxiom axiom) {
         super(owlEditorKit, section, ontology, rootObject, axiom);
     }

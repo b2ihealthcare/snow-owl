@@ -4,6 +4,7 @@ import java.awt.Component;
 
 import javax.swing.JOptionPane;
 
+import org.protege.editor.core.ProtegeApplication;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
@@ -35,13 +36,13 @@ public class ReasonerUtilities {
             break;
 		case REASONER_NOT_INITIALIZED:
             JOptionPane.showMessageDialog(owner,
-                    "No reasoner has been initialized so inference cannot proceed.  Go to the reasoner menu and select Start Reasoner",
+                    "No reasoner has been initialized so inference cannot proceed.  Go to the reasoner menu and select Start reasoner",
                     "Reasoner not initialized.",
                     JOptionPane.WARNING_MESSAGE);
             break;
 		case OUT_OF_SYNC:
             JOptionPane.showMessageDialog(owner,
-                    "The reasoner is not syncronised.  This may produce misleading results.  Consider Reasoner->Synchronize Reasoner.",
+                    "The reasoner is not synchronized.  This may produce misleading results.  Consider Reasoner->Synchronize reasoner.",
                     "Reasoner out of sync",
                     JOptionPane.WARNING_MESSAGE);
             break;
@@ -54,6 +55,15 @@ public class ReasonerUtilities {
 		case INITIALIZED:
 			break; // nothing to do...
 		}
+	}
+	
+	public static void warnThatReasonerDied(Component owner, ReasonerDiedException died) {
+		Throwable t = died.getCause();
+		ProtegeApplication.getErrorLog().logError(t);
+		JOptionPane.showMessageDialog(owner, 
+				                      "Reasoner died (see the logs for more info).",
+				                      "Fatal reasoner error",
+				                      JOptionPane.WARNING_MESSAGE);
 	}
 
 }
