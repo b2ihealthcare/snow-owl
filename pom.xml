@@ -545,6 +545,12 @@
 					<version>1.9.5</version>
 					<scope>provided</scope>
 				</dependency>
+				<dependency>
+				    <groupId>edu.stanford.protege</groupId>
+				    <artifactId>org.semanticweb.owl.owlapi</artifactId>
+				    <version>3.4.4</version>
+				    <scope>provided</scope>
+				</dependency>
 			</dependencies>
 			<repositories>
 				<repository>
