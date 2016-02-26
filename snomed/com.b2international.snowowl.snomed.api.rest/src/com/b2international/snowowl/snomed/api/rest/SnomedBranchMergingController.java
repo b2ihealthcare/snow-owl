@@ -40,7 +40,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -68,24 +67,20 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			@ApiResponse(code = 404, message = "Source or Target branch was not found", response=RestApiError.class)
 		})
 	@RequestMapping(method = RequestMethod.POST, consumes={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-	public DeferredResult<ResponseEntity<Void>> createMerge(@RequestBody MergeRestRequest restRequest) {
+	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest) {
 		ApiValidation.checkInput(restRequest);
 		
-		return DeferredResults.wrap(SnomedRequests.merging()
+		final Merge merge = SnomedRequests.merging()
 			.prepareCreate()
 			.setSource(restRequest.getSource())
 			.setTarget(restRequest.getTarget())
 			.setReviewId(restRequest.getReviewId())
 			.setCommitComment(restRequest.getCommitComment())
 			.build()
-			.execute(bus)
-			.then(new Function<Merge, ResponseEntity<Void>>() {
-				@Override
-				public ResponseEntity<Void> apply(Merge input) {
-					final URI linkUri = linkTo(SnomedBranchMergingController.class).slash(input.getId()).toUri();
-					return Responses.accepted(linkUri).build();
-				}
-			}));
+			.executeSync(bus);
+		
+		final URI linkUri = linkTo(SnomedBranchMergingController.class).slash(merge.getId()).toUri();
+		return Responses.accepted(linkUri).build();
 	}
 	
 	@ApiOperation(
