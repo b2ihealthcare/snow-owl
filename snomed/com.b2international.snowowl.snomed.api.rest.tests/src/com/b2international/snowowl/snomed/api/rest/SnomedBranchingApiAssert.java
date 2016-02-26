@@ -257,14 +257,6 @@ public abstract class SnomedBranchingApiAssert {
 		assertEquals("FAILED", entry.path("status"));
 	}
 	
-	public static void assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String reviewId, final String commitComment) {
-		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, reviewId, commitComment)));
-		ResponseBody<?> entry = waitForMergeJob(id);
-		
-		assertNotNull(entry);
-		assertEquals("FAILED", entry.path("status"));
-	}
-	
 	private static ResponseBody<?> waitForMergeJob(String id) {
 		
 		final long endTime = System.currentTimeMillis() + POLL_TIMEOUT;
