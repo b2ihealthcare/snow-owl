@@ -36,7 +36,6 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
@@ -124,19 +123,12 @@ public class CDOBranchManagerTest {
 	public void whenRebasingChildBranchInForwardState_ThenManagerShouldReopenAssociatedCDOBranch() throws Exception {
 		branchA = main.createChild("a");
 		final CDOBranch cdoBranchA = manager.getCDOBranch(branchA);
+
 		// commit and rebase
 		manager.handleCommit(main, clock.getTimeStamp());
-		
-		final Branch rebasedBranchA = RepositoryRequests.branching(repository.id())
-			.prepareMerge()
-			.setSource(main.path())
-			.setTarget(branchA.path())
-			.setCommitComment("Rebase")
-			.build()
-			.execute(context);
+		Branch rebasedBranchA = branchA.rebase(branchA.parent(), "Rebase");
 		
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());
 	}
-	
 }
