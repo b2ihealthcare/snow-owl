@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -45,43 +44,23 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 		}
 
 		@Override
-		protected Branch executePostChecks(RepositoryContext context, Branch source, Branch target) {
+		protected Branch executePostChecks(final RepositoryContext context, final Branch source, final Branch target) {
 
 			if (!target.parent().equals(source)) {
 				throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
 			}
 
 			try (Locks locks = new Locks(context, source, target)) {
-				
-				final BranchState targetState = target.state(source);
-
-				if (targetState == BranchState.BEHIND || targetState == BranchState.DIVERGED || targetState == BranchState.STALE) {
-					
-					// Check conflicts by pretending to merge target into source
-					source.applyChangeSet(target, true, commitMessage);
-					
-					// Reopen target branch and release lock on source
-					final Branch reopenedTarget = target.reopen();
-					
-					try {
-						locks.unlock(source.path());
-					} catch (OperationLockException e) {
-						LOG.warn("Failed to unlock source branch in SyncRebaseRequest; continuing.", e);
+				return source.rebase(target, commitMessage, new Runnable() {
+					@Override
+					public void run() {
+						try {
+							locks.unlock(source.path());
+						} catch (OperationLockException e) {
+							LOG.warn("Failed to unlock source branch in SyncRebaseRequest; continuing.", e);
+						}
 					}
-					
-					// Copy changes on old target to reopened target
-					final Branch rebasedTarget = reopenedTarget.applyChangeSet(target, false, commitMessage); 
-					
-					if (rebasedTarget.headTimestamp() > rebasedTarget.baseTimestamp()) {
-						return rebasedTarget; // Implicit notification already sent (because of a non-empty commit)
-					} else {
-						return rebasedTarget.notifyChanged(); // Send explicit notification (reopen but no commit)
-					}
-					
-				} else {
-					return target;
-				}
-				
+				});
 			} catch (BranchMergeException e) {
 				throw new ConflictException("Cannot rebase target '%s' on source '%s'.", target.path(), source.path(), e);
 			} catch (OperationLockException e) {
