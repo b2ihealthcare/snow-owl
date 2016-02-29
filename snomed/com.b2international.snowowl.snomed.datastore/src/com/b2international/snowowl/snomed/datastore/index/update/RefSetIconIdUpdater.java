@@ -31,8 +31,8 @@ public class RefSetIconIdUpdater extends IconIdUpdater {
 
 	private Map<String, SnomedRefSetType> referenceSetIdToTypeMap;
 
-	public RefSetIconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, boolean active, Collection<String> availableImages, Map<String, SnomedRefSetType> referenceSetIdToTypeMap) {
-		super(taxonomyBuilder, conceptId, active, availableImages);
+	public RefSetIconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, ISnomedTaxonomyBuilder statedTaxomomy, String conceptId, boolean active, Collection<String> availableImages, Map<String, SnomedRefSetType> referenceSetIdToTypeMap) {
+		super(taxonomyBuilder, statedTaxomomy, conceptId, active, availableImages);
 		this.referenceSetIdToTypeMap = referenceSetIdToTypeMap == null ? Collections.<String, SnomedRefSetType>emptyMap() : referenceSetIdToTypeMap;
 	}
 	

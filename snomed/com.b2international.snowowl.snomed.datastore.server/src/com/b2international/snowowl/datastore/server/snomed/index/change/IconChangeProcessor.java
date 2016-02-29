@@ -17,10 +17,8 @@ package com.b2international.snowowl.datastore.server.snomed.index.change;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Set;
-
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.pcj.LongSets;
@@ -32,49 +30,66 @@ import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyProvider;
 import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 import com.google.common.collect.FluentIterable;
+
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongSet;
 
 /**
  * @since 4.3
  */
 public class IconChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
 
-	private Supplier<Pair<LongSet, LongSet>> differenceSupplier;
-	private ISnomedTaxonomyBuilder newTaxonomy;
-	private ISnomedTaxonomyBuilder oldTaxonomy;
-	private IBranchPath branchPath;
+	private final TaxonomyProvider inferredTaxonomy;
+	private final TaxonomyProvider statedTaxonomy;
+	private final IBranchPath branchPath;
 
-	public IconChangeProcessor(IBranchPath branchPath, ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, Supplier<Pair<LongSet, LongSet>> differenceSupplier) {
+	public IconChangeProcessor(IBranchPath branchPath, TaxonomyProvider inferredTaxonomy, TaxonomyProvider statedTaxonomy) {
 		super("icon changes");
 		this.branchPath = branchPath;
-		this.newTaxonomy = newTaxonomy;
-		this.oldTaxonomy = oldTaxonomy;
-		this.differenceSupplier = differenceSupplier;
+		this.inferredTaxonomy = inferredTaxonomy;
+		this.statedTaxonomy = statedTaxonomy;
 	}
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet) {
 		final Set<String> iconIdUpdates = newHashSet();
+		iconIdUpdates.addAll(getAffectedConcepts(commitChangeSet, inferredTaxonomy));
+		iconIdUpdates.addAll(getAffectedConcepts(commitChangeSet, statedTaxonomy));
+		
+		for (String conceptId : iconIdUpdates) {
+			final IconIdUpdater updater = new IconIdUpdater(inferredTaxonomy.getNewTaxonomy(), statedTaxonomy.getNewTaxonomy(), conceptId,
+					inferredTaxonomy.getNewTaxonomy().containsNode(conceptId), SnomedIconProvider.getInstance().getAvailableIconIds());
+			registerUpdate(conceptId, updater);
+		}		
+		
+	}
+
+	private Collection<String> getAffectedConcepts(ICDOCommitChangeSet commitChangeSet, TaxonomyProvider taxonomy) {
+		final Set<String> iconIdUpdates = newHashSet();
+		final ISnomedTaxonomyBuilder newTaxonomy = taxonomy.getNewTaxonomy();
+		final ISnomedTaxonomyBuilder oldTaxonomy = taxonomy.getOldTaxonomy();
+		final Pair<LongSet, LongSet> diff = taxonomy.getDifference();
 		// process new/reactivated relationships
-		final LongIterator it = differenceSupplier.get().getA().iterator();
+		final LongIterator it = diff.getA().iterator();
 		while (it.hasNext()) {
 			final String relationshipId = Long.toString(it.next());
-			final String sourceNodeId = this.newTaxonomy.getSourceNodeId(relationshipId);
+			final String sourceNodeId = newTaxonomy.getSourceNodeId(relationshipId);
 			iconIdUpdates.add(sourceNodeId);
 			// add all descendants
-			iconIdUpdates.addAll(LongSets.toStringSet(this.newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
+			iconIdUpdates.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
 		}
 		
 		// process detached/inactivated relationships
-		final LongIterator detachedIt = differenceSupplier.get().getB().iterator();
+		final LongIterator detachedIt = diff.getB().iterator();
 		while (detachedIt.hasNext()) {
 			final String relationshipId = Long.toString(detachedIt.next());
-			final String sourceNodeId = this.oldTaxonomy.getSourceNodeId(relationshipId);
+			final String sourceNodeId = oldTaxonomy.getSourceNodeId(relationshipId);
 			// if concept still exists a relationship became inactive or deleted
-			if (this.newTaxonomy.containsNode(sourceNodeId)) {
-				final LongSet allAncestorNodeIds = this.newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
+			if (newTaxonomy.containsNode(sourceNodeId)) {
+				final LongSet allAncestorNodeIds = newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
 				final String oldIconId = SnomedIconProvider.getInstance().getIconId(sourceNodeId, branchPath);
 				if (!allAncestorNodeIds.contains(Long.parseLong(oldIconId))) {
 					iconIdUpdates.add(sourceNodeId);
@@ -93,12 +108,7 @@ public class IconChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBu
 				return input.getId();
 			}
 		}).copyInto(iconIdUpdates);
-		
-		for (String conceptId : iconIdUpdates) {
-			final IconIdUpdater updater = new IconIdUpdater(newTaxonomy, conceptId,
-					newTaxonomy.containsNode(conceptId), SnomedIconProvider.getInstance().getAvailableIconIds());
-			registerUpdate(conceptId, updater);
-		}
+		return iconIdUpdates;
 	}
 
 }
