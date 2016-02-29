@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.classification;
+package com.b2international.snowowl.core.merge;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.remotejobs.RemoteJobKey;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
+ * @since 4.6
  */
-public class ReasonerRemoteJobKey extends RemoteJobKey {
+public final class MergeCollection extends CollectionResource<Merge> {
 
-	private static final long serialVersionUID = 1L;
-
-	public ReasonerRemoteJobKey(final String repositoryId, final IBranchPath branchPath) {
-		super(repositoryId, branchPath);
+	public MergeCollection(List<Merge> items) {
+		super(items);
 	}
 }

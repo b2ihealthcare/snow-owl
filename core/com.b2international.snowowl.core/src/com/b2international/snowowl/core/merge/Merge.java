@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.classification;
+package com.b2international.snowowl.core.merge;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.remotejobs.RemoteJobKey;
+import java.util.Date;
+import java.util.UUID;
+
+import com.b2international.snowowl.core.exceptions.ApiError;
 
 /**
+ * @since 4.6
  */
-public class ReasonerRemoteJobKey extends RemoteJobKey {
+public interface Merge {
 
-	private static final long serialVersionUID = 1L;
-
-	public ReasonerRemoteJobKey(final String repositoryId, final IBranchPath branchPath) {
-		super(repositoryId, branchPath);
+	public enum Status {
+		SCHEDULED,
+		IN_PROGRESS,
+		COMPLETED,
+		FAILED, 
+		CANCEL_REQUESTED;
 	}
+	
+	UUID getId();
+	
+	String getSource();
+
+	String getTarget();
+
+	Status getStatus();
+	
+	Date getScheduledDate();
+	
+	Date getStartDate();
+	
+	Date getEndDate();
+	
+	ApiError getApiError();
 }

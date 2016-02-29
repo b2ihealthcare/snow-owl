@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
+import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -50,6 +51,7 @@ import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexMa
 import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
@@ -68,19 +70,19 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 
 	private final String repositoryId;
 	private final Environment env;
-	private final int numberOfWorkers;
 	private final IEventBus handlers;
 	
 	private final Map<Class<?>, Object> registry = newHashMap();
 
-	CDOBasedRepository(String repositoryId, int numberOfWorkers, Environment env) {
-		this.repositoryId = repositoryId;
+	CDOBasedRepository(String repositoryId, int numberOfWorkers, int mergeMaxResults, Environment env) {
 		checkArgument(numberOfWorkers > 0, "At least one worker thread must be specified");
-		this.numberOfWorkers = numberOfWorkers;
+		
+		this.repositoryId = repositoryId;
 		this.env = env;
 		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
-		initializeBranchingSupport();
-		initializeRequestSupport();
+		
+		initializeBranchingSupport(mergeMaxResults);
+		initializeRequestSupport(numberOfWorkers);
 	}
 
 	@Override
@@ -146,7 +148,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
 	}
 	
-	private void initializeRequestSupport() {
+	private void initializeRequestSupport(int numberOfWorkers) {
 		final ClassLoaderProvider classLoaderProvider = env.service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId);
 		for (int i = 0; i < numberOfWorkers; i++) {
 			handlers().registerHandler(address(), new ApiRequestHandler(services(), classLoaderProvider));
@@ -183,16 +185,15 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return new DefaultRepositoryContext(context, repositoryId);
 	}
 
-	private void initializeBranchingSupport() {
+	private void initializeBranchingSupport(int mergeMaxResults) {
 		final BranchSerializer branchSerializer = env.service(BranchSerializer.class);
-		final ReviewSerializer reviewSerializer = env.service(ReviewSerializer.class);
-		final ReviewConfiguration reviewConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
-		
 		final IndexStore<InternalBranch> branchStore = createIndex("branches", branchSerializer, InternalBranch.class);
+		registry.put(BranchManager.class, new CDOBranchManagerImpl(this, branchStore));
+		
+		final ReviewSerializer reviewSerializer = env.service(ReviewSerializer.class);
 		final IndexStore<ReviewImpl> reviewStore = createIndex("reviews", reviewSerializer, ReviewImpl.class);
 		final IndexStore<ConceptChangesImpl> conceptChangesStore = createIndex("concept_changes", reviewSerializer, ConceptChangesImpl.class);
-		
-		registry.put(BranchManager.class, new CDOBranchManagerImpl(this, branchStore));
+		final ReviewConfiguration reviewConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewStore, conceptChangesStore, reviewConfiguration);
 		registry.put(ReviewManager.class, reviewManager);
 
@@ -203,6 +204,9 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		indexManager.registerIndex(branchStore);
 		indexManager.registerIndex(reviewStore);
 		indexManager.registerIndex(conceptChangesStore);
+		
+		final MergeServiceImpl mergeService = new MergeServiceImpl(this, mergeMaxResults);
+		registry.put(MergeService.class, mergeService);
 	}
 	
 	private <T> IndexStore<T> createIndex(final String name, ObjectMapper mapper, Class<T> type) {

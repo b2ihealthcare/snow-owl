@@ -167,16 +167,39 @@ public interface Branch extends Deletable, MetadataHolder {
 	 */
 	BranchState state(Branch target);
 
+	boolean canRebase();
+	
+	boolean canRebase(Branch onTopOf);
+	
 	/**
-	 * @param source
-	 *            - the branch to merge onto this branch
+	 * Rebases this branch {@link Branch} on top of the specified {@link Branch}.
+	 * <p>
+	 * Rebasing this branch does not actually modify this {@link Branch} state, instead it will create a new {@link Branch} representing the rebased
+	 * form of this {@link Branch} and returns it. Commits available on the target {@link Branch} will be available on the resulting {@link Branch}
+	 * after successful rebase.
+	 * 
+	 * @param onTopOf
+	 *            - the branch on top of which this branch should be lifted
+	 * @param commitMessage
+	 *            - the commit message
+	 * @return
+	 */
+	Branch rebase(Branch onTopOf, String commitMessage);
+	
+	Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen);
+	
+	/**
+	 * Merges changes to this {@link Branch} by squashing the change set of the specified {@link Branch} into a single commit.
+	 * 
+	 * @param changesFrom
+	 *            - the branch to take changes from
 	 * @param commitMessage
 	 *            - the commit message
 	 * @return
 	 * @throws BranchMergeException
-	 *             - if source cannot be merged
+	 *             - if the branch cannot be merged for some reason
 	 */
-	Branch merge(Branch source, String commitMessage) throws BranchMergeException;
+	Branch merge(Branch changesFrom, String commitMessage) throws BranchMergeException;
 
 	/**
 	 * Creates a new child branch.

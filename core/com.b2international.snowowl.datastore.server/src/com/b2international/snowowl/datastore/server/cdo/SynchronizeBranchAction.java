@@ -46,7 +46,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.ConflictingChange;
@@ -59,7 +58,6 @@ import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Synchronizes changes with the task branches' parents. 
@@ -67,9 +65,6 @@ import com.google.common.collect.ImmutableSet;
 public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SynchronizeBranchAction.class);
-
-	// XXX: STALE is not expected for "shallow" branching scenarios (MAIN-version-task, where version branches may not be rebased at all) 
-	private static final Set<BranchState> SYNCHRONIZABLE_STATES = ImmutableSet.of(BranchState.BEHIND, BranchState.DIVERGED, BranchState.STALE); 
 
 	private final List<CDOTransaction> transactions = newArrayList();
 
@@ -91,8 +86,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 				.prepareGet(taskBranchPath.getPath())
 				.executeSync(eventBus);
 		
-		BranchState state = branch.state();
-		return SYNCHRONIZABLE_STATES.contains(state);
+		return branch.canRebase();
 	}
 
 	@Override

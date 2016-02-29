@@ -45,7 +45,6 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.datastore.store.Store;
@@ -63,8 +62,12 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
-			return handleCommit(target, clock.getTimestamp());
+		InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
+			if (!dryRun && from.headTimestamp() > from.baseTimestamp()) {
+				return handleCommit(to, clock.getTimestamp());
+			} else {
+				return to;
+			}
 		}
 
 		@Override
@@ -367,13 +370,7 @@ public class BranchManagerTest {
 		return rebase(branch, branch.parent());
 	}
 	
-	private Branch rebase(Branch branch, Branch onto) {
-		return RepositoryRequests.branching("")
-			.prepareMerge()
-			.setSource(onto.path())
-			.setTarget(branch.path())
-			.setCommitComment("Message")
-			.build()
-			.execute(context);
+	private Branch rebase(Branch branch, Branch onTopOf) {
+		return branch.rebase(onTopOf, "Message");
 	}
 }
