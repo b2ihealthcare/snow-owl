@@ -39,7 +39,7 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 		}
 
 		@Override
-		protected Branch executePostChecks(RepositoryContext context, Branch source, Branch target) {
+		protected Branch execute(RepositoryContext context, Branch source, Branch target) {
 
 			if (!source.parent().equals(target)) {
 				throw new BadRequestException("Cannot merge source '%s' into target '%s'; target is not the direct parent of source.", source.path(), target.path());

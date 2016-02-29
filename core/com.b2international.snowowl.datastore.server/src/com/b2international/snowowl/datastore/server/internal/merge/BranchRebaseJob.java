@@ -44,7 +44,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 		}
 
 		@Override
-		protected Branch executePostChecks(final RepositoryContext context, final Branch source, final Branch target) {
+		protected Branch execute(final RepositoryContext context, final Branch source, final Branch target) {
 
 			if (!target.parent().equals(source)) {
 				throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());

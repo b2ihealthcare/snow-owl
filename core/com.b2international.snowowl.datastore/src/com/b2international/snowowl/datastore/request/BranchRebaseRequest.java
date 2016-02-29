@@ -46,7 +46,7 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest<Merge
 	}
 	
 	@Override
-	protected Merge executePostChecks(RepositoryContext context, Branch source, Branch target) {
+	protected Merge execute(RepositoryContext context, Branch source, Branch target) {
 		return context.service(MergeService.class).enqueue(sourcePath, targetPath, commitMessage, reviewId);
 	}
 }

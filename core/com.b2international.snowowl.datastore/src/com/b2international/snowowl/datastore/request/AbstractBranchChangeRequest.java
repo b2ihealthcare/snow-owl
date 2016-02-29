@@ -69,14 +69,14 @@ public abstract class AbstractBranchChangeRequest<R> extends BaseRequest<Reposit
 				}
 			}
 			
-			return executePostChecks(context, source, target);
+			return execute(context, source, target);
 						
 		} catch (NotFoundException e) {
 			throw e.toBadRequestException();
 		}
 	}
 
-	protected abstract R executePostChecks(RepositoryContext context, Branch source, Branch target);
+	protected abstract R execute(RepositoryContext context, Branch source, Branch target);
 
 	@Override
 	protected Class<R> getReturnType() {
