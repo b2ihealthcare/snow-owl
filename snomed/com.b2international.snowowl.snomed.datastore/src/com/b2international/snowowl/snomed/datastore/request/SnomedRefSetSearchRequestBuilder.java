@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -42,7 +43,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	}
 	
 	public SnomedRefSetSearchRequestBuilder filterByTypes(Collection<SnomedRefSetType> refSetTypes) {
-		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, refSetTypes);
+		return addOption(SnomedRefSetSearchRequest.OptionKey.TYPE, Collections3.toImmutableSet(refSetTypes));
 	}
 
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentType(String referencedComponentType) {
@@ -64,7 +65,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	}
 	
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Collection<Integer> referencedComponentTypes) {
-		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
+		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, Collections3.toImmutableSet(referencedComponentTypes));
 	}
 
 }

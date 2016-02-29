@@ -84,24 +84,6 @@ public interface IClientRefSetBrowser<R extends IComponent<K>, C extends ICompon
 	Iterable<R> getRefsSets();
 	
 	/**
-	 * Returns all the direct children of the specified refset identifier concept where the child is a refset identifier concept and has active reference set members
-	 * 
-	 * @param refsetId
-	 * @param excludedIds
-	 * @return
-	 */
-	Collection<C> getSubTypesWithActiveMembers(K refsetId, String... excludedIds);
-	
-	/**
-	 * Returns all children of the specified refset identifier concept where the child is a refset identifier concept and has active reference set members
-	 * 
-	 * @param refsetId
-	 * @param excludedIds
-	 * @return
-	 */
-	Collection<C> getAllSubTypesWithActiveMembers(K refsetId, String... excludedIds);
-	
-	/**
 	 * Returns true, when the reference set with the specified unique identifier contains at least one member, which points to
 	 * the component identified by the specified unique identifier.
 	 * 

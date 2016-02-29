@@ -37,6 +37,7 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.spans.SpanFirstQuery;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
@@ -62,6 +64,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
@@ -95,8 +98,8 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	@Override
 	protected SnomedDescriptions doExecute(BranchContext context) throws IOException {
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
-		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 3) {
-			throw new BadRequestException("Description term must be at least 3 characters long.");
+		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 2) {
+			throw new BadRequestException("Description term must be at least 2 characters long.");
 		}
 		
 		if (containsKey(OptionKey.ACCEPTABILITY) || !languageRefSetIds().isEmpty()) {
@@ -195,45 +198,42 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 	
 	private void addDescriptionTermQuery(final SnomedQueryBuilder queryBuilder) {
-		final Query query;
 		final String searchTerm = getString(OptionKey.TERM);
-
-		if (!containsKey(OptionKey.PARSED_TERM)) {
-			query = createTermDisjunctionQuery(searchTerm);
-		} else {
-			final Query termDisjunctionQuery = createTermDisjunctionQuery(searchTerm);
-			final Query parsedTermQuery = createParsedTermQuery(searchTerm);
-			
-			final BooleanQuery bq = new BooleanQuery(true);
-			bq.add(termDisjunctionQuery, Occur.SHOULD);
-			bq.add(parsedTermQuery, Occur.SHOULD);
-			
-			query = bq;
+		
+		final SnomedQueryBuilder qb = SnomedMappings.newQuery();
+		qb.and(createTermDisjunctionQuery(searchTerm));
+		
+		if (containsKey(OptionKey.PARSED_TERM)) {
+			qb.and(createParsedTermQuery(searchTerm));
 		}
 		
-		queryBuilder.and(query);
+		if (isComponentId(searchTerm, ComponentCategory.DESCRIPTION)) {
+			final TermQuery idQuery = SnomedMappings.id().toQuery(Long.valueOf(searchTerm));
+			idQuery.setBoost(1000f);
+			qb.and(idQuery);
+		}
+		
+		queryBuilder.and(qb.matchAny());
 	}
 	
+	private boolean isComponentId(String value, ComponentCategory type) {
+		try {
+			return SnomedIdentifiers.getComponentCategory(value) == type;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+
 	private Query createTermDisjunctionQuery(final String searchTerm) {
 		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
 		final QueryBuilder termQueryBuilder = new QueryBuilder(bookendAnalyzer);
 		final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
 		
-		final Query emq = createExactMatchQuery(searchTerm, termQueryBuilder);
-		// emq.setBoost(10.0f);
-		termDisjunctionQuery.add(emq);
-		final Query atp = createAllTermsPresentQuery(searchTerm, termQueryBuilder);
-		// atp.setBoost(4.0f);
-		termDisjunctionQuery.add(atp);
+		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, termQueryBuilder));
+		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, termQueryBuilder));
 		
 		final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
 		final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
-		
-		// XXX testing new prefix query from ES
-		// final Query atpfb = createAllTermPrefixesPresentFromBeginningQueryOld(prefixes);
-		final Query atpfb = createAllTermPrefixesPresentFromBeginningQuery(prefixes);
-		// atpfb.setBoost(3.0f);
-		// termDisjunctionQuery.add(atpfb);
 		termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
 		
 		return termDisjunctionQuery;
@@ -328,6 +328,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		return termQueryBuilder.createBooleanQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm, Occur.MUST);
 	}
 
+	@Deprecated
 	private Query createAllTermPrefixesPresentFromBeginningQueryOld(List<String> prefixes) {
 		final List<SpanQuery> clauses = newArrayList();
 		clauses.add(new SpanTermQuery(SnomedMappings.descriptionTerm().toTerm(Character.toString(BookendTokenFilter.LEADING_MARKER))));
@@ -339,6 +340,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		return new SpanFirstQuery(new SpanNearQuery(Iterables.toArray(clauses, SpanQuery.class), 0, true), prefixes.size() + 1);
 	}
 	
+	@Deprecated
 	private Query createAllTermPrefixesPresentFromBeginningQuery(List<String> prefixes) {
 		final MultiPhrasePrefixQuery query = new MultiPhrasePrefixQuery();
 		query.setMaxExpansions(2000);

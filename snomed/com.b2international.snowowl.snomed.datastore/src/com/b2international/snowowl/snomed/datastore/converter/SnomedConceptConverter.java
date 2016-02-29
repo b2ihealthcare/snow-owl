@@ -262,6 +262,16 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 					return;
 				}
 				
+				// in case of only one match and limit zero, use shortcut instead of loading all IDs and components
+				// XXX won't work if number of results is greater than one, either use custom ConceptSearch or figure out how to expand descendants effectively
+				final int limit = getLimit(expandOptions);
+				if (conceptIds.size() == 1 && limit == 0) {
+					for (ISnomedConcept concept : results) {
+						((SnomedConcept) concept).setDescendants(new SnomedConcepts(0, 0, totalHits));
+					}
+					return;
+				}
+				
 				final TopDocs search = searcher.search(query, totalHits);
 				
 				final SnomedFieldsToLoadBuilder fieldsToLoadBuilder = SnomedMappings.fieldsToLoad().id();
@@ -297,7 +307,6 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				}
 				
 				final int offset = getOffset(expandOptions);
-				final int limit = getLimit(expandOptions);
 				final Collection<String> componentIds = newHashSet(descendantsByAncestor.values());
 				
 				if (limit > 0 && !componentIds.isEmpty()) {

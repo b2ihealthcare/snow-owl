@@ -41,10 +41,9 @@ public abstract class AbstractSnomedApiTest {
 		return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), UUID.randomUUID().toString());
 	}
 
-	protected IBranchPath createNestedBranch(final String... segments) {
-		IBranchPath currentBranchPath = testBranchPath;
-		givenBranchWithPath(currentBranchPath);
-
+	protected IBranchPath createNestedBranch(IBranchPath parent, final String... segments) {
+		IBranchPath currentBranchPath = parent;
+		
 		for (final String segment : segments) {
 			currentBranchPath = BranchPathUtils.createPath(currentBranchPath, segment);
 			givenBranchWithPath(currentBranchPath);

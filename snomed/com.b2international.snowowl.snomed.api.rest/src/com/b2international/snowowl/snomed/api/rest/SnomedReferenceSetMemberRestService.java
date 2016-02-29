@@ -38,8 +38,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -53,8 +55,10 @@ import com.b2international.snowowl.snomed.api.rest.request.RequestResolver;
 import com.b2international.snowowl.snomed.api.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -89,9 +93,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@PathVariable(value="path")
 			final String branchPath,
 
-			@ApiParam(value="The reference set identifier to match")
-			@RequestParam(value="referenceSetId", required=false) 
-			final String referenceSetId,
+			@ApiParam(value="The reference set identifier(s) to match, or a single escg expression")
+			@RequestParam(value="referenceSet", required=false) 
+			final List<String> referenceSetFilter,
 			
 			@ApiParam(value="The referenced component identifier to match")
 			@RequestParam(value="referencedComponentId", required=false) 
@@ -105,6 +109,11 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestParam(value="module", required=false) 
 			final String moduleFilter,
 			
+			@ApiParam(value="The target component identifier(s) to match in case of association refset members")
+			@RequestParam(value="targetComponent", required=false)
+			// TODO figure out how to dynamically include query params with swagger, or just replace swagger with a better alternative???
+			final List<String> targetComponent,
+			
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
 			final int offset,
@@ -116,7 +125,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@ApiParam(value="Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
-
+			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
@@ -131,17 +140,21 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return DeferredResults.wrap(SnomedRequests.prepareSearchMember()
+		final SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests.prepareSearchMember()
 				.setLimit(limit)
 				.setOffset(offset)
-				.filterByRefSet(referenceSetId)
+				.filterByRefSet(referenceSetFilter)
 				.filterByReferencedComponent(referencedComponentId)
 				.filterByActive(activeFilter)
 				.filterByModule(moduleFilter)
 				.setExpand(expand)
-				.setLocales(extendedLocales)
-				.build(branchPath)
-				.execute(bus));
+				.setLocales(extendedLocales);
+		
+		if (!CompareUtils.isEmpty(targetComponent)) {
+			req.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent).build());
+		}
+		
+		return DeferredResults.wrap(req.build(branchPath).execute(bus));
 	}
 	
 	@ApiOperation(

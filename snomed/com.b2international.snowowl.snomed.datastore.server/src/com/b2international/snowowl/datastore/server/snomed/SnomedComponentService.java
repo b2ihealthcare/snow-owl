@@ -91,6 +91,20 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.list.LongListIterator;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongChainedHashSet;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+import bak.pcj.set.UnmodifiableLongSet;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
@@ -121,7 +135,6 @@ import com.b2international.snowowl.datastore.server.snomed.index.SnomedComponent
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -176,20 +189,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.list.LongListIterator;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongChainedHashSet;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-import bak.pcj.set.UnmodifiableLongSet;
 
 /**
  * Service singleton for the SNOMED&nbsp;CT core components.
@@ -531,12 +530,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				
 				if (null == root ) { //SNOMED CT is not available
 					return;
-				}
-				
-				for (final Relationship destinationRelationship : root.getInboundRelationships()) {
-					
-					//just warm top level concepts
-					destinationRelationship.getSource().getFullySpecifiedName();
 				}
 				
 				LOGGER.info("The cache warming for SNOMED CT component service successfully finished.");
@@ -1408,6 +1401,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
+	@Deprecated
 	public Map<String, String> getReferencedConceptTerms(final IBranchPath branchPath, final String refSetId, final String... descriptionTypeId) {
 	
 		@Nullable Stopwatch lapTimer = null;
@@ -1549,7 +1543,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		return Pair.<String, String>of(term, ""); //XXX: previous implementation added back the member's target.
 	}
 
-	
 	@Override
 	@Deprecated
 	public Set<Pair<String, String>> getReferenceSetMemberLabels(final IBranchPath branchPath, final String refSetId) {

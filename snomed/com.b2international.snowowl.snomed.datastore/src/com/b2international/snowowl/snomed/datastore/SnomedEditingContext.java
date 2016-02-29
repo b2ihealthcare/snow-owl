@@ -86,15 +86,19 @@ import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleas
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
+import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -113,6 +117,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -832,11 +837,15 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @param characteristicType can be <tt>null</tt> then characteristicType will be Defining concept.
 	 * @param effectiveTime 
 	 * @return a valid relationship populated with default values and the specified properties
+	 * @deprecated - use {@link SnomedComponents#newRelationship()} instead
 	 */
 	public Relationship buildDefaultRelationship(Concept source, Concept type, Concept destination, Concept characteristicType) {
 		return buildDefaultRelationship(source, type, destination, characteristicType, getDefaultModuleConcept(), getDefaultNamespace());
 	}
 	
+	/**
+	 * @deprecated - use {@link SnomedComponents#newRelationship()} instead
+	 */
 	public Relationship buildDefaultRelationship(final Concept source, final Concept type, final Concept destination, Concept characteristicType, final Concept module, final String namespace) {
 		// default is stated
 		if (characteristicType == null) {
@@ -1006,8 +1015,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
 			
-			//destination relationships
-			plan.markForInactivation(Iterables.toArray(concept.getInboundRelationships(), Relationship.class));
+			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<SnomedRelationshipIndexEntry, Long>() {
+				@Override
+				public Long apply(SnomedRelationshipIndexEntry input) {
+					return input.getStorageKey();
+				}
+			}).toSet());
 			
 			if (monitor.isCanceled()) {
 				return SnomedInactivationPlan.NULL_IMPL;
@@ -1082,7 +1095,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	private Iterable<Concept> getStatedChildren(Concept conceptToInactivate) {
-		Iterable<Relationship> statedActiveInboundIsaRelationships = filterActiveStatedIsaRelationships(conceptToInactivate.getInboundRelationships());
+		Iterable<Relationship> statedActiveInboundIsaRelationships = filterActiveStatedIsaRelationships(getInboundRelationships(conceptToInactivate.getId()));
 		Iterable<Concept> children = Iterables.transform(statedActiveInboundIsaRelationships, new Function<Relationship, Concept>() {
 			@Override public Concept apply(Relationship input) {
 				return input.getSource();
@@ -1139,13 +1152,14 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return deletionPlan;
 		}
 		
-		// check sub-concepts
-		for (Relationship relationship: concept.getInboundRelationships()) {
+		for (Relationship relationship : getInboundRelationships(concept.getId())) {
 			if (IS_A.equals(relationship.getType().getId())) {
-				deletionPlan = canDelete(relationship, deletionPlan);
-				if (deletionPlan.isRejected()) {
-					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
-					return deletionPlan;
+				if (relationship != null) {
+					deletionPlan = canDelete(relationship, deletionPlan);
+					if(deletionPlan.isRejected()) {
+						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
+						return deletionPlan;
+					}
 				}
 			}
 		}
@@ -1181,12 +1195,25 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		deletionPlan.markForDeletion(descriptionTypeRefSetMembers);
 		
 		deletionPlan.markForDeletion(concept);
-		deletionPlan.markForDeletion(concept.getInboundRelationships());
 		deletionPlan.markForDeletion(concept.getOutboundRelationships());
 		
 		return deletionPlan;
 	}
-	
+
+	public final List<Relationship> getInboundRelationships(String conceptId) {
+		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
+			@Override
+			public Relationship apply(SnomedRelationshipIndexEntry input) {
+				return (Relationship) lookup(input.getStorageKey());
+			}
+		}).toList();
+	}
+
+	private List<SnomedRelationshipIndexEntry> getInboundRelationshipsFromIndex(String conceptId) {
+		final SnomedIndexService index = ApplicationContext.getInstance().getService(SnomedIndexService.class);
+		return index.search(BranchPathUtils.createPath(getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(conceptId));
+	}
+
 	private Collection<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
 		return getIndexService().searchUnsorted(createQuery(conceptId));
 	}
@@ -1351,8 +1378,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 						throw new RuntimeException("Unknown reference set type");
 					}
 				}
-			} else if (item instanceof Relationship) {
-				index = getIndexFromDatabase(item, ((Relationship) item).getDestination(), "SNOMED_CONCEPT_INBOUNDRELATIONSHIPS_LIST");
 			}
 			
 			itemMap.put(index, item);
@@ -1395,8 +1420,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				//in case of relationship or description an index lookup is not necessary 
 			} else if (eObject instanceof Relationship) {
 				Relationship relationship = (Relationship) eObject;
-				relationship.getDestination().getInboundRelationships().remove(index);
 				relationship.setSource(null);
+				relationship.setDestination(null);
 			} else if (eObject instanceof Description) {
 				Description description = (Description) eObject;
 				// maybe description was already removed before save, so the delete is reflected on the ui
@@ -1415,15 +1440,18 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @deprecated - use {@link ModulePreference} instead to get the module ID on client side
 	 */
 	public Concept getDefaultModuleConcept() {
-		if (null == moduleConcept) {
+		if (moduleConcept == null) {
 			for (String modulePreference : ModulePreference.getModulePreference()) {
+				if (moduleConcept != null) {
+					break;
+				}
 				try {
 					moduleConcept = getConcept(modulePreference);
 				} catch (ComponentNotFoundException e) {
 					// ignore and proceed to the next preference
 				}
 			}
-			if (null == moduleConcept) {
+			if (moduleConcept == null) {
 				LOGGER.warn("Error while loading and caching SNOMED CT module concept.");
 			}
 		}
@@ -1532,28 +1560,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	public SnomedEditingContext setUniquenessCheckEnabled(boolean uniquenessCheckEnabled) {
 		this.uniquenessCheckEnabled = uniquenessCheckEnabled;
 		return this;
-	}
-
-	/**
-	 * This method makes a validation for a new Is-a relationship. If the destination concept is
-	 * a subtype of the source one, the return value is false, otherwise true.
-	 * 
-	 * @param source concept
-	 * @param destination concept
-	 * @return 
-	 */
-	public boolean isValidToAddIsARelationship(Concept source, Concept destination) {
-		if (source == null || destination == null) {
-			return false;
-		}
-		IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		Collection<SnomedConceptIndexEntry> allSubTypes = terminologyBrowser.getAllSubTypesById(source.getId());
-		for (SnomedConceptIndexEntry conceptMini : allSubTypes) {
-			if (conceptMini.getId().equals(destination.getId())) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**

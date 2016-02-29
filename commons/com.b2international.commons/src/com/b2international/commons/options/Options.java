@@ -124,9 +124,9 @@ public interface Options {
 	<T> Collection<T> getCollection(String key, Class<T> type);
 
 	/**
-	 * Returns a list of values conform to the given class type found on the given key. If a single value (not a {@link List}) is mapped
-	 * to the given key, then it wraps the value in a {@link Collections#singletonList(Object) singleton list} and returns it. Otherwise it tries to get
-	 * the value as a {@link List} and return it.
+	 * Returns a list of values conform to the given class type found on the given key. If a single value (not a {@link List}) is mapped to the given
+	 * key, then it wraps the value in a {@link Collections#singletonList(Object) singleton list} and returns it. Otherwise it tries to get the value
+	 * as a {@link List} and return it.
 	 * 
 	 * @param key
 	 *            - the key whose associated value is to be returned
@@ -137,7 +137,18 @@ public interface Options {
 	 *             - if the elements in the list is not applicable to the given type.
 	 */
 	<T> List<T> getList(String key, Class<T> type);
-	
+
+	/**
+	 * Returns a nested {@link Options} from this options found on the given key, or an empty {@link Options} if not found.
+	 * 
+	 * @param key
+	 *            - the key whose associated value is to be returned
+	 * @return a non-null {@link Options} instance
+	 * @throws IllegalArgumentException
+	 *             - if the mapped item is not applicable to {@link Options}.
+	 */
+	Options getOptions(String key);
+
 	/**
 	 * Returns a {@link Set} view of the keys contained in this map. The set is backed by the map, so changes to the map are reflected in the set, and
 	 * vice-versa. If the map is modified while an iteration over the set is in progress (except through the iterator's own <tt>remove</tt>

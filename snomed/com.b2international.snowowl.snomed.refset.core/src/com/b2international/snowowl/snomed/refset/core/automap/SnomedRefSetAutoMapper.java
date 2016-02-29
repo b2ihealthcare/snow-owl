@@ -15,48 +15,125 @@
  */
 package com.b2international.snowowl.snomed.refset.core.automap;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.NullComponent;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 
 /**
+ * This class is responsible for mapping labels or IDs with SNOMED CT concepts. For performance optimization the automapper uses a recursive algorithm
+ * to get back a corresponding and appropriate equivalent.
+ * 
  * @since 3.1
  */
-public class SnomedRefSetAutoMapper extends AbstractRefSetAutoMapper {
+public class SnomedRefSetAutoMapper {
+	
+	private static final int SEARCHER_STEP_LIMIT = 243;
+	private static final int SEARCHER_STEP_INCREMENT_MULTIPLIER = 3;
 
-	public SnomedRefSetAutoMapper(IComponent<String> topLevelConcept, RefSetAutoMapperModel model) {
-		super(topLevelConcept, model);
+	private final String topLevelConceptId;
+	private final RefSetAutoMapperModel model;
+	
+	public SnomedRefSetAutoMapper(final String topLevelConceptId, final RefSetAutoMapperModel model) {
+		this.model = model;
+		this.topLevelConceptId = topLevelConceptId;
 	}
 
-	@Override
-	protected String getFirstValidResult(final List<IIndexQueryAdapter<SnomedConceptIndexEntry>> adapters, final int limit, Integer rowIndex) {
-		for (final IIndexQueryAdapter<SnomedConceptIndexEntry> adapter : adapters) {
-
-			final List<SnomedConceptIndexEntry> results = indexSearcher.search(adapter, limit);
-
-			//	no matching term found
-			if (results == null || results.size() == 0) {
-				continue;
+	public Map<Integer, String> resolveValues(final IProgressMonitor monitor) {
+		
+		final Map<Integer, String> resolvedValues = newHashMap();
+		final Map<Integer, String> values = getValuesFromColumn(model.getMappedSourceColumnIndex());
+		
+		final List<ExtendedLocale> locales = ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
+		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+		final String userId = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getUserId();
+		final String branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
+		
+		for (final Entry<Integer, String> entry : values.entrySet()) {
+			
+			if (monitor.isCanceled()) {
+				return resolvedValues;
 			}
-
-			for (final SnomedConceptIndexEntry entry : results) {
-				if (topLevelConcept == NullComponent.<String> getNullImplementation()) {
-					return entry.getId();
-				}
-
-				final Collection<SnomedConceptIndexEntry> conceptSuperTypes = terminologyBrowser.getAllSuperTypes(entry);
-
-				if (conceptSuperTypes.contains(topLevelConcept)) {
-					return entry.getId();
+			
+			// see com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.doExecute(BranchContext)
+			if (entry.getValue().length() > 1) {
+				
+				final SnomedConceptSearchRequestBuilder request = SnomedRequests
+						.prepareSearchConcept()
+						.filterByActive(true)
+						.filterByTerm(entry.getValue())
+						.filterByExtendedLocales(locales)
+						.filterByAncestor(topLevelConceptId)
+						.withSearchProfile(userId)
+						.withDoi()
+						.setExpand("pt()");
+				
+				for (int limit = 1; limit < SEARCHER_STEP_LIMIT; limit *= SEARCHER_STEP_INCREMENT_MULTIPLIER) {
+					
+					request.setLimit(limit);
+					
+					final SnomedConcepts concepts = request.build(branchPath).executeSync(eventBus);
+					List<SnomedConceptIndexEntry> candidates = SnomedConceptIndexEntry.fromConcepts(concepts);
+					
+					if (candidates.isEmpty()) {
+						final SnomedConcepts fuzzyConcepts = request.withFuzzySearch().build(branchPath).executeSync(eventBus);
+						final List<SnomedConceptIndexEntry> fuzzyCandidates = SnomedConceptIndexEntry.fromConcepts(fuzzyConcepts);
+						
+						if (fuzzyCandidates.isEmpty()) {
+							continue;
+						}
+						
+						candidates = fuzzyCandidates;
+					}
+					
+					final Optional<SnomedConceptIndexEntry> candidate = getCandidate(candidates, entry.getKey());
+					
+					if (candidate.isPresent()) {
+						resolvedValues.put(entry.getKey(), candidate.get().getId());
+						break;
+					}
+					
 				}
 			}
+			
+			monitor.worked(1);
 		}
-
-		return null;
+		
+		return resolvedValues;
 	}
 
+	protected Map<Integer, String> getValuesFromColumn(final int targetColumn) {
+		final Map<Integer, String> collectedValues = newHashMap();
+		for (final AutoMapEntry entry : model.getContent()) {
+			collectedValues.put(model.getContent().indexOf(entry), getParsedValueSafe(entry, targetColumn));
+		}
+		return collectedValues;
+	}
+	
+	protected Optional<SnomedConceptIndexEntry> getCandidate(final Collection<SnomedConceptIndexEntry> candidates, final int rowIndex) {
+		return FluentIterable.from(candidates).first();
+	}
+
+	private String getParsedValueSafe(final AutoMapEntry entry, final int index) {
+		return entry.getParsedValues().size() > index ? entry.getParsedValues().get(index) : "";
+	}
+	
 }

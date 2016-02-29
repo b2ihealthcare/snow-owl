@@ -97,6 +97,10 @@ public class QueryBuilderBase<Q extends QueryBuilderBase<Q>> {
 		return build(Occur.SHOULD, queries);
 	}
 	
+	public final boolean isEmpty() {
+		return queries.isEmpty();
+	}
+	
 	private Query build(final Occur occur, Iterable<Query> queries) {
 		final int size = Iterables.size(queries);
 		checkArgument(size > 0, "At least one clause must be specified to build a query");

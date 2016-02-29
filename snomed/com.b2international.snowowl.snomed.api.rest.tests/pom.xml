@@ -55,6 +55,11 @@
 								<id>com.sun.el</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
+							<requirement>
+								<type></type>
+								<id>com.sun.el</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
 						</extraRequirements>
 					</dependency-resolution>
 				</configuration>

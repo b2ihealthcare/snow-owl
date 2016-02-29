@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequest.OptionKey;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -36,7 +36,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 	}
 
 	public SnomedRelationshipSearchRequestBuilder filterBySource(Collection<String> sourceIds) {
-		return addOption(OptionKey.SOURCE, ImmutableSet.copyOf(sourceIds));
+		return addOption(OptionKey.SOURCE, Collections3.toImmutableSet(sourceIds));
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByType(String termFilter) {
@@ -48,7 +48,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 	}
 
 	public SnomedRelationshipSearchRequestBuilder filterByDestination(Collection<String> destinationIds) {
-		return addOption(OptionKey.DESTINATION, ImmutableSet.copyOf(destinationIds));
+		return addOption(OptionKey.DESTINATION, Collections3.toImmutableSet(destinationIds));
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicType(String termFilter) {

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
@@ -22,6 +24,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
  */
 public interface TreeBuilder {
 
-	TerminologyTree build(Iterable<SnomedConceptIndexEntry> nodes);
+	TerminologyTree build(String branch, Iterable<SnomedConceptIndexEntry> nodes);
+	
+	TreeBuilder withTopLevelConcepts(Collection<SnomedConceptIndexEntry> topLevelConcepts);
 	
 }
