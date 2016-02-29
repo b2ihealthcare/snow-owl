@@ -118,13 +118,25 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	
 	@Override
 	public Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen) {
-		final BranchState state = state(onTopOf);
-		
-		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
+		if (canRebase(onTopOf)) {
 			return branchManager.rebase(this, (BranchImpl) onTopOf, commitMessage, postReopen);
 		} else {
 			return this;
 		}
+	}
+
+	@Override
+	public boolean canRebase() {
+		return canRebase(state());
+	}
+	
+	@Override
+	public boolean canRebase(Branch onTopOf) {
+		return canRebase(state(onTopOf));
+	}
+
+	private boolean canRebase(final BranchState state) {
+		return state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE;
 	}
 	
 	@Override

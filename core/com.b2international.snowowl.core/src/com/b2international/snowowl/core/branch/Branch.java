@@ -167,6 +167,10 @@ public interface Branch extends Deletable, MetadataHolder {
 	 */
 	BranchState state(Branch target);
 
+	boolean canRebase();
+	
+	boolean canRebase(Branch onTopOf);
+	
 	/**
 	 * Rebases this branch {@link Branch} on top of the specified {@link Branch}.
 	 * <p>
