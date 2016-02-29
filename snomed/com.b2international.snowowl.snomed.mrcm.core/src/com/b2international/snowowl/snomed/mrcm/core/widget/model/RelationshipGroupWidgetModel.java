@@ -117,7 +117,7 @@ public class RelationshipGroupWidgetModel extends ContainerWidgetModel {
 		}
 		
 		throw new IllegalStateException(MessageFormat.format(
-				"Couldn''t find matching relationship model for type ''{0}'', value ''{1}'' and characteristic type ''{2}''.",
+				"Couldn't find matching relationship model for type ''{0}'', value ''{1}'' and characteristic type ''{2}''.",
 				typeId, valueId, characteristicTypeId));
 	}
 	
