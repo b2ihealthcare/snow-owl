@@ -71,9 +71,9 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final List<RelationshipGroupWidgetModel> relationshipGroupWidgetModels = newSynchronizedList();
 		
 		final List<Runnable> runnables = Lists.newArrayList();
-		for (final PredicateIndexEntry predicates : predicateMinis) {
+		for (final PredicateIndexEntry predicateIndexEntry : predicateMinis) {
 			runnables.add(new Runnable() { @Override public void run() {
-				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicates);
+				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicateIndexEntry);
 			}});
 		}
 		
