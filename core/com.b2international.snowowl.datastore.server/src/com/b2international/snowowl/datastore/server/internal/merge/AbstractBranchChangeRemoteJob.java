@@ -23,21 +23,11 @@ import org.eclipse.core.runtime.jobs.MultiRule;
 import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.review.BranchState;
-import com.b2international.snowowl.datastore.review.Review;
-import com.b2international.snowowl.datastore.review.ReviewManager;
-import com.b2international.snowowl.datastore.server.internal.CDOBasedRepository;
 
 /**
  * @since 4.6
