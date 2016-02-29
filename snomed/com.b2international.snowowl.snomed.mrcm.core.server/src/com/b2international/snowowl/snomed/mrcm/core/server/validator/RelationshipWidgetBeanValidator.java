@@ -68,23 +68,23 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 
 			final List<ModeledWidgetBean> relationships = group.getElements();
 
-			for (final RelationshipWidgetBean relationship : Iterables.filter(relationships, RelationshipWidgetBean.class)) {
-				if (!relationship.isValid()) {
+			for (final RelationshipWidgetBean relationshipWidgetBean : Iterables.filter(relationships, RelationshipWidgetBean.class)) {
+				if (!relationshipWidgetBean.isValid()) {
 					continue;
 				}
 
-				if (relationship.isUnsanctioned()) {
-					reporter.warning(relationship, "This property violates the concept model.");
+				if (relationshipWidgetBean.isUnsanctioned()) {
+					reporter.warning(relationshipWidgetBean, "No concept model rule found for this property.");
 				}
 
 				// The rest of the loop only deals with IS A relationships
-				final String destinationId = relationship.getSelectedValue().getId();
-				if (relationship.isIsA()) {
-					final String characteristicTypeId = relationship.getSelectedCharacteristicType().getId();
+				final String destinationId = relationshipWidgetBean.getSelectedValue().getId();
+				if (relationshipWidgetBean.isIsA()) {
+					final String characteristicTypeId = relationshipWidgetBean.getSelectedCharacteristicType().getId();
 					final String characteristicTypeLabel = conceptToLabelMap.getUnchecked(characteristicTypeId);
 					final Collection<String> parents = isaTypeToParentIdMap.get(characteristicTypeId);
 					if (parents.contains(destinationId)) {
-						reporter.error(relationship, "The concept has duplicate (%s) Is-a relationships.", characteristicTypeLabel);
+						reporter.error(relationshipWidgetBean, "The concept has duplicate (%s) Is-a relationships.", characteristicTypeLabel);
 					} else {
 						isaTypeToParentIdMap.put(characteristicTypeId, destinationId);
 					}
@@ -96,7 +96,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 
 					final String snomedConceptId = concept.getConceptId();
 					if (destinationId.equals(snomedConceptId)) {
-						reporter.error(relationship, "For Is-a relationships, the destination should not be the same as the edited concept.");
+						reporter.error(relationshipWidgetBean, "For Is-a relationships, the destination should not be the same as the edited concept.");
 					} else {
 						if (browser.getConcept(branch, snomedConceptId) == null) {
 							continue; // new concept. it does not exist in store. cannot cause cycle.
@@ -114,7 +114,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 								.getItems();
 						
 						if (snomedConcepts.size() != 0) {
-							reporter.error(relationship,
+							reporter.error(relationshipWidgetBean,
 									"For Is-a relationships, the destination should not be the descendant of the edited concept.");
 						}
 					}
