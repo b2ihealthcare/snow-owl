@@ -36,8 +36,8 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 		this(inferredTaxonomy, statedTaxonomy, component.getId(), component.isActive(), availableImages);
 	}
 	
-	public IconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomy, String conceptId, boolean active, Collection<String> availableImages) {
-		super(taxonomyBuilder, conceptId);
+	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, String conceptId, boolean active, Collection<String> availableImages) {
+		super(inferredTaxonomy, conceptId);
 		this.statedTaxonomy = statedTaxonomy;
 		this.active = active;
 		this.availableImages = availableImages;
