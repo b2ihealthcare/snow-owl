@@ -219,8 +219,8 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 			case COMPLEX_MAP:
 				props.put(SnomedRf2Headers.FIELD_MAP_GROUP, entry.getMapGroup());
 				props.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, entry.getMapPriority());
-				props.put(SnomedRf2Headers.FIELD_MAP_RULE, entry.getMapRule());
-				props.put(SnomedRf2Headers.FIELD_MAP_ADVICE, entry.getMapAdvice());
+				props.put(SnomedRf2Headers.FIELD_MAP_RULE, entry.getMapRule() != null ? entry.getMapRule() : "");
+				props.put(SnomedRf2Headers.FIELD_MAP_ADVICE, entry.getMapAdvice() != null ? entry.getMapAdvice() : "");
 				props.put(SnomedRf2Headers.FIELD_CORRELATION_ID, entry.getCorrelationId());
 			case SIMPLE_MAP:
 				props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
