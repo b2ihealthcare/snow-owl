@@ -70,31 +70,20 @@ public class DescriptionWidgetModel extends AllowedTypesWidgetModel {
 		return new DescriptionWidgetModel(LowerBound.OPTIONAL, UpperBound.MULTIPLE, ModelType.UNSANCTIONED, UnrestrictedStringSet.INSTANCE);
 	}
 	
-	private boolean preferredOnly;
-
 	private DescriptionWidgetModel(final LowerBound lowerBound, final UpperBound upperBound, final ModelType modelType, 
 			final Set<String> allowedTypeIds) {
 		
 		super(lowerBound, upperBound, modelType, allowedTypeIds);
 	}
 	
-	public boolean isPreferredOnly() {
-		return preferredOnly;
-	}
-	
-	public void setPreferredOnly(boolean preferredOnly) {
-		this.preferredOnly = preferredOnly;
-	}
-
 	/**
 	 * Checks if the specified description type matches the list of allowed types of this model.
 	 * 
 	 * @param typeId the SNOMED CT ID of the description type to check
-	 * @param preferred {@code true} if the description to match is a preferred term, {@code false} otherwise
 	 * @return {@code true} if this model is a match for the specified argument, {@code false} otherwise
 	 */
-	public boolean matches(final String typeId, final boolean preferred) {
-		return allowedTypeIds.contains(typeId) && (preferredOnly == preferred);
+	public boolean matches(final String typeId) {
+		return allowedTypeIds.contains(typeId);
 	}
 	
 	@Override

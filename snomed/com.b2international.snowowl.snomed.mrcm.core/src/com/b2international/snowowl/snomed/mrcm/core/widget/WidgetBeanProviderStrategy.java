@@ -217,7 +217,7 @@ public abstract class WidgetBeanProviderStrategy {
 			final boolean released = description.isReleased();
 			CaseSignificance caseSensitivity = description.getCaseSensitivity();
 			
-			final DescriptionWidgetModel matchingModel = conceptWidgetModel.getDescriptionContainerModel().getFirstMatching(typeId, preferred);
+			final DescriptionWidgetModel matchingModel = conceptWidgetModel.getDescriptionContainerModel().getFirstMatching(typeId);
 			final DescriptionWidgetBean matchingBean = new DescriptionWidgetBean(cwb, matchingModel, sctId, released, preferred);
 			
 			matchingBean.setSelectedType(typeId);
@@ -231,7 +231,7 @@ public abstract class WidgetBeanProviderStrategy {
 		
 		// Now create unpopulated beans for the rest of the models, except the unsanctioned and the ones expecting a preferred term
 		for (final DescriptionWidgetModel widgetModel : unusedModels) {
-			if (!widgetModel.isUnsanctioned() && !widgetModel.isPreferredOnly()) {
+			if (!widgetModel.isUnsanctioned()) {
 				
 				if (shouldSkipDescriptionModel(result, widgetModel)) {
 					continue;
@@ -287,7 +287,7 @@ public abstract class WidgetBeanProviderStrategy {
 			 * XXX: An existing description bean may satisfy multiple rules (even though only one is selected as its parent model). Skip
 			 * those who do, and treat all descriptions as not preferred.
 			 */
-			if (widgetModel.matches(createdBean.getSelectedTypeId(), false)) {
+			if (widgetModel.matches(createdBean.getSelectedTypeId())) {
 				return true;
 			}
 		}
