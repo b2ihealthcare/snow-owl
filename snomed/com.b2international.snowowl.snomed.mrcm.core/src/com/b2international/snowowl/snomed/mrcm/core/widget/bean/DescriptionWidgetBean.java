@@ -109,6 +109,7 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 		// XXX: no need to unregister these as we are pointing to ourselves
 		addPropertyChangeListener(PROP_SELECTED_TYPE, actionEnablingListener);
 		addPropertyChangeListener(PROP_TERM, actionEnablingListener);
+		addPropertyChangeListener(PROP_PREFERRED, actionEnablingListener);
 	}
 
 	@Override
@@ -176,14 +177,6 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 		final CaseSignificance oldCaseSensitivity = this.caseSensitivity;
 		this.caseSensitivity = newCaseSensitivity;
 		firePropertyChange(PROP_CASE_SENSITIVITY, oldCaseSensitivity, newCaseSensitivity);
-	}
-
-	@Override
-	public LeafWidgetBean onCloneAction() {
-		// Add to parent container, then set preferred term status
-		final DescriptionWidgetBean replicate = (DescriptionWidgetBean) super.onCloneAction();
-		replicate.setPreferred(this.isPreferred());
-		return replicate;
 	}
 
 	@Override

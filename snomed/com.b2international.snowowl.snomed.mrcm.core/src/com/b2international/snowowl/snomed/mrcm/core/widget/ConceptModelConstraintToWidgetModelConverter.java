@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
@@ -77,9 +76,6 @@ public class ConceptModelConstraintToWidgetModelConverter {
 			}});
 		}
 		
-		// Add preferred term rule
-		runnables.add(new Runnable() { @Override public void run() { descriptionWidgetModels.add(createPreferredTermDescriptionWidgetModel()); }});
-
 		ForkJoinUtils.runInParallel(runnables);
 		
 		//should be added in the very end of the process
@@ -199,15 +195,6 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		return new LongArrayTransformedToSet(ids);
 	}
 	
-	private static DescriptionWidgetModel createPreferredTermDescriptionWidgetModel() {
-		IClientSnomedComponentService snomedComponentService = ApplicationContext.getInstance().getService(IClientSnomedComponentService.class);
-		final DescriptionWidgetModel preferredTermModel = DescriptionWidgetModel
-				.createInfrastructureModel(snomedComponentService.getSynonymAndDescendantIds());
-
-		preferredTermModel.setPreferredOnly(true);
-		return preferredTermModel;
-	}
-
 	private static <T> List<T> newSynchronizedList() {
 		return Collections.synchronizedList(Lists.<T>newArrayList());
 	}
