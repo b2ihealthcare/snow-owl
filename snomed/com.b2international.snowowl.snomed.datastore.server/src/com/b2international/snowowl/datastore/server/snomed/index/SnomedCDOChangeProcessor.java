@@ -90,6 +90,7 @@ import com.b2international.snowowl.datastore.server.snomed.index.change.Constrai
 import com.b2international.snowowl.datastore.server.snomed.index.change.DescriptionAcceptabilityChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.DescriptionChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.IconChangeProcessor;
+import com.b2international.snowowl.datastore.server.snomed.index.change.RefSetMapTargetUpdateChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.RefSetMemberChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.RelationshipChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.TaxonomyChangeProcessor;
@@ -451,6 +452,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				.add(new IconChangeProcessor(branchPath, getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier))
 				.add(labelChangeProcessor)
 				.add(new RefSetMemberChangeProcessor())
+				.add(new RefSetMapTargetUpdateChangeProcessor(branchPath, index))
 				.add(new ConstraintChangeProcessor(branchPath, allConceptIds))
 				.build();
 		
