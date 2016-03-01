@@ -391,13 +391,6 @@ public interface ISnomedComponentService {
 	Multimap<String, String> getPreferredTermToIdsMapping(final IBranchPath branchPath, final String focusConceptId);
 	
 	/**
-	 * Returns with a mapping between concept FSNs and the concept IDs for all active concepts.
-	 * @param branchPath the branch path for the operation.
-	 * @param languageRefSetId the ID the language reference set which FSNs will be collected.
-	 */
-	Multimap<String, String> getFullySpecifiedNameToIdsMapping(final IBranchPath branchPath, final String languageRefSetId);
-	
-	/**
 	 * @param branchPath
 	 * @return
 	 */
