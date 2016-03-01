@@ -20,20 +20,34 @@ import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.commons.TimedProgressMonitorWrapper;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ValuedJob;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
 import com.b2international.snowowl.core.markers.MarkerManager;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.IClientSnomedComponentValidationService;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 /**
  * Evaluates all global validation constraints, then proceeds with evaluating all concept validation rules
@@ -45,7 +59,7 @@ public class GlobalValidationJob extends ValuedJob<Integer> {
 	private static final String[] EMPTY_ARRAY = {};
 	
 	private final IClientSnomedComponentValidationService validationService;
-	private Collection<String> globalValidationConstraintIds;
+	private final Collection<String> globalValidationConstraintIds;
 
 	public GlobalValidationJob(final String name, final Object family) {
 		this(name, family, EMPTY_ARRAY);
@@ -60,39 +74,87 @@ public class GlobalValidationJob extends ValuedJob<Integer> {
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
 		
-		final TimedProgressMonitorWrapper delegateMonitor = new TimedProgressMonitorWrapper(monitor);
+		final SubMonitor delegateMonitor = SubMonitor.convert(new TimedProgressMonitorWrapper(monitor), 100);
 		
-		try {
-			
-			final MarkerManager markerManager = ApplicationContext.getInstance().getService(MarkerManager.class);
-			final SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class);
-			final Collection<ComponentValidationDiagnostic> validationResults;
-			if (isEmpty(globalValidationConstraintIds)) {
-				validationResults = validationService.validateAll(delegateMonitor);
-			} else {
-				validationResults = validationService.validateGlobalConstraints(globalValidationConstraintIds, delegateMonitor);
-			}
-			
-			if (validationResults.size() == 1 && DiagnosticSeverity.CANCEL.equals(Iterables.get(validationResults, 0).getProblemMarkerSeverity())) {
-				return Status.CANCEL_STATUS;
-			}
-
-			final Collection<String> violatingComponentIds = newHashSet(); 
-			
-			for (final ComponentValidationDiagnostic diagnostic : validationResults) {
-				
-				if (!diagnostic.isOk()) {
-					violatingComponentIds.add(diagnostic.getId());
-				}
-				
-				markerManager.createValidationMarkerOnComponent(terminologyBrowser.getConcept(diagnostic.getId()), diagnostic);
-			}
-			
-			setValue(violatingComponentIds.size());
-		} finally {
-			delegateMonitor.done();
+		final Collection<ComponentValidationDiagnostic> validationResults;
+		
+		if (isEmpty(globalValidationConstraintIds)) {
+			validationResults = validationService.validateAll(delegateMonitor.newChild(90));
+		} else {
+			validationResults = validationService.validateGlobalConstraints(globalValidationConstraintIds, delegateMonitor.newChild(90));
 		}
 		
+		if (validationResults.size() == 1 && DiagnosticSeverity.CANCEL.equals(Iterables.getFirst(validationResults, null).getProblemMarkerSeverity())) {
+			return Status.CANCEL_STATUS;
+		}
+
+		final Collection<String> violatingComponentIds = collectViolatingComponentIds(validationResults, delegateMonitor.newChild(10));
+		
+		setValue(violatingComponentIds.size());
+		
 		return Status.OK_STATUS;
+	}
+
+	private Collection<String> collectViolatingComponentIds(final Collection<ComponentValidationDiagnostic> validationResults, final IProgressMonitor monitor) {
+		
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, 10);
+		final MarkerManager markerManager = ApplicationContext.getInstance().getService(MarkerManager.class);
+		
+		final Map<String, SnomedConceptIndexEntry> idToIndexEntryMap = getIdToIndexEntryMap(validationResults, subMonitor.newChild(5));
+		
+		final SubMonitor markerMonitor = subMonitor.newChild(5);
+		markerMonitor.setWorkRemaining(validationResults.size());
+		
+		final Collection<String> violatingComponentIds = newHashSet(); 
+		
+		for (final ComponentValidationDiagnostic diagnostic : validationResults) {
+			
+			if (!diagnostic.isOk()) {
+				violatingComponentIds.add(diagnostic.getId());
+			}
+			
+			markerManager.createValidationMarkerOnComponent(idToIndexEntryMap.get(diagnostic.getId()), diagnostic);
+			markerMonitor.worked(1);
+		}
+		
+		return violatingComponentIds;
+	}
+
+	private Map<String, SnomedConceptIndexEntry> getIdToIndexEntryMap(final Collection<ComponentValidationDiagnostic> validationResults, final IProgressMonitor monitor) {
+		
+		final Set<String> componentIds = FluentIterable.from(validationResults).transform(new Function<ComponentValidationDiagnostic, String>() {
+			@Override public String apply(final ComponentValidationDiagnostic input) {
+				return input.getId();
+			}
+		}).toSet();
+		
+		final String branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
+
+		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+			.setComponentIds(componentIds)
+			.setLocales(getLocales())
+			.setExpand("pt()")
+			.all()
+			.build(branchPath)
+			.executeSync(getEventbus());
+		
+		final Map<String, SnomedConceptIndexEntry> idToEntryMap = Maps.uniqueIndex(SnomedConceptIndexEntry.fromConcepts(concepts), new Function<SnomedConceptIndexEntry, String>() {
+			@Override
+			public String apply(final SnomedConceptIndexEntry input) {
+				return input.getId();
+			}
+		});
+		
+		monitor.worked(5);
+		
+		return idToEntryMap;
+	}
+
+	private IEventBus getEventbus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
 	}
 }
