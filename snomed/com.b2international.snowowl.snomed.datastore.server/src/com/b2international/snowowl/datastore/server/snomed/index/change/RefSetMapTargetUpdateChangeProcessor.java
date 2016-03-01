@@ -25,7 +25,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -96,12 +95,8 @@ public class RefSetMapTargetUpdateChangeProcessor extends ChangeSetProcessorBase
 	}
 
 	private boolean hasChanged(ICDOCommitChangeSet commitChangeSet, CDOObject object, final EStructuralFeature feature) {
-		return Iterables.any(commitChangeSet.getRevisionDeltas().get(object.cdoID()).getFeatureDeltas(), new Predicate<CDOFeatureDelta>() {
-			@Override
-			public boolean apply(CDOFeatureDelta input) {
-				return input.getFeature().equals(feature);
-			}
-		});
+		final CDORevisionDelta delta = commitChangeSet.getRevisionDeltas().get(object.cdoID());
+		return delta != null && delta.getFeatureDelta(feature) != null;
 	}
 	
 	private static class RefSetMemberMapTargetUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
