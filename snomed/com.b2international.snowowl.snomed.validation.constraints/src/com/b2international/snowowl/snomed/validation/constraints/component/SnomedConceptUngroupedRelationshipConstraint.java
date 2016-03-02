@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.validation.constraints.component;
 
-import static com.b2international.commons.CompareUtils.isEmpty;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.HAS_ACTIVE_INGREDIENT;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.HAS_DOSE_FORM;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.LATERALITY;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PART_OF;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +43,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
@@ -57,49 +60,63 @@ public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValid
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptUngroupedRelationshipConstraint";
 	
-	private static final Set<Long> UNGROUPED_RELATIONSHIP_TYPES = ImmutableSet.of(
-			116680003L, 123005000L, 272741003L, 127489000L, 411116001L);
+	private static final Set<String> UNGROUPED_RELATIONSHIP_TYPES = ImmutableSet.of(IS_A, PART_OF, LATERALITY, HAS_ACTIVE_INGREDIENT, HAS_DOSE_FORM);
 	
 	@Override
-	public ComponentValidationDiagnostic validate(IBranchPath branchPath, SnomedConceptIndexEntry component) {
-		SnomedIndexServerService indexService = (SnomedIndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
-		DocIdCollector collector = DocIdCollector.create(indexService.maxDoc(branchPath));
+	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
+		
+		final SnomedIndexServerService indexService = getIndexService();
+		final DocIdCollector collector = DocIdCollector.create(indexService.maxDoc(branchPath));
+		
 		final SnomedQueryBuilder relationshipTypeQuery = SnomedMappings.newQuery();
-		for (Long ungroupedRelationshipTypeId : UNGROUPED_RELATIONSHIP_TYPES) {
+		for (final String ungroupedRelationshipTypeId : UNGROUPED_RELATIONSHIP_TYPES) {
 			relationshipTypeQuery.relationshipType(ungroupedRelationshipTypeId);
 		}
-		Query query = SnomedMappings.newQuery()
+		
+		final Query query = SnomedMappings.newQuery()
 				.active()
 				.relationshipSource(component.getId())
 				.and(relationshipTypeQuery.matchAny())
 				.matchAll();
+		
 		indexService.search(branchPath, query, collector);
+		
 		try {
-			List<ComponentValidationDiagnostic> diagnostics = Lists.newArrayList();
-			DocIdsIterator iterator = collector.getDocIDs().iterator();
+			
+			final List<ComponentValidationDiagnostic> diagnostics = Lists.newArrayList();
+			final DocIdsIterator iterator = collector.getDocIDs().iterator();
+
 			while (iterator.next()) {
 				final Document doc = indexService.document(branchPath, iterator.getDocID(), SnomedMappings.fieldsToLoad().id().relationshipType().relationshipGroup().build());
-				int relationshipGroup = SnomedMappings.relationshipGroup().getValue(doc);
+				final int relationshipGroup = SnomedMappings.relationshipGroup().getValue(doc);
 				if (relationshipGroup != 0) {
-					final long relationshipTypeId = SnomedMappings.relationshipType().getValue(doc);
-					final String relationshipTypeLabel = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, String.valueOf(relationshipTypeId));
-					final String relationshipId = SnomedMappings.id().getValueAsString(doc);
-					final String relationshipLabel = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, relationshipId);
-					final String errorMessage = "'" + component.getLabel() + "' has a grouped relationship '" + relationshipLabel 
-							+ "' of the type '" + relationshipTypeLabel + "' that must always be ungrouped.";
+					final String errorMessage = createErrorMessage(doc, component, branchPath);
 					diagnostics.add(new ComponentValidationDiagnosticImpl(component.getId(), errorMessage, ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));
 				}
 			}
 			
-			if (isEmpty(diagnostics)) {
+			if (diagnostics.isEmpty()) {
 				return createOk(component.getId(), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
 			} else {
 				return new ComponentValidationDiagnosticImpl(component.getId(), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, diagnostics);
 			}
 			
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new IndexException("Error when evaluating validation constraint.", e);
 		}
+	}
+
+	private String createErrorMessage(final Document doc, final SnomedConceptIndexEntry component, final IBranchPath branchPath) {
+		final String relationshipTypeLabel = getConceptLabel(String.valueOf(SnomedMappings.relationshipType().getValue(doc)), branchPath);
+		return String.format("'%s' has a grouped relationship of the type '%s' that must always be ungrouped.", component.getLabel(), relationshipTypeLabel);
+	}
+
+	private String getConceptLabel(final String conceptId, final IBranchPath branchPath) {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
+	}
+
+	private SnomedIndexServerService getIndexService() {
+		return (SnomedIndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
 	}
 
 }
