@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.validation.constraints.component;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -28,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 
 /**
  * A concept cannot be related to itself via an active relationship.
@@ -40,24 +39,28 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 	
 	@Override
 	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(component, "component");
 		final SnomedTaxonomyService taxonomyService = getServiceForClass(SnomedTaxonomyService.class);
 		final String conceptId = component.getId();
 
 		if (isConceptReferenceItself(branchPath, taxonomyService, conceptId)) {
 			final SnomedStatementBrowser statementBrowser = getServiceForClass(SnomedStatementBrowser.class);
-			for (final SnomedRelationshipIndexEntry statement : statementBrowser.getOutboundStatements(branchPath, component)) {
-				if (statement.isActive() && statement.getValueId().equals(conceptId)) {
-					final String relationshipLabel = ApplicationContext.getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(branchPath, statement.getId());
-					final String message = "'" + component.getLabel() + "' has an active relationship '" + relationshipLabel + "' which points to itself.";
-					return new ComponentValidationDiagnosticImpl(conceptId, message, ID, CONCEPT_NUMBER, error());
+			for (final SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatements(branchPath, component)) {
+				if (relationship.isActive() && relationship.getValueId().equals(conceptId)) {
+					return new ComponentValidationDiagnosticImpl(conceptId, createErrorMessage(component, relationship, branchPath), ID, CONCEPT_NUMBER, error());
 				}
 			}
 		}
 		
-			
 		return createOk(conceptId, ID, CONCEPT_NUMBER);
+	}
+
+	private String createErrorMessage(final SnomedConceptIndexEntry component, final SnomedRelationshipIndexEntry relationship, final IBranchPath branchPath) {
+		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(),
+				getRelationshipTypeLabel(relationship, branchPath));
+	}
+
+	private String getRelationshipTypeLabel(final SnomedRelationshipIndexEntry relationship, final IBranchPath branchPath) {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, relationship.getAttributeId());
 	}
 
 	private boolean isConceptReferenceItself(final IBranchPath branchPath, final SnomedTaxonomyService taxonomyService, final String conceptId) {
