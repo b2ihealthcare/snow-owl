@@ -52,8 +52,11 @@ public class MrcmCommandProvider implements CommandProvider {
 			if ("import".equals(nextArgument)) {
 				_import(interpreter);
 				return;
-			} else if ("export".equals(nextArgument)) {
-				_export(interpreter);
+			} else if ("exportXMI".equals(nextArgument)) {
+				_exportXmi(interpreter);
+				return;
+			} else if ("exportCSV".equals(nextArgument)) {
+				_exportCsv(interpreter);
 				return;
 			} else {
 				interpreter.println(getHelp());
@@ -96,7 +99,7 @@ public class MrcmCommandProvider implements CommandProvider {
 		
 	}
 
-	public synchronized void _export(final CommandInterpreter interpreter) {
+	public synchronized void _exportXmi(final CommandInterpreter interpreter) {
 
 		final String destinationFolder = interpreter.nextArgument();
 		
@@ -115,7 +118,7 @@ public class MrcmCommandProvider implements CommandProvider {
 		// final String userId = authenticator.getUsername();
 		final String user = SpecialUserStore.SYSTEM_USER_NAME;
 
-		interpreter.println("Exporting MRCM rules...");
+		interpreter.println("Exporting MRCM rules (XMI)...");
 		
 		final Path outputFolder = Paths.get(destinationFolder);
 		checkOutputFolder(outputFolder);
@@ -123,7 +126,40 @@ public class MrcmCommandProvider implements CommandProvider {
 		
 		try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
 			new XMIMrcmExporter().doExport(user, stream);
-			interpreter.println("Exported MRCM rules to " + exportPath);
+			interpreter.println("Exported MRCM rules to " + exportPath + " in XMI format.");
+		} catch (IOException e) {
+			interpreter.printStackTrace(e);
+		}
+	}
+	
+	public synchronized void _exportCsv(final CommandInterpreter interpreter) {
+
+		final String destinationFolder = interpreter.nextArgument();
+		
+		if (StringUtils.isEmpty(destinationFolder)) {
+			interpreter.println("Export destination folder should be specified.");
+			return;
+		}
+		
+		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
+		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
+		if (authenticator.authenticate(interpreter) && !authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.MRCM_EXPORT))) {
+			interpreter.print("User is unauthorized to export MRCM rules.");
+			return;
+		}
+		
+		// final String userId = authenticator.getUsername();
+		final String user = SpecialUserStore.SYSTEM_USER_NAME;
+
+		interpreter.println("Exporting MRCM rules (CSV)...");
+		
+		final Path outputFolder = Paths.get(destinationFolder);
+		checkOutputFolder(outputFolder);
+		final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + ".csv");
+		
+		try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
+			new CsvMrcmExporter().doExport(user, stream);
+			interpreter.println("Exported MRCM rules to " + exportPath + " in CSV format.");
 		} catch (IOException e) {
 			interpreter.printStackTrace(e);
 		}
