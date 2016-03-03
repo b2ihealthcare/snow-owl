@@ -22,3 +22,4 @@ Require-Bundle: com.google.guava;bundle-version="[15.0.0,16.0.0)",
  com.b2international.snowowl.snomed.mrcm.core,
  com.b2international.snowowl.snomed.mrcm.model
 Export-Package: com.b2international.snowowl.snomed.validation
+Import-Package: org.slf4j
