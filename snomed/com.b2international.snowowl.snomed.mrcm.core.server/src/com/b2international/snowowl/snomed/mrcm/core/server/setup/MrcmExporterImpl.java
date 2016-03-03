@@ -15,28 +15,30 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.setup;
 
-import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
+import java.io.OutputStream;
+
+import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExporter;
+import com.b2international.snowowl.snomed.mrcm.core.server.CsvMrcmExporter;
+import com.b2international.snowowl.snomed.mrcm.core.server.XMIMrcmExporter;
 
 /**
- * MRCM Exporter config job to register the service.
+ * MRCM Exporter to delegate the export based on the export format.
+ * 
+ * @author bbanfai
  * @since 4.4
  */
-public class MrcmExporterConfigJob extends AbstractServerServiceConfigJob<MrcmExporter> {
-
-	public MrcmExporterConfigJob() {
-		super("Configuring MRCM exporter...", "mrcm");
-	}
+public class MrcmExporterImpl implements MrcmExporter {
 
 	@Override
-	protected Class<MrcmExporter> getServiceClass() {
-		return MrcmExporter.class;
-	}
-
-	@Override
-	protected MrcmExporter createServiceImplementation() throws SnowowlServiceException {
-		return new MrcmExporterImpl();
+	public void doExport(String user, OutputStream content, MrcmExportFormat exportFormat) {
+		if (exportFormat == MrcmExportFormat.XMI) {
+			new XMIMrcmExporter().doExport(user, content);
+		} else if (exportFormat == MrcmExportFormat.CSV) {
+			new CsvMrcmExporter().doExport(user, content);
+		} else {
+			throw new UnsupportedOperationException("No exporter is registered for " + exportFormat);
+		}
 	}
 
 }

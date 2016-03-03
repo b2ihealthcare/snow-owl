@@ -15,24 +15,9 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.io;
 
-import java.io.OutputStream;
-
 /**
- * @since 4.4
+ * The export format for the MRCM rules.
  */
-public interface MrcmExporter {
-
-	/**
-	 * Exports the current state of the MRCM rules.
-	 * 
-	 * @param user
-	 *            - the authenticated user to perform the export
-	 * @param stream
-	 *            - the outputstream to write MRCM release content to
-	 *            
-	 * @param exportFormat the export format to use           
-	 * @return - the exported file path
-	 */
-	void doExport(String user, OutputStream content, final MrcmExportFormat exportFormat);
-
+public enum MrcmExportFormat {
+	XMI, CSV
 }
