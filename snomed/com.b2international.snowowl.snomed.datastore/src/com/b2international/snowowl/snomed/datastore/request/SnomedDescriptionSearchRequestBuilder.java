@@ -42,7 +42,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	}
 	
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
-		return addOption(OptionKey.TERM, termFilter);
+		return addOption(OptionKey.TERM, termFilter == null ? termFilter : termFilter.trim());
 	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByConceptEscg(String conceptEscgFilter) {
