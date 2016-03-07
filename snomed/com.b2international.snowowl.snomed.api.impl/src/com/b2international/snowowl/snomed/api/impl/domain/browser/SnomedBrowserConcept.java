@@ -168,4 +168,31 @@ public class SnomedBrowserConcept extends SnomedBrowserComponent implements ISno
 		builder.append("]");
 		return builder.toString();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((conceptId == null) ? 0 : conceptId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SnomedBrowserConcept other = (SnomedBrowserConcept) obj;
+		if (conceptId == null) {
+			if (other.conceptId != null)
+				return false;
+		} else if (!conceptId.equals(other.conceptId))
+			return false;
+		return true;
+	}
+	
 }
