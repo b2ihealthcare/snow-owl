@@ -238,8 +238,10 @@ public class SnomedIdentifiers {
 	 * Returns the component category for a SNOMED CT identifier, or <code>null</code> in case of invalid 
 	 * @param componentId
 	 * @return
+	 * @throws IllegalArgumentException - if the given component ID is not a valid SNOMED CT Component Identifier
 	 */
 	public static ComponentCategory getComponentCategory(String componentId) {
+		validate(componentId);
 		return ComponentCategory.getByOrdinal(getComponentIdentifier(componentId));
 	}
 	
