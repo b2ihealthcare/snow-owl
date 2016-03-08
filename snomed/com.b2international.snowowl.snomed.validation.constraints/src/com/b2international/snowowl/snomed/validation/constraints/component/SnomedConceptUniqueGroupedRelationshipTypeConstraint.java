@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.validation.constraints.component;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -53,9 +54,18 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 		}
 		
 		@Override
-		public boolean apply(final SnomedRelationshipIndexEntry input) {
-			for (final SnomedRelationshipIndexEntry relationship : groupToRelationshipsMultimap.get(input.getGroup())) {
-				if (relationship != input && relationshipsEquivalent(input, relationship)) {
+		public boolean apply(final SnomedRelationshipIndexEntry rship) {
+			
+			Collection<SnomedRelationshipIndexEntry> relationshipsInGroup = groupToRelationshipsMultimap.get(rship.getGroup());
+			List<SnomedRelationshipIndexEntry> relationshipsInGroupWithSameCharType = FluentIterable.from(relationshipsInGroup).filter(new Predicate<SnomedRelationshipIndexEntry>() {
+				@Override
+				public boolean apply(SnomedRelationshipIndexEntry input) {
+					return input.getCharacteristicType() == rship.getCharacteristicType();
+				}
+			}).toList();
+			
+			for (final SnomedRelationshipIndexEntry relationship : relationshipsInGroupWithSameCharType) {
+				if (relationship != rship && relationshipsEquivalent(rship, relationship)) {
 					return false;
 				}
 			}
@@ -68,10 +78,6 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 					return false;
 				}
 			} else if (!r1.getAttributeId().equals(r2.getAttributeId())) {
-				return false;
-			}
-			
-			if (!r1.getCharacteristicTypeId().equals(r2.getCharacteristicTypeId())) {
 				return false;
 			}
 			
