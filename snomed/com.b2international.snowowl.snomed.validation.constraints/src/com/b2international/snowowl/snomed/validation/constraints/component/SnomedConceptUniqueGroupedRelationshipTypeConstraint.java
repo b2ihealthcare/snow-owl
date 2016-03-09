@@ -20,16 +20,18 @@ import static com.b2international.commons.CompareUtils.isEmpty;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ArrayListMultimap;
@@ -45,26 +47,25 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptUniqueGroupedRelationshipTypeConstraint";
 	
-	private static final class UniqueRelationshipTypePredicate implements Predicate<SnomedRelationshipIndexEntry> {
+	private static final class UniqueRelationshipTypePredicate implements Predicate<ISnomedRelationship> {
 		
-		private final Multimap<Integer, SnomedRelationshipIndexEntry> groupToRelationshipsMultimap;
+		private final Multimap<Integer, ISnomedRelationship> groupToRelationshipsMultimap;
 
-		private UniqueRelationshipTypePredicate(final Multimap<Integer, SnomedRelationshipIndexEntry> groupToRelationshipMultimap) {
+		private UniqueRelationshipTypePredicate(final Multimap<Integer, ISnomedRelationship> groupToRelationshipMultimap) {
 			this.groupToRelationshipsMultimap = groupToRelationshipMultimap;
 		}
 		
 		@Override
-		public boolean apply(final SnomedRelationshipIndexEntry rship) {
+		public boolean apply(final ISnomedRelationship rship) {
 			
-			Collection<SnomedRelationshipIndexEntry> relationshipsInGroup = groupToRelationshipsMultimap.get(rship.getGroup());
-			List<SnomedRelationshipIndexEntry> relationshipsInGroupWithSameCharType = FluentIterable.from(relationshipsInGroup).filter(new Predicate<SnomedRelationshipIndexEntry>() {
-				@Override
-				public boolean apply(SnomedRelationshipIndexEntry input) {
+			Collection<ISnomedRelationship> relationshipsInGroup = groupToRelationshipsMultimap.get(rship.getGroup());
+			List<ISnomedRelationship> relationshipsInGroupWithSameCharType = FluentIterable.from(relationshipsInGroup).filter(new Predicate<ISnomedRelationship>() {
+				@Override public boolean apply(ISnomedRelationship input) {
 					return input.getCharacteristicType() == rship.getCharacteristicType();
 				}
 			}).toList();
 			
-			for (final SnomedRelationshipIndexEntry relationship : relationshipsInGroupWithSameCharType) {
+			for (final ISnomedRelationship relationship : relationshipsInGroupWithSameCharType) {
 				if (relationship != rship && relationshipsEquivalent(rship, relationship)) {
 					return false;
 				}
@@ -72,12 +73,12 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 			return true;
 		}
 
-		private boolean relationshipsEquivalent(final SnomedRelationshipIndexEntry r1, final SnomedRelationshipIndexEntry r2) {
-			if (r1.getAttributeId() == null) {
-				if (r2.getAttributeId() != null) {
+		private boolean relationshipsEquivalent(final ISnomedRelationship r1, final ISnomedRelationship r2) {
+			if (r1.getTypeId() == null) {
+				if (r2.getTypeId() != null) {
 					return false;
 				}
-			} else if (!r1.getAttributeId().equals(r2.getAttributeId())) {
+			} else if (!r1.getTypeId().equals(r2.getTypeId())) {
 				return false;
 			}
 			
@@ -93,24 +94,29 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 	@Override
 	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
 		
-		final SnomedStatementBrowser statementBrowser = getStatementBrowser();
+		SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
+			.all()
+			.filterByActive(true)
+			.filterBySource(component.getId())
+			.setExpand("type(expand(pt()))")
+			.setLocales(getLocales())
+			.build(branchPath.getPath())
+			.executeSync(getBus());
+			
+		final Multimap<Integer, ISnomedRelationship> groupToRelationshipsMultimap = ArrayListMultimap.create();
 		
-		final List<SnomedRelationshipIndexEntry> outboundStatements = statementBrowser.getOutboundStatements(branchPath, component);
-		final Multimap<Integer, SnomedRelationshipIndexEntry> groupToRelationshipsMultimap = ArrayListMultimap.create();
-		
-		// populate map by groups, omit inactive relationships and ungrouped relationships (if group equals with 0 -> relationship is ungrouped)
-		for (final SnomedRelationshipIndexEntry relationship : outboundStatements) {
-			if (relationship.isActive() && relationship.getGroup() > 0) {
+		for (ISnomedRelationship relationship : relationships.getItems()) {
+			if (relationship.getGroup() > 0) {
 				groupToRelationshipsMultimap.put(relationship.getGroup(), relationship);
 			}
 		}
 
-		final List<SnomedRelationshipIndexEntry> invalidRelationships = FluentIterable.from(groupToRelationshipsMultimap.values())
+		final List<ISnomedRelationship> invalidRelationships = FluentIterable.from(groupToRelationshipsMultimap.values())
 				.filter(Predicates.not(new UniqueRelationshipTypePredicate(groupToRelationshipsMultimap))).toList();
 
 		final List<ComponentValidationDiagnostic> diagnostics = Lists.newArrayList();
 
-		for (final SnomedRelationshipIndexEntry relationship : invalidRelationships) {
+		for (final ISnomedRelationship relationship : invalidRelationships) {
 			final String message = createErrorMessage(component, relationship, branchPath);
 			diagnostics.add(new ComponentValidationDiagnosticImpl(component.getId(), message, ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));
 		}
@@ -123,16 +129,12 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 		
 	}
 
-	private String createErrorMessage(final SnomedConceptIndexEntry component, final SnomedRelationshipIndexEntry relationship, final IBranchPath branchPath) {
+	private String createErrorMessage(final SnomedConceptIndexEntry component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
 		return String.format("'%s' has a relationship of type '%s' which is non-unique within its group (%s).", component.getLabel(),
-				getRelationshipTypeLabel(relationship, branchPath), relationship.getGroup());
+				relationship.getTypeConcept().getPt().getTerm(), relationship.getGroup());
 	}
 
-	private SnomedStatementBrowser getStatementBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
-	}
-	
-	private String getRelationshipTypeLabel(final SnomedRelationshipIndexEntry relationship, final IBranchPath branchPath) {
-		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, relationship.getAttributeId());
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
 	}
 }
