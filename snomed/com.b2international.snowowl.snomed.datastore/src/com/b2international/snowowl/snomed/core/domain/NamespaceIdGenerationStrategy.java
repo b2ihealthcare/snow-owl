@@ -42,8 +42,7 @@ public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 	@Override
 	public String generate(BranchContext context) {
 		final SnomedIdentifiers snomedIdentifiers = context.service(SnomedIdentifiers.class);
-		// TODO use reserve instead?
-		final String componentId = snomedIdentifiers.generate(getNamespaceIdOrDefault(), category);
+		final String componentId = snomedIdentifiers.reserve(getNamespaceIdOrDefault(), category);
 		return componentId;
 	}
 
