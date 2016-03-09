@@ -24,7 +24,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.index.DocIdCollector.create;
 import static com.b2international.snowowl.datastore.index.IndexUtils.isEmpty;
 import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
-import static com.b2international.snowowl.datastore.index.IndexUtils.parallelForEachDocId;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.DEFINING_CHARACTERISTIC_TYPES;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
@@ -42,7 +41,6 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.toMap;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
-import static com.google.common.collect.Sets.newConcurrentHashSet;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.text.NumberFormat.getIntegerInstance;
 import static java.util.Collections.emptyMap;
@@ -186,7 +184,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
@@ -1768,84 +1765,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				}
 			}
 		}
-	}
-	
-	@Override
-	public Multimap<String, String> getFullySpecifiedNameToIdsMapping(final IBranchPath branchPath, final String languageRefSetId) {
-		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(languageRefSetId, "languageRefSetId");
-
-		final Query activePreferredLanguageMembersQuery = SnomedMappings.newQuery().and(PREFERRED_LANGUAGE_QUERY).active().memberRefSetId(languageRefSetId).matchAll();
-		final Query activeFsnsQuery = SnomedMappings.newQuery().active().descriptionType(Concepts.FULLY_SPECIFIED_NAME).matchAll();
-		
-		final Multimap<String, String> fsnToIdsMapping = Multimaps.synchronizedSetMultimap(HashMultimap.<String, String>create());
-
-		final int maxDoc = getIndexServerService().maxDoc(branchPath);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		final AtomicReference<IndexSearcher> searcher = new AtomicReference<IndexSearcher>();
-		
-		try {
-			
-			manager = getIndexServerService().getManager(branchPath);
-			searcher.set(manager.acquire());
-
-			final Collection<Long> preferredDescriptionIds = newConcurrentHashSet();
-			
-			final DocIdCollector preferredMemberDocIdCollector = DocIdCollector.create(maxDoc);
-			getIndexServerService().search(branchPath, activePreferredLanguageMembersQuery, preferredMemberDocIdCollector);
-			parallelForEachDocId(preferredMemberDocIdCollector.getDocIDs(), new IndexUtils.DocIdProcedure() {
-				@Override
-				public void apply(final int docId) throws IOException {
-					final Document doc = searcher.get().doc(docId, MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD);
-					preferredDescriptionIds.add(SnomedMappings.memberReferencedComponentId().getValue(doc));
-				}
-			});
-
-			final LongSet descriptionIds = newLongSet(preferredDescriptionIds);
-			final DocIdCollector fsnDocIdCollector = DocIdCollector.create(maxDoc);
-			final LongCollection activeConceptIds = getTerminologyBrowser().getAllActiveConceptIds(branchPath);
-
-			getIndexServerService().search(branchPath, activeFsnsQuery, fsnDocIdCollector);
-			parallelForEachDocId(fsnDocIdCollector.getDocIDs(), new IndexUtils.DocIdProcedure() {
-				@Override
-				public void apply(final int docId) throws IOException {
-					final Document doc = searcher.get().doc(docId, FSN_DESCRIPTION_FIELDS_TO_LOAD);
-					final long descriptionId = SnomedMappings.id().getValue(doc);
-					
-					//FSN is applicable for the specified language
-					if (descriptionIds.contains(descriptionId)) {
-						final long conceptId = SnomedMappings.descriptionConcept().getValue(doc);
-						
-						if (activeConceptIds.contains(conceptId)) {
-							final String term = SnomedMappings.descriptionTerm().getValue(doc);
-							fsnToIdsMapping.put(term, Long.toString(conceptId));
-						}
-					}
-					
-				}
-			});
-			
-		} catch (final IOException e) {
-			throw new IndexException("Error while creating FSN to concept IDs mapping.", e);
-		} finally {
-			if (null != manager && null != searcher.get()) {
-				try {
-					manager.release(searcher.get());
-				} catch (final IOException e) {
-					try {
-						manager.release(searcher.get());
-					} catch (final IOException e1) {
-						e.addSuppressed(e1);
-					}
-					throw new IndexException("Error while releasing index searcher.", e);
-				}
-			}
-		}
-
-		return HashMultimap.create(fsnToIdsMapping);
-		
 	}
 	
 	@Override

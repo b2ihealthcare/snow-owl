@@ -56,8 +56,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.typeId(SnomedMappings.relationshipType().getValueAsString(doc))
 				.destinationId(SnomedMappings.relationshipDestination().getValueAsString(doc))
 				.characteristicTypeId(SnomedMappings.relationshipCharacteristicType().getValueAsString(doc))
-				.group(SnomedMappings.relationshipGroup().getValue(doc).byteValue())
-				.unionGroup(SnomedMappings.relationshipUnionGroup().getValue(doc).byteValue())
+				.group(SnomedMappings.relationshipGroup().getValue(doc))
+				.unionGroup(SnomedMappings.relationshipUnionGroup().getValue(doc))
 				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
 				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
 				.modifierId(BooleanUtils.valueOf(SnomedMappings.relationshipUniversal().getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
@@ -74,8 +74,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
 				.characteristicTypeId(input.getCharacteristicType().getConceptId())
-				.group(Integer.valueOf(input.getGroup()).byteValue())
-				.unionGroup(Integer.valueOf(input.getUnionGroup()).byteValue())
+				.group(input.getGroup())
+				.unionGroup(input.getUnionGroup())
 				.active(input.isActive())
 				.released(input.isReleased())
 				.modifierId(input.getModifier().getConceptId())
@@ -99,8 +99,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.typeId(relationship.getType().getId())
 				.destinationId(relationship.getDestination().getId())
 				.characteristicTypeId(relationship.getCharacteristicType().getId())
-				.group(Integer.valueOf(relationship.getGroup()).byteValue())
-				.unionGroup(Integer.valueOf(relationship.getUnionGroup()).byteValue())
+				.group(relationship.getGroup())
+				.unionGroup(relationship.getUnionGroup())
 				.released(relationship.isReleased())
 				.modifierId(relationship.getModifier().getId())
 				.destinationNegated(relationship.isDestinationNegated())
@@ -125,8 +125,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		private String characteristicTypeId;
 		private String modifierId;
 
-		private byte group;
-		private byte unionGroup;
+		private int group;
+		private int unionGroup;
 
 		private boolean destinationNegated;
 		
@@ -164,12 +164,12 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 			return getSelf();
 		}
 
-		public Builder group(final byte group) {
+		public Builder group(final int group) {
 			this.group = group;
 			return getSelf();
 		}
 
-		public Builder unionGroup(final byte unionGroup) {
+		public Builder unionGroup(final int unionGroup) {
 			this.unionGroup = unionGroup;
 			return getSelf();
 		}
@@ -203,8 +203,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	private final String destinationId;
 	private final String characteristicTypeId;
 	private final String modifierId;
-	private final byte group;
-	private final byte unionGroup;
+	private final int group;
+	private final int unionGroup;
 	private final boolean destinationNegated;
 
 	private SnomedRelationshipIndexEntry(final String id, 
@@ -220,8 +220,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 			final String destinationId,
 			final String characteristicTypeId,
 			final String modifierId,
-			final byte group,
-			final byte unionGroup,
+			final int group,
+			final int unionGroup,
 			final boolean destinationNegated) {
 
 		super(id, 
@@ -234,8 +234,8 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				active, 
 				effectiveTimeLong);
 
-		checkArgument(group >= 0, "Group number '%s' may not be negative.");
-		checkArgument(unionGroup >= 0, "Union group number '%s' may not be negative.");
+		checkArgument(group >= 0, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
+		checkArgument(unionGroup >= 0, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
 
 		this.sourceId = checkNotNull(sourceId, "Relationship source identifier may not be null.");
 		this.destinationId = checkNotNull(destinationId, "Relationship destination identifier may not be null.");
@@ -327,14 +327,14 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return the relationship group
 	 */
-	public byte getGroup() {
+	public int getGroup() {
 		return group;
 	}
 
 	/**
 	 * @return the relationship union group
 	 */
-	public byte getUnionGroup() {
+	public int getUnionGroup() {
 		return unionGroup;
 	}
 
