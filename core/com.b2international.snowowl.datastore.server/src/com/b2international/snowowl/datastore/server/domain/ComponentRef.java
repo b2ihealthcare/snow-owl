@@ -15,27 +15,19 @@
  */
 package com.b2international.snowowl.datastore.server.domain;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.domain.IStorageRef;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 1.0
+ * @deprecated - will be removed in 4.7, use {@link Request} API instead
  */
 public class ComponentRef extends StorageRef implements InternalComponentRef {
 
 	private final String componentId;
 
-	public ComponentRef(IStorageRef sourceRef, String newComponentId) {
-		this(checkNotNull(sourceRef, "sourceRef").getShortName(), sourceRef.getBranchPath(), newComponentId);
-		final InternalStorageRef ref = ClassUtils.checkAndCast(sourceRef, InternalStorageRef.class);
-		setBranch(ref.getBranch());
-	}
-
-	public ComponentRef(String codeSystem, String branchPath, String componentId) {
-		super(codeSystem, branchPath);
+	public ComponentRef(String repositoryId, String branchPath, String componentId) {
+		super(repositoryId, branchPath);
 		this.componentId = componentId;
 	}
 
@@ -47,7 +39,7 @@ public class ComponentRef extends StorageRef implements InternalComponentRef {
 	@Override
 	public final int compareTo(final IComponentRef other) {
 		int result = 0;
-		if (result == 0) { result = getShortName().compareTo(other.getShortName()); }
+		if (result == 0) { result = getRepositoryId().compareTo(other.getRepositoryId()); }
 		if (result == 0) { result = getBranchPath().compareTo(other.getBranchPath()); }
 		if (result == 0) { result = getComponentId().compareTo(other.getComponentId()); }
 		return result;
@@ -56,8 +48,8 @@ public class ComponentRef extends StorageRef implements InternalComponentRef {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("ComponentRef [getShortName()=");
-		builder.append(getShortName());
+		builder.append("ComponentRef [getRepositoryId()=");
+		builder.append(getRepositoryId());
 		builder.append(", getBranchPath()=");
 		builder.append(getBranchPath());
 		builder.append(", componentId=");

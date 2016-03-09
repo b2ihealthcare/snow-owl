@@ -317,7 +317,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
+		final StorageRef ref = new StorageRef(repositoryId, branchPath);
 		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.FSN, offset, limit);
 	}
 
@@ -363,7 +363,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		final StorageRef ref = new StorageRef(codeSystemShortName, branchPath);
+		final StorageRef ref = new StorageRef(repositoryId, branchPath);
 		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.PT, offset, limit);
 	}
 
