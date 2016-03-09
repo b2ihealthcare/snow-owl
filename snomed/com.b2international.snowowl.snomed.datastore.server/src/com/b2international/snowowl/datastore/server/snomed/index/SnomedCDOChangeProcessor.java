@@ -79,7 +79,6 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -594,8 +593,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	private boolean releaseSupported(final ChangeSetProcessor<SnomedDocumentBuilder> processor) {
-		return processor instanceof ConceptChangeProcessor || processor instanceof DescriptionChangeProcessor
-				|| processor instanceof RelationshipChangeProcessor;
+		return processor instanceof ConceptChangeProcessor || processor instanceof DescriptionChangeProcessor || processor instanceof RelationshipChangeProcessor;
 	}
 
 	private boolean releasable(final Long storageKey) {
@@ -604,8 +602,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		while (!StringUtils.isEmpty(currentBranchPath.getParentPath())) {
 			currentBranchPath = currentBranchPath.getParent();
 
-			final TopDocs topDocs = index.search(currentBranchPath, Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
-			if (!IndexUtils.isEmpty(topDocs)) {
+			final int hitCount = index.getTotalHitCount(currentBranchPath, Mappings.newQuery().storageKey(storageKey).matchAll());
+			if (hitCount > 0) {
 				return false;
 			}
 		}
