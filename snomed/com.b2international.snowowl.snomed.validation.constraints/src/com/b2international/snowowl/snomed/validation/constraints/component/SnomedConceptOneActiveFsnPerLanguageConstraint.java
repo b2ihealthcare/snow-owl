@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -98,10 +97,6 @@ public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentVal
 
 	private String getConceptLabel(final String conceptId, final IBranchPath branchPath) {
 		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
-	}
-	
-	private IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
 }

@@ -15,19 +15,21 @@
  */
 package com.b2international.snowowl.snomed.validation.constraints.component;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 
+import java.util.List;
+
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * A concept cannot be related to itself via an active relationship.
@@ -39,33 +41,32 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 	
 	@Override
 	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
-		final SnomedTaxonomyService taxonomyService = getServiceForClass(SnomedTaxonomyService.class);
 		final String conceptId = component.getId();
 
-		if (isConceptReferenceItself(branchPath, taxonomyService, conceptId)) {
-			final SnomedStatementBrowser statementBrowser = getServiceForClass(SnomedStatementBrowser.class);
-			for (final SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatements(branchPath, component)) {
-				if (relationship.isActive() && relationship.getValueId().equals(conceptId)) {
-					return new ComponentValidationDiagnosticImpl(conceptId, createErrorMessage(component, relationship, branchPath), ID, CONCEPT_NUMBER, error());
-				}
+		SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
+			.all()
+			.filterByActive(true)
+			.filterByDestination(conceptId)
+			.filterBySource(conceptId)
+			.setExpand("type(expand(pt()))")
+			.setLocales(getLocales())
+			.build(branchPath.getPath())
+			.executeSync(getBus());
+		
+		if (!relationships.getItems().isEmpty()) {
+			for (ISnomedRelationship relationship : relationships) {
+				return new ComponentValidationDiagnosticImpl(conceptId, createErrorMessage(component, relationship, branchPath), ID, CONCEPT_NUMBER, error());
 			}
 		}
 		
 		return createOk(conceptId, ID, CONCEPT_NUMBER);
 	}
 
-	private String createErrorMessage(final SnomedConceptIndexEntry component, final SnomedRelationshipIndexEntry relationship, final IBranchPath branchPath) {
-		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(),
-				getRelationshipTypeLabel(relationship, branchPath));
+	private String createErrorMessage(final SnomedConceptIndexEntry component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
+		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(), relationship.getTypeConcept().getPt().getTerm());
 	}
 
-	private String getRelationshipTypeLabel(final SnomedRelationshipIndexEntry relationship, final IBranchPath branchPath) {
-		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, relationship.getAttributeId());
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
 	}
-
-	private boolean isConceptReferenceItself(final IBranchPath branchPath, final SnomedTaxonomyService taxonomyService, final String conceptId) {
-		return taxonomyService.getSupertypes(branchPath, conceptId).contains(conceptId) //IS_A referencing 
-				|| taxonomyService.getOutboundConcepts(branchPath, conceptId).contains(conceptId); //other active relationships
-	}
-
 }
