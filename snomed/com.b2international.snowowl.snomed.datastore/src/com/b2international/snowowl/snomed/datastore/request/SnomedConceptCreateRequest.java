@@ -30,7 +30,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
@@ -39,7 +38,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.collect.HashMultiset;
@@ -88,17 +86,9 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 	@Override
 	public String execute(TransactionContext context) {
-		final IBranchPath branchPath = context.branch().branchPath();
+		ensureUniqueId("Concept", context);
 		
-		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
-			try {
-				final String componentId = getIdGenerationStrategy().generate(context);
-				SnomedRequests.prepareGetConcept().setComponentId(componentId).build().execute(context);
-				throw new AlreadyExistsException("Concept", componentId);
-			} catch (ComponentNotFoundException e) {
-				// ignore
-			}
-		}
+		final IBranchPath branchPath = context.branch().branchPath();
 		
 		final Concept concept = convertConcept(context);
 		concept.getOutboundRelationships().add(convertParentIsARelationship(context));
@@ -170,5 +160,9 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 			throw e.toBadRequestException();
 		}
 	}
-	
+
+	@Override
+	protected void checkComponentExists(TransactionContext context, String componentId) throws ComponentNotFoundException {
+		SnomedRequests.prepareGetConcept().setComponentId(componentId).build().execute(context);
+	}
 }

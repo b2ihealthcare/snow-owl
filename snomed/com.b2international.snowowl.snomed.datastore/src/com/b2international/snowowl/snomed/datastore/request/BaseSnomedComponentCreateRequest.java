@@ -19,15 +19,23 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 
 /**
  * @since 4.0
  */
 public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<TransactionContext, String> implements SnomedComponentCreateRequest {
 
+	private static final int ID_GENERATION_ATTEMPTS = 50;
+	
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
+	
 	private String moduleId;
 
 	@Override
@@ -52,5 +60,36 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	protected final Class<String> getReturnType() {
 		return String.class;
 	}
-	
+
+	protected final void ensureUniqueId(String type, TransactionContext context) {
+		
+		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
+			try {
+				final String componentId = getIdGenerationStrategy().generate(context);
+				checkComponentExists(context, componentId);
+				throw new AlreadyExistsException(type, componentId);
+			} catch (ComponentNotFoundException e) {
+				return;
+			}
+		}
+		
+		if (getIdGenerationStrategy() instanceof NamespaceIdGenerationStrategy) {
+			String componentId = null;
+			
+			for (int i = 0; i < ID_GENERATION_ATTEMPTS; i++) {
+				componentId = getIdGenerationStrategy().generate(context);
+				
+				try {
+					checkComponentExists(context, componentId);
+				} catch (ComponentNotFoundException e) {
+					setIdGenerationStrategy(new UserIdGenerationStrategy(componentId));
+					return;
+				}
+			}
+			
+			throw new BadRequestException("Couldn't generate unique identifier for %s after %d attempts.", type, ID_GENERATION_ATTEMPTS); 
+		}
+	}
+
+	protected abstract void checkComponentExists(TransactionContext context, final String componentId) throws ComponentNotFoundException;
 }
