@@ -30,9 +30,9 @@ import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Joiner;
@@ -62,14 +62,12 @@ public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentVal
 			.executeSync(getBus());
 		
 		if (descriptions.getTotal() > 1) {
-			final List<SnomedDescriptionIndexEntry> snomedDescriptionIndexEntries = SnomedDescriptionIndexEntry.fromDescriptions(descriptions);
-			
 			final Multimap<String, String> languageRefsetIdToDescriptionIdMap = HashMultimap.create(); 
 			
-			for (final SnomedDescriptionIndexEntry indexEntry : snomedDescriptionIndexEntries) {
-				final Set<String> languageRefsetIdsWithPreferredMember = Maps.filterValues(indexEntry.getAcceptabilityMap(), Predicates.equalTo(Acceptability.PREFERRED)).keySet();
+			for (final ISnomedDescription description : descriptions) {
+				final Set<String> languageRefsetIdsWithPreferredMember = Maps.filterValues(description.getAcceptabilityMap(), Predicates.equalTo(Acceptability.PREFERRED)).keySet();
 				for (final String id : languageRefsetIdsWithPreferredMember) {
-					languageRefsetIdToDescriptionIdMap.put(id, indexEntry.getId());
+					languageRefsetIdToDescriptionIdMap.put(id, description.getId());
 				}
 			}
 			
