@@ -35,6 +35,8 @@ import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -80,10 +82,11 @@ final class ComponentIdUniquenessValidator {
 		
 		if (!validateComponentId(component)) {
 			
-			String newComponentId = editingContext.generateComponentId(component);
+			final SnomedIdentifier originalIdentifier = SnomedIdentifiers.create(component.getId());
+			String newComponentId = editingContext.generateComponentId(originalIdentifier.getComponentCategory(), originalIdentifier.getNamespace());
 			
 			while (!validateComponentId(newComponentId)) {
-				newComponentId = editingContext.generateComponentId(component);
+				newComponentId = editingContext.generateComponentId(originalIdentifier.getComponentCategory(), originalIdentifier.getNamespace());
 			}
 			
 			//update reference set ID as well if concept ID is not unique
