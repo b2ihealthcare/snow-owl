@@ -22,9 +22,10 @@ import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 
 /**
  * @since 4.0
@@ -63,17 +64,19 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 
 	protected final void ensureUniqueId(String type, TransactionContext context) {
 		
-		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
+		if (getIdGenerationStrategy() instanceof RegisteringIdStrategy) {
+			final String componentId = getIdGenerationStrategy().generate(context);
+			
 			try {
-				final String componentId = getIdGenerationStrategy().generate(context);
 				checkComponentExists(context, componentId);
 				throw new AlreadyExistsException(type, componentId);
 			} catch (ComponentNotFoundException e) {
+				setIdGenerationStrategy(new ConstantIdStrategy(componentId));
 				return;
 			}
 		}
 		
-		if (getIdGenerationStrategy() instanceof NamespaceIdGenerationStrategy) {
+		if (getIdGenerationStrategy() instanceof ReservingIdStrategy) {
 			String componentId = null;
 			
 			for (int i = 0; i < ID_GENERATION_ATTEMPTS; i++) {
@@ -82,7 +85,7 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 				try {
 					checkComponentExists(context, componentId);
 				} catch (ComponentNotFoundException e) {
-					setIdGenerationStrategy(new UserIdGenerationStrategy(componentId));
+					setIdGenerationStrategy(new RegisteringIdStrategy(componentId));
 					return;
 				}
 			}
