@@ -527,4 +527,35 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists(testBranchPath, "D2");
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
 	}
+	
+	@Test
+	public void rebaseOverReusedRelationshipId() {
+		assertRelationshipCreated(testBranchPath.getParent(), "R1");
+		assertRelationshipExists(testBranchPath.getParent(), "R1");
+		final String relationshipId = symbolicNameMap.get("R1");
+		
+		assertBranchCanBeRebased(testBranchPath, "Rebase after relationship creation");
+		assertComponentCanBeDeleted(testBranchPath.getParent(), "R1", SnomedComponentType.RELATIONSHIP);
+		
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("sourceId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", "116676008") // Associated morphology
+				.put("destinationId", "404684003") // ??? (different from morphologic abnormality)
+				.put("id", relationshipId)
+				.put("commitComment", "New relationship with same ID")
+				.build();
+
+		assertComponentCreated(testBranchPath.getParent(), "new-R1", SnomedComponentType.RELATIONSHIP, requestBody);
+		
+		// Different relationships before rebase
+		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "49755003");
+		
+		assertBranchCanBeRebased(testBranchPath, "Rebase after new relationship creation");
+		
+		// Same relationships after rebase
+		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
+	}
 }
