@@ -223,9 +223,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 			public Builder caseSnomedConcreteDataTypeRefSetMember(final SnomedConcreteDataTypeRefSetMember concreteDataTypeMember) {
 				builder.additionalField(SnomedMappings.memberDataTypeLabel().fieldName(), concreteDataTypeMember.getLabel())
 						.additionalField(SnomedMappings.memberDataTypeOrdinal().fieldName(), concreteDataTypeMember.getDataType().ordinal())
-						.additionalField(SnomedMappings.memberSerializedValue().fieldName(), SnomedRefSetUtil.deserializeValue(
-							concreteDataTypeMember.getDataType(), 
-							concreteDataTypeMember.getSerializedValue()))
+						.additionalField(SnomedMappings.memberSerializedValue().fieldName(), concreteDataTypeMember.getSerializedValue())
 						.additionalField(SnomedMappings.memberCharacteristicTypeId().fieldName(), Long.valueOf(concreteDataTypeMember.getCharacteristicTypeId()))
 						.additionalField(SnomedMappings.memberOperatorId().fieldName(), Long.valueOf(concreteDataTypeMember.getOperatorComponentId()));
 
@@ -291,6 +289,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				return builder;
 			}
 			
+			@Override
 			public Builder caseSnomedRefSetMember(SnomedRefSetMember object) {
 				return builder;
 			};

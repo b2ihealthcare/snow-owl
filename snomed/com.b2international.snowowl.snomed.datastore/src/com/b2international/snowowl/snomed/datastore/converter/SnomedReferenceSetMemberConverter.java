@@ -39,6 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -229,7 +230,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 			case CONCRETE_DATA_TYPE:
 				props.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, entry.getAttributeLabel());
 				props.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, entry.getCharacteristicTypeId());
-				props.put(SnomedRf2Headers.FIELD_VALUE, entry.getValue());
+				props.put(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
 				props.put(SnomedRf2Headers.FIELD_UNIT_ID, entry.getUomComponentId());
 				props.put(SnomedRf2Headers.FIELD_OPERATOR_ID, entry.getOperatorComponentId());
 				props.put(SnomedMappings.memberDataTypeOrdinal().fieldName(), entry.getRefSetPackageDataType().ordinal());
