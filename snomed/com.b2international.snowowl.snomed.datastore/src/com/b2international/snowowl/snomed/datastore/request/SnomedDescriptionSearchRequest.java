@@ -39,7 +39,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.spans.SpanFirstQuery;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
 import org.apache.lucene.search.spans.SpanNearQuery;
@@ -429,9 +428,4 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		return SnomedDescriptions.class;
 	}
 	
-//	public static void main(String[] args) {
-//		final DefaultSimilarity similarity = new DefaultSimilarity();
-//		final FieldInvertState fis = new FieldInvertState("term", 0, 5, 0, 0, 1.0f);
-//		System.out.println(similarity.decodeNormValue(similarity.computeNorm(fis)));
-//	}
 }
