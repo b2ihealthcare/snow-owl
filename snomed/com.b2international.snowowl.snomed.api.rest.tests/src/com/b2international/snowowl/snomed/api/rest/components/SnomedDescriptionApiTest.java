@@ -39,6 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMap.Builder;
 
 /**
@@ -136,7 +137,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void createDuplicateDescription() {
 		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
-		final Map<?, ?> dupRequestBody = ImmutableMap.builder().putAll(requestBody).put("id", descriptionId).build();
+		
+		final Map<Object, Object> dupRequestBody = Maps.<Object, Object>newHashMap(requestBody);
+		dupRequestBody.put("id", descriptionId);
+		dupRequestBody.put("commitComment", "New duplicate description on MAIN");
 		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.DESCRIPTION, dupRequestBody, 409);
 	}
 
