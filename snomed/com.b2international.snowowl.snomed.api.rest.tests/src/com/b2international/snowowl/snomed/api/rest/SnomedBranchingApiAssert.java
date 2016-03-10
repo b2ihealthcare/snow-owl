@@ -237,7 +237,9 @@ public abstract class SnomedBranchingApiAssert {
 		ResponseBody<?> entry = waitForMergeJob(id);
 		
 		assertNotNull(entry);
-		assertEquals("COMPLETED", entry.path("status"));
+		if (!"COMPLETED".equals(entry.path("status"))) {
+			fail(entry.path("apiError").toString());
+		}
 	}
 
 	public static void assertBranchCanBeRebased(final IBranchPath branchPath, final String commitComment) {
