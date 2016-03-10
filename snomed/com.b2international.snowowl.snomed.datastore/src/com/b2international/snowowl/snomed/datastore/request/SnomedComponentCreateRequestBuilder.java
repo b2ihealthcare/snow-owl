@@ -23,8 +23,8 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
 
 /**
  * @since 4.5
@@ -41,12 +41,12 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	}
 	
 	public final B setId(String id) {
-		this.idGenerationStrategy = new UserIdGenerationStrategy(id);
+		this.idGenerationStrategy = new RegisteringIdStrategy(id);
 		return getSelf();
 	}
 	
 	public final B setIdFromNamespace(String namespace) {
-		this.idGenerationStrategy = new NamespaceIdGenerationStrategy(category, namespace);
+		this.idGenerationStrategy = new ReservingIdStrategy(category, namespace);
 		return getSelf();
 	}
 	
@@ -64,7 +64,7 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	protected final Request<TransactionContext, String> doBuild() {
 		final BaseSnomedComponentCreateRequest req = createRequest();
 		// FIXME use default namespace???
-		req.setIdGenerationStrategy(idGenerationStrategy == null ? new NamespaceIdGenerationStrategy(category) : idGenerationStrategy);
+		req.setIdGenerationStrategy(idGenerationStrategy == null ? new ReservingIdStrategy(category) : idGenerationStrategy);
 		req.setModuleId(moduleId);
 		init(req);
 		return req;

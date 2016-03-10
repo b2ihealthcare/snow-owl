@@ -28,9 +28,9 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.UUIDIdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Strings;
@@ -61,7 +61,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 * @return
 	 */
 	public final B withId(String identifier) {
-		return withId(new UserIdGenerationStrategy(identifier));
+		return withId(new RegisteringIdStrategy(identifier));
 	}
 
 	/**
@@ -83,7 +83,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 * @return
 	 */
 	public final B withIdFromNamespace(String namespace) {
-		return withId(new NamespaceIdGenerationStrategy(category, namespace));
+		return withId(new ReservingIdStrategy(category, namespace));
 	}
 
 	/**

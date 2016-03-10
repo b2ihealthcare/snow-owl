@@ -50,7 +50,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -312,7 +312,7 @@ public class SnomedSubsetImporter {
 			.setId(conceptId)
 			.setModuleId(moduleId)
 			.setParent(parentConceptId)
-			.setIsAId(new NamespaceIdGenerationStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
+			.setIsAId(new ReservingIdStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
 			.addDescription(SnomedRequests
 					.prepareNewDescription()
 					.setIdFromNamespace(Concepts.B2I_NAMESPACE)
@@ -434,7 +434,7 @@ public class SnomedSubsetImporter {
 					.prepareNewConcept()
 					.setModuleId(moduleId)
 					.setParent(refSetType)
-					.setIsAId(new NamespaceIdGenerationStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
+					.setIsAId(new ReservingIdStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
 							.setIdFromNamespace(Concepts.B2I_NAMESPACE)
