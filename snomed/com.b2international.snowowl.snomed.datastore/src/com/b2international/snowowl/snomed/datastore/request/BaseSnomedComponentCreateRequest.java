@@ -32,7 +32,10 @@ import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
  */
 public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<TransactionContext, String> implements SnomedComponentCreateRequest {
 
-	private static final int ID_GENERATION_ATTEMPTS = 50;
+	/** 
+	 * The maximum number of identifier service reservation calls (after which a namespace is known to be completely full). 
+	 */
+	private static final int ID_GENERATION_ATTEMPTS = 9999_9999;
 	
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
