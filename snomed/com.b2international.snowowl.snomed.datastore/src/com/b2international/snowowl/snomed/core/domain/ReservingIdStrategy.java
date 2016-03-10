@@ -42,8 +42,8 @@ public class ReservingIdStrategy implements IdGenerationStrategy {
 	@Override
 	public String generate(BranchContext context) {
 		// XXX: Does not add an IdAction to SnomedIdentifiers
-		final ISnomedIdentifierService snomedIdentifiers = context.service(ISnomedIdentifierService.class);
-		final String componentId = snomedIdentifiers.reserve(getNamespaceIdOrDefault(), category);
+		final ISnomedIdentifierService identifierService = context.service(ISnomedIdentifierService.class);
+		final String componentId = identifierService.reserve(getNamespaceIdOrDefault(), category);
 		return componentId;
 	}
 
