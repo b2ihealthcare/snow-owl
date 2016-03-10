@@ -39,6 +39,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.spans.SpanFirstQuery;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
 import org.apache.lucene.search.spans.SpanNearQuery;
@@ -225,14 +226,16 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private Query createTermDisjunctionQuery(final String searchTerm) {
-		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
-		final QueryBuilder termQueryBuilder = new QueryBuilder(bookendAnalyzer);
 		final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
 		
-		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, termQueryBuilder));
-		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, termQueryBuilder));
-		
 		final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
+		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
+		
+		final QueryBuilder bookendTermQueryBuilder = new QueryBuilder(bookendAnalyzer);
+		final QueryBuilder nonBookendTermQueryBuilder = new QueryBuilder(nonBookendAnalyzer);
+		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, bookendTermQueryBuilder));
+		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, nonBookendTermQueryBuilder));
+		
 		final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
 		termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
 		
@@ -425,4 +428,10 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	protected Class<SnomedDescriptions> getReturnType() {
 		return SnomedDescriptions.class;
 	}
+	
+//	public static void main(String[] args) {
+//		final DefaultSimilarity similarity = new DefaultSimilarity();
+//		final FieldInvertState fis = new FieldInvertState("term", 0, 5, 0, 0, 1.0f);
+//		System.out.println(similarity.decodeNormValue(similarity.computeNorm(fis)));
+//	}
 }
