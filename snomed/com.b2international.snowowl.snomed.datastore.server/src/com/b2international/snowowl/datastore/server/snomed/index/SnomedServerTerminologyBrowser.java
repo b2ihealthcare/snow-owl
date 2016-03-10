@@ -44,11 +44,9 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -540,14 +538,10 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 		}
 		
-		final String terminologyComponentIdAsString = CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentId);
-		final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdAsString).getNameProvider();
-		final String label = nameProvider.getComponentLabel(branchPath, id);
-		
 		if (types.isEmpty()) {
-			return new ExtendedComponentImpl(SnomedMappings.memberUuid().getValue(doc), label, iconId, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
+			return new ExtendedComponentImpl(SnomedMappings.memberUuid().getValue(doc), id, iconId, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
 		} else {
-			return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
+			return new ExtendedComponentImpl(id, id, iconId, terminologyComponentId);
 		}
 	}
 

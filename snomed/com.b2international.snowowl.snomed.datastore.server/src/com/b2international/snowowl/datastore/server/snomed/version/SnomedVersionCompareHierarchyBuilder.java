@@ -23,10 +23,18 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.ExtendedComponentProvider;
@@ -37,11 +45,19 @@ import com.b2international.snowowl.datastore.index.diff.NodeDiffImpl;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
 import com.b2international.snowowl.datastore.server.version.VersionCompareHierarchyBuilderImpl;
 import com.b2international.snowowl.datastore.version.NodeDiffPredicate;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedCachingSuperTypeIdProvider;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 /**
  * Version compare hierarchy builder implementation for the SNOMED&nbsp;CT ontology.
@@ -79,7 +95,36 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 	
 	@Override
 	protected IComponentNameProvider getNameProvider() {
-		return getServiceForClass(ISnomedConceptNameProvider.class);
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	protected String getLabel(IBranchPath branchPath, String componentId) {
+		return componentId;
+	}
+	
+	@Override
+	public Map<String, String> resolveLabels(Multimap<IBranchPath, String> componentIdsByBranch) {
+		final ApplicationContext context = ApplicationContext.getInstance();
+		final List<ExtendedLocale> locales = context.getService(LanguageSetting.class).getLanguagePreference();
+		final IEventBus bus = context.getService(IEventBus.class);
+		
+		final Map<String, ISnomedDescription> pts = newHashMap();
+		for (final IBranchPath branch : componentIdsByBranch.keySet()) {
+			final Set<String> componentIds = newHashSet(componentIdsByBranch.get(branch));
+			pts.putAll(new DescriptionRequestHelper() {
+				@Override
+				protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
+					return req.build(branch.getPath()).executeSync(bus);
+				}
+			}.getPreferredTerms(componentIds, locales));
+		}
+		return Maps.transformValues(pts, new Function<ISnomedDescription, String>() {
+			@Override
+			public String apply(ISnomedDescription input) {
+				return input.getTerm();
+			}
+		});
 	}
 	
 	@Override

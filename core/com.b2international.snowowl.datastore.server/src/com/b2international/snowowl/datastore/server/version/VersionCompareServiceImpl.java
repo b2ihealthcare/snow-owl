@@ -52,6 +52,8 @@ import com.b2international.snowowl.datastore.version.VersionCompareService;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.b2international.snowowl.index.diff.ThreeWayIndexDiff;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets.SetView;
 
 /**
@@ -108,6 +110,7 @@ public class VersionCompareServiceImpl implements VersionCompareService {
 			LOGGER.info("Building hierarchy among the changed components [3 of 5]...");
 			subMonitor.setTaskName("Building hierarchy among the changed components [3 of 5]...");
 			buildHierarchy(configuration, builder, nodes, diff);
+			
 			LOGGER.info("Hierarchy has been successfully built among the changed components. [" + stopwatch + "]");
 			subMonitor.worked(1);
 			
@@ -122,7 +125,15 @@ public class VersionCompareServiceImpl implements VersionCompareService {
 			collapseHierarchy(builder, nodes);
 			LOGGER.info("Hierarchy has been successfully collapsed. [" + stopwatch + "]");
 			subMonitor.worked(1);
-			
+		
+			final Multimap<IBranchPath, String> nodesByBranch = ArrayListMultimap.create();
+			for (NodeDiff node : nodes.values()) {
+				nodesByBranch.put(getBranchPath(configuration, diff, node.getStorageKey(), node), node.getId());
+			}
+			final Map<String, String> labels = builder.resolveLabels(nodesByBranch);
+			for (NodeDiff node : nodes.values()) {
+				((NodeDiffImpl)node).setLabel(labels.get(node.getId()));
+			}
 			
 			if (subMonitor.isCanceled()) {
 				logUserAbort();
