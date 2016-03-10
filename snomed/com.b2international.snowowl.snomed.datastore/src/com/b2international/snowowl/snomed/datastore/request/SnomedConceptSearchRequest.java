@@ -250,7 +250,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 							
 							// TODO move this normalization to index initializer.
 							if (interest != 0.0f) {
-								interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE / MIN_DOI_VALUE);
+								interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE - MIN_DOI_VALUE);
 							}
 							
 							if (conceptScoreMap.containsKey(conceptId)) {
