@@ -29,7 +29,7 @@ public final class SnomedDescriptionGetRequestBuilder extends GetRequestBuilder<
 	}
 
 	@Override
-	protected GetRequest<ISnomedDescription> create() {
+	protected GetRequest<ISnomedDescription> createGet() {
 		return new SnomedDescriptionGetRequest();
 	}
 

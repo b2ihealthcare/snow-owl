@@ -32,7 +32,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRe
 	}
 	
 	@Override
-	protected SearchRequest<SnomedReferenceSetMembers> create() {
+	protected SearchRequest<SnomedReferenceSetMembers> createSearch() {
 		return new SnomedRefSetMemberSearchRequest();
 	}
 	

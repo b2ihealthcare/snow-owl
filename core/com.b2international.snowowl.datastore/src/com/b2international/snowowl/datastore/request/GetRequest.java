@@ -17,20 +17,14 @@ package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
@@ -39,18 +33,12 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
  * @param <R>
  *            - the return type of the GET request
  */
-public abstract class GetRequest<R> extends BaseRequest<BranchContext, R> {
+public abstract class GetRequest<R> extends BaseResourceRequest<BranchContext, R> {
 
 	private final String category;
 	
 	@NotEmpty
 	private String componentId;
-	
-	@NotNull
-	private Options expand;
-	
-	@NotNull
-	private List<ExtendedLocale> locales;
 	
 	protected GetRequest(ComponentCategory category) {
 		this(category.getDisplayName());
@@ -64,25 +52,13 @@ public abstract class GetRequest<R> extends BaseRequest<BranchContext, R> {
 		this.componentId = componentId;
 	}
 	
-	protected final void setExpand(Options expand) {
-		this.expand = expand;
-	}
-	
-	protected final void setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
-	}
-	
-	protected final List<ExtendedLocale> locales() {
-		return locales;
-	}
-	
 	@Override
 	public final R execute(BranchContext context) {
 		final IComponent<String> component = getLookupService().getComponent(context.branch().branchPath(), componentId);
 		if (component == null) {
 			throw new ComponentNotFoundException(category, componentId);
 		} else {
-			return process(context, component, expand);
+			return process(context, component, expand());
 		}
 	}
 
@@ -95,8 +71,8 @@ public abstract class GetRequest<R> extends BaseRequest<BranchContext, R> {
 		return String.format("{type:'%s', componentId:'%s', expand:%s, locales:%s}", 
 				getClass().getSimpleName(), 
 				componentId,
-				expand, 
-				formatStringList(locales));
+				expand(), 
+				formatStringList(locales()));
 	}
 
 }

@@ -75,7 +75,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	}
 	
 	@Override
-	protected SearchRequest<SnomedDescriptions> create() {
+	protected SearchRequest<SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
 	}
 }

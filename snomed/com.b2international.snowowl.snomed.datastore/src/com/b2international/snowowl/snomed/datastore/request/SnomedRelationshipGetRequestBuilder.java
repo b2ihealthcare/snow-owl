@@ -29,7 +29,7 @@ public final class SnomedRelationshipGetRequestBuilder extends GetRequestBuilder
 	}
 	
 	@Override
-	protected GetRequest<ISnomedRelationship> create() {
+	protected GetRequest<ISnomedRelationship> createGet() {
 		return new SnomedRelationshipGetRequest();
 	}
 	
