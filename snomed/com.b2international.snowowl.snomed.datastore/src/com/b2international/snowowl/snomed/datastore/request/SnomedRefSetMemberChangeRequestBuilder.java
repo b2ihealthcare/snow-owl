@@ -42,7 +42,7 @@ public final class SnomedRefSetMemberChangeRequestBuilder extends BaseRequestBui
 			return SnomedRequests
 					.prepareNewMember()
 					.setModuleId(moduleId)
-					.setReferencedComponentId(change.getReferencedComponentId())
+					.setReferencedComponentId(change.getReferencedComponent().getId())
 					.setReferenceSetId(referenceSetId)
 					.buildNoContent();
 		case REMOVE:
