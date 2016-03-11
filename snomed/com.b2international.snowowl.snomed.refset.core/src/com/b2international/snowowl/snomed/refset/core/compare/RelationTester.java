@@ -18,17 +18,16 @@ package com.b2international.snowowl.snomed.refset.core.compare;
 import java.util.List;
 import java.util.Set;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * This class implements a recursive search for relationships between the constrained and the master refset during the comparison of two reference sets.
@@ -39,15 +38,14 @@ public class RelationTester {
 
 	private final SnomedClientStatementBrowser statementBrowser;
 
-	public RelationTester() {
-		this.statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
+	public RelationTester(SnomedClientStatementBrowser statementBrowser) {
+		this.statementBrowser = statementBrowser;
 	}
 
 	public boolean isRelated(String predicateId, String candidateId) {
 		Set<String> visited = Sets.newHashSet();
 		visited.add(candidateId);
-		List<SnomedRelationshipIndexEntry> relationships = statementBrowser.getOutboundStatementsById(candidateId);
-		for (SnomedRelationshipIndexEntry relationship : relationships) {
+		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
 			if (!Concepts.IS_A.equals(relationship.getAttributeId())) {
 				if (predicateId.equals(relationship.getValueId())) {
@@ -61,8 +59,7 @@ public class RelationTester {
 	}
 
 	public boolean isRelated(String predicateId, String candidateId, String relationshipTypeId) {
-		List<SnomedRelationshipIndexEntry> relationships = statementBrowser.getOutboundStatementsById(candidateId);
-		for (SnomedRelationshipIndexEntry relationship : relationships) {
+		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
 			if (relationshipTypeId.equals(relationship.getAttributeId())) {
 				Set<String> visited = Sets.newHashSet();
@@ -78,13 +75,11 @@ public class RelationTester {
 	}
 
 	public boolean isRelated(String predicateId, String candidateId, String relationshipTypeId, Set<String> visitedIds) {
-		if (visitedIds.contains(candidateId)) {
+		if (!visitedIds.add(candidateId)) {
 			return false;
-		} else {
-			visitedIds.add(candidateId);
 		}
-		List<SnomedRelationshipIndexEntry> relationships = statementBrowser.getOutboundStatementsById(candidateId);
-		for (SnomedRelationshipIndexEntry relationship : relationships) {
+		
+		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
 			if (relationshipTypeId.equals(relationship.getAttributeId())) {
 				String relationshipTargetId = relationship.getValueId();
 				if (predicateId.equals(relationshipTargetId)) {

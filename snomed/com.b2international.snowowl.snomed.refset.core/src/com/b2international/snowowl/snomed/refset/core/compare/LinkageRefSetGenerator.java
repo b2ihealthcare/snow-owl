@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.refset.core.compare;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -27,13 +28,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.snowowl.core.ComponentIdentifierPair;
-import com.b2international.snowowl.core.api.browser.IClientStatementBrowser;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.refset.core.compare.ReferencedComponentDelta.DeltaKind;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -53,18 +51,15 @@ import com.google.common.collect.Sets;
 public class LinkageRefSetGenerator {
 
 	private final SnomedRefSetEditingContext editingContext;
-	private final SnomedClientTerminologyBrowser terminologyBrowser;
 	private final SnomedClientStatementBrowser statementBrowser;
 	private final String moduleId;
+	private final RelationTester relationTester;
 
-	public LinkageRefSetGenerator(final SnomedRefSetEditingContext editingContext, 
-			final SnomedClientTerminologyBrowser terminologyBrowser, 
-			final SnomedClientStatementBrowser statementBrowser) {
-
+	public LinkageRefSetGenerator(final SnomedRefSetEditingContext editingContext, final SnomedClientStatementBrowser statementBrowser) {
 		this.editingContext = editingContext;
-		this.terminologyBrowser = terminologyBrowser;
 		this.statementBrowser = statementBrowser;
-		moduleId = this.editingContext.getSnomedEditingContext().getDefaultModuleConcept().getModule().getId();
+		this.relationTester = new RelationTester(statementBrowser);
+		this.moduleId = this.editingContext.getSnomedEditingContext().getDefaultModuleConcept().getModule().getId();
 	}
 
 	/**
@@ -151,23 +146,17 @@ public class LinkageRefSetGenerator {
 
 		@Override
 		public List<SnomedRelationshipIndexEntry> apply(final ReferencedComponentDelta input) {
-			String conceptId = input.getReferencedComponent();
-			String subsumingConceptId = input.getRelatedTo();
-			SnomedConceptIndexEntry concept = terminologyBrowser.getConcept(conceptId);
-			SnomedConceptIndexEntry subsumingConcept = terminologyBrowser.getConcept(subsumingConceptId);
-			List<SnomedRelationshipIndexEntry> statements = collectSuperTypeStatements(concept.getId(), subsumingConcept.getId());
-			return statements;
+			return collectSuperTypeStatements(input.getReferencedComponent(), input.getRelatedTo());
 		}
 
 		private List<SnomedRelationshipIndexEntry> collectSuperTypeStatements(String conceptId, 
 				String subsumingConceptId) {
-			List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
 			if (conceptId.equals(subsumingConceptId)) {
-				return statements;
+				return Collections.emptyList();
 			}
 
-			List<SnomedRelationshipIndexEntry> outboundStatements = statementBrowser.getOutboundStatements(terminologyBrowser.getConcept(conceptId));
-			for (SnomedRelationshipIndexEntry outboundStatement : outboundStatements) {
+			final List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
+			for (SnomedRelationshipIndexEntry outboundStatement : statementBrowser.getOutboundStatementsById(conceptId)) {
 				if (outboundStatement.isActive() && Concepts.IS_A.equals(outboundStatement.getAttributeId())) {
 					if (subsumingConceptId.equals(outboundStatement.getValueId())) {
 						statements.add(outboundStatement);
@@ -186,51 +175,44 @@ public class LinkageRefSetGenerator {
 
 	private final class TransitiveRelationExtractorFunction implements Function<ReferencedComponentDelta, List<SnomedRelationshipIndexEntry>> {
 
-		private RelationTester relationTester = new RelationTester();
-
 		@Override
 		public List<SnomedRelationshipIndexEntry> apply(ReferencedComponentDelta input) {
 			String conceptId = input.getReferencedComponent();
 			String relatedConceptId = input.getRelatedTo();
 
-			SnomedConceptIndexEntry concept = terminologyBrowser.getConcept(conceptId);
 			Set<SnomedRelationshipIndexEntry> conceptOutboundRelationships = Sets.newHashSet();
-			conceptOutboundRelationships.addAll(statementBrowser.getOutboundStatements(concept));
+			conceptOutboundRelationships.addAll(statementBrowser.getOutboundStatementsById(conceptId));
 
-			SnomedConceptIndexEntry relatedConcept = terminologyBrowser.getConcept(relatedConceptId);
 			Set<SnomedRelationshipIndexEntry> relatedConceptInboundRelationships = Sets.newHashSet();
-			relatedConceptInboundRelationships.addAll(statementBrowser.getInboundStatements(relatedConcept));
+			relatedConceptInboundRelationships.addAll(statementBrowser.getInboundStatementsById(relatedConceptId));
 			Set<SnomedRelationshipIndexEntry> commonRelationships = Sets.union(conceptOutboundRelationships, relatedConceptInboundRelationships);
 
 			List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
 
 			for (SnomedRelationshipIndexEntry relationshipMini : commonRelationships) {
-				SnomedConceptIndexEntry relationshipType = terminologyBrowser.getConcept(relationshipMini.getAttributeId());
-				if (relationshipMini.isActive() && !Concepts.IS_A.equals(relationshipMini.getAttributeId()) && relationTester.isRelated(relatedConcept.getId(), concept.getId(), relationshipType.getId())) {
-					List<SnomedRelationshipIndexEntry> list = collectRelationshipTargetStatements(relatedConcept, concept, relationshipType, new HashSet<SnomedConceptIndexEntry>());
+				final String typeId = relationshipMini.getAttributeId();
+				if (relationshipMini.isActive() && !Concepts.IS_A.equals(relationshipMini.getAttributeId()) && relationTester.isRelated(relatedConceptId, conceptId, typeId)) {
+					List<SnomedRelationshipIndexEntry> list = collectRelationshipTargetStatements(relatedConceptId, conceptId, typeId, new HashSet<String>());
 					statements.addAll(list);
 				}
 			}
 			return statements;
 		}
 
-		private List<SnomedRelationshipIndexEntry> collectRelationshipTargetStatements(SnomedConceptIndexEntry relatedConcept, SnomedConceptIndexEntry concept, SnomedConceptIndexEntry relationshipType, HashSet<SnomedConceptIndexEntry> visited) {
-			List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
-			if(visited.contains(concept)){
-				return statements;
-			} else {
-				visited.add(concept);
+		private List<SnomedRelationshipIndexEntry> collectRelationshipTargetStatements(String relatedConceptId, String conceptId, String typeId, Set<String> visited) {
+			if (!visited.add(conceptId)){
+				return Collections.emptyList();
 			}
-			List<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getOutboundStatements(concept);
-			for (SnomedRelationshipIndexEntry outboundRelationship : outboundRelationships) {
-				if (outboundRelationship.isActive() && relationshipType.getId().equals(outboundRelationship.getAttributeId())) {
+			
+			final List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
+			for (SnomedRelationshipIndexEntry outboundRelationship : statementBrowser.getOutboundStatementsById(conceptId)) {
+				if (outboundRelationship.isActive() && typeId.equals(outboundRelationship.getAttributeId())) {
 
 					String relationshipTargetId = outboundRelationship.getValueId();
-					if (relatedConcept.getId().equals(relationshipTargetId)) {
+					if (relatedConceptId.equals(relationshipTargetId)) {
 						statements.add(outboundRelationship);
 					} else {
-						SnomedConceptIndexEntry relationshipTarget = terminologyBrowser.getConcept(relationshipTargetId);
-						List<SnomedRelationshipIndexEntry> temporaryStatements = collectRelationshipTargetStatements(relatedConcept, relationshipTarget, relationshipType, visited);
+						final List<SnomedRelationshipIndexEntry> temporaryStatements = collectRelationshipTargetStatements(relatedConceptId, relationshipTargetId, typeId, visited);
 						if (!temporaryStatements.isEmpty()){
 							statements.addAll(temporaryStatements);
 							statements.add(outboundRelationship);
