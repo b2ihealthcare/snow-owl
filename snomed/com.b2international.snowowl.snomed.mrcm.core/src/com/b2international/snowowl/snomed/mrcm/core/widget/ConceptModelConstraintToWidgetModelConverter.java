@@ -86,9 +86,9 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		//otherwise we can get the wildcard when calling e.g.: com.b2international.snowowl.snomed.mrcm.core.widget.model.DescriptionContainerWidgetModel.getFirstMatching(String)
 		descriptionWidgetModels.add(DescriptionWidgetModel.createUnsanctionedModel());
 		
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.BOOLEAN));
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.STRING));
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.FLOAT));
+		for (DataType type : DataType.values()) {
+			dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, type));
+		}
 		
 		ForkJoinUtils.runInParallel(
 				new Runnable() { @Override public void run() { createSingleGroupModels(singleGroupRelationshipWidgetModels, branchPath); }},
