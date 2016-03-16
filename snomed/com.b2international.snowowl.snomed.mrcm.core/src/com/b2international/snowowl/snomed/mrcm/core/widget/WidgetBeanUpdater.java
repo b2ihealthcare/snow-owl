@@ -83,6 +83,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -722,9 +723,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 				
 				final SnomedConcreteDataTypeRefSetMember existingMember = findDataType(context, uuid, unvisitedDataTypes);
 				
-				if (StringUtils.isEmpty(selectedValue) 
-						|| !SnomedRefSetUtil.deserializeValue(existingMember.getDataType(), existingMember.getSerializedValue()).equals(
-								SnomedRefSetUtil.deserializeValue(existingMember.getDataType(), selectedValue))) {
+				if (hasLabelChanges(selectedLabel, existingMember.getLabel()) || hasValueChanges(existingMember.getDataType(), selectedValue, existingMember.getSerializedValue())) {
 					
 					SnomedModelExtensions.removeOrDeactivate(existingMember);
 					dataTypeBean.setUuid(DataTypeWidgetBean.UNINITIALIZED);
@@ -752,6 +751,14 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 				SnomedModelExtensions.removeOrDeactivate(existingMember);
 			}
 		}
+	}
+
+	private boolean hasLabelChanges(String newLabel, String oldLabel) {
+		return !Objects.equal(newLabel, oldLabel);
+	}
+
+	private boolean hasValueChanges(final DataType dataType, final String newValue, final String oldValue) {
+		return StringUtils.isEmpty(newValue) || !SnomedRefSetUtil.deserializeValue(dataType, oldValue).equals(SnomedRefSetUtil.deserializeValue(dataType, newValue));
 	}
 
 	private SnomedConcreteDataTypeRefSetMember findDataType(final SnomedEditingContext context, final String uuid, 
