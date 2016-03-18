@@ -399,10 +399,9 @@ public interface ISnomedComponentService {
 	/**
 	 * @param branchPath
 	 * @param conceptId
-	 * @param languageRefSetId
 	 * @return
 	 */
-	Map<String, Boolean> getDescriptionPreferabilityMap(IBranchPath branchPath, String conceptId, String languageRefSetId);
+	Map<String, Multimap<String, String>> getDescriptionPreferabilityMap(IBranchPath branchPath, String conceptId);
 	
 	/**
 	 * Returns with all existing {@link SnomedModuleDependencyRefSetMemberFragment module dependency reference set member}s from the underling ontology.
