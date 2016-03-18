@@ -349,7 +349,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				break;
 			case LANGUAGE:
 				final SnomedLanguageRefSetMember langMember = (SnomedLanguageRefSetMember) member;
-				specialFieldComponentType = SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+				specialFieldComponentType = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 				specialFieldId = langMember.getAcceptabilityId();
 				specialFieldLabel = CoreTerminologyBroker.getInstance().getComponent(
 						createPair(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, specialFieldId)).getLabel();
