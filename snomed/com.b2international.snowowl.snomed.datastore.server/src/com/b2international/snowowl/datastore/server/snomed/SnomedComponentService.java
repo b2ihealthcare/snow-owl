@@ -79,7 +79,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.toMap;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
@@ -248,10 +247,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_LABEL
 			));
 
-	private static final Set<String> MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
-			REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID
-			));
-	
 	private static final Set<String> MEMBER_VALUE_ID_FIELDS_TO_LOAD = unmodifiableSet(newHashSet(
 			REFERENCE_SET_MEMBER_VALUE_ID
 			));
@@ -284,13 +279,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME,
 			REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME
 			));
-	
-	private static final Function<String, Boolean> ALWAYS_FALSE_FUNC = new Function<String, Boolean>() {
-		@Override
-		public Boolean apply(final String input) {
-			return false;
-		}
-	};
 	
 	private static final Query PREFERRED_LANGUAGE_QUERY = new TermQuery(new Term(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)));
 	private static final Query ACCEPTED_LANGUAGE_QUERY = new TermQuery(new Term(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID, longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE)));
@@ -2361,10 +2349,9 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public Map<String, Boolean> getDescriptionPreferabilityMap(final IBranchPath branchPath, final String conceptId, final String languageRefSetId) {
+	public Map<String, Multimap<String, String>> getDescriptionPreferabilityMap(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(conceptId, "conceptId");
-		checkNotNull(languageRefSetId, "languageRefSetId");
 		
 		final BooleanQuery descriptionQuery = new BooleanQuery(true);
 		descriptionQuery.add(new TermQuery(new Term(SnomedIndexBrowserConstants.DESCRIPTION_CONCEPT_ID, longToPrefixCoded(conceptId))), MUST);
@@ -2382,26 +2369,35 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final BooleanQuery languageMemberQuery = new BooleanQuery(true);
 		languageMemberQuery.add(SnomedIndexQueries.ACTIVE_COMPONENT_QUERY, MUST);
-		languageMemberQuery.add(PREFERRED_LANGUAGE_QUERY, MUST);
-		languageMemberQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_ID, longToPrefixCoded(languageRefSetId))), MUST);
 		languageMemberQuery.add(referencedComponentQuery, MUST);
+		final BytesRef langTypeValue = IndexUtils.intToPrefixCoded(SnomedRefSetType.LANGUAGE.ordinal());
+		languageMemberQuery.add(new TermQuery(new Term(REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE, langTypeValue)), MUST);
 		
 		ReferenceManager<IndexSearcher> manager = null;
 		IndexSearcher searcher = null;
 		
-		final Map<String, Boolean> preferabilityMap = newHashMap(toMap(descriptionIds, ALWAYS_FALSE_FUNC));
+		final Map<String, Multimap<String, String>> descriptionAcceptabilityMap = newHashMap();
 
 		try {
-			
-			final DocIdCollector collector = DocIdCollector.create(getIndexServerService().maxDoc(branchPath));
-			getIndexServerService().search(branchPath, languageMemberQuery, collector);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-
 			manager = getIndexServerService().getManager(branchPath);
 			searcher = manager.acquire();
 			
+			final DocIdCollector collector = DocIdCollector.create(searcher.getIndexReader().maxDoc());
+			searcher.search(languageMemberQuery, collector);
+			
+			final Set<String> fieldsToLoad = newHashSet(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID, REFERENCE_SET_MEMBER_REFERENCE_SET_ID, REFERENCE_SET_MEMBER_ACCEPTABILITY_ID);
+			
+			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			while (itr.next()) {
-				preferabilityMap.put(searcher.doc(itr.getDocID(), MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD).get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID), Boolean.TRUE);
+				final Document doc = searcher.doc(itr.getDocID(), fieldsToLoad);
+				final String referencedComponentId = doc.get(REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID);
+				final String refSetId = String.valueOf(doc.getField(REFERENCE_SET_MEMBER_REFERENCE_SET_ID).numericValue().longValue());
+				final String acceptabilityId = String.valueOf(doc.getField(REFERENCE_SET_MEMBER_ACCEPTABILITY_ID).numericValue().longValue());
+				if (!descriptionAcceptabilityMap.containsKey(referencedComponentId)) {
+					final Multimap<String, String> acceptabilityMap = HashMultimap.create();
+					descriptionAcceptabilityMap.put(referencedComponentId, acceptabilityMap);
+				}
+				descriptionAcceptabilityMap.get(referencedComponentId).put(acceptabilityId, refSetId);
 			}
 			
 		} catch (final IOException e) {
@@ -2418,7 +2414,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			}
 		}
 		
-		return preferabilityMap;
+		return descriptionAcceptabilityMap;
 		
 	}
 	
