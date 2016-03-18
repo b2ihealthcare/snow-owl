@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.mrcm.core.widget;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
 import java.util.List;
@@ -181,44 +182,41 @@ public abstract class WidgetBeanProviderStrategy {
 
 	/**
 	 * Creates and returns {@link LeafWidgetBean widget beans} for all descriptions of the currently processed concept.
-	 * @param languageRefSetIdRef 
+	 * @param selectedLanguageRefSetIdRef 
 	 * @param descriptionBeansRef 
 	 * 
 	 * @return the description widget models
 	 */
-	public void createDescriptionWidgetBeans(final ConceptWidgetBean cwb, final AtomicReference<List<LeafWidgetBean>> descriptionBeansRef, final AtomicReference<String> languageRefSetIdRef) {
+	public void createDescriptionWidgetBeans(final ConceptWidgetBean cwb, final AtomicReference<List<LeafWidgetBean>> descriptionBeansRef, final AtomicReference<String> selectedLanguageRefSetIdRef) {
 	
 		final List<LeafWidgetBean> result = Lists.newArrayList();
 		final List<DescriptionWidgetModel> unusedModels = Lists.newArrayList(
 				Lists.transform(conceptWidgetModel.getDescriptionContainerModel().getChildren(), new UncheckedCastFunction<WidgetModel, DescriptionWidgetModel>(DescriptionWidgetModel.class)));
 		
-		Map<String, Boolean> descriptionPreferabilityMap = getDescriptionPreferabilityMap(languageRefSetIdRef.get());
-		
-		if (descriptionPreferabilityMap.isEmpty()) {
-			languageRefSetIdRef.set(Concepts.REFSET_LANGUAGE_TYPE_UK);
-			descriptionPreferabilityMap = getDescriptionPreferabilityMap(languageRefSetIdRef.get());
-		}
+		final Map<String, Multimap<String, String>> descriptionPreferabilityMap = getDescriptionPreferabilityMap();
 		
 		// Create and populate instance beans for matching models
 		for (final SnomedDescription description : getDescriptions()) {
-			
 			if (!description.isActive()) {
 				continue;
 			}
 			
-			if (!descriptionPreferabilityMap.containsKey(description.getId())) {
-				continue;
-			}
-			
+			final String descriptionId = description.getId();
 			final String typeId = description.getTypeId();
-			final boolean preferred = descriptionPreferabilityMap.get(description.getId()).booleanValue() && !Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId);
 			final String term = description.getLabel();
-			final long sctId = Long.valueOf(description.getId());
 			final boolean released = description.isReleased();
+
+			checkState(descriptionPreferabilityMap.containsKey(descriptionId));
+			final Multimap<String, String> acceptabilityMap = descriptionPreferabilityMap.get(descriptionId);
+			
 			CaseSignificance caseSensitivity = description.getCaseSensitivity();
 			
 			final DescriptionWidgetModel matchingModel = conceptWidgetModel.getDescriptionContainerModel().getFirstMatching(typeId);
-			final DescriptionWidgetBean matchingBean = new DescriptionWidgetBean(cwb, matchingModel, sctId, released, preferred);
+			
+			// the description should show up as preferred on the UI if it is preferred in the currently selected lang refset and it's type is not FSN nor TEXT DEF
+			final boolean preferred = !Concepts.FULLY_SPECIFIED_NAME.equals(typeId)	&& !Concepts.TEXT_DEFINITION.equals(typeId)
+					&& acceptabilityMap.get(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED).contains(selectedLanguageRefSetIdRef.get());
+			final DescriptionWidgetBean matchingBean = new DescriptionWidgetBean(cwb, matchingModel, Long.parseLong(descriptionId), released, preferred);
 			
 			matchingBean.setSelectedType(typeId);
 			matchingBean.setTerm(term);
@@ -303,7 +301,7 @@ public abstract class WidgetBeanProviderStrategy {
 	/*returns with the lightweight representation of the SNOMED CT concept identifier by the specified ID*/
 	abstract protected SnomedConceptIndexEntry getConcept(final String conceptId);
 	
-	abstract protected Map<String, Boolean> getDescriptionPreferabilityMap(final String languageRefSetId);
+	abstract protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap();
 	
 	abstract protected Collection<SnomedDescription> getDescriptions();
 	
