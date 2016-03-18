@@ -72,6 +72,7 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 		
 		final Multimap<ModeledWidgetBean, IStatus> results = HashMultimap.create();
 		int numberOfFsns = 0;
+		int numberOfPreferredTerms = 0;
 		final List<ModeledWidgetBean> descriptions = concept.getDescriptions().getElements();
 		for (final DescriptionWidgetBean description : Iterables.filter(descriptions, DescriptionWidgetBean.class)) {
 			
@@ -83,12 +84,14 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 					//check fsn uniqueness for unpersisted concept.
 					if (null == ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, concept.getConceptId())) {
 						final IStatus status = new FullySpecifiedNameUniquenessValidator().validate(description.getTerm());
-						if (!status.isOK()) results.put(description, status);
+						if (!status.isOK()) {
+							results.put(description, status);
+						}
 					}
 				}
 				
 			} else if (description.isPreferred()) { // TODO: validate description type along with preferred flag?
-				
+				numberOfPreferredTerms++;
 				if (StringUtils.isEmpty(description.getTerm())) {
 					results.put(description, createError("Preferred term should be specified."));
 				}
@@ -97,6 +100,10 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 		
 		if (numberOfFsns > 1) {
 			results.put(concept, createError("Concept should have exactly one active fully specified name."));
+		}
+		
+		if (numberOfPreferredTerms != 1) {
+			results.put(concept, createError("Concept should have one active preferred synonym."));
 		}
 		
 		return results;
