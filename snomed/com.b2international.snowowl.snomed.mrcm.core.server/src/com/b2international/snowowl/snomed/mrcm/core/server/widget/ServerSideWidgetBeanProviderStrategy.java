@@ -56,6 +56,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 /**
  * Server side widget bean provider strategy implementation.
@@ -75,8 +76,8 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	}
 
 	@Override
-	protected Map<String, Boolean> getDescriptionPreferabilityMap(final String languageRefSetId) {
-		return getServiceForClass(ISnomedComponentService.class).getDescriptionPreferabilityMap(branchPath, conceptId, languageRefSetId);
+	protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap() {
+		return getServiceForClass(ISnomedComponentService.class).getDescriptionPreferabilityMap(branchPath, conceptId);
 	}
 
 	@Override
