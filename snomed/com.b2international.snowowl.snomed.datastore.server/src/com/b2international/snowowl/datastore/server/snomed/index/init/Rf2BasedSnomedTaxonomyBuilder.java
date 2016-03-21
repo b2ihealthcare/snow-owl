@@ -15,17 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.init;
 
-import static com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode.DEFAULT;
-import static com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode.VALIDATE;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.List;
-
-import bak.pcj.map.LongKeyMap;
 
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
@@ -36,10 +31,11 @@ import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
 import com.b2international.snowowl.snomed.datastore.index.StatementMap;
 import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.google.common.base.Preconditions;
+
+import bak.pcj.map.LongKeyMap;
 
 /**
  * Taxonomy builder backed by RF2 release files.
@@ -50,30 +46,11 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	private static final String ACTIVE_STATUS = "1";
 	private static final int EXPECTED_SIZE = 300000;
 	
-	/**
-	 * Returns with a new taxonomy builder instance after replicating the specified one.
-	 * @param builder the builder to replicate.
-	 * @return the new builder instance.
-	 */
-	public static Rf2BasedSnomedTaxonomyBuilder newInstance(final Rf2BasedSnomedTaxonomyBuilder builder, final String characteristicTypeId) {
-		return newInstance(builder, builder.getMode(), characteristicTypeId);
-	}
-	
 	public static Rf2BasedSnomedTaxonomyBuilder newInstance(final AbstractSnomedTaxonomyBuilder builder, final String characteristicTypeId) {
-		return newInstance(builder, DEFAULT, characteristicTypeId);
-		
-	}
-	
-	public static Rf2BasedSnomedTaxonomyBuilder newValidationInstance(final AbstractSnomedTaxonomyBuilder builder, final String characteristicTypeId) {
-		return newInstance(builder, VALIDATE, characteristicTypeId);
-		
-	}
-	
-	private static Rf2BasedSnomedTaxonomyBuilder newInstance(final AbstractSnomedTaxonomyBuilder builder, final SnomedTaxonomyBuilderMode mode, final String characteristicTypeId) {
 		
 		Preconditions.checkNotNull(builder, "Builder argument cannot be null.");
 		
-		final Rf2BasedSnomedTaxonomyBuilder $ = new Rf2BasedSnomedTaxonomyBuilder(mode, characteristicTypeId);
+		final Rf2BasedSnomedTaxonomyBuilder $ = new Rf2BasedSnomedTaxonomyBuilder(characteristicTypeId);
 		$.nodes = new LongBidiMapWithInternalId(builder.getNodes());
 		$.edges = (StatementMap) ((StatementMap) builder.getEdges()).clone();
 		$.setDirty(builder.isDirty());
@@ -93,19 +70,12 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	 * <br>For values see: {@link IsAStatementWithId}.
 	 */
 	private LongKeyMap edges;
-	private SnomedTaxonomyBuilderMode mode;
 	private String characteristicTypeId;
 	
-	private Rf2BasedSnomedTaxonomyBuilder(final SnomedTaxonomyBuilderMode mode, final String characteristicTypeId) {
-		this.mode = mode;
+	private Rf2BasedSnomedTaxonomyBuilder(final String characteristicTypeId) {
 		this.characteristicTypeId = characteristicTypeId;
 		this.nodes = new LongBidiMapWithInternalId(EXPECTED_SIZE);
 		this.edges = new StatementMap();
-	}
-
-	@Override
-	protected SnomedTaxonomyBuilderMode getMode() {
-		return mode;
 	}
 	
 	@Override

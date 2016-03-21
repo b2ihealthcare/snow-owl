@@ -15,38 +15,36 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
+import java.util.List;
 
-import java.util.Collection;
-
-import com.b2international.commons.Pair;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 /**
- * Runtime exception that has to be thrown when the underlying taxonomy being build
- * by the {@link ISnomedTaxonomyBuilder taxonomy builder} and 
- * the builder is in {@link SnomedTaxonomyBuilderMode#VALIDATE validate} mode.
- *
+ * Thrown when active relationships are found with an inactive or deleted source or target concept.
  */
-public class IncompleteTaxonomyException extends RuntimeException {
+public final class IncompleteTaxonomyException extends RuntimeException {
 
 	private static final long serialVersionUID = -8805505705355299796L;
 	
-	private Collection<Pair<String, String>> incompleteNodePairs;
+	private final List<InvalidRelationship> invalidRelationships;
 	
-	/**
-	 * Creates a new instance with a collection of erroneous node pairs.
-	 */
-	public IncompleteTaxonomyException(final Collection<Pair<String, String>> incompleteNodePairs) {
-		this.incompleteNodePairs = newHashSet(checkNotNull(incompleteNodePairs, "incompleteNodePairs"));
+	public IncompleteTaxonomyException(final List<InvalidRelationship> invalidRelationships) {
+		Preconditions.checkNotNull(invalidRelationships, "List of invalid relationships may not be null.");
+		Preconditions.checkArgument(!invalidRelationships.isEmpty(), "List of invalid relationships may not be empty.");
+		this.invalidRelationships = ImmutableList.copyOf(invalidRelationships);
 	}
 	
 	/**
-	 * Returns with a collection erroneous node pairs. 
+	 * @return the list of invalid relationships found while building the taxonomy (at least a single element is guaranteed to be present)
 	 */
-	public Collection<Pair<String, String>> getIncompleteNodePairs() {
-		return incompleteNodePairs;
+	public List<InvalidRelationship> getInvalidRelationships() {
+		return invalidRelationships;
 	}
-
+	
+	@Override
+	public String toString() {
+		return Objects.toStringHelper(this).add("invalidRelationships", invalidRelationships).toString();
+	}
 }
