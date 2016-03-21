@@ -405,14 +405,6 @@
       </serviceConfigJob>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.revisionCacheWarmerJob">
-      <revisionCacheWarmerJob
-            class="com.b2international.snowowl.snomed.datastore.services.SnomedRevisionCacheWarmerJob"
-            id="com.b2international.snowowl.snomed.datastore.services.SnomedRevisionCacheWarmJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </revisionCacheWarmerJob>
-   </extension>
-   <extension
          point="com.b2international.snowowl.core.terminologyComponentUriResolver">
       <resolver
             class="com.b2international.snowowl.snomed.datastore.uri.SnomedComponentUriResolver"
@@ -440,7 +432,7 @@
       <provider
             class="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIconIdProvider"
             id="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.">
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
       </provider>
    </extension>
    <extension
