@@ -22,8 +22,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
-import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
-import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
 /**
@@ -67,25 +65,6 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 
 	public void postProcess(final CDOTransaction transaction) {
-		Conflict conflict = delegate.postProcess(transaction);
-		if (conflict != null) {
-			String conflictDetails = getConflictDetails(conflict);
-			throw new com.b2international.snowowl.core.exceptions.ConflictException("Conflicts detected while post-processing transaction on branch %s: %s", transaction.getBranch().getPathName(), conflictDetails);
-		}
-	}
-
-	private String getConflictDetails(Conflict conflict) {
-		String details = conflict.getClass().getSimpleName() + " - ";
-		
-		if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
-			AddedInSourceAndDetachedInTargetConflict detachedConflict = (AddedInSourceAndDetachedInTargetConflict) conflict;
-			details += " source: " + detachedConflict.getSourceId();
-			details += " target: " + detachedConflict.getTargetId();
-		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
-			details += ((AddedInSourceAndTargetConflict) conflict).getMessage();
-		} else {
-			details += " id: " + conflict.getID().toString();
-		}
-		return details;
+		delegate.postProcess(transaction);
 	}
 }
