@@ -82,7 +82,7 @@ final class ComponentIdUniquenessValidator {
 		
 		if (!validateComponentId(component)) {
 			
-			final SnomedIdentifier originalIdentifier = SnomedIdentifiers.create(component.getId());
+			final SnomedIdentifier originalIdentifier = SnomedIdentifiers.of(component.getId());
 			String newComponentId = editingContext.generateComponentId(originalIdentifier.getComponentCategory(), originalIdentifier.getNamespace());
 			
 			while (!validateComponentId(newComponentId)) {

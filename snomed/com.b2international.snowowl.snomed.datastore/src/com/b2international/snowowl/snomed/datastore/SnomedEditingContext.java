@@ -1697,7 +1697,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		throw new IllegalArgumentException(MessageFormat.format("Unexpected component class ''{0}''.", component));
 	}
 	
-	private String generateComponentId(final ComponentCategory componentNature, final String namespace) {
+	public String generateComponentId(final ComponentCategory componentNature, final String namespace) {
 		return identifiers.generateId(componentNature, namespace);
 	}
 	
