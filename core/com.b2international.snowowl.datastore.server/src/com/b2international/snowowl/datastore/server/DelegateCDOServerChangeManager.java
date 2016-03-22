@@ -99,11 +99,7 @@ public class DelegateCDOServerChangeManager {
 			createProcessors(branchPath);
 			
 			final Collection<Job> changeProcessingJobs = Sets.newHashSetWithExpectedSize(changeProcessors.size());
-			
-			//copy the session for all threads.
-			//used for loading objects.
-			final AtomicReference<InternalSession> session = new AtomicReference<InternalSession>();
-			session.set(StoreThreadLocal.getSession());
+			final InternalSession session = StoreThreadLocal.getSession();
 			
 			for (final ICDOChangeProcessor processor : changeProcessors) {
 				
@@ -112,7 +108,7 @@ public class DelegateCDOServerChangeManager {
 					public IStatus run(final IProgressMonitor monitor) {
 						
 						try {
-							StoreThreadLocal.setSession(session.get());
+							StoreThreadLocal.setSession(session);
 							processor.process(commitChangeSet);
 							return Statuses.ok();
 						} catch (final Exception e) {
