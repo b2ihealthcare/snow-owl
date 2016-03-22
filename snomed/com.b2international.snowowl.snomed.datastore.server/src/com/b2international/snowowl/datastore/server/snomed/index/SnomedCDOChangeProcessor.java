@@ -68,8 +68,6 @@ import com.b2international.snowowl.datastore.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
@@ -78,7 +76,6 @@ import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ComponentLabelChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptReferringMemberChangeProcessor;
@@ -183,11 +180,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private final Supplier<Pair<LongSet,LongSet>> inferredDifferenceSupplier;
 	private final Supplier<Pair<LongSet,LongSet>> statedDifferenceSupplier;
 	
-	/**
-	 * Flag indicating whether the {@link StoreThreadLocal#getSession()} can be copied or not. 
-	 */
-	private final boolean canCopyThreadLocal;
-	
 	/**Represents the change set.*/
 	private ICDOCommitChangeSet commitChangeSet;
 
@@ -199,14 +191,13 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	 * @param branchPath the branch path where the changes has to be calculated and processed.
 	 * @param canCopyThreadLocal 
 	 */
-	public SnomedCDOChangeProcessor(final ExecutorService executor, final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath, final boolean canCopyThreadLocal) {
+	public SnomedCDOChangeProcessor(final ExecutorService executor, final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath) {
 		
 		Preconditions.checkNotNull(indexUpdater, "Index service argument cannot be null.");
 		Preconditions.checkArgument(indexUpdater instanceof AbstractIndexUpdater, "Index updater must be instance of " + AbstractIndexUpdater.class + ". Was " + indexUpdater.getClass());
 
 		this.index = (SnomedIndexServerService) indexUpdater; 
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		this.canCopyThreadLocal = canCopyThreadLocal;
 		this.executor = executor;
 		
 		inferredNewTaxonomyBuilderSupplier = Suppliers.memoize(new Supplier<ISnomedTaxonomyBuilder>() {
@@ -622,10 +613,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final Runnable previousInferredBuilderRunnable = new SnomedTaxonomyBuilderRunnable(inferredPreviousBuilder);
 		final Runnable previousStatedBuilderRunnable = new SnomedTaxonomyBuilderRunnable(statedPreviousBuilder);
 		
-		final IStoreAccessor accessor = canCopyThreadLocal 
-				? CDOServerUtils.getAccessorByUuid(getConnection().getUuid())
-				: null;
-				
+		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
 		final Runnable newStatedUpdateRunnable = new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, statedNewBuilder, Concepts.STATED_RELATIONSHIP, accessor);
 		final Runnable newInferredUpdateRunnable = new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, inferredNewBuilder, Concepts.INFERRED_RELATIONSHIP, accessor);
 		
@@ -710,10 +698,4 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			sb.append("], ");
 		}
 	}
-
-	/**returns with the CDO connection for SNOMED CT*/
-	private ICDOConnection getConnection() {
-		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
-	}
-
 }

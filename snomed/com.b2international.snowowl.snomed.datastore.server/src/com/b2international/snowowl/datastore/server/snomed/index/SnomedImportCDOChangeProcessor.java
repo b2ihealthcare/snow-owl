@@ -52,7 +52,7 @@ public class SnomedImportCDOChangeProcessor implements ICDOChangeProcessor {
 	private String userId;
 	private final ImportIndexServerService indexService;
 
-	public SnomedImportCDOChangeProcessor(final ImportIndexServerService indexService, final IBranchPath branchPath, final boolean canCopyThreadLocal) {
+	public SnomedImportCDOChangeProcessor(final ImportIndexServerService indexService, final IBranchPath branchPath) {
 		this.indexService = indexService;
 		this.branchPath = branchPath;
 	}

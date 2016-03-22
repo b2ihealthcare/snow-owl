@@ -28,21 +28,13 @@ public class SnomedReasonerChangeProcessorFactory implements CDOChangeProcessorF
 
 	private static final String FACTORY_NAME = "SNOMED CT OWL change processor factory";
 
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.CDOChangeProcessorFactory#getFactoryName()
-	 */
 	@Override
 	public String getFactoryName() {
 		return FACTORY_NAME;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory#createChangeProcessor(com.b2international.snowowl.core.api.IBranchPath, boolean)
-	 */
 	@Override
-	public ICDOChangeProcessor createChangeProcessor(IBranchPath branchPath, final boolean canCopyThreadLocal) throws SnowowlServiceException {
+	public ICDOChangeProcessor createChangeProcessor(IBranchPath branchPath) throws SnowowlServiceException {
 		return new SnomedReasonerChangeProcessor(branchPath);
 	}
 }
