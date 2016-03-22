@@ -350,11 +350,15 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 	
 	private void postProcessTaxonomy(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
+		postProcessTaxonomy(transaction, conflictingItems, StatementCollectionMode.STATED_ISA_ONLY, CharacteristicType.STATED_RELATIONSHIP);
+		postProcessTaxonomy(transaction, conflictingItems, StatementCollectionMode.INFERRED_ISA_ONLY, CharacteristicType.INFERRED_RELATIONSHIP);
+	}
+
+	private void postProcessTaxonomy(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems, 
+			StatementCollectionMode collectionMode,
+			CharacteristicType characteristicType) {
+		
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		
-		StatementCollectionMode collectionMode = StatementCollectionMode.STATED_ISA_ONLY;
-		CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
-		
 		try {
 			final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(branchPath, collectionMode);
 			new SnomedTaxonomyUpdateRunnable(transaction, taxonomyBuilder, characteristicType.getConceptId()).run();
