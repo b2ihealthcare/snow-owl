@@ -113,13 +113,13 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	
 	@Override 
 	public void run() {
-		//if not change processing is triggered without CDO update and notification.
-		//e.g.: on task synchronization
-		if (accessor != null) {
-			StoreThreadLocal.setAccessor(accessor);
-		}
 		
 		try {
+			
+			if (accessor != null) {
+				StoreThreadLocal.setAccessor(accessor);
+			}
+			
 			LOGGER.info("Processing changes taxonomic information.");
 			
 			//here we have to consider changes triggered by repository state revert
@@ -221,7 +221,8 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 			taxonomyBuilder.build();
 		} finally {
 			if (accessor != null) {
-				StoreThreadLocal.release();
+				// Don't release the accessor here, it might be shared and still in use
+				StoreThreadLocal.setAccessor(null);
 				accessor = null;
 			}
 		}
