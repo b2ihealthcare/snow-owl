@@ -474,7 +474,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		assertComponentCreated(testBranchPath.getParent(), "R1", SnomedComponentType.RELATIONSHIP, changeOnParent);
-		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept inactivation");
+		
+		// If changes could not be taken over, C1 will still be active on the test branch
+		SnomedComponentApiAssert.assertComponentActive(testBranchPath, SnomedComponentType.CONCEPT, symbolicNameMap.get("C1"), false);
 	}
 
 	@Test
