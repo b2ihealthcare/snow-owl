@@ -1256,26 +1256,27 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		if (IS_A.equals(relationship.getType().getId())) {
-			
 			// don't delete relationship if it is the only only parent relationship of a concept that can't be deleted
 			// otherwise the relationship can still be deleted without deleting that concept
-			boolean hasOtherParent = false;
-			for (Relationship otherPotentialIsa: relationship.getSource().getOutboundRelationships()) {
-				// This condition also considers relationships which still exist in CDO, but have already been marked for deletion.
-				// See: https://github.com/b2ihealthcare/snowowl/issues/631
-				if (relationship != otherPotentialIsa && IS_A.equals(otherPotentialIsa.getType().getId()) && otherPotentialIsa.isActive()
-						&& !deletionPlan.getDeletedItems().contains(otherPotentialIsa)) {
-					hasOtherParent = true;
-					break;
+			if (relationship.getSource() != null) {
+				boolean hasOtherParent = false;
+				for(Relationship otherPotentialIsa: relationship.getSource().getOutboundRelationships()) {
+					// This condition also considers relationships which still exist in CDO, but have already been marked for deletion.
+					// See: https://github.com/b2ihealthcare/snowowl/issues/631
+					if (relationship != otherPotentialIsa && IS_A.equals(otherPotentialIsa.getType().getId())
+							&& otherPotentialIsa.isActive() && !deletionPlan.getDeletedItems().contains(otherPotentialIsa)) {
+						hasOtherParent = true;
+						break;
+					}
 				}
-			}
 			
-			if (!hasOtherParent) {
-				deletionPlan = canDelete(relationship.getSource(), deletionPlan);
-				if (deletionPlan.isRejected()) {
-					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_ISA_RSHIP_MESSAGE, toString(relationship.getSource())));
-					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_RELATIONSHIP_MESSAGE, toString(relationship)));
-					return deletionPlan;
+				if(!hasOtherParent) {
+					deletionPlan = canDelete(relationship.getSource(), deletionPlan);
+					if(deletionPlan.isRejected()) {
+						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_ISA_RSHIP_MESSAGE, toString(relationship.getSource())));
+						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_RELATIONSHIP_MESSAGE, toString(relationship)));
+						return deletionPlan;
+					}
 				}
 			}
 		}
