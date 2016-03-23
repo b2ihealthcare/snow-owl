@@ -76,6 +76,7 @@ import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ComponentLabelChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptReferringMemberChangeProcessor;
@@ -516,20 +517,17 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				// members are indexes with their UUID
 				query.memberUuid(componentId);
 			}
-			final Future<?> promise = executor.submit(new Runnable() {
+			final Future<?> promise = executor.submit(CDOServerUtils.withAccessor(new Runnable() {
 				@Override
 				public void run() {
 					try {
-						StoreThreadLocal.setAccessor(accessor);
 						index.upsert(branchPath, query.matchAny(), updater, new SnomedDocumentBuilder.Factory());						
 					} catch (Exception e) {
 						LOGGER.error("Failed to upsert a document", e);
 						throw new SnowowlRuntimeException(e);
-					} finally {
-						StoreThreadLocal.setAccessor(null);
 					}
 				}
-			});
+			}, accessor));
 			promises.add(promise);
 		}
 		
@@ -614,8 +612,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final Runnable previousStatedBuilderRunnable = new SnomedTaxonomyBuilderRunnable(statedPreviousBuilder);
 		
 		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
-		final Runnable newStatedUpdateRunnable = new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, statedNewBuilder, Concepts.STATED_RELATIONSHIP, accessor);
-		final Runnable newInferredUpdateRunnable = new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, inferredNewBuilder, Concepts.INFERRED_RELATIONSHIP, accessor);
+		final Runnable newStatedUpdateRunnable = CDOServerUtils.withAccessor(new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, statedNewBuilder, Concepts.STATED_RELATIONSHIP), accessor);
+		final Runnable newInferredUpdateRunnable = CDOServerUtils.withAccessor(new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, inferredNewBuilder, Concepts.INFERRED_RELATIONSHIP), accessor);
 		
 		ForkJoinUtils.runInParallel(newInferredUpdateRunnable, previousInferredBuilderRunnable, newStatedUpdateRunnable, previousStatedBuilderRunnable);
 	}

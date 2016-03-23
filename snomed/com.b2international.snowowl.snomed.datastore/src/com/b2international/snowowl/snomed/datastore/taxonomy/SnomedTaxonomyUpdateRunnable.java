@@ -21,8 +21,6 @@ import java.util.Map;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.server.IStoreAccessor;
-import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EClass;
 import org.slf4j.Logger;
@@ -77,7 +75,6 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	private ICDOCommitChangeSet commitChangeSet;
 	private ISnomedTaxonomyBuilder taxonomyBuilder;
 	private String characteristicTypeId;
-	private IStoreAccessor accessor;
 	private IBranchPath branchPath;
 
 	public SnomedTaxonomyUpdateRunnable(CDOTransaction transaction,
@@ -94,138 +91,122 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 						transaction.getRevisionDeltas(), 
 						-1L),
 				taxonomyBuilder,
-				characteristicTypeId,
-				null);
+				characteristicTypeId);
 	}
 			
 	public SnomedTaxonomyUpdateRunnable(IBranchPath branchPath, 
 			ICDOCommitChangeSet commitChangeSet, 
 			ISnomedTaxonomyBuilder taxonomyBuilder, 
-			String characteristicTypeId, 
-			IStoreAccessor accessor) {
+			String characteristicTypeId) {
 
 		this.branchPath = branchPath;
 		this.commitChangeSet = commitChangeSet;
 		this.taxonomyBuilder = taxonomyBuilder;
 		this.characteristicTypeId = characteristicTypeId;
-		this.accessor = accessor;
 	}
 	
 	@Override 
 	public void run() {
 		
-		try {
+		LOGGER.info("Processing changes taxonomic information.");
+		
+		//here we have to consider changes triggered by repository state revert
+		//this point the following might happen:
+		//SNOMED CT concept and/or relationship will be contained by both deleted and new collections
+		//with same business (SCT ID) but different primary ID (CDO ID) [this is the way how we handle object resurrection]
+		//we decided, to order changes by primary keys. as primary IDs are provided in sequence, one could assume
+		//that the larger primary ID happens later, and that is the truth
+		
+		//but as deletion always happens later than addition, we only have to take care of deletion
+		//so if the deletion is about to erase something that has the same SCT ID but more recent (larger) 
+		//primary key, we just ignore it when building the taxonomy.
+		
+		final Iterable<Concept> newConcepts = FluentIterable.from(commitChangeSet.getNewComponents()).filter(Concept.class);
+		final Iterable<Concept> dirtyConcepts = FluentIterable.from(commitChangeSet.getDirtyComponents()).filter(Concept.class);
+		final Iterable<CDOID> deletedConcepts = ChangeSetProcessorBase.getDetachedComponents(commitChangeSet, SnomedPackage.Literals.CONCEPT);
+		final Iterable<Relationship> newRelationships = FluentIterable.from(commitChangeSet.getNewComponents()).filter(Relationship.class);
+		final Iterable<Relationship> dirtyRelationships = FluentIterable.from(commitChangeSet.getDirtyComponents()).filter(Relationship.class);
+		final Iterable<CDOID> deletedRelationships = ChangeSetProcessorBase.getDetachedComponents(commitChangeSet, SnomedPackage.Literals.RELATIONSHIP);
+		
+		//SCT ID - relationships
+		final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, GET_SCT_ID_FUNCTION));
+		
+		//SCT ID - concepts
+		final Map<String, Concept> _newConcepts = Maps.newHashMap(Maps.uniqueIndex(newConcepts, GET_SCT_ID_FUNCTION));
+		
+		for (final Relationship newRelationship : newRelationships) {
+			taxonomyBuilder.addEdge(createEdge(newRelationship));
+		}
+		
+		for (final Relationship dirtyRelationship : dirtyRelationships) {
+			taxonomyBuilder.addEdge(createEdge(dirtyRelationship));
+		}
+		
+		for (final CDOID relationshipCdoId : deletedRelationships) {
+			final long cdoId = CDOIDUtils.asLong(relationshipCdoId);
+			final SnomedRelationshipIndexQueryAdapter queryAdapter = SnomedRelationshipIndexQueryAdapter.findByStorageKey(cdoId);
+			final Iterable<SnomedRelationshipIndexEntry> results = getIndexService().search(branchPath, queryAdapter, 2);
 			
-			if (accessor != null) {
-				StoreThreadLocal.setAccessor(accessor);
-			}
+			Preconditions.checkState(!CompareUtils.isEmpty(results), "No relationships were found with unique storage key: " + cdoId);
+			Preconditions.checkState(Iterables.size(results) < 2, "More than one relationships were found with unique storage key: " + cdoId);
 			
-			LOGGER.info("Processing changes taxonomic information.");
-			
-			//here we have to consider changes triggered by repository state revert
-			//this point the following might happen:
-			//SNOMED CT concept and/or relationship will be contained by both deleted and new collections
-			//with same business (SCT ID) but different primary ID (CDO ID) [this is the way how we handle object resurrection]
-			//we decided, to order changes by primary keys. as primary IDs are provided in sequence, one could assume
-			//that the larger primary ID happens later, and that is the truth
-			
-			//but as deletion always happens later than addition, we only have to take care of deletion
-			//so if the deletion is about to erase something that has the same SCT ID but more recent (larger) 
-			//primary key, we just ignore it when building the taxonomy.
-			
-			final Iterable<Concept> newConcepts = FluentIterable.from(commitChangeSet.getNewComponents()).filter(Concept.class);
-			final Iterable<Concept> dirtyConcepts = FluentIterable.from(commitChangeSet.getDirtyComponents()).filter(Concept.class);
-			final Iterable<CDOID> deletedConcepts = ChangeSetProcessorBase.getDetachedComponents(commitChangeSet, SnomedPackage.Literals.CONCEPT);
-			final Iterable<Relationship> newRelationships = FluentIterable.from(commitChangeSet.getNewComponents()).filter(Relationship.class);
-			final Iterable<Relationship> dirtyRelationships = FluentIterable.from(commitChangeSet.getDirtyComponents()).filter(Relationship.class);
-			final Iterable<CDOID> deletedRelationships = ChangeSetProcessorBase.getDetachedComponents(commitChangeSet, SnomedPackage.Literals.RELATIONSHIP);
-			
-			//SCT ID - relationships
-			final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, GET_SCT_ID_FUNCTION));
-			
-			//SCT ID - concepts
-			final Map<String, Concept> _newConcepts = Maps.newHashMap(Maps.uniqueIndex(newConcepts, GET_SCT_ID_FUNCTION));
-			
-			for (final Relationship newRelationship : newRelationships) {
-				taxonomyBuilder.addEdge(createEdge(newRelationship));
-			}
-			
-			for (final Relationship dirtyRelationship : dirtyRelationships) {
-				taxonomyBuilder.addEdge(createEdge(dirtyRelationship));
-			}
-			
-			for (final CDOID relationshipCdoId : deletedRelationships) {
-				final long cdoId = CDOIDUtils.asLong(relationshipCdoId);
-				final SnomedRelationshipIndexQueryAdapter queryAdapter = SnomedRelationshipIndexQueryAdapter.findByStorageKey(cdoId);
-				final Iterable<SnomedRelationshipIndexEntry> results = getIndexService().search(branchPath, queryAdapter, 2);
-				
-				Preconditions.checkState(!CompareUtils.isEmpty(results), "No relationships were found with unique storage key: " + cdoId);
-				Preconditions.checkState(Iterables.size(results) < 2, "More than one relationships were found with unique storage key: " + cdoId);
-				
-				final SnomedRelationshipIndexEntry relationship = Iterables.getOnlyElement(results);
-				final String relationshipId = relationship.getId();
-				//same relationship as new and detached
-				if (_newRelationships.containsKey(relationshipId)) {
-					final Relationship newRelationship = _newRelationships.get(relationshipId);
-					final String typeId = newRelationship.getType().getId();
-					//ignore everything but IS_As
-					if (Concepts.IS_A.equals(typeId)) {
-						//check source and destination as well
-						if (relationship.getObjectId().equals(newRelationship.getSource().getId())
-								&& relationship.getValueId().equals(newRelationship.getDestination().getId())) {
-							
-							//and if the new relationship has more recent (larger CDO ID), ignore deletion
-							if (CDOIDUtils.asLong(newRelationship.cdoID()) > cdoId) {
-								continue;
-							}
+			final SnomedRelationshipIndexEntry relationship = Iterables.getOnlyElement(results);
+			final String relationshipId = relationship.getId();
+			//same relationship as new and detached
+			if (_newRelationships.containsKey(relationshipId)) {
+				final Relationship newRelationship = _newRelationships.get(relationshipId);
+				final String typeId = newRelationship.getType().getId();
+				//ignore everything but IS_As
+				if (Concepts.IS_A.equals(typeId)) {
+					//check source and destination as well
+					if (relationship.getObjectId().equals(newRelationship.getSource().getId())
+							&& relationship.getValueId().equals(newRelationship.getDestination().getId())) {
+						
+						//and if the new relationship has more recent (larger CDO ID), ignore deletion
+						if (CDOIDUtils.asLong(newRelationship.cdoID()) > cdoId) {
+							continue;
 						}
 					}
 				}
-				taxonomyBuilder.removeEdge(createEdge(relationship));
 			}
-			for (final Concept newConcept : newConcepts) {
-				taxonomyBuilder.addNode(createNode(newConcept));
-			}
-			for (final CDOID conceptCdoId : deletedConcepts) {
-				
-				//consider the same as for relationship
-				//we have to decide if deletion is the 'stronger' modification or not
-				final long cdoId = CDOIDUtils.asLong(conceptCdoId);
-				final ExtendedComponent concept = getTerminologyBrowser().getExtendedComponent(branchPath, cdoId);
-				checkState(concept != null, "No concepts were found with unique storage key: " + cdoId);
-				final String conceptId = concept.getId();
-				
-				//same concept as addition and deletion
-				if (_newConcepts.containsKey(conceptId)) {
-					final Concept newConcept = _newConcepts.get(conceptId);
-					//check whether new concept has more recent (larger CDO ID) or not, ignore deletion
-					if (CDOIDUtils.asLong(newConcept.cdoID()) > cdoId) {
-						continue;
-					}
-				}
-				
-				//else delete it
-				taxonomyBuilder.removeNode(createDeletedNode(concept));
-			}
-			for (final Concept dirtyConcept : dirtyConcepts) {
-				if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
-					//nothing can be dirty and new at the same time
-					taxonomyBuilder.removeNode(createNode(getTerminologyBrowser().getConcept(branchPath, dirtyConcept.getId())));
-				} else { //consider reverting inactivation
-					if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
-						taxonomyBuilder.addNode(createNode(dirtyConcept));
-					}
+			taxonomyBuilder.removeEdge(createEdge(relationship));
+		}
+		for (final Concept newConcept : newConcepts) {
+			taxonomyBuilder.addNode(createNode(newConcept));
+		}
+		for (final CDOID conceptCdoId : deletedConcepts) {
+			
+			//consider the same as for relationship
+			//we have to decide if deletion is the 'stronger' modification or not
+			final long cdoId = CDOIDUtils.asLong(conceptCdoId);
+			final ExtendedComponent concept = getTerminologyBrowser().getExtendedComponent(branchPath, cdoId);
+			checkState(concept != null, "No concepts were found with unique storage key: " + cdoId);
+			final String conceptId = concept.getId();
+			
+			//same concept as addition and deletion
+			if (_newConcepts.containsKey(conceptId)) {
+				final Concept newConcept = _newConcepts.get(conceptId);
+				//check whether new concept has more recent (larger CDO ID) or not, ignore deletion
+				if (CDOIDUtils.asLong(newConcept.cdoID()) > cdoId) {
+					continue;
 				}
 			}
-			LOGGER.info("Rebuilding taxonomic information based on the changes.");
-			taxonomyBuilder.build();
-		} finally {
-			if (accessor != null) {
-				// Don't release the accessor here, it might be shared and still in use
-				StoreThreadLocal.setAccessor(null);
-				accessor = null;
+			
+			//else delete it
+			taxonomyBuilder.removeNode(createDeletedNode(concept));
+		}
+		for (final Concept dirtyConcept : dirtyConcepts) {
+			if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
+				//nothing can be dirty and new at the same time
+				taxonomyBuilder.removeNode(createNode(getTerminologyBrowser().getConcept(branchPath, dirtyConcept.getId())));
+			} else { //consider reverting inactivation
+				if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
+					taxonomyBuilder.addNode(createNode(dirtyConcept));
+				}
 			}
 		}
+		LOGGER.info("Rebuilding taxonomic information based on the changes.");
+		taxonomyBuilder.build();
 	}
 	
 	/*returns with index service for SNOMED CT ontology*/
