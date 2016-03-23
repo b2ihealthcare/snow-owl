@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import java.util.List;
 
+import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -41,6 +42,31 @@ public final class IncompleteTaxonomyException extends RuntimeException {
 	 */
 	public List<InvalidRelationship> getInvalidRelationships() {
 		return invalidRelationships;
+	}
+	
+	@Override
+	public String getMessage() {
+		// Similar to the output in SnomedTaxonomyValidator, but we don't want to fetch labels here
+		StringBuilder builder = new StringBuilder("The following IS A relationships have a missing or inactive concept: ");
+		
+		for (InvalidRelationship invalidRelationship : invalidRelationships) {
+			builder.append(System.lineSeparator());
+			builder.append('\t');
+			builder.append(invalidRelationship.getRelationshipId());
+			builder.append(": ");
+			builder.append(invalidRelationship.getSourceId());
+			if (MissingConcept.SOURCE.equals(invalidRelationship.getMissingConcept())) {
+				builder.append('*');
+			}
+			builder.append(" --> ");
+			builder.append(invalidRelationship.getDestinationId());
+			if (MissingConcept.DESTINATION.equals(invalidRelationship.getMissingConcept())) {
+				builder.append('*');
+			}
+		}
+		
+		builder.append(System.lineSeparator());
+		return builder.toString();
 	}
 	
 	@Override
