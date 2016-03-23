@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
@@ -34,17 +35,23 @@ public class SearchMergeRequestBuilder {
 	}
 
 	public SearchMergeRequestBuilder withSource(String source) {
-		optionsBuilder.put("source", source);
+		if (!CompareUtils.isEmpty(source)) {
+			optionsBuilder.put("source", source);
+		}
 		return this;
 	}
 
 	public SearchMergeRequestBuilder withTarget(String target) {
-		optionsBuilder.put("target", target);
+		if (!CompareUtils.isEmpty(target)) {
+			optionsBuilder.put("target", target);
+		}
 		return this;
 	}
 
 	public SearchMergeRequestBuilder withStatus(Merge.Status status) {
-		optionsBuilder.put("status", status);
+		if (!CompareUtils.isEmpty(status)) {
+			optionsBuilder.put("status", status);
+		}
 		return this;
 	}
 
