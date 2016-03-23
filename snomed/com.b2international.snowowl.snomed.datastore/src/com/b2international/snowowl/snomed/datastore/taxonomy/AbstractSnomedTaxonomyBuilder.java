@@ -15,22 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import static com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode.DEFAULT;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.isEmpty;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.BitSet;
-import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
@@ -39,8 +32,14 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
+import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  *
@@ -90,13 +89,11 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 	@Override
 	public AbstractSnomedTaxonomyBuilder build() {
-
-		final Collection<Pair<String, String>> invalidNodePairs = newHashSet();
-		
-		final int conceptCount = getNodes().size();
+		final List<InvalidRelationship> invalidRelationships = Lists.newArrayList();
 
 		// allocate data
-		final int[] outgoingIsaHistorgram = new int[conceptCount];
+		final int conceptCount = getNodes().size();
+		final int[] outgoingIsaHistogram = new int[conceptCount];
 		final int[] incomingIsaHistogram = new int[conceptCount];
 
 		ancestors = new int[conceptCount][];
@@ -115,44 +112,39 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			
 			final long[] statement = (long[]) itr.getValue();
 
+			final long relationshipId = itr.getKey();
 			final long destinationId = statement[0];
 			final long sourceId = statement[1];
-			boolean skipEdged = false;
+			
+			boolean edgeSkipped = false;
 			
 			final int sourceConceptInternalId = getNodes().getInternalId(sourceId);
 			if (sourceConceptInternalId < 0) {
-				final Pair<String, String> missingSource = getMode().handleMissingSource(sourceId, destinationId);
-				if (null != missingSource) {
-					invalidNodePairs.add(missingSource);
-				}
-				skipEdged |= true;
+				invalidRelationships.add(new InvalidRelationship(relationshipId, sourceId, destinationId, MissingConcept.SOURCE));
+				edgeSkipped |= true;
 			}
 			
 			final int destinationConceptInternalId = getNodes().getInternalId(destinationId);
 			if (destinationConceptInternalId < 0) {
-				final Pair<String, String> missingDestination = getMode().handleMissingDestination(sourceId, destinationId);
-				if (null != missingDestination) {
-					invalidNodePairs.add(missingDestination);
-				}
-				skipEdged |= true;
+				invalidRelationships.add(new InvalidRelationship(relationshipId, sourceId, destinationId, MissingConcept.DESTINATION));
+				edgeSkipped |= true;
 			}
 
-			if (!skipEdged) {
-				outgoingIsaHistorgram[sourceConceptInternalId]++;
+			if (!edgeSkipped) {
+				outgoingIsaHistogram[sourceConceptInternalId]++;
 				incomingIsaHistogram[destinationConceptInternalId]++;
 			}
 
 			_conceptInternalIds[count][0] = sourceConceptInternalId;
 			_conceptInternalIds[count][1] = destinationConceptInternalId;
 			count++;
-			
 		}
 
-		if (isEmpty(invalidNodePairs)) {
+		if (isEmpty(invalidRelationships)) {
 			
 			for (int i = 0; i < conceptCount; i++) {
 	
-				ancestors[i] = new int[outgoingIsaHistorgram[i]];
+				ancestors[i] = new int[outgoingIsaHistogram[i]];
 				descendants[i] = new int[incomingIsaHistogram[i]];
 	
 			}
@@ -172,7 +164,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			}
 			
 		} else {
-			throw new IncompleteTaxonomyException(invalidNodePairs);
+			throw new IncompleteTaxonomyException(invalidRelationships);
 		}
 
 		dirty = false;
@@ -429,10 +421,6 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 	protected void setDirty(boolean dirty) {
 		this.dirty = dirty;
-	}
-	
-	protected SnomedTaxonomyBuilderMode getMode() {
-		return DEFAULT;
 	}
 	
 	private LongSet getAndProcessAncestors(final String conceptId, final IntToLongFunction processingFunction) {

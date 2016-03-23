@@ -453,6 +453,32 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
 	}
+	
+	@Test
+	public void noRebaseInactivatedConceptOnBranchNewRelationshipOnParent() {
+		mergeNewConceptForward();
+		
+		final Map<?, ?> changeOnBranch = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated concept on branch")
+				.build();
+		
+		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
+
+		final Map<?, ?> changeOnParent = ImmutableMap.builder()
+				.put("sourceId", symbolicNameMap.get("C1"))
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", Concepts.IS_A)
+				.put("destinationId", "49755003") // Morphologic abnormality
+				.put("commitComment", "New relationship")
+				.build();
+
+		assertComponentCreated(testBranchPath.getParent(), "R1", SnomedComponentType.RELATIONSHIP, changeOnParent);
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept inactivation");
+		
+		// If changes could not be taken over, C1 will still be active on the test branch
+		SnomedComponentApiAssert.assertComponentActive(testBranchPath, SnomedComponentType.CONCEPT, symbolicNameMap.get("C1"), false);
+	}
 
 	@Test
 	public void rebaseChangedConceptOnParentDeletedOnBranch() {

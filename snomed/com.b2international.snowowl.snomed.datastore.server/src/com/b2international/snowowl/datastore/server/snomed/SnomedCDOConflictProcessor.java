@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
@@ -48,9 +49,16 @@ import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetCo
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.snomed.*;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
+import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdateRunnable;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -245,16 +253,26 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 
 	@Override
-	public Conflict postProcess(CDOTransaction transaction) {
+	public void postProcess(CDOTransaction transaction) {
 		super.postProcess(transaction);
 		
+		final ImmutableMultimap.Builder<String, Object> conflictingItems = ImmutableMultimap.builder();
+		postProcessLanguageRefSetMembers(transaction, conflictingItems);
+		postProcessTaxonomy(transaction, conflictingItems);
+		
+		Map<String, Object> result = ImmutableMap.<String, Object>copyOf(conflictingItems.build().asMap());
+		if (!result.isEmpty()) {
+			throw new MergeConflictException(result, "Conflicts detected on %s concept(s) while post-processing changes.", result.size());
+		}
+	}
+	
+	private void postProcessLanguageRefSetMembers(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
 		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
 		final Set<SnomedLanguageRefSetMember> membersToRemove = newHashSet();
 		
 		label:
 		for (CDOObject newObject : transaction.getNewObjects().values()) {
-			
 			
 			if (!(newObject instanceof SnomedLanguageRefSetMember)) {
 				continue;
@@ -309,17 +327,17 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 							membersToRemove.add(newLanguageRefSetMember);
 							continue label;
 						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-							return new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), 
+							conflictingItems.put(concept.getId(), new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), 
 									conceptDescriptionMember.cdoID(),
 									"Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s",
-									description.getId(), conceptDescription.getId());
+									description.getId(), conceptDescription.getId()));
 						}
 					} else {
 						if (description.equals(conceptDescription)) {
-							return new AddedInSourceAndTargetConflict(
+							conflictingItems.put(concept.getId(), new AddedInSourceAndTargetConflict(
 									newLanguageRefSetMember.cdoID(), 
 									conceptDescriptionMember.cdoID(),
-									"Different acceptability selected for the same description, %s", description.getId());
+									"Different acceptability selected for the same description, %s", description.getId()));
 						}
 					}
 				}
@@ -329,10 +347,28 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		for (SnomedLanguageRefSetMember memberToRemove : membersToRemove) {
 			unlinkObject(memberToRemove);
 		}
-		
-		return null;
 	}
 	
+	private void postProcessTaxonomy(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
+		postProcessTaxonomy(transaction, conflictingItems, StatementCollectionMode.STATED_ISA_ONLY, CharacteristicType.STATED_RELATIONSHIP);
+		postProcessTaxonomy(transaction, conflictingItems, StatementCollectionMode.INFERRED_ISA_ONLY, CharacteristicType.INFERRED_RELATIONSHIP);
+	}
+
+	private void postProcessTaxonomy(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems, 
+			StatementCollectionMode collectionMode,
+			CharacteristicType characteristicType) {
+		
+		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
+		try {
+			final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(branchPath, collectionMode);
+			new SnomedTaxonomyUpdateRunnable(transaction, taxonomyBuilder, characteristicType.getConceptId()).run();
+		} catch (IncompleteTaxonomyException e) {
+			for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
+				conflictingItems.put(Long.toString(invalidRelationship.getMissingConceptId()), invalidRelationship);
+			}
+		}
+	}
+
 	@Override
 	protected void unlinkObject(final CDOObject object) {
 

@@ -16,8 +16,6 @@
 package com.b2international.snowowl.datastore.server;
 
 
-import org.eclipse.emf.cdo.server.StoreThreadLocal;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
@@ -30,13 +28,10 @@ public interface CDOChangeProcessorFactory {
 	/**
 	 * Creates and returns a {@link ICDOChangeProcessor change processor} on the given branch with the given timestamp.
 	 * @param branchPath
-	 * @param canCopyThreadLocal flag indicating if the current thread's {@link StoreThreadLocal#getSession()} can be propagated to
-	 * any arbitrary threads started from the current thread. If {@code true} the underlying session held by the thread local can be 
-	 * copied for additional threads, otherwise {@code false}.   
 	 * @return
 	 * @throws SnowowlServiceException
 	 */
-	ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath, final boolean canCopyThreadLocal) throws SnowowlServiceException;
+	ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException;
 	
 	/**
 	 * Returns with a human readable name or ID of the concrete implementation for better logging.
@@ -44,5 +39,4 @@ public interface CDOChangeProcessorFactory {
 	 * @return the name or ID of the factory.
 	 */
 	String getFactoryName();
-	
 }

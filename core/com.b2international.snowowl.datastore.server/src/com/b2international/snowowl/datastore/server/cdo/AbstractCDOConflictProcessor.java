@@ -36,6 +36,7 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -104,15 +105,13 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 
 	@Override
-	public Conflict postProcess(final CDOTransaction transaction) {
+	public void postProcess(final CDOTransaction transaction) throws ConflictException {
 		for (final CDOID idToUnlink : idsToUnlink) {
 			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
 			if (objectIfExists != null) {
 				unlinkObject(objectIfExists);
 			}
 		}
-		
-		return null;
 	}
 
 	protected void unlinkObject(final CDOObject object) {
