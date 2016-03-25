@@ -81,6 +81,13 @@
 								<versionRange>[3.8.0,3.9.0)</versionRange>
 							</restrictTo>
 						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.apache.commons.collections</id>
+							<restrictTo>
+								<versionRange>[3.2.2,3.3.0)</versionRange>
+							</restrictTo>
+						</filter>
 					</filters>
 					<environments>
 						<environment>

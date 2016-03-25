@@ -274,6 +274,14 @@
 								<version>${jackson.version}</version>
 							</restrictTo>
 						</filter>
+						<!-- Restrict Apache Commons Collections to versions above and including 3.2.2 -->
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.apache.commons.collections</id>
+							<restrictTo>
+								<versionRange>[3.2.2,3.3.0)</versionRange>
+							</restrictTo>
+						</filter>
 					</filters>
 					<environments>
 						<environment>
@@ -544,6 +552,12 @@
 					<artifactId>mockito-all</artifactId>
 					<version>1.9.5</version>
 					<scope>provided</scope>
+				</dependency>
+				<dependency>
+				    <groupId>commons-collections</groupId>
+				    <artifactId>commons-collections</artifactId>
+				    <version>3.2.2</version>
+				    <scope>provided</scope>
 				</dependency>
 			</dependencies>
 			<repositories>
