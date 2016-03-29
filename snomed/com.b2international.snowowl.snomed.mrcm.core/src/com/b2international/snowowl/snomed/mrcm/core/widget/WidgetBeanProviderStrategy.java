@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +49,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 /**
@@ -78,7 +80,7 @@ public abstract class WidgetBeanProviderStrategy {
 	 * @param relationships the relationships
 	 * @return the relationship widget beans
 	 */
-	public List<LeafWidgetBean> createRelationshipBeans(final ConceptWidgetBean cwb, final RelationshipGroupWidgetModel groupModel, final Collection<SnomedRelationship> relationships) {
+	private List<LeafWidgetBean> createRelationshipBeans(final ConceptWidgetBean cwb, final RelationshipGroupWidgetModel groupModel, final Collection<SnomedRelationship> relationships) {
 		checkNotNull(groupModel, "groupModel");
 		checkNotNull(relationships, "relationships");
 
@@ -158,7 +160,10 @@ public abstract class WidgetBeanProviderStrategy {
 	 */
 	public ListMultimap<Integer, LeafWidgetBean> createRelationshipGroupWidgetBeans(final ConceptWidgetBean cwb) {
 		final ListMultimap<Integer, LeafWidgetBean> result = ArrayListMultimap.create();
-	
+		
+		final List<RelationshipGroupWidgetModel> unusedModels = Lists.newArrayList(
+				Lists.transform(conceptWidgetModel.getRelationshipGroupContainerModel().getChildren(), new UncheckedCastFunction<WidgetModel, RelationshipGroupWidgetModel>(RelationshipGroupWidgetModel.class)));	
+		
 		// Collect group numbers
 		final Multimap<Integer, SnomedRelationship> relationshipsByGroup = HashMultimap.create();
 		
@@ -170,11 +175,21 @@ public abstract class WidgetBeanProviderStrategy {
 		for (final Integer groupNumber : relationshipsByGroup.keySet()) {
 			
 			final GroupFlag groupFlag = (groupNumber == 0) ? GroupFlag.UNGROUPED : GroupFlag.GROUPED;
+			
 			final RelationshipGroupWidgetModel matchedModel = conceptWidgetModel.getRelationshipGroupContainerModel().getFirstMatching(groupFlag);
 			final Collection<SnomedRelationship> groupRelationships = relationshipsByGroup.get(groupNumber);
 			final List<LeafWidgetBean> relationshipBeans = createRelationshipBeans(cwb, matchedModel, groupRelationships);
 			
 			result.putAll(groupNumber, relationshipBeans);
+			unusedModels.remove(matchedModel);
+		}
+		
+		int maxGroupNum = Ordering.natural().max(relationshipsByGroup.keySet());
+		
+		for (RelationshipGroupWidgetModel model : unusedModels) {
+			if (!model.isUnsanctioned()) {
+				result.putAll(++maxGroupNum, createRelationshipBeans(cwb, model, Collections.<SnomedRelationship>emptySet()));
+			}
 		}
 	
 		return result;
