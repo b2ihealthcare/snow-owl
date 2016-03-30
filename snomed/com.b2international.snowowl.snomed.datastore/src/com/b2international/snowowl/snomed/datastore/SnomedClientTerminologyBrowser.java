@@ -18,15 +18,19 @@ package com.b2international.snowowl.snomed.datastore;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
@@ -36,10 +40,12 @@ import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSe
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 import com.google.inject.Provider;
 
 import bak.pcj.LongCollection;
@@ -154,7 +160,43 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
-
+	
+	/**
+	 * Returns the set of proximal primitive supertypes for the passed in concept.  Redundant supertypes are removed from the set.
+	 * A concept is redundant if it is: 
+	 * <ul>
+	 * <li>A duplicate of another concept in the set</li>
+	 * <li>A super type of another concept in the set.</li>
+	 * </ul>
+	 * @param conceptIndexEntry
+	 * @return proximal non-redundant primitive supertypes
+	 */
+	public Set<SnomedConceptIndexEntry> getProximalPrimitiveSuperTypes(SnomedConceptIndexEntry conceptIndexEntry) {
+		
+		Set<SnomedConceptIndexEntry> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptIndexEntry>();
+		
+		if (conceptIndexEntry.isPrimitive()) {
+			proximatePrimitiveSuperTypes.add(conceptIndexEntry);
+			return proximatePrimitiveSuperTypes;
+		}
+		
+		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
+		Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(conceptIndexEntry.getId());
+		
+		
+		for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
+			if (relationship.getAttributeId().equals(Concepts.IS_A)) {
+				if (getConcept(relationship.getValueId()).isPrimitive()) {
+					proximatePrimitiveSuperTypes.add(getConcept(relationship.getValueId()));
+				} else {
+					proximatePrimitiveSuperTypes.addAll(getProximalPrimitiveSuperTypes(getConcept(relationship.getValueId())));
+				}
+			}
+		}
+		Set<SnomedConceptIndexEntry> nonFilteredProximatePrimitiveSuperTypes = filterSuperTypesToProximate(proximatePrimitiveSuperTypes);
+		return filterRedundantSuperTypes(nonFilteredProximatePrimitiveSuperTypes);
+	}
+	
 	/**
 	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the currently active branch. 
 	 * @return an iterable of all SNOMED&nbsp;CT concepts.
@@ -339,4 +381,81 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 		return (SnomedTerminologyBrowser) getWrappedBrowser();
 	}
 	
+	
+	/*
+	 * Filters a set of primitive concepts to a set of most specific primitive concepts.
+	 */
+	private Set<SnomedConceptIndexEntry> filterSuperTypesToProximate(Set<SnomedConceptIndexEntry> superTypes) {
+		Set<SnomedConceptIndexEntry> filteredProximateSuperTypes = new HashSet<SnomedConceptIndexEntry>();
+		
+		for (SnomedConceptIndexEntry superType : superTypes) {
+			if (filteredProximateSuperTypes.isEmpty()) {
+				filteredProximateSuperTypes.add(superType);
+			} else {
+				// remove types from proximateSuperTypes, if there is a more specific type among the superTypes
+				boolean toBeAdded = false;
+				Set<SnomedConceptIndexEntry> removedProximateSuperTypes = new HashSet<SnomedConceptIndexEntry>();
+				for (SnomedConceptIndexEntry proximateSuperType : filteredProximateSuperTypes) {
+					/*
+					 * If the super type is a super type of a type already in the proximate super type set, then 
+					 * it shouldn't be added, no further checks necessary.
+					 */
+					if (isSuperTypeOf(superType, proximateSuperType)) {
+						toBeAdded = false;
+						break;
+					}
+					
+					/* 
+					 * Remove super type and add more specific type. In case of multiple super types we get here several times, 
+					 * but since we are using Set<Integer>, adding the same concept multiple times is not an issue. 
+					 */
+					if (isSuperTypeOf(proximateSuperType, superType)) {
+						removedProximateSuperTypes.add(proximateSuperType);
+					}
+					
+					toBeAdded = true;
+				}
+				
+				// process differences
+				filteredProximateSuperTypes.removeAll(removedProximateSuperTypes);
+				if (toBeAdded) {
+					filteredProximateSuperTypes.add(superType);
+				}
+			}
+		}
+		return filteredProximateSuperTypes;
+	}
+	
+	/**
+	 * The non-redundant proximal primitive supertypes of the focus concepts is the set of 
+	 * all primitive supertypes of all the focus concepts with redundant concepts removed.<br/>
+	 * A concept is redundant if it is:
+	 * <ul>
+	 * <li>A duplicate of another member of the set</li>
+	 * <li>A super type of another concept in the set.</li>
+	 * </ul>
+	 * @param proximalPrimitiveSuperTypes
+	 * @return set of filtered primitive concepts
+	 */
+	private Set<SnomedConceptIndexEntry> filterRedundantSuperTypes(Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes) {
+		Set<SnomedConceptIndexEntry> filteredSuperTypes = Sets.newHashSet();
+		
+		for(SnomedConceptIndexEntry superType: proximalPrimitiveSuperTypes) {
+			if  (!filteredSuperTypes.contains(superType) && !containsSubType(proximalPrimitiveSuperTypes, superType)) {
+				filteredSuperTypes.add(superType);
+			}
+		}
+		return filteredSuperTypes;
+	}
+	
+	private boolean containsSubType(Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes, SnomedConceptIndexEntry conceptToTest) {
+		Collection<SnomedConceptIndexEntry> conceptSubTypes = getSubTypes(conceptToTest);
+		for (SnomedConceptIndexEntry conceptMini : proximalPrimitiveSuperTypes) {
+			if (conceptSubTypes.contains(conceptMini)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
