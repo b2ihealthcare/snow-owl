@@ -300,6 +300,72 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		concept.eAdapters().add(new ConceptParentAdapter(parentConceptIds));
 		return concept;
 	}
+	
+	/**
+	 * Builds a draft child concepts where the parents are proximal primitives of the selected concept.
+	 * @param selectedConceptId
+	 * @param id new concept id
+	 * @param proximalPrimitiveSuperTypes
+	 * @return the new concept
+	 */
+	public Concept buildProximalPrimitiveChildConcept(final String selectedConceptId, final String conceptId, Set<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes) {
+		
+		final Concept selectedConcept = lookup(selectedConceptId, Concept.class);
+		
+		Concept concept = SnomedFactory.eINSTANCE.createConcept();
+		
+		//set concept properties
+		if (null == conceptId) {
+			concept.setId(generateComponentId(concept));
+		} else {
+			concept.setId(conceptId);
+		}
+		concept.setActive(true);
+		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
+		concept.setModule(getDefaultModuleConcept());
+		
+		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
+		final Collection<String> preferredTermIds = getPreferredTermFromStoreIds(selectedConcept, languageRefSet.getIdentifierId());
+	
+		for (final Description description : selectedConcept.getDescriptions()) {
+			
+			if (!description.isActive()) {
+				continue;
+			}
+			
+			final Description newDescription = buildDefaultDescription(description.getTerm(), description.getType().getId());
+			concept.getDescriptions().add(newDescription);
+			final ComponentIdentifierPair<String> acceptabilityPair;
+			
+			//preferred acceptability if FSN or PT
+			if (preferredTermIds.contains(description.getId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
+				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
+			} else {
+				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
+			}
+	
+			//create language reference set membership
+			final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(newDescription.getId());
+			final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(
+					referencedComponentPair, 
+					acceptabilityPair, 
+					getDefaultModuleConcept().getId(), 
+					languageRefSet);
+			
+			newDescription.getLanguageRefSetMembers().add(member);
+		}
+		
+		//hook the concept to the potentially multiple proximate primitive parents
+		final Set<String> parentConceptIds = Sets.newHashSet();
+		for (SnomedConceptIndexEntry proximalSuperType : proximalPrimitiveSuperTypes) {
+			final Concept parentConcept = lookup(proximalSuperType.getId(), Concept.class);
+			buildDefaultIsARelationship(parentConcept, concept);
+			parentConceptIds.add(proximalSuperType.getId());
+		}
+		add(concept);
+		concept.eAdapters().add(new ConceptParentAdapter(parentConceptIds));
+		return concept;
+	}
 
 	/**
 	 * Build a new sibling concept. All description will be replicated from the sibling concept.
@@ -1646,5 +1712,5 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		newComponentIds.add(generatedId);
 		return generatedId;
 	}
-	
+
 }
