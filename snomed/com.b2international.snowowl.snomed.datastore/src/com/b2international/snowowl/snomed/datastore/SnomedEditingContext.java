@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -74,6 +75,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Concepts;
@@ -105,9 +107,11 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameP
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
@@ -305,11 +309,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * Builds a draft child concepts where the parents are proximal primitives of the selected concept.
 	 * @param selectedConceptId
 	 * @param id new concept id
-	 * @param proximalPrimitiveSuperTypes
+	 * @param proximalPrimitiveParents
 	 * @return the new concept
 	 */
-	public Concept buildProximalPrimitiveChildConcept(final String selectedConceptId, final String conceptId, Set<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes) {
+	public Concept buildProximalPrimitiveChildConcept(final String selectedConceptId, final String conceptId, final Set<SnomedConceptIndexEntry> proximalPrimitiveParents) {
 		
+		Preconditions.checkNotNull(proximalPrimitiveParents, "Proximal primitive parents is null.");
 		final Concept selectedConcept = lookup(selectedConceptId, Concept.class);
 		
 		Concept concept = SnomedFactory.eINSTANCE.createConcept();
@@ -321,7 +326,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			concept.setId(conceptId);
 		}
 		concept.setActive(true);
-		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
+		concept.setDefinitionStatus(selectedConcept.getDefinitionStatus());
 		concept.setModule(getDefaultModuleConcept());
 		
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
@@ -355,12 +360,49 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			newDescription.getLanguageRefSetMembers().add(member);
 		}
 		
+		
+		final Concept statedRelationshipConcept = lookup(SnomedConstants.Concepts.STATED_RELATIONSHIP, Concept.class);
+		
+		//copy all inferred 
+		for (final Relationship sourceRelationship : selectedConcept.getOutboundRelationships()) {
+			
+			if (!sourceRelationship.isActive()) {
+				continue;
+			}
+			
+			//Copy inferred non IS-A relationships
+			if (!IS_A.equals(sourceRelationship.getType().getId()) 
+					&& (sourceRelationship.getCharacteristicType().getId().equals(SnomedConstants.Concepts.INFERRED_RELATIONSHIP))) {
+				
+				final Relationship newRelationship = SnomedFactory.eINSTANCE.createRelationship();
+				
+				String namespace = SnomedIdentifiers.create(sourceRelationship.getId()).getNamespace();
+				newRelationship.setId(generateComponentId(ComponentCategory.RELATIONSHIP, namespace));
+				
+				newRelationship.setSource(concept);
+				newRelationship.setType(sourceRelationship.getType());
+				newRelationship.setDestination(sourceRelationship.getDestination());
+				newRelationship.setActive(true);
+				newRelationship.setCharacteristicType(statedRelationshipConcept);
+				newRelationship.setGroup(sourceRelationship.getGroup());
+				newRelationship.setModifier(sourceRelationship.getModifier());
+				newRelationship.setModule(sourceRelationship.getModule());
+				
+				//copy all inferred concrete domains
+				//relationships can also have concrete domains
+				copyInferredConcreteDomainMembers(sourceRelationship, newRelationship);
+				concept.getOutboundRelationships().add(newRelationship);
+			}
+		}
+		
+		copyInferredConcreteDomainMembers(selectedConcept, concept);
+		
 		//hook the concept to the potentially multiple proximate primitive parents
 		final Set<String> parentConceptIds = Sets.newHashSet();
-		for (SnomedConceptIndexEntry proximalSuperType : proximalPrimitiveSuperTypes) {
-			final Concept parentConcept = lookup(proximalSuperType.getId(), Concept.class);
+		for (SnomedConceptIndexEntry proximalPrimitiveParent : proximalPrimitiveParents) {
+			final Concept parentConcept = lookup(proximalPrimitiveParent.getId(), Concept.class);
 			buildDefaultIsARelationship(parentConcept, concept);
-			parentConceptIds.add(proximalSuperType.getId());
+			parentConceptIds.add(proximalPrimitiveParent.getId());
 		}
 		add(concept);
 		concept.eAdapters().add(new ConceptParentAdapter(parentConceptIds));
@@ -368,10 +410,46 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 
 	/**
+	 * @param concreteDomainRefSetMembers
+	 * @param targetSnomedComponent 
+	 */
+	private void copyInferredConcreteDomainMembers(Annotatable sourceSnomedComponent, Annotatable targetSnomedComponent) {
+		
+		EList<SnomedConcreteDataTypeRefSetMember> concreteDomainRefSetMembers = sourceSnomedComponent.getConcreteDomainRefSetMembers();
+		for (SnomedConcreteDataTypeRefSetMember sourceConcreteDataType : concreteDomainRefSetMembers) {
+			
+			//skip inactive
+			if (!sourceConcreteDataType.isActive()) {
+				continue;
+			}
+			
+			//skip non-inferred
+			if (!sourceConcreteDataType.getCharacteristicTypeId().equals(SnomedConstants.Concepts.INFERRED_RELATIONSHIP)) {
+				continue;
+			}
+				
+			SnomedConcreteDataTypeRefSetMember newConcreteDatatype = SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
+			newConcreteDatatype.setUuid(UUID.randomUUID().toString());
+			newConcreteDatatype.setActive(true);
+			newConcreteDatatype.setCharacteristicTypeId(SnomedConstants.Concepts.STATED_RELATIONSHIP);
+			newConcreteDatatype.setLabel(sourceConcreteDataType.getLabel());
+			newConcreteDatatype.setModuleId(sourceConcreteDataType.getModuleId());
+			newConcreteDatatype.setOperatorComponentId(sourceConcreteDataType.getOperatorComponentId());
+			newConcreteDatatype.setReferencedComponentId(sourceConcreteDataType.getReferencedComponentId());
+			newConcreteDatatype.setRefSet(sourceConcreteDataType.getRefSet());
+			newConcreteDatatype.setReleased(false);
+			newConcreteDatatype.setSerializedValue(sourceConcreteDataType.getSerializedValue());
+			newConcreteDatatype.setUomComponentId(sourceConcreteDataType.getUomComponentId());
+			
+			targetSnomedComponent.getConcreteDomainRefSetMembers().add(newConcreteDatatype);
+		}
+		
+	}
+
+	/**
 	 * Build a new sibling concept. All description will be replicated from the sibling concept.
 	 * All IS_A relationship will be copied from the sibling concept. 
 	 * No NON IS_A relationship will be copied from the destination concept of the sibling concept's IS_A relationships.
-	 * @param editingContext the editing concept with an underlying audit CDO view for SNOMED&nbsp;CT concept creation.
 	 * @param siblingConcept the sibling of the new concept.
 	 * @param conceptId the unique ID of the concept. Can be {@code null}. If {@code null}, then the ID will be generated via the specified editing context.
 	 * @return the new concept.
