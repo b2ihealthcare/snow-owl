@@ -751,21 +751,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	/**
-	 * Returns a SNOMED CT Concept database object from the store by loading it, or from the transaction if previously added via {@link #add(EObject)}
-	 * or {@link #addAll(Collection)}, otherwise if not found throws a {@link ComponentNotFoundException}.
-	 * 
-	 * @param conceptIndexEntry
-	 *            - the light-weight SNOMED CT representation of the concept
-	 * @return the concept, never <code>null</code>
-	 * @throws ComponentNotFoundException
-	 *             if the concept could not be retrieved
-	 */
-	public final Concept getConcept(SnomedConceptIndexEntry snomedConceptIndexEntry) {
-		Preconditions.checkNotNull(snomedConceptIndexEntry, "SnomedConceptIndexEntry is null.");
-		return lookup(snomedConceptIndexEntry.getId(), Concept.class);
-	}
-	
-	/**
 	 * @deprecated - use and see {@link SnomedEditingContext#getConcept(String)}, will be removed in 4.6
 	 */
 	public Concept findConceptById(final String conceptId) {

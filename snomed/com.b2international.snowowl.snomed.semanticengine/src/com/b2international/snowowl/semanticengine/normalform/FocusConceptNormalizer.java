@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.collect.Lists;
 
 /**
  * <b>5.3.3 Normalize focus concepts</b><br/>
@@ -73,16 +72,6 @@ public class FocusConceptNormalizer {
 	}
 
 
-	/**
-	 * Returns the normalized results for the concept passed in.
-	 * @param focusConcept
-	 * @return
-	 */
-	public FocusConceptNormalizationResult normalizeFocusConcept(Concept focusConcept) {
-		return normalizeFocusConcepts(Lists.newArrayList(focusConcept));
-		
-	}
-	
 	/** 
 	 * @param focusConcepts
 	 * @return the normalized focus concepts
@@ -138,6 +127,7 @@ public class FocusConceptNormalizer {
 				return true;
 			}
 		}
+		
 		return false;
 	}
 
