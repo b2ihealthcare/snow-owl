@@ -174,15 +174,39 @@ public final class TerminologyTree {
 
 	/**
 	 * Returns the proximal primitive parents of the node identified by the given ID. If the node does not exist in the tree, it will return an empty
-	 * collection. 
-	 * TODO include shortcut when given node is primitive, requires removal or rethinking of how create new sibling concept works on the UI 
+	 * collection. TODO include shortcut when given node is primitive, requires removal or rethinking of how create new sibling concept works on the
+	 * UI
 	 * 
 	 * @param nodeId
 	 * @return an immutable collection, never <code>null</code>
 	 */
 	public Collection<SnomedConceptIndexEntry> getProximalPrimitiveParents(String nodeId) {
+		return getNodes(getProximalPrimitiveParentIds(nodeId));
+	}
+
+	/**
+	 * 
+	 * @param nodeId
+	 * @return
+	 */
+	public Collection<String> getProximalPrimitiveParentIds(String nodeId) {
+		return getProximalPrimitiveParentIds(getAncestors(nodeId));
+	}
+
+	/**
+	 * <p><i>Non-api, tests only</i></p>
+	 * <p>
+	 * Returns the identifiers of the proximal primitive parents based on the given ancestor {@link Iterable}. This is the internal implementation of
+	 * the proximal primitive algorithm. This method should not be part of the API of this or any other class. Use
+	 * {@link #getProximalPrimitiveParents(String)} or {@link #getProximalPrimitiveParentIds(String)} instead. 
+	 * </p>
+	 * 
+	 * @param ancestors
+	 * @return
+	 */
+	/* package */ Set<String> getProximalPrimitiveParentIds(final Iterable<SnomedConceptIndexEntry> ancestors) {
 		final Set<String> proximalPrimitiveParentIds = newHashSet();
-		for (SnomedConceptIndexEntry ancestor : getAncestors(nodeId)) {
+		for (SnomedConceptIndexEntry ancestor : ancestors) {
 			if (ancestor.isPrimitive()) {
 				final String primitiveAncestorId = ancestor.getId();
 				if (proximalPrimitiveParentIds.isEmpty()) {
@@ -206,7 +230,7 @@ public final class TerminologyTree {
 				}
 			}
 		}
-		return getNodes(proximalPrimitiveParentIds);
+		return proximalPrimitiveParentIds;
 	}
 
 	/**
