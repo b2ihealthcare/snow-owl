@@ -184,11 +184,13 @@ public abstract class WidgetBeanProviderStrategy {
 			unusedModels.remove(matchedModel);
 		}
 		
-		int maxGroupNum = Ordering.natural().max(relationshipsByGroup.keySet());
-		
-		for (RelationshipGroupWidgetModel model : unusedModels) {
-			if (!model.isUnsanctioned()) {
-				result.putAll(++maxGroupNum, createRelationshipBeans(cwb, model, Collections.<SnomedRelationship>emptySet()));
+		if (!relationshipsByGroup.isEmpty()) {
+			int maxGroupNum = Ordering.natural().max(relationshipsByGroup.keySet());
+			
+			for (RelationshipGroupWidgetModel model : unusedModels) {
+				if (!model.isUnsanctioned()) {
+					result.putAll(++maxGroupNum, createRelationshipBeans(cwb, model, Collections.<SnomedRelationship>emptySet()));
+				}
 			}
 		}
 	
