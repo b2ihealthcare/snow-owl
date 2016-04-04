@@ -100,6 +100,8 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			.released()
 			.parent()
 			.statedParent()
+			.ancestor()
+			.statedAncestor()
 			.build();
 	
 	/**

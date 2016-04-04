@@ -39,6 +39,7 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
@@ -52,7 +53,9 @@ import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -64,6 +67,7 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
@@ -197,8 +201,24 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 		addPredicatesForFocus(conceptId, HierarchyInclusionType.SELF, predicates, newPredicates);
 		addPredicatesForFocus(conceptId, HierarchyInclusionType.SELF_OR_DESCENDANT, predicates, newPredicates);
 		
-		final Collection<String> ancestorIds = getServiceForClass(SnomedTaxonomyService.class).getAllSupertypes(branchPath, conceptId);
-		addDescendantPredicatesForAncestors(ancestorIds, predicates, newPredicates);
+		final SnomedConceptIndexEntry concept = getServiceForClass(SnomedTerminologyBrowser.class).getConcept(branchPath, conceptId);
+
+		// XXX use both the stated and inferred parent/ancestor IDs to get all possible/applicable MRCM rules
+		final Builder<String> ancestorIds = ImmutableSet.builder();
+		if (concept.getParents() != null) {
+			ancestorIds.addAll(LongSets.toStringSet(concept.getParents()));
+		}
+		if (concept.getAncestors() != null) {
+			ancestorIds.addAll(LongSets.toStringSet(concept.getAncestors()));
+		}
+		if (concept.getStatedParents() != null) {
+			ancestorIds.addAll(LongSets.toStringSet(concept.getStatedParents()));
+		}
+		if (concept.getStatedAncestors() != null) {
+			ancestorIds.addAll(LongSets.toStringSet(concept.getStatedAncestors()));
+		}
+		
+		addDescendantPredicatesForAncestors(ancestorIds.build(), predicates, newPredicates);
 		
 		final Collection<String> containerRefSetIds = newHashSet(); 
 		containerRefSetIds.addAll(getServiceForClass(SnomedTaxonomyService.class).getContainerRefSetIds(branchPath, conceptId));
