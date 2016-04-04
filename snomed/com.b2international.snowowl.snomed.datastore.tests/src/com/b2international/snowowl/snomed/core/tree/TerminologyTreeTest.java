@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +43,6 @@ public class TerminologyTreeTest {
 	private static final String N2 = "2";
 	private static final String N3 = "3";
 	private static final String N4 = "4";
-	private static final String N5 = "5";
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getNodeThrowsExceptionIfDoesNotExist() throws Exception {
@@ -130,6 +130,39 @@ public class TerminologyTreeTest {
 				.build();
 		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
 		assertThat(tree.getProximalPrimitiveParents(N4)).containsOnly(n2);
+	}
+	
+	@Test
+	public void getProximalPrimitiveWithFixedAncestorSet() throws Exception {
+		final TerminologyTree tree = new TestTree()
+				.addNode(N1, true, null, newHashSet(N2, N4))
+					.addNode(N2, true, newHashSet(N1), newHashSet(N3))
+						.addNode(N3, true, newHashSet(N2), newHashSet(N4))
+					.addNode(N4, false, newHashSet(N3, N1))
+				.build();
+		final SnomedConceptIndexEntry n3 = tree.getNode(N3);
+		assertThat(tree.getProximalPrimitiveParents(N4)).containsOnly(n3);
+		
+		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
+		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
+		assertThat(tree.getProximalPrimitiveParentIds(newArrayList(n3, n1, n2))).containsOnly(N3);
+	}
+	
+	@Test
+	public void getProximalPrimitiveWithFixedAncestorSet_ReplacementTest() throws Exception {
+		final TerminologyTree tree = new TestTree()
+				.addNode(N1, true, null, newHashSet(N2))
+					.addNode(N2, true, newHashSet(N1), newHashSet(N4))
+				.addNode(N3, true, null, newHashSet(N4))
+					.addNode(N4, false, newHashSet(N3, N2))
+				.build();
+		
+		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
+		final SnomedConceptIndexEntry n3 = tree.getNode(N3);
+		assertThat(tree.getProximalPrimitiveParents(N4)).containsOnly(n3, n2);
+		
+		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
+		assertThat(tree.getProximalPrimitiveParentIds(newArrayList(n1, n3, n2))).containsOnly(N3, N2);
 	}
 	
 	private static class TestTree {
