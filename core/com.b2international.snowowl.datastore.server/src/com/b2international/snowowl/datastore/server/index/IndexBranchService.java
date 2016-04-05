@@ -60,7 +60,6 @@ import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
-import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
@@ -261,10 +260,7 @@ public class IndexBranchService implements Closeable {
 				documentUpdater.update(builder);
 				final Document updatedDoc = builder.build();
 				checkState(updatedDoc.getFields().size() > 0, "At least one field must be specified");
-				final IndexField<Long> storageKeyField = Mappings.storageKey();
-				final Long storageKey = storageKeyField.getValue(updatedDoc);
-				final Term key = storageKeyField.toTerm(storageKey);
-				updateDocument(key, updatedDoc);
+				updateDocument(updatedDoc);
 			} finally {
 				if (searcher != null) {
 					try {
@@ -277,6 +273,14 @@ public class IndexBranchService implements Closeable {
 		}
 	}
 
+	/**
+	 * Indexes a document using the {@link Mappings#storageKey()} field as index key. 
+	 * @param docWithStorageKey
+	 * @throws IOException
+	 */
+	public void updateDocument(final Document docWithStorageKey) throws IOException {
+		updateDocument(Mappings.storageKey().getValue(docWithStorageKey), docWithStorageKey);
+	}
 
 	public void commit() throws IOException {
 		ensureOpen();
