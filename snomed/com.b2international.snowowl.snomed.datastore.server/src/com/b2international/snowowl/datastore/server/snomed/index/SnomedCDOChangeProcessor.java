@@ -496,15 +496,16 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final Set<String> componentIdsToUpdate = FluentIterable.from(updates.keySet()).filter(new Predicate<String>() {
 			@Override
 			public boolean apply(String componentId) {
-				try {
-					if (deletedComponentIds.contains(Long.parseLong(componentId))) {
-						// skip deleted components
-						return false;
-					}
-				} catch (NumberFormatException e) {
-					// ignore, multiple ID formats are expected, so parsing a long may not work all the time
+				if (updates.get(componentId).isEmpty()) {
+					return false;
 				}
-				return !deletedMemberIds.contains(componentId);
+				try {
+					// skip deleted and non-updated components
+					return !deletedComponentIds.contains(Long.parseLong(componentId));
+				} catch (NumberFormatException e) {
+					// multiple ID formats are expected, so parsing a long may not work all the time
+					return !deletedMemberIds.contains(componentId);
+				}
 			}
 		}).toSet();
 
@@ -544,27 +545,21 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					}
 					// this is not a new ID, execute update
 					newComponentIds.remove(docComponentId);
-					// TODO investigate if parallel doc update helps, probably not
 					final Collection<DocumentUpdater<SnomedDocumentBuilder>> updaters = updates.get(docComponentId);
-					// skip if no updaters have been defined
-					if (!updaters.isEmpty()) {
-						final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
-						final SnomedDocumentBuilder builder = docBuilderFactory.createBuilder(doc);
-						updater.update(builder);
-						checkState(!docsToIndex.containsKey(docComponentId), "Multiple documents found for ID '%s'", docComponentId);
-						docsToIndex.put(docComponentId, builder.build());
-					}
+					final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
+					final SnomedDocumentBuilder builder = docBuilderFactory.createBuilder(doc);
+					updater.update(builder);
+					checkState(!docsToIndex.containsKey(docComponentId), "Multiple documents found for ID '%s'", docComponentId);
+					docsToIndex.put(docComponentId, builder.build());
 				}
 				
 				// process remaining IDs, they are new documents
 				for (String newComponentId : newComponentIds) {
 					final Collection<DocumentUpdater<SnomedDocumentBuilder>> updaters = updates.get(newComponentId);
-					if (!updaters.isEmpty()) {
-						final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
-						final SnomedDocumentBuilder builder = docBuilderFactory.createBuilder();
-						updater.update(builder);
-						docsToIndex.put(newComponentId, builder.build());
-					}
+					final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
+					final SnomedDocumentBuilder builder = docBuilderFactory.createBuilder();
+					updater.update(builder);
+					docsToIndex.put(newComponentId, builder.build());
 				}
 				
 				return docsToIndex.values();
