@@ -124,9 +124,9 @@ public abstract class SnomedComponentApiAssert {
 	public static ValidatableResponse assertComponentReadWithStatus(final IBranchPath branchPath, 
 			final SnomedComponentType componentType, 
 			final String componentId, 
-			final int statusCode) {
+			final int statusCode, final String...expand) {
 
-		return getComponent(branchPath, componentType, componentId)
+		return getComponent(branchPath, componentType, componentId, expand)
 				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
@@ -145,9 +145,10 @@ public abstract class SnomedComponentApiAssert {
 	 * @param branchPath the branch path to test
 	 * @param componentType the expected component type
 	 * @param componentId the expected component identifier
+	 * @param expand expansion parameters
 	 */
-	public static ValidatableResponse assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
-		return assertComponentReadWithStatus(branchPath, componentType, componentId, 200);
+	public static ValidatableResponse assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String...expand) {
+		return assertComponentReadWithStatus(branchPath, componentType, componentId, 200, expand);
 	}
 
 	/**

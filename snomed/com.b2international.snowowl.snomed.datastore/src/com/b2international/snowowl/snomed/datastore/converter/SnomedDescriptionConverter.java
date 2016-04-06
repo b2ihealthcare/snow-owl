@@ -79,12 +79,12 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	@Override
 	protected void expand(List<ISnomedDescription> results) {
 		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
-		expandInactivationProperties(results, descriptionIds);
 
 		if (expand().isEmpty()) {
 			return;
 		}
 		
+		expandInactivationProperties(results, descriptionIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
 		expandType(results, descriptionIds);
 	}
@@ -118,17 +118,19 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	}
 
 	private void expandInactivationProperties(List<ISnomedDescription> results, final Set<String> descriptionIds) {
-		new InactivationExpander<ISnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
-			@Override
-			protected void setAssociationTargets(ISnomedDescription result,Multimap<AssociationType, String> associationTargets) {
-				((SnomedDescription) result).setAssociationTargets(associationTargets);
-			}
-			
-			@Override
-			protected void setInactivationIndicator(ISnomedDescription result, String valueId) {
-				((SnomedDescription) result).setDescriptionInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
-			}
-		}.expand(results, descriptionIds);
+		if (expand().containsKey("inactivationProperties")) {
+			new InactivationExpander<ISnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
+				@Override
+				protected void setAssociationTargets(ISnomedDescription result,Multimap<AssociationType, String> associationTargets) {
+					((SnomedDescription) result).setAssociationTargets(associationTargets);
+				}
+				
+				@Override
+				protected void setInactivationIndicator(ISnomedDescription result, String valueId) {
+					((SnomedDescription) result).setDescriptionInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
+				}
+			}.expand(results, descriptionIds);
+		}
 	}
 
 	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {
