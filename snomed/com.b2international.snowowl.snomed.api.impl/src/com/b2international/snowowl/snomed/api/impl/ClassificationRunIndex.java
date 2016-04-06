@@ -259,9 +259,9 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		return foundRelationshipIndexEntry;
 	}
 
-	public void deleteClassificationData(final UUID id) throws IOException {
+	public void deleteClassificationData(final String classificationId) throws IOException {
 		// Removes all documents, not just the classification run document
-		writer.deleteDocuments(new Term(FIELD_ID, id.toString()));
+		writer.deleteDocuments(new Term(FIELD_ID, classificationId));
 		commit();
 	}
 
