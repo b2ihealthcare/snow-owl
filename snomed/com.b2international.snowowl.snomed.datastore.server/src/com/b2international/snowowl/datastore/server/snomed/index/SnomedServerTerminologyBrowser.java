@@ -40,6 +40,12 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
@@ -76,12 +82,6 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Index-based SNOMED CT Terminology browser implementation.
@@ -145,6 +145,8 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 				.builder(doc)
 				.parents(SnomedMappings.parent().getValueAsLongList(doc))
 				.statedParents(SnomedMappings.statedParent().getValueAsLongList(doc))
+				.ancestors(SnomedMappings.ancestor().getValueAsLongList(doc))
+				.statedAncestors(SnomedMappings.statedAncestor().getValueAsLongList(doc))
 				.build();
 	}
 
