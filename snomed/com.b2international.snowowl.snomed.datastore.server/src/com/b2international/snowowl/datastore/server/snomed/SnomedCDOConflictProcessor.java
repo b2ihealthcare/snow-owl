@@ -23,9 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta.Type;
@@ -39,21 +37,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
+import com.b2international.snowowl.datastore.server.cdo.GenericConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.snomed.*;
+import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
@@ -62,8 +67,11 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdat
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -190,8 +198,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 		if (isComponent(eClass)) {
 			conflict = checkDetachedComponentReferences(internalSourceRevision, detachedTargetIds, DETACHED_FEATURE_MAP.get(eClass));
-		} else if (SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER.isSuperTypeOf(eClass)) {
-			conflict = checkDetachedRefSetReferences(internalSourceRevision, eClass, detachedTargetIds);
 		} else {
 			conflict = null;
 		}
@@ -211,47 +217,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return null;
 	}
 
-	private Conflict checkDetachedRefSetReferences(final InternalCDORevision internalSourceRevision, final EClass sourceEClass, final Set<CDOID> detachedTargetIds) {
-
-		final String referencedComponentId = (String) internalSourceRevision.getValue(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID);
-		final short referencedComponentType = getReferencedComponentType(sourceEClass, referencedComponentId);
-
-		// Unspecified or non-SNOMED CT components can not be checked this way
-		if (referencedComponentType == CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT) {
-			return null;
-		}
-
-		final String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
-		final long referencedComponentStorageKey = getReferencedComponentStorageKey(internalSourceRevision.getBranch(), referencedComponentId, terminologyComponentId); 
-
-		// Not found components are OK as well
-		if (referencedComponentStorageKey == -1L) {
-			return null;
-		}
-
-		final CDOID targetId = CDOIDUtil.createLong(referencedComponentStorageKey);
-		if (detachedTargetIds.contains(targetId)) {
-			return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId);
-		} else {
-			return null;
-		}
-	}
-
-	private short getReferencedComponentType(final EClass sourceEClass, final String referencedComponentId) {
-
-		if (SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER.equals(sourceEClass)) {
-			// Query reference set members need to be special cases so that they don't return CONCEPT as the type
-			return SnomedTerminologyComponentConstants.REFSET_NUMBER;
-		} else {
-			return SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(referencedComponentId);
-		}
-	}
-
-	private long getReferencedComponentStorageKey(final CDOBranch branch, final String referencedComponentId, final String terminologyComponentId) {
-		final IBranchPath branchPath = BranchPathUtils.createPath(branch);
-		return CoreTerminologyBroker.getInstance().getLookupService(terminologyComponentId).getStorageKey(branchPath, referencedComponentId);
-	}
-
 	@Override
 	public void postProcess(CDOTransaction transaction) {
 		super.postProcess(transaction);
@@ -259,6 +224,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		final ImmutableMultimap.Builder<String, Object> conflictingItems = ImmutableMultimap.builder();
 		postProcessLanguageRefSetMembers(transaction, conflictingItems);
 		postProcessTaxonomy(transaction, conflictingItems);
+		postProcessRefSetMembers(transaction, conflictingItems);
 		
 		Map<String, Object> result = ImmutableMap.<String, Object>copyOf(conflictingItems.build().asMap());
 		if (!result.isEmpty()) {
@@ -266,6 +232,35 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 	}
 	
+	private void postProcessRefSetMembers(CDOTransaction transaction, Builder<String, Object> conflictingItems) {
+		final Set<String> detachedMemberIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, SnomedRefSetMember.class)).transform(new Function<SnomedRefSetMember, String>() {
+			@Override
+			public String apply(SnomedRefSetMember input) {
+				return input.getUuid();
+			}
+		}).toSet();
+		final Set<String> detachedCoreComponentIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, Component.class)).transform(new Function<Component, String>() {
+			@Override
+			public String apply(Component input) {
+				return input.getId();
+			}
+		}).toSet();
+		if (!detachedCoreComponentIds.isEmpty()) {
+			final SnomedReferenceSetMembers membersReferencingDetachedComponents = SnomedRequests
+					.prepareSearchMember()
+					.filterByReferencedComponent(detachedCoreComponentIds)
+					.setLimit(detachedCoreComponentIds.size())
+					.build(BranchPathUtils.createPath(transaction).getPath())
+					.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+			
+			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
+				if (!detachedMemberIds.contains(member.getId())) {
+					conflictingItems.put(member.getReferencedComponent().getId(), new GenericConflict("Member '%s' is referencing detached component '%s'", member.getId(), member.getReferencedComponent().getId())); 
+				}
+			}
+		}
+	}
+
 	private void postProcessLanguageRefSetMembers(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
 		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
