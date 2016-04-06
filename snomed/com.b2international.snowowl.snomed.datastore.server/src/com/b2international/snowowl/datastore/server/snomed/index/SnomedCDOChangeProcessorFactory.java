@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -31,7 +28,6 @@ import com.b2international.snowowl.datastore.server.snomed.index.init.ImportInde
 public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactory {
 
 	private static final String FACTORY_NAME = "SNOMED CT change processor factory";
-	static final ExecutorService CHANGE_PROC_EXECUTOR = Executors.newFixedThreadPool(8);
 
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
@@ -42,7 +38,7 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 		}
 		
 		final SnomedIndexUpdater indexService = ApplicationContext.getInstance().getService(SnomedIndexUpdater.class);
-		return new SnomedCDOChangeProcessor(CHANGE_PROC_EXECUTOR, indexService, branchPath);
+		return new SnomedCDOChangeProcessor(indexService, branchPath);
 	}
 
 	@Override

@@ -16,22 +16,25 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.BooleanFilter;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -61,9 +64,9 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -74,9 +77,11 @@ import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexRead;
+import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.index.IndexBranchService;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ComponentLabelChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptReferringMemberChangeProcessor;
@@ -97,8 +102,8 @@ import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder.Factory;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderRunnable;
@@ -111,8 +116,10 @@ import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemInde
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
@@ -184,22 +191,19 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/**Represents the change set.*/
 	private ICDOCommitChangeSet commitChangeSet;
 
-	private ExecutorService executor;
-	
 	/**
 	 * Creates a new change processor for the SNOMED&nbsp;CT ontology. 
 	 * @param indexUpdater the index updater for the SNOMED&nbsp;CT ontology.
 	 * @param branchPath the branch path where the changes has to be calculated and processed.
 	 * @param canCopyThreadLocal 
 	 */
-	public SnomedCDOChangeProcessor(final ExecutorService executor, final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath) {
+	public SnomedCDOChangeProcessor(final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath) {
 		
 		Preconditions.checkNotNull(indexUpdater, "Index service argument cannot be null.");
 		Preconditions.checkArgument(indexUpdater instanceof AbstractIndexUpdater, "Index updater must be instance of " + AbstractIndexUpdater.class + ". Was " + indexUpdater.getClass());
 
 		this.index = (SnomedIndexServerService) indexUpdater; 
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		this.executor = executor;
 		
 		inferredNewTaxonomyBuilderSupplier = Suppliers.memoize(new Supplier<ISnomedTaxonomyBuilder>() {
 			@Override public ISnomedTaxonomyBuilder get() {
@@ -489,67 +493,113 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			updates.putAll(processor.getUpdates());
 		}
 		
-		final Collection<Future<?>> promises = newHashSetWithExpectedSize(updates.keySet().size());
-		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
-		for (String componentId : updates.keySet()) {
-			try {
-				if (deletedComponentIds.contains(Long.parseLong(componentId))) {
-					// skip deleted components
-					continue;
+		final Set<String> componentIdsToUpdate = FluentIterable.from(updates.keySet()).filter(new Predicate<String>() {
+			@Override
+			public boolean apply(String componentId) {
+				if (updates.get(componentId).isEmpty()) {
+					return false;
 				}
-			} catch (NumberFormatException e) {
-				// ignore, multiple ID formats are expected, so parsing a long may not work all the time
+				try {
+					// skip deleted and non-updated components
+					return !deletedComponentIds.contains(Long.parseLong(componentId));
+				} catch (NumberFormatException e) {
+					// multiple ID formats are expected, so parsing a long may not work all the time
+					return !deletedMemberIds.contains(componentId);
+				}
 			}
-			if (deletedMemberIds.contains(componentId)) {
-				continue;
+		}).toSet();
+
+		indexUpdates(componentIdsToUpdate, updates);
+		
+		LOGGER.info("Processing and updating index changes successfully finished.");
+	}
+
+	private void indexUpdates(final Set<String> componentIdsToUpdate, final Multimap<String, DocumentUpdater<SnomedDocumentBuilder>> updates) {
+		if (componentIdsToUpdate.isEmpty()) {
+			return;
+		}
+		LOGGER.info("(Re)indexing {} documents", componentIdsToUpdate.size());
+		// fetch all necessary documents at once to update them 
+		final Collection<Document> documentsToIndex = index.executeReadTransaction(branchPath, new IndexRead<Collection<Document>>() {
+			@Override
+			public Collection<Document> execute(IndexSearcher index) throws IOException {
+				final Query query = getDocsToUpdateQuery(componentIdsToUpdate);
+				
+				final TopDocs result = index.search(query, componentIdsToUpdate.size() * 2);
+				final Map<String, Document> docsToIndex = newHashMap();
+				final Set<String> newComponentIds = newHashSet(componentIdsToUpdate);
+				final Factory docBuilderFactory = new SnomedDocumentBuilder.Factory();
+				// update documents
+				for (int i = 0; i < result.scoreDocs.length; i++) {
+					final Document doc = index.doc(result.scoreDocs[i].doc);
+					
+					final String docComponentId;
+					if (doc.getField(SnomedMappings.id().fieldName()) != null) {
+						docComponentId = SnomedMappings.id().getValueAsString(doc);
+					} else if (doc.getField(SnomedMappings.memberUuid().fieldName()) != null) {
+						docComponentId = SnomedMappings.memberUuid().getValueAsString(doc);
+					} else if (doc.getField(Mappings.storageKey().fieldName()) != null) {
+						docComponentId = Mappings.storageKey().getValueAsString(doc);
+					} else {
+						throw new UnsupportedOperationException("Missing known (either SNOMED ID/Member ID/MRCM storageKey) field on document: " + doc);
+					}
+					// this is not a new ID, execute update
+					newComponentIds.remove(docComponentId);
+					final Collection<DocumentUpdater<SnomedDocumentBuilder>> updaters = updates.get(docComponentId);
+					final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
+					final SnomedDocumentBuilder builder = docBuilderFactory.createBuilder(doc);
+					updater.update(builder);
+					checkState(!docsToIndex.containsKey(docComponentId), "Multiple documents found for ID '%s'", docComponentId);
+					docsToIndex.put(docComponentId, builder.build());
+				}
+				
+				// process remaining IDs, they are new documents
+				for (String newComponentId : newComponentIds) {
+					final Collection<DocumentUpdater<SnomedDocumentBuilder>> updaters = updates.get(newComponentId);
+					final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
+					final SnomedDocumentBuilder builder = docBuilderFactory.createBuilder();
+					updater.update(builder);
+					docsToIndex.put(newComponentId, builder.build());
+				}
+				
+				return docsToIndex.values();
 			}
 			
-			final Collection<DocumentUpdater<SnomedDocumentBuilder>> updaters = updates.get(componentId);
-			final DocumentCompositeUpdater<SnomedDocumentBuilder> updater = new DocumentCompositeUpdater<>(updaters);
-
-			final SnomedQueryBuilder query = SnomedMappings.newQuery();
+		});
+		
+		final IndexBranchService branchIndex = index.getBranchService(branchPath);
+		for (Document docToIndex : documentsToIndex) {
+			try {
+				branchIndex.updateDocument(docToIndex);
+			} catch (IOException e) {
+				throw new IndexException(e);
+			}
+		}
+	}
+	
+	private Query getDocsToUpdateQuery(final Set<String> componentIdsToUpdate) {
+		final Multimap<IndexField<String>, String> stringValuesByField = ArrayListMultimap.create();
+		final Multimap<IndexField<Long>, Long> longValuesByField = ArrayListMultimap.create();
+		for (final String componentId : componentIdsToUpdate) {
 			try {
 				final Long componentIdLong = Long.valueOf(componentId);
 				// components are indexes with their long SNOMED CT ID
 				// predicates are indexed with their storageKey
-				query.id(componentIdLong).storageKey(componentIdLong);
+				longValuesByField.put(SnomedMappings.id(), componentIdLong);
+				longValuesByField.put(Mappings.storageKey(), componentIdLong);
 			} catch (NumberFormatException e) {
 				// members are indexes with their UUID
-				query.memberUuid(componentId);
-			}
-			final Future<?> promise = executor.submit(CDOServerUtils.withAccessor(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						index.upsert(branchPath, query.matchAny(), updater, new SnomedDocumentBuilder.Factory());						
-					} catch (Exception e) {
-						LOGGER.error("Failed to upsert a document", e);
-						throw new SnowowlRuntimeException(e);
-					}
-				}
-			}, accessor));
-			promises.add(promise);
-		}
-		
-
-		// wait for all index updates
-		Throwable ex = null; 
-		for (Future<?> promise : promises) {
-			try {
-				if (ex != null) {
-					promise.cancel(false);
-				} else {
-					promise.get();
-				}
-			} catch (Exception e) {
-				ex = e.getCause();
+				stringValuesByField.put(SnomedMappings.memberUuid(), componentId);
 			}
 		}
-		if (ex != null) {
-			throw SnowowlRuntimeException.wrap(ex);
+		final BooleanFilter filter = new BooleanFilter();
+		for (IndexField<Long> field : longValuesByField.keySet()) {
+			filter.add(field.createTermsFilter(longValuesByField.get(field)), Occur.SHOULD);
 		}
-		
-		LOGGER.info("Processing and updating index changes successfully finished.");
+		for (IndexField<String> field : stringValuesByField.keySet()) {
+			filter.add(field.createTermsFilter(stringValuesByField.get(field)), Occur.SHOULD);
+		}
+		return new ConstantScoreQuery(filter);
 	}
 
 	private Collection<String> getReleasableComponentIds(final ChangeSetProcessor<SnomedDocumentBuilder> processor, final Long storageKey) {
