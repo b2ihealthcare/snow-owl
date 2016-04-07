@@ -145,7 +145,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
         final CDOTransaction dirtyTransaction = applyChangeSet(from, to);
         try {
         	if (dryRun) {
-            	return from;
+            	return to;
             } else {
             	return commitChanges(from, to, commitMessage, dirtyTransaction);
             }
