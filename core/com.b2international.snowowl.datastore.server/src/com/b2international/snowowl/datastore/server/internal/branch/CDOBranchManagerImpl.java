@@ -141,11 +141,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
     
     @Override
-    InternalBranch applyChangeSet(InternalBranch to, InternalBranch from, boolean dryRun, String commitMessage) {
-        final CDOTransaction dirtyTransaction = applyChangeSet(to, from);
+    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
+        final CDOTransaction dirtyTransaction = applyChangeSet(from, to);
         try {
         	if (dryRun) {
-            	return to;
+            	return from;
             } else {
             	return commitChanges(from, to, commitMessage, dirtyTransaction);
             }
@@ -155,8 +155,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
     
     private CDOTransaction applyChangeSet(InternalBranch from, InternalBranch to) {
-    	final CDOBranch targetBranch = getCDOBranch(to);
     	final CDOBranch sourceBranch = getCDOBranch(from);
+    	final CDOBranch targetBranch = getCDOBranch(to);
     	final ICDOConnection connection = repository.getConnection();
     	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
     	final CDOTransaction targetTransaction = connection.createTransaction(targetBranch);
