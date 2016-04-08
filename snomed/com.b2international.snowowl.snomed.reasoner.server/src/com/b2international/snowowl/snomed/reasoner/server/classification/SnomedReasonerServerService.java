@@ -179,10 +179,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private final RemoteJobResultRegistry<ReasonerTaxonomy> taxonomyResultRegistry;
 	
-	public SnomedReasonerServerService(final int maximumReasonerCount, final int maximumReasonerResultsToKeep) {
+	public SnomedReasonerServerService(final int maximumReasonerCount, final int maximumTaxonomiesToKeep) {
 		super(maximumReasonerCount);
-		this.taxonomyResultRegistry = new RemoteJobResultRegistry<ReasonerTaxonomy>(maximumReasonerResultsToKeep);
-		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumReasonerResultsToKeep);
+		this.taxonomyResultRegistry = new RemoteJobResultRegistry<ReasonerTaxonomy>(maximumTaxonomiesToKeep);
+		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} saveable taxonomies to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
 	}
 
 	public void registerListeners() {

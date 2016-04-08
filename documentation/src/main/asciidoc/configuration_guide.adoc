@@ -845,11 +845,19 @@ language's reference set will be used runtime.
 
 |maxReasonerCount
 |`2`
-|The maximum number of reasoners available in the system for consumption. Minimum `1`, maximum `3` is allowed.
+|The maximum number of reasoners permitted to do computation simultaneously. Minimum `1`, maximum `3` is allowed. If the value is set to
+`1`, classification requests will be processed in a sequential fashion.
 
 |maxReasonerResults
 |`10`
-|The maximum number of reasoner results to keep. Minimum `1`, maximum `100` is allowed.
+|The number of inferred taxonomies that should be kept in memory after the reasoner completes the computational stage. The user can only 
+choose to save the results of the classification run if the corresponding taxonomy instance is still present.
+
+|maxReasonerRuns
+|`1000`
+|The number of classification runs of which details should be preserved on disk. Details include inferred and redundant relationships, 
+the list of equivalent concepts found during classification, and classification run metadata (start and end times, status, requesting user, 
+reasoner used for this run).
 
 |showReasonerUsageWarning
 |`true`

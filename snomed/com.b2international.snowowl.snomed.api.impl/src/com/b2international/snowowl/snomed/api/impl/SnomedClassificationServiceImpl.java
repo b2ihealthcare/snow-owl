@@ -89,8 +89,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedClassificationServiceImpl.class);
 	
-	private static final int MAX_INDEXED_RESULTS = 1000;
-	
 	private final class PersistenceCompletionHandler implements IHandler<IMessage> {
 
 		private final UUID uuid;
@@ -214,15 +212,20 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	
 	@Resource
 	private IEventBus bus;
+	
+	@Resource
+	private int maxReasonerRuns;
 
 	@PostConstruct
 	protected void init() {
+		LOG.info("Initializing classification service; keeping indexed data for {} recent run(s).", maxReasonerRuns); 
+		
 		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
 		indexService = new ClassificationRunIndex(dir);
 		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(indexService);
 
 		try {
-			indexService.trimIndex(MAX_INDEXED_RESULTS);
+			indexService.trimIndex(maxReasonerRuns);
 			indexService.invalidateClassificationRuns();
 		} catch (final IOException e) {
 			LOG.error("Failed to run housekeeping tasks for the classification index.", e);
@@ -249,6 +252,8 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 			indexService.dispose();
 			indexService = null;
 		}
+		
+		LOG.info("Classification service shut down.");
 	}
 
 	private static SnomedReasonerService getReasonerService() {
