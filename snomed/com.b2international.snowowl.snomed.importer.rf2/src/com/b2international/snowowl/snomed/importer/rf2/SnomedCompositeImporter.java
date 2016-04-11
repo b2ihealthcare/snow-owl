@@ -62,9 +62,12 @@ import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
@@ -82,6 +85,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+
+import bak.pcj.LongCollection;
 
 /**
  * A composite importer that coordinates the operation of its child importers:
@@ -302,9 +307,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		if (null == inferredTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
-			final SnomedTaxonomyBuilder baseBuilder = new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.INFERRED_ISA_ONLY);
-			final Rf2BasedSnomedTaxonomyBuilder rf2TaxonomyBuilder = Rf2BasedSnomedTaxonomyBuilder.newInstance(baseBuilder, Concepts.INFERRED_RELATIONSHIP);
-			inferredTaxonomyBuilder = rf2TaxonomyBuilder;
+			inferredTaxonomyBuilder = buildTaxonomy(branchPath, StatementCollectionMode.INFERRED_ISA_ONLY);
 		}
 		
 		inferredTaxonomyBuilder.applyNodeChanges(conceptFilePath);
@@ -313,9 +316,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		if (null == statedTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
-			final SnomedTaxonomyBuilder baseBuilder = new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.STATED_ISA_ONLY);
-			final Rf2BasedSnomedTaxonomyBuilder rf2TaxonomyBuilder = Rf2BasedSnomedTaxonomyBuilder.newInstance(baseBuilder, Concepts.STATED_RELATIONSHIP);
-			statedTaxonomyBuilder = rf2TaxonomyBuilder;
+			statedTaxonomyBuilder = buildTaxonomy(branchPath, StatementCollectionMode.STATED_ISA_ONLY);
 		}
 		
 		statedTaxonomyBuilder.applyNodeChanges(conceptFilePath);
@@ -339,6 +340,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		} catch (final SnowowlServiceException e) {
 			throw new ImportException(e);
 		}
+	}
+
+	private Rf2BasedSnomedTaxonomyBuilder buildTaxonomy(final IBranchPath branchPath, final StatementCollectionMode mode) {
+		final ApplicationContext context = ApplicationContext.getInstance();
+		final LongCollection conceptIds = context.getService(SnomedTerminologyBrowser.class).getAllConceptIds(branchPath);
+		final IsAStatementWithId[] statements = context.getService(SnomedStatementBrowser.class).getActiveStatements(branchPath, mode);
+		final SnomedTaxonomyBuilder baseBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
+		return Rf2BasedSnomedTaxonomyBuilder.newInstance(baseBuilder, mode.getCharacteristicType());
 	}
 
 	private void initializeIndex(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {

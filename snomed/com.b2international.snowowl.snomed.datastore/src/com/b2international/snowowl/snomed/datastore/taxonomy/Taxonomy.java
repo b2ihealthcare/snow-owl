@@ -16,20 +16,22 @@
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import com.b2international.commons.Pair;
+import com.google.common.base.Preconditions;
 
 import bak.pcj.set.LongSet;
 
 /**
  * @since 4.6
  */
-public class TaxonomyProvider {
+public class Taxonomy {
 	
 	private final ISnomedTaxonomyBuilder newTaxonomy;
 	private final ISnomedTaxonomyBuilder oldTaxonomy;
 	private final Pair<LongSet, LongSet> diff;
 
-	public TaxonomyProvider(ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, Pair<LongSet, LongSet> diff) {
+	public Taxonomy(ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, Pair<LongSet, LongSet> diff) {
 		this.newTaxonomy = newTaxonomy;
+		Preconditions.checkState(!newTaxonomy.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
 		this.oldTaxonomy = oldTaxonomy;
 		this.diff = diff;
 	}

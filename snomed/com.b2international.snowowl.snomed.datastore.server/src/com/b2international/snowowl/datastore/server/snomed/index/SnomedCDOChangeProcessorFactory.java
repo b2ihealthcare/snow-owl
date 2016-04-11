@@ -21,6 +21,9 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
+import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
  * CDO change processor factory responsible to create {@link SnomedCDOChangeProcessor change processors} for SNOMED CT terminology.
@@ -31,14 +34,18 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
+		final ApplicationContext context = ApplicationContext.getInstance();
 		
 		//SNOMED CT import is in progress
-		if (ApplicationContext.getInstance().exists(ImportIndexServerService.class)) {
-			return new SnomedImportCDOChangeProcessor(ApplicationContext.getInstance().getService(ImportIndexServerService.class), branchPath); 
+		if (context.exists(ImportIndexServerService.class)) {
+			return new SnomedImportCDOChangeProcessor(context.getService(ImportIndexServerService.class), branchPath); 
 		}
 		
-		final SnomedIndexUpdater indexService = ApplicationContext.getInstance().getService(SnomedIndexUpdater.class);
-		return new SnomedCDOChangeProcessor(indexService, branchPath);
+		final SnomedIndexUpdater indexService = context.getService(SnomedIndexUpdater.class);
+		final SnomedTerminologyBrowser terminologyBrowser = context.getService(SnomedTerminologyBrowser.class);
+		final SnomedStatementBrowser statementBrowser = context.getService(SnomedStatementBrowser.class);
+		final ISnomedIdentifierService identifierService = context.getService(ISnomedIdentifierService.class);
+		return new SnomedCDOChangeProcessor(branchPath, terminologyBrowser, statementBrowser, identifierService, indexService);
 	}
 
 	@Override

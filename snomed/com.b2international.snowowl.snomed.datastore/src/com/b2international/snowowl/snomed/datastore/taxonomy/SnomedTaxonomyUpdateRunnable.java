@@ -43,7 +43,6 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
@@ -198,7 +197,7 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		for (final Concept dirtyConcept : dirtyConcepts) {
 			if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
 				//nothing can be dirty and new at the same time
-				taxonomyBuilder.removeNode(createNode(getTerminologyBrowser().getConcept(branchPath, dirtyConcept.getId())));
+				taxonomyBuilder.removeNode(createNode(dirtyConcept.getId(), true));
 			} else { //consider reverting inactivation
 				if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
 					taxonomyBuilder.addNode(createNode(dirtyConcept));
@@ -274,13 +273,13 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	}
 
 	/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/
-	private TaxonomyBuilderNode createNode(final SnomedConceptIndexEntry concept) {
+	private TaxonomyBuilderNode createNode(final String id, final boolean active) {
 		return new TaxonomyBuilderNode() {
 			@Override public boolean isCurrent() {
-				return concept.isActive();
+				return active;
 			}
 			@Override public String getId() {
-				return concept.getId();
+				return id;
 			}
 		};
 	}
