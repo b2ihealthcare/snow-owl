@@ -40,15 +40,19 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -79,12 +83,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 /**
  * Index-based SNOMED CT Terminology browser implementation.
  */
@@ -102,6 +100,8 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			.released()
 			.parent()
 			.statedParent()
+			.ancestor()
+			.statedAncestor()
 			.build();
 	
 	/**
@@ -145,6 +145,8 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 				.builder(doc)
 				.parents(SnomedMappings.parent().getValueAsLongList(doc))
 				.statedParents(SnomedMappings.statedParent().getValueAsLongList(doc))
+				.ancestors(SnomedMappings.ancestor().getValueAsLongList(doc))
+				.statedAncestors(SnomedMappings.statedAncestor().getValueAsLongList(doc))
 				.build();
 	}
 
@@ -540,14 +542,10 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 		}
 		
-		final String terminologyComponentIdAsString = CoreTerminologyBroker.getInstance().getTerminologyComponentId(terminologyComponentId);
-		final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentIdAsString).getNameProvider();
-		final String label = nameProvider.getComponentLabel(branchPath, id);
-		
 		if (types.isEmpty()) {
-			return new ExtendedComponentImpl(SnomedMappings.memberUuid().getValue(doc), label, iconId, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
+			return new ExtendedComponentImpl(SnomedMappings.memberUuid().getValue(doc), id, iconId, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
 		} else {
-			return new ExtendedComponentImpl(id, label, iconId, terminologyComponentId);
+			return new ExtendedComponentImpl(id, id, iconId, terminologyComponentId);
 		}
 	}
 

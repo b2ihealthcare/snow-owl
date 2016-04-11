@@ -44,8 +44,8 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * @since 2.0
@@ -100,8 +100,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConceptWithGeneratedId() {
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
-		final String conceptId = snomedIdentifiers.generate(null, ComponentCategory.CONCEPT);
+		final String conceptId = identifierService.reserve(null, ComponentCategory.CONCEPT);
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
 		final String createdId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
@@ -118,8 +117,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createConceptWithGeneratedIdOnBranch() {
 		givenBranchWithPath(testBranchPath);
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
-		final String conceptId = snomedIdentifiers.generate(null, ComponentCategory.CONCEPT);
+		final String conceptId = identifierService.reserve(null, ComponentCategory.CONCEPT);
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String createdId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
@@ -260,8 +258,11 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createDuplicateConcept() throws Exception {
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, requestBody);
-		// component should not be created with duplicate ID
-		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.CONCEPT, ImmutableMap.<Object, Object>builder().put("id", conceptId).putAll(requestBody).build(), 409);
+
+		final Map<Object, Object> dupRequestBody = Maps.<Object, Object>newHashMap(requestBody);
+		dupRequestBody.put("id", conceptId);
+		dupRequestBody.put("commitComment", "New duplicate concept on MAIN");
+		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.CONCEPT, dupRequestBody, 409);
 	}
 	
 }

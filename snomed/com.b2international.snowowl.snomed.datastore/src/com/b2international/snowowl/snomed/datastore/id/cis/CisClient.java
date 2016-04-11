@@ -32,6 +32,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
@@ -127,7 +128,7 @@ class CisClient {
 	}
 
 	public String login() {
-		LOGGER.info("Logging in to Component Identifier service.");
+		LogUtils.logUserAccess(LOGGER, username, "Logging in to Component Identifier service.");
 
 		HttpPost request = null;
 
@@ -148,7 +149,7 @@ class CisClient {
 	}
 
 	public void logout(final String token) {
-		LOGGER.info("Logging out from Component Identifier service.");
+		LogUtils.logUserAccess(LOGGER, username, "Logging out from Component Identifier service.");
 
 		HttpPost request = null;
 
@@ -165,5 +166,4 @@ class CisClient {
 				release(request);
 		}
 	}
-
 }

@@ -19,49 +19,37 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.IBranchPathMap;
-import com.b2international.snowowl.datastore.ICodeSystem;
-import com.b2international.snowowl.datastore.TerminologyRegistryService;
-import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 1.0
+ * @deprecated - will be removed in 4.7, use {@link Request} API instead
  */
 public class StorageRef implements InternalStorageRef {
 
-	private static final IBranchPathMap MAIN_BRANCH_PATH_MAP = new UserBranchPathMap();
 	private static final long DEFAULT_ASYNC_TIMEOUT_DELAY = 5000;
 
 	private static ICDOConnectionManager getConnectionManager() {
 		return ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
 	}
 
-	private static TerminologyRegistryService getRegistryService() {
-		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
-	}
-	
 	private static IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
-	private final String shortName;
+	private final String repositoryId;
 	private final String branchPath;
+	
 	private Branch branch;
 
-	public StorageRef(String codeSystem, String branchPath) {
-		this.shortName = codeSystem;
+	public StorageRef(String repositoryId, String branchPath) {
+		this.repositoryId = repositoryId;
 		this.branchPath = branchPath;
-	}
-	
-	@Override
-	public String getShortName() {
-		return shortName;
 	}
 	
 	@Override
@@ -70,19 +58,8 @@ public class StorageRef implements InternalStorageRef {
 	}
 
 	@Override
-	public ICodeSystem getCodeSystem() {
-		// XXX: in case of a non-MAIN-registered code system, we would need a repository UUID to get the code system to get the repository UUID
-		final ICodeSystem codeSystem = getRegistryService().getCodeSystemByShortName(MAIN_BRANCH_PATH_MAP, shortName);
-		if (null != codeSystem) {
-			return codeSystem;
-		}
-
-		throw new CodeSystemNotFoundException(shortName);
-	}
-
-	@Override
-	public String getRepositoryUuid() {
-		return getCodeSystem().getRepositoryUuid();
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 
 	protected final void setBranch(Branch branch) {
@@ -93,7 +70,7 @@ public class StorageRef implements InternalStorageRef {
 	public Branch getBranch() {
 		if (branch == null) {
 			branch = RepositoryRequests
-						.branching(getRepositoryUuid())
+						.branching(getRepositoryId())
 						.prepareGet(branchPath)
 						.executeSync(getEventBus(), DEFAULT_ASYNC_TIMEOUT_DELAY);
 		}
@@ -114,7 +91,7 @@ public class StorageRef implements InternalStorageRef {
 	}
 
 	private CDOBranch getCdoBranchOrNull() {
-		return getConnectionManager().getByUuid(getRepositoryUuid()).getBranch(getBranch().branchPath());
+		return getConnectionManager().getByUuid(getRepositoryId()).getBranch(getBranch().branchPath());
 	}
 
 	@Override
@@ -128,8 +105,8 @@ public class StorageRef implements InternalStorageRef {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("StorageRef [shortName=");
-		builder.append(shortName);
+		builder.append("StorageRef [repositoryId=");
+		builder.append(repositoryId);
 		builder.append(", branchPath=");
 		builder.append(branchPath);
 		builder.append("]");

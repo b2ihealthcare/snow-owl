@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>4.6.0-SNAPSHOT</version>
+	<version>4.7.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -272,6 +272,14 @@
 							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>
 							<restrictTo>
 								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<!-- Restrict Apache Commons Collections to versions above and including 3.2.2 -->
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>org.apache.commons.collections</id>
+							<restrictTo>
+								<versionRange>[3.2.2,3.3.0)</versionRange>
 							</restrictTo>
 						</filter>
 					</filters>
@@ -549,6 +557,12 @@
 				    <groupId>edu.stanford.protege</groupId>
 				    <artifactId>org.semanticweb.owl.owlapi</artifactId>
 				    <version>3.4.4</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+				    <groupId>commons-collections</groupId>
+				    <artifactId>commons-collections</artifactId>
+				    <version>3.2.2</version>
 				    <scope>provided</scope>
 				</dependency>
 			</dependencies>

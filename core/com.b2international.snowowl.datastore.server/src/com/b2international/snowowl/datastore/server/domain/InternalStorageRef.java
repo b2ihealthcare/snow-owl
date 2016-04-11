@@ -19,22 +19,13 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.IStorageRef;
-import com.b2international.snowowl.datastore.ICodeSystem;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 1.0
+ * @deprecated - will be removed in 4.7, use {@link Request} API instead
  */
 public interface InternalStorageRef extends IStorageRef {
-
-	/**
-	 * @return
-	 */
-	ICodeSystem getCodeSystem();
-
-	/**
-	 * @return
-	 */
-	String getRepositoryUuid();
 
 	/**
 	 * @return the Branch associated with the storage reference.

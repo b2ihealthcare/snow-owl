@@ -391,13 +391,6 @@ public interface ISnomedComponentService {
 	Multimap<String, String> getPreferredTermToIdsMapping(final IBranchPath branchPath, final String focusConceptId);
 	
 	/**
-	 * Returns with a mapping between concept FSNs and the concept IDs for all active concepts.
-	 * @param branchPath the branch path for the operation.
-	 * @param languageRefSetId the ID the language reference set which FSNs will be collected.
-	 */
-	Multimap<String, String> getFullySpecifiedNameToIdsMapping(final IBranchPath branchPath, final String languageRefSetId);
-	
-	/**
 	 * @param branchPath
 	 * @return
 	 */
@@ -406,10 +399,9 @@ public interface ISnomedComponentService {
 	/**
 	 * @param branchPath
 	 * @param conceptId
-	 * @param languageRefSetId
 	 * @return
 	 */
-	Map<String, Boolean> getDescriptionPreferabilityMap(IBranchPath branchPath, String conceptId, String languageRefSetId);
+	Map<String, Multimap<String, String>> getDescriptionPreferabilityMap(IBranchPath branchPath, String conceptId);
 	
 	/**
 	 * Returns with all existing {@link SnomedModuleDependencyRefSetMemberFragment module dependency reference set member}s from the underling ontology.

@@ -17,17 +17,17 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 
 /**
  * @since 4.5
  */
-public final class BranchMergeRequestBuilder {
+public final class CreateMergeRequestBuilder {
 	
 	private String source;
 	private String target;
@@ -36,34 +36,34 @@ public final class BranchMergeRequestBuilder {
 	
 	private String repositoryId;
 	
-	BranchMergeRequestBuilder(String repositoryId) {
+	CreateMergeRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
 	}
 	
-	public BranchMergeRequestBuilder setSource(String source) {
+	public CreateMergeRequestBuilder setSource(String source) {
 		this.source = source;
 		return this;
 	}
 	
-	public BranchMergeRequestBuilder setTarget(String target) {
+	public CreateMergeRequestBuilder setTarget(String target) {
 		this.target = target;
 		return this;
 	}
 	
-	public BranchMergeRequestBuilder setCommitComment(String commitComment) {
+	public CreateMergeRequestBuilder setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
 		return this;
 	}
 	
-	public BranchMergeRequestBuilder setReviewId(String reviewId) {
+	public CreateMergeRequestBuilder setReviewId(String reviewId) {
 		this.reviewId = reviewId;
 		return this;
 	}
 	
-	public Request<ServiceProvider, Branch> build() {
+	public Request<ServiceProvider, Merge> build() {
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
 		final IBranchPath targetPath = BranchPathUtils.createPath(target);
-		final BaseRequest<RepositoryContext, Branch> next;
+		final BaseRequest<RepositoryContext, Merge> next;
 		
 		if (sourcePath.getParent().equals(targetPath)) {
 			next = new BranchMergeRequest(source, target, commitComment, reviewId);

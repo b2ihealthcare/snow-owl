@@ -27,7 +27,9 @@ import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.Change;
@@ -47,6 +49,7 @@ import com.b2international.snowowl.datastore.index.diff.NodeDiffDerivation;
 import com.b2international.snowowl.datastore.index.diff.NodeDiffImpl;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Multimap;
 
 /**
  * Basic component hierarchy builder.
@@ -61,6 +64,11 @@ public abstract class VersionCompareHierarchyBuilderImpl implements VersionCompa
 	@Override
 	public boolean isRoot(final NodeDiff node) {
 		return false;
+	}
+
+	@Override
+	public Map<String, String> resolveLabels(Multimap<IBranchPath, String> componentIdsByBranch) {
+		return Collections.emptyMap();
 	}
 	
 	@Override
@@ -79,8 +87,12 @@ public abstract class VersionCompareHierarchyBuilderImpl implements VersionCompa
 		checkNotNull(componentId, "componentId");
 		
 		final String iconId = getIconIdProvider().getIconId(branchPath, componentId);
-		final String label = getNameProvider().getComponentLabel(branchPath, componentId);
+		final String label = getLabel(branchPath, componentId);
 		return new NodeDiffImpl(getTerminologyComponentId(), NO_STORAGE_KEY, componentId, label, iconId, null, UNCHANGED);
+	}
+
+	protected String getLabel(IBranchPath branchPath, String componentId) {
+		return getNameProvider().getComponentLabel(branchPath, componentId);
 	}
 
 	protected abstract IComponentIconIdProvider<String> getIconIdProvider();

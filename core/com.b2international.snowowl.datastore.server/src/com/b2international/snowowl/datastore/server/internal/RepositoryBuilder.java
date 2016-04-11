@@ -25,6 +25,7 @@ public final class RepositoryBuilder {
 	
 	private String repositoryId;
 	private int numberOfWorkers;
+	private int mergeMaxResults;
 
 	RepositoryBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
@@ -34,9 +35,13 @@ public final class RepositoryBuilder {
 		this.numberOfWorkers = numberOfWorkers;
 		return this;
 	}
+
+	public RepositoryBuilder setMergeMaxResults(int mergeMaxResults) {
+		this.mergeMaxResults = mergeMaxResults;
+		return this;
+	}
 	
 	public Repository build(Environment env) {
-		return new CDOBasedRepository(repositoryId, numberOfWorkers, env);
+		return new CDOBasedRepository(repositoryId, numberOfWorkers, mergeMaxResults, env);
 	}
-
 }

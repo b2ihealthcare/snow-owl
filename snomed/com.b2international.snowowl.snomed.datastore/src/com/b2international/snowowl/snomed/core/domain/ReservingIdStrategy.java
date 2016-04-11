@@ -19,31 +19,31 @@ import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.google.common.base.Objects;
 
-public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
+/**
+ * @since 4.5
+ */
+public class ReservingIdStrategy implements IdGenerationStrategy {
 
 	private final ComponentCategory category;
 	private final String namespaceId;
 
-	public NamespaceIdGenerationStrategy(final ComponentCategory category) {
+	public ReservingIdStrategy(final ComponentCategory category) {
 		this(category, null);
 	}
 	
-	/**
-	 * @param category
-	 * @param namespaceId
-	 */
-	public NamespaceIdGenerationStrategy(final ComponentCategory category, final String namespaceId) {
+	public ReservingIdStrategy(final ComponentCategory category, final String namespaceId) {
 		this.category = category;
 		this.namespaceId = namespaceId;
 	}
 
 	@Override
 	public String generate(BranchContext context) {
-		final SnomedIdentifiers snomedIdentifiers = context.service(SnomedIdentifiers.class);
-		// TODO use reserve instead?
-		final String componentId = snomedIdentifiers.generate(getNamespaceIdOrDefault(), category);
+		// XXX: Does not add an IdAction to SnomedIdentifiers
+		final ISnomedIdentifierService identifierService = context.service(ISnomedIdentifierService.class);
+		final String componentId = identifierService.reserve(getNamespaceIdOrDefault(), category);
 		return componentId;
 	}
 
@@ -56,12 +56,9 @@ public class NamespaceIdGenerationStrategy implements IdGenerationStrategy {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("NamespaceIdGenerationStrategy [category=");
-		builder.append(category);
-		builder.append(", namespaceId=");
-		builder.append(namespaceId);
-		builder.append("]");
-		return builder.toString();
+		return Objects.toStringHelper(this)
+				.add("category", category)
+				.add("namespaceId", namespaceId)
+				.toString();
 	}
 }

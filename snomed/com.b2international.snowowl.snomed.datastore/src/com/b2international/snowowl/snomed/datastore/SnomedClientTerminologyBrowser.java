@@ -154,7 +154,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
-
+	
 	/**
 	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the currently active branch. 
 	 * @return an iterable of all SNOMED&nbsp;CT concepts.
@@ -339,4 +339,14 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 		return (SnomedTerminologyBrowser) getWrappedBrowser();
 	}
 	
+		private boolean containsSubType(Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes, SnomedConceptIndexEntry conceptToTest) {
+		Collection<SnomedConceptIndexEntry> conceptSubTypes = getSubTypes(conceptToTest);
+		for (SnomedConceptIndexEntry conceptMini : proximalPrimitiveSuperTypes) {
+			if (conceptSubTypes.contains(conceptMini)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

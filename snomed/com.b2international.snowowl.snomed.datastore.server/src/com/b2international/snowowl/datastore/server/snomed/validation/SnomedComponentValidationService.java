@@ -23,11 +23,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.datastore.server.validation.ComponentValidationService;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.ISnomedComponentValidationService;
-import com.google.common.collect.FluentIterable;
 
 /**
  * Server side SNOMED&nbsp;CT component validation service interface.
@@ -37,13 +36,14 @@ public class SnomedComponentValidationService extends ComponentValidationService
 
 	@Override
 	protected Collection<ComponentValidationDiagnostic> doValidateAll(final IBranchPath branchPath, final IProgressMonitor monitor) {
-		return validate(
-				branchPath, 
-				FluentIterable.from(getTerminologyBrowser().getConcepts(branchPath)).filter(SnomedIndexEntry.ACTIVE_PREDICATE).toSet(),
-				monitor);
+		return validate(branchPath, getAllActiveConcepts(branchPath), monitor);
 	}
 
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
+	private Collection<SnomedConceptIndexEntry> getAllActiveConcepts(final IBranchPath branchPath) {
+		return SnomedConceptIndexEntry.fromConcepts(SnomedRequests.prepareSearchConcept()
+			.filterByActive(true)
+			.all()
+			.build(branchPath.getPath())
+			.executeSync(ApplicationContext.getServiceForClass(IEventBus.class)));
 	}
 }

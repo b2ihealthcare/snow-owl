@@ -42,7 +42,7 @@ public class ReserveAction extends IdAction<String> {
 
 	@Override
 	public void execute() {
-		identifierService.reserve(namespace, category);
+		componentId = identifierService.reserve(namespace, category);
 	}
 
 	@Override

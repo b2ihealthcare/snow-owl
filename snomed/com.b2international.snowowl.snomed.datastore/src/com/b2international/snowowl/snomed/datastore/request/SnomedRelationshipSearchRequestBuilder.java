@@ -56,7 +56,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 	}
 	
 	@Override
-	protected SearchRequest<SnomedRelationships> create() {
+	protected SearchRequest<SnomedRelationships> createSearch() {
 		return new SnomedRelationshipSearchRequest();
 	}
 }

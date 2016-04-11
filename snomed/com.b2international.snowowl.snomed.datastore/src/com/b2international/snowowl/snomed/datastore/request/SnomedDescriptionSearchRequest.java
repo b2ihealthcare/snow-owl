@@ -225,14 +225,16 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private Query createTermDisjunctionQuery(final String searchTerm) {
-		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
-		final QueryBuilder termQueryBuilder = new QueryBuilder(bookendAnalyzer);
 		final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
 		
-		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, termQueryBuilder));
-		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, termQueryBuilder));
-		
 		final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
+		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
+		
+		final QueryBuilder bookendTermQueryBuilder = new QueryBuilder(bookendAnalyzer);
+		final QueryBuilder nonBookendTermQueryBuilder = new QueryBuilder(nonBookendAnalyzer);
+		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, bookendTermQueryBuilder));
+		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, nonBookendTermQueryBuilder));
+		
 		final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
 		termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
 		
@@ -425,4 +427,5 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	protected Class<SnomedDescriptions> getReturnType() {
 		return SnomedDescriptions.class;
 	}
+	
 }

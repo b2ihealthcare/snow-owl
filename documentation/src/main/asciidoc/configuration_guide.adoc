@@ -851,6 +851,18 @@ language's reference set will be used runtime.
 |`10`
 |The maximum number of reasoner results to keep. Minimum `1`, maximum `100` is allowed.
 
+|showReasonerUsageWarning
+|`true`
+|'true' will display a dialog if any user selects a non-ELK reasoner, citing memory and compatibility problems, also recommending to contact B2i.
+
+|concreteDomainSupport
+|`false`
+|'true' will turn on support for concrete domains.
+
+|inferredEditingEnabled
+|`false`
+|'true' will enable manual editing of inferred relationships and concrete domain elements.
+
 |defaultModule
 |`900000000000207008`
 |The default SNOMED CT Module to use when none is specified. The default module is SNOMED CT Core.
@@ -860,6 +872,10 @@ language's reference set will be used runtime.
 snomed:
   language: en-gb
   maxReasonerCount: 1
+  maxReasonerResults: 20
+  showReasonerUsageWarning: true
+  concreteDomainSupport: true
+  inferredEditingEnabled: false
 --------------------------
 
 ==== SNOMED CT Component Identifier Configuration

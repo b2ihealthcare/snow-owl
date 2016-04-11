@@ -28,11 +28,6 @@ public class SnomedRefSetDiagnostic implements IDiagnostic {
 	
 	public static final String SOURCE_ID = "com.b2international.snowowl.snomed.validation.diagnostic.SnomedRefSetDiagnostic";
 	
-	public static final String ACTIVE_MEMBER_INACTIVE_REFCOMPONENT = "The reference set member for component %s (%s) is active, however the referenced component itself is inactive";
-	public static final String MISSING_REFERENCED_CONCEPT = "The reference set member is referring to a non-existing concept %s (%s)";
-	public static final String MISSING_REFERENCED_DESCRIPTION = "The reference set member is referring to a non-existing description %s (%s)";
-	public static final String MISSING_REFERENCED_RELATIONSHIP = "The reference set member is referring to a non-existing relationship %s (%s)";
-	
 	private final DiagnosticSeverity diagnosticSeverity;
 	
 	private final List<IDiagnostic> children;

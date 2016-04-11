@@ -21,29 +21,36 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.datastore.request.BaseResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChangeImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluationImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchContext, QueryRefSetMemberEvaluation> {
+public final class EvaluateQueryRefSetMemberRequest extends BaseResourceRequest<BranchContext, QueryRefSetMemberEvaluation> {
 
 	@NotEmpty
 	private String memberId;
-
+	
 	EvaluateQueryRefSetMemberRequest(String memberId) {
 		this.memberId = memberId;
 	}
@@ -85,7 +92,7 @@ public final class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchCo
 			final String referencedComponentId = currentMember.getReferencedComponent().getId();
 			if (conceptsToAdd.containsKey(referencedComponentId)) {
 				if (!currentMember.isActive()) {
-					// TODO fix label???
+					// TODO fix reactivation label???
 					conceptsToActivate.put(referencedComponentId, referencedComponentId);
 				} else {
 					conceptsToAdd.remove(referencedComponentId);
@@ -96,16 +103,44 @@ public final class EvaluateQueryRefSetMemberRequest extends BaseRequest<BranchCo
 		}
 		
 		final Collection<MemberChange> changes = newArrayList();
+		
+		// fetch all referenced components
+		final Set<String> referencedConceptIds = newHashSet();
+		referencedConceptIds.addAll(conceptsToAdd.keySet());
+		referencedConceptIds.addAll(FluentIterable.from(membersToRemove).transform(new Function<SnomedReferenceSetMember, SnomedCoreComponent>() {
+			@Override
+			public SnomedCoreComponent apply(SnomedReferenceSetMember input) {
+				return input.getReferencedComponent();
+			}
+		}).transform(IComponent.ID_FUNCTION).toSet());
+		
+		final Map<String, ISnomedConcept> concepts;
+		if (expand().containsKey("referencedComponent")) {
+			final Options expandOptions = expand().getOptions("referencedComponent");
+			concepts = Maps.uniqueIndex(SnomedRequests.prepareSearchConcept()
+					.setComponentIds(referencedConceptIds)
+					.setLimit(referencedConceptIds.size())
+					.setExpand(expandOptions.getOptions("expand"))
+					.setLocales(locales())
+					.build()
+					.execute(context), IComponent.ID_FUNCTION);
+		} else {
+			// initialize with empty SnomedConcept resources
+			concepts = newHashMap();
+			for (String referencedConceptId : referencedConceptIds) {
+				concepts.put(referencedConceptId, new SnomedConcept(referencedConceptId));
+			}
+		}
+		
 		for (String id : conceptsToAdd.keySet()) {
-			// TODO label???
-			changes.add(MemberChangeImpl.added(id));
+			changes.add(MemberChangeImpl.added(concepts.get(id)));
 		}
 
 		for (SnomedReferenceSetMember memberToRemove : membersToRemove) {
-			// TODO label???
-			changes.add(MemberChangeImpl.removed(memberToRemove.getReferencedComponent().getId(), memberToRemove.getId()));
+			changes.add(MemberChangeImpl.removed(concepts.get(memberToRemove.getReferencedComponent().getId()), memberToRemove.getId()));
 		}
 
+		// TODO reactivation???
 //		for (String id : conceptsToActivate.keySet()) {
 //			changes.add(new Diff(MemberChangeKind.ACTIVATE, id, conceptsToActivate.get(id)));
 //		}

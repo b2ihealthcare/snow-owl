@@ -117,7 +117,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	}
 
 	@Override
-	protected SearchRequest<SnomedConcepts> create() {
+	protected SearchRequest<SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();
 	}
 

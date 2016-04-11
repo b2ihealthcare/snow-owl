@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
-import com.b2international.snowowl.datastore.server.index.CDOChangeIndexProcessorFactory;
+import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexUpdater;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -27,12 +27,12 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 /**
  * CDO change processor factory responsible to create {@link SnomedTraceabilityChangeProcessor traceability change processors} for the SNOMED CT terminology.
  */
-public class SnomedTraceabilityChangeProcessorFactory extends CDOChangeIndexProcessorFactory {
+public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProcessorFactory {
 
 	private static final String FACTORY_NAME = "SNOMED CT traceability change processor factory";
 
 	@Override
-	protected ICDOChangeProcessor doCreateChangeProcessor(final IBranchPath branchPath, final boolean canCopyThreadLocal) throws SnowowlServiceException {
+	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
 		// SNOMED CT import is in progress
 		if (ApplicationContext.getInstance().exists(ImportIndexServerService.class)) {
 			return ICDOChangeProcessor.NULL_IMPL; 

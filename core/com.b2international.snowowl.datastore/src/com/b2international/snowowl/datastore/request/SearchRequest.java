@@ -34,11 +34,9 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TotalHitCountCollector;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
@@ -46,7 +44,7 @@ import com.google.common.primitives.Ints;
 /**
  * @since 4.5
  */
-public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
+public abstract class SearchRequest<B> extends BaseResourceRequest<BranchContext, B> {
 
 	enum OptionKey {
 		EXPAND
@@ -60,9 +58,6 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	@NotNull
 	private Options options;
-	
-	@NotNull
-	private List<ExtendedLocale> locales;
 	
 	@NotNull
 	private Collection<String> componentIds;
@@ -79,10 +74,6 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 	
 	void setOptions(Options options) {
 		this.options = options;
-	}
-	
-	void setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
 	}
 	
 	void setComponentIds(Collection<String> componentIds) {
@@ -133,16 +124,8 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 		return options.getOptions(key.name());
 	}
 	
-	protected final Options expand() {
-		return get(OptionKey.EXPAND, Options.class);
-	}
-	
 	protected final Collection<String> componentIds() {
 		return componentIds;
-	}
-	
-	protected final List<ExtendedLocale> locales() {
-		return locales;
 	}
 	
 	protected Filter createComponentIdFilter() {
@@ -209,7 +192,7 @@ public abstract class SearchRequest<B> extends BaseRequest<BranchContext, B> {
 				offset,
 				limit,
 				formatStringList(componentIds),
-				formatStringList(locales),
+				formatStringList(locales()),
 				options);
 	}
 

@@ -42,6 +42,7 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 	@Override
 	public void validate(IBranchPath branch, ConceptWidgetBean concept, ValidationStatusReporter reporter) {
 		int numberOfFsns = 0;
+		int numberOfPreferredTerms = 0;
 		final List<ModeledWidgetBean> descriptions = concept.getDescriptions().getElements();
 		for (final DescriptionWidgetBean description : Iterables.filter(descriptions, DescriptionWidgetBean.class)) {
 			if (description.isFsn()) {
@@ -58,12 +59,18 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 					}
 				}
 				
-			} else if (description.isPreferred() && Strings.isNullOrEmpty(description.getTerm())) { // TODO: validate description type along with preferred flag?
-				reporter.error(description, "Preferred term should be specified.");
+			} else if (description.isPreferred()) {
+				numberOfPreferredTerms++;
+				if (Strings.isNullOrEmpty(description.getTerm())) {
+					reporter.error(description, "Preferred term should be specified.");
+				}
 			}
 		}
 		if (numberOfFsns > 1) {
 			reporter.error(concept, "Concept should have exactly one active fully specified name.");
+		}
+		if (numberOfPreferredTerms != 1) {
+			reporter.error(concept, "Concept should have one active preferred synonym.");
 		}
 	}
 	

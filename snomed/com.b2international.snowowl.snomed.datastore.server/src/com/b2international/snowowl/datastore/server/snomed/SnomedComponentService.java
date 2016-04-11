@@ -24,7 +24,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.index.DocIdCollector.create;
 import static com.b2international.snowowl.datastore.index.IndexUtils.isEmpty;
 import static com.b2international.snowowl.datastore.index.IndexUtils.longToPrefixCoded;
-import static com.b2international.snowowl.datastore.index.IndexUtils.parallelForEachDocId;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.DEFINING_CHARACTERISTIC_TYPES;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
@@ -39,10 +38,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.toMap;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
-import static com.google.common.collect.Sets.newConcurrentHashSet;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.text.NumberFormat.getIntegerInstance;
 import static java.util.Collections.emptyMap;
@@ -90,20 +87,6 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.list.LongListIterator;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongChainedHashSet;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-import bak.pcj.set.UnmodifiableLongSet;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
@@ -186,9 +169,22 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.list.LongListIterator;
+import bak.pcj.map.LongKeyLongMap;
+import bak.pcj.map.LongKeyLongOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyMapIterator;
+import bak.pcj.set.LongChainedHashSet;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+import bak.pcj.set.UnmodifiableLongSet;
 
 /**
  * Service singleton for the SNOMED&nbsp;CT core components.
@@ -206,7 +202,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private static final Set<String> MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberReferencedComponentId().build();
 	private static final Set<String> MEMBER_VALUE_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberValueId().build();
 	private static final Set<String> MEMBER_ID_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().memberUuid().active().memberReferencedComponentId().build();
-	private static final Set<String> FSN_DESCRIPTION_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().id().descriptionTerm().descriptionConcept().build();
 	private static final Set<String> MODULE_MEMBER_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().storageKey().module().memberReferencedComponentId()
 			.memberSourceEffectiveTime().memberTargetEffectiveTime().build();
 	
@@ -1771,84 +1766,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public Multimap<String, String> getFullySpecifiedNameToIdsMapping(final IBranchPath branchPath, final String languageRefSetId) {
-		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(languageRefSetId, "languageRefSetId");
-
-		final Query activePreferredLanguageMembersQuery = SnomedMappings.newQuery().and(PREFERRED_LANGUAGE_QUERY).active().memberRefSetId(languageRefSetId).matchAll();
-		final Query activeFsnsQuery = SnomedMappings.newQuery().active().descriptionType(Concepts.FULLY_SPECIFIED_NAME).matchAll();
-		
-		final Multimap<String, String> fsnToIdsMapping = Multimaps.synchronizedSetMultimap(HashMultimap.<String, String>create());
-
-		final int maxDoc = getIndexServerService().maxDoc(branchPath);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		final AtomicReference<IndexSearcher> searcher = new AtomicReference<IndexSearcher>();
-		
-		try {
-			
-			manager = getIndexServerService().getManager(branchPath);
-			searcher.set(manager.acquire());
-
-			final Collection<Long> preferredDescriptionIds = newConcurrentHashSet();
-			
-			final DocIdCollector preferredMemberDocIdCollector = DocIdCollector.create(maxDoc);
-			getIndexServerService().search(branchPath, activePreferredLanguageMembersQuery, preferredMemberDocIdCollector);
-			parallelForEachDocId(preferredMemberDocIdCollector.getDocIDs(), new IndexUtils.DocIdProcedure() {
-				@Override
-				public void apply(final int docId) throws IOException {
-					final Document doc = searcher.get().doc(docId, MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD);
-					preferredDescriptionIds.add(SnomedMappings.memberReferencedComponentId().getValue(doc));
-				}
-			});
-
-			final LongSet descriptionIds = newLongSet(preferredDescriptionIds);
-			final DocIdCollector fsnDocIdCollector = DocIdCollector.create(maxDoc);
-			final LongCollection activeConceptIds = getTerminologyBrowser().getAllActiveConceptIds(branchPath);
-
-			getIndexServerService().search(branchPath, activeFsnsQuery, fsnDocIdCollector);
-			parallelForEachDocId(fsnDocIdCollector.getDocIDs(), new IndexUtils.DocIdProcedure() {
-				@Override
-				public void apply(final int docId) throws IOException {
-					final Document doc = searcher.get().doc(docId, FSN_DESCRIPTION_FIELDS_TO_LOAD);
-					final long descriptionId = SnomedMappings.id().getValue(doc);
-					
-					//FSN is applicable for the specified language
-					if (descriptionIds.contains(descriptionId)) {
-						final long conceptId = SnomedMappings.descriptionConcept().getValue(doc);
-						
-						if (activeConceptIds.contains(conceptId)) {
-							final String term = SnomedMappings.descriptionTerm().getValue(doc);
-							fsnToIdsMapping.put(term, Long.toString(conceptId));
-						}
-					}
-					
-				}
-			});
-			
-		} catch (final IOException e) {
-			throw new IndexException("Error while creating FSN to concept IDs mapping.", e);
-		} finally {
-			if (null != manager && null != searcher.get()) {
-				try {
-					manager.release(searcher.get());
-				} catch (final IOException e) {
-					try {
-						manager.release(searcher.get());
-					} catch (final IOException e1) {
-						e.addSuppressed(e1);
-					}
-					throw new IndexException("Error while releasing index searcher.", e);
-				}
-			}
-		}
-
-		return HashMultimap.create(fsnToIdsMapping);
-		
-	}
-	
-	@Override
 	public Multimap<String, String> getPreferredTermToIdsMapping(final IBranchPath branchPath, final String focusConceptId) {
 		
 		checkNotNull(branchPath, "branchPath");
@@ -1915,10 +1832,9 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public Map<String, Boolean> getDescriptionPreferabilityMap(final IBranchPath branchPath, final String conceptId, final String languageRefSetId) {
+	public Map<String, Multimap<String, String>> getDescriptionPreferabilityMap(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(conceptId, "conceptId");
-		checkNotNull(languageRefSetId, "languageRefSetId");
 		
 		final Query descriptionQuery = SnomedMappings.newQuery().active().descriptionConcept(conceptId).matchAll();
 		
@@ -1934,29 +1850,35 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final Query languageMemberQuery = SnomedMappings.newQuery()
 				.active()
-				.memberRefSetId(languageRefSetId)
-				.and(PREFERRED_LANGUAGE_QUERY)
+				.memberRefSetType(SnomedRefSetType.LANGUAGE)
 				.and(referencedComponentQuery.matchAny())
 				.matchAll();
-		
+
 		ReferenceManager<IndexSearcher> manager = null;
 		IndexSearcher searcher = null;
 		
-		final Map<String, Boolean> preferabilityMap = newHashMap(toMap(descriptionIds, ALWAYS_FALSE_FUNC));
+		final Map<String, Multimap<String, String>> descriptionAcceptabilityMap = newHashMap();
 
 		try {
-			
-			final DocIdCollector collector = DocIdCollector.create(getIndexServerService().maxDoc(branchPath));
-			getIndexServerService().search(branchPath, languageMemberQuery, collector);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-
 			manager = getIndexServerService().getManager(branchPath);
 			searcher = manager.acquire();
 			
+			final DocIdCollector collector = DocIdCollector.create(searcher.getIndexReader().maxDoc());
+			searcher.search(languageMemberQuery, collector);
+			
+			final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().memberReferencedComponentId().memberRefSetId().memberAcceptabilityId().build();
+			
+			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), MEMBER_REFERENCED_COMPONENT_ID_FIELDS_TO_LOAD);
+				final Document doc = searcher.doc(itr.getDocID(), fieldsToLoad);
 				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
-				preferabilityMap.put(referencedComponentId, Boolean.TRUE);
+				final String refSetId = SnomedMappings.memberRefSetId().getValueAsString(doc);
+				final String acceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(doc);
+				if (!descriptionAcceptabilityMap.containsKey(referencedComponentId)) {
+					final Multimap<String, String> acceptabilityMap = HashMultimap.create();
+					descriptionAcceptabilityMap.put(referencedComponentId, acceptabilityMap);
+				}
+				descriptionAcceptabilityMap.get(referencedComponentId).put(acceptabilityId, refSetId);
 			}
 			
 		} catch (final IOException e) {
@@ -1973,7 +1895,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			}
 		}
 		
-		return preferabilityMap;
+		return descriptionAcceptabilityMap;
 		
 	}
 	

@@ -16,6 +16,9 @@
 package com.b2international.snowowl.datastore;
 
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.server.IStoreAccessor;
+import org.eclipse.emf.cdo.server.StoreThreadLocal;
+import org.eclipse.emf.cdo.spi.server.InternalSession;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -29,7 +32,11 @@ public interface ICDOChangeProcessor {
 
 	/**
 	 * Processes the changes.
-	 * @param commitChangeSet the set of changes.
+	 * <p>
+	 * When entering this method, the currently executing thread must have a valid {@link IStoreAccessor store 
+	 * accessor} or {@link InternalSession session} set in {@link StoreThreadLocal}.
+	 * 
+	 * @param commitChangeSet the set of changes
 	 * @throws SnowowlServiceException
 	 */
 	void process(final ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException;

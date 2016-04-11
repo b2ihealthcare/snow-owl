@@ -106,9 +106,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @Override
-    InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
-        CDOBranch targetBranch = getCDOBranch(target);
-        CDOBranch sourceBranch = getCDOBranch(source);
+    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
+        CDOBranch targetBranch = getCDOBranch(to);
+        CDOBranch sourceBranch = getCDOBranch(from);
         CDOTransaction targetTransaction = null;
 
         try {
@@ -130,15 +130,15 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
             			.parentContextDescription(DatastoreLockContextDescriptions.SYNCHRONIZE)
             			.commitOne();
             	
-	            return target.withHeadTimestamp(commitInfo.getTimeStamp());
+	            return to.withHeadTimestamp(commitInfo.getTimeStamp());
             } else {
-            	return target;
+            	return to;
             }
 
         } catch (CDOMerger.ConflictException e) {
-            throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
+            throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path(), e);
         } catch (CommitException e) {
-            throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
+            throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", to.path(), from.path(), e);
         } finally {
             if (targetTransaction != null) {
                 targetTransaction.close();

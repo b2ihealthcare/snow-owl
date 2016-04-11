@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequestBuilder;
 
 /**
@@ -84,9 +84,9 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 
 	protected IdGenerationStrategy createIdGenerationStrategy(final String idOrNull, ComponentCategory componentCategory) {
 		if (null == idOrNull) {
-			return new NamespaceIdGenerationStrategy(componentCategory, getNamespaceId());
+			return new ReservingIdStrategy(componentCategory, getNamespaceId());
 		} else {
-			return new UserIdGenerationStrategy(idOrNull);
+			return new RegisteringIdStrategy(idOrNull);
 		}
 	}
 }

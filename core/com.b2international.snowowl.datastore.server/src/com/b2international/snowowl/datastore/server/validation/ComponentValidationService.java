@@ -18,13 +18,12 @@ package com.b2international.snowowl.datastore.server.validation;
 import static com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity.INFO;
 import static com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl.createOk;
 import static com.b2international.snowowl.core.validation.IComponentValidationConstraint.EXTENSION_POINT_ID;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
-import static java.text.MessageFormat.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableCollection;
-import static org.eclipse.core.runtime.IProgressMonitor.UNKNOWN;
 import static org.eclipse.core.runtime.Platform.getExtensionRegistry;
 import static org.eclipse.core.runtime.SubMonitor.convert;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -38,6 +37,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
@@ -51,6 +51,7 @@ import com.b2international.snowowl.core.validation.GlobalConstraintStatus;
 import com.b2international.snowowl.core.validation.IComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.IComponentValidationService;
 import com.google.common.base.Function;
+import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -64,7 +65,6 @@ public abstract class ComponentValidationService<C extends IComponent<String>> i
 
 	private static final String UNKNOWN_CONSTRAINT = "Unknown constraint";
 	private static final Logger LOGGER = getLogger(ComponentValidationService.class);
-	private static final String VALIDATING_TASK_NAME_TEMPLATE = "Validating ''{0}''...";
 	
 	//cache ensuring a mapping between terminology component IDs and the available component validation constraints
 	private final LoadingCache<String, Collection<IComponentValidationConstraint<IComponent<?>>>> cache = //
@@ -72,6 +72,7 @@ public abstract class ComponentValidationService<C extends IComponent<String>> i
 
 		private static final String TERMINOLOGY_COMPONENT_ID_ATTRIBUTE = "terminologyComponent";
 				
+		@Override
 		@SuppressWarnings("unchecked")
 		public Collection<IComponentValidationConstraint<IComponent<?>>> load(final String terminologyComponentId) throws Exception {
 			final Collection<IComponentValidationConstraint<IComponent<?>>> constraints = newHashSet(); 
@@ -88,58 +89,57 @@ public abstract class ComponentValidationService<C extends IComponent<String>> i
 
 	@Override
 	public Collection<ComponentValidationDiagnostic> validate(final IBranchPath branchPath, final C component, final IProgressMonitor monitor) {
-		final IProgressMonitor subMonitor = convert(monitor);
-		subMonitor.beginTask(format(VALIDATING_TASK_NAME_TEMPLATE, component), UNKNOWN);
+		checkNotNull(component, "component");
+		
+		final Collection<IComponentValidationConstraint<IComponent<?>>> constraints = getConstraints(component);
 
-		try {
-			return newArrayList(ConcurrentCollectionUtils.transform(getConstraints(component).iterator(),
+		return newArrayList(ConcurrentCollectionUtils.transform(constraints.iterator(),
 				new Function<IComponentValidationConstraint<IComponent<?>>, ComponentValidationDiagnostic>() {
-				public ComponentValidationDiagnostic apply(final IComponentValidationConstraint<IComponent<?>> input) {
-					return input.validate(branchPath, component);
-				}
-			}));
-		} finally {
-			subMonitor.done();
-		}
+					@Override
+					public ComponentValidationDiagnostic apply(final IComponentValidationConstraint<IComponent<?>> input) {
+						return input.validate(branchPath, component);
+					}
+				}));
 	}
 	
 	@Override
 	public Collection<ComponentValidationDiagnostic> validate(final IBranchPath branchPath, final Collection<C> components, final IProgressMonitor monitor) {
-		final Collection<ComponentValidationDiagnostic> results = newArrayList();
+		checkNotNull(branchPath, "branchPath");
+		
 		final SubMonitor subMonitor = convert(monitor, components.size());
 		
-		try {
+		final Collection<ComponentValidationDiagnostic> results = newArrayList();
+		
+		for (final C component : components) {
 			
-			int counter = 0;
-			for (final C component : components) {
-				if (0 == ++counter % 1000 && subMonitor.isCanceled()) {
-					return emptyList();
-				}
-				results.addAll(validate(branchPath, component, subMonitor.newChild(1)));
+			if (subMonitor.isCanceled()) {
+				return emptyList();
 			}
 			
-			return results;
-			
-		} finally {
-			subMonitor.done();
+			results.addAll(validate(branchPath, component, subMonitor.newChild(1)));
 		}
-
+		
+		return results;
 	}
 	
 	@Override
 	public Collection<ComponentValidationDiagnostic> validateAll(final IBranchPath branchPath, final IProgressMonitor monitor) {
 
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
-		final SubMonitor globalSubMonitor = subMonitor.newChild(1);
 		final Collection<ComponentValidationDiagnostic> results = Lists.newArrayList();
 
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		// execute global validation
-		results.addAll(validateGlobalConstraints(branchPath, getAllGlobalConstraintIds(), globalSubMonitor));
+		results.addAll(validateGlobalConstraints(branchPath, getAllGlobalConstraintIds(), subMonitor.newChild(1)));
+		LOGGER.info("Global validation constraints finished in {}", TimeUtil.toString(stopwatch));
+		
+		stopwatch.reset();
+		stopwatch.start();
 		
 		// validate each component
-		final SubMonitor validateAllSubMonitor = subMonitor.newChild(1);
-		results.addAll(doValidateAll(branchPath, validateAllSubMonitor));
-
+		results.addAll(doValidateAll(branchPath, subMonitor.newChild(1)));
+		LOGGER.info("Component validation constraints finished in {}", TimeUtil.toString(stopwatch));
+		
 		return results;
 	}
 

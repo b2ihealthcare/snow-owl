@@ -33,7 +33,6 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -177,8 +176,7 @@ public class SnomedBrowserApiAssert {
 	
 	public static String generateComponentId(final String namespace, final ComponentCategory category) {
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getService(ISnomedIdentifierService.class);
-		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
-		return snomedIdentifiers.generate(namespace, category);
+		return identifierService.reserve(namespace, category);
 	}
 	
 	public static Map<String, Object> getConcept(final IBranchPath branchPath, final String conceptId) {
@@ -189,5 +187,4 @@ public class SnomedBrowserApiAssert {
 		
 		return (Map<String, Object>) concept;
 	}
-
 }

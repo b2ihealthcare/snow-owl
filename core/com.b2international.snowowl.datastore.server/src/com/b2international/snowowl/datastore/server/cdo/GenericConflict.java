@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.cdo;
-
-import org.eclipse.core.runtime.jobs.Job;
+package com.b2international.snowowl.datastore.server.cdo;
 
 /**
- * Abstract class of all CDO revision cache warmer job.
- * <p>
- * Clients may extend this class</p>
- * @see CDORevisionCacheWarmer
+ * @since 4.7
  */
-public abstract class CDORevisionCacheWarmerJob extends Job {
+public class GenericConflict {
 
-	/**
-	 * Creates a new instance of the CDO revision cache warmer job.
-	 * @param name the job name.
-	 */
-	protected CDORevisionCacheWarmerJob(final String name) {
-		super(name);
+	private final String message;
+
+	public GenericConflict(String message, Object...args) {
+		this.message = String.format(message, args);
 	}
-
+	
+	public String getMessage() {
+		return message;
+	}
+	
 }

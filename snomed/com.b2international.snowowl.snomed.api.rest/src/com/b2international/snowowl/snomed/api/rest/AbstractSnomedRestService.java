@@ -30,14 +30,14 @@ import com.b2international.snowowl.eventbus.IEventBus;
 public abstract class AbstractSnomedRestService extends AbstractRestService {
 
 	@Autowired
-	@Value("${codeSystemShortName}")
-	protected String codeSystemShortName;
+	@Value("${repositoryId}")
+	protected String repositoryId;
 	
 	@Autowired
 	protected IEventBus bus;
 
 	protected IComponentRef createComponentRef(final String branchPath, final String componentId) {
-		final ComponentRef conceptRef = new ComponentRef(codeSystemShortName, branchPath, componentId);
+		final ComponentRef conceptRef = new ComponentRef(repositoryId, branchPath, componentId);
 		conceptRef.checkStorageExists();
 		return conceptRef;
 	}

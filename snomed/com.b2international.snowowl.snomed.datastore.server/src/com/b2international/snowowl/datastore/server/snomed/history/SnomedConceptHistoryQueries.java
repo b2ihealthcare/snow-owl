@@ -31,8 +31,7 @@ public enum SnomedConceptHistoryQueries {
 	 * <ol>
 	 */
 	CONCEPT_CHANGES("SELECT "
-			+ "concept.CDO_CREATED, "
-			+ "concept.INBOUNDRELATIONSHIPS "
+			+ "concept.CDO_CREATED "
 			// -------------------------------
 			+ "FROM SNOMED_CONCEPT concept "
 			// -------------------------------

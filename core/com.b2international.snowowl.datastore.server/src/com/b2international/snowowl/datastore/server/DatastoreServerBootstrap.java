@@ -139,10 +139,12 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		env.services().registerService(BranchSerializer.class, new BranchSerializer());
 		env.services().registerService(ReviewSerializer.class, new ReviewSerializer());
 		
+		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 		for (String repositoryId : env.service(ICDORepositoryManager.class).uuidKeySet()) {
 			repositories
 				.prepareCreate(repositoryId)
-				.setNumberOfWorkers(configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers())
+				.setNumberOfWorkers(repositoryConfig.getNumberOfWorkers())
+				.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 				.build(env);
 		}
 		

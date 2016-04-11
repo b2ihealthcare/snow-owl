@@ -24,7 +24,7 @@ public class ReasonerRemoteJobKey extends RemoteJobKey {
 
 	private static final long serialVersionUID = 1L;
 
-	public ReasonerRemoteJobKey(final String targetNsUri, final IBranchPath targetBranchPath) {
-		super(targetNsUri, targetBranchPath);
+	public ReasonerRemoteJobKey(final String repositoryId, final IBranchPath branchPath) {
+		super(repositoryId, branchPath);
 	}
 }

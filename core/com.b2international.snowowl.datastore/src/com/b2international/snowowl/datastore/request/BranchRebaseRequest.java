@@ -15,16 +15,10 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branch.BranchState;
-import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeService;
 import com.google.common.base.Strings;
 
 /**
@@ -39,9 +33,7 @@ import com.google.common.base.Strings;
  *
  * @since 4.6
  */
-public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
-
-	private static final Logger LOG = LoggerFactory.getLogger(BranchRebaseRequest.class);
+public final class BranchRebaseRequest extends AbstractBranchChangeRequest<Merge> {
 
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
@@ -50,53 +42,11 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 	}
 
 	BranchRebaseRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId) {
-		super(sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
+		super(Merge.class, sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
 	}
-
+	
 	@Override
-	protected Branch executeChange(RepositoryContext context, Branch source, Branch target) {
-		
-		if (!target.parent().equals(source)) {
-			throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
-		}
-
-		try (Locks locks = new Locks(context, source, target)) {
-			
-			final BranchState targetState = target.state(source);
-
-			if (targetState == BranchState.BEHIND || targetState == BranchState.DIVERGED || targetState == BranchState.STALE) {
-				
-				// Check conflicts by pretending to merge target into source
-				source.applyChangeSet(target, true, commitMessage);
-				
-				// Reopen target branch and release lock on source
-				final Branch reopenedTarget = target.reopen();
-				
-				try {
-					locks.unlock(source.path());
-				} catch (OperationLockException e) {
-					LOG.warn("Failed to unlock source branch in BranchRebaseRequest; continuing.", e);
-				}
-				
-				// Copy changes on old target to reopened target
-				final Branch rebasedTarget = reopenedTarget.applyChangeSet(target, false, commitMessage); 
-				
-				if (rebasedTarget.headTimestamp() > rebasedTarget.baseTimestamp()) {
-					return rebasedTarget; // Implicit notification already sent (because of a non-empty commit)
-				} else {
-					return rebasedTarget.notifyChanged(); // Send explicit notification (reopen but no commit)
-				}
-				
-			} else {
-				return target;
-			}
-			
-		} catch (BranchMergeException e) {
-			throw new ConflictException("Cannot rebase target '%s' on source '%s'.", target.path(), source.path(), e);
-		} catch (OperationLockException e) {
-			throw new ConflictException("Lock exception caught while rebasing target '%s' on source '%s'. %s", target.path(), source.path(), e.getMessage());
-		} catch (InterruptedException e) {
-			throw new ConflictException("Lock obtaining process was interrupted while rebasing target '%s' on source '%s'.", target.path(), source.path());
-		}
+	protected Merge execute(RepositoryContext context, Branch source, Branch target) {
+		return context.service(MergeService.class).enqueue(sourcePath, targetPath, commitMessage, reviewId);
 	}
 }

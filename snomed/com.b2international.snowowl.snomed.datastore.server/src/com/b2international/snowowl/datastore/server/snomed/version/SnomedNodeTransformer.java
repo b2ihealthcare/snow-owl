@@ -252,9 +252,10 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 				.setLocales(getLocales())
 				.setComponentId(refSetId)
 				.build(branchPath.getPath())
-				.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+				.executeSync(getBus());
 		
 		switch (refSet.getReferencedComponentType()) {
+		case SnomedTerminologyComponentConstants.REFSET:
 		case SnomedTerminologyComponentConstants.CONCEPT:
 			return getConceptLabels(refSetId, branchPath);
 		case SnomedTerminologyComponentConstants.DESCRIPTION:
@@ -268,33 +269,36 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	
 	private ImmutableList<String> getConceptLabels(final String refSetId, final IBranchPath branchPath) {
 		final SnomedReferenceSetMembers members = getRefSetMembers(refSetId, "referencedComponent(expand(pt()))", branchPath);
-		return FluentIterable.from(members.getItems()).transform(conceptToLabelFunction).toList();
+		return FluentIterable.from(members).transform(conceptToLabelFunction).toList();
 	}
 	
 	private ImmutableList<String> getDescriptionLabels(final String refSetId, final IBranchPath branchPath) {
 		final SnomedReferenceSetMembers members = getRefSetMembers(refSetId, "referencedComponent()", branchPath);
-		return FluentIterable.from(members.getItems()).transform(descriptionToLabelFunction).toList();
+		return FluentIterable.from(members).transform(descriptionToLabelFunction).toList();
 	}
 	
 	
 	private ImmutableList<String> getRelationshipLabels(final String refSetId, final IBranchPath branchPath) {
 		final SnomedReferenceSetMembers members = getRefSetMembers(refSetId, "referencedComponent(expand(source(expand(pt())),type(expand(pt())),destination(expand(pt()))))", branchPath);
-		return FluentIterable.from(members.getItems()).transform(relationshipToLabelFunction).toList();
+		return FluentIterable.from(members).transform(relationshipToLabelFunction).toList();
 	}
 	
 	private SnomedReferenceSetMembers getRefSetMembers(final String refSetId, final String expansion, final IBranchPath branchPath) {
 		return SnomedRequests.prepareSearchMember()
 				.all()
+				.filterByRefSet(refSetId)
 				.setLocales(getLocales())
 				.setExpand(expansion)
-				.filterByRefSet(refSetId)
 				.build(branchPath.getPath())
-				.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+				.executeSync(getBus());
+	}
+
+	private IEventBus getBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 	private List<ExtendedLocale> getLocales() {
-		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
-		return locales;
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
 	private Collection<NodeDelta> compareRefSetByMapTarget(final CDOView sourceView, final CDOView targetView, final NodeDiff diff) {

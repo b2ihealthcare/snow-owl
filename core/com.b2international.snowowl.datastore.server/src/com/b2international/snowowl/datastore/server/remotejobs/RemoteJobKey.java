@@ -24,24 +24,25 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import com.b2international.snowowl.core.api.IBranchPath;
 
 /**
+ * 
  */
 public abstract class RemoteJobKey implements ISchedulingRule, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String targetNsUri;
-	private final IBranchPath targetBranchPath;
+	private final String repositoryId;
+	private final IBranchPath branchPath;
 	
-	public RemoteJobKey(final String targetNsUri, final IBranchPath targetBranchPath) {
-		checkNotNull(targetNsUri, "targetNsUri");
-		checkNotNull(targetBranchPath, "targetBranchPath");
-		this.targetNsUri = targetNsUri;
-		this.targetBranchPath = targetBranchPath;
+	public RemoteJobKey(final String repositoryId, final IBranchPath branchPath) {
+		checkNotNull(repositoryId, "repositoryId");
+		checkNotNull(branchPath, "branchPath");
+		this.repositoryId = repositoryId;
+		this.branchPath = branchPath;
 	}
 
 	@Override
 	public boolean contains(final ISchedulingRule rule) {
-		return isConflicting(rule);
+		return equals(rule);
 	}
 
 	@Override
@@ -53,36 +54,30 @@ public abstract class RemoteJobKey implements ISchedulingRule, Serializable {
 	public final int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + targetNsUri.hashCode();
-		result = prime * result + targetBranchPath.hashCode();
+		result = prime * result + repositoryId.hashCode();
+		result = prime * result + branchPath.hashCode();
 		return result;
 	}
 
 	@Override
 	public final boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
 		
-		if (obj == null) {
-			return false;
-		}
-		
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
+		// TODO: See whether an instanceof check can be used here
+		if (getClass() != obj.getClass()) { return false; } 
 		
 		final RemoteJobKey other = (RemoteJobKey) obj;
-		return targetNsUri.equals(other.targetNsUri) && targetBranchPath.equals(other.targetBranchPath);
+		return repositoryId.equals(other.repositoryId) && branchPath.equals(other.branchPath);
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("RemoteJobKey [targetNsUri=");
-		builder.append(targetNsUri);
-		builder.append(", targetBranchPath=");
-		builder.append(targetBranchPath);
+		builder.append("RemoteJobKey [repositoryId=");
+		builder.append(repositoryId);
+		builder.append(", branchPath=");
+		builder.append(branchPath);
 		builder.append("]");
 		return builder.toString();
 	}

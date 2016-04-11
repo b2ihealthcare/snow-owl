@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.validation.constraints.component;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -40,18 +38,15 @@ public class MrcmValidationConstraint implements IComponentValidationConstraint<
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.MrcmValidationConstraint";
 	
 	@Override
-	public ComponentValidationDiagnosticImpl validate(IBranchPath branchPath, SnomedConceptIndexEntry component) {
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(component, "component");
+	public ComponentValidationDiagnosticImpl validate(final IBranchPath branchPath, final SnomedConceptIndexEntry indexEntry) {
+		final IWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IWidgetModelProvider.class);
+		final IWidgetBeanProvider widgetBeanProvider = ApplicationContext.getInstance().getService(IWidgetBeanProvider.class);
 		
-		String conceptId = component.getId();
-		IWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IWidgetModelProvider.class);
-		final ConceptWidgetModel widgetModel = widgetModelProvider.createConceptWidgetModel(branchPath, conceptId, null);
-		IWidgetBeanProvider widgetBeanProvider = ApplicationContext.getInstance().getService(IWidgetBeanProvider.class);
-		ConceptWidgetBean widgetBean = widgetBeanProvider.createConceptWidgetBean(branchPath, conceptId, widgetModel, null, true, false, new NullProgressMonitor());
-		MrcmConceptWidgetBeanValidator validator = new MrcmConceptWidgetBeanValidator();
-		WidgetBeanValidationDiagnostic diagnostic = (WidgetBeanValidationDiagnostic) validator.validate(widgetBean);
-		ComponentValidationDiagnosticImpl componentValidationDiagnostic = WidgetBeanToComponentValidationDiagnosticConverter.convert(diagnostic);
+		final ConceptWidgetModel widgetModel = widgetModelProvider.createConceptWidgetModel(branchPath, indexEntry.getId(), null);
+		final ConceptWidgetBean widgetBean = widgetBeanProvider.createConceptWidgetBean(branchPath, indexEntry.getId(), widgetModel, null, true, false, new NullProgressMonitor());
+		final MrcmConceptWidgetBeanValidator validator = new MrcmConceptWidgetBeanValidator();
+		final WidgetBeanValidationDiagnostic diagnostic = (WidgetBeanValidationDiagnostic) validator.validate(widgetBean);
+		final ComponentValidationDiagnosticImpl componentValidationDiagnostic = WidgetBeanToComponentValidationDiagnosticConverter.convert(diagnostic);
 		return componentValidationDiagnostic;
 	}
 

@@ -108,7 +108,7 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 
 		final InternalComponentRef internalComponentRef = ClassUtils.checkAndCast(componentRef, InternalComponentRef.class);
 		internalComponentRef.checkStorageExists();
-		final String repositoryUuid = internalComponentRef.getRepositoryUuid();
+		final String repositoryUuid = internalComponentRef.getRepositoryId();
 
 		if (!handledRepositoryUuid.equals(repositoryUuid)) {
 			throw new IllegalArgumentException(MessageFormat.format(

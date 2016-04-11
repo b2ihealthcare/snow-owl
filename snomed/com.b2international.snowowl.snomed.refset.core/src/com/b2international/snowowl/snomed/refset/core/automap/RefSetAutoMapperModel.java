@@ -15,19 +15,13 @@
  */
 package com.b2international.snowowl.snomed.refset.core.automap;
 
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptyMap;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
@@ -217,26 +211,8 @@ public class RefSetAutoMapperModel {
 	 * @return
 	 */
 	public Map<AutoMapEntry, String> validate() {
-		final Set<String> mappedValues = newHashSet();
-		
-		final Map<AutoMapEntry, String> errorMessages = newHashMap();
-		
-		for (AutoMapEntry entry : getContent()) {
-			final String mappedValue = entry.getAutoMappedId();
-			if (!mappedValue.isEmpty()) {
-				if (!mappedValues.contains(mappedValue)) {
-					mappedValues.add(mappedValue);
-				} else {
-					
-					final String label = ApplicationContext
-							.getServiceForClass(ISnomedConceptNameProvider.class)
-							.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), mappedValue);
-					
-					errorMessages.put(entry, label + " is redundant SNOMED CT equivalent component.");
-				}
-			}
-		}
-		return errorMessages;
+		/* place to add validation rules */
+		return emptyMap();
 	}
 
 }

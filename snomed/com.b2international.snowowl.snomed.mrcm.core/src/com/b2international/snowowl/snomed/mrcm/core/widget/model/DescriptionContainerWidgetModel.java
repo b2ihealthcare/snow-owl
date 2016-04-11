@@ -55,12 +55,12 @@ public class DescriptionContainerWidgetModel extends DataTypeContainerWidgetMode
 	 * @return the first matching description widget model which accepts the type
 	 * @throws IllegalStateException if no matching model can be found
 	 */
-	public DescriptionWidgetModel getFirstMatching(final String typeId, final boolean preferred) {
+	public DescriptionWidgetModel getFirstMatching(final String typeId) {
 		
 		checkArgument(!StringUtils.isEmpty(typeId), "typeId is null or empty.");
 	
 		for (final DescriptionWidgetModel candidate : Iterables.filter(getChildren(), DescriptionWidgetModel.class)) {
-			if (candidate.matches(typeId, preferred)) {
+			if (candidate.matches(typeId)) {
 				return candidate;
 			}
 		}
