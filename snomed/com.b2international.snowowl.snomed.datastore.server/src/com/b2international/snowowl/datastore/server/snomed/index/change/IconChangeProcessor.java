@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyProvider;
+import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -42,11 +42,11 @@ import bak.pcj.set.LongSet;
  */
 public class IconChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
 
-	private final TaxonomyProvider inferredTaxonomy;
-	private final TaxonomyProvider statedTaxonomy;
+	private final Taxonomy inferredTaxonomy;
+	private final Taxonomy statedTaxonomy;
 	private final IBranchPath branchPath;
 
-	public IconChangeProcessor(IBranchPath branchPath, TaxonomyProvider inferredTaxonomy, TaxonomyProvider statedTaxonomy) {
+	public IconChangeProcessor(IBranchPath branchPath, Taxonomy inferredTaxonomy, Taxonomy statedTaxonomy) {
 		super("icon changes");
 		this.branchPath = branchPath;
 		this.inferredTaxonomy = inferredTaxonomy;
@@ -67,7 +67,7 @@ public class IconChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBu
 		
 	}
 
-	private Collection<String> getAffectedConcepts(ICDOCommitChangeSet commitChangeSet, TaxonomyProvider taxonomy) {
+	private Collection<String> getAffectedConcepts(ICDOCommitChangeSet commitChangeSet, Taxonomy taxonomy) {
 		final Set<String> iconIdUpdates = newHashSet();
 		final ISnomedTaxonomyBuilder newTaxonomy = taxonomy.getNewTaxonomy();
 		final ISnomedTaxonomyBuilder oldTaxonomy = taxonomy.getOldTaxonomy();

@@ -56,11 +56,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -97,18 +95,15 @@ import com.b2international.snowowl.datastore.server.snomed.index.collector.Compo
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder.Factory;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderRunnable;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdateRunnable;
-import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyProvider;
+import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
+import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
@@ -117,8 +112,6 @@ import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVers
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -175,81 +168,39 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	//the collection of the deleted constraints in a minimalistic form. Used for logging.
 	private final Set<ComponentIdAndLabel> deletedConstraintLogEntries = Sets.newHashSet();
 	
-	private final SnomedIndexServerService index;
 	private final IBranchPath branchPath;
-	private final Supplier<ISnomedTaxonomyBuilder> inferredNewTaxonomyBuilderSupplier;
-	private final Supplier<ISnomedTaxonomyBuilder> inferredPreviousTaxonomyBuilderSupplier;
+	private final SnomedIndexServerService index;
+	private final SnomedTerminologyBrowser browser;
+	private final SnomedStatementBrowser statementBrowser;
+	private final ISnomedIdentifierService identifierService;
 	
-	private final Supplier<ISnomedTaxonomyBuilder> statedNewTaxonomyBuilderSupplier;
-	private final Supplier<ISnomedTaxonomyBuilder> statedPreviousTaxonomyBuilderSupplier;
-	
-	/**Supplies the different between the previous and current state of the ontology.
-	 *<br>Assumes initialized taxonomy builders.*/
-	private final Supplier<Pair<LongSet,LongSet>> inferredDifferenceSupplier;
-	private final Supplier<Pair<LongSet,LongSet>> statedDifferenceSupplier;
+	private Taxonomy inferredTaxonomy;
+	private Taxonomy statedTaxonomy;
 	
 	/**Represents the change set.*/
 	private ICDOCommitChangeSet commitChangeSet;
+
+	private final LongCollection conceptIds;
 
 	/**
 	 * Creates a new change processor for the SNOMED&nbsp;CT ontology. 
 	 * @param indexUpdater the index updater for the SNOMED&nbsp;CT ontology.
 	 * @param branchPath the branch path where the changes has to be calculated and processed.
-	 * @param canCopyThreadLocal 
 	 */
-	public SnomedCDOChangeProcessor(final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath) {
-		
+	public SnomedCDOChangeProcessor(final IBranchPath branchPath, 
+			final SnomedTerminologyBrowser browser, 
+			final SnomedStatementBrowser statementBrowser,
+			final ISnomedIdentifierService identifierService,
+			final IIndexUpdater<SnomedIndexEntry> indexUpdater) {
 		Preconditions.checkNotNull(indexUpdater, "Index service argument cannot be null.");
 		Preconditions.checkArgument(indexUpdater instanceof AbstractIndexUpdater, "Index updater must be instance of " + AbstractIndexUpdater.class + ". Was " + indexUpdater.getClass());
-
-		this.index = (SnomedIndexServerService) indexUpdater; 
+		this.index = (SnomedIndexServerService) indexUpdater;
+		this.browser = browser;
+		this.statementBrowser = statementBrowser;
+		this.identifierService = identifierService;
+		
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		inferredNewTaxonomyBuilderSupplier = Suppliers.memoize(new Supplier<ISnomedTaxonomyBuilder>() {
-			@Override public ISnomedTaxonomyBuilder get() {
-				return new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.INFERRED_ISA_ONLY);
-			}
-		});
-		
-		inferredPreviousTaxonomyBuilderSupplier = Suppliers.memoize(new Supplier<ISnomedTaxonomyBuilder>() {
-			@Override public ISnomedTaxonomyBuilder get() {
-				final SnomedTaxonomyBuilder newBuilder = (SnomedTaxonomyBuilder) inferredNewTaxonomyBuilderSupplier.get();
-				final SnomedTaxonomyBuilder copy = SnomedTaxonomyBuilder.newInstance(newBuilder);
-				return copy;
-			}
-		});
-		
-		statedNewTaxonomyBuilderSupplier = Suppliers.memoize(new Supplier<ISnomedTaxonomyBuilder>() {
-			@Override public ISnomedTaxonomyBuilder get() {
-				return new SnomedTaxonomyBuilder(branchPath, StatementCollectionMode.STATED_ISA_ONLY);
-			}
-		});
-		
-		statedPreviousTaxonomyBuilderSupplier = Suppliers.memoize(new Supplier<ISnomedTaxonomyBuilder>() {
-			@Override public ISnomedTaxonomyBuilder get() {
-				final SnomedTaxonomyBuilder newBuilder = (SnomedTaxonomyBuilder) statedNewTaxonomyBuilderSupplier.get();
-				final SnomedTaxonomyBuilder copy = SnomedTaxonomyBuilder.newInstance(newBuilder);
-				return copy;
-			}
-		});
-		
-		inferredDifferenceSupplier = Suppliers.memoize(new Supplier<Pair<LongSet, LongSet>>() {
-			@Override public Pair<LongSet, LongSet> get() {
-				LOGGER.info("Calculating taxonomic differences...");
-				final Pair<LongSet, LongSet> difference = inferredNewTaxonomyBuilderSupplier.get().difference(inferredPreviousTaxonomyBuilderSupplier.get());
-				LOGGER.info("Calculating taxonomic differences successfully.");
-				return difference;
-			}
-		});
-		
-		statedDifferenceSupplier = Suppliers.memoize(new Supplier<Pair<LongSet, LongSet>>() {
-			@Override public Pair<LongSet, LongSet> get() {
-				LOGGER.info("Calculating stated taxonomic differences...");
-				final Pair<LongSet, LongSet> difference = statedNewTaxonomyBuilderSupplier.get().difference(statedPreviousTaxonomyBuilderSupplier.get());
-				LOGGER.info("Calculating stated taxonomic differences successfully.");
-				return difference;
-			}
-		});
+		this.conceptIds = browser.getAllConceptIds(branchPath);
 		
 	}
 	
@@ -373,19 +324,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 		prepareTaxonomyBuilders();
 		
-		new Thread(new Runnable() {
-			@Override public void run() {
-				inferredDifferenceSupplier.get();
-			}
-		}, "Inferred taxonomy difference processor").start();
-		
-		new Thread(new Runnable() {
-			@Override public void run() {
-				statedDifferenceSupplier.get();
-			}
-		}, "Stated taxonomy difference processor").start();
-		
-
 		// TODO refactor code system update into updaters
 		for (final CodeSystem newCodeSystem : newCodeSystems) {
 			index.index(branchPath, new CodeSystemIndexMappingStrategy(newCodeSystem));
@@ -400,15 +338,14 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 
 		// execute component/use case  base change processors
-		final LongCollection allIndexedConceptIds = getTerminologyBrowser().getAllConceptIds(branchPath);
-		final LongSet allConceptIds = LongSets.newLongSet(allIndexedConceptIds);
+		final LongSet allConceptIds = LongSets.newLongSet(conceptIds);
 		for (Concept newConcept : FluentIterable.from(commitChangeSet.getNewComponents()).filter(Concept.class)) {
 			allConceptIds.add(Long.parseLong(newConcept.getId()));
 		}
 		
 		for (Entry<CDOID, EClass> entry : commitChangeSet.getDetachedComponents().entrySet()) {
 			if (entry.getValue() == SnomedPackage.Literals.CONCEPT) {
-				final ExtendedComponent componentIdAndLabel = getTerminologyBrowser().getExtendedComponent(branchPath, CDOIDUtil.getLong(entry.getKey()));
+				final ExtendedComponent componentIdAndLabel = browser.getExtendedComponent(branchPath, CDOIDUtil.getLong(entry.getKey()));
 				allConceptIds.remove(Long.parseLong(componentIdAndLabel.getId()));
 			}
 		}
@@ -425,11 +362,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				.add(new RelationshipChangeProcessor())
 				.add(new DescriptionChangeProcessor())
 				.add(new DescriptionAcceptabilityChangeProcessor(documentProvider))
-				.add(new TaxonomyChangeProcessor(getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier,  ""))
-				.add(new TaxonomyChangeProcessor(getAndCheckStatedNewTaxonomyBuilder(), getStatedPreviousTaxonomyBuilder(), statedDifferenceSupplier, Concepts.STATED_RELATIONSHIP))
-				.add(new IconChangeProcessor(branchPath,
-						new TaxonomyProvider(getAndCheckInferredNewTaxonomyBuilder(), getInferredPreviousTaxonomyBuilder(), inferredDifferenceSupplier.get()),
-						new TaxonomyProvider(getAndCheckStatedNewTaxonomyBuilder(), getStatedPreviousTaxonomyBuilder(), statedDifferenceSupplier.get())))
+				.add(new TaxonomyChangeProcessor(inferredTaxonomy,  ""))
+				.add(new TaxonomyChangeProcessor(statedTaxonomy, Concepts.STATED_RELATIONSHIP))
+				.add(new IconChangeProcessor(branchPath, inferredTaxonomy, statedTaxonomy))
 				.add(labelChangeProcessor)
 				.add(new RefSetMemberChangeProcessor())
 				.add(new RefSetMapTargetUpdateChangeProcessor(branchPath, index))
@@ -455,7 +390,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		if (!releasableComponentIds.isEmpty()) {
-			getIdentifierService().release(releasableComponentIds);
+			identifierService.release(releasableComponentIds);
 		}
 		
 		final LongList deletedComponentIds;
@@ -651,52 +586,23 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	 */
 	private void prepareTaxonomyBuilders() {
 		LOGGER.info("Retrieving taxonomic information from store.");
-		final ISnomedTaxonomyBuilder inferredPreviousBuilder = getInferredPreviousTaxonomyBuilder(); //this will trigger the 'new one' instantiation.
-		final ISnomedTaxonomyBuilder inferredNewBuilder = getInferredNewTaxonomyBuilder(); //this could happen on the same thread. cloning is 10-20 ms.
-		
-		final ISnomedTaxonomyBuilder statedPreviousBuilder = getStatedPreviousTaxonomyBuilder();
-		final ISnomedTaxonomyBuilder statedNewBuilder = getStatedNewTaxonomyBuilder();
-		
-		LOGGER.info("Building taxonomic information.");
-		final Runnable previousInferredBuilderRunnable = new SnomedTaxonomyBuilderRunnable(inferredPreviousBuilder);
-		final Runnable previousStatedBuilderRunnable = new SnomedTaxonomyBuilderRunnable(statedPreviousBuilder);
-		
 		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
-		final Runnable newStatedUpdateRunnable = CDOServerUtils.withAccessor(new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, statedNewBuilder, Concepts.STATED_RELATIONSHIP), accessor);
-		final Runnable newInferredUpdateRunnable = CDOServerUtils.withAccessor(new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, inferredNewBuilder, Concepts.INFERRED_RELATIONSHIP), accessor);
 		
-		ForkJoinUtils.runInParallel(newInferredUpdateRunnable, previousInferredBuilderRunnable, newStatedUpdateRunnable, previousStatedBuilderRunnable);
-	}
-	
-	/*returns with the taxonomy builder instance representing the latest state of the current ontology*/
-	private ISnomedTaxonomyBuilder getInferredNewTaxonomyBuilder() {
-		return inferredNewTaxonomyBuilderSupplier.get();
-	}
-	
-	private ISnomedTaxonomyBuilder getStatedNewTaxonomyBuilder() {
-		return statedNewTaxonomyBuilderSupplier.get();
-	}
-
-	/*returns with the new taxonomy builder instance. also checks it's state.*/
-	private ISnomedTaxonomyBuilder getAndCheckInferredNewTaxonomyBuilder() {
-		final ISnomedTaxonomyBuilder taxonomyBuilder = getInferredNewTaxonomyBuilder();
-		Preconditions.checkState(!taxonomyBuilder.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
-		return taxonomyBuilder;
-	}
-	
-	private ISnomedTaxonomyBuilder getAndCheckStatedNewTaxonomyBuilder() {
-		final ISnomedTaxonomyBuilder taxonomyBuilder = getStatedNewTaxonomyBuilder();
-		Preconditions.checkState(!taxonomyBuilder.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
-		return taxonomyBuilder;
-	}
-	
-	/*returns with the taxonomy builder representing the state of the ontology before the commit that is currently being processed*/
-	private ISnomedTaxonomyBuilder getInferredPreviousTaxonomyBuilder() {
-		return inferredPreviousTaxonomyBuilderSupplier.get();
-	}
-	
-	private ISnomedTaxonomyBuilder getStatedPreviousTaxonomyBuilder() {
-		return statedPreviousTaxonomyBuilderSupplier.get();
+		final Runnable inferredRunnable = CDOServerUtils.withAccessor(new Runnable() {
+			@Override
+			public void run() {
+				inferredTaxonomy = Taxonomies.inferred(branchPath, commitChangeSet, conceptIds, statementBrowser);
+			}
+		}, accessor);
+		
+		final Runnable statedRunnable = CDOServerUtils.withAccessor(new Runnable() {
+			@Override
+			public void run() {
+				statedTaxonomy = Taxonomies.stated(branchPath, commitChangeSet, conceptIds, statementBrowser);
+			}
+		}, accessor);
+		
+		ForkJoinUtils.runInParallel(inferredRunnable, statedRunnable);
 	}
 	
 	@SuppressWarnings("restriction")
@@ -728,15 +634,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 	}
 	
-	/*returns with the terminology browser service. always represents the previous state of the SNOMED CT ontology*/
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-	}
-	
-	private ISnomedIdentifierService getIdentifierService() {
-		return ApplicationContext.getInstance().getService(ISnomedIdentifierService.class);
-	}
-
 	private void createLogEntry(final StringBuilder sb, final Set<ComponentIdAndLabel> logEntries) {
 		for (final ComponentIdAndLabel logEntry : logEntries) {
 			sb.append("[");
