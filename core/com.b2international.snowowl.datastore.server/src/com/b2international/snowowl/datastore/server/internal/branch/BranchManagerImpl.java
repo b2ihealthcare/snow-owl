@@ -125,7 +125,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return mergedTo;
 	}
 
-	final InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String commitMessage, final Runnable postReopen) {
+	InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String commitMessage, final Runnable postReopen) {
 		applyChangeSet(branch, onTopOf, true, commitMessage);
 		final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
 		postReopen.run();
