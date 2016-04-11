@@ -44,12 +44,12 @@ public final class Taxonomies {
 	private static Taxonomy buildTaxonomy(IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds,
 			SnomedStatementBrowser statementBrowser, final StatementCollectionMode mode) {
 		final IsAStatementWithId[] statements = statementBrowser.getActiveStatements(branchPath, mode);
-		final ISnomedTaxonomyBuilder inferredPreviousBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-		final ISnomedTaxonomyBuilder inferredNewBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-		inferredPreviousBuilder.build();
-		new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, inferredNewBuilder, mode.getCharacteristicType()).run();
-		final Pair<LongSet, LongSet> diff = inferredNewBuilder.difference(inferredPreviousBuilder);
-		return new Taxonomy(inferredNewBuilder, inferredPreviousBuilder, diff);
+		final ISnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
+		final ISnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
+		oldTaxonomy.build();
+		new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, newTaxonomy, mode.getCharacteristicType()).run();
+		final Pair<LongSet, LongSet> diff = newTaxonomy.difference(oldTaxonomy);
+		return new Taxonomy(newTaxonomy, oldTaxonomy, diff);
 	}
 	
 }
