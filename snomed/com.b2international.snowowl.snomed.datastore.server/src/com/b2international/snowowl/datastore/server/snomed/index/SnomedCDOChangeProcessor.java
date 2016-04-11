@@ -170,7 +170,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	
 	private final IBranchPath branchPath;
 	private final SnomedIndexServerService index;
-	private final SnomedTerminologyBrowser browser;
+	private final SnomedTerminologyBrowser terminologyBrowser;
 	private final SnomedStatementBrowser statementBrowser;
 	private final ISnomedIdentifierService identifierService;
 	
@@ -188,19 +188,19 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	 * @param branchPath the branch path where the changes has to be calculated and processed.
 	 */
 	public SnomedCDOChangeProcessor(final IBranchPath branchPath, 
-			final SnomedTerminologyBrowser browser, 
+			final SnomedTerminologyBrowser terminologyBrowser, 
 			final SnomedStatementBrowser statementBrowser,
 			final ISnomedIdentifierService identifierService,
 			final IIndexUpdater<SnomedIndexEntry> indexUpdater) {
 		Preconditions.checkNotNull(indexUpdater, "Index service argument cannot be null.");
 		Preconditions.checkArgument(indexUpdater instanceof AbstractIndexUpdater, "Index updater must be instance of " + AbstractIndexUpdater.class + ". Was " + indexUpdater.getClass());
 		this.index = (SnomedIndexServerService) indexUpdater;
-		this.browser = browser;
+		this.terminologyBrowser = terminologyBrowser;
 		this.statementBrowser = statementBrowser;
 		this.identifierService = identifierService;
 		
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		this.conceptIds = browser.getAllConceptIds(branchPath);
+		this.conceptIds = terminologyBrowser.getAllConceptIds(branchPath);
 		
 	}
 	
@@ -345,7 +345,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		for (Entry<CDOID, EClass> entry : commitChangeSet.getDetachedComponents().entrySet()) {
 			if (entry.getValue() == SnomedPackage.Literals.CONCEPT) {
-				final ExtendedComponent componentIdAndLabel = browser.getExtendedComponent(branchPath, CDOIDUtil.getLong(entry.getKey()));
+				final ExtendedComponent componentIdAndLabel = terminologyBrowser.getExtendedComponent(branchPath, CDOIDUtil.getLong(entry.getKey()));
 				allConceptIds.remove(Long.parseLong(componentIdAndLabel.getId()));
 			}
 		}

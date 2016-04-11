@@ -42,10 +42,10 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 		}
 		
 		final SnomedIndexUpdater indexService = context.getService(SnomedIndexUpdater.class);
-		final SnomedTerminologyBrowser browser = context.getService(SnomedTerminologyBrowser.class);
+		final SnomedTerminologyBrowser terminologyBrowser = context.getService(SnomedTerminologyBrowser.class);
 		final SnomedStatementBrowser statementBrowser = context.getService(SnomedStatementBrowser.class);
 		final ISnomedIdentifierService identifierService = context.getService(ISnomedIdentifierService.class);
-		return new SnomedCDOChangeProcessor(branchPath, browser, statementBrowser, identifierService, indexService);
+		return new SnomedCDOChangeProcessor(branchPath, terminologyBrowser, statementBrowser, identifierService, indexService);
 	}
 
 	@Override
