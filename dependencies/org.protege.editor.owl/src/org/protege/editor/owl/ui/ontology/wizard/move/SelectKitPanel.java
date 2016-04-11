@@ -1,16 +1,10 @@
 package org.protege.editor.owl.ui.ontology.wizard.move;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-
 import org.protege.editor.owl.OWLEditorKit;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * User: nickdrummond Date: May 20, 2008
@@ -18,6 +12,10 @@ import org.protege.editor.owl.OWLEditorKit;
 public class SelectKitPanel extends AbstractMoveAxiomsWizardPanel {
 
     public static final String ID = "AxiomSelectionStrategyPanel";
+
+    public static final int DEFAULT_PREFERRED_WIDTH = 1200;
+
+    public static final int DEFAULT_PREFERRED_HEIGHT = 800;
 
     private ButtonGroup bGroup;
 
@@ -31,6 +29,10 @@ public class SelectKitPanel extends AbstractMoveAxiomsWizardPanel {
         setInstructions("Select the method of choosing axioms from the source ontology.");
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(DEFAULT_PREFERRED_WIDTH, DEFAULT_PREFERRED_HEIGHT);
+    }
 
     public void aboutToDisplayPanel() {
         createStrategyRadioButtons();

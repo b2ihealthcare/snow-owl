@@ -1,11 +1,5 @@
 package org.protege.editor.owl.ui.selector;
 
-import java.awt.Color;
-import java.util.Set;
-
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ChangeListener;
-
 import org.protege.editor.core.ui.view.ViewComponent;
 import org.protege.editor.core.ui.view.ViewComponentPlugin;
 import org.protege.editor.core.ui.view.ViewComponentPluginAdapter;
@@ -15,6 +9,11 @@ import org.protege.editor.owl.ui.renderer.OWLSystemColors;
 import org.protege.editor.owl.ui.view.individual.OWLIndividualListViewComponent;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.util.Set;
 
 /**
  * Author: Matthew Horridge<br>

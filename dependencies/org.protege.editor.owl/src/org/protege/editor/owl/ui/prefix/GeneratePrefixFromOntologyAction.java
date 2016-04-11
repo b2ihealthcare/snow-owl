@@ -1,15 +1,14 @@
 package org.protege.editor.owl.ui.prefix;
 
-import java.awt.event.ActionEvent;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-
 import org.apache.log4j.Logger;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.UIHelper;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.Set;
 
 
 /**

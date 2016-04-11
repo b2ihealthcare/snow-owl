@@ -1,21 +1,24 @@
 package org.protege.editor.owl.ui.renderer;
 
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.core.ProtegeManager;
+import org.protege.editor.core.editorkit.EditorKitManager;
 import org.protege.editor.core.prefs.Preferences;
 import org.protege.editor.core.prefs.PreferencesManager;
 import org.protege.editor.core.ui.error.ErrorLogPanel;
+import org.protege.editor.core.ui.workspace.WorkspaceManager;
 import org.protege.editor.owl.ui.renderer.plugin.RendererPlugin;
 import org.protege.editor.owl.ui.renderer.plugin.RendererPluginLoader;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
+
+import javax.swing.*;
 
 /**
  * Author: Matthew Horridge<br>
@@ -27,7 +30,7 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
  * www.cs.man.ac.uk/~horridgm<br><br>
  */
 public class OWLRendererPreferences {
-	public static final String DEFAULT_RENDERER_CLASS_NAME = OWLEntityRendererImpl.class.getName();
+	public static final String DEFAULT_RENDERER_CLASS_NAME = OWLEntityAnnotationValueRenderer.class.getName();
 	
 	public static final String ALLOW_PROTEGE_TO_OVERRIDE_RENDERER = "allow.protege.renderer.override";
 
@@ -51,9 +54,23 @@ public class OWLRendererPreferences {
 
     public static final String ANNOTATIONS = "ANNOTATIONS";
     
-    public static final int DEFAULT_FONT_SIZE = 14;
+    public static final int DEFAULT_FONT_SIZE = 12;
 
-    public static final String DEFAULT_FONT_NAME = "Dialog.plain";
+    /**
+     * The default logical font name.  This is mappable to a physical font on all systems.
+     * See http://docs.oracle.com/javase/tutorial/2d/text/fonts.html#logical-fonts for details.
+     */
+    public static final String DEFAULT_LOGICAL_FONT_FAMILY_NAME = "SansSerif";
+
+    /**
+     * The default preferred font.  Verdana works well if it is installed.  It is specifically designed for readability
+     * at small sizes on computer screens.  See http://en.wikipedia.org/wiki/Verdana for details.  This font will not
+     * be used if is not available on the system.
+     */
+    public static final String DEFAULT_PREFERRED_PHYSICAL_FONT_FAMILY_NAME = "Verdana";
+    
+    public static final String DEFAULT_FONT_NAME = getDefaultFontName();
+
 
     public static final String NO_LANGUAGE_SET_USER_TOKEN = "!";
     
@@ -89,6 +106,31 @@ public class OWLRendererPreferences {
     
     private boolean allowProtegeToOverrideRenderer;
 
+    /*
+     * HELP!
+     * 
+     * I don't really understand this stuff at all.  But it appears that there are two schemes of naming
+     * the dialog font.  The first one, which I believe is used by Windows and Linux is to have a series of
+     * fonts called things like Dialog.plain, Dialog.bold, Dialog.bolditalic and Dialog.italic.  Each of these 
+     * fonts has a family of Dialog and a style of plain.
+     * 
+     * OS/X uses a different scheme.  There is one dialog font with a name of Dialog (no .plain).  He can
+     * be detected by looking for the font with the family Dialog and the style plain.  I am not sure what 
+     * this should be doing exactly. There is also a DialogInput font.
+     * 
+     * This idea of setting the font is a bad idea and I agree with others here that we should get rid of it.
+     */
+    private static String getDefaultFontName() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        String [] fontFamilyNames = ge.getAvailableFontFamilyNames();
+        for(String name : fontFamilyNames) {
+            if(name.toLowerCase().equals(DEFAULT_PREFERRED_PHYSICAL_FONT_FAMILY_NAME.toLowerCase())) {
+                return name;
+            }
+        }
+        return DEFAULT_LOGICAL_FONT_FAMILY_NAME;
+    }
+    
     public Font getFont() {
         return font;
     }
@@ -99,6 +141,7 @@ public class OWLRendererPreferences {
     }
 
 
+    @Deprecated
     public void setFontName(String fontName) {
         this.fontName = fontName;
         getPreferences().putString(FONT_NAME, fontName);
@@ -108,6 +151,7 @@ public class OWLRendererPreferences {
 
     private void resetFont() {
         font = new Font(this.fontName, Font.PLAIN, fontSize);
+
     }
 
 
@@ -130,7 +174,7 @@ public class OWLRendererPreferences {
     }
     
     public void setAnnotationLanguages(List<String> annotationLanguages) {
-    	this.annotationLanguages = annotationLanguages;
+    	this.annotationLanguages = new ArrayList<String>(annotationLanguages);
     	writeAnnotations();
     }
 
@@ -141,7 +185,7 @@ public class OWLRendererPreferences {
 
 
     public List<String> getAnnotationLangs(){
-    	return annotationLanguages;
+    	return Collections.unmodifiableList(annotationLanguages);
     }
 
     public Map<IRI, List<String>> getAnnotationLangMap(){
@@ -198,10 +242,9 @@ public class OWLRendererPreferences {
         if (values.equals(defaultValues)){
             annotationIRIS.add(OWLRDFVocabulary.RDFS_LABEL.getIRI());
             annotationIRIS.add(IRI.create("http://www.w3.org/2004/02/skos/core#prefLabel"));
-            annotationLanguages = new ArrayList<String>();
+            annotationLanguages = getDefaultLanguages();
         }
         else{
-            List<String> langs = new ArrayList<String>();
             for (String value : values){
                 String[] tokens = value.split(",");
                 try {
@@ -211,12 +254,11 @@ public class OWLRendererPreferences {
                         if (token.equals(NO_LANGUAGE_SET_USER_TOKEN)){
                             token = NO_LANGUAGE_SET;
                         }
-                        if (!langs.contains(token)) {
-                        	langs.add(token);
+                        if (!annotationLanguages.contains(token)) {
+                        	annotationLanguages.add(token);
                         }
                     }
                     annotationIRIS.add(iri);
-                    annotationLanguages = langs;
                 }
                 catch (URISyntaxException e) {
                     ErrorLogPanel.showErrorDialog(e);
@@ -247,6 +289,23 @@ public class OWLRendererPreferences {
             values.add(str.toString());
         }
         getPreferences().putStringList(ANNOTATIONS, values);
+    }
+    
+    private List<String> getDefaultLanguages() {
+    	List<String> langs = new ArrayList<String>();
+    	Locale locale = Locale.getDefault();
+    	if (locale != null && locale.getLanguage() != null && !locale.getLanguage().equals("")) {
+    		langs.add(locale.getLanguage());
+    		if (locale.getCountry() != null && !locale.getCountry().equals("")) {
+    			langs.add(locale.getLanguage() + "-" + locale.getCountry());
+    		}
+    	}
+    	langs.add(NO_LANGUAGE_SET);
+    	String en = Locale.ENGLISH.getLanguage();
+    	if (!langs.contains(en)) {
+    		langs.add(en);
+    	}
+    	return langs;
     }
 
 

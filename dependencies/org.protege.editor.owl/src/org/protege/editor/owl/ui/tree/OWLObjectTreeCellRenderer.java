@@ -1,11 +1,10 @@
 package org.protege.editor.owl.ui.tree;
 
-import java.awt.Component;
-
-import javax.swing.JTree;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 /**

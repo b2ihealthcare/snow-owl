@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.protege.editor.owl.ui.library.NewEntryPanel;
 import org.protege.editor.owl.ui.library.plugins.UriEntryPanel;
 import org.protege.xmlcatalog.XMLCatalog;
+import org.protege.xmlcatalog.XmlBaseContext;
 import org.protege.xmlcatalog.entry.Entry;
 import org.protege.xmlcatalog.entry.UriEntry;
 

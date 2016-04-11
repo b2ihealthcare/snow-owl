@@ -1,5 +1,7 @@
 package org.protege.editor.owl.ui.explanation;
 
+import javax.swing.JComponent;
+
 import org.protege.editor.core.plugin.ProtegePluginInstance;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;

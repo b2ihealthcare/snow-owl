@@ -29,7 +29,6 @@
 		<module>org.protege.core.feature</module>
 		<module>org.protege.editor.core.application</module>
 		<module>org.protege.editor.owl</module>
-		<module>org.semanticweb.owl.owlapi</module>
 		<module>org.supercsv</module>
 	</modules>
 	

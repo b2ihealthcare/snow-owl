@@ -1,14 +1,13 @@
 package org.protege.editor.owl.model.selection;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLObject;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 
 /**

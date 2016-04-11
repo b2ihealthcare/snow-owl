@@ -1,10 +1,10 @@
 package org.protege.editor.owl.model.hierarchy;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+
+import java.util.Collections;
+import java.util.Set;
 
 
 /**
@@ -20,8 +20,8 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
  * Children are superclasses of their parents.
  */
 public abstract class AbstractSuperClassHierarchyProvider extends AbstractOWLObjectHierarchyProvider<OWLClass> {
-
-    private OWLClass rootClass;
+	
+    private volatile OWLClass rootClass;
 
 
     public AbstractSuperClassHierarchyProvider(OWLOntologyManager manager) {
@@ -36,11 +36,12 @@ public abstract class AbstractSuperClassHierarchyProvider extends AbstractOWLObj
 
 
     public Set<OWLClass> getRoots() {
-        if (rootClass == null) {
+    	OWLClass myRoot = rootClass;
+        if (myRoot == null) {
             return Collections.emptySet();
         }
         else {
-            return Collections.singleton(rootClass);
+            return Collections.singleton(myRoot);
         }
     }
 }

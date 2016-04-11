@@ -33,7 +33,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
  */
 public class OWLDisjointClassesAxiomFrameSection extends AbstractOWLClassAxiomFrameSection<OWLDisjointClassesAxiom, Set<OWLClassExpression>> {
 
-    public static final String LABEL = "Disjoint classes";
+    public static final String LABEL = "Disjoint With";
     
     public Set<OWLClassExpression> added = new HashSet<OWLClassExpression>();
 
@@ -86,10 +86,13 @@ public class OWLDisjointClassesAxiomFrameSection extends AbstractOWLClassAxiomFr
 
 			public void run() {
 				OWLReasoner reasoner = getOWLModelManager().getReasoner();
+				if (!reasoner.isConsistent()) {
+					return;
+				}
 				NodeSet<OWLClass> disjointFromRoot = reasoner.getSubClasses(getOWLDataFactory().getOWLObjectComplementOf(getRootObject()), true);
 				for (OWLClass c : disjointFromRoot.getFlattened()) {
-					if (!added.contains(c) && !c.equals(getOWLDataFactory().getOWLNothing()) && !c.equals(getRootObject())) {
-						addRow(new OWLDisjointClassesAxiomFrameSectionRow(
+					if (!added.contains(c) && !c.equals(getRootObject())) {
+						addInferredRowIfNontrivial(new OWLDisjointClassesAxiomFrameSectionRow(
 								getOWLEditorKit(),
 								OWLDisjointClassesAxiomFrameSection.this,
 								null,
@@ -108,12 +111,6 @@ public class OWLDisjointClassesAxiomFrameSection extends AbstractOWLClassAxiomFr
     public boolean checkEditorResults(OWLObjectEditor<Set<OWLClassExpression>> editor) {
     	Set<OWLClassExpression> disjoints = editor.getEditedObject();
     	return disjoints.size() != 1 || !disjoints.contains(getRootObject());
-    }
-
-    public void visit(OWLDisjointClassesAxiom axiom) {
-        if (axiom.getClassExpressions().contains(getRootObject())) {
-            reset();
-        }
     }
 
 
@@ -146,6 +143,13 @@ public class OWLDisjointClassesAxiomFrameSection extends AbstractOWLClassAxiomFr
             getOWLModelManager().applyChanges(changes);
         }
         return true;
+    }
+    
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLDisjointClassesAxiom &&
+    			((OWLDisjointClassesAxiom) change.getAxiom()).getClassExpressions().contains(getRootObject());
     }
 
 

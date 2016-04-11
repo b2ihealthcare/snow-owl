@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.protege.editor.owl.model.inference.ReasonerPreferences;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 
 public class PrecomputePreferencesTableModel extends AbstractTableModel {

@@ -41,9 +41,12 @@ import javax.swing.text.View;
 import javax.swing.tree.TreeCellRenderer;
 
 import org.apache.log4j.Logger;
+import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.inference.ReasonerPreferences.OptionalInferenceTask;
+import org.protege.editor.owl.model.util.OWLUtilities;
+import org.protege.editor.owl.ui.OWLIcons;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLClass;
@@ -56,6 +59,7 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 
 /**
@@ -70,7 +74,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, ListCellRenderer {
 
     private static final Logger logger = Logger.getLogger(OWLCellRenderer.class);
-
+    
     private boolean forceReadOnlyRendering;
 
     private OWLEditorKit owlEditorKit;
@@ -115,7 +119,7 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
     private JLabel iconLabel;
 
     private JTextPane textPane;
-
+    
     private int preferredWidth;
 
     private int minTextHeight;
@@ -123,8 +127,6 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
     private OWLEntity focusedEntity;
 
     private boolean commentedOut;
-
-    private boolean inferred;
 
     private boolean highlightKeywords;
 
@@ -162,7 +164,7 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
 
         textPane = new JTextPane();
         textPane.setOpaque(false);
-
+        
         renderingComponent = new JPanel(new OWLCellRendererLayoutManager());
         renderingComponent.add(iconLabel);
         renderingComponent.add(textPane);
@@ -246,7 +248,6 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
         ontology = null;
         focusedEntity = null;
         commentedOut = false;
-        inferred = false;
         strikeThrough = false;
         highlightUnsatisfiableClasses = true;
         highlightUnsatisfiableProperties = true;
@@ -280,7 +281,9 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
      * default value is false)
      */
     public void setInferred(boolean inferred) {
-        this.inferred = inferred;
+    	/*
+    	 * Currently doesn't do anything.  Inferred defaults to false.
+    	 */
     }
 
 
@@ -504,6 +507,12 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
                 ontology = getOWLModelManager().getActiveOntology();
             }
             entity.accept(activeEntityVisitor);
+            if (OWLUtilities.isDeprecated(getOWLModelManager(), entity)) {
+                setStrikeThrough(true);
+            }
+            else {
+                setStrikeThrough(false);
+            }
         }
 
 
@@ -635,10 +644,16 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
         StyleConstants.setBold(nonBoldStyle, false);
 
         selectionForeground = doc.addStyle("SEL_FG_STYPE", null);
-        StyleConstants.setForeground(selectionForeground, SELECTION_FOREGROUND);
+        // we know that it is possible for SELECTION_FOREGROUND to be null 
+        // and an exception here means that Protege doesn't start
+        if (selectionForeground != null && SELECTION_FOREGROUND != null) {
+        	StyleConstants.setForeground(selectionForeground, SELECTION_FOREGROUND);
+        }
 
         foreground = doc.addStyle("FG_STYLE", null);
-        StyleConstants.setForeground(foreground, FOREGROUND);
+        if (foreground != null && FOREGROUND != null) {
+        	StyleConstants.setForeground(foreground, FOREGROUND);
+        }
 
         linkStyle = doc.addStyle("LINK_STYLE", null);
         StyleConstants.setForeground(linkStyle, Color.BLUE);
@@ -695,9 +710,6 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
             doc.setParagraphAttributes(0, doc.getLength(), commentedOutStyle, false);
             return;
         }
-        else if (inferred) {
-
-        }
 
         if (strikeThrough) {
             doc.setParagraphAttributes(0, doc.getLength(), strikeOutStyle, false);
@@ -737,6 +749,11 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
         }
 
         highlightText(doc);
+        if(selected) {
+            if (selectionForeground != null) {
+                doc.setCharacterAttributes(0, doc.getLength(), selectionForeground, false);
+            }
+        }
     }
 
 
@@ -801,19 +818,32 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
                 else if (highlightUnsatisfiableClasses && curEntity instanceof OWLClass) {
                     // If it is a class then paint the word red if the class
                     // is inconsistent
-                    getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_CLASS_UNSATISFIABILITY,
-                                                                              new Runnable() {
-                        public void run() {
-                            if (!getOWLModelManager().getReasoner().isSatisfiable((OWLClass) curEntity)) {
-                                // Paint red because of inconsistency
-                                doc.setCharacterAttributes(tokenStartIndex, tokenLength, inconsistentClassStyle, true);
-                            }
-                        }
-                    });
+                	try {
+                		getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_CLASS_UNSATISFIABILITY,
+                				new Runnable() {
+                			public void run() {
+                				OWLReasoner reasoner = getOWLModelManager().getReasoner();
+                				boolean consistent = reasoner.isConsistent();
+                				if (!consistent || !getOWLModelManager().getReasoner().isSatisfiable((OWLClass) curEntity)) {
+                					// Paint red because of inconsistency
+                					doc.setCharacterAttributes(tokenStartIndex, tokenLength, inconsistentClassStyle, true);
+                				}
+                			}
+                		});
+                	}
+                	catch (Exception e) {
+                		ProtegeApplication.getErrorLog().logError(e);
+                	}
 
                 }
                 else if (highlightUnsatisfiableProperties && curEntity instanceof OWLObjectProperty) {
                     highlightPropertyIfUnsatisfiable(curEntity, doc, tokenStartIndex, tokenLength);
+                }
+                if(OWLUtilities.isDeprecated(owlEditorKit.getOWLModelManager(), curEntity)) {
+                    setStrikeThrough(true);
+                }
+                else {
+                    setStrikeThrough(false);
                 }
                 strikeoutEntityIfCrossedOut(curEntity, doc, tokenStartIndex, tokenLength);
 
@@ -900,22 +930,29 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
 
     private void strikeoutEntityIfCrossedOut(OWLEntity entity, StyledDocument doc, int tokenStartIndex,
                                              int tokenLength) {
-        if(crossedOutEntities.contains(entity)) {
+        if(crossedOutEntities.contains(entity) || strikeThrough) {
             doc.setCharacterAttributes(tokenStartIndex, tokenLength, strikeOutStyle, false);
         }
     }
 
 
     private void highlightPropertyIfUnsatisfiable(final OWLEntity entity, final StyledDocument doc, final int tokenStartIndex, final int tokenLength) {
-        getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_OBJECT_PROPERTY_UNSATISFIABILITY, 
-                                                                  new Runnable() {
-            public void run() {
-                OWLObjectProperty prop = (OWLObjectProperty) entity;
-                if(getOWLModelManager().getReasoner().getBottomObjectPropertyNode().contains(prop)) {
-                    doc.setCharacterAttributes(tokenStartIndex, tokenLength, inconsistentClassStyle, true);
-                }
-            }
-        });
+    	try {
+    		getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_OBJECT_PROPERTY_UNSATISFIABILITY, 
+    				new Runnable() {
+    			public void run() {
+    				OWLObjectProperty prop = (OWLObjectProperty) entity;
+    				OWLReasoner reasoner = getOWLModelManager().getReasoner();
+    				boolean consistent = reasoner.isConsistent();
+    				if(!consistent || reasoner.getBottomObjectPropertyNode().contains(prop)) {
+    					doc.setCharacterAttributes(tokenStartIndex, tokenLength, inconsistentClassStyle, true);
+    				}
+    			}
+    		});
+    	}
+    	catch (Exception e) {
+    		ProtegeApplication.getErrorLog().logError(e);
+    	}
     }
 
 
@@ -939,8 +976,8 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
          * @param constraints where/how the component is added to the layout.
          */
         public void addLayoutComponent(Component comp, Object constraints) {
-            // We only have two components the label that holds the icon
-            // and the text area
+            // We only have three components the label that holds the icon
+            // the text area
         }
 
 
@@ -1067,6 +1104,8 @@ public class OWLCellRenderer implements TableCellRenderer, TreeCellRenderer, Lis
             int iconHeight;
             int textWidth;
             int textHeight;
+            int deprecatedWidth;
+            int deprecatedHeight;
             Insets rcInsets = renderingComponent.getInsets();
 
             iconWidth = iconLabel.getPreferredSize().width;

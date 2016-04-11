@@ -15,11 +15,13 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -36,6 +38,7 @@ import org.protege.editor.core.ui.util.Icons;
 import org.protege.editor.core.ui.view.ViewBarComponent;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.library.CatalogEntryManager;
+import org.protege.editor.owl.model.library.LibraryUtilities;
 import org.protege.editor.owl.model.library.OntologyCatalogManager;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.UIHelper;
@@ -312,7 +315,7 @@ public class OntologyLibraryPanel extends JPanel {
     }
     
     private void insertEntryIntoTree(DefaultMutableTreeNode parent, Entry entry) {
-        if (entry instanceof UriEntry) {
+        if (entry instanceof UriEntry && !isHidden((UriEntry) entry)) {
         	UriEntry uriEntry = (UriEntry) entry;
         	String redirectDescription = "<html><body><b>Imported Location: " + uriEntry.getName() + "</b><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
             						           + "<font color=\"gray\">Redirected To: " + uriEntry.getUri() + "</font></body></html>";
@@ -320,6 +323,16 @@ public class OntologyLibraryPanel extends JPanel {
         	DefaultMutableTreeNode entryNode = new DefaultMutableTreeNode(redirectDescription);
         	model.insertNodeInto(entryNode, parent, parent.getChildCount());
         }
+    }
+    
+    private boolean isHidden(UriEntry entry) {
+    	String u = entry.getName();
+    	for (String ignoredScheme : CatalogEntryManager.IGNORED_SCHEMES) {
+    		if (u.startsWith(ignoredScheme)) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
     
     public Dimension getPreferredSize() {

@@ -1,25 +1,17 @@
 package org.protege.editor.owl.ui.view;
 
+import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
+import org.protege.editor.owl.ui.action.AbstractDeleteEntityAction;
+import org.protege.editor.owl.ui.action.AbstractOWLTreeAction;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.util.OWLEntitySetProvider;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.Icon;
-
-import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
-import org.protege.editor.owl.ui.action.AbstractDeleteEntityAction;
-import org.protege.editor.owl.ui.action.AbstractOWLTreeAction;
-import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLProperty;
-import org.semanticweb.owlapi.model.OWLSubPropertyAxiom;
-import org.semanticweb.owlapi.util.OWLEntitySetProvider;
 
 /**
  * User: nickdrummond
@@ -33,8 +25,7 @@ public abstract class AbstractOWLPropertyHierarchyViewComponent<O extends OWLPro
      * 
      */
     private static final long serialVersionUID = 9069497093520748684L;
-
-
+    
     protected abstract OWLSubPropertyAxiom getSubPropertyAxiom(O child, O parent);
 
 
@@ -53,11 +44,13 @@ public abstract class AbstractOWLPropertyHierarchyViewComponent<O extends OWLPro
     protected abstract Icon getDeleteIcon();
 
 
-        protected void performExtraInitialisation() throws Exception {
+    protected void performExtraInitialisation() throws Exception {
 
-        addAction(new AbstractOWLTreeAction<O>("Add sub property", getSubIcon(),
-                                                                   getTree().getSelectionModel()){
-            public void actionPerformed(ActionEvent event) {
+        addAction(new AbstractOWLTreeAction<O>("Add sub property", 
+        									   getSubIcon(),
+                                               getTree().getSelectionModel()) {
+			private static final long serialVersionUID = -1108739210585116570L;
+			public void actionPerformed(ActionEvent event) {
                 createNewChild();
             }
             protected boolean canPerform(O prop) {
@@ -65,10 +58,12 @@ public abstract class AbstractOWLPropertyHierarchyViewComponent<O extends OWLPro
             }
         }, "A", "A");
 
-        addAction(new AbstractOWLTreeAction<O>("Add sibling property", getSibIcon(),
-                                                                   getTree().getSelectionModel()){
+        addAction(new AbstractOWLTreeAction<O>("Add sibling property", 
+        		                               getSibIcon(),
+                                               getTree().getSelectionModel()){
 
-            public void actionPerformed(ActionEvent event) {
+        	private static final long serialVersionUID = 29239289622664679L;
+			public void actionPerformed(ActionEvent event) {
                 createNewSibling();
             }
             protected boolean canPerform(O cls) {
@@ -76,18 +71,28 @@ public abstract class AbstractOWLPropertyHierarchyViewComponent<O extends OWLPro
             }
         }, "A", "B");
 
-        addAction(new AbstractDeleteEntityAction<O>("Delete selected properties", getDeleteIcon(),
-              getOWLEditorKit(),
-              getHierarchyProvider(),
-              new OWLEntitySetProvider<O>(){
-                  public Set<O> getEntities() {
-                      return getSelectedEntities();
-                  }
-              }){
+        addAction(new AbstractDeleteEntityAction<O>("Delete selected properties", 
+		         									getDeleteIcon(),
+		         									getOWLEditorKit(),
+		         									getHierarchyProvider(),
+		         									new OWLEntitySetProvider<O>(){
+        	                                           public Set<O> getEntities() {
+        	                                        	   return getSelectedEntities();
+        	                                           }
+                                                     }) {
 
-            protected String getPluralDescription() {
-                return "properties";
-            }
+        	private static final long serialVersionUID = -2505868423392875972L;
+
+        	protected String getPluralDescription() {
+        		return "properties";
+        	}
+
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		if (!getTopProperty().equals(getSelectedEntity())) {
+        			super.actionPerformed(e);
+				}
+        	}	
         }, "B", "A");
 
         getTree().setDragAndDropHandler(new OWLPropertyTreeDropHandler<O>(getOWLModelManager()){

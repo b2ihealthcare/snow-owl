@@ -1,21 +1,19 @@
 package org.protege.editor.owl.ui.list;
 
-import java.awt.Rectangle;
+import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.ui.renderer.OWLCellRendererSimple;
+import org.protege.editor.owl.ui.transfer.OWLObjectListDragGestureListener;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLObject;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.JList;
-import javax.swing.ListSelectionModel;
-
-import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.ui.renderer.OWLCellRendererSimple;
-import org.protege.editor.owl.ui.transfer.OWLObjectListDragGestureListener;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLObject;
 
 
 /**
@@ -28,6 +26,8 @@ import org.semanticweb.owlapi.model.OWLObject;
  * www.cs.man.ac.uk/~horridgm<br><br>
  */
 public class OWLObjectList<O extends OWLObject> extends JList {
+    private static final long serialVersionUID = -817749022854204056L;
+
 
     public OWLObjectList(OWLEditorKit owlEditorKit) {
         setCellRenderer(new OWLCellRendererSimple(owlEditorKit));
@@ -55,7 +55,7 @@ public class OWLObjectList<O extends OWLObject> extends JList {
         if (getSelectionMode() == ListSelectionModel.MULTIPLE_INTERVAL_SELECTION){
             int firstIndex = -1;
             for (int i=0; i<getModel().getSize(); i++){
-                if (owlObjects.contains((O)getModel().getElementAt(i))){
+                if (owlObjects.contains(getModel().getElementAt(i))){
                     getSelectionModel().addSelectionInterval(i, i);
                     if (firstIndex == -1){
                         firstIndex = i;
@@ -69,10 +69,11 @@ public class OWLObjectList<O extends OWLObject> extends JList {
     }
 
 
+    @SuppressWarnings("unchecked")
     public java.util.List<O> getSelectedOWLObjects(){
         List<O> sel = new ArrayList<O>();
         for (Object o : getSelectedValues()){
-            sel.add((O)o);
+            sel.add((O) o);
         }
         return sel;
     }

@@ -9,8 +9,8 @@ Bundle-Description: An OWL plugin for the Protege Editor Framework
 Bundle-Vendor: Protege Development Team (First working version written a
  t the University of Manchester by Matthew Horridge)
 Bundle-ClassPath: .,
- lib/protege-owlapi-extensions.jar,
- lib/xmlcatalog.jar
+ lib/xmlcatalog.jar,
+ lib/protege-owlapi-extensions-3.2.4.jar
 Import-Package: javax.swing,
  javax.swing.border,
  javax.swing.colorchooser,
@@ -124,10 +124,10 @@ Export-Package: org.protege.editor.owl,
  org.protege.owlapi.inference,
  org.protege.owlapi.inference.orphan,
  org.protege.owlapi.model
-Bundle-Version: 4.1.0.b2i
+Bundle-Version: 4.3.0.b2i
 Require-Bundle: org.eclipse.equinox.registry,
  org.eclipse.equinox.common,
- org.protege.editor.core.application;bundle-version="4.1.0",
+ org.protege.editor.core.application,
  org.protege.common,
  org.semanticweb.owl.owlapi
 Bundle-Activator: org.protege.editor.owl.ProtegeOWL

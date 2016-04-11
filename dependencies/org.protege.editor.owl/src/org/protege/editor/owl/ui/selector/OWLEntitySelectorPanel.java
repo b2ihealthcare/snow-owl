@@ -10,11 +10,7 @@ import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -23,6 +19,7 @@ import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ui.list.RemovableObjectList;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
+import org.semanticweb.owlapi.model.EntityType;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataProperty;
@@ -38,6 +35,7 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
  * 21-Sep-2008<br><br>
  */
 public class OWLEntitySelectorPanel extends JPanel implements OWLObjectSelector<OWLEntity>, Disposable {
+    private static final long serialVersionUID = -1671448634230595527L;
 
     private OWLClassSelectorPanel classSelectorPanel;
 
@@ -53,7 +51,7 @@ public class OWLEntitySelectorPanel extends JPanel implements OWLObjectSelector<
 
     private JTabbedPane tabbedPane;
 
-    private RemovableObjectList entityList;
+    private RemovableObjectList<OWLEntity> entityList;
 
     private JButton button;
 
@@ -113,7 +111,7 @@ public class OWLEntitySelectorPanel extends JPanel implements OWLObjectSelector<
         dataPropertySelectorPanel = new OWLDataPropertySelectorPanel(owlEditorKit, false);
         dataPropertySelectorPanel.setBorder(null);
 
-        individualSelectorPanel = new OWLIndividualSelectorPanel(owlEditorKit, false);
+        individualSelectorPanel = new OWLIndividualSelectorPanel(owlEditorKit, false, owlEditorKit.getOWLModelManager().getOntologies(), ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         individualSelectorPanel.setBorder(null);
 
         datatypeSelectorPanel = new OWLDataTypeSelectorPanel(owlEditorKit, false);
@@ -138,7 +136,7 @@ public class OWLEntitySelectorPanel extends JPanel implements OWLObjectSelector<
         else{
             setLayout(new EntitySelectorPanelLayoutManager());
             add(tabbedPane);
-            entityList = new RemovableObjectList();
+            entityList = new RemovableObjectList<OWLEntity>();
             entityList.setCellRenderer(new OWLCellRenderer(owlEditorKit));
 
             entityList.addListSelectionListener(new ListSelectionListener() {
@@ -246,9 +244,9 @@ public class OWLEntitySelectorPanel extends JPanel implements OWLObjectSelector<
         entityList.addObject(getCurrentSelection());
     }
 
-    public Set<? extends OWLEntity> getCurrentSelection() {
+    public Set<OWLEntity> getCurrentSelection() {
         Component selComponent = tabbedPane.getSelectedComponent();
-        return ((OWLObjectSelector<? extends OWLEntity>) selComponent).getSelectedObjects();
+        return (Set<OWLEntity>) ((OWLObjectSelector<? extends OWLEntity>) selComponent).getSelectedObjects();
     }
 
     public void addSelectionListener(ChangeListener l){

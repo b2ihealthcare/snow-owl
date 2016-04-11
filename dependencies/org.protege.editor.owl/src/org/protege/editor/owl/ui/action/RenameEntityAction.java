@@ -1,19 +1,10 @@
 package org.protege.editor.owl.ui.action;
 
-import java.util.List;
-
 import org.protege.editor.owl.ui.rename.RenameEntityPanel;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDatatype;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLEntityVisitor;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLEntityRenamer;
+
+import java.util.List;
 
 
 /**
@@ -55,7 +46,7 @@ public class RenameEntityAction extends SelectedOWLEntityAction {
             }
 
             public void visit(OWLAnnotationProperty owlAnnotationProperty) {
-                ensureSelected(getOWLDataFactory().getOWLDataProperty(iri));
+                ensureSelected(getOWLDataFactory().getOWLAnnotationProperty(iri));
             }
 
             public void visit(OWLNamedIndividual individual) {

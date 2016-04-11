@@ -8,14 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import org.apache.log4j.Logger;
 import org.protege.editor.core.ui.util.ComponentFactory;
-
 
 /**
  * Author: Matthew Horridge<br> The University Of Manchester<br> Medical Informatics Group<br> Date: Mar 17,
@@ -28,9 +26,6 @@ import org.protege.editor.core.ui.util.ComponentFactory;
  */
 public abstract class TabbedWorkspace extends Workspace {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 9179999766960877420L;
 
     private JTabbedPane tabbedPane;
@@ -38,9 +33,6 @@ public abstract class TabbedWorkspace extends Workspace {
     private Set<WorkspaceTab> workspaceTabs;
 
     private static final Logger LOGGER = Logger.getLogger(TabbedWorkspace.class);
-
-    private AbstractAction resetTabAction;
-
 
     /**
      * Override of the <code>Workspace</code> initialise method.

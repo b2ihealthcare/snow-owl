@@ -1,11 +1,11 @@
 package org.protege.editor.owl.ui.action;
 
-import java.awt.event.ActionEvent;
-
 import org.apache.log4j.Logger;
 import org.protege.editor.core.ui.wizard.Wizard;
 import org.protege.editor.owl.ui.ontology.wizard.move.MoveAxiomsWizard;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+
+import java.awt.event.ActionEvent;
 
 /**
  * User: nickdrummond
@@ -20,7 +20,7 @@ public class MoveAxiomsToOntologyAction extends ProtegeOWLAction {
 
         if (wiz.showModalDialog() == Wizard.FINISH_RETURN_CODE){
             try {
-                getOWLModelManager().applyChanges(wiz.getChanges());
+                wiz.applyChanges();
             }
             catch (OWLOntologyCreationException e) {
                 logger.error(e);

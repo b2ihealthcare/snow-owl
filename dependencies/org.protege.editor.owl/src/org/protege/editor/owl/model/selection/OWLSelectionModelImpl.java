@@ -1,21 +1,14 @@
 package org.protege.editor.owl.model.selection;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.model.util.OWLAxiomInstance;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDatatype;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLEntityVisitor;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -142,7 +135,7 @@ public class OWLSelectionModelImpl implements OWLSelectionModel {
 
     public OWLSelectionModelImpl() {
         listeners = new ArrayList<OWLSelectionModelListener>();
-        //logger.setLevel(Level.WARN);
+//        logger.setLevel(Level.WARN);
     }
 
 

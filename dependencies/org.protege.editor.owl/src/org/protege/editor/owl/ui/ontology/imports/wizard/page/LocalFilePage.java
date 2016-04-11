@@ -21,7 +21,9 @@ import org.protege.editor.core.editorkit.EditorKitDescriptor;
 import org.protege.editor.core.editorkit.RecentEditorKitManager;
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.core.ui.util.FilePathPanel;
+import org.protege.editor.core.ui.util.UIUtil;
 import org.protege.editor.owl.OWLEditorKit;
+import org.protege.editor.owl.ui.UIHelper;
 import org.protege.editor.owl.ui.ontology.imports.wizard.ImportInfo;
 import org.protege.editor.owl.ui.ontology.imports.wizard.OntologyImportWizard;
 
@@ -41,13 +43,6 @@ public class LocalFilePage extends OntologyImportPage {
     public static final String ID = "LocalFilePage";
 
     private FilePathPanel filePathPanel;
-    private static Set<String> possibleExtensions = new HashSet<String>();
-    static {
-        possibleExtensions.add("owl");
-        possibleExtensions.add("rdf");
-        possibleExtensions.add("rdfs");
-    }
-
 
     public LocalFilePage(OWLEditorKit owlEditorKit) {
         super(ID, "Import from local file", owlEditorKit);
@@ -57,7 +52,7 @@ public class LocalFilePage extends OntologyImportPage {
     @SuppressWarnings("unchecked")
     protected void createUI(JComponent parent) {
         setInstructions("Please specify the path to a file that contains an ontology.  You can use the browse " + "button to show a file chooser dialog.");
-        filePathPanel = new FilePathPanel("Please select a file", possibleExtensions);
+        filePathPanel = new FilePathPanel("Please select a file", UIHelper.OWL_EXTENSIONS);
         filePathPanel.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 updateFinishEnabled();
@@ -85,6 +80,7 @@ public class LocalFilePage extends OntologyImportPage {
     @Override
     public void aboutToHidePanel() {
     	OntologyImportWizard wizard = getWizard();
+        wizard.setImportsAreFinal(false);
     	wizard.clearImports();
     	ImportInfo parameters = new ImportInfo();
     	parameters.setPhysicalLocation(filePathPanel.getFile().toURI());
@@ -105,7 +101,7 @@ public class LocalFilePage extends OntologyImportPage {
         RecentEditorKitManager man = RecentEditorKitManager.getInstance();
         for (EditorKitDescriptor descriptor : man.getDescriptors()) {
             final URI uri = descriptor.getURI(OWLEditorKit.URI_KEY);
-            if (uri.getScheme() != null && uri.getScheme().equals("file")){
+            if (uri.getScheme() != null && UIUtil.isLocalFile(uri)){
                 model.addElement(descriptor);
             }
         }

@@ -1,5 +1,7 @@
 package org.protege.editor.owl.model.hierarchy;
 
+import java.util.Set;
+
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
@@ -9,6 +11,7 @@ import org.protege.editor.owl.model.hierarchy.property.InferredObjectPropertyHie
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLOntology;
 
 /**
  * Author: drummond<br>
@@ -142,18 +145,22 @@ public class OWLHierarchyManagerImpl implements OWLHierarchyManager {
 
 
     private void rebuildAsNecessary() {
+    	Set<OWLOntology> ontologies = mngr.getActiveOntologies();
         // Rebuild the various hierarchies
         if (assertedClassHierarchyProvider != null) {
-            getOWLClassHierarchyProvider().setOntologies(mngr.getActiveOntologies());
+            getOWLClassHierarchyProvider().setOntologies(ontologies);
         }
         if (assertedObjectPropertyHierarchyProvider != null) {
-            getOWLObjectPropertyHierarchyProvider().setOntologies(mngr.getActiveOntologies());
+            getOWLObjectPropertyHierarchyProvider().setOntologies(ontologies);
         }
         if (assertedDataPropertyHierarchyProvider != null) {
-            getOWLDataPropertyHierarchyProvider().setOntologies(mngr.getActiveOntologies());
+            getOWLDataPropertyHierarchyProvider().setOntologies(ontologies);
         }
         if (individualsByTypeHierarchyProvider != null) {
-            getOWLIndividualsByTypeHierarchyProvider().setOntologies(mngr.getActiveOntologies());
+            getOWLIndividualsByTypeHierarchyProvider().setOntologies(ontologies);
+        }
+        if (assertedAnnotationPropertyHierarchyProvider != null) {
+        	getOWLAnnotationPropertyHierarchyProvider().setOntologies(ontologies);
         }
     }
 }

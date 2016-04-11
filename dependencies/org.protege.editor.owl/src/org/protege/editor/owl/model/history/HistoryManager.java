@@ -1,8 +1,8 @@
 package org.protege.editor.owl.model.history;
 
-import java.util.List;
-
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+
+import java.util.List;
 
 
 /**
@@ -39,8 +39,4 @@ public interface HistoryManager {
 
     public List<List<OWLOntologyChange>> getLoggedChanges();
 
-    
-//    public boolean isEntityChanged(OWLEntity entity);
-
-//    public Set<OWLEntity> getChangedEntities();
 }

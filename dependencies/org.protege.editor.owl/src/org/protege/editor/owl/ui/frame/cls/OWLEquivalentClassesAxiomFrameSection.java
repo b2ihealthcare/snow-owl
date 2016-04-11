@@ -31,7 +31,7 @@ import org.semanticweb.owlapi.util.CollectionFactory;
  */
 public class OWLEquivalentClassesAxiomFrameSection extends AbstractOWLClassAxiomFrameSection<OWLEquivalentClassesAxiom, OWLClassExpression> {
 
-    private static final String LABEL = "Equivalent classes";
+    private static final String LABEL = "Equivalent To";
 
     private Set<OWLClassExpression> added = new HashSet<OWLClassExpression>();
 
@@ -85,6 +85,9 @@ public class OWLEquivalentClassesAxiomFrameSection extends AbstractOWLClassAxiom
                                                                   new Runnable() {
 
             public void run() {
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
             	OWLClass nothing = getOWLModelManager().getOWLDataFactory().getOWLNothing();
                 if (!getOWLModelManager().getReasoner().isSatisfiable(getRootObject()) && !nothing.equals(getRootObject())) {
                     addRow(new OWLEquivalentClassesAxiomFrameSectionRow(getOWLEditorKit(),
@@ -109,13 +112,6 @@ public class OWLEquivalentClassesAxiomFrameSection extends AbstractOWLClassAxiom
             }
         });
 
-    }
-
-
-    public void visit(OWLEquivalentClassesAxiom axiom) {
-        if (axiom.getClassExpressions().contains(getRootObject())) {
-            reset();
-        }
     }
 
 
@@ -167,8 +163,16 @@ public class OWLEquivalentClassesAxiomFrameSection extends AbstractOWLClassAxiom
         return true;
     }
 
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLEquivalentClassesAxiom &&
+    			((OWLEquivalentClassesAxiom) change.getAxiom()).getClassExpressions().contains(getRootObject());
+    }
 
-    /**
+
+
+	/**
      * Obtains a comparator which can be used to sort the rows
      * in this section.
      * @return A comparator if to sort the rows in this section,

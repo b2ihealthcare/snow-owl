@@ -2,7 +2,7 @@
 <feature
       id="org.protege.core.feature"
       label="Protege Core Feature"
-      version="4.1.0.b2i">
+      version="4.3.0.b2i">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
@@ -20,28 +20,28 @@
          id="org.protege.common"
          download-size="0"
          install-size="0"
-         version="4.1.0.b2i"
+         version="4.3.0.b2i"
          unpack="false"/>
 
    <plugin
          id="org.protege.editor.core.application"
          download-size="0"
          install-size="0"
-         version="4.1.0.b2i"
+         version="4.3.0.b2i"
          unpack="false"/>
 
    <plugin
          id="org.protege.editor.owl"
          download-size="0"
          install-size="0"
-         version="4.1.0.b2i"
+         version="4.3.0.b2i"
          unpack="false"/>
 
    <plugin
          id="org.semanticweb.owl.owlapi"
          download-size="0"
          install-size="0"
-         version="3.2.2.b2i"
+         version="3.4.4"
          unpack="false"/>
 
 </feature>

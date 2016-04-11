@@ -24,9 +24,11 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 import org.protege.editor.core.ProtegeApplication;
+import org.protege.editor.owl.model.library.CatalogEntryManager;
 import org.protege.editor.owl.model.repository.MasterOntologyIDExtractor;
 import org.protege.xmlcatalog.CatalogUtilities;
 import org.protege.xmlcatalog.XMLCatalog;
+import org.protege.xmlcatalog.XmlBaseContext;
 import org.protege.xmlcatalog.entry.UriEntry;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 

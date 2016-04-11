@@ -1,15 +1,14 @@
 package org.protege.editor.owl.ui.find;
 
-import java.awt.BorderLayout;
-import java.util.Set;
-
-import javax.swing.JList;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
 import org.semanticweb.owlapi.model.OWLEntity;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.util.Set;
 
 
 /**
@@ -42,7 +41,7 @@ public class OWLEntityFinderViewComponent extends AbstractOWLViewComponent {
         add(ComponentFactory.createScrollPane(list));
         list.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting() == false) {
+                if (!e.getValueIsAdjusting()) {
                     OWLEntity selEntity = (OWLEntity) list.getSelectedValue();
                     getOWLWorkspace().getOWLSelectionModel().setSelectedEntity(selEntity);
                 }

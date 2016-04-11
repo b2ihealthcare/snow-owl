@@ -1,53 +1,21 @@
 package org.protege.editor.owl.ui.metrics;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.ui.OWLAxiomTypeFramePanel;
-import org.semanticweb.owlapi.metrics.AxiomCountMetric;
-import org.semanticweb.owlapi.metrics.AxiomTypeMetric;
-import org.semanticweb.owlapi.metrics.DLExpressivity;
-import org.semanticweb.owlapi.metrics.GCICount;
-import org.semanticweb.owlapi.metrics.HiddenGCICount;
-import org.semanticweb.owlapi.metrics.OWLMetric;
-import org.semanticweb.owlapi.metrics.OWLMetricManager;
-import org.semanticweb.owlapi.metrics.ReferencedClassCount;
-import org.semanticweb.owlapi.metrics.ReferencedDataPropertyCount;
-import org.semanticweb.owlapi.metrics.ReferencedIndividualCount;
-import org.semanticweb.owlapi.metrics.ReferencedObjectPropertyCount;
+import org.semanticweb.owlapi.metrics.*;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.util.*;
+import java.util.List;
 
 /*
  * Copyright (C) 2007, University of Manchester
@@ -240,12 +208,17 @@ public class MetricsPanel extends JPanel {
 
     private void createBasicMetrics() {
         List<OWLMetric<?>> metrics = new ArrayList<OWLMetric<?>>();
+        metrics.add(new AxiomCount(getOWLModelManager().getOWLOntologyManager()));
+        metrics.add(new LogicalAxiomCount(getOWLModelManager().getOWLOntologyManager()));
         metrics.add(new ReferencedClassCount(getOWLModelManager().getOWLOntologyManager()));
         metrics.add(new ReferencedObjectPropertyCount(getOWLModelManager().getOWLOntologyManager()));
         metrics.add(new ReferencedDataPropertyCount(getOWLModelManager().getOWLOntologyManager()));
         metrics.add(new ReferencedIndividualCount(getOWLModelManager().getOWLOntologyManager()));
         metrics.add(new DLExpressivity(getOWLModelManager().getOWLOntologyManager()));
-        OWLMetricManager metricManager = new OWLMetricManager(metrics);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+        OWLMetricManager metricManager = new OWLMetricManager((List) metrics);
         metricManagerMap.put("Metrics", metricManager);
     }
 
@@ -257,7 +230,10 @@ public class MetricsPanel extends JPanel {
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(), AxiomType.DISJOINT_CLASSES));
         metrics.add(new GCICount(getOWLModelManager().getOWLOntologyManager()));
         metrics.add(new HiddenGCICount(getOWLModelManager().getOWLOntologyManager()));
-        OWLMetricManager metricManager = new OWLMetricManager(metrics);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+        OWLMetricManager metricManager = new OWLMetricManager((List) metrics);
         metricManagerMap.put("Class axioms", metricManager);
     }
 
@@ -291,7 +267,10 @@ public class MetricsPanel extends JPanel {
                                         AxiomType.OBJECT_PROPERTY_RANGE));
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(),
                                         AxiomType.SUB_PROPERTY_CHAIN_OF));
-        OWLMetricManager metricManager = new OWLMetricManager(metrics);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+        OWLMetricManager metricManager = new OWLMetricManager((List) metrics);
         metricManagerMap.put("Object property axioms", metricManager);
     }
 
@@ -309,7 +288,10 @@ public class MetricsPanel extends JPanel {
                                         AxiomType.DATA_PROPERTY_DOMAIN));
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(),
                                         AxiomType.DATA_PROPERTY_RANGE));        
-        OWLMetricManager metricManager = new OWLMetricManager(metrics);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+        OWLMetricManager metricManager = new OWLMetricManager((List) metrics);
         metricManagerMap.put("Data property axioms", metricManager);
     }
 
@@ -327,7 +309,10 @@ public class MetricsPanel extends JPanel {
                                         AxiomType.NEGATIVE_DATA_PROPERTY_ASSERTION));
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(), AxiomType.SAME_INDIVIDUAL));
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(), AxiomType.DIFFERENT_INDIVIDUALS));
-        OWLMetricManager metricManager = new OWLMetricManager(metrics);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+        OWLMetricManager metricManager = new OWLMetricManager((List) metrics);
         metricManagerMap.put("Individual axioms", metricManager);
     }
 
@@ -337,7 +322,10 @@ public class MetricsPanel extends JPanel {
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(), AxiomType.ANNOTATION_ASSERTION));
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(), AxiomType.ANNOTATION_PROPERTY_DOMAIN));
         metrics.add(new AxiomTypeMetric(getOWLModelManager().getOWLOntologyManager(), AxiomType.ANNOTATION_PROPERTY_RANGE));
-        OWLMetricManager metricManager = new OWLMetricManager(metrics);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+        OWLMetricManager metricManager = new OWLMetricManager((List) metrics);
         metricManagerMap.put("Annotation axioms", metricManager);
     }
     

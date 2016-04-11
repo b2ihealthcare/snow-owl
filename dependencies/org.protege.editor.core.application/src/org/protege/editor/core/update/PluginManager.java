@@ -30,9 +30,8 @@ public class PluginManager {
 
     public static final String AUTO_UPDATE_KEY = "CheckForUpdates";
 
-    public static final String PLUGIN_REGISTRY_KEY = "plugin.registry-4.1r.url";
-
-    public static final String DEFAULT_REGISTRY = "http://smi-protege.stanford.edu/protege4/plugins/4.1-prerelease-plugins.repository";
+    public static final String PLUGIN_REGISTRY_KEY = "plugin.registry-4.2-release.url";
+    public static final String DEFAULT_REGISTRY = "http://protege.googlecode.com/svn/trunk/autoupdate/4_2/4.2-plugins-2012-03-19.repository";
 
     private PluginRegistry pluginRegistry;
 
@@ -66,7 +65,7 @@ public class PluginManager {
 
 
     public URL getPluginRegistryLocation() {
-        String pluginRegistryLoc = getPrefs().getString(PLUGIN_REGISTRY_KEY, DEFAULT_REGISTRY);
+    	String pluginRegistryLoc = getPrefs().getString(PLUGIN_REGISTRY_KEY, DEFAULT_REGISTRY);
         try {
             return new URL(pluginRegistryLoc);
         }
@@ -77,8 +76,12 @@ public class PluginManager {
 
 
     public void setPluginRegistryLocation(URL url) {
-        getPrefs().putString(PLUGIN_REGISTRY_KEY, url.toString());
-        pluginRegistry = null;
+    	String oldPluginRegistryLoc = getPrefs().getString(PLUGIN_REGISTRY_KEY, DEFAULT_REGISTRY);
+    	String newPluginRegistryLoc = url.toString();
+    	if (!newPluginRegistryLoc.equals(oldPluginRegistryLoc)) {
+    		getPrefs().putString(PLUGIN_REGISTRY_KEY, newPluginRegistryLoc);
+    		pluginRegistry = null;
+    	}
     }
 
 
@@ -94,9 +97,15 @@ public class PluginManager {
         final BackgroundTask task = ProtegeApplication.getBackgroundTaskManager().startTask("searching for updates");
         Runnable runnable = new Runnable() {
             public void run() {
-                PluginRegistry updatesProvider = new PluginRegistryImpl(getPluginRegistryLocation(), PLUGIN_UPDATE_REGISTRY);
-                java.util.List<PluginInfo> updates = updatesProvider.getAvailableDownloads();
-                ProtegeApplication.getBackgroundTaskManager().endTask(task);
+            	PluginRegistry updatesProvider;
+            	java.util.List<PluginInfo> updates;
+            	try {
+            		updatesProvider = new PluginRegistryImpl(getPluginRegistryLocation(), PLUGIN_UPDATE_REGISTRY);
+            		updates = updatesProvider.getAvailableDownloads();
+            	}
+            	finally {
+            		ProtegeApplication.getBackgroundTaskManager().endTask(task);
+            	}
                 if (!updates.isEmpty()) {
                     Map<String, PluginRegistry> map = new LinkedHashMap<String, PluginRegistry>();
                     map.put("Updates", updatesProvider);
@@ -119,9 +128,14 @@ public class PluginManager {
 
         Runnable runnable = new Runnable() {
             public void run() {
-                PluginRegistry registry = getPluginRegistry();
-                final List<PluginInfo> downloads = registry.getAvailableDownloads();
-                ProtegeApplication.getBackgroundTaskManager().endTask(task);
+            	List<PluginInfo> downloads;
+            	try {
+            		PluginRegistry registry = getPluginRegistry();
+            		downloads = registry.getAvailableDownloads();
+            	}
+            	finally {
+            		ProtegeApplication.getBackgroundTaskManager().endTask(task);
+            	}
                 if (!downloads.isEmpty()){
                     Map<String, PluginRegistry> map = new LinkedHashMap<String, PluginRegistry>();
                     map.put("Downloads", getPluginRegistry());
@@ -142,10 +156,16 @@ public class PluginManager {
     public void performAutoUpdate() {
         final BackgroundTask autoUpdateTask = ProtegeApplication.getBackgroundTaskManager().startTask("autoupdate");
         Runnable runnable = new Runnable() {
+        	PluginRegistry updatesProvider;
+        	List<PluginInfo> updates;
             public void run() {
-                PluginRegistry updatesProvider = new PluginRegistryImpl(getPluginRegistryLocation(), PLUGIN_UPDATE_REGISTRY);
-                List<PluginInfo> updates = updatesProvider.getAvailableDownloads();
-                ProtegeApplication.getBackgroundTaskManager().endTask(autoUpdateTask);
+            	try {
+            		updatesProvider = new PluginRegistryImpl(getPluginRegistryLocation(), PLUGIN_UPDATE_REGISTRY);
+            		updates = updatesProvider.getAvailableDownloads();
+            	}
+            	finally {
+            		ProtegeApplication.getBackgroundTaskManager().endTask(autoUpdateTask);
+            	}
                 if (!updates.isEmpty()) {
                     Map<String, PluginRegistry> map = new LinkedHashMap<String, PluginRegistry>();
                     map.put(PLUGIN_UPDATE_REGISTRY.getLabel(), updatesProvider);

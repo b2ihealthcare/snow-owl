@@ -1,18 +1,18 @@
 package org.protege.editor.owl.ui.ontology;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-
 import org.apache.log4j.Logger;
 import org.protege.editor.owl.model.event.EventType;
 import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
 import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.ui.view.AbstractOWLViewComponent;
-import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.*;
+import java.util.List;
 
 
 /**
@@ -34,10 +34,24 @@ public class ActiveOntologyView extends AbstractOWLViewComponent {
     private OWLModelManagerListener owlModelManagerListener = new OWLModelManagerListener() {
         public void handleChange(OWLModelManagerChangeEvent event) {
             if (event.isType(EventType.ACTIVE_ONTOLOGY_CHANGED)) {
-                ontologiesList.setSelectedItem(getOWLModelManager().getActiveOntology());
+                updateList();
             }
         }
     };
+
+
+    private final OWLOntologyChangeListener ontologyChangedListener = new OWLOntologyChangeListener() {
+        public void ontologiesChanged(List<? extends OWLOntologyChange> owlOntologyChanges) throws OWLException {
+            handleOntologyChanges(owlOntologyChanges);
+        }
+    };
+
+    private void updateList() {
+        ontologiesList.setSelectedItem(getOWLModelManager().getActiveOntology());
+        ontologiesList.setRenderer(ontologiesList.getRenderer());
+    }
+
+
 
 
     public void disposeOWLView() {
@@ -58,14 +72,25 @@ public class ActiveOntologyView extends AbstractOWLViewComponent {
         });
         add(ontologiesList);
         getOWLModelManager().addListener(owlModelManagerListener);
+        getOWLModelManager().addOntologyChangeListener(ontologyChangedListener);
         rebuildList();
     }
 
+    private void handleOntologyChanges(List<? extends OWLOntologyChange> changes) {
+        for(OWLOntologyChange change : changes) {
+            System.out.println("UPDATE");
+            if(change instanceof SetOntologyID) {
+
+                updateList();
+                break;
+            }
+        }
+    }
 
     private void rebuildList() {
         try {
             ontologiesList.setModel(new DefaultComboBoxModel(getOWLModelManager().getOntologies().toArray()));
-            ontologiesList.setSelectedItem(getOWLModelManager().getActiveOntology());
+            updateList();
         }
         catch (Exception e) {
             logger.error(e);

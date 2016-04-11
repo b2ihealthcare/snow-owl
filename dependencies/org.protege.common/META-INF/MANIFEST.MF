@@ -1,7 +1,7 @@
 Manifest-Version: 2.0
 Bundle-Name: Common Protege Libraries
 Bundle-SymbolicName: org.protege.common;singleton=true
-Bundle-Version: 4.1.0.b2i
+Bundle-Version: 4.3.0.b2i
 Bundle-Description: Some common libraries
 Bundle-Vendor: Protege Development Team
 Bundle-ContactAddress: p4-feedback@lists.stanford.edu
@@ -59,3 +59,4 @@ Export-Package: org.apache.commons.lang,
 Bundle-Activator: org.protege.common.Activator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
+Bundle-ManifestVersion: 2

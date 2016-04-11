@@ -1,7 +1,5 @@
 package org.protege.editor.owl.ui;
 
-import javax.swing.JComponent;
-
 import org.protege.editor.core.ProtegeProperties;
 import org.protege.editor.core.ui.view.View;
 import org.protege.editor.core.ui.view.ViewComponent;
@@ -11,14 +9,11 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLEntityDisplayProvider;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.ui.view.AbstractOWLSelectionViewComponent;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDatatype;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLEntityVisitor;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.*;
+
+import javax.swing.*;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**

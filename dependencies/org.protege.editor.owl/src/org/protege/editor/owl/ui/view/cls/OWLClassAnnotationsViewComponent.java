@@ -1,13 +1,12 @@
 package org.protege.editor.owl.ui.view.cls;
 
-import java.awt.BorderLayout;
-
-import javax.swing.JScrollPane;
-
 import org.protege.editor.owl.ui.frame.OWLAnnotationsFrame;
 import org.protege.editor.owl.ui.framelist.OWLFrameList;
 import org.semanticweb.owlapi.model.OWLAnnotationSubject;
 import org.semanticweb.owlapi.model.OWLClass;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 /**
@@ -28,7 +27,9 @@ public class OWLClassAnnotationsViewComponent extends AbstractOWLClassViewCompon
     public void initialiseClassView() throws Exception {
         list = new OWLFrameList<OWLAnnotationSubject>(getOWLEditorKit(), new OWLAnnotationsFrame(getOWLEditorKit()));
         setLayout(new BorderLayout());
-        add(new JScrollPane(list));
+        JScrollPane comp = new JScrollPane(list);
+        comp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        add(comp);
     }
 
 

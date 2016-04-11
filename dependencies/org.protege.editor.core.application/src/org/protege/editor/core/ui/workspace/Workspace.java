@@ -1,27 +1,10 @@
 package org.protege.editor.core.ui.workspace;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.util.Collections;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
-import javax.swing.PopupFactory;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-
+import com.jgoodies.looks.FontPolicies;
+import com.jgoodies.looks.FontPolicy;
+import com.jgoodies.looks.FontSet;
+import com.jgoodies.looks.FontSets;
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import org.apache.log4j.Logger;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.core.ProtegeApplication;
@@ -34,17 +17,14 @@ import org.protege.editor.core.ui.about.AboutPanel;
 import org.protege.editor.core.ui.preferences.PreferencesDialogPanel;
 import org.protege.editor.core.ui.split.ViewSplitPane;
 import org.protege.editor.core.ui.util.ProtegePlasticTheme;
-import org.protege.editor.core.ui.view.View;
-import org.protege.editor.core.ui.view.ViewComponent;
-import org.protege.editor.core.ui.view.ViewComponentPlugin;
-import org.protege.editor.core.ui.view.ViewComponentPluginLoader;
-import org.protege.editor.core.ui.view.ViewHolder;
+import org.protege.editor.core.ui.view.*;
 
-import com.jgoodies.looks.FontPolicies;
-import com.jgoodies.looks.FontPolicy;
-import com.jgoodies.looks.FontSet;
-import com.jgoodies.looks.FontSets;
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.Set;
 
 /*
  * Copyright (C) 2007, University of Manchester
@@ -85,7 +65,7 @@ import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 public abstract class Workspace extends JComponent implements Disposable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1737700990946291204L;
 
@@ -96,7 +76,9 @@ public abstract class Workspace extends JComponent implements Disposable {
     public static final Logger LOGGER = Logger.getLogger(Workspace.class);
 
     public static final String FILE_MENU_NAME = "File";
+
     public static final String WINDOW_MENU_NAME = "Window";
+
     private static final String HELP_MENU_NAME = "Help";
 
     public static final String RESULT_PANE_ID = "org.protege.editor.core.resultspane";
@@ -124,7 +106,7 @@ public abstract class Workspace extends JComponent implements Disposable {
      * set up the <code>Workspace</code> (with references
      * to the <code>EditorKit</code> etc.)
      * @param editorKit The <code>EditorKit</code> that this
-     *                  <code>Workspace</code> belongs to.
+     * <code>Workspace</code> belongs to.
      */
     public void setup(EditorKit editorKit) {
         this.editorKit = editorKit;
@@ -162,59 +144,61 @@ public abstract class Workspace extends JComponent implements Disposable {
 
     private static void adjustBorder(ViewHolder holder) {
         Border currentBorder = holder.getBorder();
-        holder.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(7, 7, 7, 7),
-                                                            currentBorder));
+        holder.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(7, 7, 7, 7), currentBorder));
     }
 
 
     protected void initialiseExtraMenuItems(JMenuBar menuBar) {
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
             JMenu menu = menuBar.getMenu(i);
-            if (menu.getText().equals(WINDOW_MENU_NAME)) {
-                installLookAndFeelMenu(menu);
-            }
-            else if (menu.getText().equals(FILE_MENU_NAME)){
-                if (!OSUtils.isOSX()){
-                    final JMenuItem menuItem = new JMenuItem(new AbstractAction("Preferences..."){
-                        /**
-                         * 
-                         */
-                        private static final long serialVersionUID = -4897769796985728041L;
-
-                        public void actionPerformed(ActionEvent event) {
-                            PreferencesDialogPanel.showPreferencesDialog(null, getEditorKit());
-                        }
-                    });
-                    KeyStroke ks = KeyStroke.getKeyStroke(",");
-                    menuItem.setAccelerator(ks);
-                    menu.addSeparator();
-                    menu.add(menuItem);
-                    menu.addSeparator();
-                    menu.add(new AbstractAction("Exit"){
-                        /**
-                         * 
-                         */
-                        private static final long serialVersionUID = -3497054762240815779L;
-
-                        public void actionPerformed(ActionEvent event) {
-                            ProtegeApplication.handleQuit();
-                        }
-                    });
+            if (menu != null) {
+                String menuText = menu.getText();
+                if (WINDOW_MENU_NAME.equals(menuText)) {
+                    installLookAndFeelMenu(menu);
                 }
-            }
-            else if (menu.getText().equals(HELP_MENU_NAME)){
-                if (!OSUtils.isOSX()){
-                    menu.addSeparator();
-                    menu.add(new AbstractAction("About"){
-                        /**
-                         * 
-                         */
-                        private static final long serialVersionUID = 3773470646910947172L;
+                else if (FILE_MENU_NAME.equals(menuText)) {
+                    if (!OSUtils.isOSX()) {
+                        final JMenuItem menuItem = new JMenuItem(new AbstractAction("Preferences...") {
+                            /**
+                             *
+                             */
+                            private static final long serialVersionUID = -4897769796985728041L;
 
-                        public void actionPerformed(ActionEvent event) {
-                            AboutPanel.showDialog();
-                        }
-                    });
+                            public void actionPerformed(ActionEvent event) {
+                                PreferencesDialogPanel.showPreferencesDialog(null, getEditorKit());
+                            }
+                        });
+                        KeyStroke ks = KeyStroke.getKeyStroke(",");
+                        menuItem.setAccelerator(ks);
+                        menu.addSeparator();
+                        menu.add(menuItem);
+                        menu.addSeparator();
+                        menu.add(new AbstractAction("Exit") {
+                            /**
+                             *
+                             */
+                            private static final long serialVersionUID = -3497054762240815779L;
+
+                            public void actionPerformed(ActionEvent event) {
+                                ProtegeApplication.handleQuit();
+                            }
+                        });
+                    }
+                }
+                else if (HELP_MENU_NAME.equals(menuText)) {
+                    if (!OSUtils.isOSX()) {
+                        menu.addSeparator();
+                        menu.add(new AbstractAction("About") {
+                            /**
+                             *
+                             */
+                            private static final long serialVersionUID = 3773470646910947172L;
+
+                            public void actionPerformed(ActionEvent event) {
+                                AboutPanel.showDialog();
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -233,7 +217,7 @@ public abstract class Workspace extends JComponent implements Disposable {
 
         JRadioButtonMenuItem protegeDefaultMenuItem = new JRadioButtonMenuItem(new AbstractAction("Protege Default") {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = -1460075802676626382L;
 
@@ -247,17 +231,16 @@ public abstract class Workspace extends JComponent implements Disposable {
 
         for (final UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
             final String className = info.getClassName();
-            JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(
-                    new AbstractAction(info.getName()) {
-                        /**
-                         * 
-                         */
-                        private static final long serialVersionUID = 2912631603213508312L;
+            JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(new AbstractAction(info.getName()) {
+                /**
+                 *
+                 */
+                private static final long serialVersionUID = 2912631603213508312L;
 
-                        public void actionPerformed(ActionEvent e) {
-                            setLookAndFeel(className);
-                        }
-                    });
+                public void actionPerformed(ActionEvent e) {
+                    setLookAndFeel(className);
+                }
+            });
             lafMenuItemGroup.add(menuItem);
             menuItem.setSelected(lafName.equals(className));
             menu.add(menuItem);
@@ -265,7 +248,7 @@ public abstract class Workspace extends JComponent implements Disposable {
 
         JRadioButtonMenuItem plastic3DmenuItem = new JRadioButtonMenuItem(new AbstractAction("Plastic 3D") {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = 6933202663872017353L;
 
@@ -300,9 +283,11 @@ public abstract class Workspace extends JComponent implements Disposable {
             Preferences p = PreferencesManager.getInstance().getApplicationPreferences(ProtegeApplication.LOOK_AND_FEEL_KEY);
             p.putString(ProtegeApplication.LOOK_AND_FEEL_CLASS_NAME, lafName);
 
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
             LOGGER.warn("Look and feel not found: " + lafName);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             LOGGER.warn(e.toString());
         }
     }
@@ -338,12 +323,11 @@ public abstract class Workspace extends JComponent implements Disposable {
     public WorkspaceViewManager getViewManager() {
         return viewManager;
     }
-    
+
     public abstract JComponent getStatusArea();
 
 
-    public void showResultsView(String id, String headerLabel, Color headerColor, ViewComponent viewComponent,
-                                boolean replace, int location) {
+    public void showResultsView(String id, String headerLabel, Color headerColor, ViewComponent viewComponent, boolean replace, int location) {
         ViewComponentPlugin plugin = new ResultsViewComponentPlugin(id, headerLabel, headerColor, viewComponent);
         showResultsView(plugin, replace, location);
     }
@@ -401,8 +385,8 @@ public abstract class Workspace extends JComponent implements Disposable {
 
 
     public void dispose() {
-    	leftResultsViewHolder.dispose();
-    	bottomResultsViewHolder.dispose();
+        leftResultsViewHolder.dispose();
+        bottomResultsViewHolder.dispose();
     }
 
 
@@ -425,8 +409,7 @@ public abstract class Workspace extends JComponent implements Disposable {
         private Color headerColor;
 
 
-        protected ResultsViewComponentPlugin(String id, String headerLabel, Color headerColor,
-                                             ViewComponent viewComponent) {
+        protected ResultsViewComponentPlugin(String id, String headerLabel, Color headerColor, ViewComponent viewComponent) {
             this.id = id;
             this.headerColor = headerColor;
             this.headerLabel = headerLabel;
@@ -464,8 +447,7 @@ public abstract class Workspace extends JComponent implements Disposable {
         }
 
 
-        public ViewComponent newInstance() throws ClassNotFoundException, IllegalAccessException,
-                InstantiationException {
+        public ViewComponent newInstance() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
             return viewComponent;
         }
 

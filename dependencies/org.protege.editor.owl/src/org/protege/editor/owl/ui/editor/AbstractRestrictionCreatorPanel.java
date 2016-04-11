@@ -1,24 +1,5 @@
 package org.protege.editor.owl.ui.editor;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JSplitPane;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
 import org.protege.editor.owl.ui.selector.AbstractHierarchySelectorPanel;
@@ -27,6 +8,16 @@ import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLProperty;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
 * Copyright (C) 2007, University of Manchester
@@ -91,7 +82,7 @@ public abstract class AbstractRestrictionCreatorPanel<P extends OWLProperty, F e
         propertySelectorPanel.setBorder(ComponentFactory.createTitledBorder("Restricted property"));
 
         fillerSelectorPanel = createFillerSelectorPanel();
-        propertySelectorPanel.addSelectionListener(selListener);
+        fillerSelectorPanel.addSelectionListener(selListener);
         fillerSelectorPanel.setBorder(ComponentFactory.createTitledBorder("Restriction filler"));
 
         panel.setLayout(new BorderLayout());

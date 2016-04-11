@@ -1,5 +1,6 @@
 package org.protege.editor.owl.ui.action.export.inferred;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.ProgressMonitor;

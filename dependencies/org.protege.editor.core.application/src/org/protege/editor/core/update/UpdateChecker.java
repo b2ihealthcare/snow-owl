@@ -1,10 +1,10 @@
 package org.protege.editor.core.update;
 
-import java.io.IOException;
-import java.net.URL;
-
 import org.osgi.framework.Bundle;
 import org.protege.editor.core.plugin.PluginUtilities;
+
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * Author: Matthew Horridge<br>

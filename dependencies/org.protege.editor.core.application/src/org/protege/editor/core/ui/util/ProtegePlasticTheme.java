@@ -1,12 +1,11 @@
 package org.protege.editor.core.ui.util;
 
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 
-import javax.swing.UIDefaults;
-import javax.swing.plaf.ColorUIResource;
+import javax.swing.*;
+import javax.swing.plaf.*;
 
-import com.jgoodies.looks.plastic.theme.ExperienceBlue;
+import com.jgoodies.looks.plastic.theme.*;
 
 
 

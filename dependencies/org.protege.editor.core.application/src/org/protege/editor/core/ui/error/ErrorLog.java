@@ -1,12 +1,12 @@
 package org.protege.editor.core.ui.error;
 
+import org.apache.log4j.Logger;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
-import org.apache.log4j.Logger;
 
 
 /**
