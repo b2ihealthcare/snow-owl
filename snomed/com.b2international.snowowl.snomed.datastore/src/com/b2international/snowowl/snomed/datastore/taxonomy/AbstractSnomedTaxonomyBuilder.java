@@ -20,7 +20,6 @@ import static com.google.common.collect.Iterables.isEmpty;
 
 import java.util.BitSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
@@ -266,48 +265,21 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		dirty = true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#difference(com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder)
-	 */
 	@Override
 	public Pair<LongSet, LongSet> difference(final ISnomedTaxonomyBuilder other) {
-		
 		Preconditions.checkNotNull(other, "Taxonomy builder argument cannot be null.");
 		
 		if (other == this) {
-			return new Pair<LongSet, LongSet>(new LongOpenHashSet(), new LongOpenHashSet());
+			return Pair.of(LongCollections.emptySet(), LongCollections.emptySet());
 		}
 		
-		final AtomicReference<LongSet> otherStatements = new AtomicReference<LongSet>();
-		final AtomicReference<LongSet> thisStatements = new AtomicReference<LongSet>();
+		final LongSet thisStatements = getEdges().keySet();
+		final LongSet otherStatements = ((AbstractSnomedTaxonomyBuilder) other).getEdges().keySet();
 		
-		final Runnable getOtherStatementsRunnable = new Runnable() {
-			@Override public void run() { otherStatements.set(((AbstractSnomedTaxonomyBuilder) other).getEdges().keySet()); }
-		};
+		final LongSet thisDiff = LongSets.difference(thisStatements, otherStatements);
+		final LongSet otherDiff = LongSets.difference(otherStatements, thisStatements);
 		
-		final Runnable getThisStatementsRunnable = new Runnable() {
-			@Override public void run() { thisStatements.set(getEdges().keySet()); }
-		};
-		
-		ForkJoinUtils.runInParallel(getOtherStatementsRunnable, getThisStatementsRunnable);
-		
-		final AtomicReference<LongSet> newStatements = new AtomicReference<LongSet>();
-		final AtomicReference<LongSet> detachedStatements = new AtomicReference<LongSet>();
-
-		final Runnable calculateNewStatementsRunnable = new Runnable() {
-			@Override public void run() { newStatements.set(LongSets.difference(thisStatements.get(), otherStatements.get()));
-			}
-		};
-
-		final Runnable calculateDetachedStatementsRunnable = new Runnable() {
-			@Override public void run() { detachedStatements.set(LongSets.difference(otherStatements.get(), thisStatements.get()));
-			}
-		};
-
-		ForkJoinUtils.runInParallel(calculateNewStatementsRunnable, calculateDetachedStatementsRunnable);
-		
-		return new Pair<LongSet, LongSet>(newStatements.get(), detachedStatements.get());
+		return Pair.of(thisDiff, otherDiff);
 	}
 	
 	
