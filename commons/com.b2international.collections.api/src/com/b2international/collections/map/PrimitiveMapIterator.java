@@ -1,6 +1,6 @@
-package com.b2international.commons.collections.primitive.map;
+package com.b2international.collections.map;
 
-import com.b2international.commons.collections.primitive.PrimitiveIterator;
+import com.b2international.collections.PrimitiveIterator;
 
 public interface PrimitiveMapIterator extends PrimitiveIterator {
 	void next();

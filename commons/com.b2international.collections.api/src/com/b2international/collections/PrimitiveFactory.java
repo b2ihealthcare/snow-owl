@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.collections.primitive;
+package com.b2international.collections;
 
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.commons.collections.primitive.list.ByteList;
-import com.b2international.commons.collections.primitive.list.IntDeque;
-import com.b2international.commons.collections.primitive.list.IntList;
-import com.b2international.commons.collections.primitive.list.LongDeque;
-import com.b2international.commons.collections.primitive.list.LongList;
-import com.b2international.commons.collections.primitive.map.ByteKeyLongMap;
-import com.b2international.commons.collections.primitive.map.ByteKeyMap;
-import com.b2international.commons.collections.primitive.map.ByteValueMap;
-import com.b2international.commons.collections.primitive.map.IntKeyMap;
-import com.b2international.commons.collections.primitive.map.LongKeyFloatMap;
-import com.b2international.commons.collections.primitive.map.LongKeyIntMap;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.map.LongValueMap;
-import com.b2international.commons.collections.primitive.set.ByteSet;
-import com.b2international.commons.collections.primitive.set.IntSet;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.list.ByteList;
+import com.b2international.collections.list.IntDeque;
+import com.b2international.collections.list.IntList;
+import com.b2international.collections.list.LongDeque;
+import com.b2international.collections.list.LongList;
+import com.b2international.collections.map.ByteKeyLongMap;
+import com.b2international.collections.map.ByteKeyMap;
+import com.b2international.collections.map.ByteValueMap;
+import com.b2international.collections.map.IntKeyMap;
+import com.b2international.collections.map.LongKeyFloatMap;
+import com.b2international.collections.map.LongKeyIntMap;
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.map.LongValueMap;
+import com.b2international.collections.set.ByteSet;
+import com.b2international.collections.set.IntSet;
+import com.b2international.collections.set.LongSet;
 import com.google.common.hash.HashFunction;
 
 /**

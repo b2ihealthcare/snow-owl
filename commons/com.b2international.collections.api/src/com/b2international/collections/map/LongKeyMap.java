@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.collections.primitive.map;
+package com.b2international.collections.map;
 
 import java.util.Collection;
 
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.set.LongSet;
 
 /**
  * @since 4.6
