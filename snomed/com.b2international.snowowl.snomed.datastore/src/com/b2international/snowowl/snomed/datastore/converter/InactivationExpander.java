@@ -22,16 +22,15 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -47,17 +46,13 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 		this.inactivationIndicatorId = inactivationIndicatorId;
 	}
 
-	void expand(List<T> results) {
-		
-		final Set<String> componentIds = FluentIterable.from(results)
-				.transform(IComponent.ID_FUNCTION)
-				.toSet();
+	void expand(List<T> results, Set<String> componentIds) {
 		
 		if (componentIds.isEmpty()) {
 			return;
 		}
 		
-		List<String> refSetIds = newArrayList();
+		final List<String> refSetIds = newArrayList();
 		for (final AssociationType associationType : AssociationType.values()) {
 			refSetIds.add(associationType.getConceptId());
 		}
@@ -72,7 +67,11 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 			.build()
 			.execute(context);
 		
-		Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = Multimaps.index(members, new Function<SnomedReferenceSetMember, String>() {
+		if (members.getItems().isEmpty()) {
+			return;
+		}
+		
+		final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = Multimaps.index(members, new Function<SnomedReferenceSetMember, String>() {
 			@Override
 			public String apply(SnomedReferenceSetMember input) {
 				return input.getReferencedComponent().getId();
@@ -100,8 +99,8 @@ public abstract class InactivationExpander<T extends SnomedComponent> {
 			Multimap<AssociationType, String> associationTargets = HashMultimap.create();
 			for (SnomedReferenceSetMember associationMember : associationMembers) {
 				AssociationType type = AssociationType.getByConceptId(associationMember.getReferenceSetId());
-				String targetId = (String) associationMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID);
-				associationTargets.put(type, targetId);
+				final SnomedCoreComponent target = (SnomedCoreComponent) associationMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+				associationTargets.put(type, target.getId());
 			}
 			
 			if (!associationTargets.isEmpty()) {

@@ -1,18 +1,5 @@
 package org.protege.editor.owl.ui.view;
 
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-
 import org.apache.log4j.Logger;
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.prefs.Preferences;
@@ -25,6 +12,12 @@ import org.protege.editor.owl.ui.find.OWLEntityFindPanel;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLObject;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.util.List;
 
 
 /**
@@ -74,6 +67,8 @@ public abstract class AbstractOWLViewComponent extends ViewComponent {
         preparePasteable();
 //        }
         prepareCuttable();
+
+        // add refresh components here (perhaps) when the class trees don't do their crazy stuff
     }
 
 
@@ -163,23 +158,6 @@ public abstract class AbstractOWLViewComponent extends ViewComponent {
         return prefs.getBoolean(DIALOGS_ALWAYS_CENTRED, false) ? SwingUtilities.getAncestorOfClass(Frame.class, getParent()) : getParent();
     }
 
-
-//    private void setupCopyer() {
-//        if(this instanceof Copyable) {
-//            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(
-//                    KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()
-//            ), INPUT_MAP_KEY);
-//            getActionMap().put(INPUT_MAP_KEY, new AbstractAction() {
-//                public void actionPerformed(ActionEvent e) {
-//                    handleFind();
-//                }
-//            });
-//        }
-//    }
-
-//    private void handleCopy() {
-//
-//    }
 
 
     protected OWLDataFactory getOWLDataFactory() {

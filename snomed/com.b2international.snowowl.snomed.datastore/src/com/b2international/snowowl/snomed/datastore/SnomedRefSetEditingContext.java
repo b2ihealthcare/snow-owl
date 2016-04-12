@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -34,10 +32,9 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.primitive.LongIterator;
 import com.b2international.commons.collections.primitive.set.LongSet;
-
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -77,7 +74,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
@@ -93,25 +89,6 @@ import com.google.common.collect.Lists;
  * 
  */
 public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
-	
-	private static final Map<String, String> CMT_NAME_ID_PAIRS = ImmutableMap.<String, String>builder()
-			.put("Cardiology", Concepts.CARDIOLOGY_REFERENCE_SET)
-			.put("Endocrinology Urology Nephrology", Concepts.ENDOCRINOLOGY_UROLOGY_NEPHROLOGY_REFERENCE_SET)
-			.put("Hematology Oncology", Concepts.HEMATOLOGY_ONCOLOGY_REFERENCE_SET)
-			.put("Mental Health", Concepts.MENTAL_HEALTH_REFERENCE_SET)
-			.put("Musculoskeletal", Concepts.MUSCULOSKELETAL_REFERENCE_SET)
-			.put("Neurology", Concepts.NEUROLOGY_REFERENCE_SET)
-			.put("Ophthalmology", Concepts.OPHTHALMOLOGY_REFERENCE_SET)
-			.put("ENT Gastrointestinal Infectious Diseases", Concepts.ENT_GASTROINTESTINAL_INFECTIOUS_DISEASES_REFERENCE_SET)
-			.put("Hx of and FHx of", Concepts.HX_OF_AND_FHX_OF_REFERENCE_SET)
-			.put("Injuries [Part 1]", Concepts.INJURIES_PART_1_REFERENCE_SET)
-			.put("Obstetrics and Gynecology", Concepts.OBSTETRICS_AND_GYNECOLOGY_REFERENCE_SET)
-			.put("Orthopedics Extremity Fractures", Concepts.ORTHOPEDICS_EXTREMITY_FRACTURES_REFERENCE_SET)
-			.put("Orthopedics Non-Extremity Fractures", Concepts.ORTHOPEDICS_NON_EXTREMITY_FRACTURES_REFERENCE_SET)
-			.put("Primary Care", Concepts.PRIMARY_CARE_REFERENCE_SET)
-			.put("Skin Respiratory", Concepts.SKIN_RESPIRATORY_REFERENCE_SET)
-			.put("KP Problem List", Concepts.KP_PROBLEM_LIST_REFERENCE_SET)
-			.build();
 	
 	private static final EnumSet<SnomedRefSetType> CONCEPT_REFERRING_MEMBER_TYPES = EnumSet.of(
 			SnomedRefSetType.ATTRIBUTE_VALUE,
@@ -282,28 +259,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		final SnomedRegularRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.SIMPLE);
 		createIdentifierAndAddRefSet(snomedRefSet, parentConceptId, fullySpecifiedName);
 		return snomedRefSet;
-	}
-	
-	/**
-	 * 
-	 * @param label
-	 * @param terminologyComponentId - referenced component type (e.g. CONCEPT for example)
-	 * @param namespace
-	 * @param module
-	 * @param parent
-	 * @return
-	 * @deprecated - refactor it, only the subset importer uses it now
-	 */
-	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String label, final short terminologyComponentId, final String namespace, final Concept module, final Concept parent) {
-		final SnomedRegularRefSet refSet = createSnomedRegularRefSet(terminologyComponentId, SnomedRefSetType.SIMPLE);
-		final Concept identifier = getSnomedEditingContext().buildDefaultConcept(label, namespace, module, parent);
-		final Relationship relationship = getSnomedEditingContext().buildDefaultRelationship(identifier, getSnomedEditingContext().findConceptById(IS_A), parent, 
-				getSnomedEditingContext().findConceptById(Concepts.INFERRED_RELATIONSHIP), module, namespace);
-		identifier.getOutboundRelationships().add(relationship);
-		updateIdIfCMTConcept(label, identifier);
-		refSet.setIdentifierId(identifier.getId());
-		add(refSet);
-		return refSet;
 	}
 	
 	/**
@@ -1023,11 +978,4 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return CoreTerminologyBroker.getInstance().getNameProviderFactory(referencedComponentPair.getTerminologyComponentId()).getNameProvider();
 	}
 	
-	// update the concept Id to default constant id if the concept is CMT concept
-	private void updateIdIfCMTConcept(String label, Concept concept) {
-		String conceptId = CMT_NAME_ID_PAIRS.get(label.replaceAll(" reference set", ""));
-		if (null != conceptId) {
-			concept.setId(conceptId);
-		}
-	}
 }

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.protege.editor.core.ui.workspace.WorkspaceManager;
 
-
 /**
  * Author: Matthew Horridge<br>
  * The University Of Manchester<br>
@@ -45,7 +44,6 @@ public class EditorKitManager {
             workspaceManager.addWorkspace(editorKit.getWorkspace());
         }
     }
-
 
     /**
      * Removes an open <code>EditorKit</code>.  The

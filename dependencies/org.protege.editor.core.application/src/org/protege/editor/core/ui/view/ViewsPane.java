@@ -1,33 +1,18 @@
 package org.protege.editor.core.ui.view;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.JPanel;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.log4j.Logger;
-import org.coode.mdock.DynamicConfigPanel;
-import org.coode.mdock.NodePanel;
-import org.coode.mdock.NodeReanimator;
-import org.coode.mdock.NodeSerialiser;
-import org.coode.mdock.SplitterNode;
-import org.coode.mdock.Util;
-import org.coode.mdock.VerticalSplitterNode;
+import org.coode.mdock.*;
 import org.protege.editor.core.prefs.Preferences;
 import org.protege.editor.core.prefs.PreferencesManager;
 import org.protege.editor.core.ui.workspace.Workspace;
+
+import javax.swing.*;
+import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
+import java.io.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**

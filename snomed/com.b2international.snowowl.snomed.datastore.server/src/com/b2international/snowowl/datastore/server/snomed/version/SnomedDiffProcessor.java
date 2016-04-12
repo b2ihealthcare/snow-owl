@@ -116,7 +116,6 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 	private static final EAttribute ATTRIBUTE_VALUE_ID_ATTRIBUTE = SnomedRefSetPackage.eINSTANCE.getSnomedAttributeValueRefSetMember_ValueId();
 	
 	private static final Collection<EStructuralFeature> EXCLUDED_FEATURES = unmodifiableSet(Sets.<EStructuralFeature>newHashSet(
-			eINSTANCE.getConcept_InboundRelationships(),
 			SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_EffectiveTime(),
 			SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ModuleId(),
 			SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ReferencedComponentId(),

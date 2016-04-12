@@ -1,5 +1,6 @@
 package org.protege.editor.core;
 
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +39,8 @@ public class ProtegeManager {
     private Map<EditorKitFactoryPlugin, EditorKitFactory> editorKitFactoriesMap;
 
     private ProtegeApplication application;
+
+    private WeakReference<EditorKit> firstEditorKit;
 
 
     private ProtegeManager() {
@@ -127,14 +130,22 @@ public class ProtegeManager {
      */
     public boolean createAndSetupNewEditorKit(EditorKitFactoryPlugin plugin) throws Exception {
         EditorKitFactory editorKitFactory = getEditorKitFactory(plugin);
+        return createAndSetupNewEditorKit(editorKitFactory) != null;
+    }
+
+    public EditorKit createAndSetupNewEditorKit(EditorKitFactory editorKitFactory) throws Exception {
         if (editorKitFactory != null) {
             boolean success = false;
             EditorKit editorKit = editorKitFactory.createEditorKit();
+
             try {
                 if (editorKit.handleNewRequest()) {
                     getEditorKitManager().addEditorKit(editorKit);
                     success = true;
-                    return true;
+                    if(getEditorKitManager().getEditorKitCount() == 1) {
+                        firstEditorKit = new WeakReference<EditorKit>(editorKit);
+                    }
+                    return editorKit;
                 }
             }
             finally {
@@ -143,7 +154,7 @@ public class ProtegeManager {
                 }
             }
         }
-        return false;
+        return null;
     }
 
 
@@ -162,6 +173,7 @@ public class ProtegeManager {
                 if (editorKit.handleLoadRequest()) {
                     getEditorKitManager().addEditorKit(editorKit);
                     success = true;
+                    closeFirstEditorKitIfNotModified();
                     return true;
                 }
             }
@@ -174,6 +186,17 @@ public class ProtegeManager {
         return false;
     }
 
+    private void closeFirstEditorKitIfNotModified() {
+        EditorKit firstEditorKit = this.firstEditorKit.get();
+        if(firstEditorKit == null) {
+            return;
+        }
+        EditorKitManager editorKitManager = getEditorKitManager();
+        if(!firstEditorKit.hasModifiedDocument()) {
+            editorKitManager.getWorkspaceManager().doClose(firstEditorKit.getWorkspace());
+        }
+    }
+
 
     public boolean loadAndSetupEditorKitFromURI(EditorKitFactoryPlugin plugin, URI uri) throws Exception {
         EditorKitFactory editorKitFactory = getEditorKitFactory(plugin);
@@ -183,6 +206,7 @@ public class ProtegeManager {
             try {
                 if (editorKit.handleLoadFrom(uri)) {
                     getEditorKitManager().addEditorKit(editorKit);
+                    closeFirstEditorKitIfNotModified();
                     success = true;
                     return true;
                 }
@@ -204,6 +228,7 @@ public class ProtegeManager {
                 EditorKit editorKit = editorKitFactory.createEditorKit();
                 if (editorKit.handleLoadRecentRequest(editorKitDescriptor)) {
                     getEditorKitManager().addEditorKit(editorKit);
+                    closeFirstEditorKitIfNotModified();
                     return true;
                 }
             }
@@ -233,6 +258,7 @@ public class ProtegeManager {
                         entry.configureEditorKit(editorKit);
                         if (editorKit.handleLoadFrom(entry.getPhysicalURI())) {
                             getEditorKitManager().addEditorKit(editorKit);
+                            closeFirstEditorKitIfNotModified();
                             success = true;
                         }
                     }
@@ -248,41 +274,6 @@ public class ProtegeManager {
         }
         return false;
     }
-    
-    
-
-
-    public boolean handleOpenFromBuilder(OntologyBuilderPlugin builder) {
-        try {
-            for (EditorKitFactoryPlugin plugin : getEditorKitFactoryPlugins()) {
-                String id = plugin.getId();
-                if (id.equals(builder.getEditorKitId())) {
-                    EditorKitFactory editorKitFactory = getEditorKitFactory(plugin);
-                    if (editorKitFactory != null) {
-                        EditorKit editorKit = editorKitFactory.createEditorKit();
-                        boolean success = false;
-                        try {
-                            if (builder.newInstance().loadOntology(editorKit)) {
-                                getEditorKitManager().addEditorKit(editorKit);
-                                success = true;
-                                return true;
-                            }
-                        }
-                        finally {
-                            if (!success) {
-                                editorKit.dispose();
-                            }
-                        }
-                    }   
-                }
-            }
-        }
-        catch (Throwable t) {
-            ProtegeApplication.getErrorLog().logError(t);
-        }
-        return false;
-
-    }
 
     public void saveEditorKit(EditorKit editorKit) throws Exception {
         editorKit.handleSave();
@@ -296,16 +287,12 @@ public class ProtegeManager {
 
 
     /**
-     * Closes an <code>EditorKit</code>.  This disposes of the clsdescriptioneditor kit's <code>Workspace</code>, and
-     * closes the clsdescriptioneditor kit's model manager.
+     * Closes an <code>EditorKit</code>.  This disposes of the editor kit's <code>Workspace</code>, and
+     * closes the editor kit's model manager.
      */
     public void disposeOfEditorKit(EditorKit editorKit) {
         ProtegeManager.getInstance().getEditorKitManager().removeEditorKit(editorKit);
         try {
-            // Dispose of the workspace
-            editorKit.getWorkspace().dispose();
-            // Dispose of the model
-            editorKit.getModelManager().dispose();
             editorKit.dispose();
         }
         catch (Exception e) {
@@ -319,7 +306,7 @@ public class ProtegeManager {
     /**
      * Gets an <code>EditorKitFactory</code> by its corresponding plugin.
      *
-     * @param plugin The plugin that describes the clsdescriptioneditor kit that will be returned.
+     * @param plugin The plugin that describes the editor kit that will be returned.
      *
      * @return An <code>EditorKitFactory</code> or <code>null</code> if there is no installed
      *         <code>EditorKitFactory</code> with the specified Id.
@@ -339,6 +326,7 @@ public class ProtegeManager {
             for(OntologyRepositoryFactoryPlugin plugin : loader.getPlugins()) {
                 try {
                     OntologyRepositoryFactory factory = plugin.newInstance();
+                    factory.initialise();
                     OntologyRepositoryManager.getManager().addRepository(factory.createRepository());
                 }
                 // CATCH EVERYTHING!  We don't want to bring down P4 even before it has appeared to start!

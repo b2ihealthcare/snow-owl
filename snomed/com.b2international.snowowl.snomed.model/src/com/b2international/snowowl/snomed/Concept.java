@@ -67,16 +67,6 @@ public interface Concept extends Component, Inactivatable, Annotatable {
 	EList<Relationship> getOutboundRelationships();
 
 	/**
-	 * Returns with all the destination {@link Relationship relationships} of the concept.
-	 * @return a list containing all destination/inbound relationships of the concept.
-	 * @see com.b2international.snowowl.snomed.SnomedPackage#getConcept_InboundRelationships()
-	 * @see com.b2international.snowowl.snomed.Relationship#getDestination
-	 * @model opposite="destination"
-	 * @generated
-	 */
-	EList<Relationship> getInboundRelationships();
-
-	/**
 	 * Returns with all the descriptions {@link Description descriptions} of the concept.
 	 * @return a list of descriptions associated with the concept.
 	 * @see com.b2international.snowowl.snomed.SnomedPackage#getConcept_Descriptions()

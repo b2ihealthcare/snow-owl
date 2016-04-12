@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import static com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode.DEFAULT;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.isEmpty;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.BitSet;
-import java.util.Collection;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +30,14 @@ import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.collections.primitive.map.LongKeyMap;
 import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
 import com.b2international.commons.collections.primitive.set.LongSet;
-import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyBuilderMode;
+import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -89,13 +87,11 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 	@Override
 	public AbstractSnomedTaxonomyBuilder build() {
-
-		final Collection<Pair<String, String>> invalidNodePairs = newHashSet();
-		
-		final int conceptCount = getNodes().size();
+		final List<InvalidRelationship> invalidRelationships = Lists.newArrayList();
 
 		// allocate data
-		final int[] outgoingIsaHistorgram = new int[conceptCount];
+		final int conceptCount = getNodes().size();
+		final int[] outgoingIsaHistogram = new int[conceptCount];
 		final int[] incomingIsaHistogram = new int[conceptCount];
 
 		ancestors = new int[conceptCount][];
@@ -114,44 +110,39 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			
 			final long[] statement = itr.getValue();
 
+			final long relationshipId = itr.getKey();
 			final long destinationId = statement[0];
 			final long sourceId = statement[1];
-			boolean skipEdged = false;
+			
+			boolean edgeSkipped = false;
 			
 			final int sourceConceptInternalId = getNodes().getInternalId(sourceId);
 			if (sourceConceptInternalId < 0) {
-				final Pair<String, String> missingSource = getMode().handleMissingSource(sourceId, destinationId);
-				if (null != missingSource) {
-					invalidNodePairs.add(missingSource);
-				}
-				skipEdged |= true;
+				invalidRelationships.add(new InvalidRelationship(relationshipId, sourceId, destinationId, MissingConcept.SOURCE));
+				edgeSkipped |= true;
 			}
 			
 			final int destinationConceptInternalId = getNodes().getInternalId(destinationId);
 			if (destinationConceptInternalId < 0) {
-				final Pair<String, String> missingDestination = getMode().handleMissingDestination(sourceId, destinationId);
-				if (null != missingDestination) {
-					invalidNodePairs.add(missingDestination);
-				}
-				skipEdged |= true;
+				invalidRelationships.add(new InvalidRelationship(relationshipId, sourceId, destinationId, MissingConcept.DESTINATION));
+				edgeSkipped |= true;
 			}
 
-			if (!skipEdged) {
-				outgoingIsaHistorgram[sourceConceptInternalId]++;
+			if (!edgeSkipped) {
+				outgoingIsaHistogram[sourceConceptInternalId]++;
 				incomingIsaHistogram[destinationConceptInternalId]++;
 			}
 
 			_conceptInternalIds[count][0] = sourceConceptInternalId;
 			_conceptInternalIds[count][1] = destinationConceptInternalId;
 			count++;
-			
 		}
 
-		if (isEmpty(invalidNodePairs)) {
+		if (isEmpty(invalidRelationships)) {
 			
 			for (int i = 0; i < conceptCount; i++) {
 	
-				ancestors[i] = new int[outgoingIsaHistorgram[i]];
+				ancestors[i] = new int[outgoingIsaHistogram[i]];
 				descendants[i] = new int[incomingIsaHistogram[i]];
 	
 			}
@@ -171,7 +162,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			}
 			
 		} else {
-			throw new IncompleteTaxonomyException(invalidNodePairs);
+			throw new IncompleteTaxonomyException(invalidRelationships);
 		}
 
 		dirty = false;
@@ -273,48 +264,21 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		dirty = true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder#difference(com.b2international.snowowl.snomed.datastore.index.ISnomedTaxonomyBuilder)
-	 */
 	@Override
 	public Pair<LongSet, LongSet> difference(final ISnomedTaxonomyBuilder other) {
-		
 		Preconditions.checkNotNull(other, "Taxonomy builder argument cannot be null.");
 		
 		if (other == this) {
-			return new Pair<LongSet, LongSet>(PrimitiveCollections.newLongOpenHashSet(), PrimitiveCollections.newLongOpenHashSet());
+			return Pair.of(LongCollections.emptySet(), LongCollections.emptySet());
 		}
 		
-		final AtomicReference<LongSet> otherStatements = new AtomicReference<LongSet>();
-		final AtomicReference<LongSet> thisStatements = new AtomicReference<LongSet>();
+		final LongSet thisStatements = getEdges().keySet();
+		final LongSet otherStatements = ((AbstractSnomedTaxonomyBuilder) other).getEdges().keySet();
 		
-		final Runnable getOtherStatementsRunnable = new Runnable() {
-			@Override public void run() { otherStatements.set(((AbstractSnomedTaxonomyBuilder) other).getEdges().keySet()); }
-		};
+		final LongSet thisDiff = LongSets.difference(thisStatements, otherStatements);
+		final LongSet otherDiff = LongSets.difference(otherStatements, thisStatements);
 		
-		final Runnable getThisStatementsRunnable = new Runnable() {
-			@Override public void run() { thisStatements.set(getEdges().keySet()); }
-		};
-		
-		ForkJoinUtils.runInParallel(getOtherStatementsRunnable, getThisStatementsRunnable);
-		
-		final AtomicReference<LongSet> newStatements = new AtomicReference<LongSet>();
-		final AtomicReference<LongSet> detachedStatements = new AtomicReference<LongSet>();
-
-		final Runnable calculateNewStatementsRunnable = new Runnable() {
-			@Override public void run() { newStatements.set(LongSets.difference(thisStatements.get(), otherStatements.get()));
-			}
-		};
-
-		final Runnable calculateDetachedStatementsRunnable = new Runnable() {
-			@Override public void run() { detachedStatements.set(LongSets.difference(otherStatements.get(), thisStatements.get()));
-			}
-		};
-
-		ForkJoinUtils.runInParallel(calculateNewStatementsRunnable, calculateDetachedStatementsRunnable);
-		
-		return new Pair<LongSet, LongSet>(newStatements.get(), detachedStatements.get());
+		return Pair.of(thisDiff, otherDiff);
 	}
 	
 	
@@ -428,10 +392,6 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 	protected void setDirty(boolean dirty) {
 		this.dirty = dirty;
-	}
-	
-	protected SnomedTaxonomyBuilderMode getMode() {
-		return DEFAULT;
 	}
 	
 	private LongSet getAndProcessAncestors(final String conceptId, final IntToLongFunction processingFunction) {

@@ -32,7 +32,7 @@ import org.semanticweb.owlapi.reasoner.Node;
  */
 public class OWLSubClassAxiomFrameSection extends AbstractOWLClassAxiomFrameSection<OWLSubClassOfAxiom, OWLClassExpression> {
 
-    private static final String LABEL = "Superclasses";
+    private static final String LABEL = "SubClass Of";
 
     private Set<OWLClassExpression> added = new HashSet<OWLClassExpression>();
 
@@ -72,12 +72,11 @@ public class OWLSubClassAxiomFrameSection extends AbstractOWLClassAxiomFrameSect
     protected void refillInferred() {
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_SUPER_CLASSES, new Runnable() {
                 public void run() {
-                    if (getOWLModelManager().getReasoner().isSatisfiable(getRootObject())) {
-                    	OWLClass thing = getOWLModelManager().getOWLDataFactory().getOWLThing();
+                    if (getOWLModelManager().getReasoner().isConsistent()) {
                         for (Node<OWLClass> inferredSuperClasses : getOWLModelManager().getReasoner().getSuperClasses(getRootObject(), true)) {
                             for (OWLClassExpression inferredSuperClass : inferredSuperClasses) {
-                                if (!added.contains(inferredSuperClass) && !thing.equals(inferredSuperClass)) {
-                                    addRow(new OWLSubClassAxiomFrameSectionRow(getOWLEditorKit(),
+                                if (!added.contains(inferredSuperClass)) {
+                                    addInferredRowIfNontrivial(new OWLSubClassAxiomFrameSectionRow(getOWLEditorKit(),
                                                                                OWLSubClassAxiomFrameSection.this,
                                                                                null,
                                                                                getRootObject(),
@@ -142,12 +141,18 @@ public class OWLSubClassAxiomFrameSection extends AbstractOWLClassAxiomFrameSect
         return true;
     }
 
-
-    public void visit(OWLSubClassOfAxiom axiom) {
-        if (axiom.getSubClass().equals(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	if (!change.isAxiomChange()) {
+    		return false;
+    	}
+    	OWLAxiom axiom = change.getAxiom();
+    	if (axiom instanceof OWLSubClassOfAxiom) {
+    		return ((OWLSubClassOfAxiom) axiom).getSubClass().equals(getRootObject());
+    	}
+    	return false;
     }
+
 
 
     /**

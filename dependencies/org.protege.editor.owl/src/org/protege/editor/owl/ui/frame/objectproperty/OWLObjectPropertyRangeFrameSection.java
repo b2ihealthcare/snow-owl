@@ -63,11 +63,14 @@ public class OWLObjectPropertyRangeFrameSection extends AbstractOWLFrameSection<
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_OBJECT_PROPERTY_RANGES, 
                                                                   new Runnable() {
             public void run() {
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
                 for (OWLClassExpression inferredRange : getInferredRanges()) {
-                    if (!addedRanges.contains(inferredRange) && !getOWLDataFactory().getOWLThing().equals(inferredRange)) {
+                    if (!addedRanges.contains(inferredRange)) {
                         OWLObjectPropertyRangeAxiom inferredAxiom = getOWLDataFactory().getOWLObjectPropertyRangeAxiom(getRootObject(),
                                                                                                                        inferredRange);
-                        addRow(new OWLObjectPropertyRangeFrameSectionRow(getOWLEditorKit(),
+                        addInferredRowIfNontrivial(new OWLObjectPropertyRangeFrameSectionRow(getOWLEditorKit(),
                                                                          OWLObjectPropertyRangeFrameSection.this,
                                                                          null,
                                                                          getRootObject(),
@@ -92,13 +95,6 @@ public class OWLObjectPropertyRangeFrameSection extends AbstractOWLFrameSection<
 
     public OWLObjectEditor<OWLClassExpression> getObjectEditor() {
         return getOWLEditorKit().getWorkspace().getOWLComponentFactory().getOWLClassDescriptionEditor(null, AxiomType.OBJECT_PROPERTY_RANGE);
-    }
-
-
-    public void visit(OWLObjectPropertyRangeAxiom axiom) {
-        if (axiom.getProperty().equals(getRootObject())) {
-            reset();
-        }
     }
 
 
@@ -128,6 +124,17 @@ public class OWLObjectPropertyRangeFrameSection extends AbstractOWLFrameSection<
         return true;
     }
 
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	if (!change.isAxiomChange()) {
+    		return false;
+    	}
+    	OWLAxiom axiom = change.getAxiom();
+    	if (axiom instanceof OWLObjectPropertyRangeAxiom) {
+    		return ((OWLObjectPropertyRangeAxiom) axiom).getProperty().equals(getRootObject());
+    	}
+    	return false;
+    }
 
     /**
      * Obtains a comparator which can be used to sort the rows

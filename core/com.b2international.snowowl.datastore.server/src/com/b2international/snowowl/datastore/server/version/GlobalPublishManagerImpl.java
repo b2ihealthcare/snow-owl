@@ -74,6 +74,7 @@ import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.datastore.version.IVersioningManager;
 import com.b2international.snowowl.datastore.version.VersionCollector;
 import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -111,10 +112,18 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					final Map<String, Boolean> performTagPerToolingFeatures = getTagPreferences();
 					subMonitor.worked(1);
 					
-					doPublish(aggregator, subMonitor);
+					// create version managers
+					final Map<String, IVersioningManager> versioningManagers = Maps.toMap(configuration.getToolingIds(), new Function<String, IVersioningManager>() {
+						@Override
+						public IVersioningManager apply(String toolingId) {
+							return VersioningManagerBroker.INSTANCE.createVersioningManager(toolingId);
+						}
+					});
+					
+					doPublish(aggregator, versioningManagers, subMonitor);
 					doCommitChanges(aggregator, subMonitor);
 					doTag(performTagPerToolingFeatures, subMonitor);
-					postCommit(aggregator, monitor);
+					postCommit(aggregator, versioningManagers, monitor);
 					
 					return OK_STATUS;
 				} catch (final SnowowlServiceException e) {
@@ -186,20 +195,13 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 		return sb.toString();
 	}
 	
-	private void doPublish(final ICDOTransactionAggregator aggregator, 
-			final IProgressMonitor monitor) throws SnowowlServiceException {
-		
-		IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
+	private void doPublish(final ICDOTransactionAggregator aggregator, final Map<String, IVersioningManager> versioningManagers, final IProgressMonitor monitor) throws SnowowlServiceException {
+		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
 		for (final String toolingId : configuration) {
-			final IVersioningManager versioningManager = getVersionManager(toolingId);
-			versioningManager.publish(aggregator, toolingId, configuration, monitor);
+			versioningManagers.get(toolingId).publish(aggregator, toolingId, configuration, monitor);
 		}
 	}
 
-	private IVersioningManager getVersionManager(final String toolingId) {
-		return VersioningManagerBroker.INSTANCE.getVersioningManager(toolingId);
-	}
-	
 	private DatastoreLockContext createLockContext(final String userId) {
 		return new DatastoreLockContext(userId, CREATE_VERSION);
 	}
@@ -271,12 +273,10 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	/*
 	 * Performs actions after the successful commit. 
 	 */
-	private void postCommit(final ICDOTransactionAggregator aggregator, final IProgressMonitor monitor) throws SnowowlServiceException {
+	private void postCommit(final ICDOTransactionAggregator aggregator, final Map<String, IVersioningManager> versioningManagers, final IProgressMonitor monitor) throws SnowowlServiceException {
 		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
 		for (final String toolingId : configuration) {
-			final IVersioningManager versioningManager = getVersionManager(toolingId);
-			versioningManager.postCommit();
-			
+			versioningManagers.get(toolingId).postCommit();
 			if (null != monitor) {
 				monitor.worked(1);
 			}

@@ -1,12 +1,32 @@
 package org.protege.editor.owl.ui.framelist;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.ActionListener;
-
 import org.protege.editor.core.ui.list.MListButton;
+import org.protege.editor.owl.ui.renderer.OWLRendererPreferences;
+
+import java.awt.*;
+import java.awt.event.ActionListener;
+/*
+* Copyright (C) 2007, University of Manchester
+*
+* Modifications to the initial code base are copyright of their
+* respective authors, or their employers as appropriate.  Authorship
+* of the modifications may be determined from the ChangeLog placed at
+* the end of this file.
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 /**
  * Author: drummond<br>
@@ -29,24 +49,33 @@ public class AxiomAnnotationButton extends MListButton {
         super("Annotations", ROLL_OVER_COLOR, actionListener);
     }
 
+    @Override
+    public Color getBackground() {
+        if (annotationPresent) {
+            return Color.ORANGE;
+        }
+        else {
+            return super.getBackground();
+        }
+    }
 
     public void paintButtonContent(Graphics2D g) {
-        final Font font = g.getFont();
 
         int w = getBounds().width;
         int h = getBounds().height;
         int x = getBounds().x;
         int y = getBounds().y;
 
-        g.setFont(font.deriveFont(Font.BOLD).deriveFont(8));
-        final Rectangle stringBounds = g.getFontMetrics().getStringBounds(ANNOTATE_STRING, g).getBounds();
-        g.drawString(ANNOTATE_STRING,
-                     getBounds().x + w / 2 - stringBounds.width / 2,
-                     getBounds().y + h / 2 + stringBounds.height / 2 - 3);
+        Font font = g.getFont().deriveFont(Font.BOLD, OWLRendererPreferences.getInstance().getFontSize());
+        g.setFont(font);
+        FontMetrics fontMetrics = g.getFontMetrics(font);
+        final Rectangle stringBounds = fontMetrics.getStringBounds(ANNOTATE_STRING, g).getBounds();
+        int baseline = fontMetrics.getLeading() + fontMetrics.getAscent();
+        g.drawString(ANNOTATE_STRING, x + w / 2 - stringBounds.width / 2, y + (h - stringBounds.height) / 2 + baseline );
 
-        if (annotationPresent){
-            g.drawOval(x + 2, y + 2, w - 4, h - 4);
-        }
+//        if (annotationPresent) {
+//            g.drawOval(x + 2, y + 2, w - 4, h - 4);
+//        }
 
         g.setFont(font);
     }

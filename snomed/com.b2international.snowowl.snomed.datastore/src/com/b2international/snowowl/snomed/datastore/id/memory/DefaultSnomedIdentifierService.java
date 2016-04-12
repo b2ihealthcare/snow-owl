@@ -143,11 +143,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void publish(final String componentId) {
 		final SctId sctId = getSctId(componentId);
 		if (sctId.isAssigned()) {
-			LOGGER.debug(String.format("publishing component ID %s.", componentId));
+			LOGGER.debug("Publishing component ID {}.", componentId);
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 			store.put(componentId, sctId);
 		} else if (!sctId.isPublished()) {
-			throw new BadRequestException(String.format("Cannot publish ID in state %s.", sctId.getStatus()));
+			throw new BadRequestException("Cannot publish ID '%s' in state %s.", sctId.getSctid(), sctId.getStatus());
 		}
 	}
 
@@ -261,7 +261,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public void publish(final Collection<String> componentIds) {
 		final Map<String, SctId> publishedSctIds = Maps.newHashMap();
 
-		LOGGER.debug(String.format("Publishing %d component IDs.", componentIds.size()));
+		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
 
 		for (final String componentId : componentIds) {
 			final SctId sctId = getSctId(componentId);
@@ -270,7 +270,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 				sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 				publishedSctIds.put(componentId, sctId);
 			} else if (!sctId.isPublished()) {
-				throw new BadRequestException(String.format("Cannot publish ID in state %s.", sctId.getStatus()));
+				throw new BadRequestException("Cannot publish ID '%s' in state '%s'.", sctId.getSctid(), sctId.getStatus());
 			}
 		}
 

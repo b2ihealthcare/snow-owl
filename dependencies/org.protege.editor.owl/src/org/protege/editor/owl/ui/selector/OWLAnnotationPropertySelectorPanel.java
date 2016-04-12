@@ -1,10 +1,5 @@
 package org.protege.editor.owl.ui.selector;
 
-import java.awt.Color;
-import java.util.Set;
-
-import javax.swing.event.ChangeListener;
-
 import org.protege.editor.core.ui.view.ViewComponent;
 import org.protege.editor.core.ui.view.ViewComponentPlugin;
 import org.protege.editor.core.ui.view.ViewComponentPluginAdapter;
@@ -15,6 +10,10 @@ import org.protege.editor.owl.ui.renderer.OWLSystemColors;
 import org.protege.editor.owl.ui.view.AbstractOWLEntityHierarchyViewComponent;
 import org.protege.editor.owl.ui.view.annotationproperty.OWLAnnotationPropertyHierarchyViewComponent;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.util.Set;
 
 
 /**
@@ -27,9 +26,8 @@ import org.semanticweb.owlapi.model.OWLAnnotationProperty;
  * www.cs.man.ac.uk/~horridgm<br><br>
  */
 public class OWLAnnotationPropertySelectorPanel extends AbstractHierarchySelectorPanel<OWLAnnotationProperty> {
-
-
-    private AbstractOWLEntityHierarchyViewComponent<OWLAnnotationProperty> vc;
+	private static final long serialVersionUID = -5790142068951918908L;
+	private AbstractOWLEntityHierarchyViewComponent<OWLAnnotationProperty> vc;
 
 
     public OWLAnnotationPropertySelectorPanel(OWLEditorKit editorKit) {

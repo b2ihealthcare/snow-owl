@@ -27,7 +27,10 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -100,6 +103,21 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		}
 	
 		return builder;
+	}
+	
+	public static Builder builder(Description description) {
+		return builder()
+				.id(description.getId()) 
+				.term(description.getTerm())
+				.moduleId(description.getModule().getId())
+				.storageKey(CDOUtils.getStorageKey(description))
+				.released(description.isReleased()) 
+				.active(description.isActive()) 
+				.typeId(description.getType().getId()) 
+				.caseSignificanceId(description.getCaseSignificance().getId()) 
+				.conceptId(description.getConcept().getId())
+				.languageCode(description.getLanguageCode())
+				.effectiveTimeLong(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<ISnomedDescription> descriptions) {
@@ -280,6 +298,13 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	 */
 	public ImmutableMap<String, Acceptability> getAcceptabilityMap() {
 		return acceptabilityMap;
+	}
+	
+	/**
+	 * @return <code>true</code> if this description is a fully specified name, <code>false</code> otherwise.
+	 */
+	public boolean isFsn() {
+		return Concepts.FULLY_SPECIFIED_NAME.equals(getTypeId());
 	}
 
 	@Override

@@ -11,9 +11,11 @@ import org.protege.editor.owl.ui.editor.OWLObjectEditor;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSection;
 import org.protege.editor.owl.ui.frame.OWLFrame;
 import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLSameIndividualAxiom;
 
 
@@ -25,7 +27,7 @@ import org.semanticweb.owlapi.model.OWLSameIndividualAxiom;
  */
 public class OWLSameIndividualsAxiomFrameSection extends AbstractOWLFrameSection<OWLNamedIndividual, OWLSameIndividualAxiom, Set<OWLNamedIndividual>> {
 
-    public static final String LABEL = "Same individuals";
+    public static final String LABEL = "Same Individual As";
 
 
     public OWLSameIndividualsAxiomFrameSection(OWLEditorKit editorKit, OWLFrame<? extends OWLNamedIndividual> frame) {
@@ -51,6 +53,9 @@ public class OWLSameIndividualsAxiomFrameSection extends AbstractOWLFrameSection
     protected void refillInferred() {
     	getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_SAMEAS_INDIVIDUAL_ASSERTIONS, new Runnable() {
     		public void run() {
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
     			Set<OWLIndividual> existingSameIndividuals = getCurrentlyDisplayedSameIndividuals();
     			Set<OWLNamedIndividual> newSameIndividuals = new HashSet<OWLNamedIndividual>();
     			for (OWLNamedIndividual i : getCurrentReasoner().getSameIndividuals(getRootObject()).getEntities()) {
@@ -83,13 +88,6 @@ public class OWLSameIndividualsAxiomFrameSection extends AbstractOWLFrameSection
     }
 
 
-    public void visit(OWLSameIndividualAxiom axiom) {
-        if (axiom.getIndividuals().contains(getRootObject())) {
-            reset();
-        }
-    }
-
-
     protected OWLSameIndividualAxiom createAxiom(Set<OWLNamedIndividual> object) {
         object.add(getRootObject());
         OWLSameIndividualAxiom ax = getOWLDataFactory().getOWLSameIndividualAxiom(object);
@@ -106,6 +104,18 @@ public class OWLSameIndividualsAxiomFrameSection extends AbstractOWLFrameSection
 		Set<OWLNamedIndividual> equivalents = editor.getEditedObject();
 		return !equivalents.contains(getRootObject());
 	}
+    
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	if (!change.isAxiomChange()) {
+    		return false;
+    	}
+    	OWLAxiom axiom = change.getAxiom();
+    	if (axiom instanceof OWLSameIndividualAxiom) {
+    		return ((OWLSameIndividualAxiom) axiom).getIndividuals().contains(getRootObject());
+    	}
+    	return false;
+    }
 
     /**
      * Obtains a comparator which can be used to sort the rows

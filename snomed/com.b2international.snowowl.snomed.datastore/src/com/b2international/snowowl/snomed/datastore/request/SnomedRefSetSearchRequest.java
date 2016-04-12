@@ -64,6 +64,7 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		final BooleanFilter filter = new BooleanFilter();
 
 		addComponentIdFilter(filter);
+		addModuleClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TYPE)) {
 			final Collection<Integer> values = FluentIterable.from(getCollection(OptionKey.TYPE, SnomedRefSetType.class)).transform(new Function<SnomedRefSetType, Integer>() {

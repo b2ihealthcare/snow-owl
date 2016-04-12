@@ -22,7 +22,6 @@ import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.apache.lucene.search.MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE;
@@ -85,7 +84,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -133,12 +131,6 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		}
 		@Override public SnomedConceptIndexEntry apply(final SnomedRefSetType type) {
 			return getTerminologyBrowser().getConcept(branchPath, SnomedRefSetUtil.getConceptId(type));
-		}
-	}
-	
-	private final class RefsetIndexEntryToIdFunction implements Function<SnomedRefSetIndexEntry, String> {
-		@Override public String apply(final SnomedRefSetIndexEntry input) {
-			return input.getId();
 		}
 	}
 	
@@ -229,46 +221,6 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		}
 	}
 
-	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypesWithActiveMembers(final IBranchPath branchPath, final String refsetId, final String... excludedIds) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(refsetId, "SNOMED CT reference set identifier concept ID argument cannot be null.");
-		
-		final Collection<SnomedConceptIndexEntry> subTypes = getTerminologyBrowser().getSubTypesById(branchPath, refsetId);
-		final ImmutableSet<String> existingRefsetIds = FluentIterable.from(getRefsSets(branchPath)).transform(new RefsetIndexEntryToIdFunction()).toSet();
-		final Set<String> excludedRefsetIds = newHashSet(excludedIds);
-		
-		final List<SnomedConceptIndexEntry> result = newArrayList();
-		
-		for (final SnomedConceptIndexEntry entry : subTypes) {
-			if (!excludedRefsetIds.contains(entry.getId()) && existingRefsetIds.contains(entry.getId())) {
-				result.add(entry);
-			}
-		}
-		
-		return result;
-	}
-
-	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypesWithActiveMembers(final IBranchPath branchPath, final String refsetId, final String... excludedIds) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(refsetId, "SNOMED CT reference set identifier concept ID argument cannot be null.");
-		
-		final Collection<SnomedConceptIndexEntry> allSubTypes = getTerminologyBrowser().getAllSubTypesById(branchPath, refsetId);
-		final ImmutableSet<String> existingRefsetIds = FluentIterable.from(getRefsSets(branchPath)).transform(new RefsetIndexEntryToIdFunction()).toSet();
-		final Set<String> excludedRefsetIds = newHashSet(excludedIds);
-		
-		final List<SnomedConceptIndexEntry> result = newArrayList();
-		
-		for (final SnomedConceptIndexEntry entry : allSubTypes) {
-			if (!excludedRefsetIds.contains(entry.getId()) && existingRefsetIds.contains(entry.getId())) {
-				result.add(entry);
-			}
-		}
-		
-		return result;
-	}
-	
 	@Override
 	public int getTypeOrdinal(final IBranchPath branchPath, final String refSetId) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");

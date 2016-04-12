@@ -1,21 +1,37 @@
 package org.protege.editor.owl.model.io;
 
+import org.protege.editor.core.Disposable;
+import org.protege.editor.owl.model.OWLModelManager;
+import org.semanticweb.owlapi.model.OWLOntology;
+
+import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+/*
+* Copyright (C) 2007, University of Manchester
+*
+* Modifications to the initial code base are copyright of their
+* respective authors, or their employers as appropriate.  Authorship
+* of the modifications may be determined from the ChangeLog placed at
+* the end of this file.
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
 
-import javax.swing.Timer;
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
 
-import org.protege.editor.core.Disposable;
-import org.protege.editor.owl.model.OWLModelManager;
-import org.semanticweb.owlapi.model.OWLOntology;
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 /**
  * Author: drummond<br>
@@ -102,7 +118,7 @@ public class OntologySourcesManager extends IOListener implements Disposable {
 
 
     private long getTimestamp(URI uri){
-        if (uri.getScheme().equals("file")){
+        if ("file".equals(uri.getScheme())){
             File file = new File(uri);
             if (file.exists()){
                 return file.lastModified();

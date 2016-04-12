@@ -147,6 +147,7 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	}
 	
 	@Override
+	@Deprecated
 	public Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId) {
 		return wrappedService.getReferencedConceptTerms(getBranchPath(), refSetId, descriptionTypeId);
 	}

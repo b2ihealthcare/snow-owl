@@ -16,8 +16,10 @@
 package com.b2international.snowowl.snomed.mrcm.core.widget;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +49,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 /**
@@ -77,7 +80,7 @@ public abstract class WidgetBeanProviderStrategy {
 	 * @param relationships the relationships
 	 * @return the relationship widget beans
 	 */
-	public List<LeafWidgetBean> createRelationshipBeans(final ConceptWidgetBean cwb, final RelationshipGroupWidgetModel groupModel, final Collection<SnomedRelationship> relationships) {
+	private List<LeafWidgetBean> createRelationshipBeans(final ConceptWidgetBean cwb, final RelationshipGroupWidgetModel groupModel, final Collection<SnomedRelationship> relationships) {
 		checkNotNull(groupModel, "groupModel");
 		checkNotNull(relationships, "relationships");
 
@@ -157,7 +160,10 @@ public abstract class WidgetBeanProviderStrategy {
 	 */
 	public ListMultimap<Integer, LeafWidgetBean> createRelationshipGroupWidgetBeans(final ConceptWidgetBean cwb) {
 		final ListMultimap<Integer, LeafWidgetBean> result = ArrayListMultimap.create();
-	
+		
+		final List<RelationshipGroupWidgetModel> unusedModels = Lists.newArrayList(
+				Lists.transform(conceptWidgetModel.getRelationshipGroupContainerModel().getChildren(), new UncheckedCastFunction<WidgetModel, RelationshipGroupWidgetModel>(RelationshipGroupWidgetModel.class)));	
+		
 		// Collect group numbers
 		final Multimap<Integer, SnomedRelationship> relationshipsByGroup = HashMultimap.create();
 		
@@ -169,11 +175,23 @@ public abstract class WidgetBeanProviderStrategy {
 		for (final Integer groupNumber : relationshipsByGroup.keySet()) {
 			
 			final GroupFlag groupFlag = (groupNumber == 0) ? GroupFlag.UNGROUPED : GroupFlag.GROUPED;
+			
 			final RelationshipGroupWidgetModel matchedModel = conceptWidgetModel.getRelationshipGroupContainerModel().getFirstMatching(groupFlag);
 			final Collection<SnomedRelationship> groupRelationships = relationshipsByGroup.get(groupNumber);
 			final List<LeafWidgetBean> relationshipBeans = createRelationshipBeans(cwb, matchedModel, groupRelationships);
 			
 			result.putAll(groupNumber, relationshipBeans);
+			unusedModels.remove(matchedModel);
+		}
+		
+		if (!relationshipsByGroup.isEmpty()) {
+			int maxGroupNum = Ordering.natural().max(relationshipsByGroup.keySet());
+			
+			for (RelationshipGroupWidgetModel model : unusedModels) {
+				if (!model.isUnsanctioned()) {
+					result.putAll(++maxGroupNum, createRelationshipBeans(cwb, model, Collections.<SnomedRelationship>emptySet()));
+				}
+			}
 		}
 	
 		return result;
@@ -181,44 +199,41 @@ public abstract class WidgetBeanProviderStrategy {
 
 	/**
 	 * Creates and returns {@link LeafWidgetBean widget beans} for all descriptions of the currently processed concept.
-	 * @param languageRefSetIdRef 
+	 * @param selectedLanguageRefSetIdRef 
 	 * @param descriptionBeansRef 
 	 * 
 	 * @return the description widget models
 	 */
-	public void createDescriptionWidgetBeans(final ConceptWidgetBean cwb, final AtomicReference<List<LeafWidgetBean>> descriptionBeansRef, final AtomicReference<String> languageRefSetIdRef) {
+	public void createDescriptionWidgetBeans(final ConceptWidgetBean cwb, final AtomicReference<List<LeafWidgetBean>> descriptionBeansRef, final AtomicReference<String> selectedLanguageRefSetIdRef) {
 	
 		final List<LeafWidgetBean> result = Lists.newArrayList();
 		final List<DescriptionWidgetModel> unusedModels = Lists.newArrayList(
 				Lists.transform(conceptWidgetModel.getDescriptionContainerModel().getChildren(), new UncheckedCastFunction<WidgetModel, DescriptionWidgetModel>(DescriptionWidgetModel.class)));
 		
-		Map<String, Boolean> descriptionPreferabilityMap = getDescriptionPreferabilityMap(languageRefSetIdRef.get());
-		
-		if (descriptionPreferabilityMap.isEmpty()) {
-			languageRefSetIdRef.set(Concepts.REFSET_LANGUAGE_TYPE_UK);
-			descriptionPreferabilityMap = getDescriptionPreferabilityMap(languageRefSetIdRef.get());
-		}
+		final Map<String, Multimap<String, String>> descriptionPreferabilityMap = getDescriptionPreferabilityMap();
 		
 		// Create and populate instance beans for matching models
 		for (final SnomedDescription description : getDescriptions()) {
-			
 			if (!description.isActive()) {
 				continue;
 			}
 			
-			if (!descriptionPreferabilityMap.containsKey(description.getId())) {
-				continue;
-			}
-			
+			final String descriptionId = description.getId();
 			final String typeId = description.getTypeId();
-			final boolean preferred = descriptionPreferabilityMap.get(description.getId()).booleanValue() && !Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId);
 			final String term = description.getTerm();
-			final long sctId = Long.valueOf(description.getId());
 			final boolean released = description.isReleased();
+
+			checkState(descriptionPreferabilityMap.containsKey(descriptionId));
+			final Multimap<String, String> acceptabilityMap = descriptionPreferabilityMap.get(descriptionId);
+			
 			CaseSignificance caseSensitivity = description.getCaseSensitivity();
 			
-			final DescriptionWidgetModel matchingModel = conceptWidgetModel.getDescriptionContainerModel().getFirstMatching(typeId, preferred);
-			final DescriptionWidgetBean matchingBean = new DescriptionWidgetBean(cwb, matchingModel, sctId, released, preferred);
+			final DescriptionWidgetModel matchingModel = conceptWidgetModel.getDescriptionContainerModel().getFirstMatching(typeId);
+			
+			// the description should show up as preferred on the UI if it is preferred in the currently selected lang refset and it's type is not FSN nor TEXT DEF
+			final boolean preferred = !Concepts.FULLY_SPECIFIED_NAME.equals(typeId)	&& !Concepts.TEXT_DEFINITION.equals(typeId)
+					&& acceptabilityMap.get(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED).contains(selectedLanguageRefSetIdRef.get());
+			final DescriptionWidgetBean matchingBean = new DescriptionWidgetBean(cwb, matchingModel, Long.parseLong(descriptionId), released, preferred);
 			
 			matchingBean.setSelectedType(typeId);
 			matchingBean.setTerm(term);
@@ -231,7 +246,7 @@ public abstract class WidgetBeanProviderStrategy {
 		
 		// Now create unpopulated beans for the rest of the models, except the unsanctioned and the ones expecting a preferred term
 		for (final DescriptionWidgetModel widgetModel : unusedModels) {
-			if (!widgetModel.isUnsanctioned() && !widgetModel.isPreferredOnly()) {
+			if (!widgetModel.isUnsanctioned()) {
 				
 				if (shouldSkipDescriptionModel(result, widgetModel)) {
 					continue;
@@ -287,7 +302,7 @@ public abstract class WidgetBeanProviderStrategy {
 			 * XXX: An existing description bean may satisfy multiple rules (even though only one is selected as its parent model). Skip
 			 * those who do, and treat all descriptions as not preferred.
 			 */
-			if (widgetModel.matches(createdBean.getSelectedTypeId(), false)) {
+			if (widgetModel.matches(createdBean.getSelectedTypeId())) {
 				return true;
 			}
 		}
@@ -303,7 +318,7 @@ public abstract class WidgetBeanProviderStrategy {
 	/*returns with the lightweight representation of the SNOMED CT concept identifier by the specified ID*/
 	abstract protected SnomedConceptIndexEntry getConcept(final String conceptId);
 	
-	abstract protected Map<String, Boolean> getDescriptionPreferabilityMap(final String languageRefSetId);
+	abstract protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap();
 	
 	abstract protected Collection<SnomedDescription> getDescriptions();
 	

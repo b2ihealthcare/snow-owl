@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
@@ -71,25 +70,21 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final List<RelationshipGroupWidgetModel> relationshipGroupWidgetModels = newSynchronizedList();
 		
 		final List<Runnable> runnables = Lists.newArrayList();
-		for (final PredicateIndexEntry predicates : predicateMinis) {
+		for (final PredicateIndexEntry predicateIndexEntry : predicateMinis) {
 			runnables.add(new Runnable() { @Override public void run() {
-				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicates);
+				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicateIndexEntry);
 			}});
 		}
 		
-		// Add preferred term rule
-		runnables.add(new Runnable() { @Override public void run() { descriptionWidgetModels.add(createPreferredTermDescriptionWidgetModel()); }});
-
 		ForkJoinUtils.runInParallel(runnables);
 		
 		//should be added in the very end of the process
 		//otherwise we can get the wildcard when calling e.g.: com.b2international.snowowl.snomed.mrcm.core.widget.model.DescriptionContainerWidgetModel.getFirstMatching(String)
 		descriptionWidgetModels.add(DescriptionWidgetModel.createUnsanctionedModel());
 		
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.BOOLEAN));
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.STRING));
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.DECIMAL));
-		dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, DataType.INTEGER));
+		for (DataType type : DataType.values()) {
+			dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, type));
+		}
 		
 		ForkJoinUtils.runInParallel(
 				new Runnable() { @Override public void run() { createSingleGroupModels(singleGroupRelationshipWidgetModels, branchPath); }},
@@ -199,15 +194,6 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		return new LongArrayTransformedToSet(ids);
 	}
 	
-	private static DescriptionWidgetModel createPreferredTermDescriptionWidgetModel() {
-		IClientSnomedComponentService snomedComponentService = ApplicationContext.getInstance().getService(IClientSnomedComponentService.class);
-		final DescriptionWidgetModel preferredTermModel = DescriptionWidgetModel
-				.createInfrastructureModel(snomedComponentService.getSynonymAndDescendantIds());
-
-		preferredTermModel.setPreferredOnly(true);
-		return preferredTermModel;
-	}
-
 	private static <T> List<T> newSynchronizedList() {
 		return Collections.synchronizedList(Lists.<T>newArrayList());
 	}

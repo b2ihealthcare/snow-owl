@@ -123,7 +123,7 @@ public class SnomedConceptCommitInfoProcessingJob extends CDOCommitInfoProcessin
 				}
 			}));
 			
-			if (!Sets.intersection(newLanguageMemberIds, remotelyAddedIds).isEmpty()) {
+			if (!Sets.intersection(newLanguageMemberIds, remotelyAddedIds).isEmpty() || !Sets.intersection(newLanguageMemberIds, remotelyChangedIds).isEmpty()) {
 				if (Iterables.isEmpty(locallyAddedPreferredMembers)) {
 					setAction(CommitInfoAction.MERGE_WITH_REFRESH);	
 				} else {

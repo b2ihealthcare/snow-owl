@@ -28,15 +28,17 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuil
  */
 public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	
-	private Collection<String> availableImages;
-	private boolean active;
+	private final ISnomedTaxonomyBuilder statedTaxonomy;
+	private final Collection<String> availableImages;
+	private final boolean active;
 	
-	public IconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, Component component, Collection<String> availableImages) {
-		this(taxonomyBuilder, component.getId(), component.isActive(), availableImages);
+	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, Component component, Collection<String> availableImages) {
+		this(inferredTaxonomy, statedTaxonomy, component.getId(), component.isActive(), availableImages);
 	}
 	
-	public IconIdUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, boolean active, Collection<String> availableImages) {
-		super(taxonomyBuilder, conceptId);
+	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, String conceptId, boolean active, Collection<String> availableImages) {
+		super(inferredTaxonomy, conceptId);
+		this.statedTaxonomy = statedTaxonomy;
 		this.active = active;
 		this.availableImages = availableImages;
 	}
@@ -48,35 +50,40 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	}
 
 	protected String getIconId(String conceptId, boolean active) {
+		String iconId = null;
 		if (active) {
 			// TODO do not set the iconId to the one in the taxonomyBuilder if the concept is inactive
 			// we may have to need a ref to the concept itself or at least know the active flag
-			if (getTaxonomyBuilder().containsNode(conceptId)) {
-				return getIconComponentId(conceptId, getTaxonomyBuilder());
+			final ISnomedTaxonomyBuilder inferredTaxonomy = getTaxonomyBuilder();
+			if (inferredTaxonomy.containsNode(conceptId)) {
+				iconId = getParentIcon(conceptId, inferredTaxonomy);
+			}
+			// try to use the stated form to get the ID
+			if (iconId == null) {
+				iconId = getParentIcon(conceptId, statedTaxonomy);
 			}
 		}
-		// default icon is the ROOT
-		return Concepts.ROOT_CONCEPT;
+		// default icon is the ROOT if neither the inferred nor the stated tree provided an ICON, usually this means that the concept is inactive
+		return iconId == null ? Concepts.ROOT_CONCEPT : iconId;
 	}
 	
-	private String getIconComponentId(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
+	private String getParentIcon(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
 		if (componentId == null) {
 			return null;
 		}
 		if (taxonomyBuilder.getAllAncestorNodeIds(componentId).contains(Long.valueOf(componentId))) {
 			throw new CycleDetectedException("Concept " + componentId + " would introduce a cycle in the ISA graph (loop).");
 		}
-		String iconId = getParentFrom(componentId);
-		return iconId != null ? iconId : Concepts.ROOT_CONCEPT;
+		return getParentFrom(componentId, taxonomyBuilder);
 	}
 	
-	private String getParentFrom(final String conceptId) {
-		if (getTaxonomyBuilder().getAncestorNodeIds(conceptId).size() == 0) {
-			return conceptId;
+	private String getParentFrom(final String conceptId, ISnomedTaxonomyBuilder taxonomyBuilder) {
+		if (taxonomyBuilder.getAncestorNodeIds(conceptId).size() == 0) {
+			return null;
 		}
 		if (this.availableImages.contains(conceptId)) {
 			return conceptId;
 		}
-		return getParentFrom(Long.toString(getTaxonomyBuilder().getAncestorNodeIds(conceptId).iterator().next()));
+		return getParentFrom(Long.toString(taxonomyBuilder.getAncestorNodeIds(conceptId).iterator().next()), taxonomyBuilder);
 	}
 }

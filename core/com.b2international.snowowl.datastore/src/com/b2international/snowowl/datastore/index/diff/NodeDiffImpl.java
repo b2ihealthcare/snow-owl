@@ -44,7 +44,7 @@ public class NodeDiffImpl implements NodeDiff, Serializable {
 	private final short terminologyComponentId;
 	private final long storageKey;
 	private final String id;
-	private final String label;
+	private String label;
 	@Nullable private final String iconId;
 	@Nullable private NodeDiff parent;
 	private final ChangeKind changeKind;
@@ -268,6 +268,10 @@ public class NodeDiffImpl implements NodeDiff, Serializable {
 		}
 		
 		return sb.toString();
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 }

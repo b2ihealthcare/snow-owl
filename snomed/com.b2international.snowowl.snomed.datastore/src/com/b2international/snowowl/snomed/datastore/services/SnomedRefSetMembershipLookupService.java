@@ -20,10 +20,12 @@ import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * SNOMED CT terminology specific reference set membership lookup service implementation that uses the currently active branch path-scoped
  * client services.
+ * @deprecated - UNSUPPORTED API, please use {@link SnomedRequests#prepareSearchMember()} instead
  */
 @Client
 public class SnomedRefSetMembershipLookupService extends AbstractSnomedRefSetMembershipLookupService {

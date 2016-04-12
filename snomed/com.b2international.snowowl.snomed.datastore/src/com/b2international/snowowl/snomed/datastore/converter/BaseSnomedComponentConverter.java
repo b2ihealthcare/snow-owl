@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -45,14 +44,12 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 
 	private final BranchContext context;
 	private final Options expand;
-	private final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService;
 	private final List<ExtendedLocale> locales;
 
-	protected BaseSnomedComponentConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
+	protected BaseSnomedComponentConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		this.context = checkNotNull(context, "context");
 		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
-		this.refSetMembershipLookupService = refSetMembershipLookupService;
 	}
 
 	protected final Options expand() {
@@ -98,10 +95,6 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 
 	protected final Date toEffectiveTime(final long effectiveTimeAsLong) {
 		return EffectiveTimes.toDate(effectiveTimeAsLong);
-	}
-
-	protected final AbstractSnomedRefSetMembershipLookupService getRefSetMembershipLookupService() {
-		return refSetMembershipLookupService;
 	}
 	
 	protected final int getLimit(final Options expandOptions) {

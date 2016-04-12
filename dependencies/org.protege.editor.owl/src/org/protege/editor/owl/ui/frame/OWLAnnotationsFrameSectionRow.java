@@ -9,6 +9,7 @@ import org.protege.editor.owl.ui.editor.OWLObjectEditor;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationSubject;
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 
@@ -20,7 +21,9 @@ import org.semanticweb.owlapi.model.OWLOntology;
  */
 public class OWLAnnotationsFrameSectionRow extends AbstractOWLFrameSectionRow<OWLAnnotationSubject, OWLAnnotationAssertionAxiom, OWLAnnotation> {
 
-    public OWLAnnotationsFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection section, OWLOntology ontology,
+    public OWLAnnotationsFrameSectionRow(OWLEditorKit owlEditorKit, 
+    									 OWLFrameSection<OWLAnnotationSubject, OWLAnnotationAssertionAxiom, OWLAnnotation> section, 
+    									 OWLOntology ontology,
                                          OWLAnnotationSubject rootObject, OWLAnnotationAssertionAxiom axiom) {
         super(owlEditorKit, section, ontology, rootObject, axiom);
     }

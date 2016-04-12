@@ -1,18 +1,14 @@
 package org.protege.editor.owl.ui.frame.property;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.editor.OWLObjectEditor;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSectionRow;
 import org.protege.editor.owl.ui.frame.OWLFrameSection;
 import org.protege.editor.owl.ui.util.OWLComponentFactory;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLProperty;
-import org.semanticweb.owlapi.model.OWLPropertyDomainAxiom;
+import org.semanticweb.owlapi.model.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 /*
 * Copyright (C) 2007, University of Manchester
@@ -47,7 +43,7 @@ import org.semanticweb.owlapi.model.OWLPropertyDomainAxiom;
  */
 public abstract class AbstractPropertyDomainFrameSectionRow<P extends OWLProperty, A extends OWLPropertyDomainAxiom> extends AbstractOWLFrameSectionRow<P, A, OWLClassExpression> {
 
-    public AbstractPropertyDomainFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection section,
+    public AbstractPropertyDomainFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection<P, A, OWLClassExpression> section,
                                                 OWLOntology ontology, P rootObject,
                                                 A axiom) {
         super(owlEditorKit, section, ontology, rootObject, axiom);

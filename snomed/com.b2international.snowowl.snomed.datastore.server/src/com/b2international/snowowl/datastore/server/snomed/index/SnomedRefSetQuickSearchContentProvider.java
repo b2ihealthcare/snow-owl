@@ -19,9 +19,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -83,55 +85,103 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 					getSuffixes(queryExpression, label));
 		}
 	}
+	
+	private static final ImmutableSet<SnomedRefSetType> DEFAULT_REFSET_TYPES = ImmutableSet.of(SnomedRefSetType.SIMPLE,
+			SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.QUERY, SnomedRefSetType.EXTENDED_MAP, SnomedRefSetType.DESCRIPTION_TYPE,
+			SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.ATTRIBUTE_VALUE);
 
 	@Override
-	public QuickSearchContentResult getComponents(final String queryExpression, final IBranchPathMap branchPathMap, final int limit, final Map<String, Object> configuration) {
-		final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
+	public QuickSearchContentResult getComponents(final String filterText, final IBranchPathMap branchPathMap, final int limit,
+			final Map<String, Object> configuration) {
 		final IBranchPath branchPath = getBranchPath(branchPathMap);
-		
-		// TODO provide this via the configuration object from the client side
-		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
-		
-		final List<String> componentIds = configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET) ? ImmutableList.copyOf(getComponentIds(configuration)) : Collections.<String>emptyList();
-		
-		final SnomedConceptSearchRequestBuilder req = SnomedRequests
-			.prepareSearchConcept()
-			.filterByActive(true)
-			.filterByTerm(queryExpression)
-			.filterByDescriptionType("<<" + Concepts.SYNONYM)
-			.setLimit(limit)
-			.setExpand("pt()")
-			.setLocales(locales)
-			.setComponentIds(componentIds);
-		
-		final SnomedConcepts matchingConcepts = req.build(branchPath.getPath()).executeSync(bus);
-		
+
+		if (StringUtils.isEmpty(filterText)) {
+			return getUnfilteredComponents(filterText, limit, configuration, branchPath);
+		} else {
+			return getFilteredComponents(filterText, limit, configuration, branchPath);
+		}
+	}
+
+	private QuickSearchContentResult getUnfilteredComponents(final String filterText, final int limit,
+			final Map<String, Object> configuration, final IBranchPath branchPath) {
+		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration,
+				getComponentIdsFromConfiguration(configuration), getRefSetTypes(configuration));
+		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).executeSync(getEventBus());
+
+		if (matchingRefSets.getTotal() <= 0) {
+			return new QuickSearchContentResult();
+		}
+
+		final ImmutableList<String> conceptIds = FluentIterable.from(matchingRefSets.getItems())
+				.transform(new Function<SnomedReferenceSet, String>() {
+					@Override
+					public String apply(SnomedReferenceSet input) {
+						return input.getId();
+					}
+				}).toList();
+
+		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest("", limit, conceptIds);
+		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).executeSync(getEventBus());
+
+		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
+		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
+				new RefSetToQuickSearchElementConverter(filterText, matchingConceptsById)));
+	}
+
+	private QuickSearchContentResult getFilteredComponents(final String queryExpression, final int limit,
+			final Map<String, Object> configuration, final IBranchPath branchPath) {
+		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest(queryExpression, limit,
+				getComponentIdsFromConfiguration(configuration));
+		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).executeSync(getEventBus());
+
 		if (matchingConcepts.getTotal() <= 0) {
 			return new QuickSearchContentResult();
 		}
-		
-		final Map<String, ISnomedConcept> matchingConceptsById = FluentIterable.from(matchingConcepts).uniqueIndex(new Function<ISnomedConcept, String>() {
-			@Override
-			public String apply(ISnomedConcept input) {
-				return input.getId();
-			}
-		});
-		
-		final Collection<SnomedRefSetType> refSetTypes = configuration.containsKey(SnomedRefSetQuickSearchProvider.REFSET_TYPE_CONFIG_ID)
-				? ImmutableSet.copyOf(getRefSetType(configuration)) : Collections.<SnomedRefSetType> emptySet();
-		
-		final SnomedRefSetSearchRequestBuilder refSetReq = SnomedRequests
+
+		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
+
+		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration, matchingConceptsById.keySet(),
+				getRefSetTypes(configuration));
+		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).executeSync(getEventBus());
+
+		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
+				new RefSetToQuickSearchElementConverter(queryExpression, matchingConceptsById)));
+	}
+
+	private SnomedConceptSearchRequestBuilder buildConceptSearchRequest(final String filterText, final int limit,
+			final List<String> componentIds) {
+		return SnomedRequests
+				.prepareSearchConcept()
+				.filterByActive(true)
+				.filterByTerm(filterText)
+				.filterByDescriptionType("<<" + Concepts.SYNONYM)
+				.filterByAncestor(Concepts.REFSET_ALL)
+				.setLimit(limit)
+				.setExpand("pt()")
+				.setLocales(getLocales())
+				.setComponentIds(componentIds);
+	}
+	
+	private SnomedRefSetSearchRequestBuilder buildRefSetSearchRequest(final int limit, final Map<String, Object> configuration,
+			final Collection<String> componentIds, final Collection<SnomedRefSetType> refSetTypes) {
+		return SnomedRequests
 			.prepareSearchRefSet()
 			.filterByActive(true)
 			.filterByTypes(refSetTypes)
 			.filterByReferencedComponentType(getReferencedComponentType(configuration))
-			.setComponentIds(ImmutableSet.copyOf(matchingConceptsById.keySet()))
+			.setComponentIds(ImmutableSet.copyOf(componentIds))
 			.setLimit(limit);
-		
-		final SnomedReferenceSets matchingRefSets = refSetReq.build(branchPath.getPath()).executeSync(bus);
-		
-		// TODO how to compute the total hit count
-		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(), new RefSetToQuickSearchElementConverter(queryExpression, matchingConceptsById)));
+	}
+	
+	private Map<String, ISnomedConcept> createMatchingConceptsMap(final SnomedConcepts matchingConcepts) {
+		final Map<String, ISnomedConcept> matchingConceptsById = FluentIterable.from(matchingConcepts)
+				.uniqueIndex(new Function<ISnomedConcept, String>() {
+					@Override
+					public String apply(ISnomedConcept input) {
+						return input.getId();
+					}
+				});
+		return matchingConceptsById;
 	}
 
 	@Override
@@ -139,17 +189,29 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		return SnomedRefSetPackage.eINSTANCE;
 	}
 	
-	/*extracts the reference set type from the configuration*/
+	private List<String> getComponentIdsFromConfiguration(final Map<String, Object> configuration) {
+		return configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET)
+				? ImmutableList.copyOf(getComponentIds(configuration)) : Collections.<String> emptyList();
+	}
+	
+	private Set<SnomedRefSetType> getRefSetTypes(final Map<String, Object> configuration) {
+		return configuration.containsKey(SnomedRefSetQuickSearchProvider.REFSET_TYPE_CONFIG_ID)
+				? ImmutableSet.copyOf(getRefSetType(configuration))	: DEFAULT_REFSET_TYPES;
+	}
+
+	/* extracts the reference set type from the configuration */
 	private SnomedRefSetType[] getRefSetType(final Map<String, Object> configuration) {
 		return null == configuration ? new SnomedRefSetType[] {} : getTypes(configuration);
 	}
 
-	/*returns with the reference set types given as an array of type ordinal.*/
+	/*
+	 * returns with the reference set types given as an array of type ordinal.
+	 */
 	private SnomedRefSetType[] getTypes(final Map<String, Object> configuration) {
-		
+
 		final int[] typeOrdinals = (int[]) configuration.get(SnomedRefSetQuickSearchProvider.REFSET_TYPE_CONFIG_ID);
 		final SnomedRefSetType[] types;
-		
+
 		if (typeOrdinals == null)
 			types = new SnomedRefSetType[0];
 		else {
@@ -158,13 +220,23 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 				types[i] = SnomedRefSetType.get(typeOrdinals[i]);
 			}
 		}
-		
+
 		return types;
 	}
-	
-	/*extracts the reference component type from the configuration*/
+
+	/* extracts the reference component type from the configuration */
 	private String getReferencedComponentType(final Map<String, Object> configuration) {
-		return null == configuration ? null : (String) configuration.get(SnomedRefSetQuickSearchProvider.REFERENCED_COMPONENT_TYPE_CONFIG_ID);
+		return null == configuration ? null
+				: (String) configuration.get(SnomedRefSetQuickSearchProvider.REFERENCED_COMPONENT_TYPE_CONFIG_ID);
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		// TODO provide this via the configuration object from the client side
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
 }

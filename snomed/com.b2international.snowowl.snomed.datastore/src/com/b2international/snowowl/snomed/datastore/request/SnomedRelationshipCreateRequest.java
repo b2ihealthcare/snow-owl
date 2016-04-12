@@ -22,12 +22,10 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.UserIdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 
 /**
@@ -128,15 +126,7 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 
 	@Override
 	public String execute(TransactionContext context) {
-		if (getIdGenerationStrategy() instanceof UserIdGenerationStrategy) {
-			try {
-				final String componentId = getIdGenerationStrategy().generate(context);
-				SnomedRequests.prepareGetRelationship().setComponentId(componentId).build().execute(context);
-				throw new AlreadyExistsException("Relationship", componentId);
-			} catch (ComponentNotFoundException e) {
-				// ignore
-			}
-		}
+		ensureUniqueId("Relationship", context);
 		
 		try {
 			final Relationship relationship = SnomedComponents.newRelationship()
@@ -157,5 +147,10 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}	
+	}
+	
+	@Override
+	protected void checkComponentExists(TransactionContext context, String componentId) throws ComponentNotFoundException {
+		SnomedRequests.prepareGetRelationship().setComponentId(componentId).build().execute(context);
+	}
 }

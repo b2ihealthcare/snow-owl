@@ -14,6 +14,7 @@ import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDataPropertyRangeAxiom;
 import org.semanticweb.owlapi.model.OWLDataRange;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 
 /**
@@ -56,14 +57,13 @@ public class OWLDataPropertyRangeFrameSection extends AbstractOWLFrameSection<OW
         }
     }
 
-
-    public void visit(OWLDataPropertyRangeAxiom axiom) {
-        if (axiom.getProperty().equals(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLDataPropertyRangeAxiom &&
+    			((OWLDataPropertyRangeAxiom) change.getAxiom()).getProperty().equals(getRootObject());
     }
-
-
+    
     public Comparator<OWLFrameSectionRow<OWLDataProperty, OWLDataPropertyRangeAxiom, OWLDataRange>> getRowComparator() {
         return null;
     }

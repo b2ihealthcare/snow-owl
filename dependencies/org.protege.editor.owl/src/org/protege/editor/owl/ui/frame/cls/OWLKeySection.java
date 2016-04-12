@@ -9,9 +9,11 @@ import org.protege.editor.owl.ui.editor.OWLPropertySetEditor;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSection;
 import org.protege.editor.owl.ui.frame.OWLFrame;
 import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLHasKeyAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLPropertyExpression;
 
 /**
@@ -24,7 +26,7 @@ import org.semanticweb.owlapi.model.OWLPropertyExpression;
  */
 public class OWLKeySection extends AbstractOWLFrameSection<OWLClass, OWLHasKeyAxiom, Set<OWLPropertyExpression>> {
 
-    public static final String LABEL = "Keys";
+    public static final String LABEL = "Target for Key";
 
 
     public OWLKeySection(OWLEditorKit editorKit, OWLFrame<OWLClass> frame) {
@@ -48,15 +50,24 @@ public class OWLKeySection extends AbstractOWLFrameSection<OWLClass, OWLHasKeyAx
 
 
     protected OWLHasKeyAxiom createAxiom(Set<OWLPropertyExpression> properties) {
-        return getOWLDataFactory().getOWLHasKeyAxiom(getRootObject(), properties);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+    	return getOWLDataFactory().getOWLHasKeyAxiom(getRootObject(), (Set) properties);
     }
 
-
-    public void visit(OWLHasKeyAxiom axiom) {
-        if (axiom.getClassExpression().equals(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	if (!change.isAxiomChange()) {
+    		return false;
+    	}
+    	OWLAxiom axiom = change.getAxiom();
+    	if (axiom instanceof OWLHasKeyAxiom) {
+    		return ((OWLHasKeyAxiom) axiom).getClassExpression().equals(getRootObject());
+    	}
+    	return false;
     }
+
 
 
     public OWLObjectEditor<Set<OWLPropertyExpression>> getObjectEditor() {

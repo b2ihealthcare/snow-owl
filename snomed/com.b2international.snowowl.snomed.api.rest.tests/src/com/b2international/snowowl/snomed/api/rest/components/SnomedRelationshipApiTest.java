@@ -39,10 +39,12 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * @since 2.0
@@ -99,7 +101,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	public void createDuplicateRelationship() {
 		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
-		final Map<?, ?> dupRequestBody = ImmutableMap.builder().putAll(requestBody).put("id", relationshipId).build();
+		
+		final Map<Object, Object> dupRequestBody = Maps.<Object, Object>newHashMap(requestBody);
+		dupRequestBody.put("id", relationshipId);
+		dupRequestBody.put("commitComment", "New duplicate relationship on MAIN");
 		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.RELATIONSHIP, dupRequestBody, 409);
 	}
 
@@ -220,7 +225,8 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createRelationshipOnNestedBranch() {
-		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
 		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
 
@@ -232,7 +238,8 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void deleteRelationshipOnNestedBranch() {
-		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
 		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
 

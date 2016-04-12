@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Objects;
+
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 
 /**
  * @since 4.5
@@ -23,12 +27,12 @@ import java.util.Objects;
 public class MemberChangeImpl implements MemberChange {
 
 	private final MemberChangeKind changeKind;
-	private final String referencedComponentId;
+	private final ISnomedConcept referencedComponent;
 	private final String memberId;
 
-	private MemberChangeImpl(MemberChangeKind changeKind, String referencedComponentId, String memberId) {
+	private MemberChangeImpl(MemberChangeKind changeKind, ISnomedConcept referencedComponent, String memberId) {
 		this.changeKind = changeKind;
-		this.referencedComponentId = referencedComponentId;
+		this.referencedComponent = checkNotNull(referencedComponent);
 		this.memberId = memberId;
 	}
 	
@@ -38,8 +42,8 @@ public class MemberChangeImpl implements MemberChange {
 	}
 
 	@Override
-	public String getReferencedComponentId() {
-		return referencedComponentId;
+	public ISnomedConcept getReferencedComponent() {
+		return referencedComponent;
 	}
 
 	@Override
@@ -49,7 +53,7 @@ public class MemberChangeImpl implements MemberChange {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(changeKind, referencedComponentId);
+		return Objects.hash(changeKind, referencedComponent.getId());
 	}
 	
 	@Override
@@ -61,30 +65,29 @@ public class MemberChangeImpl implements MemberChange {
 		if (getClass() != obj.getClass())
 			return false;
 		MemberChangeImpl other = (MemberChangeImpl) obj;
-		return Objects.equals(changeKind, other.changeKind) && Objects.equals(referencedComponentId, other.referencedComponentId);
+		return Objects.equals(changeKind, other.changeKind) && Objects.equals(referencedComponent.getId(), other.referencedComponent.getId());
 	}
 	
 	@Override
 	public int compareTo(MemberChange o) {
 		int diff = changeKind.compareTo(o.getChangeKind());
 
-		// TODO alphabetical ordering if label provided???
-//		if (diff == 0) {
-//			diff = diff1.getLabel().compareTo(diff2.getLabel());
-//		}
+		if (diff == 0 && referencedComponent.getPt() != null && o.getReferencedComponent().getPt() != null) {
+			diff = referencedComponent.getPt().getTerm().compareTo(o.getReferencedComponent().getPt().getTerm());
+		}
 
 		if (diff == 0) {
-			diff = referencedComponentId.compareTo(o.getReferencedComponentId());
+			diff = referencedComponent.getId().compareTo(o.getReferencedComponent().getId());
 		}
 		return diff;
 	}
 	
-	public static MemberChange added(String referencedComponentId) {
-		return new MemberChangeImpl(MemberChangeKind.ADD, referencedComponentId, null);
+	public static MemberChange added(ISnomedConcept referencedComponent) {
+		return new MemberChangeImpl(MemberChangeKind.ADD, referencedComponent, null);
 	}
 	
-	public static MemberChange removed(String referencedComponentId, String memberId) {
-		return new MemberChangeImpl(MemberChangeKind.REMOVE, referencedComponentId, memberId);
+	public static MemberChange removed(ISnomedConcept referencedComponent, String memberId) {
+		return new MemberChangeImpl(MemberChangeKind.REMOVE, referencedComponent, memberId);
 	}
 
 }

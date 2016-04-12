@@ -1,11 +1,5 @@
 package org.protege.editor.owl.ui.action;
 
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.net.URI;
-
-import javax.swing.JOptionPane;
-
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.owl.ui.GatherOntologiesPanel;
 import org.semanticweb.owlapi.model.IRI;
@@ -13,6 +7,11 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyFormat;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.net.URI;
 
 
 /**

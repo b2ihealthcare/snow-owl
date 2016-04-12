@@ -220,6 +220,7 @@ public interface ISnomedComponentService {
 	* @param branchPath the branch path.
 	* @param conceptId the concept IDs.
 	* @return a map concept concept IDs and associated image concept IDs.
+	* @deprecated - will be removed in 4.7
 	*/
 	@Nullable String[] getIconId(final IBranchPath branchPath, final String... conceptId);
 	
@@ -327,6 +328,7 @@ public interface ISnomedComponentService {
 	 * @param descriptionTypeId the description type IDs. Optional, if omitted the PT of the concept will be returned as the term.
 	 * @return a map of concept IDs and the associated description terms from a given type of descriptions.
 	 */
+	@Deprecated
 	Map<String, String> getReferencedConceptTerms(final IBranchPath branchPath, final String refSetId, final String... descriptionTypeId);
 	
 	/**
@@ -389,13 +391,6 @@ public interface ISnomedComponentService {
 	Multimap<String, String> getPreferredTermToIdsMapping(final IBranchPath branchPath, final String focusConceptId);
 	
 	/**
-	 * Returns with a mapping between concept FSNs and the concept IDs for all active concepts.
-	 * @param branchPath the branch path for the operation.
-	 * @param languageRefSetId the ID the language reference set which FSNs will be collected.
-	 */
-	Multimap<String, String> getFullySpecifiedNameToIdsMapping(final IBranchPath branchPath, final String languageRefSetId);
-	
-	/**
 	 * @param branchPath
 	 * @return
 	 */
@@ -404,10 +399,9 @@ public interface ISnomedComponentService {
 	/**
 	 * @param branchPath
 	 * @param conceptId
-	 * @param languageRefSetId
 	 * @return
 	 */
-	Map<String, Boolean> getDescriptionPreferabilityMap(IBranchPath branchPath, String conceptId, String languageRefSetId);
+	Map<String, Multimap<String, String>> getDescriptionPreferabilityMap(IBranchPath branchPath, String conceptId);
 	
 	/**
 	 * Returns with all existing {@link SnomedModuleDependencyRefSetMemberFragment module dependency reference set member}s from the underling ontology.

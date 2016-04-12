@@ -15,6 +15,7 @@ import org.semanticweb.owlapi.model.OWLClassAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 
 
@@ -26,13 +27,13 @@ import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
  */
 public class InheritedAnonymousClassesFrameSection extends AbstractOWLFrameSection<OWLClass, OWLClassAxiom, OWLClassExpression> {
 
-    private static final String LABEL = "Inherited anonymous classes";
+    private static final String LABEL = "SubClass Of (Anonymous Ancestor)";
 
     private Set<OWLClass> processedClasses = new HashSet<OWLClass>();
 
 
     public InheritedAnonymousClassesFrameSection(OWLEditorKit editorKit, OWLFrame<? extends OWLClass> frame) {
-        super(editorKit, LABEL, "Inherited anonymous class", frame);
+        super(editorKit, LABEL, "Anonymous Ancestor Class", frame);
     }
 
 
@@ -64,7 +65,7 @@ public class InheritedAnonymousClassesFrameSection extends AbstractOWLFrameSecti
 
 
     protected void refillInferred() {
-        getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_INHERITED_ANONYMOUS_CLASSES,
+        getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_SUPER_CLASSES,
                                                                   new Runnable() {
             public void run() {
                 refillInferredDoIt();
@@ -73,7 +74,7 @@ public class InheritedAnonymousClassesFrameSection extends AbstractOWLFrameSecti
     }
     
     private void refillInferredDoIt() {
-        if (!getOWLModelManager().getReasoner().isSatisfiable(getRootObject())) {
+        if (!getOWLModelManager().getReasoner().isConsistent()) {
             return;
         }
         Set<OWLClass> clses = getReasoner().getSuperClasses(getRootObject(), true).getFlattened();
@@ -82,26 +83,27 @@ public class InheritedAnonymousClassesFrameSection extends AbstractOWLFrameSecti
             if (!processedClasses.contains(cls)) {
                 for (OWLOntology ontology : getOWLModelManager().getActiveOntology().getImportsClosure()) {
                     for (OWLSubClassOfAxiom ax : ontology.getSubClassAxiomsForSubClass(cls)) {
-                        if (ax.getSuperClass().isAnonymous()) {
+                        OWLClassExpression superClass = ax.getSuperClass();
+                        if (superClass.isAnonymous()) {
+                            OWLSubClassOfAxiom entailedAxiom = getOWLDataFactory().getOWLSubClassOfAxiom(getRootObject(), superClass);
                             addRow(new InheritedAnonymousClassesFrameSectionRow(getOWLEditorKit(),
                                                                                 this,
                                                                                 null,
                                                                                 cls,
-                                                                                ax));
+                                                                                entailedAxiom));
                         }
                     }
                     for (OWLEquivalentClassesAxiom ax : ontology.getEquivalentClassesAxioms(cls)) {
                         Set<OWLClassExpression> descs = new HashSet<OWLClassExpression>(ax.getClassExpressions());
                         descs.remove(getRootObject());
-                        OWLClassExpression superCls = descs.iterator().next();
-                        if (superCls.isAnonymous()) {
-                            addRow(new InheritedAnonymousClassesFrameSectionRow(getOWLEditorKit(),
-                                                                                this,
-                                                                                null,
-                                                                                cls,
-                                                                                getOWLDataFactory().getOWLSubClassOfAxiom(
-                                                                                                                          getRootObject(),
-                                                                                                                          superCls)));
+                        for (OWLClassExpression superCls : descs) {
+                        	if (superCls.isAnonymous()) {
+                                OWLSubClassOfAxiom entailedAxiom = getOWLDataFactory().getOWLSubClassOfAxiom(getRootObject(), superCls);
+                                addRow(new InheritedAnonymousClassesFrameSectionRow(getOWLEditorKit(),
+                        				this,
+                        				null,
+                        				cls, entailedAxiom));
+                        	}
                         }
                     }
                 }
@@ -113,15 +115,10 @@ public class InheritedAnonymousClassesFrameSection extends AbstractOWLFrameSecti
     public boolean canAdd() {
         return false;
     }
-
-
-    public void visit(OWLSubClassOfAxiom axiom) {
-        reset();
-    }
-
-
-    public void visit(OWLEquivalentClassesAxiom axiom) {
-        reset();
+    
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() && (change.getAxiom() instanceof OWLSubClassOfAxiom || change.getAxiom() instanceof OWLEquivalentClassesAxiom);
     }
 
 

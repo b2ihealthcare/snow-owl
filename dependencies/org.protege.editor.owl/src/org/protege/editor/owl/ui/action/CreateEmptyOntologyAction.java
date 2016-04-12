@@ -1,10 +1,5 @@
 package org.protege.editor.owl.ui.action;
 
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JOptionPane;
-
 import org.protege.editor.core.ProtegeManager;
 import org.protege.editor.core.ui.wizard.Wizard;
 import org.protege.editor.owl.ui.ontology.wizard.create.CreateOntologyWizard;
@@ -12,6 +7,10 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 
 /**

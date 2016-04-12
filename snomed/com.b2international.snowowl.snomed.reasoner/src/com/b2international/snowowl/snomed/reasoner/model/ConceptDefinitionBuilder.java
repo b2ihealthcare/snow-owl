@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.collections.primitive.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -49,15 +48,7 @@ public class ConceptDefinitionBuilder {
 		final LongSet disjointUnionIds;
 
 		if (exhaustive) {
-			disjointUnionIds = PrimitiveCollections.newLongOpenHashSet();
-			for (final Relationship relationship : concept.getInboundRelationships()) {
-				if (relationship.isActive()
-						&& Concepts.IS_A.equals(relationship.getType().getId())
-						&& relationship.getSource().isActive()
-						&& isDefining(relationship)) {
-					disjointUnionIds.add(Long.parseLong(relationship.getSource().getId()));
-				}
-			}
+			throw new UnsupportedOperationException();
 		} else {
 			disjointUnionIds = null;
 		}

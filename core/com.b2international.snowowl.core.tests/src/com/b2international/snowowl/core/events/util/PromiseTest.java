@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.b2international.commons.collections.Procedure;
+import com.google.common.base.Function;
 
 /**
  * @since 4.2
@@ -52,11 +53,12 @@ public class PromiseTest {
 		final Promise<Object> p = new Promise<>();
 		p.reject(rejection);
 		final CountDownLatch latch = new CountDownLatch(1);
-		p.fail(new Procedure<Throwable>() {
+		p.fail(new Function<Throwable, Object>() {
 			@Override
-			protected void doApply(Throwable input) {
+			public Object apply(Throwable input) {
 				assertEquals(rejection, input);
 				latch.countDown();
+				return null;
 			}
 		});
 		latch.await(100, TimeUnit.MILLISECONDS);
@@ -81,11 +83,12 @@ public class PromiseTest {
 	public void rejectAfterFailHandlerAdded() throws Exception {
 		final Promise<Object> p = new Promise<>();
 		final CountDownLatch latch = new CountDownLatch(1);
-		p.fail(new Procedure<Throwable>() {
+		p.fail(new Function<Throwable, Object>() {
 			@Override
-			protected void doApply(Throwable input) {
+			public Object apply(Throwable input) {
 				assertEquals(rejection, input);
 				latch.countDown();
+				return null;
 			}
 		});
 		p.reject(rejection);

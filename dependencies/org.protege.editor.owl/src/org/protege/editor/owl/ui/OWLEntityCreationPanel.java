@@ -1,45 +1,30 @@
 package org.protege.editor.owl.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashSet;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.Timer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
+import org.protege.editor.core.ui.util.AugmentedJTextField;
 import org.protege.editor.core.ui.util.Icons;
 import org.protege.editor.core.ui.util.InputVerificationStatusChangedListener;
 import org.protege.editor.core.ui.util.VerifiedInputEditor;
 import org.protege.editor.owl.OWLEditorKit;
-import org.protege.editor.owl.model.classexpression.OWLExpressionParserException;
+import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.entity.CustomOWLEntityFactory;
 import org.protege.editor.owl.model.entity.OWLEntityCreationException;
 import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
 import org.protege.editor.owl.ui.clsdescriptioneditor.ExpressionEditorPreferences;
-import org.protege.editor.owl.ui.clsdescriptioneditor.OWLAutoCompleter;
-import org.protege.editor.owl.ui.clsdescriptioneditor.OWLExpressionChecker;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDatatype;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLOntology;
+import org.protege.editor.owl.ui.preferences.NewEntitiesPreferencesPanel;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.vocab.Namespaces;
+import org.semanticweb.owlapi.vocab.PrefixOWLOntologyFormat;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 
 /**
@@ -52,21 +37,21 @@ import org.semanticweb.owlapi.model.OWLOntology;
  * www.cs.man.ac.uk/~horridgm<br><br>
  */
 public class OWLEntityCreationPanel<T extends OWLEntity> extends JPanel implements VerifiedInputEditor {
+	
+	public enum EntityCreationMode {
+		PREVIEW, CREATE;
+	}
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -2790553738912229896L;
 
-    private final int INTERNAL_PADDING = 5;
+    public static final int FIELD_WIDTH = 40;
 
     private OWLEditorKit owlEditorKit;
 
-    private JTextField textField;
-
-    private JLabel errorLabel;
-
-    private final Icon warningIcon = Icons.getIcon("warning.png");
+    private JTextField userSuppliedNameField;
 
     private Class<T> type;
 
@@ -76,12 +61,13 @@ public class OWLEntityCreationPanel<T extends OWLEntity> extends JPanel implemen
 
     private Timer timer = new Timer(ExpressionEditorPreferences.getInstance().getCheckDelay(), new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            performCheck();
             timer.stop();
         }
     });
 
-    private JLabel uriPreviewLabel;
+    private final AugmentedJTextField entityIRIField = new AugmentedJTextField(FIELD_WIDTH, "IRI (auto-generated)");
+
+    private final JTextArea messageArea = new JTextArea(1, FIELD_WIDTH);
 
 
     public OWLEntityCreationPanel(OWLEditorKit owlEditorKit, String message, Class<T> type) {
@@ -92,22 +78,29 @@ public class OWLEntityCreationPanel<T extends OWLEntity> extends JPanel implemen
 
 
     public void setEnabled(boolean b) {
-        textField.setEnabled(b);
+        userSuppliedNameField.setEnabled(b);
         super.setEnabled(b);
     }
 
 
-    public void setName(String name){
-        textField.setText(name);
+    public void setName(String name) {
+        userSuppliedNameField.setText(name);
     }
 
 
     private void createUI(String message) {
         setLayout(new BorderLayout());
+        JPanel holder = new JPanel(new GridBagLayout());
+        add(holder);
+        Insets insets = new Insets(0, 0, 2, 2);
 
-        JPanel entryPanel = new JPanel(new BorderLayout());
-        textField = new JTextField(30);
-        textField.getDocument().addDocumentListener(new DocumentListener() {
+        int rowIndex = 0;
+
+        holder.add(new JLabel("Name:"), new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+
+
+        userSuppliedNameField = new AugmentedJTextField(30, "Short name or full IRI or Prefix-Name");
+        userSuppliedNameField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 update();
             }
@@ -117,76 +110,145 @@ public class OWLEntityCreationPanel<T extends OWLEntity> extends JPanel implemen
             }
 
             public void changedUpdate(DocumentEvent e) {
+            }
+        });
+
+
+        holder.add(userSuppliedNameField, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+
+
+        rowIndex++;
+        holder.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 100.0, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(10, 2, 10, 2), 0, 0));
+
+        rowIndex++;
+        holder.add(new JLabel("IRI:"), new GridBagConstraints(0, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.NONE, insets, 0, 0));
+        entityIRIField.setForeground(Color.GRAY);
+        entityIRIField.setEditable(false);
+        holder.add(entityIRIField, new GridBagConstraints(1, rowIndex, 1, 1, 100.0, 0.0, GridBagConstraints.BASELINE_TRAILING, GridBagConstraints.HORIZONTAL, insets, 0, 0));
+
+
+        rowIndex++;
+        holder.add(new JButton(new AbstractAction("New entity options...") {
+            public void actionPerformed(ActionEvent e) {
+                showEntityCreationPreferences();
+            }
+        }), new GridBagConstraints(1, rowIndex, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(7, 0, 0, 0), 0, 0));
+
+
+        rowIndex++;
+        holder.add(new JSeparator(), new GridBagConstraints(0, rowIndex, 2, 1, 100.0, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(10, 2, 5, 2), 0, 0));
+
+        rowIndex++;
+        messageArea.setBackground(null);
+        messageArea.setBorder(null);
+        messageArea.setEditable(false);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setLineWrap(true);
+        messageArea.setFont(messageArea.getFont().deriveFont(12.0f));
+        messageArea.setForeground(Color.RED);
+        holder.add(messageArea, new GridBagConstraints(0, rowIndex, 2, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+
+        
+        update();
+    }
+
+
+    private void showEntityCreationPreferences() {
+        try {
+            NewEntitiesPreferencesPanel panel = new NewEntitiesPreferencesPanel();
+            panel.setup("Entity creation preferences", owlEditorKit);
+
+            panel.initialise();
+
+            int ret = JOptionPane.showConfirmDialog(this, panel, "Entity Creation Preferences", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (ret == JOptionPane.OK_OPTION) {
+                panel.applyChanges();
                 update();
             }
-        });
-
-        if (message != null){
-            final JLabel label = new JLabel(message);
-            label.setBorder(BorderFactory.createEmptyBorder(INTERNAL_PADDING, INTERNAL_PADDING, INTERNAL_PADDING, INTERNAL_PADDING));
-            entryPanel.add(label, BorderLayout.NORTH);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
 
-        entryPanel.add(textField, BorderLayout.SOUTH);
-
-
-        errorLabel = new JLabel("");
-        errorLabel.setFont(errorLabel.getFont().deriveFont(10.0f));
-        errorLabel.setBorder(BorderFactory.createEmptyBorder(INTERNAL_PADDING, INTERNAL_PADDING, INTERNAL_PADDING, INTERNAL_PADDING));
-        errorLabel.setPreferredSize(new Dimension(errorLabel.getPreferredSize().width, 40));
-
-        uriPreviewLabel = new JLabel("");
-        uriPreviewLabel.setFont(errorLabel.getFont().deriveFont(10.0f));
-        uriPreviewLabel.setBorder(BorderFactory.createEmptyBorder(INTERNAL_PADDING, INTERNAL_PADDING, INTERNAL_PADDING, INTERNAL_PADDING));
-        Box previewPanel = new Box(BoxLayout.PAGE_AXIS);
-        previewPanel.add(uriPreviewLabel);
-
-        add(entryPanel, BorderLayout.NORTH);
-        add(previewPanel, BorderLayout.CENTER);
-        add(errorLabel, BorderLayout.SOUTH);
-
-        OWLAutoCompleter completer = new OWLAutoCompleter(owlEditorKit, textField, new OWLExpressionChecker() {
-            public void check(String text) throws OWLExpressionParserException {
-                throw new OWLExpressionParserException(text,
-                                                       0,
-                                                       text.length(),
-                                                       OWLClass.class.isAssignableFrom(type),
-                                                       OWLObjectProperty.class.isAssignableFrom(type),
-                                                       OWLDataProperty.class.isAssignableFrom(type),
-                                                       OWLIndividual.class.isAssignableFrom(type),
-                                                       OWLDatatype.class.isAssignableFrom(type),
-                                                       OWLAnnotationProperty.class.isAssignableFrom(type),
-                                                       new HashSet<String>());
-            }
-
-
-            public Object createObject(String text) throws OWLExpressionParserException {
-                return null;
-            }
-        });
     }
 
+    /**
+     * Determines if the entity name represents an IRI rather than a short name.
+     * @return <code>true</code> if the entity name represents an IRI rather than a short name, otherwise
+     * <code>false</code>.
+     */
+    public boolean isEntityIRI() {
+        String entityName = getEntityName();
+        for (Namespaces ns : Namespaces.values()) {
+            if (entityName.startsWith(ns.name().toLowerCase() + ":")) {
+                return true;
+            }
+        }
+        OWLModelManager owlModelManager = owlEditorKit.getOWLModelManager();
+        OWLOntologyManager owlOntologyManager = owlModelManager.getOWLOntologyManager();
+        for(OWLOntology ont : owlModelManager.getActiveOntologies()) {
+            OWLOntologyFormat format = owlOntologyManager.getOntologyFormat(ont);
+            if(format.isPrefixOWLOntologyFormat()) {
+                PrefixOWLOntologyFormat prefixFormat = format.asPrefixOWLOntologyFormat();
+                for(String prefix : prefixFormat.getPrefixNames()) {
+                    if(entityName.startsWith(prefix)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        try {
+            URI uri = new URI(entityName);
+            return uri.isAbsolute() && uri.getPath() != null;
+        }
+        catch (URISyntaxException e) {
+            return false;
+        }
+    }
 
     public String getEntityName() {
-        return textField.getText();
+        return userSuppliedNameField.getText().trim();
     }
 
 
-    public OWLEntityCreationSet<T> getOWLEntityCreationSet() {
+    /**
+     * Gets the entity creation set
+     * @return The entity creation set
+     * @throws RuntimeException which wraps an {@link OWLEntityCreationException} if there was a problem
+     */
+    public OWLEntityCreationSet<T> getOWLEntityCreationSet() throws RuntimeException {
+    	return getOWLEntityCreationSet(EntityCreationMode.CREATE);
+    }
+    
+    public OWLEntityCreationSet<T> getOWLEntityCreationSet(EntityCreationMode preview) throws RuntimeException {
         try {
-            return owlEditorKit.getModelManager().getOWLEntityFactory().createOWLEntity(type,
-                                                                                        getEntityName(),
-                                                                                        getBaseIRI());
+            if (isEntityIRI()) {
+                IRI iri = getRawIRI();
+                OWLOntology ontology = owlEditorKit.getModelManager().getActiveOntology();
+                OWLDataFactory factory = owlEditorKit.getModelManager().getOWLDataFactory();
+                T owlEntity = CustomOWLEntityFactory.getOWLEntity(factory, type, iri);
+                OWLOntologyChange addDecl = new AddAxiom(ontology, factory.getOWLDeclarationAxiom(owlEntity));
+                return new OWLEntityCreationSet<T>(owlEntity, Collections.singletonList(addDecl));
+            }
+            else {
+            	switch (preview) {
+            	case CREATE:
+                    return owlEditorKit.getModelManager().getOWLEntityFactory().createOWLEntity(type, getEntityName(), getBaseIRI());
+            	case PREVIEW: 
+                    return owlEditorKit.getModelManager().getOWLEntityFactory().preview(type, getEntityName(), getBaseIRI());
+            	default:
+            		throw new IllegalStateException("Programmer error - report this (with stack trace) to the Protege 4 mailing list");
+            	}
+            }
         }
         catch (OWLEntityCreationException e) {
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
 
     public void addStatusChangedListener(InputVerificationStatusChangedListener listener) {
         listeners.add(listener);
-        performCheck();
         listener.verifiedStatusChanged(currentlyValid);
     }
 
@@ -197,16 +259,15 @@ public class OWLEntityCreationPanel<T extends OWLEntity> extends JPanel implemen
 
 
     public static <T extends OWLEntity> OWLEntityCreationSet<T> showDialog(OWLEditorKit owlEditorKit, String message, Class<T> type) {
-        OWLEntityCreationPanel panel = new OWLEntityCreationPanel<T>(owlEditorKit, message, type);
 
-        int ret = new UIHelper(owlEditorKit).showValidatingDialog("Create a new " + type.getSimpleName(), panel, panel.textField);
-
-        if (ret == JOptionPane.OK_OPTION) {
-            return panel.getOWLEntityCreationSet();
-        }
-        else {
-            return null;
-        }
+            OWLEntityCreationPanel panel = new OWLEntityCreationPanel<T>(owlEditorKit, message, type);
+            int ret = new UIHelper(owlEditorKit).showValidatingDialog("Create a new " + type.getSimpleName(), panel, panel.userSuppliedNameField);
+            if (ret == JOptionPane.OK_OPTION) {
+                return panel.getOWLEntityCreationSet();
+            }
+            else {
+                return null;
+            }
     }
 
 
@@ -216,105 +277,79 @@ public class OWLEntityCreationPanel<T extends OWLEntity> extends JPanel implemen
 
 
     private void update() {
-        currentlyValid = false;
+        try {
+
+            entityIRIField.setText("");
+            messageArea.setText("");
+            if (userSuppliedNameField.getText().trim().isEmpty()) {
+                setValid(false);
+                return;
+            }
+            OWLEntityCreationSet<?> creationSet = getOWLEntityCreationSet(EntityCreationMode.PREVIEW);
+            if(creationSet == null) {
+                setValid(false);
+                return;
+            }
+            OWLEntity owlEntity = creationSet.getOWLEntity();
+            String iriString = owlEntity.getIRI().toString();
+            entityIRIField.setText(iriString);
+            setValid(true);
+        }
+        catch (RuntimeException e) {
+            setValid(false);
+            Throwable cause = e.getCause();
+            if (cause != null) {
+                if(cause instanceof OWLOntologyCreationException) {
+                    messageArea.setText("Entity already exists");
+                }
+                else {
+                    messageArea.setText(cause.getMessage());
+                }
+            }
+            else {
+                messageArea.setText(e.getMessage());
+            }
+        }
+
+    }
+
+    private void setValid(boolean valid) {
+        currentlyValid = valid;
+        fireVerificationStatusChanged();
+    }
+
+    private void fireVerificationStatusChanged() {
         for (InputVerificationStatusChangedListener l : listeners){
             l.verifiedStatusChanged(currentlyValid);
         }
-        timer.restart();
     }
 
 
-    private void performCheck() {
-        boolean wasValid = currentlyValid;
-        try{
-            final String name = getEntityName();
-            OWLEntityCreationSet<T> changeSet = owlEditorKit.getModelManager().getOWLEntityFactory().preview(type,
-                                                                                                             name,
-                                                                                                             getBaseIRI());
-            IRI iri = changeSet.getOWLEntity().getIRI();
-            uriPreviewLabel.setText(iri.toString());
 
-            currentlyValid = true;
-
-            String warningMessage = null;
-
-            for (OWLOntology ont : owlEditorKit.getOWLModelManager().getActiveOntologies()){
-                if (ont.containsEntityInSignature(iri)){
-                    warningMessage = "Warning: this is a pun for an existing entity.";
-                    break;
-                }
-            }
-            if (warningMessage == null){
-                OWLEntity entity = owlEditorKit.getModelManager().getOWLEntityFinder().getOWLEntity(name);
-                if(entity != null){
-                    warningMessage = "Warning: an entity with that name already exists.";
-                }
-                else{
-                    clearMessage();
-                }
-            }
-
-            if (warningMessage != null){
-                displayWarningMessage(warningMessage);
+    private IRI getRawIRI() {
+        String text = getEntityName();
+        OWLOntology activeOntology = owlEditorKit.getModelManager().getActiveOntology();
+        OWLOntologyManager manager = owlEditorKit.getModelManager().getOWLOntologyManager();
+        OWLOntologyFormat format = manager.getOntologyFormat(activeOntology);
+        for (Namespaces ns : Namespaces.values()) {
+            if (text.startsWith(ns.name().toLowerCase() + ":")) {
+                return IRI.create(ns.toString() + text.substring(ns.name().length() + 1));
             }
         }
-        catch(OWLEntityCreationException e){
-            currentlyValid = false;
-            handleException(e);
-
-        }
-        finally{
-            if (wasValid != currentlyValid){
-                for (InputVerificationStatusChangedListener l : listeners){
-                    l.verifiedStatusChanged(currentlyValid);
-                }
+        int colonIndex = text.indexOf(':');
+        if (colonIndex >= 0 && format.isPrefixOWLOntologyFormat()) {
+            PrefixOWLOntologyFormat prefixes = format.asPrefixOWLOntologyFormat();
+            String prefixName = text.substring(0, colonIndex + 1);
+            String prefix = prefixes.getPrefix(prefixName);
+            if (prefix != null) {
+                return IRI.create(prefix + text.substring(colonIndex + 1));
             }
         }
-    }
-
-
-    private void handleException(OWLEntityCreationException e) {
-        boolean handled = false;
-        final Throwable cause = e.getCause();
-        if (cause != null){
-            if (cause instanceof URISyntaxException){
-                handleURISyntaxException((URISyntaxException)cause);
-                handled = true;
-            }
-        }
-        if (!handled){
-            displayWarningMessage("Error: " + e.getMessage());
-        }
-    }
-
-
-    // selects the text where the URI is incorrect
-    private void handleURISyntaxException(URISyntaxException e) {
-        int actualIndex = e.getIndex();
-        String fullURI = e.getInput();
-        int indexFromRHS = fullURI.length()-actualIndex;
-        int relativeIndex = getEntityName().length() - indexFromRHS;
-        textField.setSelectionStart(relativeIndex);
-        textField.setSelectionEnd(getEntityName().length());
-        displayWarningMessage("Invalid name: " + e.getReason());
-    }
-
-
-    private void displayWarningMessage(String message) {
-        errorLabel.setIcon(warningIcon);
-        errorLabel.setText("<html>" + message + "</html>");
-        errorLabel.validate();
-    }
-
-
-    private void clearMessage() {
-        errorLabel.setIcon(null);
-        errorLabel.setText("");
-        errorLabel.validate();
+        return IRI.create(text);
     }
 
 
     public JComponent getFocusComponent() {
-        return textField;
+        return userSuppliedNameField;
     }
 }

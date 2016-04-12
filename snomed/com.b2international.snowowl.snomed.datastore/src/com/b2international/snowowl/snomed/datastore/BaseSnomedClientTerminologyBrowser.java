@@ -102,7 +102,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 		
 		final FluentIterable<SnomedConceptIndexEntry> matchingConcepts = FluentIterable.from(SnomedConceptIndexEntry.fromConcepts(matches));
 		final Set<String> matchingConceptIds = matchingConcepts.transform(ComponentUtils.<String>getIdFunction()).toSet();
-		final TerminologyTree tree = newTree(branch, getLocales()).build(matchingConcepts);
+		final TerminologyTree tree = newTree(branch, matchingConcepts);
 		return new FilteredTerminologyBrowser<SnomedConceptIndexEntry, String>(tree.getItems(), tree.getSubTypes(), tree.getSuperTypes(), FilterTerminologyBrowserType.HIERARCHICAL, matchingConceptIds);
 	}
 	
@@ -140,10 +140,11 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 	/**
 	 * Create a {@link TreeBuilder} for a filtered tree.
 	 * @param branch
+	 * @param matchingConcepts 
 	 * @param locales
 	 * @return
 	 */
-	protected abstract TreeBuilder newTree(String branch, List<ExtendedLocale> locales);
+	protected abstract TerminologyTree newTree(String branch, Iterable<SnomedConceptIndexEntry> matchingConcepts);
 	
 	/**
 	 * Returns with a collection of concepts given with the concept unique IDs.
@@ -161,7 +162,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 				.all()
 				.setComponentIds(ImmutableSet.copyOf(ids))
 				.setLocales(getLocales())
-				.setExpand("pt(),parentIds()")
+				.setExpand("pt(),parentIds(),ancestorIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
 		return SnomedConceptIndexEntry.fromConcepts(concepts);

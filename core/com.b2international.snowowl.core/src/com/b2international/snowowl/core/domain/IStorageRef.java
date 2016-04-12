@@ -15,17 +15,18 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import com.b2international.snowowl.core.events.Request;
+
 /**
- * Points to a versioned component storage space of a code system, on a particular branch. 
+ * Points to a versioned component storage space of a code system, on a particular branch.
+ * @deprecated - will be removed in 4.7, use {@link Request} API instead 
  */
 public interface IStorageRef {
 
 	/**
-	 * Returns the code system short name, eg. "{@code SNOMEDCT}"
-	 * 
-	 * @return the code system short name
+	 * @return the repository identifier
 	 */
-	String getShortName();
+	String getRepositoryId();
 
 	/**
 	 * Returns the branch path eg. "{@code MAIN/projectA/task1}".

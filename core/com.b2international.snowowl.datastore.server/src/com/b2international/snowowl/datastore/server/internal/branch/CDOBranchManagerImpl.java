@@ -27,6 +27,7 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
@@ -106,46 +108,90 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @Override
-    InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
-        CDOBranch targetBranch = getCDOBranch(target);
-        CDOBranch sourceBranch = getCDOBranch(source);
-        CDOTransaction targetTransaction = null;
-
+    InternalBranch rebase(InternalBranch branch, InternalBranch onTopOf, String commitMessage, Runnable postReopen) {
+		CDOTransaction testTransaction = null;
+		CDOTransaction newTransaction = null;
+		
+		try {
+			testTransaction = applyChangeSet(branch, onTopOf);
+			final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
+			postReopen.run();
+			
+			if (branch.headTimestamp() > branch.baseTimestamp()) {
+				newTransaction = transferChangeSet(testTransaction, rebasedBranch);
+				 // Implicit notification (reopen & commit)
+				return commitChanges(branch, rebasedBranch, commitMessage, newTransaction);
+			} else {
+				return sendChangeEvent(rebasedBranch); // Explicit notification (reopen)
+			}
+			
+		} finally {
+			LifecycleUtil.deactivate(testTransaction);
+			LifecycleUtil.deactivate(newTransaction);
+		}
+    }
+    
+    private CDOTransaction transferChangeSet(final CDOTransaction transaction, final InternalBranch rebasedBranch) {
+		final ICDOConnection connection = repository.getConnection();
+		final CDOBranch rebasedCdoBranch = getCDOBranch(rebasedBranch);
+		final CDOTransaction newTransaction = connection.createTransaction(rebasedCdoBranch);
+		
+		CDOUtils.mergeTransaction(transaction, newTransaction);
+		return newTransaction;
+	}
+    
+    @Override
+    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
+        final CDOTransaction dirtyTransaction = applyChangeSet(from, to);
         try {
+        	if (dryRun) {
+            	return to;
+            } else {
+            	return commitChanges(from, to, commitMessage, dirtyTransaction);
+            }
+		} finally {
+			LifecycleUtil.deactivate(dirtyTransaction);
+		}
+    }
+    
+    private CDOTransaction applyChangeSet(InternalBranch from, InternalBranch to) {
+    	final CDOBranch sourceBranch = getCDOBranch(from);
+    	final CDOBranch targetBranch = getCDOBranch(to);
+    	final ICDOConnection connection = repository.getConnection();
+    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
+    	final CDOTransaction targetTransaction = connection.createTransaction(targetBranch);
 
-            ICDOConnection connection = repository.getConnection();
-            targetTransaction = connection.createTransaction(targetBranch);
+    	try {
+    		// XXX: specifying sourceBase instead of defaulting to the computed common ancestor point here
+    		targetTransaction.merge(sourceBranch.getHead(), sourceBranch.getBase(), merger);
+    		merger.postProcess(targetTransaction);
+    		return targetTransaction;
+    	} catch (CDOMerger.ConflictException e) {
+    		LifecycleUtil.deactivate(targetTransaction);
+    		throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path(), e);
+    	}
+    }
+    
+	private InternalBranch commitChanges(InternalBranch from, InternalBranch to, String commitMessage, CDOTransaction targetTransaction) {
+		try { 
 
-            CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
-            
-            // XXX: specifying sourceBase instead of defaulting to the computed common ancestor point here
-            targetTransaction.merge(sourceBranch.getHead(), sourceBranch.getBase(), merger);
-            merger.postProcess(targetTransaction);
-
-            targetTransaction.setCommitComment(commitMessage);
-
-            if (!dryRun) {
+            if (targetTransaction.isDirty()) {
     			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
+            	targetTransaction.setCommitComment(commitMessage);
             	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(SpecialUserStore.SYSTEM_USER_NAME, commitMessage, targetTransaction)
             			.parentContextDescription(DatastoreLockContextDescriptions.SYNCHRONIZE)
             			.commitOne();
             	
-	            return target.withHeadTimestamp(commitInfo.getTimeStamp());
+	            return to.withHeadTimestamp(commitInfo.getTimeStamp());
             } else {
-            	return target;
+            	return to;
             }
 
-        } catch (CDOMerger.ConflictException e) {
-            throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
         } catch (CommitException e) {
-            throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
-        } finally {
-            if (targetTransaction != null) {
-                targetTransaction.close();
-            }
+            throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", to.path(), from.path(), e);
         }
-    }
-
+	}
+    
     @Override
     InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);

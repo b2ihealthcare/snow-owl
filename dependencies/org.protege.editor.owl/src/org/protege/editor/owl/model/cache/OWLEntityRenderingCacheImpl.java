@@ -9,11 +9,11 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.util.OWLDataTypeUtils;
-import org.protege.editor.owl.ui.renderer.OWLModelManagerEntityRenderer;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiomChange;
 import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLEntity;
@@ -89,16 +89,17 @@ public class OWLEntityRenderingCacheImpl implements OWLEntityRenderingCache {
 
     public void rebuild() {
         clear();
-        OWLModelManagerEntityRenderer entityRenderer = owlModelManager.getOWLEntityRenderer();
+        owlModelManager.getOWLEntityRenderer();
+        OWLDataFactory factory = owlModelManager.getOWLDataFactory();
+        
+        addRendering(factory.getOWLThing(), owlClassMap);
+        addRendering(factory.getOWLNothing(), owlClassMap);
+        addRendering(factory.getOWLTopObjectProperty(), owlObjectPropertyMap);
+        addRendering(factory.getOWLBottomObjectProperty(), owlObjectPropertyMap);
+        addRendering(factory.getOWLTopDataProperty(), owlDataPropertyMap);
+        addRendering(factory.getOWLBottomDataProperty(), owlDataPropertyMap);
 
-        OWLClass thing = owlModelManager.getOWLDataFactory().getOWLThing();
-        owlClassMap.put(entityRenderer.render(thing), thing);
-        entityRenderingMap.put(thing, entityRenderer.render(thing));
-        OWLClass nothing = owlModelManager.getOWLDataFactory().getOWLNothing();
-        entityRenderingMap.put(nothing, entityRenderer.render(nothing));
-        owlClassMap.put(entityRenderer.render(nothing), nothing);
-
-        for (OWLOntology ont : owlModelManager.getActiveOntologies()) {
+        for (OWLOntology ont : owlModelManager.getOntologies()) {
             for (OWLClass cls : ont.getClassesInSignature()) {
                 addRendering(cls, owlClassMap);
             }
@@ -120,7 +121,7 @@ public class OWLEntityRenderingCacheImpl implements OWLEntityRenderingCache {
 
         // standard annotation properties        
         for (IRI uri : OWLRDFVocabulary.BUILT_IN_ANNOTATION_PROPERTY_IRIS){
-            addRendering(owlModelManager.getOWLDataFactory().getOWLAnnotationProperty(uri), owlAnnotationPropertyMap);
+            addRendering(factory.getOWLAnnotationProperty(uri), owlAnnotationPropertyMap);
         }
 
         // datatypes

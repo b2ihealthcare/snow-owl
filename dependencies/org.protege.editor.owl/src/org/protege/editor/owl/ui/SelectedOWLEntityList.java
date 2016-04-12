@@ -1,13 +1,12 @@
 package org.protege.editor.owl.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JList;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.selection.OWLSelectionModelListener;
 import org.semanticweb.owlapi.model.OWLEntity;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

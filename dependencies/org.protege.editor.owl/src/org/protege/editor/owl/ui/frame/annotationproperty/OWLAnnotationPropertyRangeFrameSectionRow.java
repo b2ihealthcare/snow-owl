@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.editor.IRIFromEntityEditor;
+import org.protege.editor.owl.ui.editor.OWLAnnotationPropertyRangeEditor;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSectionRow;
 import org.protege.editor.owl.ui.frame.OWLFrameSection;
 import org.semanticweb.owlapi.model.IRI;
@@ -22,15 +23,15 @@ import org.semanticweb.owlapi.model.OWLOntology;
  */
 public class OWLAnnotationPropertyRangeFrameSectionRow extends AbstractOWLFrameSectionRow<OWLAnnotationProperty, OWLAnnotationPropertyRangeAxiom, IRI> {
 
-    public OWLAnnotationPropertyRangeFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection section,
+    public OWLAnnotationPropertyRangeFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection<OWLAnnotationProperty, OWLAnnotationPropertyRangeAxiom, IRI> section,
                                                 OWLOntology ontology, OWLAnnotationProperty property,
                                                 OWLAnnotationPropertyRangeAxiom axiom) {
         super(owlEditorKit, section, ontology, property, axiom);
     }
 
 
-    protected IRIFromEntityEditor getObjectEditor() {
-        final IRIFromEntityEditor editor = new IRIFromEntityEditor(getOWLEditorKit());
+    protected OWLAnnotationPropertyRangeEditor getObjectEditor() {
+        final OWLAnnotationPropertyRangeEditor editor = new OWLAnnotationPropertyRangeEditor(getOWLEditorKit());
         editor.setEditedObject(getAxiom().getRange());
         return editor;
     }

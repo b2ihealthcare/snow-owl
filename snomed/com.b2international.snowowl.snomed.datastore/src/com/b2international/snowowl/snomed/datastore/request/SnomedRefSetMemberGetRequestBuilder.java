@@ -29,7 +29,7 @@ public final class SnomedRefSetMemberGetRequestBuilder extends GetRequestBuilder
 	}
 	
 	@Override
-	protected GetRequest<SnomedReferenceSetMember> create() {
+	protected GetRequest<SnomedReferenceSetMember> createGet() {
 		return new SnomedRefSetMemberGetRequest();
 	}
 	

@@ -82,13 +82,18 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 			@ApiParam(value="The concept identifier")
 			@PathVariable(value="conceptId")
-			final String conceptId) {
+			final String conceptId,
+			
+			@ApiParam(value="Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final String expand) {
 		
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareSearchDescription()
 					.all()
 					.filterByConceptId(conceptId)
+					.setExpand(expand)
 					.build(branchPath)
 					.execute(bus)
 					.then(new Function<SnomedDescriptions, SnomedConceptDescriptions>() {

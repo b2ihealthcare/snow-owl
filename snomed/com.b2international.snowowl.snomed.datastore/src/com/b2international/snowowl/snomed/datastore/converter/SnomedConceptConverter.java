@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -62,7 +62,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
@@ -77,8 +76,8 @@ import com.google.common.collect.TreeMultimap;
  */
 final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
 
-	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
-		super(context, expand, locales, membershipLookupService);
+	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
+		super(context, expand, locales);
 	}
 	
 	@Override
@@ -120,13 +119,16 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	
 	@Override
 	protected void expand(List<ISnomedConcept> results) {
-		expandInactivationProperties(results);
+		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
+		expandInactivationProperties(results, conceptIds);
 		
 		if (expand().isEmpty()) {
 			return;
 		}
 		
-		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
+		
+		new MembersExpander(context(), expand(), locales()).expand(results, conceptIds);
+		
 		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
 			@Override
 			protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
@@ -142,7 +144,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		expandAncestors(results, conceptIds);
 	}
 
-	private void expandInactivationProperties(List<ISnomedConcept> results) {
+	private void expandInactivationProperties(List<ISnomedConcept> results, Set<String> conceptIds) {
 		new InactivationExpander<ISnomedConcept>(context(), Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR) {
 			@Override
 			protected void setAssociationTargets(ISnomedConcept result,Multimap<AssociationType, String> associationTargets) {
@@ -153,7 +155,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			protected void setInactivationIndicator(ISnomedConcept result, String valueId) {
 				((SnomedConcept) result).setInactivationIndicator(InactivationIndicator.getByConceptId(valueId));				
 			}
-		}.expand(results);
+		}.expand(results, conceptIds);
 	}
 
 	private void expandPreferredTerm(List<ISnomedConcept> results, final Set<String> conceptIds, final DescriptionRequestHelper helper) {
@@ -260,6 +262,16 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 					return;
 				}
 				
+				// in case of only one match and limit zero, use shortcut instead of loading all IDs and components
+				// XXX won't work if number of results is greater than one, either use custom ConceptSearch or figure out how to expand descendants effectively
+				final int limit = getLimit(expandOptions);
+				if (conceptIds.size() == 1 && limit == 0) {
+					for (ISnomedConcept concept : results) {
+						((SnomedConcept) concept).setDescendants(new SnomedConcepts(0, 0, totalHits));
+					}
+					return;
+				}
+				
 				final TopDocs search = searcher.search(query, totalHits);
 				
 				final SnomedFieldsToLoadBuilder fieldsToLoadBuilder = SnomedMappings.fieldsToLoad().id();
@@ -295,7 +307,6 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				}
 				
 				final int offset = getOffset(expandOptions);
-				final int limit = getLimit(expandOptions);
 				final Collection<String> componentIds = newHashSet(descendantsByAncestor.values());
 				
 				if (limit > 0 && !componentIds.isEmpty()) {

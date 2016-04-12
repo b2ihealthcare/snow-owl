@@ -216,4 +216,10 @@
             class="com.b2international.snowowl.datastore.server.snomed.SnomedClassLoaderProvider">
       </classLoaderProvider>
    </extension>
+   <extension
+         point="com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor">
+      <postProcessor
+            class="com.b2international.snowowl.datastore.server.snomed.SnomedConcreteDomainImportPostProcessor">
+      </postProcessor>
+   </extension>
 </plugin>

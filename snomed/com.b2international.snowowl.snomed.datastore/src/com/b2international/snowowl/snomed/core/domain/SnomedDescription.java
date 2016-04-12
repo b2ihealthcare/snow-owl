@@ -23,7 +23,7 @@ import com.google.common.collect.Multimap;
  * Represents a SNOMED&nbsp;CT description.
  *
  */
-public class SnomedDescription extends BaseSnomedComponent implements ISnomedDescription {
+public class SnomedDescription extends BaseSnomedCoreComponent implements ISnomedDescription {
 
 	private String conceptId;
 	private String typeId;
@@ -34,6 +34,13 @@ public class SnomedDescription extends BaseSnomedComponent implements ISnomedDes
 	private Map<String, Acceptability> acceptabilityMap;
 	private Multimap<AssociationType, String> associationTargets;
 	private ISnomedConcept type;
+
+	public SnomedDescription() {
+	}
+	
+	public SnomedDescription(String id) {
+		setId(id);
+	}
 
 	@Override
 	public String getConceptId() {

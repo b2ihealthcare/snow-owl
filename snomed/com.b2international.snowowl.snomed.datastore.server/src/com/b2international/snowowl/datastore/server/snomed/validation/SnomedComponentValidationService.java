@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.validation;
 
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Collection;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,10 +23,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.datastore.server.validation.ComponentValidationService;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.ISnomedComponentValidationService;
-import com.google.common.base.Predicate;
 
 /**
  * Server side SNOMED&nbsp;CT component validation service interface.
@@ -37,16 +34,16 @@ import com.google.common.base.Predicate;
  */
 public class SnomedComponentValidationService extends ComponentValidationService<SnomedConceptIndexEntry> implements ISnomedComponentValidationService {
 
-	private static final Predicate<SnomedConceptIndexEntry> ACTIVE_CONCEPT_PREDICATE = new Predicate<SnomedConceptIndexEntry>() {
-		public boolean apply(final SnomedConceptIndexEntry concept) {
-			return concept.isActive();
-		}
-	};
-	
 	@Override
 	protected Collection<ComponentValidationDiagnostic> doValidateAll(final IBranchPath branchPath, final IProgressMonitor monitor) {
-		final SnomedTerminologyBrowser snomedTerminologyBrowser = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-		final Iterable<SnomedConceptIndexEntry> concepts = filter(snomedTerminologyBrowser.getConcepts(branchPath), ACTIVE_CONCEPT_PREDICATE);
-		return validate(branchPath, newArrayList(concepts), monitor);
+		return validate(branchPath, getAllActiveConcepts(branchPath), monitor);
+	}
+
+	private Collection<SnomedConceptIndexEntry> getAllActiveConcepts(final IBranchPath branchPath) {
+		return SnomedConceptIndexEntry.fromConcepts(SnomedRequests.prepareSearchConcept()
+			.filterByActive(true)
+			.all()
+			.build(branchPath.getPath())
+			.executeSync(ApplicationContext.getServiceForClass(IEventBus.class)));
 	}
 }

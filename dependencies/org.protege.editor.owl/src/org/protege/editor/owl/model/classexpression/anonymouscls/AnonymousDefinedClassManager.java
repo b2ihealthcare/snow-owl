@@ -3,19 +3,22 @@ package org.protege.editor.owl.model.classexpression.anonymouscls;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.protege.editor.core.Disposable;
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.entity.AbstractIDGenerator;
 import org.protege.editor.owl.model.entity.AutoIDException;
 import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
-import org.protege.editor.owl.model.entity.PseudoRandomAutoIDGenerator;
+import org.protege.editor.owl.model.entity.Revertable;
 import org.protege.editor.owl.model.io.IOListener;
 import org.protege.editor.owl.model.io.IOListenerEvent;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -153,5 +156,29 @@ public class AnonymousDefinedClassManager implements Disposable {
 
     public URI getURI() {
         return DEFAULT_ANON_CLASS_ANNOTATION_URI;
+    }
+    
+    public class PseudoRandomAutoIDGenerator extends AbstractIDGenerator implements Revertable {
+
+        private long nextId = System.nanoTime();
+
+        private Stack<Long> checkpoints = new Stack<Long>();
+
+        protected long getRawID(Class<? extends OWLEntity> type) throws AutoIDException {
+            long id = nextId;
+            nextId = System.nanoTime();
+            return id;
+        }
+
+
+        public void checkpoint() {
+            checkpoints.push(nextId);
+        }
+
+
+        public void revert() {
+            nextId = checkpoints.pop();
+        }
+
     }
 }

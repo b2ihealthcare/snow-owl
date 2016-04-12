@@ -14,6 +14,7 @@ import org.semanticweb.owlapi.model.OWLDifferentIndividualsAxiom;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
  /**
   * Author: Matthew Horridge<br>
@@ -23,7 +24,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
   */
  public class OWLDifferentIndividualsAxiomFrameSection extends AbstractOWLFrameSection<OWLNamedIndividual, OWLDifferentIndividualsAxiom, Set<OWLNamedIndividual>> {
 
-    public static final String LABEL = "Different individuals";
+    public static final String LABEL = "Different Individuals";
 
     private Set<OWLIndividual> added = new HashSet<OWLIndividual>();
 
@@ -70,14 +71,13 @@ import org.semanticweb.owlapi.model.OWLOntology;
 		return !equivalents.contains(getRootObject());
 	}
 
-
-    public void visit(OWLDifferentIndividualsAxiom axiom) {
-        if (axiom.getIndividuals().contains(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLDifferentIndividualsAxiom &&
+    			((OWLDifferentIndividualsAxiom) change.getAxiom()).getIndividuals().contains(getRootObject());
     }
-
-
+    
     /**
      * Obtains a comparator which can be used to sort the rows
      * in this section.

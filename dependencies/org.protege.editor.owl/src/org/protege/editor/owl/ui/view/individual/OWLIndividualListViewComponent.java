@@ -1,23 +1,5 @@
 package org.protege.editor.owl.ui.view.individual;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import org.protege.editor.core.ui.RefreshableComponent;
 import org.protege.editor.core.ui.view.DisposableAction;
 import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
@@ -31,17 +13,21 @@ import org.protege.editor.owl.ui.view.ChangeListenerMediator;
 import org.protege.editor.owl.ui.view.CreateNewTarget;
 import org.protege.editor.owl.ui.view.Deleteable;
 import org.protege.editor.owl.ui.view.Findable;
-import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.OWLAxiomChange;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLEntityCollector;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLEntitySetProvider;
+
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
 
 /**
  * Author: Matthew Horridge<br>
@@ -50,6 +36,14 @@ import org.semanticweb.owlapi.util.OWLEntitySetProvider;
  * Date: 29-Jan-2007<br>
  * <br>
  * <p/> This definitely needs a rethink - it is a totally inefficient hack!
+ */
+
+/*
+ * TODO - the need for this class probably indicates a problem with the individuals views
+ *        I do use it but for an ontology with a large number of individuals this view is 
+ *        totally worthless.   A good protege would not have this class.  Note that this is 
+ *        also used in individual selection - that is a terrible thing.
+ * TODO - This should not be constrained to named individuals only.
  */
 public class OWLIndividualListViewComponent extends AbstractOWLIndividualViewComponent
         implements Findable<OWLNamedIndividual>, Deleteable, CreateNewTarget, RefreshableComponent {
@@ -63,13 +57,14 @@ public class OWLIndividualListViewComponent extends AbstractOWLIndividualViewCom
     private ChangeListenerMediator changeListenerMediator;
     private OWLModelManagerListener modelManagerListener;
     private int selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
+    private boolean selectionChangedByUser = true;
 
     protected Set<OWLNamedIndividual> individualsInList;
 
     private ListSelectionListener listSelectionListener = new ListSelectionListener() {
         public void valueChanged(ListSelectionEvent e) {
             if (!e.getValueIsAdjusting()) {
-                if (list.getSelectedValue() != null) {
+                if (list.getSelectedValue() != null && selectionChangedByUser) {
                     setGlobalSelection((OWLNamedIndividual)list.getSelectedValue());
                 }
                 changeListenerMediator.fireStateChanged(OWLIndividualListViewComponent.this);
@@ -151,7 +146,13 @@ public class OWLIndividualListViewComponent extends AbstractOWLIndividualViewCom
     protected void reset() {
         list.setListData(individualsInList.toArray());
         OWLNamedIndividual individual = getSelectedOWLIndividual();
-        list.setSelectedValue(individual, true);
+        selectionChangedByUser = false;
+        try {
+            list.setSelectedValue(individual, true);
+        }
+        finally {
+            selectionChangedByUser = true;
+        }
     }
 
     public OWLNamedIndividual updateView(OWLNamedIndividual selelectedIndividual) {
@@ -178,7 +179,7 @@ public class OWLIndividualListViewComponent extends AbstractOWLIndividualViewCom
         return inds;
     }
 
-    private void processChanges(List<? extends OWLOntologyChange> changes) {
+    protected void processChanges(List<? extends OWLOntologyChange> changes) {
     	Set<OWLEntity> possiblyAddedObjects = new HashSet<OWLEntity>();
     	Set<OWLEntity> possiblyRemovedObjects = new HashSet<OWLEntity>();
         OWLEntityCollector addedCollector = new OWLEntityCollector(possiblyAddedObjects);

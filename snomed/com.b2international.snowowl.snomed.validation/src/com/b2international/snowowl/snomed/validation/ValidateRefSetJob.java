@@ -27,206 +27,288 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ValuedJob;
 import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
 import com.b2international.snowowl.core.markers.MarkerManager;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.IClientSnomedComponentValidationService;
 import com.b2international.snowowl.snomed.validation.diagnostic.SnomedRefSetDiagnostic;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Reference set validation job (not EMF based). Currently there is only one validation rule, we regard the member invalid if this is an <b>active</b> member(s)
- * but its referenced component is inactive.
+ * Reference set validation job (not EMF based). Currently there is only one
+ * validation rule, we regard the member invalid if this is an <b>active</b>
+ * member(s) but its referenced component is inactive.
  * <p>
- * The job also validates member SCT concepts by delegating to {@link ValidateConceptsJob}.
+ * The job also validates member SCT concepts by delegating to
+ * {@link ValidateConceptsJob}.
  */
 public class ValidateRefSetJob extends ValuedJob<Integer> {
 
+	private static final String ACTIVE_MEMBER_INACTIVE_REFCOMPONENT = "The reference set member for component %s (%s) is active, however the referenced component itself is inactive";
+	private static final String MISSING_REFERENCED_CONCEPT = "The reference set member is referring to a non-existing concept %s";
+	private static final String MISSING_REFERENCED_DESCRIPTION = "The reference set member is referring to a non-existing description %s";
+	private static final String MISSING_REFERENCED_RELATIONSHIP = "The reference set member is referring to a non-existing relationship %s";
+
 	private final SnomedRefSetIndexEntry refSetEntry;
-	
+
 	public ValidateRefSetJob(final String name, final Object family, final SnomedRefSetIndexEntry refSetEntry) {
 		super(name, family);
 		this.refSetEntry = refSetEntry;
 	}
-	
+
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		
-		final SnomedClientIndexService indexService = ApplicationContext.getServiceForClass(SnomedClientIndexService.class);
-		final SnomedRefSetMemberIndexQueryAdapter refSetMemberQueryAdapter = new SnomedRefSetMemberIndexQueryAdapter(refSetEntry.getId(), "", false);
-		final List<SnomedRefSetMemberIndexEntry> members = indexService.search(refSetMemberQueryAdapter);
+		final List<SnomedReferenceSetMember> members = SnomedRequests
+				.prepareSearchMember()
+				.all()
+				.filterByRefSet(refSetEntry.getId())
+				.setLocales(getLocales())
+				.build(getBranch())
+				.executeSync(getBus())
+				.getItems();
 
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Validating reference set members...", members.size());
 
 		try {
 			switch (refSetEntry.getReferencedComponentType()) {
-				case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-					return validateConceptMembers(members, subMonitor);
-				case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-					return validateDescriptionMembers(subMonitor, members);
-				case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-					return validateRelationshipMembers(subMonitor, members);
-				default:
-					// TODO: This component type cannot be validated here. What to do?
-					return Status.OK_STATUS;
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+				return validateConceptMembers(members, subMonitor);
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+				return validateDescriptionMembers(subMonitor, members);
+			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+				return validateRelationshipMembers(subMonitor, members);
+			default:
+				// TODO: This component type cannot be validated here. What to
+				// do?
+				return Status.OK_STATUS;
 			}
 		} finally {
 			monitor.done();
 		}
 	}
 
-	private IStatus validateConceptMembers(final Collection<SnomedRefSetMemberIndexEntry> members, final SubMonitor subMonitor) {
-		
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+	}
+
+	private String getBranch() {
+		return BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
+	}
+
+	private IEventBus getBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+
+	private IStatus validateConceptMembers(final Collection<SnomedReferenceSetMember> members, final SubMonitor subMonitor) {
 		// We will also validate the concepts themselves; double up the tick count
 		subMonitor.setWorkRemaining(2 * members.size());
-		
-		final SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class);
+
+		final List<ISnomedConcept> referencedConcepts = SnomedRequests
+				.prepareSearchConcept()
+				.all()
+				.setComponentIds(getReferencedComponentIds(members))
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.build(getBranch())
+				.executeSync(getBus())
+				.getItems();
+
+		final ImmutableMap<String, ISnomedConcept> referencedConceptsMap = asMap(referencedConcepts);
+
 		final List<IDiagnostic> diagnostics = newArrayList();
-		final Set<SnomedConceptIndexEntry> uniqueConcepts = newHashSet();
-		
-		for (final SnomedRefSetMemberIndexEntry memberIndexEntry : members) {
-			final SnomedConceptIndexEntry referencedConcept = terminologyBrowser.getConcept(memberIndexEntry.getReferencedComponentId());
-			
+		final Set<ISnomedConcept> uniqueConcepts = newHashSet();
+
+		for (final SnomedReferenceSetMember member : members) {
+			final ISnomedConcept referencedConcept = referencedConceptsMap.get(member.getReferencedComponent().getId());
+
 			if (null == referencedConcept) {
 				diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
-						SnomedRefSetDiagnostic.MISSING_REFERENCED_CONCEPT, 
-						memberIndexEntry.getLabel(),
-						memberIndexEntry.getReferencedComponentId())));
-				
+						MISSING_REFERENCED_CONCEPT, 
+						member.getReferencedComponent().getId())));
+
 				continue;
-			} 
-			
+			}
+
 			if (uniqueConcepts.add(referencedConcept)) {
-				if (!referencedConcept.isActive() && memberIndexEntry.isActive()) {
+				if (!referencedConcept.isActive() && member.isActive()) {
 					diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
-							SnomedRefSetDiagnostic.ACTIVE_MEMBER_INACTIVE_REFCOMPONENT,
-							memberIndexEntry.getLabel(),
-							memberIndexEntry.getReferencedComponentId())));
+							ACTIVE_MEMBER_INACTIVE_REFCOMPONENT,
+							getLabel(referencedConcept), 
+							member.getReferencedComponent().getId())));
 				}
 			}
-			
+
 			if (subMonitor.isCanceled()) {
 				break;
 			}
-			
+
 			subMonitor.worked(1);
 		}
 
 		int errorCount = 0;
-		
+
 		if (!subMonitor.isCanceled()) {
-			
 			// Run concept validation for members here
-			final IClientSnomedComponentValidationService validationService = ApplicationContext.getServiceForClass(IClientSnomedComponentValidationService.class);
-			final ValidateConceptsJob<SnomedConceptIndexEntry, String> validateConceptsJob = new ValidateConceptsJob<SnomedConceptIndexEntry, String>("", 
-					family, 
-					uniqueConcepts,
-					validationService);
-			
+			final IClientSnomedComponentValidationService validationService = ApplicationContext
+					.getServiceForClass(IClientSnomedComponentValidationService.class);
+			final ValidateConceptsJob<SnomedConceptIndexEntry, String> validateConceptsJob = new ValidateConceptsJob<SnomedConceptIndexEntry, String>(
+					"", family, SnomedConceptIndexEntry.fromConcepts(uniqueConcepts), validationService);
+
 			subMonitor.setWorkRemaining(uniqueConcepts.size());
 			validateConceptsJob.run(subMonitor.newChild(uniqueConcepts.size()));
-			
+
 			errorCount += validateConceptsJob.getValue();
 		}
-		
+
 		return finishValidation(subMonitor, diagnostics, errorCount);
 	}
 
-	private IStatus validateDescriptionMembers(final SubMonitor subMonitor, final List<SnomedRefSetMemberIndexEntry> members) {
-		
-		final SnomedDescriptionLookupService lookupService = new SnomedDescriptionLookupService();
+	private Collection<String> getReferencedComponentIds(final Collection<SnomedReferenceSetMember> members) {
+		return FluentIterable.from(members).transform(new Function<SnomedReferenceSetMember, String>() {
+			@Override
+			public String apply(SnomedReferenceSetMember input) {
+				return input.getReferencedComponent().getId();
+			}
+		}).toList();
+	}
+
+	private <C extends SnomedCoreComponent> ImmutableMap<String, C> asMap(final Collection<C> components) {
+		return FluentIterable.from(components).uniqueIndex(new Function<C, String>() {
+			@Override
+			public String apply(C input) {
+				return input.getId();
+			}
+		});
+	}
+
+	private IStatus validateDescriptionMembers(final SubMonitor subMonitor, final List<SnomedReferenceSetMember> members) {
 		final List<IDiagnostic> diagnostics = newArrayList();
-		
-		for (final SnomedRefSetMemberIndexEntry memberIndexEntry : members) {
-			final SnomedDescriptionIndexEntry referencedDescription = (SnomedDescriptionIndexEntry) lookupService.getComponent(memberIndexEntry.getReferencedComponentId());
-			
+
+		final List<ISnomedDescription> referencedDescriptions = SnomedRequests
+				.prepareSearchDescription()
+				.all()
+				.setComponentIds(getReferencedComponentIds(members))
+				.setLocales(getLocales())
+				.build(getBranch())
+				.executeSync(getBus())
+				.getItems();
+
+		final ImmutableMap<String, ISnomedDescription> referencedDescriptionsMap = asMap(referencedDescriptions);
+
+		for (final SnomedReferenceSetMember member : members) {
+			final ISnomedDescription referencedDescription = referencedDescriptionsMap.get(member.getReferencedComponent().getId());
+
 			if (null == referencedDescription) {
 				diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
-						SnomedRefSetDiagnostic.MISSING_REFERENCED_DESCRIPTION, 
-						memberIndexEntry.getLabel(),
-						memberIndexEntry.getReferencedComponentId())));
-				
+						MISSING_REFERENCED_DESCRIPTION, 
+						member.getReferencedComponent().getId())));
+
 				continue;
-			} 
-			
-			if (!referencedDescription.isActive() && memberIndexEntry.isActive()) {
-				diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
-						SnomedRefSetDiagnostic.ACTIVE_MEMBER_INACTIVE_REFCOMPONENT,
-						memberIndexEntry.getLabel(),
-						memberIndexEntry.getReferencedComponentId())));
 			}
-			
+
+			if (!referencedDescription.isActive() && member.isActive()) {
+				diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
+						ACTIVE_MEMBER_INACTIVE_REFCOMPONENT,
+						referencedDescription.getTerm(), 
+						member.getReferencedComponent().getId())));
+			}
+
 			if (subMonitor.isCanceled()) {
 				break;
 			}
-			
+
 			subMonitor.worked(1);
 		}
 
 		return finishValidation(subMonitor, diagnostics);
 	}
 
-	private IStatus validateRelationshipMembers(final SubMonitor subMonitor, final List<SnomedRefSetMemberIndexEntry> members) {
-		
-		final SnomedClientStatementBrowser statementBrowser = ApplicationContext.getServiceForClass(SnomedClientStatementBrowser.class);
+	private IStatus validateRelationshipMembers(final SubMonitor subMonitor, final List<SnomedReferenceSetMember> members) {
 		final List<IDiagnostic> diagnostics = newArrayList();
-		
-		for (final SnomedRefSetMemberIndexEntry memberIndexEntry : members) {
-			final SnomedRelationshipIndexEntry referencedRelationship = statementBrowser.getStatement(memberIndexEntry.getReferencedComponentId());
-			
+
+		final List<ISnomedRelationship> referencedRelationships = SnomedRequests
+				.prepareSearchRelationship()
+				.all()
+				.setComponentIds(getReferencedComponentIds(members))
+				.setExpand("source(expand(pt())),type(expand(pt())),destination(expand(pt()))")
+				.setLocales(getLocales())
+				.build(getBranch())
+				.executeSync(getBus())
+				.getItems();
+
+		final ImmutableMap<String, ISnomedRelationship> referencedRelationshipsMap = asMap(referencedRelationships);
+
+		for (final SnomedReferenceSetMember member : members) {
+			final ISnomedRelationship referencedRelationship = referencedRelationshipsMap.get(member.getReferencedComponent().getId());
+
 			if (null == referencedRelationship) {
 				diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
-						SnomedRefSetDiagnostic.MISSING_REFERENCED_RELATIONSHIP, 
-						memberIndexEntry.getLabel(),
-						memberIndexEntry.getReferencedComponentId())));
-				
+						MISSING_REFERENCED_RELATIONSHIP, 
+						member.getReferencedComponent().getId())));
+
 				continue;
-			} 
-			
-			if (!referencedRelationship.isActive() && memberIndexEntry.isActive()) {
-				diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
-						SnomedRefSetDiagnostic.ACTIVE_MEMBER_INACTIVE_REFCOMPONENT,
-						memberIndexEntry.getLabel(),
-						memberIndexEntry.getReferencedComponentId())));
 			}
-			
+
+			if (!referencedRelationship.isActive() && member.isActive()) {
+				diagnostics.add(new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, String.format(
+						ACTIVE_MEMBER_INACTIVE_REFCOMPONENT,
+						getLabel(referencedRelationship), 
+						member.getReferencedComponent().getId())));
+			}
+
 			if (subMonitor.isCanceled()) {
 				break;
 			}
-			
+
 			subMonitor.worked(1);
 		}
 
 		return finishValidation(subMonitor, diagnostics);
+	}
+
+	private String getLabel(final ISnomedRelationship relationship) {
+		return getLabel(relationship.getSourceConcept()) + " " + getLabel(relationship.getTypeConcept()) + " "
+				+ getLabel(relationship.getDestinationConcept());
+	}
+
+	private String getLabel(final ISnomedConcept concept) {
+		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 	}
 
 	private IStatus finishValidation(final SubMonitor subMonitor, final List<IDiagnostic> errors) {
 		return finishValidation(subMonitor, errors, 0);
 	}
-	
+
 	private IStatus finishValidation(final SubMonitor subMonitor, final List<IDiagnostic> errors, int errorCount) {
-		
+
 		if (!errors.isEmpty()) {
 			errorCount += errors.size();
-			
+
 			final MarkerManager markerManager = ApplicationContext.getServiceForClass(MarkerManager.class);
 			final SnomedRefSetDiagnostic summaryDiagnostic = new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, "", errors);
 			markerManager.createValidationMarkerOnComponent(refSetEntry, summaryDiagnostic);
 		}
-		
+
 		setValue(errorCount);
 		return subMonitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
+	
 }

@@ -17,10 +17,12 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
+import javax.validation.constraints.NotNull;
+
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.request.BaseResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluations;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -32,10 +34,11 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetRequest extends BaseRequest<BranchContext, QueryRefSetMemberEvaluations> {
+public final class EvaluateQueryRefSetRequest extends BaseResourceRequest<BranchContext, QueryRefSetMemberEvaluations> {
 
+	@NotNull
 	private final String referenceSetId;
-
+	
 	EvaluateQueryRefSetRequest(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
 	}
@@ -49,7 +52,7 @@ public final class EvaluateQueryRefSetRequest extends BaseRequest<BranchContext,
 				.transform(new Function<SnomedReferenceSetMember, Request<BranchContext, QueryRefSetMemberEvaluation>>() {
 					@Override
 					public Request<BranchContext, QueryRefSetMemberEvaluation> apply(SnomedReferenceSetMember input) {
-						return new EvaluateQueryRefSetMemberRequest(input.getId());
+						return SnomedRequests.prepareQueryRefSetMemberEvaluation(input.getId()).setLocales(locales()).setExpand(expand()).build();
 					}
 				})
 				.transform(new Function<Request<BranchContext, QueryRefSetMemberEvaluation>, QueryRefSetMemberEvaluation>() {
@@ -76,6 +79,13 @@ public final class EvaluateQueryRefSetRequest extends BaseRequest<BranchContext,
 				.build()
 				.execute(context)
 				.getItems();
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("{type:'%s', referenceSetId:'%s'}", 
+				getClass().getSimpleName(), 
+				referenceSetId);
 	}
 	
 }

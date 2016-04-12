@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -34,25 +39,28 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 4.5
  */
 final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
 
-	SnomedReferenceSetMemberConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, AbstractSnomedRefSetMembershipLookupService membershipLookupService) {
-		super(context, expand, locales, membershipLookupService);
+	SnomedReferenceSetMemberConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+		super(context, expand, locales);
 	}
 
 	@Override
@@ -63,6 +71,52 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 	@Override
 	protected void expand(List<SnomedReferenceSetMember> results) {
 		expandReferencedComponent(results);
+		expandTargetComponent(results);
+	}
+
+	private void expandTargetComponent(List<SnomedReferenceSetMember> results) {
+		if (expand().containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
+			final Options expandOptions = expand().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT, Options.class);
+			
+			final Multimap<String, SnomedReferenceSetMember> membersByTargetComponent = HashMultimap.create();
+			for (SnomedReferenceSetMember member : results) {
+				final Map<String, Object> props = member.getProperties();
+				if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
+					membersByTargetComponent.put(((SnomedCoreComponent) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId(), member);
+				}
+			}
+			
+			final Multimap<ComponentCategory,String> targetComponentIdsByCategory = Multimaps.index(membersByTargetComponent.keySet(), new Function<String, ComponentCategory>() {
+				@Override
+				public ComponentCategory apply(String id) {
+					return SnomedIdentifiers.getComponentCategory(id);
+				}
+			});
+			
+			for (ComponentCategory category : targetComponentIdsByCategory.keySet()) {
+				final Collection<String> targetComponentIds = targetComponentIdsByCategory.get(category);
+				final Map<String,? extends SnomedCoreComponent> componentsById = Maps.uniqueIndex(getComponents(category, targetComponentIds, expandOptions.get("expand", Options.class)), IComponent.ID_FUNCTION);
+				for (String targetComponentId : targetComponentIds) {
+					final SnomedCoreComponent targetComponent = componentsById.get(targetComponentId);
+					if (targetComponent != null) {
+						for (SnomedReferenceSetMember member : membersByTargetComponent.get(targetComponentId)) {
+							final Map<String, Object> newProps = newHashMap(member.getProperties());
+							newProps.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent);
+							((SnomedReferenceSetMemberImpl) member).setProperties(newProps);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private CollectionResource<? extends SnomedCoreComponent> getComponents(ComponentCategory category, Collection<String> componentIds, Options expand) {
+		switch (category) {
+		case CONCEPT: return SnomedRequests.prepareSearchConcept().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case DESCRIPTION: return SnomedRequests.prepareSearchDescription().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		default: throw new NotImplementedException("Not implemented non core target component expansion", category);
+		}
 	}
 
 	private void expandReferencedComponent(List<SnomedReferenceSetMember> results) {
@@ -149,6 +203,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setReferenceSetId(entry.getRefSetIdentifierId());
 		member.setType(entry.getRefSetType());
 		
+		// XXX would be nice to refactor this switch
 		final Builder<String, Object> props = ImmutableMap.builder();
 		switch (entry.getRefSetType()) {
 			case QUERY:
@@ -158,13 +213,36 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 				props.put(SnomedRf2Headers.FIELD_VALUE_ID, entry.getValueId());
 				break;
 			case ASSOCIATION:
-				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, entry.getTargetComponentId());
+				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponentId()));
 				break;
-			case SIMPLE_MAP:
+			case EXTENDED_MAP:
+				props.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, entry.getMapCategoryId());
 			case COMPLEX_MAP:
-				props.put(SnomedMappings.memberMapTargetComponentId().fieldName(), entry.getMapTargetComponentId());
+				props.put(SnomedRf2Headers.FIELD_MAP_GROUP, entry.getMapGroup());
+				props.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, entry.getMapPriority());
+				props.put(SnomedRf2Headers.FIELD_MAP_RULE, entry.getMapRule() != null ? entry.getMapRule() : "");
+				props.put(SnomedRf2Headers.FIELD_MAP_ADVICE, entry.getMapAdvice() != null ? entry.getMapAdvice() : "");
+				props.put(SnomedRf2Headers.FIELD_CORRELATION_ID, entry.getCorrelationId());
+			case SIMPLE_MAP:
+				props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
 				props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
 				break;
+			case CONCRETE_DATA_TYPE:
+				props.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, entry.getAttributeLabel());
+				props.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, entry.getCharacteristicTypeId());
+				props.put(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
+				props.put(SnomedRf2Headers.FIELD_UNIT_ID, entry.getUomComponentId());
+				props.put(SnomedRf2Headers.FIELD_OPERATOR_ID, entry.getOperatorComponentId());
+				props.put(SnomedMappings.memberDataTypeOrdinal().fieldName(), entry.getRefSetPackageDataType().ordinal());
+				break;
+			case LANGUAGE:
+				props.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, entry.getAcceptabilityId());
+				break;
+			case DESCRIPTION_TYPE:
+				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, entry.getDescriptionFormat());
+				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, entry.getDescriptionLength());
+				break;
+			// TODO module dependency refset
 			default:
 				break;
 		}
@@ -174,6 +252,15 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		return member;
 	}
 	
+	private SnomedCoreComponent convertToResource(String targetComponentId) {
+		switch (SnomedIdentifiers.getComponentCategory(targetComponentId)) {
+		case CONCEPT: return new SnomedConcept(targetComponentId);
+		case DESCRIPTION: return new SnomedDescription(targetComponentId);
+		case RELATIONSHIP: return new SnomedRelationship(targetComponentId);
+		default: throw new NotImplementedException("Cannot convert '%s' to component, unknown type.", targetComponentId);
+		}
+	}
+
 	private void setReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, String referencedComponentType) {
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {

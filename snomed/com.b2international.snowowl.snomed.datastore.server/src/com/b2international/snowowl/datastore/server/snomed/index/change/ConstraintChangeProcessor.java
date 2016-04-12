@@ -18,13 +18,13 @@ package com.b2international.snowowl.datastore.server.snomed.index.change;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.commons.collections.primitive.set.LongSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -92,6 +92,9 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase<SnomedDocu
 
 	/* marks the proper concepts and reference sets if the transaction contains attribute constraint changes */
 	private void processAttributeConstraints(final Iterable<AttributeConstraint> newAndDirtyConstraints, final Iterable<CDOID> deletedConstraints) {
+		if (Iterables.isEmpty(newAndDirtyConstraints) && Iterables.isEmpty(deletedConstraints)) {
+			return;
+		}
 		
 		final Multimap<Long, ConstraintDomain> constraintToDomainKeys = HashMultimap.<Long, PredicateUtils.ConstraintDomain>create();
 		
@@ -101,11 +104,7 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase<SnomedDocu
 			constraintToDomainKeys.put(constraintDomain.getStorageKey(), constraintDomain);
 		}
 		
-		final Set<Long> conceptIds = FluentIterable.from(allConstraintDomains).transform(new Function<ConstraintDomain, Long>() {
-			@Override public Long apply(final ConstraintDomain input) {
-				return input.getComponentId();
-			}
-		}).copyInto(Sets.<Long>newHashSet());
+		final Set<Long> conceptIds = Sets.newHashSet();
 		
 		for (final AttributeConstraint constraint : newAndDirtyConstraints) {
 			final long constraintStoragekey = CDOIDUtil.getLong(constraint.cdoID());
@@ -121,6 +120,11 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase<SnomedDocu
 		
 		for (final CDOID cdoId : deletedConstraints) {
 			final long constraintStoragekey = CDOIDUtil.getLong(cdoId);
+			final Collection<ConstraintDomain> domains = constraintToDomainKeys.get(constraintStoragekey);
+			for (final ConstraintDomain domain : domains) {
+				conceptIds.add(domain.getComponentId());
+			}
+			
 			constraintToDomainKeys.removeAll(constraintStoragekey);
 		}
 		
@@ -132,12 +136,17 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase<SnomedDocu
 		
 		for (final Long conceptId : conceptIds) {
 			if (allConceptIds.contains(conceptId)) {
+				final Collection<String> predicateKeys;
 				
-				final Collection<String> predicateKeys = FluentIterable.from(conceptIdToDomainKeys.get(conceptId)).transform(new Function<ConstraintDomain, String>() {
-					@Override public String apply(final ConstraintDomain input) {
-						return input.getPredicateKey();
-					}
-				}).toSet();
+				if (!conceptIdToDomainKeys.containsKey(conceptId)) {
+					predicateKeys = Collections.emptyList();
+				} else {
+					predicateKeys = FluentIterable.from(conceptIdToDomainKeys.get(conceptId)).transform(new Function<ConstraintDomain, String>() {
+						@Override public String apply(final ConstraintDomain input) {
+							return input.getPredicateKey();
+						}
+					}).toSet();
+				}
 				
 				registerUpdate(String.valueOf(conceptId), new ComponentConstraintUpdater(String.valueOf(conceptId), predicateKeys));
 			}

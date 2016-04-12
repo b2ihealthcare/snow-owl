@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.Platform;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.Pair;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -89,10 +88,12 @@ public enum VersioningManagerBroker {
 	});
 	
 	/**Returns with the component versioning manager for the given tooling feature.*/
-	public IVersioningManager getVersioningManager(final String toolingId) {
-		final Pair<Class<IVersioningManager>, Class<IVersioningManager>> pair = cache.get().get(Preconditions.checkNotNull(toolingId));
-		final Class<IVersioningManager> providerInterface = pair.getA();
-		return ApplicationContext.getInstance().getService(providerInterface);
+	public IVersioningManager createVersioningManager(final String toolingId) {
+		try {
+			return cache.get().get(toolingId).getB().newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 	
 	/**Returns with all registered component versioning manager interface-class mappings.*/

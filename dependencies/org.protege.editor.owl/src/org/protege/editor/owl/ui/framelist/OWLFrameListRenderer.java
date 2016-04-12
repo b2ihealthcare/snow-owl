@@ -1,24 +1,21 @@
 package org.protege.editor.owl.ui.framelist;
 
-import java.awt.Component;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.frame.AbstractOWLFrameSectionRow;
 import org.protege.editor.owl.ui.frame.OWLFrameSection;
 import org.protege.editor.owl.ui.frame.OWLFrameSectionRow;
 import org.protege.editor.owl.ui.renderer.OWLAnnotationCellRenderer;
+import org.protege.editor.owl.ui.renderer.OWLAnnotationCellRenderer2;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLObject;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -35,7 +32,7 @@ public class OWLFrameListRenderer implements ListCellRenderer {
 
     private ListCellRenderer separatorRenderer;
 
-    private OWLAnnotationCellRenderer annotationRenderer;
+    private OWLAnnotationCellRenderer2 annotationRenderer;
 
     private boolean highlightKeywords;
 
@@ -51,7 +48,7 @@ public class OWLFrameListRenderer implements ListCellRenderer {
         this.owlEditorKit = owlEditorKit;
         owlCellRenderer = new OWLCellRenderer(owlEditorKit);
         separatorRenderer = new DefaultListCellRenderer();
-        annotationRenderer = new OWLAnnotationCellRenderer(owlEditorKit);
+        annotationRenderer = new OWLAnnotationCellRenderer2(owlEditorKit);
         highlightKeywords = true;
         highlightUnsatisfiableClasses = true;
         highlightUnsatisfiableProperties = true;
@@ -139,7 +136,7 @@ public class OWLFrameListRenderer implements ListCellRenderer {
             final OWLAxiom axiom = row.getAxiom();
             if (axiom instanceof OWLAnnotationAssertionAxiom && annotationRendererEnabled) {
                 OWLAnnotationAssertionAxiom annotationAssertionAxiom = (OWLAnnotationAssertionAxiom) axiom;
-                annotationRenderer.setOntology(row.getOntology());
+                annotationRenderer.setReferenceOntology(row.getOntology());
                 return annotationRenderer.getListCellRendererComponent(list,
                                                                        annotationAssertionAxiom.getAnnotation(),
                                                                        index,

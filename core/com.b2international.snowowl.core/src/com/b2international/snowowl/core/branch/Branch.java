@@ -167,38 +167,39 @@ public interface Branch extends Deletable, MetadataHolder {
 	 */
 	BranchState state(Branch target);
 
+	boolean canRebase();
+	
+	boolean canRebase(Branch onTopOf);
+	
 	/**
-	 * Rebases the {@link Branch} with its {@link #parent()}. Rebasing this branch does not actually modify this {@link Branch} state, instead it will
-	 * create a new {@link Branch} representing the rebased form of this {@link Branch} and returns it. Commits available on the {@link #parent()}
-	 * will be available on the resulting rebased {@link Branch} after successful rebase.
+	 * Rebases this branch {@link Branch} on top of the specified {@link Branch}.
+	 * <p>
+	 * Rebasing this branch does not actually modify this {@link Branch} state, instead it will create a new {@link Branch} representing the rebased
+	 * form of this {@link Branch} and returns it. Commits available on the target {@link Branch} will be available on the resulting {@link Branch}
+	 * after successful rebase.
 	 * 
+	 * @param onTopOf
+	 *            - the branch on top of which this branch should be lifted
 	 * @param commitMessage
-	 * @return
-	 * @see #rebase(Branch)
-	 */
-	Branch rebase(String commitMessage);
-
-	/**
-	 * Rebases the {@link Branch} with the given target {@link Branch}. Rebasing this branch does not actually modify this {@link Branch} state,
-	 * instead it will create a new {@link Branch} representing the rebased form of this {@link Branch} and returns it. Commits available on the
-	 * target {@link Branch} will be available on the resulting {@link Branch} after successful rebase.
-	 * 
-	 * @param target
-	 * @param commitMessage
+	 *            - the commit message
 	 * @return
 	 */
-	Branch rebase(Branch target, String commitMessage);
-
+	Branch rebase(Branch onTopOf, String commitMessage);
+	
+	Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen);
+	
 	/**
-	 * @param source
-	 *            - the branch to merge onto this branch
+	 * Merges changes to this {@link Branch} by squashing the change set of the specified {@link Branch} into a single commit.
+	 * 
+	 * @param changesFrom
+	 *            - the branch to take changes from
 	 * @param commitMessage
 	 *            - the commit message
 	 * @return
 	 * @throws BranchMergeException
-	 *             - if source cannot be merged
+	 *             - if the branch cannot be merged for some reason
 	 */
-	Branch merge(Branch source, String commitMessage) throws BranchMergeException;
+	Branch merge(Branch changesFrom, String commitMessage) throws BranchMergeException;
 
 	/**
 	 * Creates a new child branch.
@@ -246,4 +247,26 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * @deprecated - use the new {@link Branch} interface instead
 	 */
 	IBranchPath branchPath();
+
+	/**
+	 * Commits changes from the specified branch on this {@link Branch}.
+	 * 
+	 * @param source
+	 *            - the {@link Branch} from which changes should be
+	 *            lifted
+	 * @param dryRun
+	 *            - set <code>true</code> if only potential conflicts should be
+	 *            collected, <code>false</code> to actually perform the commit
+	 * @param commitMessage
+	 *            - the commit message to use
+	 * @return the state of this branch after applying changes
+	 */
+	Branch applyChangeSet(Branch source, boolean dryRun, String commitMessage);
+
+	/**
+	 * Sends a notification event about changes on this branch to interested parties. 
+	 * 
+	 * @return the state of this branch
+	 */
+	Branch notifyChanged();
 }

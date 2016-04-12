@@ -17,9 +17,13 @@ package com.b2international.snowowl.core.events.util;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import com.b2international.commons.collections.Procedure;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.AbstractFuture;
@@ -37,42 +41,77 @@ import com.google.common.util.concurrent.MoreExecutors;
 public final class Promise<T> extends AbstractFuture<T> {
 
 	/**
-	 * @param func - the function to wrap into a {@link Promise}
 	 * @return
 	 * @since 4.6
 	 */
 	@Beta
-	public static <T> Promise<T> wrap(final Callable<T> func) {
-		final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1));
-		final ListenableFuture<T> submit = executor.submit(func);
-		executor.shutdown();
-		return wrap(submit); 
+	public T getSync() {
+		try {
+			return get();
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
+		} catch (ExecutionException e) {
+			final Throwable cause = e.getCause();
+			if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			}
+			throw new SnowowlRuntimeException(cause);
+		}
 	}
 	
 	/**
-	 * Define what to do when the promise becomes resolved.
+	 * @param timeout
+	 * @param unit
+	 * @return
+	 * @since 4.6
+	 */
+	@Beta
+	public T getSync(long timeout, TimeUnit unit) {
+		try {
+			return get(timeout, unit);
+		} catch (TimeoutException e) {
+			throw new RequestTimeoutException(e);
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
+		} catch (ExecutionException e) {
+			final Throwable cause = e.getCause();
+			if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			}
+			throw new SnowowlRuntimeException(cause);
+		}
+	}
+	
+	/**
+	 * Define what to do when the promise becomes rejected.
 	 * 
 	 * @param then
 	 * @return
 	 */
-	public final Promise<T> fail(final Procedure<Throwable> fail) {
+	public final Promise<T> fail(final Function<Throwable, T> fail) {
+		final Promise<T> promise = new Promise<>();
 		Futures.addCallback(this, new FutureCallback<T>() {
 
 			@Override
 			public void onSuccess(T result) {
+				promise.resolve(result);
 			}
 
 			@Override
 			public void onFailure(Throwable t) {
-				fail.apply(t);
+				try {
+					promise.resolve(fail.apply(t));
+				} catch (Throwable e) {
+					promise.reject(e);
+				}
 			}
 
 		});
-		return null;
+		return promise;
 	}
 
 	/**
-	 * Define what to do when the promise becomes rejected.
+	 * Define what to do when the promise becomes resolved.
 	 * 
 	 * @param fail
 	 * @return
@@ -116,6 +155,35 @@ public final class Promise<T> extends AbstractFuture<T> {
 		setException(throwable);
 	}
 
+	/**
+	 * @param func - the function to wrap into a {@link Promise}
+	 * @return
+	 * @since 4.6
+	 */
+	@Beta
+	public static <T> Promise<T> wrap(final Callable<T> func) {
+		final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1));
+		final ListenableFuture<T> submit = executor.submit(func);
+		executor.shutdown();
+		return wrap(submit); 
+	}
+	
+	/**
+	 * @param promises
+	 * @return
+	 * @since 4.6
+	 */
+	@Beta
+	public static Promise<List<Object>> all(Iterable<? extends Promise<?>> promises) {
+		return Promise.wrap(Futures.allAsList(promises));
+	}
+	
+	/**
+	 * @param promises
+	 * @return
+	 * @since 4.6
+	 */
+	@Beta
 	public static Promise<List<Object>> all(Promise<?>...promises) {
 		return Promise.wrap(Futures.allAsList(promises));
 	}
@@ -135,10 +203,16 @@ public final class Promise<T> extends AbstractFuture<T> {
 		return promise;
 	}
 	
+	/**
+	 * @param value
+	 * @return
+	 * @since 4.6
+	 */
+	@Beta
 	public static final <T> Promise<T> immediate(T value) {
 		final Promise<T> promise = new Promise<>();
 		promise.resolve(value);
 		return promise;
 	}
-	
+
 }

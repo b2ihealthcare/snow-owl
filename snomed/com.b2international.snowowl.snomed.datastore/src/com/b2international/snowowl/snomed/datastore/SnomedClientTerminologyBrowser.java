@@ -25,8 +25,6 @@ import javax.annotation.Nullable;
 import com.b2international.commons.collections.primitive.LongCollection;
 import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
 import com.b2international.commons.collections.primitive.set.LongSet;
-
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
@@ -35,7 +33,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
+import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
@@ -73,8 +71,10 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	}
 
 	@Override
-	protected TreeBuilder newTree(String branch, List<ExtendedLocale> locales) {
-		return Trees.newInferredTree(branch, locales, this, getBus());
+	protected TerminologyTree newTree(String branch, Iterable<SnomedConceptIndexEntry> concepts) {
+		return Trees
+				.newInferredTree()
+				.build(branch, concepts);
 	}
 	
 	@Override
@@ -153,7 +153,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
-
+	
 	/**
 	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the currently active branch. 
 	 * @return an iterable of all SNOMED&nbsp;CT concepts.
@@ -338,4 +338,14 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 		return (SnomedTerminologyBrowser) getWrappedBrowser();
 	}
 	
+		private boolean containsSubType(Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes, SnomedConceptIndexEntry conceptToTest) {
+		Collection<SnomedConceptIndexEntry> conceptSubTypes = getSubTypes(conceptToTest);
+		for (SnomedConceptIndexEntry conceptMini : proximalPrimitiveSuperTypes) {
+			if (conceptSubTypes.contains(conceptMini)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

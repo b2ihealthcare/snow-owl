@@ -33,7 +33,6 @@ public class SnomedComponentIdentifierValidator implements SnomedIdentifierValid
 	@Override
 	public boolean isValid(String componentId) {
 		try {
-			SnomedIdentifiers.validate(componentId);
 			return category.equals(SnomedIdentifiers.getComponentCategory(componentId));
 		} catch (IllegalArgumentException e) {
 			return false;

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.version;
 
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 
 import java.util.Collection;
@@ -68,6 +69,12 @@ public class SnomedPublishManager extends PublishManager {
 	public SnomedPublishManager() {
 		this.snomedIdentifiers = new SnomedIdentifiers(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
 		this.componentService = ApplicationContext.getInstance().getServiceChecked(ISnomedComponentService.class);
+	}
+	
+	@Override
+	protected LongSet getUnversionedComponentStorageKeys(final IBranchPath branchPath) {
+		final ISnomedComponentService componentService = getServiceForClass(ISnomedComponentService.class);
+		return componentService.getAllUnpublishedComponentStorageKeys(branchPath);
 	}
 
 	@Override

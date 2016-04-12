@@ -59,6 +59,8 @@ public interface OWLReasonerManager extends Disposable {
      * Gets the current reasoner.
      */
     OWLReasoner getCurrentReasoner();
+    
+    void killCurrentReasoner();
 
     /**
      * @deprecated use getReasonerStatus() instead
@@ -72,6 +74,12 @@ public interface OWLReasonerManager extends Disposable {
     @Deprecated
     boolean isClassified();
     
+    /**
+     * Returns the current status of the reasoner.
+     * 
+     * @throws ReasonerDiedException if the reasoner went into a bad state and needed to be trashed
+     *                                then this exception is thrown.
+     */
     ReasonerStatus getReasonerStatus();
 
     boolean classifyAsynchronously(Set<InferenceType> precompute);
@@ -82,4 +90,14 @@ public interface OWLReasonerManager extends Disposable {
     void killCurrentClassification();
     
     ReasonerPreferences getReasonerPreferences();
+    
+    /**
+     * Add the filters to be applied when the ABOUT_TO_CLASSIFY event starts.
+     * The list of filters will be cleared when the classification completes regardless
+     * of whether a new reasoner was created in the process.
+     * 
+     * @param filter
+     */
+    void addReasonerFilter(ReasonerFilter filter);
+    
 }

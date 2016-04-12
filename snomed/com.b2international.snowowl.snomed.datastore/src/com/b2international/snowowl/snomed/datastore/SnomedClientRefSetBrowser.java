@@ -99,7 +99,9 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 					.setLocales(getLocales())
 					.build(getBranchPath().getPath())
 					.executeSync(bus);
-			return SnomedRefSetIndexEntry.builder(refset).build();
+			
+			final SnomedConceptIndexEntry concept = browser.get().getConcept(refSetId);
+			return SnomedRefSetIndexEntry.builder(refset).label(concept.getLabel()).build();
 		} catch (NotFoundException e) {
 			return null;
 		}
@@ -145,6 +147,20 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 				.executeSync(bus)
 				.getItems();
 
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final String refsetId) {
+		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByEscg("^" + refsetId)
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(bus)
+				.getItems();
+		
 		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 	
@@ -210,6 +226,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * @param identifierConceptId the reference set identifier concept ID.
 	 * @param conceptId the unique concept ID. 
 	 * @return {@code true} if the reference set has at least one active member referencing to the specified concept, otherwise returns with {@code false}.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public boolean isActiveMemberOf(final long identifierConceptId, final long conceptId) {
 		return getWrapperService().isActiveMemberOf(getBranchPath(), identifierConceptId, conceptId);
@@ -241,6 +258,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	/**
 	 * Returns with all reference sets.
 	 * @return a collection of all existing reference sets.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchRefSet()}.
 	 */
 	public Collection<SnomedRefSetIndexEntry> getAllReferenceSets() {
 		return getWrapperService().getAllReferenceSets(getBranchPath());
@@ -250,6 +268,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all active reference set members referring the given SNOMED&nbsp;CT concept.
 	 * @param conceptId the unique concept ID.
 	 * @return a collection of active members referring to the given concept.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getActiveReferringMembers(final String conceptId) {
 		return getWrapperService().getActiveReferringMembers(getBranchPath(), conceptId);
@@ -259,6 +278,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all (including the inactive ones) reference set members referring the given SNOMED&nbsp;CT concept.
 	 * @param conceptId the unique concept ID.
 	 * @return a collection of all members referring to the given concept.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getReferringMembers(final String conceptId) {
 		return getWrapperService().getReferringMembers(getBranchPath(), conceptId);
@@ -268,6 +288,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all (including the inactive ones) reference set members of a given reference set.
 	 * @param referenceSetId the reference set identifier concept ID.
 	 * @return a collection of all reference set members of a reference set.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getMembers(final String referenceSetId) {
 		return getWrapperService().getMembers(getBranchPath(), referenceSetId);
@@ -277,6 +298,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all active reference set members of a given reference set.
 	 * @param referenceSetId the reference set identifier concept ID.
 	 * @return a collection of active reference set members of a reference set.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getActiveMembers(final String referenceSetId) {
 		return getWrapperService().getActiveMembers(getBranchPath(), referenceSetId);
@@ -331,16 +353,6 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 */
 	public Map<String, Collection<String>> getMapppings(final String refSetId) {
 		return getWrapperService().getMapppings(getBranchPath(), refSetId);
-	}
-	
-	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypesWithActiveMembers(final String refsetId, final String... excludedIds) {
-		return getWrapperService().getSubTypesWithActiveMembers(getBranchPath(), refsetId, excludedIds);
-	}
-	
-	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypesWithActiveMembers(final String refsetId, final String... excludedIds) {
-		return getWrapperService().getAllSubTypesWithActiveMembers(getBranchPath(), refsetId, excludedIds);
 	}
 	
 	@Override

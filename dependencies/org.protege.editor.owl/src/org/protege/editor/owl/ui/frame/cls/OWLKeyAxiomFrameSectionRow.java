@@ -12,6 +12,28 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLHasKeyAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLPropertyExpression;
+/*
+* Copyright (C) 2007, University of Manchester
+*
+* Modifications to the initial code base are copyright of their
+* respective authors, or their employers as appropriate.  Authorship
+* of the modifications may be determined from the ChangeLog placed at
+* the end of this file.
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 /**
  * Author: drummond<br>
@@ -23,7 +45,8 @@ import org.semanticweb.owlapi.model.OWLPropertyExpression;
  */
 public class OWLKeyAxiomFrameSectionRow extends AbstractOWLFrameSectionRow<OWLClass, OWLHasKeyAxiom, Set<OWLPropertyExpression>> {
 
-    public OWLKeyAxiomFrameSectionRow(OWLEditorKit owlEditorKit, OWLFrameSection section,
+    public OWLKeyAxiomFrameSectionRow(OWLEditorKit owlEditorKit, 
+    								  OWLFrameSection<OWLClass, OWLHasKeyAxiom, Set<OWLPropertyExpression>> section,
                                       OWLOntology ontology, OWLClass rootObject,
                                       OWLHasKeyAxiom axiom) {
         super(owlEditorKit, section, ontology, rootObject, axiom);
@@ -31,13 +54,19 @@ public class OWLKeyAxiomFrameSectionRow extends AbstractOWLFrameSectionRow<OWLCl
 
 
     protected OWLHasKeyAxiom createAxiom(Set<OWLPropertyExpression> properties) {
-        return getOWLDataFactory().getOWLHasKeyAxiom(getRootObject(), properties);
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+    	return getOWLDataFactory().getOWLHasKeyAxiom(getRootObject(), (Set) properties);
     }
 
 
     protected OWLPropertySetEditor getObjectEditor() {
         final OWLPropertySetEditor editor = new OWLPropertySetEditor(getOWLEditorKit());
-        editor.setEditedObject(getAxiom().getPropertyExpressions());
+    	/*
+    	 * Degenericized to be compatible with changing OWLAPI interfaces
+    	 */
+        editor.setEditedObject((Set) getAxiom().getPropertyExpressions());
         return editor;
     }
 

@@ -1,8 +1,7 @@
 package org.protege.editor.owl.ui.editor;
 
+import javax.swing.*;
 import java.util.Set;
-
-import javax.swing.JComponent;
 
 
 /**

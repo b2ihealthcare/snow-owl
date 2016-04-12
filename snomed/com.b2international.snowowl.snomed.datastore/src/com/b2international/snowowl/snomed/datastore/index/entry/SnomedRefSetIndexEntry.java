@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.lucene.document.Document;
 
@@ -31,6 +33,8 @@ import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * A transfer object representing a SNOMED CT reference set.
@@ -85,6 +89,15 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				.label(entry.getLabel())
 				.score(entry.getScore())
 				.storageKey(entry.getStorageKey());
+	}
+	
+	public static List<SnomedRefSetIndexEntry> from(final Collection<SnomedReferenceSet> refSets) {
+		return FluentIterable.from(refSets).transform(new Function<SnomedReferenceSet, SnomedRefSetIndexEntry>() {
+			@Override
+			public SnomedRefSetIndexEntry apply(SnomedReferenceSet input) {
+				return SnomedRefSetIndexEntry.builder(input).build();
+			}
+		}).toList();
 	}
 
 	public static class Builder extends AbstractBuilder<Builder> {

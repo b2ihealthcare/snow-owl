@@ -23,7 +23,6 @@ import org.protege.editor.core.ui.action.ProtegeAction;
 import org.protege.editor.core.ui.menu.MenuBuilder;
 import org.protege.editor.core.ui.util.Icons;
 
-
 /**
  * Author: Matthew Horridge<br>
  * The University Of Manchester<br>
@@ -38,12 +37,11 @@ import org.protege.editor.core.ui.util.Icons;
  */
 public class WorkspaceFrame extends JFrame {
 
-    private static final String VIEW = "Views";
-
-	/**
-     * 
-     */
     private static final long serialVersionUID = -8568184212386766789L;
+
+    public static final int DEFAULT_WIDTH = 1024;
+
+    public static final int DEFAULT_HEIGHT = 768;
 
     private Workspace workspace;
 
@@ -97,8 +95,8 @@ public class WorkspaceFrame extends JFrame {
 
     protected void restoreMetrics() {
         Preferences p = PreferencesManager.getInstance().getApplicationPreferences(getClass().getName());
-        int w = p.getInt(SIZE_X, 800);
-        int h = p.getInt(SIZE_Y, 600);
+        int w = p.getInt(SIZE_X, DEFAULT_WIDTH);
+        int h = p.getInt(SIZE_Y, DEFAULT_HEIGHT);
         setSize(w, h);
         Point defLoc = getDefaultLocation();
         int x = p.getInt(LOC_X, defLoc.x);

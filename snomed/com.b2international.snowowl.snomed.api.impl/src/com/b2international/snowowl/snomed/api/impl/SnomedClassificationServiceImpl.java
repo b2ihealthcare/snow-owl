@@ -74,6 +74,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.classification.Classif
 import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConcept;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
@@ -479,7 +480,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	}
 
 	private StorageRef createStorageRef(final String branchPath) {
-		final StorageRef storageRef = new StorageRef("SNOMEDCT", branchPath);
+		final StorageRef storageRef = new StorageRef(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
 		storageRef.checkStorageExists();
 		return storageRef;
 	}

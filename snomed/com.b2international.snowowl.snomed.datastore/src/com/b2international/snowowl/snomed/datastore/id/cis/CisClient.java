@@ -27,10 +27,12 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
@@ -45,6 +47,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
  */
 class CisClient {
 
+	private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisClient.class);
 
 	private final String baseUrl;
@@ -53,7 +56,7 @@ class CisClient {
 	private final String password;
 	private final ObjectMapper mapper;
 
-	private HttpClient client = new DefaultHttpClient();
+	private final HttpClient client;
 
 	public CisClient(final SnomedIdentifierConfiguration conf, final ObjectMapper mapper) {
 		this.baseUrl = conf.getCisBaseUrl();
@@ -61,6 +64,10 @@ class CisClient {
 		this.username = conf.getCisUserName();
 		this.password = conf.getCisPassword();
 		this.mapper = mapper;
+		final PoolingClientConnectionManager conman = new PoolingClientConnectionManager();
+		conman.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
+		conman.setMaxTotal(conf.getCisMaxConnections());
+		this.client = new DefaultHttpClient(conman);
 	}
 
 	public HttpGet httpGet(final String suffix) {
@@ -121,7 +128,7 @@ class CisClient {
 	}
 
 	public String login() {
-		LOGGER.info("Logging in to Component Identifier service.");
+		LogUtils.logUserAccess(LOGGER, username, "Logging in to Component Identifier service.");
 
 		HttpPost request = null;
 
@@ -142,7 +149,7 @@ class CisClient {
 	}
 
 	public void logout(final String token) {
-		LOGGER.info("Logging out from Component Identifier service.");
+		LogUtils.logUserAccess(LOGGER, username, "Logging out from Component Identifier service.");
 
 		HttpPost request = null;
 
@@ -159,5 +166,4 @@ class CisClient {
 				release(request);
 		}
 	}
-
 }

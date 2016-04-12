@@ -137,7 +137,6 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 	private static final ObjectWriter WRITER;
 
 	private static final Set<EStructuralFeature> IGNORED_FEATURES = ImmutableSet.<EStructuralFeature>of(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS,
-			SnomedPackage.Literals.CONCEPT__INBOUND_RELATIONSHIPS,
 			SnomedPackage.Literals.CONCEPT__OUTBOUND_RELATIONSHIPS);
 	
 	static {

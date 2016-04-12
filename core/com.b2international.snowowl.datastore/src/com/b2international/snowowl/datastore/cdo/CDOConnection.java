@@ -216,7 +216,7 @@ import com.google.common.collect.Lists;
 		cdoSessionOptions.setCommitTimeout(COMMIT_MONITOR_TIMEOUT_SECONDS);
 
 		// Adjust collection loading policy; it needs to be the same both on the client and the server
-		cdoSessionOptions.setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, 10));
+		cdoSessionOptions.setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, configuration.getResolveChunkSize()));
 		
 		return cdoSession;
 	}

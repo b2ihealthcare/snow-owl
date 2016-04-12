@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+
 /**
  * Marker interface to reference only SNOMED CT Core Component, aka Concepts, Descriptions and Relationships.
  * 
@@ -22,4 +24,6 @@ package com.b2international.snowowl.snomed.core.domain;
  */
 public interface SnomedCoreComponent extends SnomedComponent {
 
+	SnomedReferenceSetMembers getMembers();
+	
 }

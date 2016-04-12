@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +28,7 @@ import org.eclipse.emf.ecore.EPackage;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
 import com.b2international.snowowl.core.quicksearch.IQuickSearchProvider;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
@@ -48,6 +52,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Floats;
+import com.google.common.primitives.Ints;
 
 /**
  * Server side, Net4j independent service for providing the SNOMED&nbsp;CT concepts as the content of quick search provider.
@@ -125,9 +131,23 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		final List<QuickSearchElement> quickSearchElements = Lists.newArrayList();
 
 		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(getEventBus());
-		final ImmutableList<QuickSearchElement> results = FluentIterable.from(matches)
+		final Map<String, ISnomedConcept> concepts = newHashMap(FluentIterable.from(matches).uniqueIndex(IComponent.ID_FUNCTION));
+		// XXX sort only non-fuzzy matches
+		final List<QuickSearchElement> results = FluentIterable.from(matches)
 				.transform(new SnomedConceptConverterFunction(queryExpression, false))
-				.toList();
+				.toSortedList(new Comparator<QuickSearchElement>() {
+					@Override
+					public int compare(QuickSearchElement o1, QuickSearchElement o2) {
+						final Float o1Score = concepts.get(o1.getId()).getScore();
+						final Float o2Score = concepts.get(o2.getId()).getScore();
+						final int sortByScore = o1Score.compareTo(o2Score);
+						if (sortByScore == 0) {
+							return Ints.compare(o1.getLabel().length(), o2.getLabel().length());
+						} else {
+							return -sortByScore;
+						} 
+					}
+				});
 
 		quickSearchElements.addAll(results);
 
@@ -136,18 +156,11 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 
 			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).executeSync(getEventBus());
 
-			final FluentIterable<String> conceptIds = FluentIterable.from(matches).transform(new Function<ISnomedConcept, String>() {
-				@Override
-				public String apply(ISnomedConcept input) {
-					return input.getId();
-				}
-			});
-
 			final ImmutableList<QuickSearchElement> approximateResults = FluentIterable.from(fuzzyMatches)
 					.filter(new Predicate<ISnomedConcept>() {
 						@Override
 						public boolean apply(ISnomedConcept input) {
-							return !conceptIds.contains(input.getId());
+							return !concepts.containsKey(input.getId());
 						}
 					}).transform(new SnomedConceptConverterFunction(queryExpression, true))
 					.toList();

@@ -1,15 +1,37 @@
 package org.protege.editor.owl.ui.ontology.wizard.move;
 
-import java.awt.BorderLayout;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JRadioButton;
-
+import org.protege.editor.core.ui.wizard.Wizard;
+import org.protege.editor.core.ui.wizard.WizardModel;
+import org.protege.editor.core.ui.wizard.WizardPanel;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.ontology.wizard.create.OntologyIDPanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+/*
+ * Copyright (C) 2008, University of Manchester
+ *
+ * Modifications to the initial code base are copyright of their
+ * respective authors, or their employers as appropriate.  Authorship
+ * of the modifications may be determined from the ChangeLog placed at
+ * the end of this file.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 
 /**
@@ -43,8 +65,25 @@ public class SelectTargetOntologyTypePanel extends AbstractMoveAxiomsWizardPanel
         ButtonGroup bg = new ButtonGroup();
         bg.add(mergeIntoNew);
         bg.add(mergeIntoExisting);
+        mergeIntoExisting.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getWizard().resetButtonStates();
+            }
+        });
+        mergeIntoNew.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getWizard().resetButtonStates();
+                getWizard().setTargetOntologyID(null);
+            }
+        });
     }
 
+    @Override
+    public void aboutToHidePanel() {
+        if(mergeIntoNew.isSelected()) {
+            getWizard().setTargetOntologyID(null);
+        }
+    }
 
     public void displayingPanel() {
         super.displayingPanel();
@@ -59,7 +98,7 @@ public class SelectTargetOntologyTypePanel extends AbstractMoveAxiomsWizardPanel
 
     public Object getNextPanelDescriptor() {
         if (mergeIntoNew.isSelected()) {
-            return OntologyIDPanel.ID;
+            return WizardPanel.FINISH;
         }
         else {
             return SelectTargetOntologyPanel.ID;

@@ -22,7 +22,7 @@ import java.util.List;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.NamespaceIdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 
 /**
  * @since 4.5
@@ -72,7 +72,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		final SnomedConceptCreateRequest req = (SnomedConceptCreateRequest) request;
 		req.setDefinitionStatus(definitionStatus);
 		// TODO use default namespace???
-		req.setIsAIdGenerationStrategy(isAIdGenerationStrategy == null ? new NamespaceIdGenerationStrategy(ComponentCategory.RELATIONSHIP) : isAIdGenerationStrategy);
+		req.setIsAIdGenerationStrategy(isAIdGenerationStrategy == null ? new ReservingIdStrategy(ComponentCategory.RELATIONSHIP) : isAIdGenerationStrategy);
 		req.setDescriptions(descriptions);
 		req.setParentId(parentId);
 	}

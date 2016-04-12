@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.connection;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,6 +38,7 @@ public class RepositoryConnectionConfiguration {
 	private static final long DEFAULT_CONNECTION_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(10L);
 	private static final long DEFAULT_WATCHDOG_RATE_MILLIS = TimeUnit.SECONDS.toMillis(30L);
 	private static final long DEFAULT_WATCHDOG_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(5L);
+	private static final int DEFAULT_RESOLVE_CHUNK_SIZE = 10_000;
 	
 	@Min(0)
 	private long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT_MILLIS;
@@ -49,6 +51,10 @@ public class RepositoryConnectionConfiguration {
 	
 	@Min(0)
 	private long watchdogTimeout = DEFAULT_WATCHDOG_TIMEOUT_MILLIS;
+	
+	@Min(0)
+	@Max(20_000)
+	private int resolveChunkSize = DEFAULT_RESOLVE_CHUNK_SIZE;
 	
 	/**
 	 * @return the timeout in milliseconds, after which a connection, that seems to be working correctly, is
@@ -116,5 +122,20 @@ public class RepositoryConnectionConfiguration {
 	public void setWatchdogRate(long watchdogRate) {
 		this.watchdogRate = watchdogRate;
 	}
+
+	/**
+	 * @param resolveChunkSize the resolveChunkSize to set
+	 */
+	@JsonProperty
+	public void setResolveChunkSize(int resolveChunkSize) {
+		this.resolveChunkSize = resolveChunkSize;
+	}
 	
+	/**
+	 * @return the number of CDOIDs to resolve in a CDOObject's list feature once it is being accessed.
+	 */
+	@JsonProperty
+	public int getResolveChunkSize() {
+		return resolveChunkSize;
+	}
 }

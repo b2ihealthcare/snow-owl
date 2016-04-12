@@ -32,62 +32,51 @@ import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
-import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExporter;
 import com.b2international.snowowl.snomed.mrcm.core.renderer.ConceptModelComponentRenderer;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 
 /**
+ * Exporter to create a delimiter separated file for the MRCM rules in the system.
+ * 
  * @since 4.6
  */
-public class CsvMrcmExporter implements MrcmExporter {
+public class CsvMrcmExporter {
 
-	private static final Logger LOG = LoggerFactory.getLogger(MrcmExporter.class);
-	
+	private static final Logger LOG = LoggerFactory.getLogger(CsvMrcmExporter.class);
+
 	private static final Joiner TAB_JOINER = Joiner.on('\t').useForNull("");
-	
-	@Override
+
 	public void doExport(String user, OutputStream stream) {
 		final IBranchPath branch = BranchPathUtils.createMainPath();
 		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer();
-		
+
 		try (MrcmEditingContext context = new MrcmEditingContext(branch)) {
 			LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules to CSV...");
 
 			try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, Charsets.UTF_8)))) {
-				writer.println(TAB_JOINER.join("uuid",
-						"effectiveTime",
-						"author",
-						"strength",
-						"description",
-						"validationMessage",
-						"form",
-						"domain",
-						"predicate"));
-				
+				writer.println(
+						TAB_JOINER.join("uuid", "effectiveTime", "author", "strength", "description", "validationMessage", "form", "domain", "predicate"));
+
 				final List<ConceptModel> contents = context.getContents();
 				for (ConceptModel model : contents) {
 					for (ConstraintBase constraint : model.getConstraints()) {
-						writer.print(TAB_JOINER.join(constraint.getUuid(), 
-								constraint.getEffectiveTime(), 
-								constraint.getAuthor(), 
-								constraint.getStrength(), 
-								constraint.getDescription(), 
-								constraint.getValidationMessage()));
-						
+						writer.print(TAB_JOINER.join(constraint.getUuid(), constraint.getEffectiveTime(), constraint.getAuthor(), constraint.getStrength(),
+								constraint.getDescription(), constraint.getValidationMessage()));
+
 						if (constraint instanceof AttributeConstraint) {
 							final AttributeConstraint attributeConstraint = (AttributeConstraint) constraint;
-							
+
 							writer.print(TAB_JOINER.join(attributeConstraint.getForm(),
 									renderer.getHumanReadableRendering(attributeConstraint.getDomain(), Integer.MAX_VALUE),
 									renderer.getHumanReadableRendering(attributeConstraint.getPredicate(), Integer.MAX_VALUE)));
 						}
-	
+
 						writer.println();
 					}
 				}
 			}
-			
+
 			LogUtils.logExportActivity(LOG, user, branch, "MRCM rule export to CSV successfully finished.");
 		} catch (final Throwable t) {
 			LogUtils.logExportActivity(LOG, user, branch, "Failed to export MRCM rules.");

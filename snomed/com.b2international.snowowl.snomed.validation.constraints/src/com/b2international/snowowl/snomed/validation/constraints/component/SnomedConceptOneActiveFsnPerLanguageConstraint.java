@@ -15,107 +15,86 @@
  */
 package com.b2international.snowowl.snomed.validation.constraints.component;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import static com.google.common.collect.Lists.newArrayList;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicates;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 /**
- * No concept may have more than one active fully-specified name in a particular language.
- * Note: "en", "en-gb", "en-au" and "en-us" should be treated as the same language.
+ * From the SNOMED CT TIG:
+ * There may be more than one active description with the typeId 900000000000003001 | Fully specified name |. 
+ * However, only one fully specified name should be marked as preferred for use in a given language or dialect in the relevant Language reference set
  * 
  */
 public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentValidationConstraint<SnomedConceptIndexEntry> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptOneActiveFsnPerLanguageConstraint";
 	
-	private static final class LargerThanOnePredicate implements Predicate<Integer> {
-		@Override
-		public boolean apply(Integer input) {
-			return input > 1;
-		}
-	}
-
-	private static final String EN_LANGUAGE_CODE = "en";
-	private static final Set<String> EN_ALTERNATIVE_LANGUAGE_CODES = ImmutableSet.of("en-gb", "en-us", "en-au", "en-sg");
-	
-	// predicate for filtering out language codes, which have more than one FSN
-	private final Predicate<Integer> largerThanOnePredicate = new LargerThanOnePredicate();
-	
 	@Override
-	public ComponentValidationDiagnostic validate(IBranchPath branchPath, SnomedConceptIndexEntry component) {
-		// TODO: put description language codes into the index to avoid using CDO
-		// look up concept in CDO
-		ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
-		CDOBranch branch = connection.getBranch(branchPath);
-		CDOView view = null;
-		try {
-			view = connection.createView(branch);
-			SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
-			Concept concept = lookupService.getComponent(component.getId(), view);
+	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+
+		final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
+			.filterByActive(true)
+			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
+			.filterByConceptId(concept.getId())
+			.build(branchPath.getPath())
+			.executeSync(getBus());
+		
+		if (descriptions.getTotal() > 1) {
+			final Multimap<String, String> languageRefsetIdToDescriptionIdMap = HashMultimap.create(); 
 			
-			Map<String, Integer> languageToActiveFSNCountMap = new HashMap<String, Integer>();
-			
-			for (Description description : concept.getDescriptions()) {
-				if (description.getType().getId().equals(SnomedConstants.Concepts.FULLY_SPECIFIED_NAME)
-						&& description.isActive()) {
-					// normalize country-specific "en" codes
-					String languageCode = getNormalizedLanguageCode(description);
-					Integer activeFSNCountFromMap = languageToActiveFSNCountMap.get(languageCode);
-					// add language code if not already present in map, or increment value
-					if (activeFSNCountFromMap == null)
-						languageToActiveFSNCountMap.put(languageCode, 1);
-					else
-						languageToActiveFSNCountMap.put(languageCode, ++activeFSNCountFromMap);
+			for (final ISnomedDescription description : descriptions) {
+				final Set<String> languageRefsetIdsWithPreferredMember = Maps.filterValues(description.getAcceptabilityMap(), Predicates.equalTo(Acceptability.PREFERRED)).keySet();
+				for (final String id : languageRefsetIdsWithPreferredMember) {
+					languageRefsetIdToDescriptionIdMap.put(id, description.getId());
 				}
 			}
 			
-			// filtered map will only contain entries, where the value is greater than one, and hence should be reported
-			Map<String, Integer> filteredMap = Maps.filterValues(languageToActiveFSNCountMap, largerThanOnePredicate);
-			if (filteredMap.size() > 0) {
-				StringBuffer languageCodeMessageBuffer = new StringBuffer();
-				for (Iterator<String> iterator = filteredMap.keySet().iterator(); iterator.hasNext();) {
-					String languageCode = iterator.next();
-					languageCodeMessageBuffer.append(languageCode);
-					if (iterator.hasNext())
-						languageCodeMessageBuffer.append(", ");
-					return new ComponentValidationDiagnosticImpl(component.getId(), languageCodeMessageBuffer.toString(), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error());
+			final List<ComponentValidationDiagnostic> diagnostics = newArrayList();
+			
+			for (final Entry<String, Collection<String>> entry : languageRefsetIdToDescriptionIdMap.asMap().entrySet()) {
+				if (entry.getValue().size() > 1) {
+					diagnostics.add(new ComponentValidationDiagnosticImpl(concept.getId(), createErrorMessage(concept, entry, branchPath), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));
 				}
 			}
 			
-			return createOk(component.getId(), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
-		} finally {
-			LifecycleUtil.deactivate(view);
+			if (!diagnostics.isEmpty()) {
+				return new ComponentValidationDiagnosticImpl(concept.getId(), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, diagnostics);
+			}
 		}
+		
+		return createOk(concept.getId(), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+	}
+	
+	private String createErrorMessage(final SnomedConceptIndexEntry concept, final Entry<String, Collection<String>> entry, final IBranchPath branchPath) {
+		return String.format(
+				"%s has multiple active fully specified name marked as preferred in language reference set %s | %s (description ids: %s).",
+				concept.getId(), entry.getKey(), getConceptLabel(entry.getKey(), branchPath), Joiner.on(", ").join(entry.getValue()));
 	}
 
-	private String getNormalizedLanguageCode(Description description) {
-		if (EN_ALTERNATIVE_LANGUAGE_CODES.contains(description.getLanguageCode())) {
-			return EN_LANGUAGE_CODE;
-		} else {
-			return description.getLanguageCode();
-		}
+	private String getConceptLabel(final String conceptId, final IBranchPath branchPath) {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
 	}
+
 }

@@ -1,20 +1,14 @@
 package org.protege.editor.owl.ui.usage;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 import org.protege.editor.owl.ui.tree.OWLLinkedObjectTree;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLEntity;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
 
 
 /**

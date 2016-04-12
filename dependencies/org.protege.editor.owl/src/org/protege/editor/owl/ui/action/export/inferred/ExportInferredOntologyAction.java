@@ -11,9 +11,11 @@ import javax.swing.ProgressMonitor;
 
 import org.protege.editor.core.ProtegeApplication;
 import org.protege.editor.core.ui.wizard.Wizard;
+import org.protege.editor.owl.model.inference.NoOpReasoner;
 import org.protege.editor.owl.model.inference.OWLReasonerManager;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
 import org.protege.editor.owl.model.inference.ReasonerUtilities;
+import org.protege.editor.owl.model.inference.VacuousAxiomVisitor;
 import org.protege.editor.owl.ui.action.ProtegeOWLAction;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
@@ -94,7 +96,7 @@ public class ExportInferredOntologyAction extends ProtegeOWLAction {
 			inferredOntologyGenerator = new InferredOntologyGenerator(getOWLModelManager().getReasoner(), inferredAxiomGenerators);
 			exportedOntology = outputManager.createOntology(wizard.getOntologyID());
 
-			taskCount = inferredAxiomGenerators.size();
+			taskCount = inferredAxiomGenerators.size() + 1;
 			if (wizard.isIncludeAnnotations()) {
 				taskCount += 1;
 			}
@@ -115,6 +117,9 @@ public class ExportInferredOntologyAction extends ProtegeOWLAction {
 
 				int currentTask = inferredAxiomGenerators.size();
 				List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
+
+				adjustProgress("Deleting trivial inferences", ++currentTask);
+				deleteTrivialAxioms(changes);
 				
 				if (wizard.isIncludeAnnotations()) {
 					adjustProgress("Adding annotations", ++currentTask);
@@ -145,11 +150,8 @@ public class ExportInferredOntologyAction extends ProtegeOWLAction {
 						"Export aborted",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
-			catch (OWLOntologyStorageException e2) {
-				ProtegeApplication.getErrorLog().logError(e2);
-			}
-			catch (OWLOntologyChangeException e1) {
-				ProtegeApplication.getErrorLog().logError(e1);
+			catch (Throwable t) {
+				ProtegeApplication.getErrorLog().logError(t);
 			}
 		}
 		
@@ -185,6 +187,14 @@ public class ExportInferredOntologyAction extends ProtegeOWLAction {
 	    	}
 	    	if (!precomputeNow.isEmpty()) {
 	    		reasoner.precomputeInferences(precomputeNow.toArray(new InferenceType[0]));
+	    	}
+	    }
+	    
+	    private void deleteTrivialAxioms(List<OWLOntologyChange> changes) {
+	    	for (OWLAxiom axiom : exportedOntology.getAxioms()) {
+	    		if (VacuousAxiomVisitor.isVacuousAxiom(axiom) || VacuousAxiomVisitor.involvesInverseSquared(axiom)) {
+	    			changes.add(new RemoveAxiom(exportedOntology, axiom));
+	    		}
 	    	}
 	    }
 	    

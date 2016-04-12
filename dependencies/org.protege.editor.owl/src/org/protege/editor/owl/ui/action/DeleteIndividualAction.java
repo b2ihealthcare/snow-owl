@@ -1,13 +1,13 @@
 package org.protege.editor.owl.ui.action;
 
-import java.awt.event.ActionEvent;
-
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.view.OWLSelectionViewAction;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLEntitySetProvider;
+
+import java.awt.event.ActionEvent;
 
 
 /**

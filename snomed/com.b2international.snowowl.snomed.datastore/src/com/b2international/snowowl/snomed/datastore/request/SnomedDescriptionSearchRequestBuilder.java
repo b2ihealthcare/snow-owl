@@ -17,11 +17,11 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.google.common.collect.ImmutableSet;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
 
 /**
@@ -42,7 +42,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	}
 	
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
-		return addOption(OptionKey.TERM, termFilter);
+		return addOption(OptionKey.TERM, termFilter == null ? termFilter : termFilter.trim());
 	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByConceptEscg(String conceptEscgFilter) {
@@ -59,7 +59,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	}
 	
 	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Collection<Long> conceptIdFilter) {
-		return addOption(OptionKey.CONCEPT_ID, ImmutableSet.copyOf(conceptIdFilter));
+		return addOption(OptionKey.CONCEPT_ID, Collections3.toImmutableSet(conceptIdFilter));
 	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByType(String typeFilter) {
@@ -67,7 +67,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByLanguageCodes(Collection<String> languageCodes) {
-		return addOption(OptionKey.LANGUAGE, ImmutableSet.copyOf(languageCodes));
+		return addOption(OptionKey.LANGUAGE, Collections3.toImmutableSet(languageCodes));
 	}
 	
 	public SnomedDescriptionSearchRequestBuilder filterByAcceptability(Acceptability acceptabilityFilter) {
@@ -75,7 +75,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	}
 	
 	@Override
-	protected SearchRequest<SnomedDescriptions> create() {
+	protected SearchRequest<SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
 	}
 }

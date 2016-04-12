@@ -232,7 +232,8 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/branches/MAIN/branchName</c
   "target" : "MAIN"
 }</code></pre>
 		<p>Response</p>
-		<pre><code class="json">Status: 204 No content</code></pre>
+		<pre><code class="json">Status: 202 Accepted
+Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/2f4d3b5b-3020-4e8e-b046-b8266967d7dc</code></pre>
 		<h3>Perform a rebase (former synchronization)</h3>
 		<pre><code class="json">POST /merges</code></pre>
 		<p>Input</p>
@@ -241,7 +242,8 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/branches/MAIN/branchName</c
   "target" : "MAIN/branchName"
 }</code></pre>
 		<p>Response</p>
-		<pre><code class="json">Status: 204 No content</code></pre>
+		<pre><code class="json">Status: 202 Accepted
+Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/c82c443d-f3f4-4409-9cdb-a744da336936</code></pre>
 		<h3>Perform a merge with review identifier</h3>
 		<pre><code class="json">POST /merges</code></pre>
 		<p>Input</p>
@@ -251,7 +253,8 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/branches/MAIN/branchName</c
   "reviewId" : "63e3187d-b2dd-4824-8078-893679fed93e" 
 }</code></pre>
 		<p>Successful response</p>
-		<pre><code class="json">Status: 204 No content</code></pre>
+		<pre><code class="json">Status: 202 Accepted
+Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/0da14d74-f796-409f-900b-b175c0909de1</code></pre>
 		<p>Failure response</p>
 		<pre><code class="json">{
   "status": 409,
@@ -259,6 +262,22 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/branches/MAIN/branchName</c
   "message": "Target branch 'MAIN' did not match with stored state on review identifier '63e3187d-b2dd-4824-8078-893679fed93e'.",
   "developerMessage": "Target branch 'MAIN' did not match with stored state on review identifier '63e3187d-b2dd-4824-8078-893679fed93e'."
 }</code></pre>
+		<h3>Monitor progress of a merge or rebase</h3>
+		<pre><code class="json">GET /merges/c82c443d-f3f4-4409-9cdb-a744da336936</code></pre>
+		<p>Response</p>
+		<pre><code class="json">{
+  "id": "c82c443d-f3f4-4409-9cdb-a744da336936",
+  "source": "MAIN",
+  "target": "MAIN/branchName",
+  "status": "COMPLETED",
+  "scheduledDate": "2016-02-29T13:52:45Z",
+  "startDate": "2016-02-29T13:52:45Z",
+  "endDate": "2016-02-29T13:53:06Z"
+}</code></pre>
+		<h3>Remove merge or rebase queue item</h3>
+		<pre><code class="json">DELETE /merges/c82c443d-f3f4-4409-9cdb-a744da336936</code></pre>
+		<p>Response</p>
+		<pre><code class="json">Status: 204 No content</code></pre>
 	<h2>Reviews</h2>
 		<h3>Create a review</h3>
 		<pre><code class="json">POST /reviews</code></pre>

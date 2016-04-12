@@ -48,6 +48,9 @@ import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * @deprecated - UNSUPPORTED, please do NOT use it if possible, it has to be refactored and it currently does not work at all 
+ */
 @XStreamAlias("snomedSimpleTypeRefSetAttributeConfiguration")
 public final class SnomedSimpleTypeRefSetAttributeConfiguration extends AbstractSerializableConfiguration<AttributeOrderConfiguration>{
 	

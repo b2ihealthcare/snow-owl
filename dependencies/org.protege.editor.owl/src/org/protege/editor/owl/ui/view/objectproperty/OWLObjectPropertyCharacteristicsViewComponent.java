@@ -1,31 +1,14 @@
 package org.protege.editor.owl.ui.view.objectproperty;
 
-import java.awt.BorderLayout;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.util.FilteringOWLOntologyChangeListener;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JScrollPane;
-
-import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.OWLAsymmetricObjectPropertyAxiom;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLFunctionalObjectPropertyAxiom;
-import org.semanticweb.owlapi.model.OWLInverseFunctionalObjectPropertyAxiom;
-import org.semanticweb.owlapi.model.OWLIrreflexiveObjectPropertyAxiom;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
-import org.semanticweb.owlapi.model.OWLReflexiveObjectPropertyAxiom;
-import org.semanticweb.owlapi.model.OWLSymmetricObjectPropertyAxiom;
-import org.semanticweb.owlapi.model.OWLTransitiveObjectPropertyAxiom;
-import org.semanticweb.owlapi.model.RemoveAxiom;
-import org.semanticweb.owlapi.util.FilteringOWLOntologyChangeListener;
 
 
 /**
@@ -191,6 +174,9 @@ public class OWLObjectPropertyCharacteristicsViewComponent extends AbstractOWLOb
     private void addSetter(final JCheckBox checkBox, final PropertyCharacteristicSetter setter) {
         checkBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+            	if (getProperty() == null) {
+            		return;
+            	}
                 if (checkBox.isSelected()) {
                     OWLOntology ont = getOWLModelManager().getActiveOntology();
                     OWLAxiom ax = setter.getAxiom();
@@ -219,9 +205,9 @@ public class OWLObjectPropertyCharacteristicsViewComponent extends AbstractOWLOb
     }
 
 
-    private void enableAll() {
+    private void setCheckBoxesEnabled(boolean enable) {
         for (JCheckBox cb : checkBoxes) {
-            cb.setEnabled(true);
+            cb.setEnabled(enable);
         }
     }
 
@@ -236,7 +222,10 @@ public class OWLObjectPropertyCharacteristicsViewComponent extends AbstractOWLOb
     protected OWLObjectProperty updateView(OWLObjectProperty property) {
         prop = property;
         clearAll();
-        enableAll();
+        setCheckBoxesEnabled(property != null);
+        if (property == null) {
+        	return null;
+        }
         // We only require one axiom to specify that a property has a specific characteristic
         for (OWLOntology ont : getOWLModelManager().getActiveOntologies()) {
             if (!ont.getFunctionalObjectPropertyAxioms(property).isEmpty()) {

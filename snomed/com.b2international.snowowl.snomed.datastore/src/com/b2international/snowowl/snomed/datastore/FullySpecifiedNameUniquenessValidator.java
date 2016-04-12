@@ -62,7 +62,11 @@ public class FullySpecifiedNameUniquenessValidator implements IValidator, Serial
 		final String fsn = ((String) value).trim();
 		
 		if (fsn.isEmpty()) {
-			return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Please determine preferred term.");
+			return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Fully specified name must be specified.");
+		}
+		
+		if (fsn.length() < 2) {
+			return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Fully specified name should be at least two characters long.");
 		}
 		
 		final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()

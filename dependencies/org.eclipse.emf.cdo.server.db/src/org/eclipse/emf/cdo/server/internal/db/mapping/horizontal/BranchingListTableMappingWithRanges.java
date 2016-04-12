@@ -13,6 +13,15 @@
  */
 package org.eclipse.emf.cdo.server.internal.db.mapping.horizontal;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
@@ -47,7 +56,9 @@ import org.eclipse.emf.cdo.server.internal.db.bundle.OM;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
-
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.net4j.db.DBException;
 import org.eclipse.net4j.db.DBType;
 import org.eclipse.net4j.db.DBUtil;
@@ -57,19 +68,6 @@ import org.eclipse.net4j.db.ddl.IDBTable;
 import org.eclipse.net4j.util.ImplementationError;
 import org.eclipse.net4j.util.collection.MoveableList;
 import org.eclipse.net4j.util.om.trace.ContextTracer;
-
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.EStructuralFeature;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * This is a list-table mapping for audit mode. It is optimized for frequent insert operations at the list's end, which
@@ -746,8 +744,6 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
     {
       listChanges.get(index++).accept(visitor);
     }
-
-    visitor.finishPendingRemove();
   }
 
   /**
@@ -768,8 +764,6 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
 
     private int lastIndex;
 
-    private int lastRemovedIndex;
-
     public ListDeltaVisitor(IDBStoreAccessor accessor, InternalCDORevision originalRevision, int targetBranchID,
         int oldVersion, int newVersion)
     {
@@ -779,12 +773,10 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
       this.oldVersion = oldVersion;
       this.newVersion = newVersion;
       lastIndex = originalRevision.getList(getFeature()).size() - 1;
-      lastRemovedIndex = -1;
     }
 
     public void visit(CDOAddFeatureDelta delta)
     {
-      finishPendingRemove();
       int startIndex = delta.getIndex();
       int endIndex = lastIndex;
 
@@ -807,21 +799,34 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
 
     public void visit(CDORemoveFeatureDelta delta)
     {
-      finishPendingRemove();
-      lastRemovedIndex = delta.getIndex();
+      int startIndex = delta.getIndex();
+      int endIndex = lastIndex;
 
       if (TRACER.isEnabled())
       {
-        TRACER.format("Delta Removing at: {0}", lastRemovedIndex); //$NON-NLS-1$
+        TRACER.format("Delta Removing at: {0}", startIndex); //$NON-NLS-1$
       }
 
       // remove the item
-      removeEntry(accessor, id, branchID, oldVersion, newVersion, lastRemovedIndex);
+      removeEntry(accessor, id, branchID, oldVersion, newVersion, startIndex);
+
+      if (!delta.getFeature().isOrdered() && startIndex < endIndex - 1)
+      {
+        Object value = getValue(accessor, id, branchID, endIndex, true);
+        removeEntry(accessor, id, branchID, oldVersion, newVersion, endIndex);
+        addEntry(accessor, id, branchID, newVersion, startIndex, value);
+      }
+      else
+      {
+        // make room for the new item
+        moveOneUp(accessor, id, branchID, oldVersion, newVersion, startIndex + 1, endIndex);
+      }
+
+      --lastIndex;
     }
 
     public void visit(CDOSetFeatureDelta delta)
     {
-      finishPendingRemove();
       int index = delta.getIndex();
 
       if (TRACER.isEnabled())
@@ -850,7 +855,6 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
 
       clearList(accessor, id, branchID, oldVersion, newVersion, lastIndex);
       lastIndex = -1;
-      lastRemovedIndex = -1;
     }
 
     public void visit(CDOClearFeatureDelta delta)
@@ -862,7 +866,6 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
 
       clearList(accessor, id, branchID, oldVersion, newVersion, lastIndex);
       lastIndex = -1;
-      lastRemovedIndex = -1;
     }
 
     public void visit(CDOMoveFeatureDelta delta)
@@ -870,22 +873,9 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
       int fromIdx = delta.getOldPosition();
       int toIdx = delta.getNewPosition();
 
-      // optimization: a move from the end of the list to an index that was just removed requires no shifting
-      boolean optimizeMove = lastRemovedIndex != -1 && fromIdx == lastIndex - 1 && toIdx == lastRemovedIndex;
-
       if (TRACER.isEnabled())
       {
         TRACER.format("Delta Moving: {0} to {1}", fromIdx, toIdx); //$NON-NLS-1$
-      }
-
-      // items after a pending remove have an index offset by one
-      if (optimizeMove)
-      {
-        fromIdx++;
-      }
-      else
-      {
-        finishPendingRemove();
       }
 
       Object value = getValue(accessor, id, branchID, fromIdx, true);
@@ -894,27 +884,17 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
       removeEntry(accessor, id, branchID, oldVersion, newVersion, fromIdx);
 
       // adjust indexes and shift either up or down for regular moves
-      if (!optimizeMove)
+      if (fromIdx < toIdx)
       {
-        if (fromIdx < toIdx)
-        {
-          moveOneUp(accessor, id, branchID, oldVersion, newVersion, fromIdx + 1, toIdx);
-        }
-        else
-        { // fromIdx > toIdx here
-          moveOneDown(accessor, id, branchID, oldVersion, newVersion, toIdx, fromIdx - 1);
-        }
+        moveOneUp(accessor, id, branchID, oldVersion, newVersion, fromIdx + 1, toIdx);
+      }
+      else
+      { // fromIdx > toIdx here
+        moveOneDown(accessor, id, branchID, oldVersion, newVersion, toIdx, fromIdx - 1);
       }
 
       // create the item
       addEntry(accessor, id, branchID, newVersion, toIdx, value);
-
-      // clear the pending status of the previous remove
-      if (optimizeMove)
-      {
-        --lastIndex;
-        lastRemovedIndex = -1;
-      }
     }
 
     public void visit(CDOListFeatureDelta delta)
@@ -925,21 +905,6 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
     public void visit(CDOContainerFeatureDelta delta)
     {
       throw new ImplementationError("Should not be called"); //$NON-NLS-1$
-    }
-
-    public void finishPendingRemove()
-    {
-      if (lastRemovedIndex != -1)
-      {
-        int startIndex = lastRemovedIndex;
-        int endIndex = lastIndex;
-
-        // make room for the new item
-        moveOneUp(accessor, id, branchID, oldVersion, newVersion, startIndex + 1, endIndex);
-
-        --lastIndex;
-        lastRemovedIndex = -1;
-      }
     }
 
     private void moveOneUp(IDBStoreAccessor accessor, CDOID id, int branchId, int oldVersion, int newVersion,

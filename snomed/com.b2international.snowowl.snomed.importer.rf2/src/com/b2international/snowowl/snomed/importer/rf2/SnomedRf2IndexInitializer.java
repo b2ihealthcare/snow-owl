@@ -822,7 +822,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	protected void updateIconId(String conceptId, boolean active, SnomedDocumentBuilder doc, boolean withDocValues) {
 		final Collection<String> availableImages = SnomedIconProvider.getInstance().getAvailableIconIds();
-		new RefSetIconIdUpdater(inferredTaxonomyBuilder, conceptId, active, availableImages, identifierConceptIdsForNewRefSets).update(doc);		
+		new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, conceptId, active, availableImages, identifierConceptIdsForNewRefSets).update(doc);		
 	}
 
 	private void indexDescriptions(final String absolutePath) {

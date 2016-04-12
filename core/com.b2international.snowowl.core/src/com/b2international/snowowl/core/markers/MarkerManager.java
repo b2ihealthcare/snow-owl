@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.markers;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -43,6 +46,7 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -195,22 +199,18 @@ public class MarkerManager {
 	 * @param <T> type of the return value. 
 	 */
 	public static final <T> T getAttributeSafe(final IMarker marker, final String attributeName, final Class<T> clazz) {
-		try {
-			if (null == marker || null == attributeName ||  null == clazz)
-				throw new Exception();
-
-			final Object attribute = marker.getAttribute(attributeName);
-			if (null == attribute) 
-				throw new Exception();
-			
-			if (attribute.getClass().isAssignableFrom(clazz)) {
-				return clazz.cast(attribute);
-			} else {
-				throw new Exception();
-			}
-		} catch (final Exception e) {
+		if (null == marker || null == attributeName ||  null == clazz) {
 			return null;
 		}
+		
+		try {
+			final Object attribute = marker.getAttribute(attributeName);
+			if (attribute.getClass().isAssignableFrom(clazz)) {
+				return clazz.cast(attribute);
+			}
+		} catch (final Exception e) { /* ignore */ }
+		
+		return null;
 	}
 	
 	/**
@@ -225,22 +225,18 @@ public class MarkerManager {
 	 * @param <T> type of the return value. 
 	 */
 	public static final <T> T getAttributeSafe(final IMarkerDelta markerDelta, final String attributeName, final Class<T> clazz) {
-		try {
-			if (null == markerDelta || null == attributeName ||  null == clazz)
-				throw new Exception();
-			
-			final Object attribute = markerDelta.getAttribute(attributeName);
-			if (null == attribute) 
-				throw new Exception();
-			
-			if (attribute.getClass().isAssignableFrom(clazz)) {
-				return clazz.cast(attribute);
-			} else {
-				throw new Exception();
-			}
-		} catch (final Exception e) {
+		if (null == markerDelta || null == attributeName ||  null == clazz) {
 			return null;
 		}
+
+		try {
+			final Object attribute = markerDelta.getAttribute(attributeName);
+			if (attribute.getClass().isAssignableFrom(clazz)) {
+				return clazz.cast(attribute);
+			}
+		} catch (final Exception e) { /* ignore */ }
+		
+		return null;
 	}
 	
 	/**
@@ -261,7 +257,6 @@ public class MarkerManager {
 		try {
 			return Lists.newArrayList(Iterators.filter(Iterators.forArray(getResource().findMarkers(markerType, true, 
 					IResource.DEPTH_INFINITE)), new Predicate<IMarker>() {
-				//implements com.google.common.base.Predicate<org.eclipse.core.resources.IMarker>.apply
 				@Override
 				public boolean apply(final IMarker marker) {
 					for (final MarkerAttributeIdValuePair<T> pair : idValuePairs) {
@@ -275,7 +270,7 @@ public class MarkerManager {
 			}));
 		} catch (final CoreException e) {
 			LOGGER.warn("Error while retrieving markers from workspace. Marker type:" + markerType);
-			return Lists.newArrayList();
+			return emptyList();
 		}
 	}
 	
@@ -334,19 +329,8 @@ public class MarkerManager {
 		Preconditions.checkNotNull(terminologyComponentId, "The terminology component identifier of the component cannot be null.");
 		
 		try {
-			final IMarker[] allProblemMarkers = getResource().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
-			final Set<IMarker> markersWithSameComponent = Sets.newHashSet(Iterators.filter(Iterators.forArray(allProblemMarkers), 
-					new Predicate<IMarker>() {
+			final Set<IMarker> markersWithSameComponent = getExistingProblemMarkers(id, terminologyComponentId);
 
-				@Override
-				public boolean apply(final IMarker marker) {
-					final String componentIdAttributeValue = getAttributeSafe(marker, ComponentMarker.ID, String.class);
-					final String componentTerminologyComponentIdAttributeValue = getAttributeSafe(marker, ComponentMarker.TERMINOLOGY_COMPONENT_ID, String.class);
-					return id.equals(componentIdAttributeValue)
-							&& terminologyComponentId.equals(componentTerminologyComponentIdAttributeValue);
-				}
-			}));
-			
 			if (!diagnostic.getChildren().isEmpty()) {
 				// if it has children, then create markers from those
 				for (final IDiagnostic childDiagnostic : diagnostic.getChildren()) {
@@ -368,6 +352,21 @@ public class MarkerManager {
 			LOGGER.warn("Error while creating problem marker for component: " + component.getLabel() + ". [" + componentInfo + "ID: " + id + "]", e);
 		}
 		
+	}
+
+	private Set<IMarker> getExistingProblemMarkers(final String id, final String terminologyComponentId) {
+		try {
+			return FluentIterable.from(Arrays.asList(getResource().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE))).filter(new Predicate<IMarker>() {
+				@Override public boolean apply(IMarker marker) {
+					final String componentIdAttributeValue = getAttributeSafe(marker, ComponentMarker.ID, String.class);
+					final String componentTerminologyComponentIdAttributeValue = getAttributeSafe(marker, ComponentMarker.TERMINOLOGY_COMPONENT_ID, String.class);
+					return id.equals(componentIdAttributeValue)	&& terminologyComponentId.equals(componentTerminologyComponentIdAttributeValue);
+				}
+			}).toSet();
+		} catch (Exception e) {
+			LOGGER.warn("Retrieving existing component markers failed:", e);
+			return emptySet();
+		}
 	}
 	
 	/* Creates a problem marker and persists it into the workspace root. If there was a problem marker on the same component with the same source (e.g. constraint ID), 

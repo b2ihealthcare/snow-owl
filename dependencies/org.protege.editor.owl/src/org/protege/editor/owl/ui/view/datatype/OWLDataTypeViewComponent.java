@@ -1,30 +1,49 @@
 package org.protege.editor.owl.ui.view.datatype;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.core.ui.view.DisposableAction;
 import org.protege.editor.owl.model.entity.OWLEntityCreationSet;
+import org.protege.editor.owl.model.event.EventType;
+import org.protege.editor.owl.model.event.OWLModelManagerChangeEvent;
+import org.protege.editor.owl.model.event.OWLModelManagerListener;
 import org.protege.editor.owl.model.util.OWLDataTypeUtils;
 import org.protege.editor.owl.ui.OWLIcons;
 import org.protege.editor.owl.ui.list.OWLObjectList;
 import org.protege.editor.owl.ui.view.ChangeListenerMediator;
 import org.protege.editor.owl.ui.view.Findable;
 import org.protege.editor.owl.ui.view.OWLSelectionViewAction;
-import org.semanticweb.owlapi.model.OWLDatatype;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLException;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
+
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+/*
+* Copyright (C) 2007, University of Manchester
+*
+* Modifications to the initial code base are copyright of their
+* respective authors, or their employers as appropriate.  Authorship
+* of the modifications may be determined from the ChangeLog placed at
+* the end of this file.
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 /**
  * Author: drummond<br>
@@ -63,6 +82,15 @@ public class OWLDataTypeViewComponent extends AbstractOWLDataTypeViewComponent
             handleChanges(changes);
         }
     };
+    
+    private OWLModelManagerListener modelManagerListener = new OWLModelManagerListener() {
+		
+		public void handleChange(OWLModelManagerChangeEvent event) {
+			if (event.getType() == EventType.ACTIVE_ONTOLOGY_CHANGED) {
+				reload();
+			}
+		}
+	};
 
 
     public void initialiseView() throws Exception {
@@ -78,6 +106,7 @@ public class OWLDataTypeViewComponent extends AbstractOWLDataTypeViewComponent
         setupActions();
 
         getOWLModelManager().addOntologyChangeListener(ontChangeListener);
+        getOWLModelManager().addListener(modelManagerListener);
 
         add(ComponentFactory.createScrollPane(list));
     }
@@ -167,6 +196,7 @@ public class OWLDataTypeViewComponent extends AbstractOWLDataTypeViewComponent
 
     public void disposeView() {
         getOWLModelManager().removeOntologyChangeListener(ontChangeListener);
+        getOWLModelManager().removeListener(modelManagerListener);
     }
 
 

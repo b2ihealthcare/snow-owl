@@ -15,24 +15,14 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.options.Options;
-import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
+public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
 
 	private String componentId;
-	private Options expand = OptionsBuilder.newBuilder().build();
-	private List<ExtendedLocale> locales = Collections.emptyList();
 
 	protected GetRequestBuilder(String repositoryId) {
 		super(repositoryId);
@@ -42,35 +32,14 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> ex
 		this.componentId = componentId;
 		return getSelf();
 	}
-	
-	public final B setExpand(String expand) {
-		if (!CompareUtils.isEmpty(expand)) {
-			this.expand = ExpandParser.parse(expand);
-		}
-		return getSelf();
-	}
-	
-	public final B setLocales(List<ExtendedLocale> locales) {
-		if (!CompareUtils.isEmpty(locales)) {
-			this.locales = locales;
-		}
-		return getSelf();
-	}
-	
+
 	@Override
-	protected final Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
-		return new IndexReadRequest<>(req);
-	}
-	
-	@Override
-	protected final Request<BranchContext, R> doBuild() {
-		final GetRequest<R> req = create();
+	protected final BaseResourceRequest<BranchContext, R> create() {
+		final GetRequest<R> req = createGet();
 		req.setComponentId(componentId);
-		req.setExpand(expand);
-		req.setLocales(locales);
 		return req;
 	}
 	
-	protected abstract GetRequest<R> create();
+	protected abstract GetRequest<R> createGet();
 	
 }

@@ -19,9 +19,7 @@ import org.eclipse.emf.spi.cdo.FSMUtil;
 
 import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -50,19 +48,7 @@ public class SnomedDescriptionAdapterFactory extends TypeSafeAdapterFactory {
 			if (FSMUtil.isClean(description) && !description.cdoRevision().isHistorical()) {
 				adaptedEntry = new SnomedDescriptionLookupService().getComponent(BranchPathUtils.createPath(description), description.getId());
 			} else {
-				adaptedEntry = SnomedDescriptionIndexEntry.builder()
-						.id(description.getId()) 
-						.term(description.getTerm())
-						.moduleId(description.getModule().getId())
-						.storageKey(CDOUtils.getStorageKey(description))
-						.released(description.isReleased()) 
-						.active(description.isActive()) 
-						.typeId(description.getType().getId()) 
-						.caseSignificanceId(description.getCaseSignificance().getId()) 
-						.conceptId(description.getConcept().getId())
-						.languageCode(description.getLanguageCode())
-						.effectiveTimeLong(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-						.build();
+				adaptedEntry = SnomedDescriptionIndexEntry.builder(description).build();
 			}
 			
 			return adapterType.cast(adaptedEntry);

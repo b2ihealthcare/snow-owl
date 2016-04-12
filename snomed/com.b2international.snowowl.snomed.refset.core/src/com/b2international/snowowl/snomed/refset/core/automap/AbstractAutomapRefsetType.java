@@ -29,8 +29,8 @@ public abstract class AbstractAutomapRefsetType implements Serializable {
 
 	private static final long serialVersionUID = 6854380124508640329L;
 
-	private static final String SIMLE_MAP_HUMAN_READABLE = "Simple Map type Reference Set";
-	private static final String COMPLEX_MAP_HUMAN_READABLE = "Complex Map type Reference Set";
+	private static final String SIMLE_MAP_HUMAN_READABLE = "Simple map type reference set";
+	private static final String COMPLEX_MAP_HUMAN_READABLE = "Complex map type reference set";
 
 	private SnomedRefSetType snomedRefSetType;
 	

@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.api.exception.SnomedExportException;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
 import com.google.common.collect.ImmutableMap;
@@ -90,7 +91,7 @@ public class SnomedExportService implements ISnomedExportService {
 		checkNotNull(configuration, "Configuration was missing for the export operation.");
 		final ContentSubType contentSubType = convertType(configuration.getRf2ReleaseType());
 		
-		final StorageRef exportStorageRef = new StorageRef("SNOMEDCT", configuration.getBranchPath());
+		final StorageRef exportStorageRef = new StorageRef(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath());
 		final IBranchPath exportBranch = exportStorageRef.getBranch().branchPath();
 		
 		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranch);

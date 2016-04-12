@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -66,19 +65,13 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 			.relationshipGroup()
 			.build();
 	
-	private static final Set<String> REFINABILITY_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.memberValueId()
-			.build();
-	
 	private final Id2Rf1PropertyMapper mapper;
 	private final SnomedExportConfiguration configuration;
 	private final Supplier<Iterator<String>> itrSupplier;
-	private boolean refinabilityExists;
 
 	public SnomedRf1RelationshipExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper) {
 		this.configuration = checkNotNull(configuration, "configuration");
 		this.mapper = checkNotNull(mapper, "mapper");
-		refinabilityExists = new SnomedRefSetLookupService().exists(this.configuration.getCurrentBranchPath(), Concepts.REFSET_RELATIONSHIP_REFINABILITY);
 		itrSupplier = createSupplier();
 	}
 	
@@ -125,16 +118,8 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 								_values[2] = SnomedMappings.relationshipType().getValueAsString(doc);
 								_values[3] = SnomedMappings.relationshipDestination().getValueAsString(doc);
 								_values[4] = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
+								_values[5] = Concepts.OPTIONAL_REFINABLE;
 								_values[6] = SnomedMappings.relationshipGroup().getValueAsString(doc);
-								
-								if (refinabilityExists) {
-									final Query inactivationQuery = SnomedMappings.newQuery().memberReferencedComponentId(relationshipId).memberRefSetId(Concepts.REFSET_RELATIONSHIP_REFINABILITY).matchAll();
-									final TopDocs inactivationTopDocs = indexService.search(getBranchPath(), inactivationQuery, 1);
-									
-									if (null != inactivationTopDocs && !CompareUtils.isEmpty(inactivationTopDocs.scoreDocs)) {
-										_values[5] = SnomedMappings.memberValueId().getValueAsString(searcher.doc(inactivationTopDocs.scoreDocs[0].doc, REFINABILITY_ID_FIELD_TO_LOAD));
-									} 
-								}
 								
 								return new StringBuilder(valueOfOrEmptyString(_values[0])) //ID
 									.append(HT)

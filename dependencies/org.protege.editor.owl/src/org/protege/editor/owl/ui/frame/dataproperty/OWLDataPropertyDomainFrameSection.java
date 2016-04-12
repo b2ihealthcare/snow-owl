@@ -13,6 +13,7 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDataPropertyDomainAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -69,15 +70,19 @@ public class OWLDataPropertyDomainFrameSection extends AbstractPropertyDomainFra
         getOWLModelManager().getReasonerPreferences().executeTask(OptionalInferenceTask.SHOW_INFERRED_DATATYPE_PROPERTY_DOMAINS,
                                                                   new Runnable() {
             public void run() {
+            	if (!getOWLModelManager().getReasoner().isConsistent()) {
+            		return;
+            	}
                 OWLDataPropertyDomainFrameSection.super.refillInferred();
             }
         });
     }
 
-
-    public void visit(OWLDataPropertyDomainAxiom axiom) {
-        if (axiom.getProperty().equals(getRootObject())) {
-            reset();
-        }
+    @Override
+    protected boolean isResettingChange(OWLOntologyChange change) {
+    	return change.isAxiomChange() &&
+    			change.getAxiom() instanceof OWLDataPropertyDomainAxiom &&
+    			((OWLDataPropertyDomainAxiom) change.getAxiom()).getProperty().equals(getRootObject());
     }
+    
 }

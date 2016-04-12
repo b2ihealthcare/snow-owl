@@ -31,17 +31,29 @@ import org.springframework.http.ResponseEntity;
 public class Responses {
 
 	private Responses() {
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 
 	/**
 	 * Creates a {@link ResponseBuilder} with the HTTP status code CREATED.
 	 * 
 	 * @param location
-	 *            - the Location header value to find the created resource.
+	 *            the Location header value to find the created resource
 	 * @return
 	 */
 	public static final ResponseBuilder created(URI location) {
 		return status(HttpStatus.CREATED).location(location);
+	}
+
+	/**
+	 * Creates a {@link ResponseBuilder} with the HTTP status code ACCEPTED.
+	 * 
+	 * @param location
+	 *            the Location header value to find/poll the resource describing current status of the asynchronous request, or the end result
+	 * @return
+	 */
+	public static ResponseBuilder accepted(URI location) {
+		return status(HttpStatus.ACCEPTED).location(location);
 	}
 
 	/**

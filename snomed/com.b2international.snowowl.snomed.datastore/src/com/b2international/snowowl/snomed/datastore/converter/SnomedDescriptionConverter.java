@@ -24,6 +24,7 @@ import java.util.Set;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -36,7 +37,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.AbstractSnomedRefSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
@@ -47,8 +47,8 @@ import com.google.common.collect.Multimap;
  */
 final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
 
-	SnomedDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales, final AbstractSnomedRefSetMembershipLookupService refSetMembershipLookupService) {
-		super(context, expand, locales, refSetMembershipLookupService);
+	SnomedDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+		super(context, expand, locales);
 	}
 
 	@Override
@@ -78,11 +78,18 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	
 	@Override
 	protected void expand(List<ISnomedDescription> results) {
-		expandInactivationProperties(results);
-		expandType(results);
+		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
+
+		if (expand().isEmpty()) {
+			return;
+		}
+		
+		expandInactivationProperties(results, descriptionIds);
+		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
+		expandType(results, descriptionIds);
 	}
 
-	private void expandType(List<ISnomedDescription> results) {
+	private void expandType(List<ISnomedDescription> results, final Set<String> descriptionIds) {
 		if (expand().containsKey("type")) {
 			final Options expandOptions = expand().get("type", Options.class);
 			final Set<String> typeIds = FluentIterable.from(results).transform(new Function<ISnomedDescription, String>() {
@@ -110,18 +117,20 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 		}
 	}
 
-	private void expandInactivationProperties(List<ISnomedDescription> results) {
-		new InactivationExpander<ISnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
-			@Override
-			protected void setAssociationTargets(ISnomedDescription result,Multimap<AssociationType, String> associationTargets) {
-				((SnomedDescription) result).setAssociationTargets(associationTargets);
-			}
-			
-			@Override
-			protected void setInactivationIndicator(ISnomedDescription result, String valueId) {
-				((SnomedDescription) result).setDescriptionInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
-			}
-		}.expand(results);
+	private void expandInactivationProperties(List<ISnomedDescription> results, final Set<String> descriptionIds) {
+		if (expand().containsKey("inactivationProperties")) {
+			new InactivationExpander<ISnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
+				@Override
+				protected void setAssociationTargets(ISnomedDescription result,Multimap<AssociationType, String> associationTargets) {
+					((SnomedDescription) result).setAssociationTargets(associationTargets);
+				}
+				
+				@Override
+				protected void setInactivationIndicator(ISnomedDescription result, String valueId) {
+					((SnomedDescription) result).setDescriptionInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
+				}
+			}.expand(results, descriptionIds);
+		}
 	}
 
 	private CaseSignificance toCaseSignificance(final String caseSignificanceId) {

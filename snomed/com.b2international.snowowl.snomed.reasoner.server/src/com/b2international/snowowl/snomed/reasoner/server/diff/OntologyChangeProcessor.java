@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.reasoner.server.diff;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.TreeSet;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -25,6 +26,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 
 /**
  * Compares two collections of change subjects and calls template methods whenever a removed, added or unmodified
@@ -41,9 +43,10 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 	
 	public void apply(final long conceptId, final Collection<T> oldCollection, final Collection<T> newCollection, final Ordering<T> ordering, final IProgressMonitor monitor) {
 		
-		final int unitsOfWork = oldCollection.size() +  newCollection.size();
+		final int unitsOfWork = oldCollection.size() + newCollection.size();
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Processing changes...", unitsOfWork);
-		
+
+		final TreeSet<T> uniqueOlds = Sets.newTreeSet(ordering);
 		final ImmutableList<T> sortedOld = ordering.immutableSortedCopy(oldCollection);
 		final ImmutableList<T> sortedNew = ordering.immutableSortedCopy(newCollection);
 		
@@ -55,7 +58,7 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			
 			final int idx = ordering.binarySearch(sortedNew, oldSubject);
 			
-			if (idx < 0) {
+			if (idx < 0 || !uniqueOlds.add(oldSubject)) {
 				handleRemovedSubject(conceptId, oldSubject);
 			}
 			

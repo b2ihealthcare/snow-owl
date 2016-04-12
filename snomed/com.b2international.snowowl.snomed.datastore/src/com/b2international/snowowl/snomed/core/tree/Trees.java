@@ -15,26 +15,22 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
-import java.util.List;
-
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
-
 /**
  * @since 4.6
  */
 public class Trees {
-	
+
 	public static final String STATED_FORM = "stated";
 	public static final String INFERRED_FORM = "inferred";
-	
-	public static TreeBuilder newInferredTree(String branch, List<ExtendedLocale> locales, BaseSnomedClientTerminologyBrowser browser, IEventBus bus) {
-		return new TreeBuilderImpl(INFERRED_FORM, branch, locales, browser, bus);
+
+	Trees() {}
+
+	public static TreeBuilder newInferredTree() {
+		return new InferredTreeBuilderImpl();
 	}
-	
-	public static TreeBuilder newStatedTree(String branch, List<ExtendedLocale> locales, BaseSnomedClientTerminologyBrowser browser, IEventBus bus) {
-		return new TreeBuilderImpl(STATED_FORM, branch, locales, browser, bus);
+
+	public static TreeBuilder newStatedTree() {
+		return new StatedTreeBuilderImpl();
 	}
 
 }

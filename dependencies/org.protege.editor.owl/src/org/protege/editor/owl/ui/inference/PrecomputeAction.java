@@ -1,6 +1,7 @@
 package org.protege.editor.owl.ui.inference;
 
 import java.awt.event.ActionEvent;
+import java.util.EnumSet;
 import java.util.Set;
 
 import javax.swing.JOptionPane;

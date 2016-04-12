@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import java.util.List;
+import java.util.Set;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Predicates regarding {@link CharacteristicType}s.
@@ -30,23 +32,33 @@ import com.google.common.collect.Lists;
 public class CharacteristicTypePredicates {
 
 	private static ImmutableList<String> MANUALLY_ALLOWED_CHARACTERISTIC_TYPES = ImmutableList.<String> of(CharacteristicType.ADDITIONAL_RELATIONSHIP.getConceptId(), CharacteristicType.STATED_RELATIONSHIP.getConceptId());
+	private static boolean inferredEditingEnabled = ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isInferredEditingEnabled();
 	
 	/**
 	 * Predicate for {@link CharacteristicType} IDs.
 	 */
 	public static class CharacteristicTypeByIdPredicate implements Predicate<String> {
 
-		private List<String> ids = Lists.newArrayList();
+		private Set<String> ids = Sets.newHashSet();
 
 		public CharacteristicTypeByIdPredicate(String... characteristicTypesIDs) {
 			for (String id : characteristicTypesIDs) {
 				ids.add(id);
+			}
+			
+			//manual override
+			if (inferredEditingEnabled) {
+				ids.add(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId());
 			}
 		}
 		
 		public CharacteristicTypeByIdPredicate(CharacteristicType... characteristicTypes) {
 			for (CharacteristicType characteristicType : characteristicTypes) {
 				ids.add(characteristicType.getConceptId());
+			}
+			//manual override
+			if (inferredEditingEnabled) {
+				ids.add(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId());
 			}
 		}
 
@@ -62,17 +74,25 @@ public class CharacteristicTypePredicates {
 	 */
 	public static class CharacteristicTypeIComponentPredicate implements Predicate<IComponent<String>> {
 		
-		private List<String> ids = Lists.<String> newArrayList();
+		private Set<String> ids = Sets.newHashSet();
 		
 		public CharacteristicTypeIComponentPredicate(String... characteristicTypeIDs) {
 			for (String id : characteristicTypeIDs) {
 				ids.add(id);
+			}
+			//manual override
+			if (inferredEditingEnabled) {
+				ids.add(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId());
 			}
 		}
 		
 		public CharacteristicTypeIComponentPredicate(CharacteristicType... characteristicTypes) {
 			for (CharacteristicType characteristicType : characteristicTypes) {
 				ids.add(characteristicType.getConceptId());
+			}
+			//manual override
+			if (inferredEditingEnabled) {
+				ids.add(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId());
 			}
 		}
 		

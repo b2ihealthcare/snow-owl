@@ -20,7 +20,6 @@ import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.A
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.COMPLEX_MAP;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.DESCRIPTION_TYPE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.EXTENDED_MAP;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.LANGUAGE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.QUERY;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP;
@@ -57,6 +56,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /** 
  * Utility class collecting commons operations related to SNOMED CT reference sets. 
@@ -318,33 +318,18 @@ public abstract class SnomedRefSetUtil {
 	
 	// concrete domain reference set members should not be shown in the UI.
 	public static SnomedRefSetType getByConceptId(String conceptId) {
-		
-		if (conceptId == null) {
-			return null;
-		}
-		
-		if (Concepts.REFSET_ATTRIBUTE_VALUE_TYPE.equals(conceptId)) {
-			return ATTRIBUTE_VALUE;
-		} else if (Concepts.REFSET_LANGUAGE_TYPE.equals(conceptId)) {
-			return LANGUAGE;
-		} else if (Concepts.REFSET_QUERY_SPECIFICATION_TYPE.equals(conceptId)) {
-			return QUERY;
-		} else if (Concepts.REFSET_SIMPLE_MAP_TYPE.equals(conceptId)) {
-			return SIMPLE_MAP;
-		} else if (Concepts.REFSET_SIMPLE_TYPE.equals(conceptId)) {
-			return SIMPLE;
-		} else if (Concepts.REFSET_COMPLEX_MAP_TYPE.equals(conceptId)) {
-			return COMPLEX_MAP;
-		} else if (Concepts.EXTENDED_MAP_TYPE.equals(conceptId)) {
-			return EXTENDED_MAP;
-		} else if (Concepts.REFSET_DESCRIPTION_TYPE.equals(conceptId)) {
-			return DESCRIPTION_TYPE;
-		} else if (Concepts.SDD_DRUG_REFERENCE_SET.equals(conceptId)) {
-			return SIMPLE_MAP; 
-		} else if (Concepts.SDD_SIMPLE_TYPE_REFERENCE_SET.equals(conceptId)) {
-			return SIMPLE; 
-		} else {
-			return null;
+		switch (conceptId) {
+		case Concepts.REFSET_ATTRIBUTE_VALUE_TYPE: return SnomedRefSetType.ATTRIBUTE_VALUE;
+		case Concepts.REFSET_LANGUAGE_TYPE: return SnomedRefSetType.LANGUAGE;
+		case Concepts.REFSET_QUERY_SPECIFICATION_TYPE: return SnomedRefSetType.QUERY;
+		case Concepts.SDD_DRUG_REFERENCE_SET:
+		case Concepts.REFSET_SIMPLE_MAP_TYPE: return SnomedRefSetType.SIMPLE_MAP;
+		case Concepts.SDD_SIMPLE_TYPE_REFERENCE_SET:
+		case Concepts.REFSET_SIMPLE_TYPE: return SnomedRefSetType.SIMPLE;
+		case Concepts.REFSET_COMPLEX_MAP_TYPE: return SnomedRefSetType.COMPLEX_MAP;
+		case Concepts.EXTENDED_MAP_TYPE: return SnomedRefSetType.EXTENDED_MAP;
+		case Concepts.REFSET_DESCRIPTION_TYPE: return SnomedRefSetType.DESCRIPTION_TYPE;
+		default: return null;
 		}
 	}
 
@@ -379,31 +364,25 @@ public abstract class SnomedRefSetUtil {
 	}
 
 	/**
-	 * Get the type dependent preference page tab item text
+	 * Get the type dependent label
 	 * 
 	 * @param type SnomedRefSetType
-	 * @return String tab item text
+	 * @return
 	 */
-	//concrete domain reference set members should not be shown in the UI.
-	public static String getPreferencePageTabItemText(SnomedRefSetType type) {
+	public static String getTypeLabel(SnomedRefSetType type) {
 		
 		switch (type) {
-			case ATTRIBUTE_VALUE:
-				return "Attribute value type reference set";
-			case LANGUAGE:
-				return "Language type reference set"; // not used at preferences
-			case QUERY:
-				return "Query type reference set";
-			case SIMPLE_MAP:
-				return "Simple map type reference set";
-			case SIMPLE:
-				return "Simple type reference set";
-			case COMPLEX_MAP:
-				return "Complex map type reference set";
-			case EXTENDED_MAP:
-				return "Extended map type reference set";
-			case DESCRIPTION_TYPE:
-				return "Description type reference set";
+			case ATTRIBUTE_VALUE: return "Attribute value type reference set";
+			case LANGUAGE: return "Language type reference set";
+			case QUERY: return "Query type reference set";
+			case SIMPLE_MAP: return "Simple map type reference set";
+			case SIMPLE: return "Simple type reference set";
+			case COMPLEX_MAP: return "Complex map type reference set";
+			case EXTENDED_MAP: return "Extended map type reference set";
+			case DESCRIPTION_TYPE: return "Description type reference set";
+			case ASSOCIATION: return "Association type reference set";
+			case CONCRETE_DATA_TYPE: return "Concrete domain type reference set";
+			case MODULE_DEPENDENCY: return "Module dependency type reference set";
 			default:
 				throw new IllegalArgumentException("Unexpected reference set type: " + type);
 		}
@@ -440,6 +419,17 @@ public abstract class SnomedRefSetUtil {
 		}
 	}
 	
+	/**
+	 * Returns concept IDs of the currently known and handled reference set types.
+	 * @return
+	 */
+	public static Collection<String> getUIRefSetTypeConceptIds() {
+		final Builder<String> ids = ImmutableSet.builder();
+		for (SnomedRefSetType type : getTypesForUI()) {
+			ids.add(getConceptId(type));
+		}
+		return ids.build();
+	}
 	
 	@SuppressWarnings("unchecked")
 	public static <T> T deserializeValue(final DataType dataType, final String serializedValue) {

@@ -37,6 +37,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExporter;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmImporter;
 import com.b2international.snowowl.test.commons.Services;
@@ -70,14 +71,24 @@ public class MrcmImportExportTest {
 	public void exportTest() throws Exception {
 		importTest();
 		
-		final Path target = Paths.get("target");
+		Path target = Paths.get("target");
 		target.toFile().mkdirs();
-		final Path exportedFile = target.resolve("mrcm_" + Dates.now() + ".xmi");
+		Path exportedFile = target.resolve("mrcm_" + Dates.now() + ".xmi");
 		assertFalse(exportedFile.toFile().exists());
 		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE_NEW)) {
-			Services.service(MrcmExporter.class).doExport("test", stream);
+			Services.service(MrcmExporter.class).doExport("test", stream, MrcmExportFormat.XMI);
 		}
 		assertTrue(exportedFile.toFile().exists());
+		
+		target = Paths.get("target");
+		target.toFile().mkdirs();
+		exportedFile = target.resolve("mrcm_" + Dates.now() + ".csv");
+		assertFalse(exportedFile.toFile().exists());
+		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE_NEW)) {
+			Services.service(MrcmExporter.class).doExport("test", stream, MrcmExportFormat.CSV);
+		}
+		assertTrue(exportedFile.toFile().exists());
+		
 	}
 	
 }
