@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.Pair;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.google.common.base.Preconditions;
 
 /**

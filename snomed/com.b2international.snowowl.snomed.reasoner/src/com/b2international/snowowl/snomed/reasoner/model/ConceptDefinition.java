@@ -37,8 +37,8 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.set.LongSet;
 
 /**
  * Aggregates relationships and concrete domain entries that together form the definition of a concept.

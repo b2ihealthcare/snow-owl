@@ -40,10 +40,10 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.PrimitiveCollections;

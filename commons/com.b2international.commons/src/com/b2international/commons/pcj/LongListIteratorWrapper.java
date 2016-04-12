@@ -19,9 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.NoSuchElementException;
 
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.list.LongList;
-import com.b2international.commons.collections.primitive.list.LongListIterator;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.list.LongList;
+import com.b2international.collections.list.LongListIterator;
 
 /**
  * Converts an {@link LongIterator iterator} into a {@link LongListIterator list iterator} by caching the returned entries.

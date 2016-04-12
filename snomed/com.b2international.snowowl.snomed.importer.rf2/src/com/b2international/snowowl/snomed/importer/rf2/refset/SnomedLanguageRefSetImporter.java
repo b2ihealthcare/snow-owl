@@ -40,10 +40,10 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.LongFunction;

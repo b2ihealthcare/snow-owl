@@ -47,11 +47,11 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.list.LongList;
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.list.LongList;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;

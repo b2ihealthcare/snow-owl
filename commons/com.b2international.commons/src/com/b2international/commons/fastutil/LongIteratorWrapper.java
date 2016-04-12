@@ -15,12 +15,12 @@
  */
 package com.b2international.commons.fastutil;
 
-import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.collections.LongIterator;
 
 /**
  * @since 4.6
  */
-public class LongIteratorWrapper<T extends it.unimi.dsi.fastutil.longs.LongIterator> implements LongIterator {
+public class LongIteratorWrapper<T extends com.b2international.collections.LongIterator> implements LongIterator {
 
 	protected final T delegate;
 

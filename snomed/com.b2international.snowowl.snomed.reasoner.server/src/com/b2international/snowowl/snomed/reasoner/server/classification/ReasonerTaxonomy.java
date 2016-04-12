@@ -20,10 +20,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.list.LongList;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.list.LongList;
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;

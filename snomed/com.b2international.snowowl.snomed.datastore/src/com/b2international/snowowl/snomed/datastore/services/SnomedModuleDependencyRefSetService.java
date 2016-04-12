@@ -27,9 +27,8 @@ import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
-
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.set.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Component;

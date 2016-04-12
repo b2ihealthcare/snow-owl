@@ -47,7 +47,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.FluentIterable;
-import com.b2international.commons.collections.primitive.list.IntList;
+import com.b2international.collections.list.IntList;
 import com.b2international.commons.pcj.PrimitiveCollections;
 
 /**

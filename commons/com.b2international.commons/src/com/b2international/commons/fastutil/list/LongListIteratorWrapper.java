@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.fastutil.list;
 
-import com.b2international.commons.collections.primitive.list.LongListIterator;
+import com.b2international.collections.list.LongListIterator;
 import com.b2international.commons.fastutil.LongIteratorWrapper;
 
 /**

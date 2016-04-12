@@ -15,11 +15,11 @@
  */
 package com.b2international.commons.fastutil.list;
 
-import com.b2international.commons.collections.primitive.AbstractLongCollection;
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.list.LongList;
-import com.b2international.commons.collections.primitive.list.LongListIterator;
+import com.b2international.collections.AbstractLongCollection;
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.list.LongList;
+import com.b2international.collections.list.LongListIterator;
 import com.b2international.commons.fastutil.LongIteratorWrapper;
 
 public class LongArrayListWrapper extends AbstractLongCollection implements LongList {

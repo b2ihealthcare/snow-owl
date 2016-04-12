@@ -37,10 +37,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.StopWatch;
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;

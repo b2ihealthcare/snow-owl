@@ -20,8 +20,7 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-
+import com.b2international.collections.map.LongKeyMap;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.browser.AbstractClientStatementBrowser;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientStatementBrowser;

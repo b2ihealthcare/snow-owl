@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.api;
 
-import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.collections.LongCollection;
 
 /**
  * @since 4.6

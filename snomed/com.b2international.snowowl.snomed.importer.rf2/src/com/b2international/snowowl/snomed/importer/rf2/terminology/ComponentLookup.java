@@ -24,7 +24,7 @@ import java.util.Map.Entry;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
+import com.b2international.collections.map.LongKeyLongMap;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;

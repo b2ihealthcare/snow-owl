@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.reasoner.equivalence;
 import java.util.List;
 import java.util.UUID;
 
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;

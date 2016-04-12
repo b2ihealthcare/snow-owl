@@ -34,6 +34,10 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.map.LongKeyLongMapIterator;
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -53,11 +57,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMapIterator;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Index based statement browser implementation.

@@ -15,12 +15,12 @@
  */
 package com.b2international.commons.fastutil;
 
-import com.b2international.commons.collections.primitive.ByteIterator;
+import com.b2international.collections.ByteIterator;
 
 /**
  * @since 4.6
  */
-public class ByteIteratorWrapper<T extends it.unimi.dsi.fastutil.bytes.ByteIterator> implements ByteIterator {
+public class ByteIteratorWrapper<T extends com.b2international.collections.ByteIterator> implements ByteIterator {
 
 	protected final T delegate;
 

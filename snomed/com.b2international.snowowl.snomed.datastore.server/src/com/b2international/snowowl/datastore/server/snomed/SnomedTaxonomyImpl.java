@@ -41,17 +41,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 
+import com.b2international.collections.IntCollection;
+import com.b2international.collections.IntIterator;
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.list.LongList;
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.map.LongKeyMapIterator;
+import com.b2international.collections.set.IntSet;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.commons.collections.primitive.IntCollection;
-import com.b2international.commons.collections.primitive.IntIterator;
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.list.LongList;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
-import com.b2international.commons.collections.primitive.set.IntSet;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.time.TimeUtil;

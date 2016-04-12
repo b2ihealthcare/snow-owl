@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.NoSuchElementException;
 
-import com.b2international.commons.collections.primitive.LongIterator;
+import com.b2international.collections.LongIterator;
 
 /**
  * Skeleton unmodifiable implementation of the {@link LongIterator}.

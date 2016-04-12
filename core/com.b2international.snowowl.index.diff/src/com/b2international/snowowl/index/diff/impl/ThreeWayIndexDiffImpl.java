@@ -16,9 +16,9 @@
 package com.b2international.snowowl.index.diff.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
 
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.Change;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.b2international.snowowl.index.diff.IndexDiffMerger;

@@ -20,11 +20,11 @@ import static com.google.common.base.Preconditions.checkPositionIndexes;
 
 import java.util.NoSuchElementException;
 
-import com.b2international.commons.collections.primitive.ByteCollection;
-import com.b2international.commons.collections.primitive.ByteIterator;
-import com.b2international.commons.collections.primitive.list.ByteList;
-import com.b2international.commons.collections.primitive.list.ByteListIterator;
-import com.b2international.commons.collections.primitive.set.ByteSet;
+import com.b2international.collections.ByteCollection;
+import com.b2international.collections.ByteIterator;
+import com.b2international.collections.list.ByteList;
+import com.b2international.collections.list.ByteListIterator;
+import com.b2international.collections.set.ByteSet;
 
 /**
  * Utility class for {@link ByteCollection}s.

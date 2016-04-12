@@ -15,10 +15,10 @@
  */
 package com.b2international.commons.fastutil.set;
 
-import com.b2international.commons.collections.primitive.AbstractLongCollection;
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.AbstractLongCollection;
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.fastutil.LongIteratorWrapper;
 import com.google.common.hash.HashFunction;
 
@@ -27,7 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 public class LongOpenHashSetWrapper extends AbstractLongCollection implements LongSet {
 
-	private final it.unimi.dsi.fastutil.longs.LongSet delegate;
+	private final com.b2international.collections.set.LongSet delegate;
 
 	public static LongSet create(HashFunction hashFunction) {
 		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet(new StrategyWrapper(hashFunction)));

@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.pcj;
 
-import com.b2international.commons.collections.primitive.IntIterator;
+import com.b2international.collections.IntIterator;
 
 /**
  * An {@link IntIterator} wrapping an integer array.

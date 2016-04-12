@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.pcj.LongSets;
@@ -31,8 +32,6 @@ import com.b2international.snowowl.core.api.component.LabelProvider;
 import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-
-import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Abstract representation of a component modification.

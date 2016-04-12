@@ -24,8 +24,7 @@ import static java.lang.Long.parseLong;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
-import com.b2international.commons.collections.primitive.set.LongSet;
-
+import com.b2international.collections.set.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.browser.SuperTypeIdProvider;

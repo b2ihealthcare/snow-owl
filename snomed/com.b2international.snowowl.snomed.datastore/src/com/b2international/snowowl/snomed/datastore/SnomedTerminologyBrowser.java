@@ -20,10 +20,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
-
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;

@@ -34,12 +34,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.map.ByteKeyMap;
-import com.b2international.commons.collections.primitive.map.ByteValueMap;
-import com.b2international.commons.collections.primitive.map.ByteValueMapIterator;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.map.ByteKeyMap;
+import com.b2international.collections.map.ByteValueMap;
+import com.b2international.collections.map.ByteValueMapIterator;
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.InverseLongFunction;

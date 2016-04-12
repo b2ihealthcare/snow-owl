@@ -25,8 +25,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-
+import com.b2international.collections.map.LongKeyMap;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;

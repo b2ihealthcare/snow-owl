@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;

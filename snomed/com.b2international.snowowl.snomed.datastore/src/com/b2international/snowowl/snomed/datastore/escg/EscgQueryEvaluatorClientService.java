@@ -20,8 +20,7 @@ import java.util.Collection;
 import org.apache.lucene.search.BooleanQuery;
 import org.eclipse.emf.ecore.EPackage;
 
-import com.b2international.commons.collections.primitive.LongCollection;
-
+import com.b2international.collections.LongCollection;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;

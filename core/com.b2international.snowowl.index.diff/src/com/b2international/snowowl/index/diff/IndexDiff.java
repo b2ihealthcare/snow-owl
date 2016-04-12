@@ -19,10 +19,9 @@ import java.io.Serializable;
 
 import org.apache.lucene.index.IndexCommit;
 
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.Change;
-
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
 
 /**
  * Represents an index difference between two {@link IndexCommit index commit}s.

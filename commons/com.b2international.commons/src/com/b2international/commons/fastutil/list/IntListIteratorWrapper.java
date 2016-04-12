@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.fastutil.list;
 
-import com.b2international.commons.collections.primitive.list.IntListIterator;
+import com.b2international.collections.list.IntListIterator;
 import com.b2international.commons.fastutil.IntIteratorWrapper;
 
 /**

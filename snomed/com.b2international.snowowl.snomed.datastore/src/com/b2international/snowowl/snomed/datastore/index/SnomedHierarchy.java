@@ -19,10 +19,10 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.map.LongKeyIntMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.map.LongKeyIntMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;

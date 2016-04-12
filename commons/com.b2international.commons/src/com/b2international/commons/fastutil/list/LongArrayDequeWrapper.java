@@ -17,7 +17,7 @@ package com.b2international.commons.fastutil.list;
 
 import java.util.NoSuchElementException;
 
-import com.b2international.commons.collections.primitive.list.LongDeque;
+import com.b2international.collections.list.LongDeque;
 
 public class LongArrayDequeWrapper extends LongArrayListWrapper implements LongDeque {
 

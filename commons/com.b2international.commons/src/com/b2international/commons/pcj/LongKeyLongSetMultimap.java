@@ -19,9 +19,9 @@ import static com.google.common.hash.Hashing.murmur3_32;
 
 import java.util.Collection;
 
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.map.LongKeyMapIterator;
+import com.b2international.collections.set.LongSet;
 
 /**
  * A long key long value set multimap implementation.

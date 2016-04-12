@@ -27,7 +27,7 @@ import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollect
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
+import com.b2international.collections.map.LongKeyMap;
 import com.b2international.commons.pcj.PrimitiveCollections;
 
 /**

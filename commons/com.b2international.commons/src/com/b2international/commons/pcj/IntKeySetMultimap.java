@@ -21,9 +21,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import com.b2international.commons.collections.primitive.map.IntKeyMap;
-import com.b2international.commons.collections.primitive.map.IntKeyMapIterator;
-import com.b2international.commons.collections.primitive.set.IntSet;
+import com.b2international.collections.map.IntKeyMap;
+import com.b2international.collections.map.IntKeyMapIterator;
+import com.b2international.collections.set.IntSet;
 
 /**
  * Type safe set multimap implementation using primitive integer keys. 

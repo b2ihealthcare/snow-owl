@@ -48,10 +48,10 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.collections.primitive.map.LongKeyMap;
-import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;

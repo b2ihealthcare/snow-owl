@@ -18,9 +18,9 @@ package com.b2international.commons.pcj;
 import java.io.Serializable;
 import java.util.NoSuchElementException;
 
-import com.b2international.commons.collections.primitive.LongIterator;
-import com.b2international.commons.collections.primitive.set.AbstractLongSet;
-import com.b2international.commons.collections.primitive.set.LongSet;
+import com.b2international.collections.LongIterator;
+import com.b2international.collections.set.AbstractLongSet;
+import com.b2international.collections.set.LongSet;
 
 /**
  * Utility methods related to primitive long collections.

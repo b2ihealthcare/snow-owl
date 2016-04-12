@@ -34,7 +34,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.slf4j.Logger;
 
-import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.collections.LongCollection;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;

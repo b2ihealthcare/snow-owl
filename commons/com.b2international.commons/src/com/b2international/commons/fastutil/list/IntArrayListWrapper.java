@@ -15,11 +15,11 @@
  */
 package com.b2international.commons.fastutil.list;
 
-import com.b2international.commons.collections.primitive.AbstractIntCollection;
-import com.b2international.commons.collections.primitive.IntCollection;
-import com.b2international.commons.collections.primitive.IntIterator;
-import com.b2international.commons.collections.primitive.list.IntList;
-import com.b2international.commons.collections.primitive.list.IntListIterator;
+import com.b2international.collections.AbstractIntCollection;
+import com.b2international.collections.IntCollection;
+import com.b2international.collections.IntIterator;
+import com.b2international.collections.list.IntList;
+import com.b2international.collections.list.IntListIterator;
 import com.b2international.commons.fastutil.IntIteratorWrapper;
 
 public class IntArrayListWrapper extends AbstractIntCollection implements IntList {

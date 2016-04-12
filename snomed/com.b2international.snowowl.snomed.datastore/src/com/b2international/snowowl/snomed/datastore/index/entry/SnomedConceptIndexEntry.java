@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 
+import com.b2international.collections.LongCollection;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IComponent;
@@ -32,8 +33,6 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-
-import com.b2international.commons.collections.primitive.LongCollection;
 
 /**
  * A transfer object representing a SNOMED CT concept.

@@ -38,6 +38,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.collections.LongCollection;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.pcj.LongSets;
@@ -60,8 +61,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.collect.ImmutableList;
-
-import com.b2international.commons.collections.primitive.LongCollection;
 
 /**
  * @since 4.5

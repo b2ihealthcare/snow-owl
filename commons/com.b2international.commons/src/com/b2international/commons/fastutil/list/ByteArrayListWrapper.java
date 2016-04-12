@@ -15,11 +15,11 @@
  */
 package com.b2international.commons.fastutil.list;
 
-import com.b2international.commons.collections.primitive.AbstractByteCollection;
-import com.b2international.commons.collections.primitive.ByteCollection;
-import com.b2international.commons.collections.primitive.ByteIterator;
-import com.b2international.commons.collections.primitive.list.ByteList;
-import com.b2international.commons.collections.primitive.list.ByteListIterator;
+import com.b2international.collections.AbstractByteCollection;
+import com.b2international.collections.ByteCollection;
+import com.b2international.collections.ByteIterator;
+import com.b2international.collections.list.ByteList;
+import com.b2international.collections.list.ByteListIterator;
 import com.b2international.commons.fastutil.ByteIteratorWrapper;
 
 public class ByteArrayListWrapper extends AbstractByteCollection implements ByteList {

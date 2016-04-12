@@ -41,8 +41,7 @@ import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 
-import com.b2international.commons.collections.primitive.LongCollection;
-
+import com.b2international.collections.LongCollection;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;

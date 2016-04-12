@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.b2international.commons.collections.primitive.map.IntKeyMapIterator;
+import com.b2international.collections.map.IntKeyMapIterator;
 import com.b2international.commons.pcj.IntKeySetMultimap;
 
 /**

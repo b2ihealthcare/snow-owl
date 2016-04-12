@@ -44,9 +44,9 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.map.LongKeyFloatMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collections.primitive.map.LongKeyFloatMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;

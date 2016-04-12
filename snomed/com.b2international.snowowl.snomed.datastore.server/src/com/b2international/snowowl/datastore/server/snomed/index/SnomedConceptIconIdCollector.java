@@ -24,9 +24,9 @@ import java.util.Map;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMapIterator;
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.map.LongKeyLongMapIterator;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;

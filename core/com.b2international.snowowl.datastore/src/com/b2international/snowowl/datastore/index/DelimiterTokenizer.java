@@ -20,7 +20,7 @@ import java.io.Reader;
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.Version;
 
-import com.b2international.commons.collections.primitive.set.IntSet;
+import com.b2international.collections.set.IntSet;
 import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.TextConstants;
 

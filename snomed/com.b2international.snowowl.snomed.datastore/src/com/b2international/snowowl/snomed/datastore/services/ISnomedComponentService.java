@@ -27,10 +27,9 @@ import javax.annotation.Nullable;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 
-import com.b2international.commons.collections.primitive.list.LongList;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.set.LongSet;
-
+import com.b2international.collections.list.LongList;
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Description;

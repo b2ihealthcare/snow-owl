@@ -15,10 +15,10 @@
  */
 package com.b2international.commons.fastutil.set;
 
-import com.b2international.commons.collections.primitive.AbstractIntCollection;
-import com.b2international.commons.collections.primitive.IntCollection;
-import com.b2international.commons.collections.primitive.IntIterator;
-import com.b2international.commons.collections.primitive.set.IntSet;
+import com.b2international.collections.AbstractIntCollection;
+import com.b2international.collections.IntCollection;
+import com.b2international.collections.IntIterator;
+import com.b2international.collections.set.IntSet;
 import com.b2international.commons.fastutil.IntIteratorWrapper;
 
 public class IntOpenHashSetWrapper extends AbstractIntCollection implements IntSet {

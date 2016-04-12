@@ -46,11 +46,10 @@ import org.apache.lucene.search.Query;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
 
-import com.b2international.commons.collections.primitive.LongCollection;
-import com.b2international.commons.collections.primitive.map.LongKeyLongMap;
-import com.b2international.commons.collections.primitive.map.LongKeyMapIterator;
-import com.b2international.commons.collections.primitive.set.LongSet;
-
+import com.b2international.collections.LongCollection;
+import com.b2international.collections.map.LongKeyLongMap;
+import com.b2international.collections.map.LongKeyMapIterator;
+import com.b2international.collections.set.LongSet;
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;

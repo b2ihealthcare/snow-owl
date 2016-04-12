@@ -22,9 +22,8 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.LongCollection;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
-import com.b2international.commons.collections.primitive.LongCollection;
 
 /**
  * Collector for gathering the container concept ID, the description type ID and the case significance concept IDs of each
