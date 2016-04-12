@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Fastutil based implementation of Collections API
+Bundle-SymbolicName: com.b2international.collections.fastutil
+Bundle-Version: 4.7.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: com.b2international.collections.api,
+ it.unimi.dsi.fastutil;bundle-version="7.0.12"
