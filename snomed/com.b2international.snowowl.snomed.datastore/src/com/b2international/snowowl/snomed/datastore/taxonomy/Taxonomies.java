@@ -16,14 +16,13 @@
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import com.b2international.commons.Pair;
+import com.b2international.commons.collections.primitive.LongCollection;
+import com.b2international.commons.collections.primitive.set.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-
-import bak.pcj.LongCollection;
-import bak.pcj.set.LongSet;
 
 /**
  * @since 4.7

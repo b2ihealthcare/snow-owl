@@ -34,6 +34,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.slf4j.Logger;
 
+import com.b2international.commons.collections.primitive.LongCollection;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -85,8 +86,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
-
-import bak.pcj.LongCollection;
 
 /**
  * A composite importer that coordinates the operation of its child importers:

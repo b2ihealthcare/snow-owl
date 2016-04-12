@@ -31,6 +31,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.collections.primitive.LongCollection;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.pcj.LongSets;
@@ -47,8 +48,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-
-import bak.pcj.LongCollection;
 
 /**
  * @since 4.5
