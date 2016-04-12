@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.fastutil.set;
+package com.b2international.collections.set;
 
 import com.b2international.collections.AbstractIntCollection;
 import com.b2international.collections.IntCollection;
 import com.b2international.collections.IntIterator;
+import com.b2international.collections.IntIteratorWrapper;
 import com.b2international.collections.set.IntSet;
-import com.b2international.commons.fastutil.IntIteratorWrapper;
 
 public class IntOpenHashSetWrapper extends AbstractIntCollection implements IntSet {
 

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.fastutil.set;
+package com.b2international.collections.set;
 
 import com.b2international.collections.AbstractLongCollection;
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
+import com.b2international.collections.LongIteratorWrapper;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.fastutil.LongIteratorWrapper;
 import com.google.common.hash.HashFunction;
 
 import it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet;
@@ -27,7 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 public class LongOpenHashSetWrapper extends AbstractLongCollection implements LongSet {
 
-	private final com.b2international.collections.set.LongSet delegate;
+	private final it.unimi.dsi.fastutil.longs.LongSet delegate;
 
 	public static LongSet create(HashFunction hashFunction) {
 		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet(new StrategyWrapper(hashFunction)));

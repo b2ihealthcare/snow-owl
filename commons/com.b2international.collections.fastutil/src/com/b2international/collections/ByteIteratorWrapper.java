@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.fastutil;
-
-import com.b2international.collections.ByteIterator;
+package com.b2international.collections;
 
 /**
  * @since 4.6
  */
-public class ByteIteratorWrapper<T extends com.b2international.collections.ByteIterator> implements ByteIterator {
+public class ByteIteratorWrapper<T extends it.unimi.dsi.fastutil.bytes.ByteIterator> implements ByteIterator {
 
 	protected final T delegate;
 

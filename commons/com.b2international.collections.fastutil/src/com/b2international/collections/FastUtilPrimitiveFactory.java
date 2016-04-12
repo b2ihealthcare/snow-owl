@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.fastutil;
+package com.b2international.collections;
 
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.collections.ByteCollection;
-import com.b2international.collections.IntCollection;
-import com.b2international.collections.LongCollection;
-import com.b2international.collections.PrimitiveFactory;
+import com.b2international.collections.list.ByteArrayListWrapper;
 import com.b2international.collections.list.ByteList;
+import com.b2international.collections.list.IntArrayDequeWrapper;
+import com.b2international.collections.list.IntArrayListWrapper;
 import com.b2international.collections.list.IntDeque;
 import com.b2international.collections.list.IntList;
+import com.b2international.collections.list.LongArrayDequeWrapper;
+import com.b2international.collections.list.LongArrayListWrapper;
 import com.b2international.collections.list.LongDeque;
 import com.b2international.collections.list.LongList;
 import com.b2international.collections.map.ByteKeyLongMap;
@@ -36,17 +37,12 @@ import com.b2international.collections.map.LongKeyIntMap;
 import com.b2international.collections.map.LongKeyLongMap;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.map.LongValueMap;
+import com.b2international.collections.set.ByteOpenHashSetWrapper;
 import com.b2international.collections.set.ByteSet;
+import com.b2international.collections.set.IntOpenHashSetWrapper;
 import com.b2international.collections.set.IntSet;
+import com.b2international.collections.set.LongOpenHashSetWrapper;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.fastutil.list.ByteArrayListWrapper;
-import com.b2international.commons.fastutil.list.IntArrayDequeWrapper;
-import com.b2international.commons.fastutil.list.IntArrayListWrapper;
-import com.b2international.commons.fastutil.list.LongArrayDequeWrapper;
-import com.b2international.commons.fastutil.list.LongArrayListWrapper;
-import com.b2international.commons.fastutil.set.ByteOpenHashSetWrapper;
-import com.b2international.commons.fastutil.set.IntOpenHashSetWrapper;
-import com.b2international.commons.fastutil.set.LongOpenHashSetWrapper;
 import com.google.common.hash.HashFunction;
 
 /**

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.fastutil.list;
+package com.b2international.collections.list;
 
+import com.b2international.collections.IntIteratorWrapper;
 import com.b2international.collections.list.IntListIterator;
-import com.b2international.commons.fastutil.IntIteratorWrapper;
 
 /**
  * @since 4.6

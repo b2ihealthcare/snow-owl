@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.collections.ByteCollection;
+import com.b2international.collections.FastUtilPrimitiveFactory;
 import com.b2international.collections.IntCollection;
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.PrimitiveFactory;
@@ -39,7 +40,6 @@ import com.b2international.collections.map.LongValueMap;
 import com.b2international.collections.set.ByteSet;
 import com.b2international.collections.set.IntSet;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.fastutil.FastUtilPrimitiveFactory;
 import com.google.common.hash.HashFunction;
 
 /**

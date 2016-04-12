@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.fastutil.set;
+package com.b2international.collections.set;
 
 import com.b2international.collections.AbstractByteCollection;
 import com.b2international.collections.ByteCollection;
 import com.b2international.collections.ByteIterator;
+import com.b2international.collections.ByteIteratorWrapper;
 import com.b2international.collections.set.ByteSet;
-import com.b2international.commons.fastutil.ByteIteratorWrapper;
 
 public class ByteOpenHashSetWrapper extends AbstractByteCollection implements ByteSet {
 

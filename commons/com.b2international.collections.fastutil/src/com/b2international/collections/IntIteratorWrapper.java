@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.fastutil;
-
-import com.b2international.collections.IntIterator;
+package com.b2international.collections;
 
 /**
  * @since 4.6
  */
-public class IntIteratorWrapper<T extends com.b2international.collections.IntIterator> implements IntIterator {
+public class IntIteratorWrapper<T extends it.unimi.dsi.fastutil.ints.IntIterator> implements IntIterator {
 
 	protected final T delegate;
 
