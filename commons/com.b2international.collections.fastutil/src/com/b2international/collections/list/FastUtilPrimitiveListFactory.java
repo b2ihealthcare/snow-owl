@@ -21,7 +21,7 @@ import com.b2international.collections.LongCollection;
 /**
  * @since 4.7
  */
-public class FastUtilPrimitiveListFactory implements PrimitiveListFactory {
+public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory {
 
 	@Override
 	public ByteList newByteArrayList(byte[] source) {
@@ -59,7 +59,7 @@ public class FastUtilPrimitiveListFactory implements PrimitiveListFactory {
 	}
 
 	@Override
-	public LongList newLongArrayList(long[] source) {
+	public LongList newLongArrayList(long... source) {
 		return LongArrayListWrapper.create(source);
 	}
 

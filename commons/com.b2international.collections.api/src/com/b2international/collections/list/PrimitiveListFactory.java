@@ -37,7 +37,7 @@ public interface PrimitiveListFactory {
 
 	LongList newLongArrayList(int expectedSize);
 
-	LongList newLongArrayList(long[] source);
+	LongList newLongArrayList(long... source);
 
 	LongList newLongArrayList(LongCollection source);
 

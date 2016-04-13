@@ -63,10 +63,10 @@ public class PrimitiveLists {
 		return FACTORY.newLongArrayList(expectedSize);
 	}
 
-	public static LongList newLongArrayList(long[] source) {
+	public static LongList newLongArrayList(long... source) {
 		return FACTORY.newLongArrayList(source);
 	}
-
+	
 	public static LongList newLongArrayList(LongCollection source) {
 		return FACTORY.newLongArrayList(source);
 	}
