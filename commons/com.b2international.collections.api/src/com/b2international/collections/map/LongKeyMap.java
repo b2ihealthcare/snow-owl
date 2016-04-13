@@ -36,9 +36,6 @@ public interface LongKeyMap<V> extends PrimitiveKeyMap {
 	@Override
 	LongSet keySet();
 
-	@Override
-	LongKeyMapIterator<V> mapIterator();
-
 	V put(long key, V value);
 
 	V remove(long key);

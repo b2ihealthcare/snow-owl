@@ -35,9 +35,6 @@ public interface LongValueMap<K> extends PrimitiveValueMap {
 
 	Set<K> keySet();
 	
-	@Override
-	LongValueMapIterator<K> mapIterator();
-	
 	long put(K key, long value);
 
 	long remove(K key);

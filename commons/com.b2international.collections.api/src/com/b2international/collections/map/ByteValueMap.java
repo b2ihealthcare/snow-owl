@@ -35,9 +35,6 @@ public interface ByteValueMap<K> extends PrimitiveValueMap {
 
 	Set<K> keySet();
 	
-	@Override
-	ByteValueMapIterator<K> mapIterator();
-	
 	byte put(K key, byte value);
 
 	byte remove(K key);

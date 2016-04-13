@@ -26,8 +26,6 @@ public interface PrimitiveMap {
 
 	boolean isEmpty();
 
-	PrimitiveMapIterator mapIterator();
-	
 	int size();
 	
 	void trimToSize();

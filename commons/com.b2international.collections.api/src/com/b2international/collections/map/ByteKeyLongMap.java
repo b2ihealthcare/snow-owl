@@ -33,9 +33,6 @@ public interface ByteKeyLongMap extends PrimitiveKeyMap, PrimitiveValueMap {
 	@Override
 	ByteSet keySet();
 	
-	@Override
-	ByteKeyLongMapIterator mapIterator();
-
 	long put(byte key, long value);
 
 	long remove(byte key);

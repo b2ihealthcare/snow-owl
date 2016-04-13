@@ -33,9 +33,6 @@ public interface LongKeyIntMap extends PrimitiveKeyMap, PrimitiveValueMap {
 	@Override
 	LongSet keySet();
 	
-	@Override
-	LongKeyIntMapIterator mapIterator();
-
 	int put(long key, int value);
 
 	int remove(long key);

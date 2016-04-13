@@ -36,9 +36,6 @@ public interface IntKeyMap<V> extends PrimitiveKeyMap {
 	@Override
 	IntSet keySet();
 	
-	@Override
-	IntKeyMapIterator<V> mapIterator();
-	
 	V put(int key, V value);
 
 	V remove(int key);

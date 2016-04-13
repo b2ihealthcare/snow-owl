@@ -36,9 +36,6 @@ public interface ByteKeyMap<V> extends PrimitiveKeyMap {
 	@Override
 	ByteSet keySet();
 	
-	@Override
-	ByteKeyMapIterator<V> mapIterator();
-	
 	V put(byte key, V value);
 
 	V remove(byte key);

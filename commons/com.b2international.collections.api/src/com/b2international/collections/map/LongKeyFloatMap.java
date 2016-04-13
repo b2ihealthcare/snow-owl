@@ -33,9 +33,6 @@ public interface LongKeyFloatMap extends PrimitiveKeyMap, PrimitiveValueMap {
 	@Override
 	LongSet keySet();
 	
-	@Override
-	LongKeyFloatMapIterator mapIterator();
-
 	float put(long key, float value);
 
 	float remove(long key);
