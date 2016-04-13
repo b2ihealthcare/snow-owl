@@ -18,7 +18,6 @@ package com.b2international.collections.set;
 import java.util.Set;
 
 import com.b2international.collections.ByteCollection;
-import com.b2international.collections.IntCollection;
 import com.b2international.collections.LongCollection;
 import com.google.common.hash.HashFunction;
 
@@ -28,14 +27,6 @@ import com.google.common.hash.HashFunction;
 public interface PrimitiveSetFactory {
 
 	ByteSet newByteOpenHashSet(ByteCollection source);
-	
-	IntSet newIntBitSet();
-
-	IntSet newIntBitSet(int expectedSize);
-
-	IntSet newIntBitSet(int[] source);
-
-	IntSet newIntBitSet(IntCollection source);
 	
 	IntSet newIntOpenHashSet();
 

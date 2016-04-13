@@ -18,7 +18,6 @@ package com.b2international.collections.set;
 import java.util.Set;
 
 import com.b2international.collections.ByteCollection;
-import com.b2international.collections.IntCollection;
 import com.b2international.collections.LongCollection;
 import com.google.common.hash.HashFunction;
 
@@ -30,26 +29,6 @@ public class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 	@Override
 	public ByteSet newByteOpenHashSet(ByteCollection source) {
 		return ByteOpenHashSetWrapper.create(source);
-	}
-
-	@Override
-	public IntSet newIntBitSet() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IntSet newIntBitSet(int expectedSize) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IntSet newIntBitSet(int[] source) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IntSet newIntBitSet(IntCollection source) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

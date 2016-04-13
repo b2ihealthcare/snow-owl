@@ -15,11 +15,13 @@
  */
 package com.b2international.commons.collect;
 
+import java.util.BitSet;
 import java.util.Set;
 
 import com.b2international.collections.ByteCollection;
 import com.b2international.collections.FastUtilPrimitiveCollections;
 import com.b2international.collections.IntCollection;
+import com.b2international.collections.IntIterator;
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.set.ByteSet;
 import com.b2international.collections.set.IntSet;
@@ -40,20 +42,37 @@ public class PrimitiveSets {
 		return FACTORY.newByteOpenHashSet(source);
 	}
 
-	public static IntSet newIntBitSet() {
-		return FACTORY.newIntBitSet();
+	public static BitSet newBitSet() {
+		return new BitSet();
 	}
 
-	public static IntSet newIntBitSet(int expectedSize) {
-		return FACTORY.newIntBitSet(expectedSize);
+	public static BitSet newBitSet(int expectedSize) {
+		return new BitSet(expectedSize);
 	}
 
-	public static IntSet newIntBitSet(int[] source) {
-		return FACTORY.newIntBitSet(source);
+	public static BitSet newBitSet(int[] source) {
+		if (source == null) {
+			return newBitSet();
+		} else {
+			final BitSet bitSet = newBitSet(source.length);
+			for (int value : source) {
+				bitSet.set(value);
+			}
+			return bitSet;
+		}
 	}
 
-	public static IntSet newIntBitSet(IntCollection source) {
-		return FACTORY.newIntBitSet(source);
+	public static BitSet newBitSet(IntCollection source) {
+		if (source == null) {
+			return newBitSet();
+		} else {
+			final BitSet bitSet = newBitSet(source.size());
+			final IntIterator iter = source.iterator();
+			while (iter.hasNext()) {
+				bitSet.set(iter.next());
+			}
+			return bitSet;
+		}
 	}
 
 	public static IntSet newIntOpenHashSet() {
