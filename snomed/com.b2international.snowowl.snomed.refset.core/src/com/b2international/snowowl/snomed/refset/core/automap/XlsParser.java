@@ -148,14 +148,17 @@ public class XlsParser implements ITableParser {
 	}
 
 	private List<String> collectRowValues(Row row) {
+
 		List<String> list = newArrayListWithExpectedSize(row.getLastCellNum());
+		
+		boolean hasAnyCellWithValue = false;
 		for (int i = 0; i < row.getLastCellNum(); i++) {
 			String cellValue = getStringValue(row.getCell(i, Row.RETURN_BLANK_AS_NULL));
-			if (!StringUtils.isEmpty(cellValue)) {
-				list.add(cellValue);
-			}
+			hasAnyCellWithValue = !StringUtils.isEmpty(cellValue);
+			list.add(cellValue);
 		}
-		return list;
+		
+		return hasAnyCellWithValue ? list : Collections.<String>emptyList();
 	}
 
 	/**
