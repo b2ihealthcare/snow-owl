@@ -78,6 +78,6 @@ public final class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 
 	@Override
 	public LongSet newUnmodifiableLongSet(LongSet source) {
-		throw new UnsupportedOperationException();
+		return ImmutableLongSet.of(LongOpenHashSetWrapper.create(source));
 	}
 }
