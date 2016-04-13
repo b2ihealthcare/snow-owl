@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -102,6 +103,11 @@ public class SnomedSubsetImportConfiguration {
 	private void setName(final String term, final SubsetEntry subsetEntry) {
 
 		String subsetName = term;
+		
+		if (Concepts.CMT_REFSET_NAME_ID_MAP.containsKey(subsetName)) {
+			subsetEntry.setSubsetName(subsetName);
+			return;
+		}
 		
 		subsetName = retainAfter(subsetName, "Concepts_");
 		subsetName = retainAfter(subsetName, "Refset");
