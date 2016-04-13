@@ -71,10 +71,6 @@ public class PrimitiveLists {
 		return FACTORY.newLongArrayList(source);
 	}
 
-	public static IntList newUnmodifiableIntList(IntList source) {
-		return FACTORY.newUnmodifiableIntList(source);
-	}
-
 	public static IntDeque newIntArrayDeque(int[] source) {
 		return FACTORY.newIntArrayDeque(source);
 	}
