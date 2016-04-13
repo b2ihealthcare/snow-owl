@@ -17,10 +17,12 @@ package com.b2international.snowowl.snomed;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -168,6 +170,7 @@ public abstract class SnomedConstants {
 		public static final String REFSET_KP_CONVERGENT_MEDICAL_TERMINOLOGY = "494287621000154107"; //for more details see: https://github.com/b2ihealthcare/snowowl/issues/368
 		public static final String REFSET_CORE_PROBLEM_LIST_REFERENCE_SETS = "344562521000154101";
 		public static final String REFSET_INFOWAY_PRIMARY_HEALTH_CARE_REFERENCE_SETS = "372749141000154103";
+		
 		public static final String CARDIOLOGY_REFERENCE_SET = "152725851000154106";
 		public static final String ENDOCRINOLOGY_UROLOGY_NEPHROLOGY_REFERENCE_SET = "674330851000154100";
 		public static final String HEMATOLOGY_ONCOLOGY_REFERENCE_SET = "291212201000154102";
@@ -176,15 +179,32 @@ public abstract class SnomedConstants {
 		public static final String NEUROLOGY_REFERENCE_SET = "501847791000154106";
 		public static final String OPHTHALMOLOGY_REFERENCE_SET = "735316271000154103";
 		public static final String PRIMARY_CARE_REFERENCE_SET = "723916301000154101";
-		public static final String ORTHOPEDICS_NON_EXTREMITY_FRACTURES_REFERENCE_SET = "411115801000154106";
-		public static final String HX_OF_AND_FHX_OF_REFERENCE_SET = "470288881000154105";
-		public static final String INJURIES_PART_1_REFERENCE_SET = "111719501000154107";
-		public static final String ORTHOPEDICS_EXTREMITY_FRACTURES_REFERENCE_SET = "461251521000154104";
+		public static final String HISTORY_AND_FAMILY_HISTORY_REFERENCE_SET = "470288881000154105";
+		public static final String INJURIES_REFERENCE_SET = "111719501000154107";
+		public static final String ORTHOPEDICS_REFERENCE_SET = "461251521000154104";
 		public static final String OBSTETRICS_AND_GYNECOLOGY_REFERENCE_SET = "358903761000154109";
 		public static final String SKIN_RESPIRATORY_REFERENCE_SET = "832566231000154105";
 		public static final String ENT_GASTROINTESTINAL_INFECTIOUS_DISEASES_REFERENCE_SET = "149994661000154106";
 		public static final String KP_PROBLEM_LIST_REFERENCE_SET = "376537701000154105";
 
+		public static final Map<String, String> CMT_REFSET_NAME_ID_MAP = ImmutableMap.<String, String>builder()
+				.put("Cardiology", CARDIOLOGY_REFERENCE_SET)
+				.put("Endocrine, Nephrology, and Urology", ENDOCRINOLOGY_UROLOGY_NEPHROLOGY_REFERENCE_SET)
+				.put("ENT, Gastrointestinal, Infectious Diseases", ENT_GASTROINTESTINAL_INFECTIOUS_DISEASES_REFERENCE_SET)
+				.put("Hematology and Oncology", HEMATOLOGY_ONCOLOGY_REFERENCE_SET)
+				.put("History and Family History", HISTORY_AND_FAMILY_HISTORY_REFERENCE_SET)
+				.put("Injuries", INJURIES_REFERENCE_SET)
+				.put("KP Problem List", KP_PROBLEM_LIST_REFERENCE_SET)
+				.put("Mental Health", MENTAL_HEALTH_REFERENCE_SET)
+				.put("Musculoskeletal", MUSCULOSKELETAL_REFERENCE_SET)
+				.put("Neurology", NEUROLOGY_REFERENCE_SET)
+				.put("Obstetrics and Gynecology", OBSTETRICS_AND_GYNECOLOGY_REFERENCE_SET)
+				.put("Ophthalmology", OPHTHALMOLOGY_REFERENCE_SET)
+				.put("Orthopedics", ORTHOPEDICS_REFERENCE_SET)
+				.put("Primary Care", PRIMARY_CARE_REFERENCE_SET)
+				.put("Skin/Dermatology and Respiratory", SKIN_RESPIRATORY_REFERENCE_SET)
+				.build();
+		
 		public static final String SINGAPORE_UNIT_OF_MEASURE_REFERENCE_SET = "492227111000132107";
 		public static final String SINGAPORE_EXTENSION_REFERENCE_SET = "843239231000132105";
 		public static final String SDD_UNIT_OF_MEASURE_REFERENCE_SET = "62111000133108";

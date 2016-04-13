@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.util.CommitException;
@@ -61,7 +60,6 @@ import com.b2international.snowowl.snomed.refset.core.automap.CsvVariableFieldCo
 import com.b2international.snowowl.snomed.refset.core.automap.XlsParser;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 
@@ -395,25 +393,6 @@ public class SnomedSubsetImporter {
 	 */
 	private final class SubsetImporterCallback implements RecordParserCallback<String> {
 
-		private final Map<String, String> CMT_NAME_ID_PAIRS = ImmutableMap.<String, String>builder()
-				.put("Cardiology", Concepts.CARDIOLOGY_REFERENCE_SET)
-				.put("Endocrinology Urology Nephrology", Concepts.ENDOCRINOLOGY_UROLOGY_NEPHROLOGY_REFERENCE_SET)
-				.put("Hematology Oncology", Concepts.HEMATOLOGY_ONCOLOGY_REFERENCE_SET)
-				.put("Mental Health", Concepts.MENTAL_HEALTH_REFERENCE_SET)
-				.put("Musculoskeletal", Concepts.MUSCULOSKELETAL_REFERENCE_SET)
-				.put("Neurology", Concepts.NEUROLOGY_REFERENCE_SET)
-				.put("Ophthalmology", Concepts.OPHTHALMOLOGY_REFERENCE_SET)
-				.put("ENT Gastrointestinal Infectious Diseases", Concepts.ENT_GASTROINTESTINAL_INFECTIOUS_DISEASES_REFERENCE_SET)
-				.put("Hx of and FHx of", Concepts.HX_OF_AND_FHX_OF_REFERENCE_SET)
-				.put("Injuries [Part 1]", Concepts.INJURIES_PART_1_REFERENCE_SET)
-				.put("Obstetrics and Gynecology", Concepts.OBSTETRICS_AND_GYNECOLOGY_REFERENCE_SET)
-				.put("Orthopedics Extremity Fractures", Concepts.ORTHOPEDICS_EXTREMITY_FRACTURES_REFERENCE_SET)
-				.put("Orthopedics Non-Extremity Fractures", Concepts.ORTHOPEDICS_NON_EXTREMITY_FRACTURES_REFERENCE_SET)
-				.put("Primary Care", Concepts.PRIMARY_CARE_REFERENCE_SET)
-				.put("Skin Respiratory", Concepts.SKIN_RESPIRATORY_REFERENCE_SET)
-				.put("KP Problem List", Concepts.KP_PROBLEM_LIST_REFERENCE_SET)
-				.build();
-		
 		private final SnomedUnimportedRefSets unImportedRefSets;
 		private String moduleId;
 		private final int idColumnNumber;
@@ -480,7 +459,7 @@ public class SnomedSubsetImporter {
 		
 		// update the concept Id to default constant id if the concept is CMT concept
 		private String getIdIfCMTConcept(String label) {
-			return CMT_NAME_ID_PAIRS.get(label.replaceAll(" reference set", ""));
+			return Concepts.CMT_REFSET_NAME_ID_MAP.get(label.replaceAll(" reference set", ""));
 		}
 
 		@Override
