@@ -41,8 +41,6 @@ public interface PrimitiveListFactory {
 
 	LongList newLongArrayList(LongCollection source);
 
-	IntList newUnmodifiableIntList(IntList source);
-	
 	IntDeque newIntArrayDeque(int[] source);
 
 	LongDeque newLongArrayDeque();

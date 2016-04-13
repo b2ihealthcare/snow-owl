@@ -78,9 +78,4 @@ public class FastUtilPrimitiveListFactory implements PrimitiveListFactory {
 		return LongArrayDequeWrapper.create();
 	}
 	
-	@Override
-	public IntList newUnmodifiableIntList(IntList source) {
-		throw new UnsupportedOperationException();
-	}
-	
 }
