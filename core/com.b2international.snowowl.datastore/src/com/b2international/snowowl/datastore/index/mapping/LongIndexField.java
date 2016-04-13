@@ -16,18 +16,27 @@
 package com.b2international.snowowl.datastore.index.mapping;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.queries.TermsFilter;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
 
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.LongIterator;
 import com.b2international.collections.list.LongList;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveSets;
+import com.b2international.snowowl.datastore.index.lucene.MatchNoDocsFilter;
 
 /**
  * @since 4.3
@@ -67,7 +76,7 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	@Override
 	public final LongSet getValueAsLongSet(Document doc) {
 		final IndexableField[] fields = getFields(doc);
-		final LongSet longIds = PrimitiveCollections.newLongOpenHashSet(fields.length + 1);
+		final LongSet longIds = PrimitiveSets.newLongOpenHashSet(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}
@@ -75,14 +84,31 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	@Override
 	public final LongList getValueAsLongList(Document doc) {
 		final IndexableField[] fields = getFields(doc);
-		final LongList longIds = PrimitiveCollections.newLongArrayList(fields.length + 1);
+		final LongList longIds = PrimitiveLists.newLongArrayList(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}
-
+	
 	private void addIdsToLongCollection(final IndexableField[] fields, final LongCollection longIds) {
 		for (final IndexableField field : fields) {
 			longIds.add(getValue(field));
+		}
+	}
+	
+	public final Filter createTermsFilter(LongCollection values) {
+		if (CompareUtils.isEmpty(values)) {
+			return new MatchNoDocsFilter(); 
+		} else {
+			// Converted BytesRef values should be unique, but TermsFilter requires a writable list for sorting
+			final LongSet uniqueValues = PrimitiveSets.newLongOpenHashSet(values);
+
+			final List<BytesRef> uniqueBytesRefs = newArrayList();
+			final LongIterator iter = uniqueValues.iterator();
+			while (iter.hasNext()) {
+				uniqueBytesRefs.add(toBytesRef(iter.next()));
+			}
+			
+			return new TermsFilter(fieldName(), uniqueBytesRefs);
 		}
 	}
 
