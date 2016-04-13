@@ -23,11 +23,6 @@ import com.google.common.hash.HashFunction;
 public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 
 	@Override
-	public ByteKeyLongMap newByteKeyLongOpenHashMap() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public <V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize) {
 		throw new UnsupportedOperationException();
 	}

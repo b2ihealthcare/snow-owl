@@ -22,8 +22,6 @@ import com.google.common.hash.HashFunction;
  */
 public interface PrimitiveMapFactory {
 
-	ByteKeyLongMap newByteKeyLongOpenHashMap();
-
 	<V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize);
 	
 	<V> IntKeyMap<V> newIntKeyOpenHashMap();
