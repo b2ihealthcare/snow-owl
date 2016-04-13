@@ -24,7 +24,7 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 
 	@Override
 	public <V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize) {
-		throw new UnsupportedOperationException();
+		return ByteKeyMapWrapper.create(expectedSize);
 	}
 	
 	@Override
