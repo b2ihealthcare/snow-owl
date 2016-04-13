@@ -52,7 +52,7 @@ import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -123,7 +123,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     private static final String DIRECTORY_PATH_PREFIX = "sct_import";
 
     private final IBranchPath importTargetBranchPath;
-    private final LongKeyMap pendingDescriptionDocuments = PrimitiveCollections.newLongKeyOpenHashMap();
+    private final LongKeyMap<Document> pendingDescriptionDocuments = PrimitiveMaps.newLongKeyOpenHashMap();
 	
 	private LoadingCache<String, Filter> preferredFilters = CacheBuilder.newBuilder().build(new CacheLoader<String, Filter>() {
 		@Override
@@ -344,7 +344,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
             searcher = manager.acquire();
             
 	        final long longDescriptionId = Long.parseLong(descriptionId);
-	        Document pendingDescriptionDoc = (Document) pendingDescriptionDocuments.get(longDescriptionId);
+	        Document pendingDescriptionDoc = pendingDescriptionDocuments.get(longDescriptionId);
 	
 	        if (pendingDescriptionDoc == null) {
 	            final Query descriptionIdQuery = createDescriptionQuery(descriptionId);
@@ -466,11 +466,11 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
     @Override
     public void commit() {
-    	for (final LongKeyMapIterator itr = pendingDescriptionDocuments.mapIterator(); itr.hasNext(); /* empty */) {
+    	for (final LongKeyMapIterator<Document> itr = pendingDescriptionDocuments.mapIterator(); itr.hasNext(); /* empty */) {
     		itr.next();
     		
     		final long descriptionId = itr.getKey();
-    		final Document descriptionDoc = (Document) itr.getValue();
+    		final Document descriptionDoc = itr.getValue();
     		index(new Term(DESCRIPTION_ID, String.valueOf(descriptionId)), descriptionDoc);
     	}
     	

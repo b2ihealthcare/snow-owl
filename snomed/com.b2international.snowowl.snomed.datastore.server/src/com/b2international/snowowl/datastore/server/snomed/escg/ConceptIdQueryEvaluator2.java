@@ -28,8 +28,8 @@ import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
@@ -88,18 +88,18 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			switch (concept.getQuantifier()) {
 				
 				case SELF:
-					return PrimitiveCollections.newLongOpenHashSet(new long[] { Long.parseLong(conceptId) });
+					return PrimitiveSets.newLongOpenHashSet(new long[] { Long.parseLong(conceptId) });
 					
 				case ANY_SUBTYPE:
 					final Query descendatQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
 					mainQuery.add(descendatQuery, Occur.MUST);
 					service.search(branchPath, mainQuery, collector);
-					return PrimitiveCollections.newLongOpenHashSet(collector.getValues());
+					return PrimitiveSets.newLongOpenHashSet(collector.getValues());
 
 				case SELF_AND_ANY_SUBTYPE:
 					mainQuery.add(SnomedMappings.newQuery().id(conceptId).parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
 					service.search(branchPath, mainQuery, collector);
-					return PrimitiveCollections.newLongOpenHashSet(collector.getValues());
+					return PrimitiveSets.newLongOpenHashSet(collector.getValues());
 					
 				default:
 					throw new IllegalArgumentException("Unknown concept quantifier type: " + concept.getQuantifier());
@@ -134,7 +134,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			//workaround to disable scoring on MUST_NOT boolean query. See: https://issues.apache.org/jira/browse/LUCENE-4395
 			getIndexService().search(branchPath, new ConstantScoreQuery(query), collector);
 
-			return PrimitiveCollections.newLongOpenHashSet(collector.getObjectIds());
+			return PrimitiveSets.newLongOpenHashSet(collector.getObjectIds());
 			
 		} else if (expression instanceof RefSet) {
 			
@@ -145,7 +145,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final SnomedIndexServerService service = getIndexService();
 			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
 			service.search(branchPath, query, collector);
-			return PrimitiveCollections.newLongOpenHashSet(collector.getValues());
+			return PrimitiveSets.newLongOpenHashSet(collector.getValues());
 			
 		} else if (expression instanceof SubExpression) {
 			
@@ -177,8 +177,8 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 				final LongSet rightIds = evaluate(clause.getRight());
 				
 				return leftIds.size() < rightIds.size() 
-						? PrimitiveCollections.newLongOpenHashSet(LongSets.intersection(leftIds, rightIds)) 
-						: PrimitiveCollections.newLongOpenHashSet(LongSets.intersection(rightIds, leftIds));
+						? PrimitiveSets.newLongOpenHashSet(LongSets.intersection(leftIds, rightIds)) 
+						: PrimitiveSets.newLongOpenHashSet(LongSets.intersection(rightIds, leftIds));
 				
 			}
 			
@@ -209,11 +209,11 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 
 	private LongSet getByNumericalAttributes(final LongCollection conceptIds, final NumericDataClause numericDataClause) {
-		return PrimitiveCollections.newLongOpenHashSet();
+		return PrimitiveSets.newLongOpenHashSet();
 	}
 
 	private LongSet getByNumericalAttributesGroup(final LongCollection concepts, final NumericDataClause numericDataClause, final LongCollection substanceConcepts) {
-		return PrimitiveCollections.newLongOpenHashSet();
+		return PrimitiveSets.newLongOpenHashSet();
 	}
 	
 	/*returns with the server side index service*/

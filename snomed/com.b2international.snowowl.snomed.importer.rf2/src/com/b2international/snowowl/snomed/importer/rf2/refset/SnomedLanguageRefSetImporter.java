@@ -44,8 +44,8 @@ import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.LongFunction;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPointUtils;
@@ -228,7 +228,7 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 		}
 		
 		//mapping between SNOMED CT description storage key and the CDO revision
-		final LongKeyMap storageKeyToRevisionMap = PrimitiveCollections.newLongKeyOpenHashMap();
+		final LongKeyMap<InternalCDORevision> storageKeyToRevisionMap = PrimitiveMaps.newLongKeyOpenHashMap();
 		for (final Iterator<CDORevision> itr = revisions.iterator(); itr.hasNext(); /**/) {
 			
 			final InternalCDORevision revision = (InternalCDORevision) itr.next();

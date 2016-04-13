@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -114,7 +114,7 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 		final LongSet disjointUnionIds;
 
 		if (exhaustive) {
-			disjointUnionIds = PrimitiveCollections.newLongOpenHashSet(oldReasonerTaxonomy.getSubTypeIds(conceptId));
+			disjointUnionIds = PrimitiveSets.newLongOpenHashSet(oldReasonerTaxonomy.getSubTypeIds(conceptId));
 		} else {
 			disjointUnionIds = null;
 		}
@@ -162,7 +162,7 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 		final LongSet disjointUnionIds;
 
 		if (exhaustive) {
-			disjointUnionIds = PrimitiveCollections.newLongOpenHashSet(newReasonerTaxonomy.getSubTypeIds(conceptId));
+			disjointUnionIds = PrimitiveSets.newLongOpenHashSet(newReasonerTaxonomy.getSubTypeIds(conceptId));
 		} else {
 			disjointUnionIds = null;
 		}

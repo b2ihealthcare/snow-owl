@@ -99,10 +99,12 @@ import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -276,7 +278,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	 * <p>
 	 * <b>NOTE:&nbsp;</b>Just for estimation.
 	 */
-	public static final LongCollection TOP_MOST_RELATIONSHIP_TYPE_IDS_AS_LONG = PrimitiveCollections.newUnmodifiableLongSet(PrimitiveCollections.newLongChainedHashSet(new long[] {
+	public static final LongCollection TOP_MOST_RELATIONSHIP_TYPE_IDS_AS_LONG = PrimitiveSets.newUnmodifiableLongSet(PrimitiveSets.newLongChainedHashSet(new long[] {
 			Long.parseLong(Concepts.IS_A),
 			Long.parseLong(Concepts.FINDING_SITE),
 			Long.parseLong(Concepts.HAS_ACTIVE_INGREDIENT),
@@ -850,7 +852,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	@Override
 	public boolean isActive(final IBranchPath branchPath, final long storageKey) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		return isActive(branchPath, PrimitiveCollections.newLongArrayList(new long[] { storageKey })).get(0);
+		return isActive(branchPath, PrimitiveLists.newLongArrayList(new long[] { storageKey })).get(0);
 	}
 
 	@Override
@@ -990,7 +992,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				
 			}
 			
-			final LongSet $ = PrimitiveCollections.newLongOpenHashSet(hitCount);
+			final LongSet $ = PrimitiveSets.newLongOpenHashSet(hitCount);
 
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
@@ -1204,7 +1206,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return LongCollections.emptySet();
 			}
 			
-			final LongSet $ = PrimitiveCollections.newLongOpenHashSet(hitCount);
+			final LongSet $ = PrimitiveSets.newLongOpenHashSet(hitCount);
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
 			while (itr.next()) {
@@ -1322,7 +1324,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			
 			indexService.search(branchPath, SnomedMappings.newQuery().refSet().matchAll(), collector);
 			
-			final LongSet $ = PrimitiveCollections.newLongOpenHashSet();
+			final LongSet $ = PrimitiveSets.newLongOpenHashSet();
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
 			while (itr.next()) {
@@ -1366,7 +1368,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			manager = getIndexServerService().getManager(branchPath);
 			searcher = manager.acquire();
-			final LongKeyLongMap ids = PrimitiveCollections.newLongKeyLongOpenHashMap();
+			final LongKeyLongMap ids = PrimitiveMaps.newLongKeyLongOpenHashMap();
 
 			while (itr.next()) {
 				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_MODULE_FIELDS_TO_LOAD);
@@ -1426,14 +1428,14 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				lapTimer.start();
 			}
 			
-			final LongKeyMap idLabelMapping = collector.getIdLabelMapping();
+			final LongKeyMap<String> idLabelMapping = collector.getIdLabelMapping();
 			//label ID mapping. initial pessimistic about the capacity
 			final Map<String, String> $ = Maps.newHashMapWithExpectedSize(idLabelMapping.size() * descriptionTypeId.length);
 			
 			//XXX map key is lowercase on purpose
-			for (final LongKeyMapIterator itr = idLabelMapping.mapIterator(); itr.hasNext(); /* nothing */) {
+			for (final LongKeyMapIterator<String> itr = idLabelMapping.mapIterator(); itr.hasNext(); /* nothing */) {
 				itr.next();
-				$.put(String.valueOf(itr.getValue()).toLowerCase(), String.valueOf(itr.getKey()));
+				$.put(itr.getValue().toLowerCase(), String.valueOf(itr.getKey()));
 			}
 			
 			if (LOGGER.isDebugEnabled()) {
@@ -1774,7 +1776,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 		final Multimap<String, String> ptToIdsMapping = HashMultimap.create();
 		
-		for (final LongKeyMapIterator itr = collector.getIdLabelMapping().mapIterator(); itr.hasNext(); /**/) {
+		for (final LongKeyMapIterator<String> itr = collector.getIdLabelMapping().mapIterator(); itr.hasNext(); /**/) {
 			itr.next();
 			final String id = Long.toString(itr.getKey());
 			final String pt = StringUtils.valueOfOrEmptyString(itr.getValue());
@@ -2009,7 +2011,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	private LongSet getComponentStorageKeysByRefSetIdsAndComponentType(final IBranchPath branchPath, final IndexServerService indexService, 
 			final ReferenceManager<IndexSearcher> manager, final IndexSearcher searcher, final Set<String> referencedComponentIds, final short referencedComponentType) throws IOException {
 		
-		final LongSet storageKeys = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
 		final int maxDoc = indexService.maxDoc(branchPath);
 		
 		BooleanQuery query = new BooleanQuery(true);
@@ -2353,7 +2355,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	/* initialize a map of namespace IDs and the associated extension namespace concept IDs */
 	private LongKeyLongMap getNameSpaceIds(/*ignored*/final IBranchPath branchPath) {
 		
-		final LongKeyLongMap map = PrimitiveCollections.newLongKeyLongOpenHashMap();
+		final LongKeyLongMap map = PrimitiveMaps.newLongKeyLongOpenHashMap();
 		
 		for (final SnomedConceptIndexEntry concept : getTerminologyBrowser().getAllSubTypesById(branchPath, Concepts.NAMESPACE_ROOT)) {
 			
@@ -2452,7 +2454,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	 * Executes the given query and returns with the found components storage keys.
 	 */
 	private LongSet getStorageKeys(final Query query, final IndexServerService<?> indexService, final IndexSearcher searcher, final int maxDoc, final IBranchPath branchPath) throws IOException {
-		final LongSet resultSet = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet resultSet = PrimitiveSets.newLongOpenHashSet();
 		final DocIdCollector componentCollector = DocIdCollector.create(maxDoc);
 		indexService.search(branchPath, query, componentCollector);
 		final DocIdsIterator componentItr = componentCollector.getDocIDs().iterator();

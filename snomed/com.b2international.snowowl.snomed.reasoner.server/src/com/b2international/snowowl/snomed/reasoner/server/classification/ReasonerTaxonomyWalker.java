@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.map.LongKeyLongMap;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -72,7 +73,7 @@ public class ReasonerTaxonomyWalker {
 		this.reasoner = reasoner;
 		this.taxonomy = changeSet;
 		this.pm = SnomedOntologyUtils.createPrefixManager(SnomedOntologyUtils.BASE_IRI.resolve(branchPath.getPath()));
-		processedConceptIds = PrimitiveCollections.newLongOpenHashSet(600000);
+		processedConceptIds = PrimitiveSets.newLongOpenHashSet(600000);
 		idToStorageKeyMap = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConceptIdToStorageKeyMap(branchPath);
 	}
 
@@ -116,7 +117,7 @@ public class ReasonerTaxonomyWalker {
 
  		// Check first if we are at the bottom node, as all OWL classes are superclasses of Nothing
  		final boolean unsatisfiable = node.isBottomNode();
- 		final LongSet conceptIds = PrimitiveCollections.newLongOpenHashSet();
+ 		final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet();
  		final long representativeConceptId = getConceptIds(node, conceptIds);
 
 		if (unsatisfiable) {
@@ -139,7 +140,7 @@ public class ReasonerTaxonomyWalker {
 			registerEquivalentConceptIds(conceptIds, unsatisfiable);
 		}
 
-		final LongSet parentConceptIds = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet parentConceptIds = PrimitiveSets.newLongOpenHashSet();
 		
 		for (final Node<OWLClass> parentNode : parentNodeSet) {
 			
@@ -148,7 +149,7 @@ public class ReasonerTaxonomyWalker {
 				break;
 			}
 			
-			final long parentConceptId = getConceptIds(parentNode, PrimitiveCollections.newLongOpenHashSet());
+			final long parentConceptId = getConceptIds(parentNode, PrimitiveSets.newLongOpenHashSet());
 			parentConceptIds.add(parentConceptId);
 		}
 		
@@ -212,7 +213,7 @@ public class ReasonerTaxonomyWalker {
 			conceptIds.add(conceptId);
 		}
 		
-		final LongKeyLongMap map = PrimitiveCollections.newLongKeyLongOpenHashMap(conceptIds.size());
+		final LongKeyLongMap map = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIds.size());
 		
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /* nothing */) {
 			final long conceptId = itr.next();

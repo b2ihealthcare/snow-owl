@@ -28,9 +28,9 @@ import com.b2international.collections.map.LongKeyLongMap;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.ArrayIntIterator;
 import com.b2international.commons.pcj.BitSetIntIterator;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -69,13 +69,13 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	protected LongSet fullyDefinedConceptIds;
 
 	/** Mapping between concept IDs and the associated active outbound relationships. */
-	protected LongKeyMap conceptIdToStatements;
+	protected LongKeyMap<Collection<StatementFragment>> conceptIdToStatements;
 
 	/** Mapping between concept IDs and the associated concrete domain members. */
-	protected LongKeyMap conceptIdToConcreteDomain;
+	protected LongKeyMap<Collection<ConcreteDomainFragment>> conceptIdToConcreteDomain;
 
 	/** Mapping between statement IDs and the associated concrete domain members. */
-	protected LongKeyMap statementIdToConcreteDomain;
+	protected LongKeyMap<Collection<ConcreteDomainFragment>> statementIdToConcreteDomain;
 
 	/** Maps internal IDs to SNOMED&nbsp;CT concept IDs. */
 	protected LongList internalIdToconceptId;
@@ -183,10 +183,9 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @param conceptId the unique ID of the SNOMED&nbsp;CT concept.
 	 * @return the concrete domains associated with a concept, if any.
 	 */
-	@SuppressWarnings("unchecked")
 	public Collection<ConcreteDomainFragment> getConceptConcreteDomainFragments(final long conceptId) {
-		final Object concreteDomains = conceptIdToConcreteDomain.get(conceptId);
-		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
+		final Collection<ConcreteDomainFragment> concreteDomains = conceptIdToConcreteDomain.get(conceptId);
+		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
 	}
 
 	/**
@@ -194,10 +193,9 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @param statementId the unique ID of the SNOMED&nbsp;CT relationships.
 	 * @return the concrete domains associated with a relationship, if any.
 	 */
-	@SuppressWarnings("unchecked")
 	public Collection<ConcreteDomainFragment> getStatementConcreteDomainFragments(final long statementId) {
-		final Object concreteDomains = statementIdToConcreteDomain.get(statementId);
-		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
+		final Collection<ConcreteDomainFragment> concreteDomains = statementIdToConcreteDomain.get(statementId);
+		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
 	}
 
 	/**
@@ -211,7 +209,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	/**
 	 * @return a {@link LongKeyMap} associating statement identifiers to their corresponding concrete domain members.
 	 */
-	public LongKeyMap getStatementIdToConcreteDomainMap() {
+	public LongKeyMap<Collection<ConcreteDomainFragment>> getStatementIdToConcreteDomainMap() {
 		return statementIdToConcreteDomain;
 	}
 
@@ -232,7 +230,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getSubTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int id = getInternalId(conceptId);
@@ -240,7 +238,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		final int[] subtypes = subTypes[id];
 
 		if (CompareUtils.isEmpty(subtypes)) { //guard against lower bound cannot be negative: 0
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		return convertToConceptIds(new ArrayIntIterator(subtypes));
@@ -254,7 +252,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getSuperTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int id = getInternalId(conceptId);
@@ -262,7 +260,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		final int[] supertypes = superTypes[id];
 
 		if (CompareUtils.isEmpty(supertypes)) { //guard against lower bound cannot be negative: 0
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		return convertToConceptIds(new ArrayIntIterator(supertypes));
@@ -276,7 +274,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getAllSubTypesIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int conceptCount = internalIdToconceptId.size();
@@ -296,7 +294,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getAllSuperTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int conceptCount = internalIdToconceptId.size();
@@ -344,7 +342,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	}
 
 	private LongSet convertToConceptIds(final IntIterator it) {
-		final LongSet result = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet result = PrimitiveSets.newLongOpenHashSet();
 
 		while (it.hasNext()) {
 			result.add(getConceptId(it.next()));

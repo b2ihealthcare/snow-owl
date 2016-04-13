@@ -30,9 +30,9 @@ import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
@@ -412,18 +412,18 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	}
 
 	private long[] getEdges0(final long statementId) {
-		return (long[]) getEdges().get(statementId);
+		return getEdges().get(statementId);
 	}
 
 	private LongSet processElements(final long conceptId, final IntToLongFunction function, final BitSet bitSet) {
 		Preconditions.checkNotNull(function, "Function argument cannot be null.");
 		Preconditions.checkNotNull(function, "Bit set argument cannot be null.");
 		if (CompareUtils.isEmpty(bitSet)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		final int count = bitSet.cardinality();
 	
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet(count);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet(count);
 		for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
 			long convertedId = function.apply(i);
 			if (convertedId == conceptId) {
@@ -438,9 +438,9 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	private LongSet processElements(final String conceptId, final IntToLongFunction function, final int... internalIds) {
 		Preconditions.checkNotNull(function, "Function argument cannot be null.");
 		if (CompareUtils.isEmpty(internalIds)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet(internalIds.length); //optimized load factor
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet(internalIds.length); //optimized load factor
 		final long conceptIdLong = Long.parseLong(conceptId);
 		for (final int i : internalIds) {
 			long convertedId = function.apply(i);

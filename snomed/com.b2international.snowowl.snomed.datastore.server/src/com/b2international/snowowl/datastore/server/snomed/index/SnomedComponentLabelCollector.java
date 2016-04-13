@@ -23,8 +23,8 @@ import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.map.LongKeyMap;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.LongPredicate;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
@@ -45,7 +45,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollector {
 
 	private final LongPredicate componentIdsPredicate;
-	private final LongKeyMap idLabelMapping;
+	private final LongKeyMap<String> idLabelMapping;
 
 	private BinaryDocValues labelDocValues;
 	private NumericDocValues idDocValues;
@@ -59,7 +59,7 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	 * results.
 	 */
 	public SnomedComponentLabelCollector() {
-		this(LongPredicate.ALL_PREDICATE, PrimitiveCollections.newLongKeyOpenHashMap());
+		this(LongPredicate.ALL_PREDICATE, PrimitiveMaps.<String>newLongKeyOpenHashMap());
 	}
 
 	/**
@@ -69,10 +69,10 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	 * @param componentIds the component identifiers to accept
 	 */
 	public SnomedComponentLabelCollector(final LongCollection componentIds) {
-		this(LongSets.in(componentIds), PrimitiveCollections.newLongKeyOpenHashMap(getExpectedSize(componentIds)));
+		this(LongSets.in(componentIds), PrimitiveMaps.<String>newLongKeyOpenHashMap(getExpectedSize(componentIds)));
 	}
 
-	private SnomedComponentLabelCollector(final LongPredicate componentIdsPredicate, final LongKeyMap idLabelMapping) {
+	private SnomedComponentLabelCollector(final LongPredicate componentIdsPredicate, final LongKeyMap<String> idLabelMapping) {
 		this.componentIdsPredicate = componentIdsPredicate;
 		this.idLabelMapping = idLabelMapping;
 	}
@@ -104,7 +104,7 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	 * 
 	 * @return the map between component IDs and their human readable labels
 	 */
-	public LongKeyMap getIdLabelMapping() {
+	public LongKeyMap<String> getIdLabelMapping() {
 		return idLabelMapping;
 	}
 }

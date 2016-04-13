@@ -47,12 +47,12 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.map.LongKeyFloatMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -575,7 +575,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 
 	private Set<String> getAllDescendants(final Set<String> union) {
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet();
 		for (final String conceptId : union) {
 			if (inferredTaxonomyBuilder.containsNode(conceptId)) { //inactive one
 				$.addAll(inferredTaxonomyBuilder.getAllDescendantNodeIds(conceptId));

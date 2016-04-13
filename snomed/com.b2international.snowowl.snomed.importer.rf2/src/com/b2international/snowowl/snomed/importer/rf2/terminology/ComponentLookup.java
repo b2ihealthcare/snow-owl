@@ -25,7 +25,7 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -56,7 +56,7 @@ public class ComponentLookup<C extends CDOObject> {
 
 	private static final int EXPECTED_COMPONENT_SIZE = 50000;
 
-	private final LongKeyLongMap componentIdMap = PrimitiveCollections.newLongKeyLongOpenHashMap(EXPECTED_COMPONENT_SIZE);
+	private final LongKeyLongMap componentIdMap = PrimitiveMaps.newLongKeyLongOpenHashMap(EXPECTED_COMPONENT_SIZE);
 	private final CDOEditingContext editingContext;
 	private final EnumSet<ComponentImportType> initializedComponents = EnumSet.noneOf(ComponentImportType.class);
 	private final Map<String, C> newComponents = Maps.newHashMap();

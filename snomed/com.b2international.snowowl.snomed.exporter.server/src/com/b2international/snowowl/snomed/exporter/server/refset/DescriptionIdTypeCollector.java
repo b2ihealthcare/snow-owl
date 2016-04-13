@@ -21,7 +21,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -42,7 +42,7 @@ public class DescriptionIdTypeCollector extends AbstractDocsOutOfOrderCollector 
 	 * @param expectedSize the expected number of entries in the collector's backing map, or <= 0 to use the default size
 	 */
 	public DescriptionIdTypeCollector(final int expectedSize) {
-		map = expectedSize > 0 ? PrimitiveCollections.newLongKeyLongOpenHashMap(expectedSize) : PrimitiveCollections.newLongKeyLongOpenHashMap();
+		map = expectedSize > 0 ? PrimitiveMaps.newLongKeyLongOpenHashMap(expectedSize) : PrimitiveMaps.newLongKeyLongOpenHashMap();
 	}
 
 	@Override

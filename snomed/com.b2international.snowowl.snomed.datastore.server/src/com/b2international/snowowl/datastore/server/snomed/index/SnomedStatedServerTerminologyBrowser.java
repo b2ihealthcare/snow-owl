@@ -32,8 +32,8 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.graph.GraphUtils;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
@@ -103,7 +103,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(String.valueOf(conceptId)), 1); // concept
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().build();
@@ -117,7 +117,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(String.valueOf(conceptId)), 1); // concept
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().statedAncestor().build(); // all parents

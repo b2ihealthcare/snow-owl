@@ -21,7 +21,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -56,7 +56,7 @@ public class StatementDestinationIdCollector extends AbstractDocsOutOfOrderColle
 	 * @param expectedSize the expected number of source-destination pairs, or <= 0 to use the built-in defaults
 	 */
 	public StatementDestinationIdCollector(final int expectedSize) {
-		this.sourceToDestinationIds = (0 > expectedSize) ? PrimitiveCollections.newLongKeyLongOpenHashMap(expectedSize) : PrimitiveCollections.newLongKeyLongOpenHashMap();
+		this.sourceToDestinationIds = (0 > expectedSize) ? PrimitiveMaps.newLongKeyLongOpenHashMap(expectedSize) : PrimitiveMaps.newLongKeyLongOpenHashMap();
 	}
 
 	@Override

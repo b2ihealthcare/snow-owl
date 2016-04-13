@@ -35,8 +35,9 @@ import com.b2international.collections.set.LongSet;
 import com.b2international.commons.StopWatch;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
@@ -148,7 +149,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		}
 
 		final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes = new BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode>(EXPECTED_REFERENCE_SET_SIZE);
-		final LongKeyMap referencedComponentToNodeMap = PrimitiveCollections.newLongKeyOpenHashMap(EXPECTED_REFERENCE_SET_SIZE);
+		final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap = PrimitiveMaps.newLongKeyOpenHashMap(EXPECTED_REFERENCE_SET_SIZE);
 		
 		final Runnable collectReferencedComponentMapRunnable = new CollectReferencedComponentMapRunnable(maxDoc, 
 				filteredMemberConceptIds.get(), 
@@ -179,10 +180,10 @@ public class FilteredRefSetMemberBrowser2Builder {
 	 */
 	private FilteredRefSetMemberBrowser2 postFilterMembers(final SnomedHierarchy hierarchy, 
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes, 
-			final LongKeyMap referencedComponentToNodeMap) {
+			final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap) {
 		
-		final IntKeyMap subTypeMap = PrimitiveCollections.newIntKeyOpenHashMap(refSetMemberNodes.size());
-		final IntKeyMap superTypeMap = PrimitiveCollections.newIntKeyOpenHashMap(refSetMemberNodes.size());
+		final IntKeyMap<IntSet> subTypeMap = PrimitiveMaps.newIntKeyOpenHashMap(refSetMemberNodes.size());
+		final IntKeyMap<IntSet> superTypeMap = PrimitiveMaps.newIntKeyOpenHashMap(refSetMemberNodes.size());
 
 		addTopLevels(hierarchy,
 				refSetMemberNodes,
@@ -206,10 +207,10 @@ public class FilteredRefSetMemberBrowser2Builder {
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes,
 			final int parentInternalId,
 			final long conceptId, 
-			final IntKeyMap subTypeMap, 
-			final IntKeyMap superTypeMap, 
+			final IntKeyMap<IntSet> subTypeMap, 
+			final IntKeyMap<IntSet> superTypeMap, 
 			final int level,
-			final LongKeyMap referencedComponentToNodeMap) {
+			final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap) {
 		
 		if (level < 1) {
 			return;
@@ -232,10 +233,10 @@ public class FilteredRefSetMemberBrowser2Builder {
 
 	private void processComponentForTree(final SnomedHierarchy hierarchy, 
 			final IRefSetMemberNode node, 
-			final IntKeyMap subTypeMap,
-			final IntKeyMap superTypeMap,
+			final IntKeyMap<IntSet> subTypeMap,
+			final IntKeyMap<IntSet> superTypeMap,
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes, 
-			final LongKeyMap referencedComponentToNodeMap) {
+			final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap) {
 
 		final LongSet superTypeIds = hierarchy.getSuperTypeIds(node.getConceptId());
 		processConceptSuperTypes(hierarchy, node, superTypeIds, referencedComponentToNodeMap, refSetMemberNodes, subTypeMap, superTypeMap);
@@ -244,10 +245,10 @@ public class FilteredRefSetMemberBrowser2Builder {
 	private void processConceptSuperTypes(final SnomedHierarchy hierarchy, 
 			final IRefSetMemberNode node,
 			final LongSet superTypeIds, 
-			final LongKeyMap referencedComponentToNodeMap, 
+			final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap, 
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes, 
-			final IntKeyMap subTypeMap, 
-			final IntKeyMap superTypeMap) {
+			final IntKeyMap<IntSet> subTypeMap, 
+			final IntKeyMap<IntSet> superTypeMap) {
 
 		if (superTypeIds.isEmpty()) {
 			return;
@@ -257,8 +258,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 
 			final long parentId = itr.next();
 			
-			@SuppressWarnings("unchecked")
-			final Set<IRefSetMemberNode> parentNodes = (Set<IRefSetMemberNode>) referencedComponentToNodeMap.get(parentId);
+			final Set<IRefSetMemberNode> parentNodes = referencedComponentToNodeMap.get(parentId);
 			
 			if (null != parentNodes) {
 				final int childInternalId = refSetMemberNodes.getInternalId(node);
@@ -276,26 +276,24 @@ public class FilteredRefSetMemberBrowser2Builder {
 		processConceptSuperTypes(hierarchy, node, superTypeIds, referencedComponentToNodeMap, refSetMemberNodes, subTypeMap, superTypeMap);
 	}
 
-	private void put(final IntKeyMap map, final int key, final int value) {
-		IntSet values = (IntSet) map.get(key);
-
+	private void put(final IntKeyMap<IntSet> map, final int key, final int value) {
+		IntSet values = map.get(key);
 		if (values == null) {
-			values = PrimitiveCollections.newIntOpenHashSet();
+			values = PrimitiveSets.newIntOpenHashSet();
 			map.put(key, values);
 		}
-		
 		values.add(value);
 	}
 
 	private boolean trimTopLevels(final int internalId, 
 			final int level, 
-			final IntKeyMap subTypeMap, 
-			final IntKeyMap superTypeMap, 
+			final IntKeyMap<IntSet> subTypeMap, 
+			final IntKeyMap<IntSet> superTypeMap, 
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes) {
 
 		// dig down recursively to the specified levels
 		if (level >= 1) {
-			final IntSet subTypeIds = (IntSet) subTypeMap.get(internalId);
+			final IntSet subTypeIds = subTypeMap.get(internalId);
 			if (null != subTypeIds) {
 				final IntIterator it = subTypeIds.iterator();
 				while (it.hasNext()) {
@@ -308,7 +306,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		}
 
 		if (internalId != -1L) {
-			final IntSet subTypeIds = (IntSet) subTypeMap.get(internalId);
+			final IntSet subTypeIds = subTypeMap.get(internalId);
 			if (null == subTypeIds) {
 				superTypeMap.remove(internalId);
 				refSetMemberNodes.remove(refSetMemberNodes.get(internalId));
@@ -325,19 +323,15 @@ public class FilteredRefSetMemberBrowser2Builder {
 				return true;
 			}
 		}
-		
 		return false;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void put(final LongKeyMap referencedComponentToNodeMap, final long conceptId, final IRefSetMemberNode node) {
-		Set<IRefSetMemberNode> values = (Set<IRefSetMemberNode>) referencedComponentToNodeMap.get(conceptId);
-
+	private void put(final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap, final long conceptId, final IRefSetMemberNode node) {
+		Set<IRefSetMemberNode> values = referencedComponentToNodeMap.get(conceptId);
 		if (values == null) {
 			values = newHashSet();
 			referencedComponentToNodeMap.put(conceptId, values);
 		}
-		
 		values.add(node);
 	}
 }

@@ -21,7 +21,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.list.LongList;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -49,7 +49,7 @@ public class ComponentIdCollector extends AbstractDocsOutOfOrderCollector {
 	 * @param expectedSize the expected size for the backing 2D array.
 	 */
 	public ComponentIdCollector(final int expectedSize) {
-		conceptIds = 0 > expectedSize ? PrimitiveCollections.newLongArrayList(expectedSize) : PrimitiveCollections.newLongArrayList();
+		conceptIds = 0 > expectedSize ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
 	}
 
 	@Override

@@ -60,9 +60,9 @@ import com.b2international.collections.list.LongList;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -418,7 +418,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				}
 			});
 		} else {
-			deletedComponentIds	= PrimitiveCollections.newLongArrayList();
+			deletedComponentIds	= PrimitiveLists.newLongArrayList();
 			deletedMemberIds = Collections.emptySet();
 		}
 		

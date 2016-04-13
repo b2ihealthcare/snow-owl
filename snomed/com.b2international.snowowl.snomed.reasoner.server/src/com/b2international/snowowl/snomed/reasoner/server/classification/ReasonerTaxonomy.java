@@ -24,8 +24,10 @@ import com.b2international.collections.LongIterator;
 import com.b2international.collections.list.LongList;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.LongCollections;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 
 /**
@@ -35,10 +37,10 @@ public class ReasonerTaxonomy implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private final List<LongSet> equivalentConceptIds = newArrayList();
-	private final LongSet unsatisfiableConceptIds = PrimitiveCollections.newLongOpenHashSet();
-	private final LongKeyMap parentIds = PrimitiveCollections.newLongKeyOpenHashMap();
-	private final LongKeyMap ancestorIds = PrimitiveCollections.newLongKeyOpenHashMap();
-	private final LongList insertionOrderedIds = PrimitiveCollections.newLongArrayList();
+	private final LongSet unsatisfiableConceptIds = PrimitiveSets.newLongOpenHashSet();
+	private final LongKeyMap<LongSet> parentIds = PrimitiveMaps.newLongKeyOpenHashMap();
+	private final LongKeyMap<LongSet> ancestorIds = PrimitiveMaps.newLongKeyOpenHashMap();
+	private final LongList insertionOrderedIds = PrimitiveLists.newLongArrayList();
 
 	private final IBranchPath branchPath;
 	private final long elapsedTimeMillis;
@@ -66,7 +68,7 @@ public class ReasonerTaxonomy implements Serializable {
 	}
 	
 	public void addEquivalentConceptIds(final LongSet conceptIds) {
-		equivalentConceptIds.add(PrimitiveCollections.newLongOpenHashSet(conceptIds));
+		equivalentConceptIds.add(PrimitiveSets.newLongOpenHashSet(conceptIds));
 	}
 	
 	public List<LongSet> getEquivalentConceptIds() {
@@ -90,19 +92,19 @@ public class ReasonerTaxonomy implements Serializable {
 		}
 	}
 
-	private LongSet getOrCreateSet(final LongKeyMap map, final long key) {
+	private LongSet getOrCreateSet(final LongKeyMap<LongSet> map, final long key) {
 		if (map.containsKey(key)) {
-			return (LongSet) map.get(key);
+			return map.get(key);
 		} else {
-			final LongSet newSet = PrimitiveCollections.newLongOpenHashSet();
+			final LongSet newSet = PrimitiveSets.newLongOpenHashSet();
 			map.put(key, newSet);
 			return newSet;
 		}
 	}
 
-	private LongSet getOrReturnEmptySet(final LongKeyMap map, final long key) {
+	private LongSet getOrReturnEmptySet(final LongKeyMap<LongSet> map, final long key) {
 		if (map.containsKey(key)) {
-			return (LongSet) map.get(key);
+			return map.get(key);
 		} else {
 			return LongCollections.emptySet();
 		}

@@ -52,8 +52,9 @@ import com.b2international.collections.set.IntSet;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -111,7 +112,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	private int incomings[][][];
 	private int outgoings[][][];
 	private LongBidiMapWithInternalId concepts;
-	private LongKeyMap refSetMap;
+	private LongKeyMap<LongSet> refSetMap;
 	private final AtomicReference<InitializationState> state = new AtomicReference<InitializationState>(InitializationState.UNINITIALIZED);
 	
 	private final LoadingCache<String, Collection<String>> expressionCache = CacheBuilder.newBuilder()
@@ -287,7 +288,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				return emptyList();
 			}
 			final int ids[][] = outgoings[internalId];
-			final IntCollection internalIds = PrimitiveCollections.newIntArrayList();
+			final IntCollection internalIds = PrimitiveLists.newIntArrayList();
 			final int isATypeInternalId = getInternalId(IS_A);
 			
 			for (final int[] id : ids) {
@@ -311,7 +312,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			}
 			final int ids[][] = outgoings[internalId];
 			final int typeInternalId = getInternalId(typeId);
-			final IntCollection internalIds = PrimitiveCollections.newIntArrayList();
+			final IntCollection internalIds = PrimitiveLists.newIntArrayList();
 			for (final int[] id : ids) {
 				if (typeInternalId == id[1]) {
 					internalIds.add(id[0]);
@@ -332,7 +333,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				return emptyList();
 			}
 			final int ids[][] = outgoings[internalId];
-			final IntCollection internalIds = PrimitiveCollections.newIntArrayList();
+			final IntCollection internalIds = PrimitiveLists.newIntArrayList();
 			
 			for (final int[] id : ids) {
 				internalIds.add(id[0]);
@@ -358,7 +359,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			}
 			
 			final int ids[][] = outgoings[internalId];
-			final IntCollection internalIds = PrimitiveCollections.newIntArrayList();
+			final IntCollection internalIds = PrimitiveLists.newIntArrayList();
 			final int isATypeInternalId = getInternalId(IS_A);
 			
 			for (final int[] id : ids) {
@@ -383,7 +384,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				return emptyList();
 			}
 			final int ids[][] = incomings[internalId];
-			final IntCollection internalIds = PrimitiveCollections.newIntArrayList();
+			final IntCollection internalIds = PrimitiveLists.newIntArrayList();
 			final int isATypeInternalId = getInternalId(IS_A);
 			
 			for (final int[] id : ids) {
@@ -407,7 +408,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			}
 			final int ids[][] = incomings[internalId];
 			final int typeInternalId = getInternalId(typeId);
-			final IntCollection internalIds = PrimitiveCollections.newIntArrayList();
+			final IntCollection internalIds = PrimitiveLists.newIntArrayList();
 			for (final int[] id : ids) {
 				if (typeInternalId == id[1]) {
 					internalIds.add(id[0]);
@@ -428,7 +429,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				return emptyList();
 			}
 			final int ids[][] = incomings[internalId];
-			final IntCollection internalIds = PrimitiveCollections.newIntArrayList();
+			final IntCollection internalIds = PrimitiveLists.newIntArrayList();
 			
 			for (final int[] id : ids) {
 				internalIds.add(id[0]);
@@ -462,12 +463,12 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				final long conceptIdL = Long.parseLong(conceptId);
 				final LongSet containerRefSetIds = newLongSet();
 				
-				for (final LongKeyMapIterator itr = refSetMap.mapIterator(); itr.hasNext(); /**/) {
+				for (final LongKeyMapIterator<LongSet> itr = refSetMap.mapIterator(); itr.hasNext(); /**/) {
 					itr.next();
 					
-					final Object value = itr.getValue();
-					if (value instanceof LongCollection) {
-						if (((LongCollection) value).contains(conceptIdL)) {
+					final LongSet value = itr.getValue();
+					if (value != null) {
+						if (value.contains(conceptIdL)) {
 							containerRefSetIds.add(itr.getKey());
 						}
 					}
@@ -618,9 +619,9 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			
 		}
 
-		final Supplier<LongKeyMap> refSetMapSupplier = memoize(new Supplier<LongKeyMap>() {
+		final Supplier<LongKeyMap<LongSet>> refSetMapSupplier = memoize(new Supplier<LongKeyMap<LongSet>>() {
 			@Override
-			public LongKeyMap get() {
+			public LongKeyMap<LongSet> get() {
 				return getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
 		}});
 		
@@ -676,7 +677,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			}
 			switch (concept.getQuantifier()) {
 				case SELF:
-					return PrimitiveCollections.newIntBitSet(new int[] { internalId } );
+					return PrimitiveSets.newIntBitSet(new int[] { internalId } );
 				case ANY_SUBTYPE:
 					return getAllSubTypeInternalIds(internalId);
 				case SELF_AND_ANY_SUBTYPE:
@@ -696,7 +697,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 
 		} else if (expression instanceof OrClause) {
 			final OrClause clause = (OrClause) expression;
-			final IntSet results = PrimitiveCollections.newIntBitSet(getConceptCount());
+			final IntSet results = PrimitiveSets.newIntBitSet(getConceptCount());
 			results.addAll(evaluateInternalIds(clause.getLeft()));
 			results.addAll(evaluateInternalIds(clause.getRight()));
 			return results;
@@ -712,9 +713,9 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 
 			} else {
 
-				final IntSet results = PrimitiveCollections.newIntBitSet(getConceptCount());
-				final IntSet leftValueIds = PrimitiveCollections.newIntBitSet(evaluateInternalIds(clause.getLeft()));
-				final IntSet rightValueIds = PrimitiveCollections.newIntBitSet(evaluateInternalIds(clause.getRight()));
+				final IntSet results = PrimitiveSets.newIntBitSet(getConceptCount());
+				final IntSet leftValueIds = PrimitiveSets.newIntBitSet(evaluateInternalIds(clause.getLeft()));
+				final IntSet rightValueIds = PrimitiveSets.newIntBitSet(evaluateInternalIds(clause.getRight()));
 
 				for (final IntIterator itr = leftValueIds.iterator(); itr.hasNext(); /* */) {
 					final int leftValue = itr.next();
@@ -728,10 +729,10 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 
 		} else if (expression instanceof NumericDataClause) {
 			//TODO this is not supported now
-			return PrimitiveCollections.newIntBitSet();
+			return PrimitiveSets.newIntBitSet();
 		} else if (expression instanceof NumericDataGroupClause) {
 			//TODO this is not supported now
-			return PrimitiveCollections.newIntBitSet();
+			return PrimitiveSets.newIntBitSet();
 		} else if (expression instanceof NotClause) {
 			throw new UnsupportedOperationException("Cannot NOT yet: " + expression);
 		}
@@ -745,8 +746,8 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			throw new UnsupportedOperationException("Cannot AND two NOT clauses yet");
 		}
 
-		final IntSet notNegatedInternalIds = PrimitiveCollections.newIntBitSet(evaluateInternalIds(notNegated));
-		final IntSet negatedInternalIds = PrimitiveCollections.newIntBitSet(evaluateInternalIds(negated.getValue()));
+		final IntSet notNegatedInternalIds = PrimitiveSets.newIntBitSet(evaluateInternalIds(notNegated));
+		final IntSet negatedInternalIds = PrimitiveSets.newIntBitSet(evaluateInternalIds(negated.getValue()));
 
 		for (final IntIterator itr = negatedInternalIds.iterator(); itr.hasNext(); /* */) {
 			notNegatedInternalIds.remove(itr.next());
@@ -755,11 +756,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 
 	private Collection<String> getIds(final int[] internalIds) {
-		return getIds(PrimitiveCollections.newIntArrayDeque(internalIds));
+		return getIds(PrimitiveLists.newIntArrayDeque(internalIds));
 	}
 	
 	private Collection<String> getIds(final IntCollection internalIds) {
-		final LongList ids = PrimitiveCollections.newLongArrayList(internalIds.size());
+		final LongList ids = PrimitiveLists.newLongArrayList(internalIds.size());
 		for (final IntIterator itr = internalIds.iterator(); itr.hasNext(); /**/) {
 			ids.add(concepts.get(itr.next()));
 		}
@@ -794,7 +795,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	 */
 	private IntSet getByAttributes(final IntSet typeIds, final IntSet destinationConceptIds) {
 		
-		final IntSet $ = PrimitiveCollections.newIntOpenHashSet();
+		final IntSet $ = PrimitiveSets.newIntOpenHashSet();
 		
 		for (final IntIterator itr = destinationConceptIds.iterator(); itr.hasNext(); /**/) {
 			final int destinationId = itr.next();
@@ -832,18 +833,18 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 
 	private IntSet getMemberConceptInternalIds(final String id) {
-		final Object object = refSetMap.get(Long.parseLong(id));
-		if (object instanceof LongSet) {
-			if (((LongSet) object).isEmpty()) {
-				return PrimitiveCollections.newIntOpenHashSet();
+		final LongSet values = refSetMap.get(Long.parseLong(id));
+		if (values != null) {
+			if (values.isEmpty()) {
+				return PrimitiveSets.newIntOpenHashSet();
 			}
-			final IntSet internalIds = PrimitiveCollections.newIntOpenHashSet(((LongSet) object).size());
-			for (final LongIterator itr = ((LongSet) object).iterator(); itr.hasNext(); /**/) {
+			final IntSet internalIds = PrimitiveSets.newIntOpenHashSet(values.size());
+			for (final LongIterator itr = values.iterator(); itr.hasNext(); /**/) {
 				internalIds.add(getInternalId(itr.next()));
 			}
 			return internalIds;
 		}
-		return PrimitiveCollections.newIntOpenHashSet();
+		return PrimitiveSets.newIntOpenHashSet();
 	}
 	
 	private void collectAncestors(final int type, final BitSet ancestors) {
@@ -874,11 +875,11 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	
 	private IntSet processElements(final BitSet bitSet) {
 		if (CompareUtils.isEmpty(bitSet)) {
-			return PrimitiveCollections.newIntOpenHashSet();
+			return PrimitiveSets.newIntOpenHashSet();
 		}
 		final int count = bitSet.cardinality();
 	
-		final IntSet $ = PrimitiveCollections.newIntOpenHashSet(count);
+		final IntSet $ = PrimitiveSets.newIntOpenHashSet(count);
 		for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
 			$.add(i);
 		}

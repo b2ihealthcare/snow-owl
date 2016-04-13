@@ -21,7 +21,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -54,7 +54,7 @@ public class StatementIdCollector extends AbstractDocsOutOfOrderCollector {
 	 * @param expectedSize the expected number of collected identifiers, or <= 0 if the built-in default should be used
 	 */
 	public StatementIdCollector(final int expectedSize) {
-		this.ids = (0 > expectedSize) ? PrimitiveCollections.newLongOpenHashSet(expectedSize) : PrimitiveCollections.newLongOpenHashSet();
+		this.ids = (0 > expectedSize) ? PrimitiveSets.newLongOpenHashSet(expectedSize) : PrimitiveSets.newLongOpenHashSet();
 	}
 
 	@Override

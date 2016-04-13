@@ -15,20 +15,19 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.map.LongKeyMap;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.collections.map.LongKeyMap;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.google.common.collect.Lists;
 
 /**
  * Collector for gathering SNOMED CT relationship representations after performing an index search.
@@ -47,7 +46,7 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	 * <li>Value: list of outbound statement fragments</li>
 	 * </ul>
 	 */
-	private final LongKeyMap statementMap;
+	private final LongKeyMap<Collection<StatementFragment>> statementMap;
 
 	private NumericDocValues idValues;
 	private NumericDocValues storageKeyValues;
@@ -72,7 +71,8 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	 * @param expectedSize the expected number of source concept identifiers, or <= 0 to use the built-in default hash map size
 	 */
 	public StatementFragmentCollector(final int expectedSize) {
-		statementMap = (0 > expectedSize) ? PrimitiveCollections.newLongKeyOpenHashMap(expectedSize) : PrimitiveCollections.newLongKeyOpenHashMap();
+		statementMap = (0 > expectedSize) ? PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMap(expectedSize)
+				: PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMap();
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 		);
 
 		if (!statementMap.containsKey(sourceId)) {
-			statementMap.put(sourceId, newArrayList());
+			statementMap.put(sourceId, Lists.<StatementFragment>newArrayList());
 		}
 
 		getStatementsById(sourceId).add(statement);
@@ -136,12 +136,11 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	 * 
 	 * @return the collected statement map
 	 */
-	public LongKeyMap getStatementMap() {
+	public LongKeyMap<Collection<StatementFragment>> getStatementMap() {
 		return statementMap;
 	}
 
-	@SuppressWarnings("unchecked")
-	private List<StatementFragment> getStatementsById(final long sourceId) {
-		return (List<StatementFragment>) statementMap.get(sourceId);
+	private Collection<StatementFragment> getStatementsById(final long sourceId) {
+		return statementMap.get(sourceId);
 	}
 }

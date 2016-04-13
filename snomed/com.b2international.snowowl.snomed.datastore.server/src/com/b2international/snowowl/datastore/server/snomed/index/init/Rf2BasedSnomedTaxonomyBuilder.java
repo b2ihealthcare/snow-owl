@@ -25,11 +25,11 @@ import java.util.List;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
@@ -74,7 +74,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	private Rf2BasedSnomedTaxonomyBuilder(final String characteristicTypeId) {
 		this.characteristicTypeId = characteristicTypeId;
 		this.nodes = new LongBidiMapWithInternalId(EXPECTED_SIZE);
-		this.edges = PrimitiveCollections.newLongKeyOpenHashMap();
+		this.edges = PrimitiveMaps.newLongKeyOpenHashMap();
 	}
 
 	@Override

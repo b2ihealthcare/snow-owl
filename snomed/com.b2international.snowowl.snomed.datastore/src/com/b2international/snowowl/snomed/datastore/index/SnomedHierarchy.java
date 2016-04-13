@@ -23,8 +23,9 @@ import com.b2international.collections.LongCollection;
 import com.b2international.collections.map.LongKeyIntMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -109,7 +110,7 @@ public class SnomedHierarchy {
 		Preconditions.checkNotNull(conceptIds, "Array of concept IDs argument cannot be null.");
 		Preconditions.checkNotNull(statements, "Array of statements argument cannot be null.");
 	
-		this.conceptIdToInternalId = PrimitiveCollections.newLongKeyIntOpenHashMap(conceptIds.length);
+		this.conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMap(conceptIds.length);
 		this.conceptIds = Arrays.copyOf(conceptIds, conceptIds.length);
 		
 		for (int i = 0; i < conceptIds.length; i++) {
@@ -177,7 +178,7 @@ public class SnomedHierarchy {
 	}
 	
 	public LongSet getRootConceptIds() {
-		final LongSet result = PrimitiveCollections.newLongOpenHashSet(roots.length);
+		final LongSet result = PrimitiveSets.newLongOpenHashSet(roots.length);
 		for (int i = 0; i < roots.length; i++) {
 			result.add(getConceptId(roots[i]));
 		}
@@ -200,7 +201,7 @@ public class SnomedHierarchy {
 	public LongSet getSubTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final int id = getInternalId(conceptId);
@@ -208,10 +209,10 @@ public class SnomedHierarchy {
 		final int[] subtypes = subTypes[id];
 
 		if (CompareUtils.isEmpty(subtypes)) { //guard against lower bound cannot be negative: 0
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet(subtypes.length);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet(subtypes.length);
 
 		for (int i = 0; i < subtypes.length; i++) {
 			$.add(getConceptId(subtypes[i]));
@@ -228,7 +229,7 @@ public class SnomedHierarchy {
 	public LongSet getSuperTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final int id = getInternalId(conceptId);
@@ -236,10 +237,10 @@ public class SnomedHierarchy {
 		final int[] supertypes = superTypes[id];
 
 		if (CompareUtils.isEmpty(supertypes)) { //guard against lower bound cannot be negative: 0
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet(supertypes.length);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet(supertypes.length);
 
 		for (int i = 0; i < supertypes.length; i++) {
 			$.add(getConceptId(supertypes[i]));
@@ -256,7 +257,7 @@ public class SnomedHierarchy {
 	public LongSet getAllSubTypesIds(final long conceptId) {
 		
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final int conceptCount = conceptIdToInternalId.size();
@@ -268,10 +269,10 @@ public class SnomedHierarchy {
 		final int count = subTypeMap.cardinality();
 	
 		if (0 == count) { //guard against lower bound cannot be negative: 0
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 	
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet(count);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet(count);
 		for (int i = subTypeMap.nextSetBit(0); i >= 0; i = subTypeMap.nextSetBit(i + 1)) {
 			$.add(getConceptId(i));
 	
@@ -288,7 +289,7 @@ public class SnomedHierarchy {
 	public LongSet getAllSuperTypeIds(final long conceptId) {
 		
 		if (!isActive(conceptId)) {
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final int conceptCount = conceptIdToInternalId.size();
@@ -300,10 +301,10 @@ public class SnomedHierarchy {
 		final int count = superTypeMap.cardinality();
 	
 		if (0 == count) { //guard against lower bound cannot be negative: 0
-			return PrimitiveCollections.newLongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 	
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet(count);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet(count);
 		for (int i = superTypeMap.nextSetBit(0); i >= 0; i = superTypeMap.nextSetBit(i + 1)) {
 			$.add(getConceptId(i));
 	

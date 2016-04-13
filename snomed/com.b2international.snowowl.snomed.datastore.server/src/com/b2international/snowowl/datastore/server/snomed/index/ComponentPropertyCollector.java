@@ -24,7 +24,7 @@ import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.map.LongKeyMap;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.hash.Hashing;
@@ -35,12 +35,12 @@ import com.google.common.hash.Hashing;
 public abstract class ComponentPropertyCollector extends AbstractDocsOutOfOrderCollector {
 
 	protected LongCollection acceptedStorageKeys;
-	protected LongKeyMap mapping;
+	protected LongKeyMap<long[]> mapping;
 	protected NumericDocValues storageKeys;
 
 	public ComponentPropertyCollector(final LongCollection acceptedStorageKeys) {
 		this.acceptedStorageKeys = checkNotNull(acceptedStorageKeys, "acceptedStorageKeys");
-		this.mapping = PrimitiveCollections.newLongKeyOpenHashMap(Hashing.murmur3_32());
+		this.mapping = PrimitiveMaps.newLongKeyOpenHashMap(Hashing.murmur3_32());
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public abstract class ComponentPropertyCollector extends AbstractDocsOutOfOrderC
 	 * 
 	 * @return the created storage key mapping
 	 */
-	public LongKeyMap getMapping() {
+	public LongKeyMap<long[]> getMapping() {
 		return mapping;
 	}
 }

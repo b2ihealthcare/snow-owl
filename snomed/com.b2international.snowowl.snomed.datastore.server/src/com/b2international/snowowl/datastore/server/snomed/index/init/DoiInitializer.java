@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.map.LongKeyFloatMap;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.google.common.base.Preconditions;
@@ -57,7 +57,7 @@ public class DoiInitializer {
 			
 			final int size = dis.readInt();
 			
-			final LongKeyFloatMap data = size > 0 ? PrimitiveCollections.newLongKeyFloatOpenHashMap(size) : PrimitiveCollections.newLongKeyFloatOpenHashMap();
+			final LongKeyFloatMap data = size > 0 ? PrimitiveMaps.newLongKeyFloatOpenHashMap(size) : PrimitiveMaps.newLongKeyFloatOpenHashMap();
 			
 			for (int i = 0; i < size; i++) {
 				
@@ -74,7 +74,7 @@ public class DoiInitializer {
 			
 			LOGGER.warn("Failed to collect usage data for concept documents. Falling back to default degree of interest values.");
 			
-			return PrimitiveCollections.newLongKeyFloatOpenHashMap();
+			return PrimitiveMaps.newLongKeyFloatOpenHashMap();
 			
 		} finally {
 			

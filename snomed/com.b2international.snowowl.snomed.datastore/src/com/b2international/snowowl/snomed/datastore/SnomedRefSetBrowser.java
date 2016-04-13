@@ -236,6 +236,6 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * @param branchPath the branch path.
 	 * @return a mapping between regular reference set IDs and the contained referenced concept IDs.
 	 */
-	LongKeyMap getReferencedConceptIds(final IBranchPath branchPath);
+	LongKeyMap<LongSet> getReferencedConceptIds(final IBranchPath branchPath);
 	
 }

@@ -34,7 +34,8 @@ import org.apache.lucene.search.TopDocs;
 import com.b2international.collections.map.LongKeyLongMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -87,7 +88,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 		super(configuration, refSetId);
 		mapper = new Id2Rf1PropertyMapper();
 		languageType = isLanguageType(refSetId);
-		distinctEffectiveTimeSet = PrimitiveCollections.newLongOpenHashSet();
+		distinctEffectiveTimeSet = PrimitiveSets.newLongOpenHashSet();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<ReferencedComponentIdStatus, String>() {
 			@Override public String apply(ReferencedComponentIdStatus input) {
 				return new StringBuilder(getRefSetId())
@@ -107,7 +108,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
 		
-		LongKeyLongMap descriptionIdTypeMap = PrimitiveCollections.newLongKeyLongOpenHashMap();
+		LongKeyLongMap descriptionIdTypeMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 		
 		//get referenced component's (description) ID to description type ID mapping 
 		if (languageType) {
