@@ -47,9 +47,10 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.list.ByteList;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.pcj.ByteCollections.BytePredicate;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.b2international.snowowl.index.diff.IndexDiffException;
 import com.b2international.snowowl.index.diff.IndexDiffer;
@@ -82,7 +83,7 @@ public class IndexDifferImpl implements IndexDiffer {
 		checkNotNull(targetCommit, "targetCommit");
 		
 		final byte[] spare = new byte[1];		
-		final LongKeyMap indexChanges = PrimitiveCollections.newLongKeyOpenHashMap(murmur3_32());
+		final LongKeyMap<ByteList> indexChanges = PrimitiveMaps.newLongKeyOpenHashMap(murmur3_32());
 		final LongSet newIds = newLongSetWithMurMur3Hash();     
 		final LongSet changedIds = newLongSetWithMurMur3Hash(); 
 		final LongSet detachedIds = newLongSetWithMurMur3Hash();
@@ -141,9 +142,9 @@ public class IndexDifferImpl implements IndexDiffer {
 				@Override
 				public void apply(final long id) {
 
-					final ByteList allChanges = (ByteList) indexChanges.get(id);
-					final ByteList intersectionChanges = PrimitiveCollections.newByteArrayList(allChanges.size());
-					final ByteList differenceChanges = PrimitiveCollections.newByteArrayList(filter(allChanges, new BytePredicate() {
+					final ByteList allChanges = indexChanges.get(id);
+					final ByteList intersectionChanges = PrimitiveLists.newByteArrayList(allChanges.size());
+					final ByteList differenceChanges = PrimitiveLists.newByteArrayList(filter(allChanges, new BytePredicate() {
 						@Override public boolean apply(final byte input) {
 							final boolean inIntersection = isIntersection(input);
 							if (inIntersection) {
@@ -291,12 +292,12 @@ public class IndexDifferImpl implements IndexDiffer {
 		});
 	}
 
-	private void registerIndexChange(final long id, final byte indexChangeFlag, final LongKeyMap indexChanges, final byte[] spare) {
+	private void registerIndexChange(final long id, final byte indexChangeFlag, final LongKeyMap<ByteList> indexChanges, final byte[] spare) {
 		
-		final ByteList indexChangeFlags = (ByteList) indexChanges.get(id);
+		final ByteList indexChangeFlags = indexChanges.get(id);
 		if (null == indexChangeFlags) {
 			spare[0] = indexChangeFlag;
-			indexChanges.put(id, PrimitiveCollections.newByteArrayList(spare));
+			indexChanges.put(id, PrimitiveLists.newByteArrayList(spare));
 		} else {
 			indexChangeFlags.add(indexChangeFlag);
 		}

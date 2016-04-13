@@ -21,7 +21,7 @@ import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.Version;
 
 import com.b2international.collections.set.IntSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.TextConstants;
 
 /**
@@ -44,7 +44,7 @@ public class DelimiterTokenizer extends CharTokenizer {
 	
 	static {
 		
-		final IntSet set = PrimitiveCollections.newIntOpenHashSet();
+		final IntSet set = PrimitiveSets.newIntOpenHashSet();
 		
 		char[] charArray = TextConstants.DELIMITERS.toCharArray();
 		for (int i = 0; i < charArray.length; i++) {
@@ -70,7 +70,7 @@ public class DelimiterTokenizer extends CharTokenizer {
 		
 		set.trimToSize();
 		
-		TOKEN_CHARS = PrimitiveCollections.newUnmodifiableIntSet(set);
+		TOKEN_CHARS = PrimitiveSets.newUnmodifiableIntSet(set);
 		
 	}
 	

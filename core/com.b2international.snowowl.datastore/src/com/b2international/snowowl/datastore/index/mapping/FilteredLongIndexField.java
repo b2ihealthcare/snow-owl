@@ -21,7 +21,8 @@ import org.apache.lucene.index.IndexableField;
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.list.LongList;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.google.common.base.Predicate;
 
 /**
@@ -36,7 +37,7 @@ public class FilteredLongIndexField extends FilteredIndexField<Long> implements 
 	@Override
 	public LongSet getValueAsLongSet(Document doc) {
 		final IndexableField[] fields = getDelegate().getFields(doc);
-		final LongSet longIds = PrimitiveCollections.newLongOpenHashSet(fields.length + 1);
+		final LongSet longIds = PrimitiveSets.newLongOpenHashSet(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}
@@ -44,7 +45,7 @@ public class FilteredLongIndexField extends FilteredIndexField<Long> implements 
 	@Override
 	public LongList getValueAsLongList(Document doc) {
 		final IndexableField[] fields = getDelegate().getFields(doc);
-		final LongList longIds = PrimitiveCollections.newLongArrayList(fields.length + 1);
+		final LongList longIds = PrimitiveLists.newLongArrayList(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}

@@ -25,8 +25,8 @@ import com.b2international.collections.LongIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.PrimitiveCollections;
 import com.b2international.commons.pcj.LongSets.LongPredicate;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.google.common.base.Objects;
@@ -53,17 +53,17 @@ public class IndexDiffImpl implements IndexDiff, Serializable {
 
 	@Override
 	public LongSet getNewIds() {
-		return PrimitiveCollections.newUnmodifiableLongSet(newIds);
+		return PrimitiveSets.newUnmodifiableLongSet(newIds);
 	}
 
 	@Override
 	public LongSet getChangedIds() {
-		return PrimitiveCollections.newUnmodifiableLongSet(changedIds);
+		return PrimitiveSets.newUnmodifiableLongSet(changedIds);
 	}
 
 	@Override
 	public LongSet getDetachedIds() {
-		return PrimitiveCollections.newUnmodifiableLongSet(detachedIds);
+		return PrimitiveSets.newUnmodifiableLongSet(detachedIds);
 	}
 	
 	@Override

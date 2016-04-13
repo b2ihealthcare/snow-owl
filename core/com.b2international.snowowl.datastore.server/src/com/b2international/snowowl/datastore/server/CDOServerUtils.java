@@ -77,7 +77,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.list.LongList;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -377,7 +377,7 @@ public abstract class CDOServerUtils {
 		//try to find the first revision
 		if (emptyOrNullRevision(revisions)) {
 	
-			final LongList commitTimestamps = PrimitiveCollections.newLongArrayList();
+			final LongList commitTimestamps = PrimitiveLists.newLongArrayList();
 			
 			((CommitInfoLoader) getAccessor(cdoId)).loadCommitInfos(
 					branchPoint.getBranch(), //branch 

@@ -33,6 +33,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
+import com.b2international.collections.list.IntList;
+import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -47,8 +49,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.FluentIterable;
-import com.b2international.collections.list.IntList;
-import com.b2international.commons.pcj.PrimitiveCollections;
 
 /**
  * @since 4.3
@@ -104,7 +104,7 @@ public class DiffIndexServerService extends IndexServerService<DiffConceptIndexE
 	
 	@Override
 	protected BranchPath getMostRecentPhysicalPath(IBranchPath logicalPath) {
-		final IntList segments = PrimitiveCollections.newIntArrayList();
+		final IntList segments = PrimitiveLists.newIntArrayList();
 		final Iterator<IBranchPath> branchPrefixIterator = BranchPathUtils.topToBottomIterator(logicalPath);
 		while (branchPrefixIterator.hasNext()) {
 			final IBranchPath currentBranchPath = branchPrefixIterator.next();

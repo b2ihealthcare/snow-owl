@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
@@ -466,7 +466,7 @@ public class IndexServiceSmokeTest {
 
 	private void assertIdsExactly(final LongSet actual, final long... expected) {
 		assertEquals("Number of expected IDs did not match.", expected.length, actual.size());
-		assertTrue("Expected concept identifiers did not match.", actual.containsAll(PrimitiveCollections.newLongOpenHashSet(expected)));
+		assertTrue("Expected concept identifiers did not match.", actual.containsAll(PrimitiveSets.newLongOpenHashSet(expected)));
 	}
 
 	private void assertConceptIdsExactly(final IBranchPath branchPath, final String... conceptIds) {

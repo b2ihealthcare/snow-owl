@@ -20,7 +20,7 @@ import java.util.Set;
 
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -94,9 +94,9 @@ public class RelationTester {
 	
 	private static final long IS_A = Long.parseLong(Concepts.IS_A) ;
 	
-	public static boolean isRelated(long predicateId, long candidateId, final LongKeyMap statements) {
+	public static boolean isRelated(long predicateId, long candidateId, final LongKeyMap<List<StatementFragment>> statements) {
 		
-		final LongSet visited = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet visited = PrimitiveSets.newLongOpenHashSet();
 		visited.add(candidateId);
 		
 		for (final StatementFragment relationship : getStatements(candidateId, statements)) {
@@ -113,13 +113,13 @@ public class RelationTester {
 		return false;
 	}
 
-	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongKeyMap statements) {
+	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongKeyMap<List<StatementFragment>> statements) {
 
 		for (StatementFragment relationship : getStatements(candidateId, statements)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
 			if (relationshipTypeId == relationship.getTypeId()) {
 				
-				final LongSet visited = PrimitiveCollections.newLongOpenHashSet();
+				final LongSet visited = PrimitiveSets.newLongOpenHashSet();
 				visited.add(candidateId);
 				
 				if (predicateId == relationship.getDestinationId()) {
@@ -134,7 +134,7 @@ public class RelationTester {
 		return false;
 	}
 
-	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongSet visitedIds, final LongKeyMap statements) {
+	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongSet visitedIds, final LongKeyMap<List<StatementFragment>> statements) {
 		
 		if (visitedIds.contains(candidateId)) {
 			return false;
@@ -160,10 +160,9 @@ public class RelationTester {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
-	private static List<StatementFragment> getStatements(final long sourceConceptId, final LongKeyMap statements) {
-		final Object object = statements.get(sourceConceptId);
-		return (List<StatementFragment>) (object instanceof List<?> ? object : Lists.newArrayList());
+	private static List<StatementFragment> getStatements(final long sourceConceptId, final LongKeyMap<List<StatementFragment>> statements) {
+		final List<StatementFragment> object = statements.get(sourceConceptId);
+		return object != null ? object : Lists.<StatementFragment>newArrayList();
 	}
 	
 	

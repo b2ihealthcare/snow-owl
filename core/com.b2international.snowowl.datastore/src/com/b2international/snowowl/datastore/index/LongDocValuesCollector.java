@@ -23,7 +23,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.LongCollection;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveLists;
 
 /**
  * Collector instance for gathering long doc values from the matching documents.
@@ -57,7 +57,7 @@ public class LongDocValuesCollector extends AbstractDocsOutOfOrderCollector {
 	 */
 	public LongDocValuesCollector(final String fieldName, final int expectedSize) {
 		this.fieldName = checkNotNull(fieldName, "Field name argument cannot be null.");
-		this.collectedValues = (0 > expectedSize) ? PrimitiveCollections.newLongArrayList(expectedSize) : PrimitiveCollections.newLongArrayList();
+		this.collectedValues = (0 > expectedSize) ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
 	}
 
 	@Override

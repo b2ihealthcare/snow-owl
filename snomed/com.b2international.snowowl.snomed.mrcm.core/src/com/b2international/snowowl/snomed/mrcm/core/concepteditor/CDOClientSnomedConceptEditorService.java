@@ -24,7 +24,7 @@ import java.util.Set;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.collections.set.LongSet;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
@@ -117,7 +117,7 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 		
 		// Retrieve synonym and descendant type IDs
 		final Set<String> synonymAndDescendants = ApplicationContext.getServiceForClass(IClientSnomedComponentService.class).getSynonymAndDescendantIds();
-		final LongSet synonymAndDescendantIds = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet synonymAndDescendantIds = PrimitiveSets.newLongOpenHashSet();
 		for (final String synonymAndDescendant : synonymAndDescendants) {
 			synonymAndDescendantIds.add(Long.parseLong(synonymAndDescendant));
 		}
