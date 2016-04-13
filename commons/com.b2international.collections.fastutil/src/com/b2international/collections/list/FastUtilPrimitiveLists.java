@@ -1,0 +1,86 @@
+/*
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.collections.list;
+
+import com.b2international.collections.ByteCollection;
+import com.b2international.collections.LongCollection;
+
+/**
+ * @since 4.7
+ */
+public class FastUtilPrimitiveLists implements PrimitiveLists {
+
+	@Override
+	public ByteList newByteArrayList(byte[] source) {
+		return ByteArrayListWrapper.create(source);
+	}
+
+	@Override
+	public ByteList newByteArrayList(ByteCollection source) {
+		return ByteArrayListWrapper.create(source);
+	}
+
+	@Override
+	public ByteList newByteArrayList(int expectedSize) {
+		return ByteArrayListWrapper.create(expectedSize);
+	}
+	
+	@Override
+	public IntList newIntArrayList() {
+		return IntArrayListWrapper.create();
+	}
+
+	@Override
+	public IntList newIntArrayList(int[] source) {
+		return IntArrayListWrapper.create(source);
+	}
+	
+	@Override
+	public LongList newLongArrayList() {
+		return LongArrayListWrapper.create();
+	}
+
+	@Override
+	public LongList newLongArrayList(int expectedSize) {
+		return LongArrayListWrapper.create(expectedSize);
+	}
+
+	@Override
+	public LongList newLongArrayList(long[] source) {
+		return LongArrayListWrapper.create(source);
+	}
+
+	@Override
+	public LongList newLongArrayList(LongCollection source) {
+		return LongArrayListWrapper.create(source);
+	}
+	
+	@Override
+	public IntDeque newIntArrayDeque(int[] source) {
+		return IntArrayDequeWrapper.create(source);
+	}
+	
+	@Override
+	public LongDeque newLongArrayDeque() {
+		return LongArrayDequeWrapper.create();
+	}
+	
+	@Override
+	public IntList newUnmodifiableIntList(IntList source) {
+		throw new UnsupportedOperationException();
+	}
+	
+}
