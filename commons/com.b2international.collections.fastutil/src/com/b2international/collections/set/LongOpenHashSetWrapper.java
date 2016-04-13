@@ -25,47 +25,47 @@ import com.google.common.hash.HashFunction;
 import it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
-public class LongOpenHashSetWrapper extends AbstractLongCollection implements LongSet {
+/**
+ * @since 4.7
+ */
+public final class LongOpenHashSetWrapper extends AbstractLongCollection implements LongSet {
 
 	private final it.unimi.dsi.fastutil.longs.LongSet delegate;
 
 	public static LongSet create(HashFunction hashFunction) {
-		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet(new StrategyWrapper(hashFunction)));
+		return wrap(new it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet(new StrategyWrapper(hashFunction)));
 	}
 	
 	public static LongSet create(long[] source) {
-		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(source));
+		return wrap(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(source));
 	}
 	
 	public static LongSet create(LongCollection source) {
 		if (source instanceof LongOpenHashSetWrapper) {
 			final it.unimi.dsi.fastutil.longs.LongSet sourceDelegate = ((LongOpenHashSetWrapper) source).delegate;
-			
-			if (sourceDelegate instanceof LongOpenCustomHashSet) {
-				return new LongOpenHashSetWrapper(((LongOpenCustomHashSet) sourceDelegate).clone());
-			} else if (sourceDelegate instanceof LongOpenHashSet) {
-				return new LongOpenHashSetWrapper(((LongOpenHashSet) sourceDelegate).clone());
-			} else {
-				throw new IllegalStateException("Don't know how to clone wrapped long set of type " + sourceDelegate.getClass().getSimpleName() + ".");
-			}
+			return wrap(clone(sourceDelegate));
 		} else {
-			LongOpenHashSetWrapper result = new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(source.size()));
+			final LongSet result = create(source.size());
 			result.addAll(source);
 			return result;
 		}
 	}
 	
 	public static LongSet create(int expectedSize) {
-		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(expectedSize));
+		return wrap(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(expectedSize));
 	}
 	
 	// XXX: Fill factor parameter loses precision on API boundary
 	public static LongSet create(int expectedSize, double fillFactor) {
-		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(expectedSize, (float) fillFactor));
+		return wrap(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(expectedSize, (float) fillFactor));
 	}
 
 	public static LongSet create() {
-		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet());
+		return wrap(new it.unimi.dsi.fastutil.longs.LongOpenHashSet());
+	}
+	
+	public static LongSet wrap(it.unimi.dsi.fastutil.longs.LongSet delegate) {
+		return new LongOpenHashSetWrapper(delegate);
 	}
 	
 	private LongOpenHashSetWrapper(it.unimi.dsi.fastutil.longs.LongSet delegate) {
@@ -89,13 +89,7 @@ public class LongOpenHashSetWrapper extends AbstractLongCollection implements Lo
 
 	@Override
 	public void trimToSize() {
-		if (delegate instanceof LongOpenHashSet) {
-			((LongOpenHashSet)delegate).trim();
-		} else if (delegate instanceof LongOpenCustomHashSet) {
-			((LongOpenCustomHashSet) delegate).trim();
-		} else {
-			throw new IllegalStateException("Don't know how to trim long set of type " + delegate.getClass().getSimpleName() + ".");
-		}
+		trim(delegate);
 	}
 
 	@Override
@@ -161,6 +155,29 @@ public class LongOpenHashSetWrapper extends AbstractLongCollection implements Lo
 
 	@Override
 	public LongSet dup() {
-		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(delegate));
+		return create(this);
 	}
+	
+	// FastUtil helpers
+	
+	private static void trim(it.unimi.dsi.fastutil.longs.LongSet set) {
+		if (set instanceof LongOpenHashSet) {
+			((LongOpenHashSet)set).trim();
+		} else if (set instanceof LongOpenCustomHashSet) {
+			((LongOpenCustomHashSet) set).trim();
+		} else {
+			throw new IllegalStateException("Don't know how to trim long set of type " + set.getClass().getSimpleName() + ".");
+		}		
+	}
+	
+	private static it.unimi.dsi.fastutil.longs.LongSet clone(it.unimi.dsi.fastutil.longs.LongSet set) {
+		if (set instanceof LongOpenCustomHashSet) {
+			return ((LongOpenCustomHashSet) set).clone();
+		} else if (set instanceof LongOpenHashSet) {
+			return ((LongOpenHashSet) set).clone();
+		} else {
+			throw new IllegalStateException("Don't know how to clone wrapped long set of type " + set.getClass().getSimpleName() + ".");
+		}
+	}
+	
 }

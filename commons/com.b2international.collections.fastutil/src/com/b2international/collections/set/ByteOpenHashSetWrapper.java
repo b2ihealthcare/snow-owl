@@ -21,25 +21,35 @@ import com.b2international.collections.ByteIterator;
 import com.b2international.collections.ByteIteratorWrapper;
 import com.b2international.collections.set.ByteSet;
 
-public class ByteOpenHashSetWrapper extends AbstractByteCollection implements ByteSet {
+import it.unimi.dsi.fastutil.bytes.ByteOpenHashSet;
 
-	private final it.unimi.dsi.fastutil.bytes.ByteOpenHashSet delegate;
+/**
+ * @since 4.7
+ */
+public final class ByteOpenHashSetWrapper extends AbstractByteCollection implements ByteSet {
+
+	private final it.unimi.dsi.fastutil.bytes.ByteSet delegate;
 
 	public static ByteSet create(ByteCollection source) {
 		if (source instanceof ByteOpenHashSetWrapper) {
-			return new ByteOpenHashSetWrapper(((ByteOpenHashSetWrapper) source).delegate.clone());
+			final it.unimi.dsi.fastutil.bytes.ByteSet sourceDelegate = ((ByteOpenHashSetWrapper) source).delegate;
+			return wrap(clone(sourceDelegate));
 		} else {
-			ByteOpenHashSetWrapper result = new ByteOpenHashSetWrapper(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet(source.size()));
+			final ByteSet result = create(source.size());
 			result.addAll(source);
 			return result;
 		}
 	}
 	
 	public static ByteSet create(int expectedSize) {
-		return new ByteOpenHashSetWrapper(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet(expectedSize));
+		return wrap(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet(expectedSize));
 	}
-
-	private ByteOpenHashSetWrapper(it.unimi.dsi.fastutil.bytes.ByteOpenHashSet delegate) {
+	
+	public static ByteSet wrap(it.unimi.dsi.fastutil.bytes.ByteSet keySet) {
+		return new ByteOpenHashSetWrapper(keySet);
+	}
+	
+	private ByteOpenHashSetWrapper(it.unimi.dsi.fastutil.bytes.ByteSet delegate) {
 		this.delegate = delegate;
 	}
 
@@ -60,7 +70,7 @@ public class ByteOpenHashSetWrapper extends AbstractByteCollection implements By
 
 	@Override
 	public void trimToSize() {
-		delegate.trim();
+		trim(delegate);
 	}
 
 	@Override
@@ -126,6 +136,25 @@ public class ByteOpenHashSetWrapper extends AbstractByteCollection implements By
 
 	@Override
 	public ByteSet dup() {
-		return new ByteOpenHashSetWrapper(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet(delegate));
+		return create(this);
 	}
+	
+	// FastUtil helpers
+	
+	public static it.unimi.dsi.fastutil.bytes.ByteSet clone(it.unimi.dsi.fastutil.bytes.ByteSet set) {
+		if (set instanceof ByteOpenHashSet) {
+			return ((ByteOpenHashSet) set).clone();
+		} else {
+			throw new UnsupportedOperationException("Unsupported set implementation: " + set.getClass().getSimpleName());
+		}
+	}
+	
+	public static void trim(it.unimi.dsi.fastutil.bytes.ByteSet set) {
+		if (set instanceof ByteOpenHashSet) {
+			((ByteOpenHashSet) set).trim();
+		} else {
+			throw new UnsupportedOperationException("Unsupported set implementation: " + set.getClass().getSimpleName());
+		}
+	}
+
 }

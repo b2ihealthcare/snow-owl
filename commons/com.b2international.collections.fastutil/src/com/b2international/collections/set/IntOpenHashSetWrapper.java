@@ -19,31 +19,40 @@ import com.b2international.collections.AbstractIntCollection;
 import com.b2international.collections.IntCollection;
 import com.b2international.collections.IntIterator;
 import com.b2international.collections.IntIteratorWrapper;
-import com.b2international.collections.set.IntSet;
 
-public class IntOpenHashSetWrapper extends AbstractIntCollection implements IntSet {
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
-	private final it.unimi.dsi.fastutil.ints.IntOpenHashSet delegate;
+/**
+ * @since 4.7
+ */
+public final class IntOpenHashSetWrapper extends AbstractIntCollection implements IntSet {
+
+	private final it.unimi.dsi.fastutil.ints.IntSet delegate;
 
 	public static IntSet create(IntCollection source) {
 		if (source instanceof IntOpenHashSetWrapper) {
-			return new IntOpenHashSetWrapper(((IntOpenHashSetWrapper) source).delegate.clone());
+			final it.unimi.dsi.fastutil.ints.IntSet sourceDelegate = ((IntOpenHashSetWrapper) source).delegate;
+			return wrap(clone(sourceDelegate));
 		} else {
-			IntOpenHashSetWrapper result = new IntOpenHashSetWrapper(new it.unimi.dsi.fastutil.ints.IntOpenHashSet(source.size()));
+			final IntSet result = create(source.size());
 			result.addAll(source);
 			return result;
 		}
 	}
 	
 	public static IntSet create(int expectedSize) {
-		return new IntOpenHashSetWrapper(new it.unimi.dsi.fastutil.ints.IntOpenHashSet(expectedSize));
+		return wrap(new it.unimi.dsi.fastutil.ints.IntOpenHashSet(expectedSize));
 	}
 	
 	public static IntSet create() {
-		return new IntOpenHashSetWrapper(new it.unimi.dsi.fastutil.ints.IntOpenHashSet());
+		return wrap(new it.unimi.dsi.fastutil.ints.IntOpenHashSet());
+	}
+	
+	private static IntSet wrap(it.unimi.dsi.fastutil.ints.IntSet delegate) {
+		return new IntOpenHashSetWrapper(delegate);
 	}
 
-	private IntOpenHashSetWrapper(it.unimi.dsi.fastutil.ints.IntOpenHashSet delegate) {
+	private IntOpenHashSetWrapper(it.unimi.dsi.fastutil.ints.IntSet delegate) {
 		this.delegate = delegate;
 	}
 
@@ -64,7 +73,7 @@ public class IntOpenHashSetWrapper extends AbstractIntCollection implements IntS
 
 	@Override
 	public void trimToSize() {
-		delegate.trim();
+		trim(delegate);
 	}
 
 	@Override
@@ -130,6 +139,25 @@ public class IntOpenHashSetWrapper extends AbstractIntCollection implements IntS
 
 	@Override
 	public IntSet dup() {
-		return new IntOpenHashSetWrapper(new it.unimi.dsi.fastutil.ints.IntOpenHashSet(delegate));
+		return create(this);
 	}
+	
+	// FastUtil helpers
+	
+	private void trim(it.unimi.dsi.fastutil.ints.IntSet set) {
+		if (set instanceof IntOpenHashSet) {
+			((IntOpenHashSet) set).trim();
+		} else {
+			throw new UnsupportedOperationException("Unsupported set implementation: " + set.getClass().getSimpleName());
+		}
+	}
+	
+	private static it.unimi.dsi.fastutil.ints.IntSet clone(it.unimi.dsi.fastutil.ints.IntSet set) {
+		if (set instanceof IntOpenHashSet) {
+			return ((IntOpenHashSet) set).clone();
+		} else {
+			throw new UnsupportedOperationException("Unsupported set implementation: " + set.getClass().getSimpleName());
+		}
+	}
+	
 }
