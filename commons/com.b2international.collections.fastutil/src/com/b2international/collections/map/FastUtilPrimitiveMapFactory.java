@@ -20,7 +20,7 @@ import com.google.common.hash.HashFunction;
 /**
  * @since 4.7
  */
-public class FastUtilPrimitiveMaps implements PrimitiveMaps {
+public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 
 	@Override
 	public ByteKeyLongMap newByteKeyLongOpenHashMap() {

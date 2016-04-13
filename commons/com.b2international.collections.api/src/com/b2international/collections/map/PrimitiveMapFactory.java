@@ -20,7 +20,7 @@ import com.google.common.hash.HashFunction;
 /**
  * @since 4.7
  */
-public interface PrimitiveMaps {
+public interface PrimitiveMapFactory {
 
 	ByteKeyLongMap newByteKeyLongOpenHashMap();
 

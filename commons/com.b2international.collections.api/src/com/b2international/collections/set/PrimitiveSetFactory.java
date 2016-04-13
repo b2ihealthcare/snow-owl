@@ -25,7 +25,7 @@ import com.google.common.hash.HashFunction;
 /**
  * @since 4.7
  */
-public interface PrimitiveSets {
+public interface PrimitiveSetFactory {
 
 	ByteSet newByteOpenHashSet(ByteCollection source);
 	

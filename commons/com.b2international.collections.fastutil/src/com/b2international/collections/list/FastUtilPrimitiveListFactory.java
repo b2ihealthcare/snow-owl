@@ -21,7 +21,7 @@ import com.b2international.collections.LongCollection;
 /**
  * @since 4.7
  */
-public class FastUtilPrimitiveLists implements PrimitiveLists {
+public class FastUtilPrimitiveListFactory implements PrimitiveListFactory {
 
 	@Override
 	public ByteList newByteArrayList(byte[] source) {

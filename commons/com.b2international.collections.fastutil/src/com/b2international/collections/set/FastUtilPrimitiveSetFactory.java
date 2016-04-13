@@ -25,7 +25,7 @@ import com.google.common.hash.HashFunction;
 /**
  * @since 4.7
  */
-public class FastUtilPrimitiveSets implements PrimitiveSets {
+public class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 	
 	@Override
 	public ByteSet newByteOpenHashSet(ByteCollection source) {

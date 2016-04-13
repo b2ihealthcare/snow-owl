@@ -21,7 +21,7 @@ import com.b2international.collections.LongCollection;
 /**
  * @since 4.7
  */
-public interface PrimitiveLists {
+public interface PrimitiveListFactory {
 
 	ByteList newByteArrayList(byte[] source);
 

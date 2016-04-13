@@ -15,23 +15,32 @@
  */
 package com.b2international.collections;
 
-import com.b2international.collections.list.FastUtilPrimitiveLists;
-import com.b2international.collections.map.FastUtilPrimitiveMaps;
-import com.b2international.collections.set.FastUtilPrimitiveSets;
+import com.b2international.collections.list.FastUtilPrimitiveListFactory;
+import com.b2international.collections.list.PrimitiveListFactory;
+import com.b2international.collections.map.FastUtilPrimitiveMapFactory;
+import com.b2international.collections.map.PrimitiveMapFactory;
+import com.b2international.collections.set.FastUtilPrimitiveSetFactory;
+import com.b2international.collections.set.PrimitiveSetFactory;
 
 /**
  * @since 4.7
  */
-public class FastUtilPrimitiveCollections extends PrimitiveCollections {
+public final class FastUtilPrimitiveCollections {
 
-	private static final PrimitiveCollections FACTORY = new FastUtilPrimitiveCollections();
-	
-	public static PrimitiveCollections factory() {
-		return FACTORY;
+	private static final PrimitiveListFactory LISTS = new FastUtilPrimitiveListFactory();
+	private static final PrimitiveSetFactory SETS = new FastUtilPrimitiveSetFactory();
+	private static final PrimitiveMapFactory MAPS = new FastUtilPrimitiveMapFactory();
+
+	public static PrimitiveListFactory lists() {
+		return LISTS;
 	}
 	
-	private FastUtilPrimitiveCollections() {
-		super(new FastUtilPrimitiveLists(), new FastUtilPrimitiveSets(), new FastUtilPrimitiveMaps());
+	public static PrimitiveSetFactory sets() {
+		return SETS;
+	}
+	
+	public static PrimitiveMapFactory maps() {
+		return MAPS;
 	}
 	
 }
