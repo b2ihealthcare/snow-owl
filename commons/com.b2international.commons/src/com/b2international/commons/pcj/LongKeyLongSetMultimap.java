@@ -22,6 +22,8 @@ import java.util.Collection;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.collections.set.LongSet;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 
 /**
  * A long key long value set multimap implementation.
@@ -31,7 +33,7 @@ public class LongKeyLongSetMultimap {
 	private final LongKeyMap<LongSet> map;
 
 	public LongKeyLongSetMultimap() {
-		this(PrimitiveCollections.<LongSet>newLongKeyOpenHashMap(murmur3_32()));
+		this(PrimitiveMaps.<LongSet>newLongKeyOpenHashMap(murmur3_32()));
 	}
 
 	public LongKeyLongSetMultimap(LongKeyMap<LongSet> map) {
@@ -54,7 +56,7 @@ public class LongKeyLongSetMultimap {
 		LongSet values = delegateGet(key);
 		
 		if (values == null) {
-			values = PrimitiveCollections.newLongOpenHashSet();
+			values = PrimitiveSets.newLongOpenHashSet();
 			delegatePut(key, values);
 		}
 		

@@ -19,7 +19,8 @@ import java.io.Serializable;
 
 import com.b2international.collections.list.LongList;
 import com.b2international.collections.map.LongKeyIntMap;
-import com.b2international.commons.pcj.PrimitiveCollections;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
 
 /**
  * Bidirectional map for primitive longs with primitive integer internal IDs.
@@ -34,8 +35,8 @@ public class LongBidiMapWithInternalId implements Serializable {
 	private LongList elements;
 
 	public LongBidiMapWithInternalId(int expectedSize) {
-		keyMap = expectedSize < 1 ? PrimitiveCollections.newLongKeyIntOpenHashMap() : PrimitiveCollections.newLongKeyIntOpenHashMap(expectedSize);
-		elements = expectedSize < 1 ? PrimitiveCollections.newLongArrayList() : PrimitiveCollections.newLongArrayList(expectedSize);
+		keyMap = expectedSize < 1 ? PrimitiveMaps.newLongKeyIntOpenHashMap() : PrimitiveMaps.newLongKeyIntOpenHashMap(expectedSize);
+		elements = expectedSize < 1 ? PrimitiveLists.newLongArrayList() : PrimitiveLists.newLongArrayList(expectedSize);
 	}
 
 	public LongBidiMapWithInternalId(final LongBidiMapWithInternalId original) {

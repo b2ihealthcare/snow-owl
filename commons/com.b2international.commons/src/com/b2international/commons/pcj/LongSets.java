@@ -41,6 +41,8 @@ import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.StopWatch;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -56,7 +58,7 @@ public class LongSets {
 
 	/**Creates and returns with a new long hash set.*/
 	public static LongSet newLongSet() {
-		return PrimitiveCollections.newLongOpenHashSet();
+		return PrimitiveSets.newLongOpenHashSet();
 	}
 	
 	/**Creates a new long set using the {@link Hashing#murmur3_32() 32-bit murmur3} hashing algorithm.*/
@@ -73,26 +75,26 @@ public class LongSets {
 	
 	/**Creates and returns with a new long hash set with the given hash function.*/
 	public static LongSet newLongSet(final HashFunction hashFunction) {
-		return PrimitiveCollections.newLongOpenHashSet(checkNotNull(hashFunction, "hashFunction"));
+		return PrimitiveSets.newLongOpenHashSet(checkNotNull(hashFunction, "hashFunction"));
 	}
 	
 	/**Creates and returns with a new long hash set with the given expected size.*/
 	public static LongSet newLongSetWithExpectedSize(final int i) {
-		return PrimitiveCollections.newLongOpenHashSet(i > 0 ? i : 1);
+		return PrimitiveSets.newLongOpenHashSet(i > 0 ? i : 1);
 	}
 	
 	/**Creates and returns with a new long hash set with the same element as the given array argument.*/
 	public static LongSet newLongSet(final long[] items) {
 		if (items == null) {
-			return PrimitiveCollections.newLongOpenHashSet(1);
+			return PrimitiveSets.newLongOpenHashSet(1);
 		} else {
-			return PrimitiveCollections.newLongOpenHashSet(items);
+			return PrimitiveSets.newLongOpenHashSet(items);
 		}
 	}
 	
 	/**Creates a long hash set with the given long values.*/
 	public static LongSet newLongSet(final long item, final long... others) {
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet(others);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet(others);
 		$.add(item);
 		return $;
 	}
@@ -112,7 +114,7 @@ public class LongSets {
 	/**Creates a new primitive long hash set with the same elements as a specified collection.*/
 	public static LongSet newLongSet(final LongCollection collection) {
 		checkNotNull(collection, "collection");
-		return PrimitiveCollections.newLongOpenHashSet(collection);
+		return PrimitiveSets.newLongOpenHashSet(collection);
 	}
 	
 	/**
@@ -134,7 +136,7 @@ public class LongSets {
 			return LongCollections.emptySet();
 		}
 
-		final LongSet result = PrimitiveCollections.newLongOpenHashSet(set1);
+		final LongSet result = PrimitiveSets.newLongOpenHashSet(set1);
 		result.removeAll(set2);
 		return result;
 	}
@@ -161,7 +163,7 @@ public class LongSets {
 			return LongCollections.emptySet();
 		}
 
-		final LongSet result = PrimitiveCollections.newLongOpenHashSet(set1);
+		final LongSet result = PrimitiveSets.newLongOpenHashSet(set1);
 		result.retainAll(set2);
 		return result;
 	}
@@ -299,7 +301,7 @@ public class LongSets {
 	 */
 	public static LongSet newLongSet(final LongIterator itr) {
 		
-		final LongSet $ = PrimitiveCollections.newLongOpenHashSet();
+		final LongSet $ = PrimitiveSets.newLongOpenHashSet();
 		while (itr.hasNext()) {
 			
 			$.add(itr.next());
@@ -546,7 +548,7 @@ public class LongSets {
 	public static LongCollection filter(final LongCollection unfiltered, final LongPredicate predicate) {
 		checkNotNull(unfiltered, "unfiltered");
 		checkNotNull(predicate, "predicate");
-		final LongCollection copy = unfiltered instanceof LongSet ? newLongSet(unfiltered) : PrimitiveCollections.newLongArrayList(unfiltered);
+		final LongCollection copy = unfiltered instanceof LongSet ? newLongSet(unfiltered) : PrimitiveLists.newLongArrayList(unfiltered);
 		for (final LongIterator itr = copy.iterator(); itr.hasNext(); /* */) {
 			final long value = itr.next();
 			if (!predicate.apply(value)) {
@@ -722,8 +724,8 @@ public class LongSets {
 		System.out.println("reference " + Sets.difference(set1, set2));
 		System.out.println("reference " + Sets.difference(set2, set1));
 		
-		LongSet longset1 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set1));
-		LongSet longset2 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set2));
+		LongSet longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
+		LongSet longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
 		LongSet diff1 = LongSets.difference(longset1, longset2);
 		LongSet diff2 = LongSets.difference(longset2, longset1);
 		System.out.println("assert " + LongSets.toString(diff1));
@@ -747,8 +749,8 @@ public class LongSets {
 		System.out.println(Sets.difference(set2, set1).size());
 		
 		StopWatch.time("diff sets", t);
-		longset1 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set1));
-		longset2 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set2));
+		longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
+		longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
 		
 		t = System.currentTimeMillis();
 		diff1 = LongSets.difference(longset1, longset2);
@@ -775,8 +777,8 @@ public class LongSets {
 		System.out.println("reference " + Sets.intersection(set1, set2));
 		System.out.println("reference " + Sets.intersection(set2, set1));
 		
-		longset1 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set1));
-		longset2 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set2));
+		longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
+		longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
 		LongSet intersection1 = LongSets.intersection(longset1, longset2);
 		LongSet intersection2 = LongSets.intersection(longset2, longset1);
 		System.out.println("assert " + LongSets.toString(intersection1));
@@ -800,8 +802,8 @@ public class LongSets {
 		System.out.println(Sets.intersection(set2, set1).size());
 		
 		StopWatch.time("intersection sets", t);
-		longset1 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set1));
-		longset2 = PrimitiveCollections.newLongOpenHashSet(Longs.toArray(set2));
+		longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
+		longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
 		
 		t = System.currentTimeMillis();
 		intersection1 = LongSets.intersection(longset1, longset2);

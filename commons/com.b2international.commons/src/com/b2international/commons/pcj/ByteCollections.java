@@ -25,6 +25,8 @@ import com.b2international.collections.ByteIterator;
 import com.b2international.collections.list.ByteList;
 import com.b2international.collections.list.ByteListIterator;
 import com.b2international.collections.set.ByteSet;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveSets;
 
 /**
  * Utility class for {@link ByteCollection}s.
@@ -70,7 +72,7 @@ public class ByteCollections {
 		checkNotNull(unfiltered, "unfiltered");
 		checkNotNull(predicate, "predicate");
 		
-		final ByteCollection copy = unfiltered instanceof ByteSet ? PrimitiveCollections.newByteOpenHashSet(unfiltered) : PrimitiveCollections.newByteArrayList(unfiltered);
+		final ByteCollection copy = unfiltered instanceof ByteSet ? PrimitiveSets.newByteOpenHashSet(unfiltered) : PrimitiveLists.newByteArrayList(unfiltered);
 		for (final ByteIterator itr = copy.iterator(); itr.hasNext(); /* */) {
 			final byte input = itr.next();
 			if (!predicate.apply(input)) {
@@ -108,7 +110,7 @@ public class ByteCollections {
 		final byte[] array = list.toArray();
 		final byte[] copy = new byte[toIndex - fromIndex];
 		System.arraycopy(array, fromIndex, copy, 0, toIndex - fromIndex);
-		return PrimitiveCollections.newByteArrayList(copy);
+		return PrimitiveLists.newByteArrayList(copy);
 	}
 	
 	/**

@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.list.LongList;
 import com.b2international.collections.list.LongListIterator;
+import com.b2international.commons.collect.PrimitiveLists;
 
 /**
  * Converts an {@link LongIterator iterator} into a {@link LongListIterator list iterator} by caching the returned entries.
@@ -30,7 +31,7 @@ import com.b2international.collections.list.LongListIterator;
 public class LongListIteratorWrapper implements ResettableLongListIterator {
 
     private final LongIterator delegate;
-    private final LongList list = PrimitiveCollections.newLongArrayList();
+    private final LongList list = PrimitiveLists.newLongArrayList();
 
     private int currentIndex = 0;
     private int wrappedIteratorIndex = 0;

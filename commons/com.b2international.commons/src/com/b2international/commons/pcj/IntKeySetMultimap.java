@@ -24,6 +24,7 @@ import java.util.Set;
 import com.b2international.collections.map.IntKeyMap;
 import com.b2international.collections.map.IntKeyMapIterator;
 import com.b2international.collections.set.IntSet;
+import com.b2international.commons.collect.PrimitiveMaps;
 
 /**
  * Type safe set multimap implementation using primitive integer keys. 
@@ -33,7 +34,7 @@ public class IntKeySetMultimap<V> {
 	private final IntKeyMap<Set<V>> map;
 
 	public IntKeySetMultimap() {
-		this(PrimitiveCollections.<Set<V>>newIntKeyOpenHashMap());
+		this(PrimitiveMaps.<Set<V>>newIntKeyOpenHashMap());
 	}
 
 	public IntKeySetMultimap(IntKeyMap<Set<V>> map) {
