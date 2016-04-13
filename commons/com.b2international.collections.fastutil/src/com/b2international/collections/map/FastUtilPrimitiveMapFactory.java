@@ -29,12 +29,12 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	
 	@Override
 	public <V> IntKeyMap<V> newIntKeyOpenHashMap() {
-		throw new UnsupportedOperationException();
+		return IntKeyMapWrapper.create();
 	}
 
 	@Override
 	public <V> IntKeyMap<V> newIntKeyOpenHashMap(int expectedSize) {
-		throw new UnsupportedOperationException();
+		return IntKeyMapWrapper.create(expectedSize);
 	}
 	
 	@Override

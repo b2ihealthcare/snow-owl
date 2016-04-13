@@ -48,7 +48,7 @@ public final class IntOpenHashSetWrapper extends AbstractIntCollection implement
 		return wrap(new it.unimi.dsi.fastutil.ints.IntOpenHashSet());
 	}
 	
-	private static IntSet wrap(it.unimi.dsi.fastutil.ints.IntSet delegate) {
+	public static IntSet wrap(it.unimi.dsi.fastutil.ints.IntSet delegate) {
 		return new IntOpenHashSetWrapper(delegate);
 	}
 
