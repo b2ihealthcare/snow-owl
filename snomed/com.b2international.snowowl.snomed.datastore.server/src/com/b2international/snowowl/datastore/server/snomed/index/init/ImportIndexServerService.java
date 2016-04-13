@@ -48,8 +48,8 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.LongIterator;
 import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.collect.PrimitiveMaps;
@@ -466,11 +466,9 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
     @Override
     public void commit() {
-    	for (final LongKeyMapIterator<Document> itr = pendingDescriptionDocuments.mapIterator(); itr.hasNext(); /* empty */) {
-    		itr.next();
-    		
-    		final long descriptionId = itr.getKey();
-    		final Document descriptionDoc = itr.getValue();
+    	for (final LongIterator keys = pendingDescriptionDocuments.keySet().iterator(); keys.hasNext(); /**/) {
+			final long descriptionId = keys.next();
+    		final Document descriptionDoc = pendingDescriptionDocuments.get(descriptionId);
     		index(new Term(DESCRIPTION_ID, String.valueOf(descriptionId)), descriptionDoc);
     	}
     	

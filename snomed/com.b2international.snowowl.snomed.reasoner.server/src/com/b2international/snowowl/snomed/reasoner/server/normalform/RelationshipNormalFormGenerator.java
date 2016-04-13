@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.map.ByteKeyMap;
 import com.b2international.collections.map.ByteValueMap;
-import com.b2international.collections.map.ByteValueMapIterator;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.collect.PrimitiveMaps;
@@ -218,13 +217,11 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				}
 			}
 
-			final ByteValueMapIterator<UnionGroup> itr = newNumberMap.mapIterator();
+			final Iterator<UnionGroup> itr = newNumberMap.keySet().iterator();
 			while (itr.hasNext()) {
-				itr.next();
-
-				final UnionGroup unionGroupToAdjust = itr.getKey();
+				final UnionGroup unionGroupToAdjust = itr.next();
 				final byte oldNumber = unionGroupToAdjust.getUnionGroupNumber();
-				final byte newNumber = itr.getValue();
+				final byte newNumber = newNumberMap.get(unionGroupToAdjust);
 
 				final UnionGroup swap = oldNumberMap.get(newNumber);
 				if (swap != null) {
@@ -627,13 +624,11 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				}
 			}
 
-			final ByteValueMapIterator<Group> itr = newNumberMap.mapIterator();
+			final Iterator<Group> itr = newNumberMap.keySet().iterator();
 			while (itr.hasNext()) {
-				itr.next();
-
-				final Group groupToAdjust = itr.getKey();
+				final Group groupToAdjust = itr.next();
 				final byte oldNumber = groupToAdjust.getGroupNumber();
-				final byte newNumber = itr.getValue();
+				final byte newNumber = newNumberMap.get(groupToAdjust);
 
 				final Group swap = oldNumberMap.get(newNumber);
 				if (swap != null) {

@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.b2international.collections.map.IntKeyMapIterator;
+import com.b2international.collections.IntIterator;
 import com.b2international.commons.pcj.IntKeySetMultimap;
 
 /**
@@ -135,11 +135,13 @@ public class IntKeySetMultimapTest {
 		multimap.put(3, "Three_1");
 		multimap.put(3, "Three_2");
 		multimap.put(3, "Three_3");
-		for (IntKeyMapIterator<Set<String>> itr = multimap.mapIterator(); itr.hasNext(); /**/) {
-			itr.next();
-			itr.getValue();
-			itr.remove();
+
+		final IntIterator keys = multimap.keySet().iterator();
+		while (keys.hasNext()) {
+			final int key = keys.next();
+			multimap.get(key);
 		}
+		
 		assertTrue(multimap.size() == 0);
 		assertTrue(multimap.isEmpty());
 	}

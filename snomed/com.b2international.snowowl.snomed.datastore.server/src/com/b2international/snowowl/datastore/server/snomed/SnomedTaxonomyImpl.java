@@ -47,7 +47,6 @@ import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.list.LongList;
 import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.collect.PrimitiveLists;
@@ -463,17 +462,14 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 				final long conceptIdL = Long.parseLong(conceptId);
 				final LongSet containerRefSetIds = newLongSet();
 				
-				for (final LongKeyMapIterator<LongSet> itr = refSetMap.mapIterator(); itr.hasNext(); /**/) {
-					itr.next();
-					
-					final LongSet value = itr.getValue();
+				for (final LongIterator keys = refSetMap.keySet().iterator(); keys.hasNext(); /**/) {
+					final long key = keys.next();
+					final LongSet value = refSetMap.get(key);
 					if (value != null) {
 						if (value.contains(conceptIdL)) {
-							containerRefSetIds.add(itr.getKey());
+							containerRefSetIds.add(key);
 						}
 					}
-					
-					
 				}
 				return toStringList(containerRefSetIds);
 			} catch (final NumberFormatException e) {

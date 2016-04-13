@@ -47,8 +47,9 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
 
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.LongIterator;
 import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.map.LongKeyMapIterator;
+import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -189,10 +190,10 @@ public enum SnomedModuleDependencyCollectorService {
 		final DescriptionPropertyCollector collector = new DescriptionPropertyCollector(getUnpublishedStorageKeys());
 		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().description().matchAll(), collector);
 		
-		for (final LongKeyMapIterator itr = collector.getMapping().mapIterator(); itr.hasNext(); /**/) {
-			itr.next();
-			
-			final long[] properties = (long[]) itr.getValue();
+		final LongKeyMap<long[]> mapping = collector.getMapping();
+		for (final LongIterator keys = mapping.keySet().iterator(); keys.hasNext(); /**/) {
+			final long key = keys.next();
+			final long[] properties = mapping.get(key);
 			final long conceptId = properties[0];
 			final long moduleId = properties[1];
 			final long typeId = properties[2];
@@ -207,11 +208,11 @@ public enum SnomedModuleDependencyCollectorService {
 	private void tryCreateMembersForRelationshipChanges() {
 		final RelationshipPropertyCollector collector = new RelationshipPropertyCollector(getUnpublishedStorageKeys());
 		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().relationship().matchAll(), collector);
+		final LongKeyMap<long[]> mapping = collector.getMapping();
 		
-		for (final LongKeyMapIterator itr = collector.getMapping().mapIterator(); itr.hasNext(); /**/) {
-			itr.next();
-			
-			final long[] properties = (long[]) itr.getValue();
+		for (final LongIterator keys = mapping.keySet().iterator(); keys.hasNext(); /**/) {
+			final long key = keys.next();
+			final long[] properties = mapping.get(key);
 			final long characteristicTypeId = properties[0];
 			final long moduleId = properties[1];
 			final long typeId = properties[2];
@@ -230,10 +231,11 @@ public enum SnomedModuleDependencyCollectorService {
 	private void tryCreateMembersForDataTypeChanges() {
 		final ConcreteDataTypePropertyCollector collector = new ConcreteDataTypePropertyCollector(getUnpublishedStorageKeys());
 		getIndexServerService().search(getBranchPath(), ALL_CDT_MEMBERS_QUERY, collector);
+		final LongKeyMap<long[]> mapping = collector.getMapping();
 		
 		Set<Long> referencedComponentIds = newHashSet();
 		
-		for (Object value : collector.getMapping().values()) {
+		for (Object value : mapping.values()) {
 			final long[] properties = (long[]) value;
 			referencedComponentIds.add(properties[1]);
 		}
@@ -251,10 +253,9 @@ public enum SnomedModuleDependencyCollectorService {
 		
 		LongKeyLongMap idToModuleMap = componentModuleCollector.getIdToModuleMap();
 		
-		for (final LongKeyMapIterator itr = collector.getMapping().mapIterator(); itr.hasNext(); /**/) {
-			itr.next();
-			
-			final long[] properties = (long[]) itr.getValue();
+		for (final LongIterator keys = mapping.keySet().iterator(); keys.hasNext(); /**/) {
+			final long key = keys.next();
+			final long[] properties = mapping.get(key);
 			final long moduleId = properties[0];
 			final long referencedComponentId = properties[1];
 			

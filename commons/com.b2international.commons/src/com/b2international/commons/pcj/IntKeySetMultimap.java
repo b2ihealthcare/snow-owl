@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.b2international.collections.map.IntKeyMap;
-import com.b2international.collections.map.IntKeyMapIterator;
 import com.b2international.collections.set.IntSet;
 import com.b2international.commons.collect.PrimitiveMaps;
 
@@ -67,10 +66,6 @@ public class IntKeySetMultimap<V> {
 
 	public IntSet keySet() {
 		return map.keySet();
-	}
-
-	public IntKeyMapIterator<Set<V>> mapIterator() {
-		return map.mapIterator();
 	}
 
 	public Set<V> remove(int key) {

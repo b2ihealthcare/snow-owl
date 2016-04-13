@@ -20,7 +20,6 @@ import static com.google.common.hash.Hashing.murmur3_32;
 import java.util.Collection;
 
 import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;
@@ -38,10 +37,6 @@ public class LongKeyLongSetMultimap {
 
 	public LongKeyLongSetMultimap(LongKeyMap<LongSet> map) {
 		this.map = map;
-	}
-
-	public LongKeyMapIterator<LongSet> mapIterator() {
-		return map.mapIterator();
 	}
 
 	public LongSet keySet() {

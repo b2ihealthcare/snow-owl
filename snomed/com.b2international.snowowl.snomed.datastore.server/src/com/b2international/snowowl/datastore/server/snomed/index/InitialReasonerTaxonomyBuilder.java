@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.map.LongKeyLongMap;
 import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.collect.PrimitiveLists;
@@ -267,12 +266,10 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 			final LongKeyMap<Collection<ConcreteDomainFragment>> concreteDomainMap = collector.getDataTypeMap();
 
-			for (final LongKeyMapIterator<Collection<ConcreteDomainFragment>> itr = concreteDomainMap.mapIterator(); itr.hasNext(); /* not much */) {
-				itr.next();
-
-				final long componentId = itr.getKey();
+			for (final LongIterator keys = concreteDomainMap.keySet().iterator(); keys.hasNext(); /**/) {
+				final long componentId = keys.next();
 				if (!componentIds.contains(componentId)) {
-					itr.remove(); //no matching active SNOMED CT component
+					keys.remove(); //no matching active SNOMED CT component
 				}
 			}
 
@@ -336,11 +333,10 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final StatementFragmentCollector collector = new StatementFragmentCollector();
 			getIndexServerService().search(branchPath, statementQuery, collector);
 			final LongKeyMap<Collection<StatementFragment>> statementMap = collector.getStatementMap();
-			for (final LongKeyMapIterator<Collection<StatementFragment>> itr = statementMap.mapIterator(); itr.hasNext(); /* nothing */) {
-				itr.next();
-				final long sourceConceptId = itr.getKey();
+			for (final LongIterator keys = statementMap.keySet().iterator(); keys.hasNext(); /**/) {
+				final long sourceConceptId = keys.next();
 				if (!conceptIds.contains(sourceConceptId)) { // active relationship, but source concept is not active?
-					itr.remove();
+					keys.remove();
 				}
 			}
 			return statementMap;

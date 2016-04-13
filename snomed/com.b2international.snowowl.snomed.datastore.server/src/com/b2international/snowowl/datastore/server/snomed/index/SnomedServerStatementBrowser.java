@@ -34,8 +34,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.collections.LongIterator;
 import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.map.LongKeyLongMapIterator;
 import com.b2international.collections.map.LongKeyMap;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
@@ -482,11 +482,10 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		service.search(branchPath, query, collector);
 
 		final LongKeyLongMap idsSet = collector.getIds();
-		final LongKeyLongMapIterator iter = idsSet.mapIterator();
-		while (iter.hasNext()) {
-			iter.next();
-			if (!sourceIds.contains(String.valueOf(iter.getKey()))) {
-				iter.remove();
+		for (final LongIterator keys = idsSet.keySet().iterator(); keys.hasNext(); /**/) {
+			final long key = keys.next();
+			if (!sourceIds.contains(String.valueOf(key))) {
+				keys.remove();
 			}
 		}
 		final Map<String, String> result = Maps.newHashMapWithExpectedSize(idsSet.size());

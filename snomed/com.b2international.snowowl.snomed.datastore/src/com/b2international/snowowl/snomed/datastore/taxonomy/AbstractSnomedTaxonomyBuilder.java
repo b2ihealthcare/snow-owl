@@ -24,8 +24,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.LongIterator;
 import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
@@ -100,17 +100,17 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		//2D integer array for storing concept internal IDs and for saving ~1M additional internal ID lookup via hash code
 		//0 index source/subject concept internal ID
 		//1 index destination/object concept internal ID
-		final int[][] _conceptInternalIds  = new int[getEdges().size()][2];
+		final LongKeyMap<long[]> edges = getEdges();
+		final int[][] _conceptInternalIds  = new int[edges.size()][2];
 		int count = 0;
 		
 		// refresh all RelationshipMini concepts, since they may have been modified
-		for (final LongKeyMapIterator<long[]> itr = getEdges().mapIterator(); itr.hasNext(); /* nothing */) {
+		for (final LongIterator keys = edges.keySet().iterator(); keys.hasNext(); /* nothing */) {
 			
-			itr.next(); //keep iterating
+			final long relationshipId = keys.next(); //keep iterating
+			final long[] statement = edges.get(relationshipId);
 			
-			final long[] statement = itr.getValue();
 
-			final long relationshipId = itr.getKey();
 			final long destinationId = statement[0];
 			final long sourceId = statement[1];
 			

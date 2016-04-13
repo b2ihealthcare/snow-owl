@@ -94,7 +94,6 @@ import com.b2international.collections.list.LongList;
 import com.b2international.collections.list.LongListIterator;
 import com.b2international.collections.map.LongKeyLongMap;
 import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.map.LongKeyMapIterator;
 import com.b2international.collections.set.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
@@ -1426,9 +1425,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			final Map<String, String> $ = Maps.newHashMapWithExpectedSize(idLabelMapping.size() * descriptionTypeId.length);
 			
 			//XXX map key is lowercase on purpose
-			for (final LongKeyMapIterator<String> itr = idLabelMapping.mapIterator(); itr.hasNext(); /* nothing */) {
-				itr.next();
-				$.put(itr.getValue().toLowerCase(), String.valueOf(itr.getKey()));
+			for (final LongIterator keys = idLabelMapping.keySet().iterator(); keys.hasNext(); /* nothing */) {
+				final long key = keys.next();
+				final String value = idLabelMapping.get(key);
+				$.put(value.toLowerCase(), String.valueOf(key));
 			}
 			
 			if (LOGGER.isDebugEnabled()) {
@@ -1766,13 +1766,13 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final SnomedComponentLabelCollector collector = new SnomedComponentLabelCollector();
 		getIndexServerService().search(branchPath, query, collector);
+		final LongKeyMap<String> idLabelMapping = collector.getIdLabelMapping();
 
 		final Multimap<String, String> ptToIdsMapping = HashMultimap.create();
-		
-		for (final LongKeyMapIterator<String> itr = collector.getIdLabelMapping().mapIterator(); itr.hasNext(); /**/) {
-			itr.next();
-			final String id = Long.toString(itr.getKey());
-			final String pt = StringUtils.valueOfOrEmptyString(itr.getValue());
+		for (final LongIterator keys = idLabelMapping.keySet().iterator(); keys.hasNext(); /**/) {
+			final long key = keys.next();
+			final String id = Long.toString(key);
+			final String pt = StringUtils.valueOfOrEmptyString(idLabelMapping.get(key));
 			ptToIdsMapping.put(pt, id);
 		}
 		
