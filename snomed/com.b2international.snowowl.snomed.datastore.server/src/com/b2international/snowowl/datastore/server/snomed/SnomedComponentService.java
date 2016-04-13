@@ -233,13 +233,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			.descriptionType()
 			.build();
 	
-	private static final Function<String, Boolean> ALWAYS_FALSE_FUNC = new Function<String, Boolean>() {
-		@Override
-		public Boolean apply(final String input) {
-			return false;
-		}
-	};
-	
 	private static final Query PREFERRED_LANGUAGE_QUERY = new TermQuery(new Term(SnomedMappings.memberAcceptabilityId().fieldName(), longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)));
 	private static final Query ACCEPTED_LANGUAGE_QUERY = new TermQuery(new Term(SnomedMappings.memberAcceptabilityId().fieldName(), longToPrefixCoded(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE)));
 	private static final Query DESCRIPTION_INACTIVATION_REFSET_QUERY = SnomedMappings.newQuery().memberRefSetId(REFSET_DESCRIPTION_INACTIVITY_INDICATOR).matchAll();
@@ -278,7 +271,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	 * <p>
 	 * <b>NOTE:&nbsp;</b>Just for estimation.
 	 */
-	public static final LongCollection TOP_MOST_RELATIONSHIP_TYPE_IDS_AS_LONG = PrimitiveSets.newUnmodifiableLongSet(PrimitiveSets.newLongChainedHashSet(new long[] {
+	public static final LongCollection TOP_MOST_RELATIONSHIP_TYPE_IDS_AS_LONG = PrimitiveLists.newLongArrayList(
 			Long.parseLong(Concepts.IS_A),
 			Long.parseLong(Concepts.FINDING_SITE),
 			Long.parseLong(Concepts.HAS_ACTIVE_INGREDIENT),
@@ -289,7 +282,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			Long.parseLong(Concepts.PROCEDURE_SITE_DIRECT),
 			Long.parseLong(Concepts.INTERPRETS),
 			Long.parseLong(Concepts.CAUSATIVE_AGENT)
-	}));
+	);
 				
 	
 	/**
