@@ -44,10 +44,6 @@ public interface PrimitiveSetFactory {
 
 	LongSet newLongOpenHashSet(LongCollection source);
 	
-	LongSet newLongChainedHashSet(long[] source);
-	
-	IntSet newUnmodifiableIntSet(IntSet source);
-
 	LongSet newUnmodifiableLongSet(LongSet source);
 	
 	Set<Long> newLongSetToSetAdapter(LongSet source);

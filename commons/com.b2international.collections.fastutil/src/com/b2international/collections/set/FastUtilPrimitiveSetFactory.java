@@ -24,7 +24,7 @@ import com.google.common.hash.HashFunction;
 /**
  * @since 4.7
  */
-public class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
+public final class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 	
 	@Override
 	public ByteSet newByteOpenHashSet(ByteCollection source) {
@@ -39,11 +39,6 @@ public class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 	@Override
 	public IntSet newIntOpenHashSet(int expectedSize) {
 		return IntOpenHashSetWrapper.create(expectedSize);
-	}
-
-	@Override
-	public LongSet newLongChainedHashSet(long[] source) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -78,11 +73,6 @@ public class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 
 	@Override
 	public Set<Long> newLongSetToSetAdapter(LongSet source) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IntSet newUnmodifiableIntSet(IntSet source) {
 		throw new UnsupportedOperationException();
 	}
 

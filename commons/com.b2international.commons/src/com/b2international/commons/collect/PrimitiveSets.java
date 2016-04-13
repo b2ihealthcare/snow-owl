@@ -107,14 +107,6 @@ public class PrimitiveSets {
 		return FACTORY.newLongOpenHashSet(source);
 	}
 
-	public static LongSet newLongChainedHashSet(long[] source) {
-		return FACTORY.newLongChainedHashSet(source);
-	}
-
-	public static IntSet newUnmodifiableIntSet(IntSet source) {
-		return FACTORY.newUnmodifiableIntSet(source);
-	}
-
 	public static LongSet newUnmodifiableLongSet(LongSet source) {
 		return FACTORY.newUnmodifiableLongSet(source);
 	}
