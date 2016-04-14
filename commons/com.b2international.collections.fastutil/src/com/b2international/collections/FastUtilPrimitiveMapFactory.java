@@ -27,6 +27,7 @@ import com.b2international.collections.longs.LongKeyIntMapWrapper;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongKeyLongMapWrapper;
 import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongKeyMapWrapper;
 import com.b2international.collections.longs.LongValueMap;
 import com.google.common.hash.HashFunction;
 
@@ -82,19 +83,19 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 
 	@Override
 	public <V> LongKeyMap<V> newLongKeyOpenHashMap() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public <V> LongKeyMap<V> newLongKeyOpenHashMap(HashFunction hashFunction) {
-		throw new UnsupportedOperationException();
+		return LongKeyMapWrapper.create();
 	}
 
 	@Override
 	public <V> LongKeyMap<V> newLongKeyOpenHashMap(int expectedSize) {
-		throw new UnsupportedOperationException();
+		return LongKeyMapWrapper.create(expectedSize);
 	}
 	
+	@Override
+	public <V> LongKeyMap<V> newLongKeyOpenHashMap(HashFunction hashFunction) {
+		return LongKeyMapWrapper.create(hashFunction);
+	}
+
 	@Override
 	public <K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize) {
 		throw new UnsupportedOperationException();
