@@ -16,7 +16,10 @@
 package com.b2international.collections.list;
 
 import com.b2international.collections.ByteCollection;
+import com.b2international.collections.FloatCollection;
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.floats.FloatArrayListWrapper;
+import com.b2international.collections.floats.FloatList;
 
 /**
  * @since 4.7
@@ -46,6 +49,26 @@ public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory 
 	@Override
 	public IntList newIntArrayList(int[] source) {
 		return IntArrayListWrapper.create(source);
+	}
+	
+	@Override
+	public FloatList newFloatArrayList() {
+		return FloatArrayListWrapper.create();
+	}
+	
+	@Override
+	public FloatList newFloatArrayList(int expectedSize) {
+		return FloatArrayListWrapper.create(expectedSize);
+	}
+	
+	@Override
+	public FloatList newFloatArrayList(float... source) {
+		return FloatArrayListWrapper.create(source);
+	}
+	
+	@Override
+	public FloatList newFloatArrayList(FloatCollection source) {
+		return FloatArrayListWrapper.create(source);
 	}
 	
 	@Override
