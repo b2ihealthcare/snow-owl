@@ -19,6 +19,9 @@ import java.util.NoSuchElementException;
 
 import com.b2international.collections.ints.IntDeque;
 
+/**
+ * @since 4.7
+ */
 public class IntArrayDequeWrapper extends IntArrayListWrapper implements IntDeque {
 
 	public static IntDeque create(int[] source) {
@@ -31,13 +34,13 @@ public class IntArrayDequeWrapper extends IntArrayListWrapper implements IntDequ
 
 	@Override
 	public void addLast(int value) {
-		delegate.add(delegate.size(), value);
+		delegate().add(delegate().size(), value);
 	}
 
 	@Override
 	public int getLast() {
-		if (!delegate.isEmpty()) {
-			return delegate.getInt(delegate.size() - 1);
+		if (!delegate().isEmpty()) {
+			return delegate().getInt(delegate().size() - 1);
 		} else {
 			throw new NoSuchElementException();
 		}
@@ -45,8 +48,8 @@ public class IntArrayDequeWrapper extends IntArrayListWrapper implements IntDequ
 
 	@Override
 	public int removeLast() {
-		if (!delegate.isEmpty()) {
-			return delegate.removeInt(delegate.size() - 1);
+		if (!delegate().isEmpty()) {
+			return delegate().removeInt(delegate().size() - 1);
 		} else {
 			throw new NoSuchElementException();
 		}

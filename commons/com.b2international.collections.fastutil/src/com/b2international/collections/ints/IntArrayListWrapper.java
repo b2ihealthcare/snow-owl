@@ -15,131 +15,95 @@
  */
 package com.b2international.collections.ints;
 
-import com.b2international.collections.ints.AbstractIntCollection;
-import com.b2international.collections.ints.IntCollection;
-import com.b2international.collections.ints.IntIterator;
-import com.b2international.collections.ints.IntList;
-import com.b2international.collections.ints.IntListIterator;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-public class IntArrayListWrapper extends AbstractIntCollection implements IntList {
+/**
+ * @since 4.7
+ */
+public class IntArrayListWrapper extends IntCollectionWrapper implements IntList {
 
-	protected final it.unimi.dsi.fastutil.ints.IntArrayList delegate;
-
-	public static IntList create(int[] source) {
-		return new IntArrayListWrapper(new it.unimi.dsi.fastutil.ints.IntArrayList(source));
-	}
-
-	public static IntList create() {
-		return new IntArrayListWrapper(new it.unimi.dsi.fastutil.ints.IntArrayList());
-	}
-
-	protected IntArrayListWrapper(it.unimi.dsi.fastutil.ints.IntArrayList delegate) {
-		this.delegate = delegate;
+	protected IntArrayListWrapper(it.unimi.dsi.fastutil.ints.IntList delegate) {
+		super(delegate);
 	}
 
 	@Override
-	public void clear() {
-		delegate.clear();
+	protected it.unimi.dsi.fastutil.ints.IntList delegate() {
+		return (it.unimi.dsi.fastutil.ints.IntList) super.delegate();
 	}
-
-	@Override
-	public boolean isEmpty() {
-		return delegate.isEmpty();
-	}
-
-	@Override
-	public int size() {
-		return delegate.size();
-	}
-
+	
 	@Override
 	public void trimToSize() {
-		delegate.trim();
-	}
-
-	@Override
-	public boolean add(int value) {
-		return delegate.add(value);
-	}
-
-	@Override
-	public boolean addAll(IntCollection collection) {
-		if (collection instanceof IntArrayListWrapper) {
-			return delegate.addAll(((IntArrayListWrapper) collection).delegate);
-		} else {
-			return super.addAll(collection);
-		}
-	}
-
-	@Override
-	public boolean contains(int value) {
-		return delegate.contains(value);
-	}
-
-	@Override
-	public boolean containsAll(IntCollection collection) {
-		if (collection instanceof IntArrayListWrapper) {
-			return delegate.containsAll(((IntArrayListWrapper) collection).delegate);
-		} else {
-			return super.containsAll(collection);
-		}
-	}
-
-	@Override
-	public IntIterator iterator() {
-		return new IntIteratorWrapper<>(delegate.iterator());
-	}
-
-	@Override
-	public boolean remove(int value) {
-		return delegate.rem(value);
-	}
-
-	@Override
-	public boolean removeAll(IntCollection collection) {
-		if (collection instanceof IntArrayListWrapper) {
-			return delegate.removeAll(((IntArrayListWrapper) collection).delegate);
-		} else {
-			return super.removeAll(collection);
-		}
-	}
-
-	@Override
-	public boolean retainAll(IntCollection collection) {
-		if (collection instanceof IntArrayListWrapper) {
-			return delegate.retainAll(((IntArrayListWrapper) collection).delegate);
-		} else {
-			return super.retainAll(collection);
-		}
-	}
-
-	@Override
-	public int[] toArray() {
-		return delegate.toArray(new int[delegate.size()]);
+		trim(delegate());
 	}
 
 	@Override
 	public IntList dup() {
-		return new IntArrayListWrapper(new it.unimi.dsi.fastutil.ints.IntArrayList(delegate));
+		return create(this);
 	}
 
 	@Override
 	public int get(int index) {
-		return delegate.getInt(index);
+		return delegate().getInt(index);
 	}
 
 	@Override
 	public IntListIterator listIterator() {
-		return new IntListIteratorWrapper(delegate.listIterator());
+		return new IntListIteratorWrapper(delegate().listIterator());
 	}
 
 	@Override
 	public IntListIterator listIterator(int startIndex) {
-		return new IntListIteratorWrapper(delegate.listIterator(startIndex));
+		return new IntListIteratorWrapper(delegate().listIterator(startIndex));
 	}
 
 	@Override
 	public int set(int index, int value) {
-		return delegate.set(index, value);
+		return delegate().set(index, value);
 	}
+	
+	public static IntList wrap(it.unimi.dsi.fastutil.ints.IntList delegate) {
+		return new IntArrayListWrapper(delegate);
+	}
+	
+	public static IntList create(IntCollection collection) {
+		if (collection instanceof IntArrayListWrapper) {
+			final it.unimi.dsi.fastutil.ints.IntList sourceDelegate = ((IntArrayListWrapper) collection).delegate();
+			return wrap(clone(sourceDelegate));
+		} else {
+			final IntList result = create(collection.size());
+			result.addAll(collection);
+			return result;
+		}
+	}
+	
+	public static IntList create(int expectedSize) {
+		return wrap(new it.unimi.dsi.fastutil.ints.IntArrayList(expectedSize));
+	}
+	
+	public static IntList create(int[] source) {
+		return wrap(new it.unimi.dsi.fastutil.ints.IntArrayList(source));
+	}
+
+	public static IntList create() {
+		return wrap(new it.unimi.dsi.fastutil.ints.IntArrayList());
+	}
+	
+	// FastUtil helpers
+	
+	private static it.unimi.dsi.fastutil.ints.IntList clone(it.unimi.dsi.fastutil.ints.IntList list) {
+		if (list instanceof IntArrayList) {
+			return ((IntArrayList) list).clone();
+		} else {
+			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
+		}
+	}
+	
+	private static void trim(it.unimi.dsi.fastutil.ints.IntList list) {
+		if (list instanceof IntArrayList) {
+			((IntArrayList) list).trim();
+		} else {
+			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
+		}
+	}
+	
 }
