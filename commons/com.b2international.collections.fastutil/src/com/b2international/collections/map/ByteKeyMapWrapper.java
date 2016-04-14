@@ -18,8 +18,9 @@ package com.b2international.collections.map;
 import java.util.Collection;
 
 import com.b2international.collections.bytes.ByteIterator;
+import com.b2international.collections.bytes.ByteKeyMap;
+import com.b2international.collections.bytes.ByteSet;
 import com.b2international.collections.set.ByteOpenHashSetWrapper;
-import com.b2international.collections.set.ByteSet;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenCustomHashMap;

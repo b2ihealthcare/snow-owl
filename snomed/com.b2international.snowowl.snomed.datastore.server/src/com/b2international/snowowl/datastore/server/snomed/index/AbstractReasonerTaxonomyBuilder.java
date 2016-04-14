@@ -22,11 +22,11 @@ import java.util.Collection;
 import java.util.Collections;
 
 import com.b2international.collections.IntIterator;
-import com.b2international.collections.list.LongList;
-import com.b2international.collections.map.LongKeyIntMap;
-import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongKeyIntMap;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.ArrayIntIterator;

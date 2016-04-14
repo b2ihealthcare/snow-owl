@@ -17,7 +17,7 @@ package com.b2international.collections.list;
 
 import java.util.NoSuchElementException;
 
-import com.b2international.collections.list.IntDeque;
+import com.b2international.collections.ints.IntDeque;
 
 public class IntArrayDequeWrapper extends IntArrayListWrapper implements IntDeque {
 

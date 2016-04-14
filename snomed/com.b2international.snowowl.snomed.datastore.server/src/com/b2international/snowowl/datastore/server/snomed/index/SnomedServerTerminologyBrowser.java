@@ -41,8 +41,8 @@ import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.collections.LongCollection;
-import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;

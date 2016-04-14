@@ -16,11 +16,8 @@
 package com.b2international.collections;
 
 import com.b2international.collections.list.FastUtilPrimitiveListFactory;
-import com.b2international.collections.list.PrimitiveListFactory;
 import com.b2international.collections.map.FastUtilPrimitiveMapFactory;
-import com.b2international.collections.map.PrimitiveMapFactory;
 import com.b2international.collections.set.FastUtilPrimitiveSetFactory;
-import com.b2international.collections.set.PrimitiveSetFactory;
 
 /**
  * @since 4.7

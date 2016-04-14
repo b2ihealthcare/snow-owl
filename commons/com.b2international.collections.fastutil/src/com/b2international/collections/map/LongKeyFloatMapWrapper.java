@@ -18,8 +18,9 @@ package com.b2international.collections.map;
 import com.b2international.collections.FloatCollection;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.floats.FloatCollectionWrapper;
+import com.b2international.collections.longs.LongKeyFloatMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.collections.set.LongOpenHashSetWrapper;
-import com.b2international.collections.set.LongSet;
 
 import it.unimi.dsi.fastutil.longs.Long2FloatMap;
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenCustomHashMap;

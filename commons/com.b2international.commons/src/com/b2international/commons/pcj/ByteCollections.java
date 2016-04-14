@@ -22,9 +22,9 @@ import java.util.NoSuchElementException;
 
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteIterator;
-import com.b2international.collections.list.ByteList;
-import com.b2international.collections.list.ByteListIterator;
-import com.b2international.collections.set.ByteSet;
+import com.b2international.collections.bytes.ByteList;
+import com.b2international.collections.bytes.ByteListIterator;
+import com.b2international.collections.bytes.ByteSet;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveSets;
 

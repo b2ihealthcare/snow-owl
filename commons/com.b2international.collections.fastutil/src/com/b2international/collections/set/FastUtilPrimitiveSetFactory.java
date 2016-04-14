@@ -18,7 +18,12 @@ package com.b2international.collections.set;
 import java.util.Set;
 
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.PrimitiveSetFactory;
 import com.b2international.collections.bytes.ByteCollection;
+import com.b2international.collections.bytes.ByteSet;
+import com.b2international.collections.ints.IntSet;
+import com.b2international.collections.longs.ImmutableLongSet;
+import com.b2international.collections.longs.LongSet;
 import com.google.common.hash.HashFunction;
 
 /**

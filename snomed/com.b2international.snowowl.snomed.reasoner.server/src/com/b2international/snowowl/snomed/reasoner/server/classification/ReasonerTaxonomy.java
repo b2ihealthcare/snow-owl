@@ -21,9 +21,9 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.list.LongList;
-import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;

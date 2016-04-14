@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.IStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;

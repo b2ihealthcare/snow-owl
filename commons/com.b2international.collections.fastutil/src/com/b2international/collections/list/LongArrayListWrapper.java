@@ -19,8 +19,8 @@ import com.b2international.collections.AbstractLongCollection;
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.LongIteratorWrapper;
-import com.b2international.collections.list.LongList;
-import com.b2international.collections.list.LongListIterator;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongListIterator;
 
 public class LongArrayListWrapper extends AbstractLongCollection implements LongList {
 

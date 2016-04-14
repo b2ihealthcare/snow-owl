@@ -20,7 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.Collection;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;

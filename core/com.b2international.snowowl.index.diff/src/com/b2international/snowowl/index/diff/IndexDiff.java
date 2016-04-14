@@ -20,7 +20,7 @@ import java.io.Serializable;
 import org.apache.lucene.index.IndexCommit;
 
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Change;
 
 /**

@@ -22,7 +22,7 @@ import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.List;
 
-import com.b2international.collections.map.LongKeyMap;
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.collect.PrimitiveMaps;

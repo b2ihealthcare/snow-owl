@@ -17,9 +17,15 @@ package com.b2international.collections.list;
 
 import com.b2international.collections.FloatCollection;
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.PrimitiveListFactory;
 import com.b2international.collections.bytes.ByteCollection;
+import com.b2international.collections.bytes.ByteList;
 import com.b2international.collections.floats.FloatArrayListWrapper;
 import com.b2international.collections.floats.FloatList;
+import com.b2international.collections.ints.IntDeque;
+import com.b2international.collections.ints.IntList;
+import com.b2international.collections.longs.LongDeque;
+import com.b2international.collections.longs.LongList;
 
 /**
  * @since 4.7

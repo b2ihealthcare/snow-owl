@@ -16,7 +16,7 @@
 package com.b2international.collections.list;
 
 import com.b2international.collections.ByteIteratorWrapper;
-import com.b2international.collections.list.ByteListIterator;
+import com.b2international.collections.bytes.ByteListIterator;
 
 /**
  * @since 4.6

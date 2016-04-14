@@ -19,8 +19,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 
 import com.b2international.collections.LongCollection;
-import com.b2international.collections.list.LongList;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.google.common.base.Predicate;

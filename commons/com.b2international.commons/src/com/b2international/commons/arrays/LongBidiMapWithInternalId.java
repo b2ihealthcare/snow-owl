@@ -17,8 +17,8 @@ package com.b2international.commons.arrays;
 
 import java.io.Serializable;
 
-import com.b2international.collections.list.LongList;
-import com.b2international.collections.map.LongKeyIntMap;
+import com.b2international.collections.longs.LongKeyIntMap;
+import com.b2international.collections.longs.LongList;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveMaps;
 

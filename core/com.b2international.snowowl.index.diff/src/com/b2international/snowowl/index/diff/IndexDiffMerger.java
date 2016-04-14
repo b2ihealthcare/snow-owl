@@ -25,7 +25,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.index.diff.impl.IndexDiffImpl;
 import com.google.common.base.Stopwatch;
 

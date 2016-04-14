@@ -16,7 +16,7 @@
 package com.b2international.collections.list;
 
 import com.b2international.collections.LongIteratorWrapper;
-import com.b2international.collections.list.LongListIterator;
+import com.b2international.collections.longs.LongListIterator;
 
 /**
  * @since 4.6

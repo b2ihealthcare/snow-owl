@@ -20,8 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.NoSuchElementException;
 
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.list.LongList;
-import com.b2international.collections.list.LongListIterator;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongListIterator;
 import com.b2international.commons.collect.PrimitiveLists;
 
 /**

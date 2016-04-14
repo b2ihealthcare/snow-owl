@@ -19,8 +19,8 @@ import com.b2international.collections.ByteIteratorWrapper;
 import com.b2international.collections.bytes.AbstractByteCollection;
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteIterator;
-import com.b2international.collections.list.ByteList;
-import com.b2international.collections.list.ByteListIterator;
+import com.b2international.collections.bytes.ByteList;
+import com.b2international.collections.bytes.ByteListIterator;
 
 public class ByteArrayListWrapper extends AbstractByteCollection implements ByteList {
 

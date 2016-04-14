@@ -35,9 +35,9 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;

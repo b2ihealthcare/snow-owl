@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.pcj.LongSets;

@@ -23,8 +23,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.b2international.collections.LongCollection;
-import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;

@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;

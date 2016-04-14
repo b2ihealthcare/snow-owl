@@ -16,15 +16,15 @@
 package com.b2international.commons.collect;
 
 import com.b2international.collections.FastUtilPrimitiveCollections;
-import com.b2international.collections.map.ByteKeyMap;
-import com.b2international.collections.map.ByteValueMap;
-import com.b2international.collections.map.IntKeyMap;
-import com.b2international.collections.map.LongKeyFloatMap;
-import com.b2international.collections.map.LongKeyIntMap;
-import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.map.LongValueMap;
-import com.b2international.collections.map.PrimitiveMapFactory;
+import com.b2international.collections.PrimitiveMapFactory;
+import com.b2international.collections.bytes.ByteKeyMap;
+import com.b2international.collections.bytes.ByteValueMap;
+import com.b2international.collections.ints.IntKeyMap;
+import com.b2international.collections.longs.LongKeyFloatMap;
+import com.b2international.collections.longs.LongKeyIntMap;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongValueMap;
 import com.google.common.hash.HashFunction;
 
 /**

@@ -64,7 +64,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 
 
 /**

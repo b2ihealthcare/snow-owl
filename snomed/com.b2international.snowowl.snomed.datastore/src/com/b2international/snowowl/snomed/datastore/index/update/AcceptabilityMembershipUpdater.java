@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 
 /**
  * @since 4.5

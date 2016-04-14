@@ -26,7 +26,7 @@ import org.apache.lucene.search.TermQuery;
 
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.LongSets;

@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IBranchPath;

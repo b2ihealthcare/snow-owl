@@ -25,7 +25,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.domain.IComponent;

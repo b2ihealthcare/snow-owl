@@ -19,8 +19,8 @@ import com.b2international.collections.AbstractIntCollection;
 import com.b2international.collections.IntCollection;
 import com.b2international.collections.IntIterator;
 import com.b2international.collections.IntIteratorWrapper;
-import com.b2international.collections.list.IntList;
-import com.b2international.collections.list.IntListIterator;
+import com.b2international.collections.ints.IntList;
+import com.b2international.collections.ints.IntListIterator;
 
 public class IntArrayListWrapper extends AbstractIntCollection implements IntList {
 

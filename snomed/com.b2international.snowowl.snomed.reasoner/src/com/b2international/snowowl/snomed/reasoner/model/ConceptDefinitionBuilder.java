@@ -20,7 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;

@@ -27,7 +27,7 @@ import static java.lang.Long.parseLong;
 
 import java.util.Collection;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Annotatable;

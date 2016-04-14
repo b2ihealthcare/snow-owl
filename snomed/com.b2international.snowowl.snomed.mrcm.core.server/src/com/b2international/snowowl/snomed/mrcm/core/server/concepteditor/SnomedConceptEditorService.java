@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;

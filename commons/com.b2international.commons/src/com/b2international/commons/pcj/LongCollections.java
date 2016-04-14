@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.NoSuchElementException;
 
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.set.AbstractLongSet;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.AbstractLongSet;
+import com.b2international.collections.longs.LongSet;
 
 /**
  * Utility methods related to primitive long collections.

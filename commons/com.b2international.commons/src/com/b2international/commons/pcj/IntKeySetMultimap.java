@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import com.b2international.collections.map.IntKeyMap;
-import com.b2international.collections.set.IntSet;
+import com.b2international.collections.ints.IntKeyMap;
+import com.b2international.collections.ints.IntSet;
 import com.b2international.commons.collect.PrimitiveMaps;
 
 /**

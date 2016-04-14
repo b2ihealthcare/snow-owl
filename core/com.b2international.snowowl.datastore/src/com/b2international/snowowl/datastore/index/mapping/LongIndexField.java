@@ -31,8 +31,8 @@ import org.apache.lucene.util.NumericUtils;
 
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.list.LongList;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveSets;

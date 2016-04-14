@@ -20,8 +20,8 @@ import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.b2international.collections.LongCollection;
-import com.b2international.collections.map.LongKeyIntMap;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongKeyIntMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;

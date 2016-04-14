@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;

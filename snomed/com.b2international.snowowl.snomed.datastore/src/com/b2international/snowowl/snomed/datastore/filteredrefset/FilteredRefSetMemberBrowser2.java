@@ -23,8 +23,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.collections.IntIterator;
-import com.b2international.collections.map.IntKeyMap;
-import com.b2international.collections.set.IntSet;
+import com.b2international.collections.ints.IntKeyMap;
+import com.b2international.collections.ints.IntSet;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
 import com.b2international.snowowl.core.ClientTerminologyBrowserAdapter;
 import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;

@@ -19,7 +19,7 @@ import com.b2international.collections.AbstractLongCollection;
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
 import com.b2international.collections.LongIteratorWrapper;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 import com.google.common.hash.HashFunction;
 
 import it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet;

@@ -48,9 +48,9 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.LongCollection;
 import com.b2international.collections.LongIterator;
-import com.b2international.collections.map.LongKeyLongMap;
-import com.b2international.collections.map.LongKeyMap;
-import com.b2international.collections.set.LongSet;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;

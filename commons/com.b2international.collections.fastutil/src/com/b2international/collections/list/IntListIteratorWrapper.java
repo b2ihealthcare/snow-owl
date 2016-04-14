@@ -16,7 +16,7 @@
 package com.b2international.collections.list;
 
 import com.b2international.collections.IntIteratorWrapper;
-import com.b2international.collections.list.IntListIterator;
+import com.b2international.collections.ints.IntListIterator;
 
 /**
  * @since 4.6
