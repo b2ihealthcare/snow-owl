@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.collections.list;
+package com.b2international.collections.ints;
 
-import com.b2international.collections.IntIteratorWrapper;
 import com.b2international.collections.ints.AbstractIntCollection;
 import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.ints.IntIterator;

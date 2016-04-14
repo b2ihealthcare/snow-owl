@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.collections.map;
+package com.b2international.collections.bytes;
 
 import java.util.Collection;
 
 import com.b2international.collections.bytes.ByteIterator;
 import com.b2international.collections.bytes.ByteKeyMap;
 import com.b2international.collections.bytes.ByteSet;
-import com.b2international.collections.set.ByteOpenHashSetWrapper;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenCustomHashMap;

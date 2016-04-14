@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.collections.list;
+package com.b2international.collections.longs;
 
-import com.b2international.collections.LongIteratorWrapper;
 import com.b2international.collections.longs.AbstractLongCollection;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;

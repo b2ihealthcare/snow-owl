@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.collections.map;
+package com.b2international.collections.longs;
 
 import com.b2international.collections.floats.FloatCollection;
 import com.b2international.collections.floats.FloatCollectionWrapper;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.collections.set.LongOpenHashSetWrapper;
 
 import it.unimi.dsi.fastutil.longs.Long2FloatMap;
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenCustomHashMap;
