@@ -64,7 +64,7 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 	public static FloatList create(FloatCollection collection) {
 		if (collection instanceof FloatArrayListWrapper) {
 			final it.unimi.dsi.fastutil.floats.FloatList sourceDelegate = ((FloatArrayListWrapper) collection).delegate();
-			return wrap(clone(sourceDelegate));
+			return new FloatArrayListWrapper(clone(sourceDelegate));
 		} else {
 			final FloatList result = create(collection.size());
 			result.addAll(collection);
@@ -73,21 +73,17 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 	}
 	
 	public static FloatList create(float[] source) {
-		return wrap(new it.unimi.dsi.fastutil.floats.FloatArrayList(source));
+		return new FloatArrayListWrapper(new it.unimi.dsi.fastutil.floats.FloatArrayList(source));
 	}
 	
 	public static FloatList create(int expectedSize) {
-		return wrap(new FloatArrayList(expectedSize));
+		return new FloatArrayListWrapper(new FloatArrayList(expectedSize));
 	}
 	
 	public static FloatList create() {
-		return wrap(new FloatArrayList());
+		return new FloatArrayListWrapper(new FloatArrayList());
 	}
 
-	public static FloatList wrap(it.unimi.dsi.fastutil.floats.FloatList delegate) {
-		return new FloatArrayListWrapper(delegate);
-	}
-	
 	// FastUtil helpers
 	
 	private static it.unimi.dsi.fastutil.floats.FloatList clone(it.unimi.dsi.fastutil.floats.FloatList list) {

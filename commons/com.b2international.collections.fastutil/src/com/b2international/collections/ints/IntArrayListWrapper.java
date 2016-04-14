@@ -61,14 +61,10 @@ public class IntArrayListWrapper extends IntCollectionWrapper implements IntList
 		return delegate().set(index, value);
 	}
 	
-	public static IntList wrap(it.unimi.dsi.fastutil.ints.IntList delegate) {
-		return new IntArrayListWrapper(delegate);
-	}
-	
 	public static IntList create(IntCollection collection) {
 		if (collection instanceof IntArrayListWrapper) {
 			final it.unimi.dsi.fastutil.ints.IntList sourceDelegate = ((IntArrayListWrapper) collection).delegate();
-			return wrap(clone(sourceDelegate));
+			return new IntArrayListWrapper(clone(sourceDelegate));
 		} else {
 			final IntList result = create(collection.size());
 			result.addAll(collection);
@@ -77,15 +73,15 @@ public class IntArrayListWrapper extends IntCollectionWrapper implements IntList
 	}
 	
 	public static IntList create(int expectedSize) {
-		return wrap(new it.unimi.dsi.fastutil.ints.IntArrayList(expectedSize));
+		return new IntArrayListWrapper(new it.unimi.dsi.fastutil.ints.IntArrayList(expectedSize));
 	}
 	
 	public static IntList create(int[] source) {
-		return wrap(new it.unimi.dsi.fastutil.ints.IntArrayList(source));
+		return new IntArrayListWrapper(new it.unimi.dsi.fastutil.ints.IntArrayList(source));
 	}
 
 	public static IntList create() {
-		return wrap(new it.unimi.dsi.fastutil.ints.IntArrayList());
+		return new IntArrayListWrapper(new it.unimi.dsi.fastutil.ints.IntArrayList());
 	}
 	
 	// FastUtil helpers

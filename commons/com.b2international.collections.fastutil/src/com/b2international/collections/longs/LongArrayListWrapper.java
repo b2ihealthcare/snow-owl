@@ -65,7 +65,7 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 	public static LongList create(LongCollection source) {
 		if (source instanceof LongArrayListWrapper) {
 			final it.unimi.dsi.fastutil.longs.LongList sourceDelegate = ((LongArrayListWrapper) source).delegate();
-			return wrap(clone(sourceDelegate));
+			return new LongArrayListWrapper(clone(sourceDelegate));
 		} else {
 			final LongList result = create(source.size());
 			result.addAll(source);
@@ -74,19 +74,15 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 	}
 	
 	public static LongList create(long[] source) {
-		return wrap(new it.unimi.dsi.fastutil.longs.LongArrayList(source));
+		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(source));
 	}
 	
 	public static LongList create(int expectedSize) {
-		return wrap(new it.unimi.dsi.fastutil.longs.LongArrayList(expectedSize));
+		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(expectedSize));
 	}
 
 	public static LongList create() {
-		return wrap(new it.unimi.dsi.fastutil.longs.LongArrayList());
-	}
-	
-	public static LongList wrap(it.unimi.dsi.fastutil.longs.LongList list) {
-		return new LongArrayListWrapper(list);
+		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList());
 	}
 	
 	// FastUtil helper methods
