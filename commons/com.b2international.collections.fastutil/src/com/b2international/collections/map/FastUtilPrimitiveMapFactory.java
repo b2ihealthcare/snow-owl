@@ -39,12 +39,12 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	
 	@Override
 	public LongKeyFloatMap newLongKeyFloatOpenHashMap() {
-		throw new UnsupportedOperationException();
+		return LongKeyFloatMapWrapper.create();
 	}
 
 	@Override
 	public LongKeyFloatMap newLongKeyFloatOpenHashMap(int expectedSize) {
-		throw new UnsupportedOperationException();
+		return LongKeyFloatMapWrapper.create(expectedSize);
 	}
 
 	@Override
