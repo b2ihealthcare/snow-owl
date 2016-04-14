@@ -1,9 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Fastutil based implementation of Collections API
-Bundle-SymbolicName: com.b2international.collections.fastutil
+Bundle-SymbolicName: com.b2international.collections.fastutil;singleton:=true
 Bundle-Version: 4.7.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Require-Bundle: com.b2international.collections.api,
- it.unimi.dsi.fastutil;bundle-version="7.0.12"
-Export-Package: com.b2international.collections
+Require-Bundle: com.b2international.collections.api;bundle-version="4.7.0";visibility:=reexport,
+ it.unimi.dsi.fastutil;bundle-version="7.0.12";visibility:=reexport
+Export-Package: com.b2international.collections,
+ com.b2international.collections.bytes;x-internal:=true,
+ com.b2international.collections.floats;x-internal:=true,
+ com.b2international.collections.ints;x-internal:=true,
+ com.b2international.collections.longs;x-internal:=true,
+ com.b2international.collections.objects;x-internal:=true

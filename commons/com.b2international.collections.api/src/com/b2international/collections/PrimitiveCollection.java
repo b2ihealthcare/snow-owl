@@ -15,10 +15,12 @@
  */
 package com.b2international.collections;
 
+import java.io.Serializable;
+
 /**
  * @since 4.6
  */
-public interface PrimitiveCollection {
+public interface PrimitiveCollection extends Serializable {
 
 	void clear();
 
