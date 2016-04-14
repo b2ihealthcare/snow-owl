@@ -17,7 +17,6 @@ package com.b2international.collections.longs;
 
 import java.util.Collection;
 
-import com.b2international.collections.StrategyWrapper;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;

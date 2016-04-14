@@ -15,7 +15,6 @@
  */
 package com.b2international.collections.longs;
 
-import com.b2international.collections.StrategyWrapper;
 import com.b2international.collections.longs.AbstractLongCollection;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
