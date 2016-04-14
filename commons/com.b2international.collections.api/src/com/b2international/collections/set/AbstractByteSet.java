@@ -15,7 +15,7 @@
  */
 package com.b2international.collections.set;
 
-import com.b2international.collections.AbstractByteCollection;
+import com.b2international.collections.bytes.AbstractByteCollection;
 
 /**
  * @since 4.6

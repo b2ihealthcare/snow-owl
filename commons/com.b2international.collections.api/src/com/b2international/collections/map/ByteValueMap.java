@@ -17,7 +17,7 @@ package com.b2international.collections.map;
 
 import java.util.Set;
 
-import com.b2international.collections.ByteCollection;
+import com.b2international.collections.bytes.ByteCollection;
 
 /**
  * @since 4.6

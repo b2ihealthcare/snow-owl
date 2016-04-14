@@ -15,7 +15,7 @@
  */
 package com.b2international.collections.list;
 
-import com.b2international.collections.ByteCollection;
+import com.b2international.collections.bytes.ByteCollection;
 
 /**
  * @since 4.6

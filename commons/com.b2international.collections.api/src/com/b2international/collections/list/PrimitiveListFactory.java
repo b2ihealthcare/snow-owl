@@ -15,9 +15,9 @@
  */
 package com.b2international.collections.list;
 
-import com.b2international.collections.ByteCollection;
 import com.b2international.collections.FloatCollection;
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.floats.FloatList;
 
 /**
