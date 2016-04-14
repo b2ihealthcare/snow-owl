@@ -17,6 +17,8 @@ package com.b2international.collections;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.collections.longs.LongIterator;
+
 /**
  * @since 4.7
  */

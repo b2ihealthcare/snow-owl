@@ -15,7 +15,6 @@
  */
 package com.b2international.collections.ints;
 
-import com.b2international.collections.IntIterator;
 import com.b2international.collections.PrimitiveListIterator;
 
 /**

@@ -17,9 +17,11 @@ package com.b2international.collections;
 
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteList;
+import com.b2international.collections.floats.FloatCollection;
 import com.b2international.collections.floats.FloatList;
 import com.b2international.collections.ints.IntDeque;
 import com.b2international.collections.ints.IntList;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongDeque;
 import com.b2international.collections.longs.LongList;
 

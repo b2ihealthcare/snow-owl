@@ -15,8 +15,6 @@
  */
 package com.b2international.collections.longs;
 
-import com.b2international.collections.LongCollection;
-
 /**
  * @since 4.7
  */

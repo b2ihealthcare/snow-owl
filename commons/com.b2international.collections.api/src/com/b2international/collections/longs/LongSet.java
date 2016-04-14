@@ -15,7 +15,6 @@
  */
 package com.b2international.collections.longs;
 
-import com.b2international.collections.LongCollection;
 import com.b2international.collections.PrimitiveSet;
 
 /**

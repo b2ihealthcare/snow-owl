@@ -15,9 +15,9 @@
  */
 package com.b2international.collections.bytes;
 
-import com.b2international.collections.LongCollection;
 import com.b2international.collections.PrimitiveKeyMap;
 import com.b2international.collections.PrimitiveValueMap;
+import com.b2international.collections.longs.LongCollection;
 
 /**
  * @since 4.6

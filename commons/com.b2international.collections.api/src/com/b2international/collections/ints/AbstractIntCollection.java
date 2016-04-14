@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.collections;
+package com.b2international.collections.ints;
 
 /**
  * @since 4.6

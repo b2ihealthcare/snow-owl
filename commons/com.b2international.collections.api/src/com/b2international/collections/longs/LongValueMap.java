@@ -17,7 +17,6 @@ package com.b2international.collections.longs;
 
 import java.util.Set;
 
-import com.b2international.collections.LongCollection;
 import com.b2international.collections.PrimitiveValueMap;
 
 /**

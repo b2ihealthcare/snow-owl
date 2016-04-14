@@ -15,8 +15,6 @@
  */
 package com.b2international.collections.ints;
 
-import com.b2international.collections.AbstractIntCollection;
-
 /**
  * @since 4.6
  */
