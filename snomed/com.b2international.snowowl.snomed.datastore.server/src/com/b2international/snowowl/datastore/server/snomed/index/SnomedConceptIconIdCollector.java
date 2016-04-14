@@ -24,8 +24,8 @@ import java.util.Map;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import com.b2international.collections.LongCollection;
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.pcj.LongSets;

@@ -15,8 +15,6 @@
  */
 package com.b2international.collections.floats;
 
-import com.b2international.collections.FloatIterator;
-
 /**
  * @since 4.7
  */

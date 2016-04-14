@@ -37,8 +37,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.b2international.collections.LongCollection;
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StopWatch;
 import com.b2international.commons.collect.PrimitiveLists;

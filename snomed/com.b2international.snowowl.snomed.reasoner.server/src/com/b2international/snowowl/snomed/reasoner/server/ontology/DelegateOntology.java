@@ -27,7 +27,7 @@ import java.util.Set;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;

@@ -16,12 +16,12 @@
 package com.b2international.commons.collect;
 
 import com.b2international.collections.FastUtilPrimitiveCollections;
-import com.b2international.collections.LongCollection;
 import com.b2international.collections.PrimitiveListFactory;
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteList;
 import com.b2international.collections.ints.IntDeque;
 import com.b2international.collections.ints.IntList;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongDeque;
 import com.b2international.collections.longs.LongList;
 

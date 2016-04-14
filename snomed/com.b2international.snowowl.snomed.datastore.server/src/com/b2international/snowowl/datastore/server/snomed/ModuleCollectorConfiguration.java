@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
 
 /**

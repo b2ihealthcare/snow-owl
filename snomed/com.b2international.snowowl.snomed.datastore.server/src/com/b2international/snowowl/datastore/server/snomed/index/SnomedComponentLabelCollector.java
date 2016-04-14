@@ -21,7 +21,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.pcj.LongSets;

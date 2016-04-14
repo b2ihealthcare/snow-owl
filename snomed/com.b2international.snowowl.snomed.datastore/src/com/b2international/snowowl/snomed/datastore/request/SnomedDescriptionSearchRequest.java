@@ -48,7 +48,7 @@ import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.Version;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;

@@ -47,7 +47,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;

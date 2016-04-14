@@ -15,10 +15,10 @@
  */
 package com.b2international.collections.set;
 
-import com.b2international.collections.AbstractIntCollection;
-import com.b2international.collections.IntCollection;
-import com.b2international.collections.IntIterator;
 import com.b2international.collections.IntIteratorWrapper;
+import com.b2international.collections.ints.AbstractIntCollection;
+import com.b2international.collections.ints.IntCollection;
+import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntSet;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;

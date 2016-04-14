@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.collections.IntIterator;
+import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.commons.arrays.BidiMapWithInternalId;

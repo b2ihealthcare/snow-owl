@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.util.InternalEList;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;

@@ -41,10 +41,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 
-import com.b2international.collections.IntCollection;
-import com.b2international.collections.IntIterator;
-import com.b2international.collections.LongCollection;
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.ints.IntCollection;
+import com.b2international.collections.ints.IntIterator;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;

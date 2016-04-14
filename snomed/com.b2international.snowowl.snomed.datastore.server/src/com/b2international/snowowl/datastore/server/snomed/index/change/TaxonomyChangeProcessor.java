@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.change;
 
-import com.b2international.collections.LongCollection;
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;

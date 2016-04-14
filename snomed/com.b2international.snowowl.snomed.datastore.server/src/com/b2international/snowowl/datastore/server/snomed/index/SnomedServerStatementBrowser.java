@@ -34,7 +34,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;

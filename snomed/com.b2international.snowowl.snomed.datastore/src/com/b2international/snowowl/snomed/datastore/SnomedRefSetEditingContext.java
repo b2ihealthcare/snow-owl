@@ -32,7 +32,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;

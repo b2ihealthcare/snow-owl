@@ -15,10 +15,10 @@
  */
 package com.b2international.collections.list;
 
-import com.b2international.collections.AbstractLongCollection;
-import com.b2international.collections.LongCollection;
-import com.b2international.collections.LongIterator;
 import com.b2international.collections.LongIteratorWrapper;
+import com.b2international.collections.longs.AbstractLongCollection;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongListIterator;
 

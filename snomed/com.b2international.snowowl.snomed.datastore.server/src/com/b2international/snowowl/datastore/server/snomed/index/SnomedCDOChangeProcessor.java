@@ -55,7 +55,7 @@ import org.eclipse.emf.spi.cdo.CDOStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;

@@ -21,7 +21,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.b2international.collections.IntIterator;
+import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongKeyMap;

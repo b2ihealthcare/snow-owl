@@ -34,9 +34,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.LongIterator;
 import com.b2international.collections.bytes.ByteKeyMap;
 import com.b2international.collections.bytes.ByteValueMap;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.PrimitiveMaps;

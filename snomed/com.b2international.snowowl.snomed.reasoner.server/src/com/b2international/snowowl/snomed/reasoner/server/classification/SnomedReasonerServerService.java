@@ -41,7 +41,7 @@ import org.eclipse.net4j.util.event.IListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;

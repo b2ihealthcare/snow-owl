@@ -15,9 +15,9 @@
  */
 package com.b2international.collections.map;
 
-import com.b2international.collections.FloatCollection;
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.floats.FloatCollection;
 import com.b2international.collections.floats.FloatCollectionWrapper;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.collections.set.LongOpenHashSetWrapper;

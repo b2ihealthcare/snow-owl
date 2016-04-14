@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.IComponent;

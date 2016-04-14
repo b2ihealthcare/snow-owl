@@ -15,7 +15,7 @@
  */
 package com.b2international.commons.pcj;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 
 /**
  * {@link LongIterator} that does not support {@link #remove()}.

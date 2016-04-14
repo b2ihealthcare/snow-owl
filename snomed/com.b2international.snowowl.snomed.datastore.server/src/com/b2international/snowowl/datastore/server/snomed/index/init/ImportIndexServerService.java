@@ -48,7 +48,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;

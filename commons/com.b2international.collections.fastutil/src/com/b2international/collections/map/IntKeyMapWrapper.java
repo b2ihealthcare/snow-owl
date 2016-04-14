@@ -17,7 +17,7 @@ package com.b2international.collections.map;
 
 import java.util.Collection;
 
-import com.b2international.collections.IntIterator;
+import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.set.IntOpenHashSetWrapper;

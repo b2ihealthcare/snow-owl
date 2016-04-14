@@ -18,8 +18,8 @@ package com.b2international.commons.pcj;
 import java.io.Serializable;
 import java.util.NoSuchElementException;
 
-import com.b2international.collections.LongIterator;
 import com.b2international.collections.longs.AbstractLongSet;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 
 /**

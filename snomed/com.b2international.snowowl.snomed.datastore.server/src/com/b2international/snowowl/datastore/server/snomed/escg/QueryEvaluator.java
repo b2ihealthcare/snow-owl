@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.commons.pcj.LongSets;

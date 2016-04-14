@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.filteredrefset;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**

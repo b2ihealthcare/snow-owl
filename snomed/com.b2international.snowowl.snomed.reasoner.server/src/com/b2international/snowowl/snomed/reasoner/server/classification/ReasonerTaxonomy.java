@@ -20,7 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;

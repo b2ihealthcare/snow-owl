@@ -29,8 +29,8 @@ import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
 
-import com.b2international.collections.LongCollection;
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;

@@ -20,7 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.collections.LongIterator;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.commons.pcj.LongSets;

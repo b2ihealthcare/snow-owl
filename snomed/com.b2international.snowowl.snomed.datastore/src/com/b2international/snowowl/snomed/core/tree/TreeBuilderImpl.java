@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.AlphaNumericComparator;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.pcj.LongSets;

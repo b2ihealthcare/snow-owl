@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import com.b2international.collections.LongCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;

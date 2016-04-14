@@ -17,7 +17,7 @@ package com.b2international.commons.pcj;
 
 import java.util.BitSet;
 
-import com.b2international.collections.IntIterator;
+import com.b2international.collections.ints.IntIterator;
 
 public class BitSetIntIterator implements IntIterator {
 
