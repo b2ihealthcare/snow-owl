@@ -16,7 +16,9 @@
 package com.b2international.collections.list;
 
 import com.b2international.collections.ByteCollection;
+import com.b2international.collections.FloatCollection;
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.floats.FloatList;
 
 /**
  * @since 4.7
@@ -33,6 +35,16 @@ public interface PrimitiveListFactory {
 
 	IntList newIntArrayList(int[] source);
 	
+	IntDeque newIntArrayDeque(int[] source);
+	
+	FloatList newFloatArrayList();
+	
+	FloatList newFloatArrayList(int expectedSize);
+	
+	FloatList newFloatArrayList(float...source);
+	
+	FloatList newFloatArrayList(FloatCollection source);
+	
 	LongList newLongArrayList();
 
 	LongList newLongArrayList(int expectedSize);
@@ -40,8 +52,6 @@ public interface PrimitiveListFactory {
 	LongList newLongArrayList(long... source);
 
 	LongList newLongArrayList(LongCollection source);
-
-	IntDeque newIntArrayDeque(int[] source);
 
 	LongDeque newLongArrayDeque();
 	
