@@ -15,141 +15,96 @@
  */
 package com.b2international.collections.bytes;
 
-import com.b2international.collections.bytes.AbstractByteCollection;
-import com.b2international.collections.bytes.ByteCollection;
-import com.b2international.collections.bytes.ByteIterator;
-import com.b2international.collections.bytes.ByteList;
-import com.b2international.collections.bytes.ByteListIterator;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 
-public class ByteArrayListWrapper extends AbstractByteCollection implements ByteList {
+/**
+ * @since 4.7
+ */
+public final class ByteArrayListWrapper extends ByteCollectionWrapper implements ByteList {
 
-	private final it.unimi.dsi.fastutil.bytes.ByteArrayList delegate;
-
-	public static ByteList create(byte[] source) {
-		return new ByteArrayListWrapper(new it.unimi.dsi.fastutil.bytes.ByteArrayList(source));
+	private ByteArrayListWrapper(it.unimi.dsi.fastutil.bytes.ByteList delegate) {
+		super(delegate);
 	}
 
-	public static ByteList create(ByteCollection source) {
-		if (source instanceof ByteArrayListWrapper) {
-			return new ByteArrayListWrapper(((ByteArrayListWrapper) source).delegate.clone());
-		} else {
-			ByteArrayListWrapper result = new ByteArrayListWrapper(new it.unimi.dsi.fastutil.bytes.ByteArrayList(source.size()));
-			result.addAll(source);
-			return result;
-		}
+	@Override
+	protected it.unimi.dsi.fastutil.bytes.ByteList delegate() {
+		return (it.unimi.dsi.fastutil.bytes.ByteArrayList) super.delegate();
 	}
 	
-	public static ByteList create(int expectedSize) {
-		return new ByteArrayListWrapper(new it.unimi.dsi.fastutil.bytes.ByteArrayList(expectedSize));
-	}
-
-	private ByteArrayListWrapper(it.unimi.dsi.fastutil.bytes.ByteArrayList delegate) {
-		this.delegate = delegate;
-	}
-
-	@Override
-	public void clear() {
-		delegate.clear();
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return delegate.isEmpty();
-	}
-
-	@Override
-	public int size() {
-		return delegate.size();
-	}
-
 	@Override
 	public void trimToSize() {
-		delegate.trim();
-	}
-
-	@Override
-	public boolean add(byte value) {
-		return delegate.add(value);
-	}
-
-	@Override
-	public boolean addAll(ByteCollection collection) {
-		if (collection instanceof ByteArrayListWrapper) {
-			return delegate.addAll(((ByteArrayListWrapper) collection).delegate);
-		} else {
-			return super.addAll(collection);
-		}
-	}
-
-	@Override
-	public boolean contains(byte value) {
-		return delegate.contains(value);
-	}
-
-	@Override
-	public boolean containsAll(ByteCollection collection) {
-		if (collection instanceof ByteArrayListWrapper) {
-			return delegate.containsAll(((ByteArrayListWrapper) collection).delegate);
-		} else {
-			return super.containsAll(collection);
-		}
-	}
-
-	@Override
-	public ByteIterator iterator() {
-		return new ByteIteratorWrapper<>(delegate.iterator());
-	}
-
-	@Override
-	public boolean remove(byte value) {
-		return delegate.rem(value);
-	}
-
-	@Override
-	public boolean removeAll(ByteCollection collection) {
-		if (collection instanceof ByteArrayListWrapper) {
-			return delegate.removeAll(((ByteArrayListWrapper) collection).delegate);
-		} else {
-			return super.removeAll(collection);
-		}
-	}
-
-	@Override
-	public boolean retainAll(ByteCollection collection) {
-		if (collection instanceof ByteArrayListWrapper) {
-			return delegate.retainAll(((ByteArrayListWrapper) collection).delegate);
-		} else {
-			return super.retainAll(collection);
-		}
-	}
-
-	@Override
-	public byte[] toArray() {
-		return delegate.toArray(new byte[delegate.size()]);
+		trim(delegate());
 	}
 
 	@Override
 	public ByteList dup() {
-		return new ByteArrayListWrapper(new it.unimi.dsi.fastutil.bytes.ByteArrayList(delegate));
+		return create(this);
 	}
 
 	@Override
 	public byte get(int index) {
-		return delegate.getByte(index);
+		return delegate().getByte(index);
 	}
 
 	@Override
 	public ByteListIterator listIterator() {
-		return new ByteListIteratorWrapper(delegate.listIterator());
+		return new ByteListIteratorWrapper(delegate().listIterator());
 	}
 
 	@Override
 	public ByteListIterator listIterator(int startIndex) {
-		return new ByteListIteratorWrapper(delegate.listIterator(startIndex));
+		return new ByteListIteratorWrapper(delegate().listIterator(startIndex));
 	}
 
 	@Override
 	public byte set(int index, byte value) {
-		return delegate.set(index, value);
+		return delegate().set(index, value);
+	}
+	
+	// Builder methods
+	
+	public static ByteList create(ByteCollection collection) {
+		if (collection instanceof ByteArrayListWrapper) {
+			final it.unimi.dsi.fastutil.bytes.ByteList sourceDelegate = ((ByteArrayListWrapper) collection).delegate();
+			return wrap(clone(sourceDelegate));
+		} else {
+			final ByteList result = create(collection.size());
+			result.addAll(collection);
+			return result;
+		}
+	}
+	
+	public static ByteList create(byte[] source) {
+		return wrap(new ByteArrayList(source));
+	}
+	
+	public static ByteList create(int expectedSize) {
+		return wrap(new ByteArrayList(expectedSize));
+	}
+	
+	public static ByteList create() {
+		return wrap(new ByteArrayList());
+	}
+	
+	public static ByteList wrap(it.unimi.dsi.fastutil.bytes.ByteList list) {
+		return new ByteArrayListWrapper(list);
+	}
+	
+	// FastUtil helpers
+	
+	private static it.unimi.dsi.fastutil.bytes.ByteList clone(it.unimi.dsi.fastutil.bytes.ByteList list) {
+		if (list instanceof ByteArrayList) {
+			return ((ByteArrayList) list).clone();
+		} else {
+			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
+		}
+	}
+	
+	private static void trim(it.unimi.dsi.fastutil.bytes.ByteList list) {
+		if (list instanceof ByteArrayList) {
+			((ByteArrayList) list).trim();
+		} else {
+			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
+		}
 	}
 }

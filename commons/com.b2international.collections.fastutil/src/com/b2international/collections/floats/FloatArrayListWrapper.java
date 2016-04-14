@@ -94,7 +94,7 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 		if (list instanceof FloatArrayList) {
 			return ((FloatArrayList) list).clone();
 		} else {
-			throw new UnsupportedOperationException("Unsupported collection implementation: " + list.getClass().getSimpleName());
+			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
 		}
 	}
 	
