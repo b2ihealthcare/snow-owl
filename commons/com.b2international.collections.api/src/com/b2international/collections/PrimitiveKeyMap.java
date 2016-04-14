@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.collections.map;
-
-import com.b2international.collections.set.PrimitiveSet;
+package com.b2international.collections;
 
 /**
  * @since 4.6

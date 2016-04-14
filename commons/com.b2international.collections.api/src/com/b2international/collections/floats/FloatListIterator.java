@@ -16,7 +16,7 @@
 package com.b2international.collections.floats;
 
 import com.b2international.collections.FloatIterator;
-import com.b2international.collections.list.PrimitiveListIterator;
+import com.b2international.collections.PrimitiveListIterator;
 
 /**
  * @since 4.7

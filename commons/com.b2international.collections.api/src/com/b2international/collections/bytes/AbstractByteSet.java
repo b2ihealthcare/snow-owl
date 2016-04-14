@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.collections.set;
-
-import com.b2international.collections.bytes.AbstractByteCollection;
+package com.b2international.collections.bytes;
 
 /**
  * @since 4.6
