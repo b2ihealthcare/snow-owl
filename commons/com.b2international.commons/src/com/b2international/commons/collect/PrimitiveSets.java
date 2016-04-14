@@ -18,11 +18,11 @@ package com.b2international.commons.collect;
 import java.util.BitSet;
 import java.util.Set;
 
-import com.b2international.collections.ByteCollection;
 import com.b2international.collections.FastUtilPrimitiveCollections;
 import com.b2international.collections.IntCollection;
 import com.b2international.collections.IntIterator;
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.set.ByteSet;
 import com.b2international.collections.set.IntSet;
 import com.b2international.collections.set.LongSet;

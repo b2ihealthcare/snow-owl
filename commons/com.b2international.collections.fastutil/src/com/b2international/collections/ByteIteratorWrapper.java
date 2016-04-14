@@ -15,6 +15,8 @@
  */
 package com.b2international.collections;
 
+import com.b2international.collections.bytes.ByteIterator;
+
 /**
  * @since 4.6
  */

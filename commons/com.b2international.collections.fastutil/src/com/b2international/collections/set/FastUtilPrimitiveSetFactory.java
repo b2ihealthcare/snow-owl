@@ -17,8 +17,8 @@ package com.b2international.collections.set;
 
 import java.util.Set;
 
-import com.b2international.collections.ByteCollection;
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.bytes.ByteCollection;
 import com.google.common.hash.HashFunction;
 
 /**

@@ -15,10 +15,10 @@
  */
 package com.b2international.collections.set;
 
-import com.b2international.collections.AbstractByteCollection;
-import com.b2international.collections.ByteCollection;
-import com.b2international.collections.ByteIterator;
 import com.b2international.collections.ByteIteratorWrapper;
+import com.b2international.collections.bytes.AbstractByteCollection;
+import com.b2international.collections.bytes.ByteCollection;
+import com.b2international.collections.bytes.ByteIterator;
 import com.b2international.collections.set.ByteSet;
 
 import it.unimi.dsi.fastutil.bytes.ByteOpenHashSet;

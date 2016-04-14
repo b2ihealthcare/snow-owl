@@ -17,7 +17,7 @@ package com.b2international.collections.map;
 
 import java.util.Collection;
 
-import com.b2international.collections.ByteIterator;
+import com.b2international.collections.bytes.ByteIterator;
 import com.b2international.collections.set.ByteOpenHashSetWrapper;
 import com.b2international.collections.set.ByteSet;
 

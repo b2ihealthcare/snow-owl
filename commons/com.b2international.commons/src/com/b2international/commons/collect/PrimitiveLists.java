@@ -15,9 +15,9 @@
  */
 package com.b2international.commons.collect;
 
-import com.b2international.collections.ByteCollection;
 import com.b2international.collections.FastUtilPrimitiveCollections;
 import com.b2international.collections.LongCollection;
+import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.list.ByteList;
 import com.b2international.collections.list.IntDeque;
 import com.b2international.collections.list.IntList;
