@@ -15,7 +15,6 @@
  */
 package com.b2international.collections;
 
-import com.b2international.collections.PrimitiveMapFactory;
 import com.b2international.collections.bytes.ByteKeyMap;
 import com.b2international.collections.bytes.ByteKeyMapWrapper;
 import com.b2international.collections.bytes.ByteValueMap;
@@ -24,6 +23,7 @@ import com.b2international.collections.ints.IntKeyMapWrapper;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongKeyFloatMapWrapper;
 import com.b2international.collections.longs.LongKeyIntMap;
+import com.b2international.collections.longs.LongKeyIntMapWrapper;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongValueMap;
@@ -61,12 +61,12 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 
 	@Override
 	public LongKeyIntMap newLongKeyIntOpenHashMap() {
-		throw new UnsupportedOperationException();
+		return LongKeyIntMapWrapper.create();
 	}
 
 	@Override
 	public LongKeyIntMap newLongKeyIntOpenHashMap(int expectedSize) {
-		throw new UnsupportedOperationException();
+		return LongKeyIntMapWrapper.create(expectedSize);
 	}
 
 	@Override
