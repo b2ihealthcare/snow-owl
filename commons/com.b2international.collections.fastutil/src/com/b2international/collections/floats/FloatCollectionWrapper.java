@@ -15,8 +15,6 @@
  */
 package com.b2international.collections.floats;
 
-import com.b2international.collections.PrimitiveCollection;
-
 /**
  * @since 4.7
  */
@@ -109,7 +107,7 @@ public class FloatCollectionWrapper extends AbstractFloatCollection implements F
 	}
 
 	@Override
-	public PrimitiveCollection dup() {
+	public FloatCollection dup() {
 		throw new UnsupportedOperationException();
 	}
 	

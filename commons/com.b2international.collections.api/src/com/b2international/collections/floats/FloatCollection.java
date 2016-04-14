@@ -40,4 +40,7 @@ public interface FloatCollection extends PrimitiveCollection {
 	boolean retainAll(FloatCollection collection);
 	
 	float[] toArray();
+	
+	@Override
+	FloatCollection dup();
 }

@@ -40,4 +40,7 @@ public interface ByteCollection extends PrimitiveCollection {
 	boolean retainAll(ByteCollection collection);
 	
 	byte[] toArray();
+	
+	@Override
+	ByteCollection dup();
 }

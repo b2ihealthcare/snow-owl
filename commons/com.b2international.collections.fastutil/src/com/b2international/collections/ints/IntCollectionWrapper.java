@@ -15,8 +15,6 @@
  */
 package com.b2international.collections.ints;
 
-import com.b2international.collections.PrimitiveCollection;
-
 /**
  * @since 4.7
  */
@@ -109,7 +107,7 @@ public class IntCollectionWrapper extends AbstractIntCollection implements IntCo
 	}
 
 	@Override
-	public PrimitiveCollection dup() {
+	public IntCollection dup() {
 		throw new UnsupportedOperationException();
 	}
 	
