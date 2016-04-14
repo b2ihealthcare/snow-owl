@@ -149,8 +149,4 @@ public abstract class AbstractIntCollection implements IntCollection {
 		return size;
 	}
 
-	@Override
-	public void trimToSize() {
-		// Implementation-dependent, subclasses should override
-	}
 }

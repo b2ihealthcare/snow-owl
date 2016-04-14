@@ -149,8 +149,4 @@ public abstract class AbstractLongCollection implements LongCollection {
 		return size;
 	}
 
-	@Override
-	public void trimToSize() {
-		// Implementation-dependent, subclasses should override
-	}
 }

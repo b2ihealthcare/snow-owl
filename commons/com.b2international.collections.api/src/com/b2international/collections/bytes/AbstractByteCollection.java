@@ -149,8 +149,4 @@ public abstract class AbstractByteCollection implements ByteCollection {
 		return size;
 	}
 
-	@Override
-	public void trimToSize() {
-		// Implementation-dependent, subclasses should override
-	}
 }
