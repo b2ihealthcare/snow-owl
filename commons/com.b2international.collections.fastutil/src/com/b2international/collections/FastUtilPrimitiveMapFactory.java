@@ -30,6 +30,7 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongKeyMapWrapper;
 import com.b2international.collections.longs.LongValueMap;
 import com.b2international.collections.objects.ObjectKeyByteMapWrapper;
+import com.b2international.collections.objects.ObjectKeyLongMapWrapper;
 import com.google.common.hash.HashFunction;
 
 /**
@@ -104,7 +105,7 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 
 	@Override
 	public <K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize) {
-		throw new UnsupportedOperationException();
+		return ObjectKeyLongMapWrapper.create(expectedSize);
 	}
 	
 }
