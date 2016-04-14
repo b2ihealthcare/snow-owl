@@ -15,24 +15,30 @@
  */
 package com.b2international.collections.bytes;
 
-import com.b2international.collections.bytes.AbstractByteCollection;
-import com.b2international.collections.bytes.ByteCollection;
-import com.b2international.collections.bytes.ByteIterator;
-import com.b2international.collections.bytes.ByteSet;
-
 import it.unimi.dsi.fastutil.bytes.ByteOpenHashSet;
 
 /**
  * @since 4.7
  */
-public final class ByteOpenHashSetWrapper extends AbstractByteCollection implements ByteSet {
+public final class ByteOpenHashSetWrapper extends ByteSetWrapper {
 
-	private final it.unimi.dsi.fastutil.bytes.ByteSet delegate;
+	private ByteOpenHashSetWrapper(it.unimi.dsi.fastutil.bytes.ByteSet delegate) {
+		super(delegate);
+	}
+
+	@Override
+	public void trimToSize() {
+		if (delegate() instanceof ByteOpenHashSet) {
+			((ByteOpenHashSet) delegate()).trim();
+		} else {
+			super.trimToSize();
+		}
+	}
 
 	public static ByteSet create(ByteCollection source) {
 		if (source instanceof ByteOpenHashSetWrapper) {
-			final it.unimi.dsi.fastutil.bytes.ByteSet sourceDelegate = ((ByteOpenHashSetWrapper) source).delegate;
-			return wrap(clone(sourceDelegate));
+			final it.unimi.dsi.fastutil.bytes.ByteSet sourceDelegate = ((ByteOpenHashSetWrapper) source).delegate();
+			return new ByteOpenHashSetWrapper(clone(sourceDelegate));
 		} else {
 			final ByteSet result = create(source.size());
 			result.addAll(source);
@@ -41,106 +47,12 @@ public final class ByteOpenHashSetWrapper extends AbstractByteCollection impleme
 	}
 	
 	public static ByteSet create(int expectedSize) {
-		return wrap(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet(expectedSize));
-	}
-	
-	public static ByteSet wrap(it.unimi.dsi.fastutil.bytes.ByteSet keySet) {
-		return new ByteOpenHashSetWrapper(keySet);
-	}
-	
-	private ByteOpenHashSetWrapper(it.unimi.dsi.fastutil.bytes.ByteSet delegate) {
-		this.delegate = delegate;
-	}
-
-	@Override
-	public void clear() {
-		delegate.clear();
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return delegate.isEmpty();
-	}
-
-	@Override
-	public int size() {
-		return delegate.size();
-	}
-
-	@Override
-	public void trimToSize() {
-		trim(delegate);
-	}
-
-	@Override
-	public boolean add(byte value) {
-		return delegate.add(value);
-	}
-
-	@Override
-	public boolean addAll(ByteCollection collection) {
-		if (collection instanceof ByteOpenHashSetWrapper) {
-			return delegate.addAll(((ByteOpenHashSetWrapper) collection).delegate);
-		} else {
-			return super.addAll(collection);
-		}
-	}
-
-	@Override
-	public boolean contains(byte value) {
-		return delegate.contains(value);
-	}
-
-	@Override
-	public boolean containsAll(ByteCollection collection) {
-		if (collection instanceof ByteOpenHashSetWrapper) {
-			return delegate.containsAll(((ByteOpenHashSetWrapper) collection).delegate);
-		} else {
-			return super.containsAll(collection);
-		}
-	}
-
-	@Override
-	public ByteIterator iterator() {
-		return new ByteIteratorWrapper<>(delegate.iterator());
-	}
-
-	@Override
-	public boolean remove(byte value) {
-		return delegate.rem(value);
-	}
-
-	@Override
-	public boolean removeAll(ByteCollection collection) {
-		if (collection instanceof ByteOpenHashSetWrapper) {
-			return delegate.removeAll(((ByteOpenHashSetWrapper) collection).delegate);
-		} else {
-			return super.removeAll(collection);
-		}
-	}
-
-	@Override
-	public boolean retainAll(ByteCollection collection) {
-		if (collection instanceof ByteOpenHashSetWrapper) {
-			return delegate.retainAll(((ByteOpenHashSetWrapper) collection).delegate);
-		} else {
-			return super.retainAll(collection);
-		}
-	}
-
-	@Override
-	public byte[] toArray() {
-		return delegate.toArray(new byte[delegate.size()]);
-	}
-
-	@Override
-	public ByteSet dup() {
-		return create(this);
+		return new ByteOpenHashSetWrapper(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet(expectedSize));
 	}
 	
 	// FastUtil helpers
 	
-	public static it.unimi.dsi.fastutil.bytes.ByteSet clone(it.unimi.dsi.fastutil.bytes.ByteSet set) {
+	private static it.unimi.dsi.fastutil.bytes.ByteSet clone(it.unimi.dsi.fastutil.bytes.ByteSet set) {
 		if (set instanceof ByteOpenHashSet) {
 			return ((ByteOpenHashSet) set).clone();
 		} else {
@@ -148,12 +60,4 @@ public final class ByteOpenHashSetWrapper extends AbstractByteCollection impleme
 		}
 	}
 	
-	public static void trim(it.unimi.dsi.fastutil.bytes.ByteSet set) {
-		if (set instanceof ByteOpenHashSet) {
-			((ByteOpenHashSet) set).trim();
-		} else {
-			throw new UnsupportedOperationException("Unsupported set implementation: " + set.getClass().getSimpleName());
-		}
-	}
-
 }
