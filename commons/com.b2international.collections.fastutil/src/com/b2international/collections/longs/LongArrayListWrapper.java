@@ -15,145 +15,96 @@
  */
 package com.b2international.collections.longs;
 
-import com.b2international.collections.longs.AbstractLongCollection;
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongList;
-import com.b2international.collections.longs.LongListIterator;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 
-public class LongArrayListWrapper extends AbstractLongCollection implements LongList {
+/**
+ * @since 4.7
+ */
+public class LongArrayListWrapper extends LongCollectionWrapper implements LongList {
 
-	protected final it.unimi.dsi.fastutil.longs.LongArrayList delegate;
-
-	public static LongList create(long[] source) {
-		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(source));
+	protected LongArrayListWrapper(it.unimi.dsi.fastutil.longs.LongList delegate) {
+		super(delegate);
+	}
+	
+	@Override
+	protected it.unimi.dsi.fastutil.longs.LongList delegate() {
+		return (it.unimi.dsi.fastutil.longs.LongList) super.delegate();
 	}
 
+	@Override
+	public void trimToSize() {
+		trim(delegate());
+	}
+
+	@Override
+	public LongList dup() {
+		return create(this);
+	}
+
+	@Override
+	public long get(int index) {
+		return delegate().getLong(index);
+	}
+
+	@Override
+	public LongListIterator listIterator() {
+		return new LongListIteratorWrapper(delegate().listIterator());
+	}
+
+	@Override
+	public LongListIterator listIterator(int startIndex) {
+		return new LongListIteratorWrapper(delegate().listIterator(startIndex));
+	}
+
+	@Override
+	public long set(int index, long value) {
+		return delegate().set(index, value);
+	}
+	
+	// Builder methods
 	public static LongList create(LongCollection source) {
 		if (source instanceof LongArrayListWrapper) {
-			return new LongArrayListWrapper(((LongArrayListWrapper) source).delegate.clone());
+			final it.unimi.dsi.fastutil.longs.LongList sourceDelegate = ((LongArrayListWrapper) source).delegate();
+			return wrap(clone(sourceDelegate));
 		} else {
-			LongArrayListWrapper result = new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(source.size()));
+			final LongList result = create(source.size());
 			result.addAll(source);
 			return result;
 		}
 	}
 	
+	public static LongList create(long[] source) {
+		return wrap(new it.unimi.dsi.fastutil.longs.LongArrayList(source));
+	}
+	
 	public static LongList create(int expectedSize) {
-		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(expectedSize));
+		return wrap(new it.unimi.dsi.fastutil.longs.LongArrayList(expectedSize));
 	}
 
 	public static LongList create() {
-		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList());
+		return wrap(new it.unimi.dsi.fastutil.longs.LongArrayList());
 	}
-
-	protected LongArrayListWrapper(it.unimi.dsi.fastutil.longs.LongArrayList delegate) {
-		this.delegate = delegate;
+	
+	public static LongList wrap(it.unimi.dsi.fastutil.longs.LongList list) {
+		return new LongArrayListWrapper(list);
 	}
-
-	@Override
-	public void clear() {
-		delegate.clear();
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return delegate.isEmpty();
-	}
-
-	@Override
-	public int size() {
-		return delegate.size();
-	}
-
-	@Override
-	public void trimToSize() {
-		delegate.trim();
-	}
-
-	@Override
-	public boolean add(long value) {
-		return delegate.add(value);
-	}
-
-	@Override
-	public boolean addAll(LongCollection collection) {
-		if (collection instanceof LongArrayListWrapper) {
-			return delegate.addAll(((LongArrayListWrapper) collection).delegate);
+	
+	// FastUtil helper methods
+	
+	private static it.unimi.dsi.fastutil.longs.LongList clone(it.unimi.dsi.fastutil.longs.LongList list) {
+		if (list instanceof LongArrayList) {
+			return ((LongArrayList) list).clone();
 		} else {
-			return super.addAll(collection);
+			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
 		}
 	}
-
-	@Override
-	public boolean contains(long value) {
-		return delegate.contains(value);
-	}
-
-	@Override
-	public boolean containsAll(LongCollection collection) {
-		if (collection instanceof LongArrayListWrapper) {
-			return delegate.containsAll(((LongArrayListWrapper) collection).delegate);
+	
+	private static void trim(it.unimi.dsi.fastutil.longs.LongList list) {
+		if (list instanceof LongArrayList) {
+			((LongArrayList) list).trim();
 		} else {
-			return super.containsAll(collection);
+			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
 		}
 	}
-
-	@Override
-	public LongIterator iterator() {
-		return new LongIteratorWrapper<>(delegate.iterator());
-	}
-
-	@Override
-	public boolean remove(long value) {
-		return delegate.rem(value);
-	}
-
-	@Override
-	public boolean removeAll(LongCollection collection) {
-		if (collection instanceof LongArrayListWrapper) {
-			return delegate.removeAll(((LongArrayListWrapper) collection).delegate);
-		} else {
-			return super.removeAll(collection);
-		}
-	}
-
-	@Override
-	public boolean retainAll(LongCollection collection) {
-		if (collection instanceof LongArrayListWrapper) {
-			return delegate.retainAll(((LongArrayListWrapper) collection).delegate);
-		} else {
-			return super.retainAll(collection);
-		}
-	}
-
-	@Override
-	public long[] toArray() {
-		return delegate.toArray(new long[delegate.size()]);
-	}
-
-	@Override
-	public LongList dup() {
-		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(delegate));
-	}
-
-	@Override
-	public long get(int index) {
-		return delegate.getLong(index);
-	}
-
-	@Override
-	public LongListIterator listIterator() {
-		return new LongListIteratorWrapper(delegate.listIterator());
-	}
-
-	@Override
-	public LongListIterator listIterator(int startIndex) {
-		return new LongListIteratorWrapper(delegate.listIterator(startIndex));
-	}
-
-	@Override
-	public long set(int index, long value) {
-		return delegate.set(index, value);
-	}
+	
 }

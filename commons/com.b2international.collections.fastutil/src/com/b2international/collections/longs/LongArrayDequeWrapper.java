@@ -17,8 +17,11 @@ package com.b2international.collections.longs;
 
 import java.util.NoSuchElementException;
 
-import com.b2international.collections.longs.LongDeque;
+import it.unimi.dsi.fastutil.longs.LongList;
 
+/**
+ * @since 4.7
+ */
 public class LongArrayDequeWrapper extends LongArrayListWrapper implements LongDeque {
 
 	public static LongDeque create() {
@@ -31,11 +34,13 @@ public class LongArrayDequeWrapper extends LongArrayListWrapper implements LongD
 
 	@Override
 	public void addLast(long value) {
+		final LongList delegate = delegate();
 		delegate.add(delegate.size(), value);
 	}
 
 	@Override
 	public long getLast() {
+		final LongList delegate = delegate();
 		if (!delegate.isEmpty()) {
 			return delegate.getLong(delegate.size() - 1);
 		} else {
@@ -45,6 +50,7 @@ public class LongArrayDequeWrapper extends LongArrayListWrapper implements LongD
 
 	@Override
 	public long removeLast() {
+		final LongList delegate = delegate();
 		if (!delegate.isEmpty()) {
 			return delegate.removeLong(delegate.size() - 1);
 		} else {
