@@ -113,7 +113,7 @@ public class LongCollectionWrapper extends AbstractLongCollection implements Lon
 	
 	@Override
 	public void trimToSize() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("Unsupported collection implementation: " + delegate.getClass().getSimpleName());
 	}
 	
 	public static LongCollection wrap(it.unimi.dsi.fastutil.longs.LongCollection collection) {

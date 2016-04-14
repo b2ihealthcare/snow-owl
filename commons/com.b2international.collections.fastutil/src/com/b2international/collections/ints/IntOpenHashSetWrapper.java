@@ -22,6 +22,21 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
  */
 public final class IntOpenHashSetWrapper extends IntSetWrapper {
 
+	private IntOpenHashSetWrapper(it.unimi.dsi.fastutil.ints.IntSet delegate) {
+		super(delegate);
+	}
+	
+	@Override
+	public void trimToSize() {
+		if (delegate() instanceof IntOpenHashSet) {
+			((IntOpenHashSet) delegate()).clone();
+		} else {
+			super.trimToSize();
+		}
+	}
+
+	// Builder methods
+	
 	public static IntSet create(IntCollection source) {
 		if (source instanceof IntOpenHashSetWrapper) {
 			final it.unimi.dsi.fastutil.ints.IntSet sourceDelegate = ((IntOpenHashSetWrapper) source).delegate();
@@ -39,20 +54,6 @@ public final class IntOpenHashSetWrapper extends IntSetWrapper {
 	
 	public static IntSet create() {
 		return new IntOpenHashSetWrapper(new it.unimi.dsi.fastutil.ints.IntOpenHashSet());
-	}
-	
-	private IntOpenHashSetWrapper(it.unimi.dsi.fastutil.ints.IntSet delegate) {
-		super(delegate);
-	}
-	
-	@Override
-	protected it.unimi.dsi.fastutil.ints.IntOpenHashSet delegate() {
-		return (IntOpenHashSet) super.delegate();
-	}
-	
-	@Override
-	public void trimToSize() {
-		delegate().trim();
 	}
 	
 	// FastUtil helpers

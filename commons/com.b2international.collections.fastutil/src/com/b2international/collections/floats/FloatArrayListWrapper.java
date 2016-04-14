@@ -33,7 +33,11 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 	
 	@Override
 	public void trimToSize() {
-		trim(delegate());
+		if (delegate() instanceof FloatArrayList) {
+			((FloatArrayList) delegate()).trim();
+		} else {
+			super.trimToSize();
+		}
 	}
 
 	@Override
@@ -89,14 +93,6 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 	private static it.unimi.dsi.fastutil.floats.FloatList clone(it.unimi.dsi.fastutil.floats.FloatList list) {
 		if (list instanceof FloatArrayList) {
 			return ((FloatArrayList) list).clone();
-		} else {
-			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
-		}
-	}
-	
-	private static void trim(it.unimi.dsi.fastutil.floats.FloatList list) {
-		if (list instanceof FloatArrayList) {
-			((FloatArrayList) list).trim();
 		} else {
 			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
 		}

@@ -33,7 +33,12 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 	
 	@Override
 	public void trimToSize() {
-		trim(delegate());
+		final it.unimi.dsi.fastutil.bytes.ByteList list = delegate();
+		if (list instanceof ByteArrayList) {
+			((ByteArrayList) list).trim();
+		} else {
+			super.trimToSize();
+		}
 	}
 
 	@Override
@@ -91,14 +96,6 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 	private static it.unimi.dsi.fastutil.bytes.ByteList clone(it.unimi.dsi.fastutil.bytes.ByteList list) {
 		if (list instanceof ByteArrayList) {
 			return ((ByteArrayList) list).clone();
-		} else {
-			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
-		}
-	}
-	
-	private static void trim(it.unimi.dsi.fastutil.bytes.ByteList list) {
-		if (list instanceof ByteArrayList) {
-			((ByteArrayList) list).trim();
 		} else {
 			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
 		}

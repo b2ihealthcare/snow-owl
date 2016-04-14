@@ -113,7 +113,7 @@ public class ByteCollectionWrapper extends AbstractByteCollection {
 	
 	@Override
 	public void trimToSize() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("Unsupported collection implementation: " + delegate.getClass().getSimpleName());
 	}
 	
 	// Builder methods

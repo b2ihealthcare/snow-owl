@@ -33,7 +33,11 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 
 	@Override
 	public void trimToSize() {
-		trim(delegate());
+		if (delegate() instanceof LongArrayList) {
+			((LongArrayList) delegate()).trim();
+		} else {
+			super.trimToSize();
+		}
 	}
 
 	@Override
@@ -90,14 +94,6 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 	private static it.unimi.dsi.fastutil.longs.LongList clone(it.unimi.dsi.fastutil.longs.LongList list) {
 		if (list instanceof LongArrayList) {
 			return ((LongArrayList) list).clone();
-		} else {
-			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
-		}
-	}
-	
-	private static void trim(it.unimi.dsi.fastutil.longs.LongList list) {
-		if (list instanceof LongArrayList) {
-			((LongArrayList) list).trim();
 		} else {
 			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
 		}

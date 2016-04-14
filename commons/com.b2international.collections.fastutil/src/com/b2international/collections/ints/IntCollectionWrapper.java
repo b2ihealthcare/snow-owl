@@ -105,7 +105,7 @@ public class IntCollectionWrapper extends AbstractIntCollection implements IntCo
 	public final int[] toArray() {
 		return delegate.toIntArray();
 	}
-
+	
 	@Override
 	public IntCollection dup() {
 		throw new UnsupportedOperationException();
@@ -113,9 +113,10 @@ public class IntCollectionWrapper extends AbstractIntCollection implements IntCo
 	
 	@Override
 	public void trimToSize() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("Unsupported collection implementation: " + delegate.getClass().getName());
 	}
 	
+
 	public static IntCollection wrap(it.unimi.dsi.fastutil.ints.IntCollection collection) {
 		return new IntCollectionWrapper(collection);
 	}

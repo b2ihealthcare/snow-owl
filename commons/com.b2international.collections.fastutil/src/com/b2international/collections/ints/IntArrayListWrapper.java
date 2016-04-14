@@ -33,7 +33,12 @@ public class IntArrayListWrapper extends IntCollectionWrapper implements IntList
 	
 	@Override
 	public void trimToSize() {
-		trim(delegate());
+		final it.unimi.dsi.fastutil.ints.IntList list = delegate();
+		if (list instanceof IntArrayList) {
+			((IntArrayList) list).trim();
+		} else {
+			super.trimToSize();
+		}
 	}
 
 	@Override
@@ -89,14 +94,6 @@ public class IntArrayListWrapper extends IntCollectionWrapper implements IntList
 	private static it.unimi.dsi.fastutil.ints.IntList clone(it.unimi.dsi.fastutil.ints.IntList list) {
 		if (list instanceof IntArrayList) {
 			return ((IntArrayList) list).clone();
-		} else {
-			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
-		}
-	}
-	
-	private static void trim(it.unimi.dsi.fastutil.ints.IntList list) {
-		if (list instanceof IntArrayList) {
-			((IntArrayList) list).trim();
 		} else {
 			throw new UnsupportedOperationException("Unsupported list implementation: " + list.getClass().getSimpleName());
 		}

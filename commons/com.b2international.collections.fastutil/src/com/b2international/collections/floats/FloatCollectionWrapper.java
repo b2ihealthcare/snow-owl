@@ -113,7 +113,7 @@ public class FloatCollectionWrapper extends AbstractFloatCollection implements F
 	
 	@Override
 	public void trimToSize() {
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("Unsupported collection implementation: " + delegate.getClass().getSimpleName());
 	}
 	
 	public static FloatCollection wrap(it.unimi.dsi.fastutil.floats.FloatCollection collection) {

@@ -31,7 +31,14 @@ public final class LongOpenHashSetWrapper extends LongSetWrapper {
 
 	@Override
 	public void trimToSize() {
-		trim(delegate());
+		final it.unimi.dsi.fastutil.longs.LongSet set = delegate();
+		if (set instanceof LongOpenHashSet) {
+			((LongOpenHashSet)set).trim();
+		} else if (set instanceof LongOpenCustomHashSet) {
+			((LongOpenCustomHashSet) set).trim();
+		} else {
+			super.trimToSize();
+		}		
 	}
 
 	// Builder methods
@@ -69,16 +76,6 @@ public final class LongOpenHashSetWrapper extends LongSetWrapper {
 	}
 	
 	// FastUtil helpers
-	
-	private static void trim(it.unimi.dsi.fastutil.longs.LongSet set) {
-		if (set instanceof LongOpenHashSet) {
-			((LongOpenHashSet)set).trim();
-		} else if (set instanceof LongOpenCustomHashSet) {
-			((LongOpenCustomHashSet) set).trim();
-		} else {
-			throw new UnsupportedOperationException("Unsupported set implementation: " + set.getClass().getSimpleName());
-		}		
-	}
 	
 	private static it.unimi.dsi.fastutil.longs.LongSet clone(it.unimi.dsi.fastutil.longs.LongSet set) {
 		if (set instanceof LongOpenCustomHashSet) {
