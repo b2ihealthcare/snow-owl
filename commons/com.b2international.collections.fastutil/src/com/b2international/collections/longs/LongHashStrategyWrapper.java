@@ -22,11 +22,11 @@ import it.unimi.dsi.fastutil.longs.LongHash.Strategy;
 /**
  * @since 4.6
  */
-public class StrategyWrapper implements Strategy {
+final class LongHashStrategyWrapper implements Strategy {
 
 	private final HashFunction delegate;
 
-	public StrategyWrapper(HashFunction delegate) {
+	LongHashStrategyWrapper(HashFunction delegate) {
 		this.delegate = delegate;
 	}
 

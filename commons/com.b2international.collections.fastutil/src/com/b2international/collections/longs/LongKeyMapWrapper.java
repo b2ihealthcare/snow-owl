@@ -108,7 +108,7 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 	}
 	
 	public static <V> LongKeyMap<V> create(HashFunction hashFunction) {
-		return wrap(new Long2ObjectOpenCustomHashMap<V>(new StrategyWrapper(hashFunction)));
+		return wrap(new Long2ObjectOpenCustomHashMap<V>(new LongHashStrategyWrapper(hashFunction)));
 	}
 	
 	public static <V> LongKeyMap<V> create(int expectedSize) {

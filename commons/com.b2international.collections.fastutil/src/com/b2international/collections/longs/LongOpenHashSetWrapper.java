@@ -32,7 +32,7 @@ public final class LongOpenHashSetWrapper extends AbstractLongCollection impleme
 	private final it.unimi.dsi.fastutil.longs.LongSet delegate;
 
 	public static LongSet create(HashFunction hashFunction) {
-		return wrap(new it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet(new StrategyWrapper(hashFunction)));
+		return wrap(new it.unimi.dsi.fastutil.longs.LongOpenCustomHashSet(new LongHashStrategyWrapper(hashFunction)));
 	}
 	
 	public static LongSet create(long[] source) {
