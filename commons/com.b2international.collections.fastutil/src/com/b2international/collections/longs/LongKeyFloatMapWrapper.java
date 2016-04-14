@@ -73,7 +73,7 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 
 	@Override
 	public LongSet keySet() {
-		return LongOpenHashSetWrapper.wrap(delegate.keySet());
+		return LongSetWrapper.wrap(delegate.keySet());
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 	private LongKeyFloatMap create(LongKeyFloatMap map) {
 		if (map instanceof LongKeyFloatMapWrapper) {
 			final Long2FloatMap sourceDelegate = ((LongKeyFloatMapWrapper) map).delegate;
-			return wrap(clone(sourceDelegate));
+			return new LongKeyFloatMapWrapper(clone(sourceDelegate));
 		} else {
 			final LongKeyFloatMap result = create(map.size());
 			final LongIterator keys = map.keySet().iterator();
@@ -106,16 +106,12 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 		}
 	}
 	
-	public static LongKeyFloatMap wrap(Long2FloatMap delegate) {
-		return new LongKeyFloatMapWrapper(delegate);
-	}
-	
 	public static LongKeyFloatMap create() {
-		return wrap(new Long2FloatOpenHashMap());
+		return new LongKeyFloatMapWrapper(new Long2FloatOpenHashMap());
 	}
 	
 	public static LongKeyFloatMap create(int expectedSize) {
-		return wrap(new Long2FloatOpenHashMap(expectedSize));
+		return new LongKeyFloatMapWrapper(new Long2FloatOpenHashMap(expectedSize));
 	}
 	
 	// FastUtil helpers

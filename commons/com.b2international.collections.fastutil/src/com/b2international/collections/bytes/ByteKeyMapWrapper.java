@@ -73,7 +73,7 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 
 	@Override
 	public ByteSet keySet() {
-		return ByteOpenHashSetWrapper.wrap(delegate.keySet());
+		return ByteSetWrapper.wrap(delegate.keySet());
 	}
 
 	@Override
@@ -91,18 +91,14 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 		return delegate.values();
 	}
 	
-	public static <V> ByteKeyMap<V> wrap(Byte2ObjectMap<V> delegate) {
-		return new ByteKeyMapWrapper<>(delegate);
-	}
-	
 	public static <V> ByteKeyMap<V> create(int expectedSize) {
-		return wrap(new Byte2ObjectOpenHashMap<V>(expectedSize));
+		return new ByteKeyMapWrapper<>(new Byte2ObjectOpenHashMap<V>(expectedSize));
 	}
 	
 	public static <V> ByteKeyMap<V> create(ByteKeyMap<V> map) {
 		if (map instanceof ByteKeyMapWrapper) {
 			final Byte2ObjectMap<V> sourceDelegate = ((ByteKeyMapWrapper<V>) map).delegate;
-			return wrap(clone(sourceDelegate));
+			return new ByteKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
 			final ByteKeyMap<V> result = create(map.size());
 			final ByteIterator iter = map.keySet().iterator();

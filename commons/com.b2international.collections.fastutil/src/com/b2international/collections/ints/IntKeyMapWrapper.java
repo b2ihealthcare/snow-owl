@@ -17,10 +17,6 @@ package com.b2international.collections.ints;
 
 import java.util.Collection;
 
-import com.b2international.collections.ints.IntIterator;
-import com.b2international.collections.ints.IntKeyMap;
-import com.b2international.collections.ints.IntSet;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -73,7 +69,7 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 
 	@Override
 	public IntSet keySet() {
-		return IntOpenHashSetWrapper.wrap(delegate.keySet());
+		return IntSetWrapper.wrap(delegate.keySet());
 	}
 
 	@Override
@@ -91,22 +87,18 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 		return delegate.values();
 	}
 	
-	public static <V> IntKeyMap<V> wrap(Int2ObjectMap<V> map) {
-		return new IntKeyMapWrapper<>(map);
-	}
-	
 	public static <V> IntKeyMap<V> create() {
-		return wrap(new Int2ObjectOpenHashMap<V>());
+		return new IntKeyMapWrapper<>(new Int2ObjectOpenHashMap<V>());
 	}
 	
 	public static <V> IntKeyMap<V> create(int expectedSize) {
-		return wrap(new Int2ObjectOpenHashMap<V>(expectedSize));
+		return new IntKeyMapWrapper<>(new Int2ObjectOpenHashMap<V>(expectedSize));
 	}
 	
 	public static <V> IntKeyMap<V> create(IntKeyMap<V> map) {
 		if (map instanceof IntKeyMapWrapper) {
 			final Int2ObjectMap<V> sourceDelegate = ((IntKeyMapWrapper<V>) map).delegate;
-			return wrap(clone(sourceDelegate));
+			return new IntKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
 			final IntKeyMap<V> result = create(map.size());
 			final IntIterator iter = map.keySet().iterator();

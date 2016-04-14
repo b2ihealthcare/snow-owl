@@ -97,7 +97,7 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 	public static <K> ByteValueMap<K> create(ByteValueMap<K> map) {
 		if (map instanceof ObjectKeyByteMapWrapper) {
 			final Object2ByteMap<K> sourceDelegate = ((ObjectKeyByteMapWrapper<K>) map).delegate;
-			return wrap(clone(sourceDelegate));
+			return new ObjectKeyByteMapWrapper<>(clone(sourceDelegate));
 		} else {
 			final ByteValueMap<K> result = create(map.size());
 			final Iterator<K> keys = map.keySet().iterator();
@@ -110,15 +110,11 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 	}
 	
 	public static <K> ByteValueMap<K> create(int expectedSize) {
-		return wrap(new Object2ByteOpenHashMap<K>(expectedSize));
+		return new ObjectKeyByteMapWrapper<>(new Object2ByteOpenHashMap<K>(expectedSize));
 	}
 	
 	public static <K> ByteValueMap<K> create() {
-		return wrap(new Object2ByteOpenHashMap<K>());
-	}
-	
-	public static <K> ByteValueMap<K> wrap(Object2ByteMap<K> map) {
-		return new ObjectKeyByteMapWrapper<>(map);
+		return new ObjectKeyByteMapWrapper<>(new Object2ByteOpenHashMap<K>());
 	}
 	
 	// FastUtil helpers

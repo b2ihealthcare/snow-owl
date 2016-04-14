@@ -73,7 +73,7 @@ public final class LongKeyIntMapWrapper implements LongKeyIntMap {
 
 	@Override
 	public LongSet keySet() {
-		return LongOpenHashSetWrapper.wrap(delegate.keySet());
+		return LongSetWrapper.wrap(delegate.keySet());
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public final class LongKeyIntMapWrapper implements LongKeyIntMap {
 	private LongKeyIntMap create(LongKeyIntMap map) {
 		if (map instanceof LongKeyIntMapWrapper) {
 			final Long2IntMap sourceDelegate = ((LongKeyIntMapWrapper) map).delegate;
-			return wrap(clone(sourceDelegate));
+			return new LongKeyIntMapWrapper(clone(sourceDelegate));
 		} else {
 			final LongKeyIntMap result = create(map.size());
 			final LongIterator keys = map.keySet().iterator();
@@ -106,16 +106,12 @@ public final class LongKeyIntMapWrapper implements LongKeyIntMap {
 		}
 	}
 	
-	public static LongKeyIntMap wrap(Long2IntMap delegate) {
-		return new LongKeyIntMapWrapper(delegate);
-	}
-	
 	public static LongKeyIntMap create() {
-		return wrap(new Long2IntOpenHashMap());
+		return new LongKeyIntMapWrapper(new Long2IntOpenHashMap());
 	}
 	
 	public static LongKeyIntMap create(int expectedSize) {
-		return wrap(new Long2IntOpenHashMap(expectedSize));
+		return new LongKeyIntMapWrapper(new Long2IntOpenHashMap(expectedSize));
 	}
 	
 	// FastUtil helpers

@@ -74,7 +74,7 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 
 	@Override
 	public LongSet keySet() {
-		return LongOpenHashSetWrapper.wrap(delegate.keySet());
+		return LongSetWrapper.wrap(delegate.keySet());
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 	public static <V> LongKeyMap<V> create(LongKeyMap<V> map) {
 		if (map instanceof LongKeyMapWrapper) {
 			final Long2ObjectMap<V> sourceDelegate = ((LongKeyMapWrapper<V>) map).delegate;
-			return wrap(clone(sourceDelegate));
+			return new LongKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
 			final LongKeyMap<V> result = create(map.size());
 			final LongIterator iter = map.keySet().iterator();
@@ -108,19 +108,15 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 	}
 	
 	public static <V> LongKeyMap<V> create(HashFunction hashFunction) {
-		return wrap(new Long2ObjectOpenCustomHashMap<V>(new LongHashStrategyWrapper(hashFunction)));
+		return new LongKeyMapWrapper<>(new Long2ObjectOpenCustomHashMap<V>(new LongHashStrategyWrapper(hashFunction)));
 	}
 	
 	public static <V> LongKeyMap<V> create(int expectedSize) {
-		return wrap(new Long2ObjectOpenHashMap<V>(expectedSize));
+		return new LongKeyMapWrapper<>(new Long2ObjectOpenHashMap<V>(expectedSize));
 	}
 	
 	public static <V> LongKeyMap<V> create() {
-		return wrap(new Long2ObjectOpenHashMap<V>());
-	}
-	
-	public static <V> LongKeyMap<V> wrap(Long2ObjectMap<V> delegate) {
-		return new LongKeyMapWrapper<>(delegate);
+		return new LongKeyMapWrapper<>(new Long2ObjectOpenHashMap<V>());
 	}
 	
 	// Move to FastUtil helper methods
