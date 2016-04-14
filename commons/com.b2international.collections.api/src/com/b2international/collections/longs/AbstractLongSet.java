@@ -20,4 +20,9 @@ package com.b2international.collections.longs;
  */
 public abstract class AbstractLongSet extends AbstractLongCollection implements LongSet {
 	// Empty class body
+	
+	@Override
+	public void trimToSize() {
+	}
+	
 }

@@ -40,7 +40,7 @@ public abstract class LongCollections {
 		public EmptyLongSet dup() {
 			return this;
 		}
-	
+		
 		@Override
 		public boolean add(long value) {
 			throw new UnsupportedOperationException("Can't add value " + value + " to a SingletonLongSet.");
