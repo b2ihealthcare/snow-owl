@@ -16,9 +16,9 @@
 package com.b2international.snowowl.index.diff.impl;
 
 import static com.b2international.commons.StringUtils.EMPTY_STRING;
+import static com.b2international.commons.collect.ByteCollections.filter;
+import static com.b2international.commons.collect.ByteCollections.getLast;
 import static com.b2international.commons.collect.LongSets.forEach;
-import static com.b2international.commons.pcj.ByteCollections.filter;
-import static com.b2international.commons.pcj.ByteCollections.getLast;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -50,7 +50,7 @@ import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;
-import com.b2international.commons.pcj.ByteCollections.BytePredicate;
+import com.b2international.commons.collect.ByteCollections.BytePredicate;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.b2international.snowowl.index.diff.IndexDiffException;
 import com.b2international.snowowl.index.diff.IndexDiffer;
