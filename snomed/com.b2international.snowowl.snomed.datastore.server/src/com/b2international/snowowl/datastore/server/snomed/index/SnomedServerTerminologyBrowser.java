@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.commons.pcj.LongSets.newLongSetWithExpectedSize;
 import static com.b2international.commons.pcj.LongSets.parallelForEach;
 import static com.b2international.commons.pcj.LongSets.toSet;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -47,6 +46,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.graph.GraphUtils;
+import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ExtendedComponent;
@@ -360,10 +360,14 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		
 		final LongSet parents = SnomedMappings.parent().getValueAsLongSet(doc);
 		final LongSet ancestors = SnomedMappings.ancestor().getValueAsLongSet(doc);
-		final LongSet ids = newLongSetWithExpectedSize(parents.size() + ancestors.size());
-		ids.addAll(parents);
-		ids.addAll(ancestors);
-		return ids;
+		if (parents.isEmpty() && ancestors.isEmpty()) {
+			return LongCollections.emptySet();
+		} else {
+			final LongSet ids = PrimitiveSets.newLongOpenHashSet(parents.size() + ancestors.size());
+			ids.addAll(parents);
+			ids.addAll(ancestors);
+			return ids;
+		}
 	}
 	
 	@Override

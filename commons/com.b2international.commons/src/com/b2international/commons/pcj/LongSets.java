@@ -55,11 +55,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
  */
 public class LongSets {
 
-	/**Creates and returns with a new long hash set with the given expected size.*/
-	public static LongSet newLongSetWithExpectedSize(final int i) {
-		return PrimitiveSets.newLongOpenHashSet(i > 0 ? i : 1);
-	}
-	
 	/**Creates and returns with a new long hash set with the same element as the given array argument.*/
 	public static LongSet newLongSet(final long[] items) {
 		if (items == null) {
