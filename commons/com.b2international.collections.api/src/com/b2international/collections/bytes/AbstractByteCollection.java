@@ -15,6 +15,8 @@
  */
 package com.b2international.collections.bytes;
 
+import java.util.Iterator;
+
 /**
  * @since 4.6
  */
@@ -31,7 +33,7 @@ public abstract class AbstractByteCollection implements ByteCollection {
 		
 		return changed;
 	}
-
+	
 	@Override
 	public boolean contains(byte value) {
 		final ByteIterator itr = iterator();
@@ -147,6 +149,23 @@ public abstract class AbstractByteCollection implements ByteCollection {
 		}
 		
 		return size;
+	}
+	
+	@Override
+	public String toString() {
+		ByteIterator it = iterator();
+        if (! it.hasNext())
+            return "[]";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (;;) {
+            byte e = it.next();
+            sb.append(e);
+            if (! it.hasNext())
+                return sb.append(']').toString();
+            sb.append(',').append(' ');
+        }
 	}
 
 }

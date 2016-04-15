@@ -21,7 +21,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -128,9 +127,9 @@ public class LongSets {
 	 * @return a string representation of {@code set}.
 	 * @see Arrays#toString(long[])
 	 */
-	public static String toString(final LongSet set) {
-		return Arrays.toString(checkNotNull(set, "Long set argument cannot be null.").toArray());
-	}
+//	public static String toString(final LongSet set) {
+//		return Arrays.toString(checkNotNull(set, "Long set argument cannot be null.").toArray());
+//	}
 	
 	/**
 	 * Returns with an array containing all long values as a string.
@@ -628,8 +627,8 @@ public class LongSets {
 		LongSet longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
 		LongSet diff1 = LongSets.difference(longset1, longset2);
 		LongSet diff2 = LongSets.difference(longset2, longset1);
-		System.out.println("assert " + LongSets.toString(diff1));
-		System.out.println("assert " + LongSets.toString(diff2));
+		System.out.println("assert " + diff1);
+		System.out.println("assert " + diff2);
 		
 		System.out.println("*******************************************");
 		
@@ -681,8 +680,8 @@ public class LongSets {
 		longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
 		LongSet intersection1 = LongSets.intersection(longset1, longset2);
 		LongSet intersection2 = LongSets.intersection(longset2, longset1);
-		System.out.println("assert " + LongSets.toString(intersection1));
-		System.out.println("assser " + LongSets.toString(intersection2));
+		System.out.println("assert " + intersection1);
+		System.out.println("assser " + intersection2);
 		
 		System.out.println("*******************************************");
 		

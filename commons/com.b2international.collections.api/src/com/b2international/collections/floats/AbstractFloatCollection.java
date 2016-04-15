@@ -149,4 +149,21 @@ public abstract class AbstractFloatCollection implements FloatCollection {
 		return size;
 	}
 	
+	@Override
+	public String toString() {
+		FloatIterator it = iterator();
+        if (! it.hasNext())
+            return "[]";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (;;) {
+            float e = it.next();
+            sb.append(e);
+            if (! it.hasNext())
+                return sb.append(']').toString();
+            sb.append(',').append(' ');
+        }
+	}
+	
 }

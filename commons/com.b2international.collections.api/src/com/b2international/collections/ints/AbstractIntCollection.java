@@ -148,5 +148,22 @@ public abstract class AbstractIntCollection implements IntCollection {
 		
 		return size;
 	}
+	
+	@Override
+	public String toString() {
+		IntIterator it = iterator();
+        if (! it.hasNext())
+            return "[]";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (;;) {
+            int e = it.next();
+            sb.append(e);
+            if (! it.hasNext())
+                return sb.append(']').toString();
+            sb.append(',').append(' ');
+        }
+	}
 
 }

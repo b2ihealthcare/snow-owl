@@ -148,5 +148,22 @@ public abstract class AbstractLongCollection implements LongCollection {
 		
 		return size;
 	}
+	
+	@Override
+	public String toString() {
+		LongIterator it = iterator();
+        if (! it.hasNext())
+            return "[]";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (;;) {
+            long e = it.next();
+            sb.append(e);
+            if (! it.hasNext())
+                return sb.append(']').toString();
+            sb.append(',').append(' ');
+        }
+	}
 
 }
