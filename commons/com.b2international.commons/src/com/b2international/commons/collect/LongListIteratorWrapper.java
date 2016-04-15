@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.pcj;
+package com.b2international.commons.collect;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -23,7 +23,6 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongListIterator;
 import com.b2international.collections.longs.ResettableLongListIterator;
-import com.b2international.commons.collect.PrimitiveLists;
 
 /**
  * Converts an {@link LongIterator iterator} into a {@link LongListIterator list iterator} by caching the returned entries.

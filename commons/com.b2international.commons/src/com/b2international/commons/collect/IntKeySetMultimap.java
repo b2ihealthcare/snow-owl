@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.pcj;
+package com.b2international.commons.collect;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -23,7 +23,6 @@ import java.util.Set;
 
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntSet;
-import com.b2international.commons.collect.PrimitiveMaps;
 
 /**
  * Type safe set multimap implementation using primitive integer keys. 

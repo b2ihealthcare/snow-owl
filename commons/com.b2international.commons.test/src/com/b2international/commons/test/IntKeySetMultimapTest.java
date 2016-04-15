@@ -24,7 +24,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.b2international.collections.ints.IntIterator;
-import com.b2international.commons.pcj.IntKeySetMultimap;
+import com.b2international.commons.collect.IntKeySetMultimap;
 
 /**
  * Test for {@link IntKeySetMultimap}.

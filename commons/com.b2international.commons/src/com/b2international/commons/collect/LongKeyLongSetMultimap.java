@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.pcj;
+package com.b2international.commons.collect;
 
 import static com.google.common.hash.Hashing.murmur3_32;
 
@@ -22,8 +22,6 @@ import java.util.Collection;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.PrimitiveMaps;
-import com.b2international.commons.collect.PrimitiveSets;
 
 /**
  * A long key long value set multimap implementation.
