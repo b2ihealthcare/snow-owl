@@ -565,6 +565,12 @@
 				    <version>3.2.2</version>
 				    <scope>provided</scope>
 				</dependency>
+				<dependency>
+				    <groupId>org.semanticweb.elk</groupId>
+				    <artifactId>elk-protege</artifactId>
+				    <version>0.4.2</version>
+				    <scope>provided</scope>
+				</dependency>
 			</dependencies>
 			<repositories>
 				<repository>
@@ -617,9 +623,17 @@
 		<profile>
 			<id>tp_dependencies</id>
 			<properties>
-				<target.platform.version>4.5.0</target.platform.version>
-				<target.platform.url>${nexus.url}/content/unzip/releases.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
+				<target.platform.version>4.7.0-SNAPSHOT</target.platform.version>
+				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
 			</properties>
+			<dependencies>
+				<dependency>
+				    <groupId>org.semanticweb.elk</groupId>
+				    <artifactId>elk-protege</artifactId>
+				    <version>0.4.2</version>
+				    <scope>provided</scope>
+				</dependency>
+			</dependencies>
 			<repositories>
 				<repository>
 					<id>tp</id>

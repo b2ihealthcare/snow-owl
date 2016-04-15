@@ -56,8 +56,8 @@
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
-								<type></type>
-								<id>com.sun.el</id>
+								<type>eclipse-plugin</type>
+								<id>org.semanticweb.elk</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 						</extraRequirements>
