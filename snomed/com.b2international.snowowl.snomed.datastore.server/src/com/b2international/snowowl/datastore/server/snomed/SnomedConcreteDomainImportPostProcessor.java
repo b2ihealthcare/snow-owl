@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.ISnomedPostProcessorContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -194,7 +195,8 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 	}
 
 	private Relationship createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType, final ImportOnlySnomedTransactionContext context) {
-		return SnomedComponents.newRelationship()
+
+		Relationship relationship = SnomedComponents.newRelationship()
 			.withIdFromNamespace(B2I_NAMESPACE)
 			.withActive(true)
 			.withModule(MODULE_B2I_EXTENSION)
@@ -204,6 +206,11 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			.withCharacteristicType(characteristicType)
 			.withModifier(RelationshipModifier.EXISTENTIAL)
 			.build(context);
+		
+		SnomedIdentifiers identifiers = context.service(SnomedIdentifiers.class);
+		identifiers.register(relationship.getId());
+		
+		return relationship;
 	}
 
 	private Description createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability, final String languageCode, final String languageRefsetId, final ImportOnlySnomedTransactionContext context) {
@@ -218,6 +225,9 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			.withTerm(term)
 			.withCaseSignificance(CaseSignificance.CASE_INSENSITIVE)
 			.build(context);
+		
+		SnomedIdentifiers identifiers = context.service(SnomedIdentifiers.class);
+		identifiers.register(description.getId());
 		
 		final SnomedLanguageRefSetMember languageRefSetMember = SnomedComponents.newLanguageMember()
 			.withActive(true)
