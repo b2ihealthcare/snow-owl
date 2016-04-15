@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.commons.pcj.LongSets.newLongSet;
 import static com.b2international.commons.pcj.LongSets.parallelForEach;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
@@ -694,7 +693,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 							if (conceptIds != null) {
 								conceptIds.add(conceptId);
 							} else {
-								conceptIds = newLongSet();
+								conceptIds = PrimitiveSets.newLongOpenHashSet();
 								conceptIds.add(conceptId);
 								refSetIdReferencedConceptIds.put(refSetId, conceptIds);
 							}

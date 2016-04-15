@@ -20,7 +20,6 @@ import static com.b2international.commons.pcj.ByteCollections.filter;
 import static com.b2international.commons.pcj.ByteCollections.getLast;
 import static com.b2international.commons.pcj.ByteCollections.isEmpty;
 import static com.b2international.commons.pcj.LongSets.forEach;
-import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -49,6 +48,7 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.ByteCollections.BytePredicate;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.index.diff.IndexDiff;
@@ -84,9 +84,9 @@ public class IndexDifferImpl implements IndexDiffer {
 		
 		final byte[] spare = new byte[1];		
 		final LongKeyMap<ByteList> indexChanges = PrimitiveMaps.newLongKeyOpenHashMap(murmur3_32());
-		final LongSet newIds = newLongSetWithMurMur3Hash();     
-		final LongSet changedIds = newLongSetWithMurMur3Hash(); 
-		final LongSet detachedIds = newLongSetWithMurMur3Hash();
+		final LongSet newIds = PrimitiveSets.newLongOpenHashSet(murmur3_32());
+		final LongSet changedIds = PrimitiveSets.newLongOpenHashSet(murmur3_32());
+		final LongSet detachedIds = PrimitiveSets.newLongOpenHashSet(murmur3_32());
 		
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		

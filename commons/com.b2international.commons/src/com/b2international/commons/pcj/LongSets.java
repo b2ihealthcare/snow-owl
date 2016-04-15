@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
-import static com.google.common.hash.Hashing.murmur3_32;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,37 +46,15 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
+
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 /**
  * Utility class for {@link LongSet}s.
  */
 public class LongSets {
 
-	/**Creates and returns with a new long hash set.*/
-	public static LongSet newLongSet() {
-		return PrimitiveSets.newLongOpenHashSet();
-	}
-	
-	/**Creates a new long set using the {@link Hashing#murmur3_32() 32-bit murmur3} hashing algorithm.*/
-	public static LongSet newLongSetWithMurMur3Hash() {
-		return newLongSet(murmur3_32());
-	}
-	
-	/**Creates a new long set using the {@link Hashing#murmur3_32() 32-bit murmur3} hashing algorithm and with the given collection.*/
-	public static LongSet newLongSetWithMurMur3Hash(LongCollection collection) {
-		final LongSet set = newLongSet(murmur3_32());
-		set.addAll(collection);
-		return set;
-	}
-	
-	/**Creates and returns with a new long hash set with the given hash function.*/
-	public static LongSet newLongSet(final HashFunction hashFunction) {
-		return PrimitiveSets.newLongOpenHashSet(checkNotNull(hashFunction, "hashFunction"));
-	}
-	
 	/**Creates and returns with a new long hash set with the given expected size.*/
 	public static LongSet newLongSetWithExpectedSize(final int i) {
 		return PrimitiveSets.newLongOpenHashSet(i > 0 ? i : 1);

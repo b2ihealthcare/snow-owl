@@ -16,11 +16,11 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.commons.pcj.LongSets.newLongSetWithExpectedSize;
-import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash;
 import static com.b2international.commons.pcj.LongSets.parallelForEach;
 import static com.b2international.commons.pcj.LongSets.toSet;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.hash.Hashing.murmur3_32;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -406,7 +406,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		checkNotNull(query, "Query argument cannot be null.");
 		try {
 			
-			final LongSet ids = newLongSetWithMurMur3Hash();
+			final LongSet ids = PrimitiveSets.newLongOpenHashSet(murmur3_32());
 	
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 			service.search(branchPath, query, collector);

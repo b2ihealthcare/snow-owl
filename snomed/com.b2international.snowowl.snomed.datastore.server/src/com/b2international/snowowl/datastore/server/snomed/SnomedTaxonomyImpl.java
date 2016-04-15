@@ -460,7 +460,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			try {
 				
 				final long conceptIdL = Long.parseLong(conceptId);
-				final LongSet containerRefSetIds = newLongSet();
+				final LongSet containerRefSetIds = PrimitiveSets.newLongOpenHashSet();
 				
 				for (final LongIterator keys = refSetMap.keySet().iterator(); keys.hasNext(); /**/) {
 					final long key = keys.next();

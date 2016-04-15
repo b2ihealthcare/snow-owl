@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.snomed;
 import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.commons.pcj.LongSets.newLongSet;
-import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash;
 import static com.b2international.commons.pcj.LongSets.toStringSet;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.index.DocIdCollector.create;
@@ -41,6 +40,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.hash.Hashing.murmur3_32;
 import static java.text.NumberFormat.getIntegerInstance;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -1792,7 +1792,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		try {
 			
-			final LongSet storageKeys = newLongSetWithMurMur3Hash();
+			final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet(murmur3_32());
 			manager = getIndexServerService().getManager(branchPath);
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			searcher = manager.acquire();
