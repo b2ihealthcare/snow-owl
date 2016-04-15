@@ -100,7 +100,11 @@ public class PrimitiveSets {
 	}
 
 	public static LongSet newLongOpenHashSet(long[] source) {
-		return FACTORY.newLongOpenHashSet(source);
+		if (source == null) {
+			return newLongOpenHashSet();
+		} else {
+			return FACTORY.newLongOpenHashSet(source);
+		}
 	}
 
 	public static LongSet newLongOpenHashSet(LongCollection source) {

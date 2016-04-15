@@ -22,7 +22,7 @@ import org.apache.lucene.document.Document;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.BooleanUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -88,10 +88,10 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.iconId(input.getIconId())
 				.primitive(input.getDefinitionStatus().isPrimitive())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
-				.parents(LongSets.newLongSet(input.getParentIds()))
-				.ancestors(LongSets.newLongSet(input.getAncestorIds()))
-				.statedParents(LongSets.newLongSet(input.getStatedParentIds()))
-				.statedAncestors(LongSets.newLongSet(input.getStatedAncestorIds()));
+				.parents(PrimitiveSets.newLongOpenHashSet(input.getParentIds()))
+				.ancestors(PrimitiveSets.newLongOpenHashSet(input.getAncestorIds()))
+				.statedParents(PrimitiveSets.newLongOpenHashSet(input.getStatedParentIds()))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()));
 		
 		if (input.getScore() != null) {
 			builder.score(input.getScore());

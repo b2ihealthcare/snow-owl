@@ -40,7 +40,6 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StopWatch;
-import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -55,40 +54,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
  */
 public class LongSets {
 
-	/**Creates and returns with a new long hash set with the same element as the given array argument.*/
-	public static LongSet newLongSet(final long[] items) {
-		if (items == null) {
-			return PrimitiveSets.newLongOpenHashSet(1);
-		} else {
-			return PrimitiveSets.newLongOpenHashSet(items);
-		}
-	}
-	
-	/**Creates a long hash set with the given long values.*/
-	public static LongSet newLongSet(final long item, final long... others) {
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(others);
-		$.add(item);
-		return $;
-	}
-	
-	/**Creates a new primitive long hash set from the given iterable of {@link Long} values.*/
-	public static LongSet newLongSet(final Iterable<Long> iterable) {
-		checkNotNull(iterable, "iterable");
-		final long $[] = new long[Iterables.size(iterable)];
-		int i =0;
-		final Iterator<Long> itr = iterable.iterator();
-		while (itr.hasNext()) {
-			$[i++] = itr.next();
-		}
-		return newLongSet($);
-	}
-	
-	/**Creates a new primitive long hash set with the same elements as a specified collection.*/
-	public static LongSet newLongSet(final LongCollection collection) {
-		checkNotNull(collection, "collection");
-		return PrimitiveSets.newLongOpenHashSet(collection);
-	}
-	
 	/**
 	 * Returns with the difference of two sets. The
 	 * returned set contains all elements that are contained by {@code set1} and
@@ -520,7 +485,7 @@ public class LongSets {
 	public static LongCollection filter(final LongCollection unfiltered, final LongPredicate predicate) {
 		checkNotNull(unfiltered, "unfiltered");
 		checkNotNull(predicate, "predicate");
-		final LongCollection copy = unfiltered instanceof LongSet ? newLongSet(unfiltered) : PrimitiveLists.newLongArrayList(unfiltered);
+		final LongCollection copy = unfiltered.dup();
 		for (final LongIterator itr = copy.iterator(); itr.hasNext(); /* */) {
 			final long value = itr.next();
 			if (!predicate.apply(value)) {

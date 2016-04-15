@@ -1609,7 +1609,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		checkNotNull(branchPath, "branchPath");
 		final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
 		getIndexServerService().search(branchPath, ALL_CORE_COMPONENTS_QUERY, collector);
-		return newLongSet(collector.getValues());
+		return collector.getValues();
 	}
 	
 	@Override

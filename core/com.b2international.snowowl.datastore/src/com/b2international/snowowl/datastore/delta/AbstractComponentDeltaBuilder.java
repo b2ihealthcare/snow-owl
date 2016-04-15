@@ -33,8 +33,10 @@ import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.view.CDOView;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -237,17 +239,16 @@ public abstract class AbstractComponentDeltaBuilder<C extends ComponentDelta> im
 	 * @see ChangeKind
 	 */
 	protected final C put(final C delta, final long... relatedCdoIds) {
-
+		final LongSet relatedCdoIdSet = PrimitiveSets.newLongOpenHashSet(relatedCdoIds);
 		if (contains(delta)) {
 
 			final Collection<C> storedDeltas = get(delta.getId());
 			final C storedDelta = Iterables.find(storedDeltas, Predicates.equalTo(delta));
 
 			if (storedDelta.getChange().compareTo(delta.getChange()) > 0) { // delta is more significant
-
 				// Copy all related component CDO IDs from storedDelta
 				delta.getRelatedCdoIds().addAll(storedDelta.getRelatedCdoIds());
-				delta.getRelatedCdoIds().addAll(newLongSet(relatedCdoIds));
+				delta.getRelatedCdoIds().addAll(relatedCdoIdSet);
 
 				// Remove previous element and add new one, as change kind not part of #hashCode we have to explicitly remove the old value
 				deltas.remove(delta.getId(), storedDelta);
@@ -255,14 +256,13 @@ public abstract class AbstractComponentDeltaBuilder<C extends ComponentDelta> im
 				return delta;
 
 			} else { // storedDelta is more significant
-
-				storedDelta.getRelatedCdoIds().addAll(newLongSet(relatedCdoIds));
+				storedDelta.getRelatedCdoIds().addAll(relatedCdoIdSet);
 				return storedDelta;
 			}
 
 		} else { 
 
-			delta.getRelatedCdoIds().addAll(newLongSet(relatedCdoIds));
+			delta.getRelatedCdoIds().addAll(relatedCdoIdSet);
 			deltas.put(delta.getId(), delta);
 			return delta;
 		}
