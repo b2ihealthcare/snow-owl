@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.pcj;
+package com.b2international.collections.longs;
 
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.NoSuchElementException;
-
-import com.b2international.collections.longs.LongIterator;
 
 /**
  * Skeleton unmodifiable implementation of the {@link LongIterator}.

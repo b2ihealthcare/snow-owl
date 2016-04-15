@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.pcj;
-
-import com.b2international.collections.longs.LongListIterator;
+package com.b2international.collections.longs;
 
 /**
  * Defines a {@link LongListIterator list iterator} that can be reset back to an initial state. 
