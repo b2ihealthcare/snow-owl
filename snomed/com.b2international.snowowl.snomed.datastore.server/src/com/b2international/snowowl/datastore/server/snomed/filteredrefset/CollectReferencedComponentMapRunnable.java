@@ -46,7 +46,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
- * 
+ * @deprecated unsupported, will be removed in 4.7
  */
 public class CollectReferencedComponentMapRunnable implements Runnable {
 	

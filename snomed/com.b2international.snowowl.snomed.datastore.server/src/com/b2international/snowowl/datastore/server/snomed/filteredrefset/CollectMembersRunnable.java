@@ -27,6 +27,9 @@ import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
+/**
+ * @deprecated - unsupported, will be removed in 4.7
+ */
 public final class CollectMembersRunnable implements Runnable {
 	
 	private final Query labelQuery;

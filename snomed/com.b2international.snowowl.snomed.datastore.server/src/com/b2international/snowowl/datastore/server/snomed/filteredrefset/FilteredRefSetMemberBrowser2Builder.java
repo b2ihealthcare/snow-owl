@@ -51,7 +51,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedConceptReducedQu
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**
- * 
+ * @deprecated - unsupported will be removed in 4.7
  */
 public class FilteredRefSetMemberBrowser2Builder {
 

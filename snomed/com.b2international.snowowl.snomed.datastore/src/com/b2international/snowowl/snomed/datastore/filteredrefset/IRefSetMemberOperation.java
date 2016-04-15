@@ -19,7 +19,7 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**
- * 
+ * @deprecated unsupported, will be removed in 4.7
  */
 public interface IRefSetMemberOperation {
 

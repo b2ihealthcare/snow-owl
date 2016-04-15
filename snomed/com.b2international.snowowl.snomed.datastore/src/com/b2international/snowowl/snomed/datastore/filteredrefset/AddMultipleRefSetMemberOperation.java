@@ -21,7 +21,7 @@ import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**
- * 
+ * @deprecated - unsupported will be removed in 4.7
  */
 public class AddMultipleRefSetMemberOperation implements IRefSetMemberOperation {
 	

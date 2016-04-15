@@ -22,7 +22,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**
- * 
+ * @deprecated unsupported, will be removed in 4.7
  */
 public class AddRefSetMemberOperation extends AbstractRefSetMemberOperation implements Serializable {
 

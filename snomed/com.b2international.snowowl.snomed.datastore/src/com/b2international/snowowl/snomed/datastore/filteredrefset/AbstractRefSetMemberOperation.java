@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.filteredrefset;
 
 /**
  * Abstract superclass for reference set member operations. 
- *
+ * @deprecated - unsupported, will be removed in 4.7
  */
 public abstract class AbstractRefSetMemberOperation implements IRefSetMemberOperation {
 

@@ -194,6 +194,7 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 * @param includeInactiveMembers {@code false} if inactive reference set members should be excluded. Otherwise {@code true}.
 	 * @param pendingOperations a list of uncommitted reference set member manipulating operations to take into account when filtering.
 	 * @return a filtered taxonomy for referenced components of reference set members.
+	 * @deprecated unsupported, will be removed in 4.7
 	 */
 	FilteredRefSetMemberBrowser2 createFilteredRefSetBrowser(final IBranchPath branchPath,
 			final long refSetId, 

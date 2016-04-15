@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrow
 import com.google.common.collect.Lists;
 
 /**
+ * @deprecated unsupported, will be removed in 4.7
  */
 public class FilteredRefSetMemberBrowser2 
 		extends ClientTerminologyBrowserAdapter<IRefSetMemberNode, IRefSetMemberNode> 
