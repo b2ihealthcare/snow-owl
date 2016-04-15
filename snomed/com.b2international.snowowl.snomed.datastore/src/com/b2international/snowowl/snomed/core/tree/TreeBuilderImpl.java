@@ -25,8 +25,8 @@ import java.util.Set;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.AlphaNumericComparator;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.eventbus.IEventBus;

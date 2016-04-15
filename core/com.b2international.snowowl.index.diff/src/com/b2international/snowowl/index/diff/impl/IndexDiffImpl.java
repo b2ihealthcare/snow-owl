@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.index.diff.impl;
 
-import static com.b2international.commons.pcj.LongSets.in;
+import static com.b2international.commons.collect.LongSets.in;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
@@ -25,9 +25,9 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveSets;
-import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.LongSets.LongPredicate;
+import com.b2international.commons.collect.LongSets.LongPredicate;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.google.common.base.Objects;
 

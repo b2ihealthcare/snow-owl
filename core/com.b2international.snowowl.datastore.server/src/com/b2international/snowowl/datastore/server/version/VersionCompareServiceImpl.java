@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.version;
 
-import static com.b2international.commons.pcj.LongSets.parallelForEach;
+import static com.b2international.commons.collect.LongSets.parallelForEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.server.version.VersionCompareHierarchyBuilderCache.INSTANCE;
@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Change;
-import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
+import com.b2international.commons.collect.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.CompareResultImpl;

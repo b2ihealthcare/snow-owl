@@ -39,9 +39,9 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.options.Options;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.commons.pcj.LongSets.forEach;
+import static com.b2international.commons.collect.LongSets.forEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
@@ -51,7 +51,7 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.pcj.LongSets.LongCollectionProcedure;
+import com.b2international.commons.collect.LongSets.LongCollectionProcedure;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.snomed.index.ComponentModuleCollector;

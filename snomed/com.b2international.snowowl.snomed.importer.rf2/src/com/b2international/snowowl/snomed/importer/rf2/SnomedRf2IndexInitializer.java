@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
-import static com.b2international.commons.pcj.LongSets.newLongSet;
-import static com.b2international.commons.pcj.LongSets.toStringList;
+import static com.b2international.commons.collect.LongSets.newLongSet;
+import static com.b2international.commons.collect.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -47,13 +47,13 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;

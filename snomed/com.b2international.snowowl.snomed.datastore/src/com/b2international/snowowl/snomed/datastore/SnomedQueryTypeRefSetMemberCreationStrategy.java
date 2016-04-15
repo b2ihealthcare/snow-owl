@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.commons.pcj.LongSets.forEach;
+import static com.b2international.commons.collect.LongSets.forEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -30,7 +30,7 @@ import java.util.List;
 import org.eclipse.emf.ecore.util.InternalEList;
 
 import com.b2international.collections.longs.LongCollection;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;

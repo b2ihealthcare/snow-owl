@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.commons.pcj.LongSets.parallelForEach;
-import static com.b2international.commons.pcj.LongSets.toSet;
+import static com.b2international.commons.collect.LongSets.parallelForEach;
+import static com.b2international.commons.collect.LongSets.toSet;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.hash.Hashing.murmur3_32;
@@ -43,11 +43,11 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongCollections;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;

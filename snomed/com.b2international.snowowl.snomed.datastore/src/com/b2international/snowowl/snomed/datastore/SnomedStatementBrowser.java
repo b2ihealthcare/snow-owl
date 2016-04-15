@@ -142,9 +142,13 @@ public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptI
 	* the specified unique SNOMED&nbsp;CT ID.
 	* @param conceptId the concept ID.
 	* @return a map of concept IDs and concept image IDs.
+	* @deprecated - unsupported, will be removed in 4.7
 	*/
 	Map<String, String> getAllStatementImageIdsById(final IBranchPath branchPath, final String conceptId);
 
+	/**
+	 * @deprecated - unsupported, will be removed in 4.7
+	 */
 	Map<String, String> getAllDestinationLabels(IBranchPath branchPath, Collection<String> sourceIds, String typeId);
 
 }

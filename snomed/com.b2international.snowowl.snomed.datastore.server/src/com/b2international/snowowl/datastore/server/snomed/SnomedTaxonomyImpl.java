@@ -16,9 +16,9 @@
 package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.b2international.commons.StringUtils.isEmpty;
+import static com.b2international.commons.collect.LongSets.newLongSet;
+import static com.b2international.commons.collect.LongSets.toStringList;
 import static com.b2international.commons.graph.GraphUtils.getLongestPath;
-import static com.b2international.commons.pcj.LongSets.newLongSet;
-import static com.b2international.commons.pcj.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;

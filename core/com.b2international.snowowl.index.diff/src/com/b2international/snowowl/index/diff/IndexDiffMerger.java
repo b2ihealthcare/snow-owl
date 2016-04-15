@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.index.diff;
 
-import static com.b2international.commons.pcj.LongSets.filter;
-import static com.b2international.commons.pcj.LongSets.in;
-import static com.b2international.commons.pcj.LongSets.intersection;
-import static com.b2international.commons.pcj.LongSets.not;
+import static com.b2international.commons.collect.LongSets.filter;
+import static com.b2international.commons.collect.LongSets.in;
+import static com.b2international.commons.collect.LongSets.intersection;
+import static com.b2international.commons.collect.LongSets.not;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.slf4j.Logger;

@@ -29,7 +29,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;

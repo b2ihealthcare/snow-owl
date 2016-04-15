@@ -39,7 +39,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentTextProvider;
 import com.b2international.snowowl.datastore.BranchPointUtils;

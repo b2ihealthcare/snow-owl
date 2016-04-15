@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.commons.pcj.LongSets.toStringSet;
+import static com.b2international.commons.collect.LongSets.toStringSet;
 import static com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy.forBranch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.cache.CacheBuilder.newBuilder;

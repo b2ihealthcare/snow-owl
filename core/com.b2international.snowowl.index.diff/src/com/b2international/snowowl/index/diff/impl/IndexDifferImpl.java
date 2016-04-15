@@ -16,10 +16,10 @@
 package com.b2international.snowowl.index.diff.impl;
 
 import static com.b2international.commons.StringUtils.EMPTY_STRING;
+import static com.b2international.commons.collect.LongSets.forEach;
 import static com.b2international.commons.pcj.ByteCollections.filter;
 import static com.b2international.commons.pcj.ByteCollections.getLast;
 import static com.b2international.commons.pcj.ByteCollections.isEmpty;
-import static com.b2international.commons.pcj.LongSets.forEach;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -46,11 +46,11 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.bytes.ByteList;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.ByteCollections.BytePredicate;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.b2international.snowowl.index.diff.IndexDiffException;
 import com.b2international.snowowl.index.diff.IndexDiffer;

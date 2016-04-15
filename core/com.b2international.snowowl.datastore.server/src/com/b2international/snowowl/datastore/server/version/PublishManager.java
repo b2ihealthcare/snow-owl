@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.version;
 
-import static com.b2international.commons.pcj.LongSets.transform;
+import static com.b2international.commons.collect.LongSets.transform;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.FAKE_LAST_UPDATE_TIME_DATE;

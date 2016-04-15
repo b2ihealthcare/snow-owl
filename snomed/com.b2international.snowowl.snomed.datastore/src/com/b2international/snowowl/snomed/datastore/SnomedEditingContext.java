@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.commons.pcj.LongSets.transform;
+import static com.b2international.commons.collect.LongSets.transform;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;

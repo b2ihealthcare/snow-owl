@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.commons.pcj.LongSets.toStringSet;
+import static com.b2international.commons.collect.LongSets.toStringSet;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.commit;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;

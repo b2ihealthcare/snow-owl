@@ -115,11 +115,15 @@ public class SnomedClientStatementBrowser extends ActiveBranchClientStatementBro
 	 * the specified unique SNOMED&nbsp;CT ID.
 	 * @param conceptId the concept ID.
 	 * @return a map of concept IDs and concept image IDs.
+	 * @deprecated - unsupported, will be removed in 4.7
 	 */
 	public Map<String, String> getAllStatementImageIdsById(final String conceptId) {
 		return ((SnomedStatementBrowser) getDelegateBrowser()).getAllStatementImageIdsById(getBranchPath(), conceptId);
 	}
 
+	/**
+	 * @deprecated - unsupported, will be removed in 4.7
+	 */
 	public Map<String, String> getAllDestinationLabels(final Collection<String> sourceIds, final String typeId) {
 		return ((SnomedStatementBrowser) getDelegateBrowser()).getAllDestinationLabels(getBranchPath(), sourceIds, typeId);
 	}

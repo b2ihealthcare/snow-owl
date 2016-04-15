@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.pcj;
+package com.b2international.commons.collect;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -40,7 +40,9 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StopWatch;
-import com.b2international.commons.collect.PrimitiveSets;
+import com.b2international.commons.pcj.AbstractLongIterator;
+import com.b2international.commons.pcj.LongCollections;
+import com.b2international.commons.pcj.LongListIteratorWrapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -111,7 +113,7 @@ public class LongSets {
 	 * @param itr the iterator.
  	 * @return the number of remaining elements.
 	 */
-	public static int size(final LongIterator itr) {
+	private static int size(final LongIterator itr) {
 		checkNotNull(itr, "Long iterator argument cannot be null.");
 		int $ = 0;
 		while (itr.hasNext()) {
@@ -120,16 +122,6 @@ public class LongSets {
 		}
 		return $;
 	}
-	
-	/**
-	 * Returns with the string representation of the specified {@link LongSet}.  
-	 * @param set the set whose string representation to return. 
-	 * @return a string representation of {@code set}.
-	 * @see Arrays#toString(long[])
-	 */
-//	public static String toString(final LongSet set) {
-//		return Arrays.toString(checkNotNull(set, "Long set argument cannot be null.").toArray());
-//	}
 	
 	/**
 	 * Returns with an array containing all long values as a string.
@@ -217,14 +209,10 @@ public class LongSets {
 	 * @param procedure the procedure to apply on each element of the given iterator of primitive long numbers.
 	 */
 	public static void forEach(final LongIterator itr, final LongCollectionProcedure procedure) {
-		
-		checkNotNull(itr, "itr");
 		checkNotNull(procedure, "procedure");
-
 		while (itr.hasNext()) {
 			procedure.apply(itr.next());
 		}
-		
 	}
 	
 	/**
@@ -233,13 +221,7 @@ public class LongSets {
 	 * @param procedure the procedure to apply on each element of the given collection of primitive long elements.
 	 */
 	public static void forEach(final LongCollection collection, final LongCollectionProcedure procedure) {
-		
-		checkNotNull(procedure, "procedure");
-		checkNotNull(collection, "collection");
-
-		for (final LongIterator itr = collection.iterator(); itr.hasNext(); /**/) {
-			procedure.apply(itr.next());
-		}
+		forEach(collection.iterator(), procedure);
 	}
 	
 	/**
@@ -249,8 +231,6 @@ public class LongSets {
 	 * @param procedure the procedure to apply on each element of the given iterator of primitive long numbers.
 	 */
 	public static void parallelForEach(final LongIterator iterator, final LongCollectionProcedure procedure) {
-		
-		checkNotNull(iterator, "iterator");
 		checkNotNull(procedure, "procedure");
 		
 		final LongListIteratorWrapper itr = new LongListIteratorWrapper(iterator); 
@@ -319,7 +299,7 @@ public class LongSets {
 	 * @param procedure the procedure to apply on each element of the given iterator of primitive long numbers.
 	 */
 	public static void parallelForEach(final LongCollection collection, final LongCollectionProcedure procedure) {
-		parallelForEach(checkNotNull(collection, "collection").iterator(), checkNotNull(procedure, "procedure"));
+		parallelForEach(collection.iterator(), procedure);
 	}
 	
 	/**
