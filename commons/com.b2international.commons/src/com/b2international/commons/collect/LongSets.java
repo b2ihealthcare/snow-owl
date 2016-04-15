@@ -37,11 +37,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.b2international.collections.longs.AbstractLongIterator;
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StopWatch;
-import com.b2international.commons.pcj.LongCollections;
 import com.b2international.commons.pcj.LongListIteratorWrapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;

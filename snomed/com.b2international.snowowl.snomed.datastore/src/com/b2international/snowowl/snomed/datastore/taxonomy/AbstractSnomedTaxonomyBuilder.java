@@ -24,6 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
@@ -32,7 +33,6 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveSets;
-import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;

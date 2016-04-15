@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.pcj;
+package com.b2international.collections.longs;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
-
-import com.b2international.collections.longs.AbstractLongSet;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
 
 /**
  * Utility methods related to primitive long collections.

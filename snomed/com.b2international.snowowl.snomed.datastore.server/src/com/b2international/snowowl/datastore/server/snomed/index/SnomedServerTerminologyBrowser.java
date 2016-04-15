@@ -40,6 +40,7 @@ import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
@@ -47,7 +48,6 @@ import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.graph.GraphUtils;
-import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
