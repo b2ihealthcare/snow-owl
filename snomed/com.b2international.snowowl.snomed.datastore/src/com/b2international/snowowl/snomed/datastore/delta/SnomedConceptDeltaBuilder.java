@@ -390,7 +390,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	@Override
 	protected String getParentIdFromTerminologyBrowser(String id) {
 		final LongSet ancestorIds = getTerminologyBrowser().getSuperTypeIds(getBranchPath(), Long.parseLong(id));
-		return LongSets.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
+		return CompareUtils.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
 	}
 	
 	@Override

@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StopWatch;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.google.common.base.Function;
@@ -69,7 +70,7 @@ public class LongSets {
 		checkNotNull(set1, "The set1 argument cannot be null.");
 		checkNotNull(set2, "The set2 argument cannot be null.");
 
-		if (isEmpty(set1)) { //nothing to do
+		if (CompareUtils.isEmpty(set1)) { //nothing to do
 			return LongCollections.emptySet();
 		}
 
@@ -96,7 +97,7 @@ public class LongSets {
 		checkNotNull(set1, "The set1 argument cannot be null.");
 		checkNotNull(set2, "The set2 argument cannot be null.");
 
-		if (isEmpty(set1)) { //nothing to do
+		if (CompareUtils.isEmpty(set1)) { //nothing to do
 			return LongCollections.emptySet();
 		}
 
@@ -122,15 +123,6 @@ public class LongSets {
 	}
 	
 	/**
-	 * Returns {@code true} if either the specified {@link LongCollection} is {@code null} or empty. Otherwise returns with false; 
-	 * @param collection the collection to check.
-	 * @return {@code true} if does not contain elements, otherwise {@code false}. 
-	 */
-	public static boolean isEmpty(final LongCollection collection) {
-		return null == collection ? true : collection.isEmpty();
-	}
-	
-	/**
 	 * Returns with the string representation of the specified {@link LongSet}.  
 	 * @param set the set whose string representation to return. 
 	 * @return a string representation of {@code set}.
@@ -138,35 +130,6 @@ public class LongSets {
 	 */
 	public static String toString(final LongSet set) {
 		return Arrays.toString(checkNotNull(set, "Long set argument cannot be null.").toArray());
-	}
-	
-	/**
-	 * Copies the iterators remaining elements into an array and returns with it. 
-	 * The iterator will be left exhausted: its {@link LongIterator#hasNext()} method will return {@code false}. 
-	 * @param itr the iterator to copy.
-	 * @return a newly-allocated long array into which all the elements of the iterator have been copied.
-	 */
-	public static long[] toArray(final LongIterator itr) {
-		checkNotNull(itr, "Long iterator argument cannot be null.");
-		final int size = size(itr);
-		return toArray(itr, size);
-	}
-	
-	/**
-	 * Copies the iterators remaining elements into an array that was allocated based on the size and returns with it. 
-	 * The iterator will be left exhausted: its {@link LongIterator#hasNext()} method will return {@code false}. 
-	 * @param itr the iterator to copy.
-	 * @param size the expected size of the remaining elements of the iterator.
-	 * @return a newly-allocated long array into which all the elements of the iterator have been copied.
-	 * @throws ArrayIndexOutOfBoundsException if the size is smaller that the remaining elements of the iterator.
-	 */
-	public static long[] toArray(final LongIterator itr, final int size) {
-		final long[] $ = new long[size];
-		int i = 0;
-		while (itr.hasNext()) {
-			$[i++] = itr.next();
-		}
-		return $;
 	}
 	
 	/**

@@ -630,7 +630,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		
 		final long conceptIdL = Long.parseLong(conceptId);
 		final LongSet allSuperTypeIds = getAllSuperTypeIds(branchPath, conceptIdL);
-		if (LongSets.isEmpty(allSuperTypeIds)) {
+		if (CompareUtils.isEmpty(allSuperTypeIds)) {
 			return 0;
 		}
 		

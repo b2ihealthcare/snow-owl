@@ -27,8 +27,8 @@ import org.apache.lucene.index.NumericDocValues;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.PrimitiveMaps;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
@@ -50,7 +50,7 @@ public class SnomedConceptIconIdCollector extends AbstractDocsOutOfOrderCollecto
 	 */
 	public SnomedConceptIconIdCollector(final LongCollection conceptIds) {
 		this.conceptIds = checkNotNull(conceptIds, "Concept identifier collection may not be null.");
-		this.idIconIdMapping = PrimitiveMaps.newLongKeyLongOpenHashMap(LongSets.isEmpty(conceptIds) ? 1 : conceptIds.size());
+		this.idIconIdMapping = PrimitiveMaps.newLongKeyLongOpenHashMap(CompareUtils.isEmpty(conceptIds) ? 1 : conceptIds.size());
 	}
 
 	@Override

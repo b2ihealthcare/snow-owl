@@ -20,9 +20,9 @@ import java.io.Serializable;
 import org.eclipse.emf.cdo.common.id.CDOID;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.pcj.LongCollections;
-import com.b2international.commons.pcj.LongSets;
 import com.google.common.base.Preconditions;
 
 /**
@@ -61,7 +61,7 @@ public interface IChangedComponentCDOIDs extends Serializable {
 		 */
 		public static IChangedComponentCDOIDs create(final long cdoId, final LongSet relatedCdoIds) {
 			
-			if (LongSets.isEmpty(Preconditions.checkNotNull(relatedCdoIds))) {
+			if (CompareUtils.isEmpty(Preconditions.checkNotNull(relatedCdoIds))) {
 				return createSinglton(cdoId);
 			}
 			

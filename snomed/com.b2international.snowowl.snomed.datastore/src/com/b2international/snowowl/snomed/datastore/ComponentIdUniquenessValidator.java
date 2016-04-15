@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.commons.pcj.LongSets.isEmpty;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
@@ -28,6 +27,7 @@ import static java.lang.Long.parseLong;
 import java.util.Collection;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongCollections;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Annotatable;
@@ -167,7 +167,7 @@ final class ComponentIdUniquenessValidator {
 	 * @return {@code true} if the id is unique for the component. Otherwise returns with {@code false}.
 	 */
 	private boolean isUniqueInDatabase(final String componentId) {
-		if (isEmpty(existingCoreComponentIds)) {
+		if (CompareUtils.isEmpty(existingCoreComponentIds)) {
 			return getServiceForClass(SnomedTerminologyBrowser.class).isUniqueId(branchPath, componentId);
 		} else {
 			return !existingCoreComponentIds.contains(parseLong(componentId));
