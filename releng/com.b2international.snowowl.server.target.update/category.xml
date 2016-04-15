@@ -97,6 +97,8 @@
    <bundle id="org.eclipse.xpand" version="1.4.0.v201306110406"/>
    <bundle id="org.eclipse.xtend.lib" version="2.8.4.v201508050135"/>
    <bundle id="org.eclipse.xtend.lib.source" version="2.8.4.v201508050135"/>
+   <bundle id="org.eclipse.xtend.lib.macro" version="2.8.4.v201508050135"/>
+   <bundle id="org.eclipse.xtend.lib.macro.source" version="2.8.4.v201508050135"/>
    <bundle id="org.junit" version="4.11.0.v201303080030"/>
    <bundle id="org.junit.source" version="4.11.0.v201303080030"/>
    <bundle id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
