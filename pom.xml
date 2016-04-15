@@ -565,6 +565,12 @@
 				    <version>3.2.2</version>
 				    <scope>provided</scope>
 				</dependency>
+				<dependency>
+				    <groupId>org.semanticweb.elk</groupId>
+				    <artifactId>elk-protege</artifactId>
+				    <version>0.4.2</version>
+				    <scope>provided</scope>
+				</dependency>
 			</dependencies>
 			<repositories>
 				<repository>
