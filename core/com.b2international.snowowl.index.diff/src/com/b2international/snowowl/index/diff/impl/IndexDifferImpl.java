@@ -19,7 +19,6 @@ import static com.b2international.commons.StringUtils.EMPTY_STRING;
 import static com.b2international.commons.collect.LongSets.forEach;
 import static com.b2international.commons.pcj.ByteCollections.filter;
 import static com.b2international.commons.pcj.ByteCollections.getLast;
-import static com.b2international.commons.pcj.ByteCollections.isEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -46,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.bytes.ByteList;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveMaps;
@@ -171,7 +171,7 @@ public class IndexDifferImpl implements IndexDiffer {
 						
 					} else {
 						
-						final boolean hasOutOfIntersectionChanges = isEmpty(differenceChanges);
+						final boolean hasOutOfIntersectionChanges = CompareUtils.isEmpty(differenceChanges);
 						if (hasOutOfIntersectionChanges) {
 
 							for (int i = 0; i < allChanges.size(); i++) {
