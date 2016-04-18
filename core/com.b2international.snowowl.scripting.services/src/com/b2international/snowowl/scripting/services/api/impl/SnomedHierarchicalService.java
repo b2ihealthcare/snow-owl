@@ -68,7 +68,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public Collection<SnomedConceptIndexEntry> getSubtypes(final long conceptId) {
-		return getTerminologyBrowser().getSubTypes(getConcept(conceptId));
+		return getTerminologyBrowser().getSubTypesById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
@@ -76,7 +76,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public long getDirectSubtypeCount(final long conceptId) {
-		return getTerminologyBrowser().getSubTypeCount(getConcept(conceptId));
+		return getTerminologyBrowser().getSubTypeCountById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
@@ -84,7 +84,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public long getAllSubtypeCount(final long conceptId) {
-		return getTerminologyBrowser().getAllSubTypeCount(getConcept(conceptId));
+		return getTerminologyBrowser().getAllSubTypeCountById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
@@ -92,7 +92,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public Collection<SnomedConceptIndexEntry> getAllSubtypes(final long conceptId) {
-		return getTerminologyBrowser().getAllSubTypes(getConcept(conceptId));
+		return getTerminologyBrowser().getAllSubTypesById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
@@ -100,7 +100,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public Collection<SnomedConceptIndexEntry> getSupertypes(final long conceptId) {
-		return getTerminologyBrowser().getSuperTypes(getConcept(conceptId));
+		return getTerminologyBrowser().getSuperTypesById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
@@ -108,7 +108,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public Collection<SnomedConceptIndexEntry> getAllSupertypes(final long conceptId) {
-		return getTerminologyBrowser().getAllSuperTypes(getConcept(conceptId));
+		return getTerminologyBrowser().getAllSuperTypesById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
@@ -116,7 +116,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public long getDirectSupertypeCount(final long conceptId) {
-		return getTerminologyBrowser().getSubTypeCount(getConcept(conceptId));
+		return getTerminologyBrowser().getSubTypeCountById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
@@ -124,7 +124,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public long getAllSupertypeCount(final long conceptId) {
-		return getTerminologyBrowser().getAllSuperTypeCount(getConcept(conceptId));
+		return getTerminologyBrowser().getAllSuperTypeCountById(String.valueOf(conceptId));
 	}
 
 	/* (non-Javadoc)
