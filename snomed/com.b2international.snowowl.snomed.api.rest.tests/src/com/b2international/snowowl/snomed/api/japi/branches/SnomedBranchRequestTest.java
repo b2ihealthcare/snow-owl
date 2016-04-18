@@ -16,8 +16,7 @@
 package com.b2international.snowowl.snomed.api.japi.branches;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Set;
@@ -26,6 +25,7 @@ import java.util.UUID;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -57,7 +57,7 @@ public class SnomedBranchRequestTest {
 	}
 
 	@Test
-	public void createTwoBranchSameTimeShouldNotBePossible() throws Exception {
+	public void createTwoBranchesSameTimeWithSameName() throws Exception {
 		final Branching branches = SnomedRequests.branching();
 		
 		// try to create two branches at the same time
@@ -82,6 +82,34 @@ public class SnomedBranchRequestTest {
 			.getSync();
 		assertNull(error, error);
 		assertEquals(1, getCdoBranches(branchName).size());
+	}
+	
+	@Test
+	public void createTwoBranchesSameTimeWithDifferentName() throws Exception {
+		final Branching branches = SnomedRequests.branching();
+		
+		// try to create two branches at the same time
+		final String branchA = UUID.randomUUID().toString();
+		final String branchB = UUID.randomUUID().toString();
+		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchA).build().execute(bus);
+		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchB).build().execute(bus);
+		final Boolean success = Promise.all(first, second)
+			.then(new Function<List<Object>, Boolean>() {
+				@Override
+				public Boolean apply(List<Object> input) {
+					final Branch first = (Branch) input.get(0);
+					final Branch second = (Branch) input.get(1);
+					return first.name().equals(branchA) && second.name().equals(branchB);
+				}
+			})
+			.fail(new Function<Throwable, Boolean>() {
+				@Override
+				public Boolean apply(Throwable input) {
+					return false;
+				}
+			})
+			.getSync();
+		assertTrue(success);
 	}
 
 	private Set<CDOBranch> getCdoBranches(final String branchName) {
