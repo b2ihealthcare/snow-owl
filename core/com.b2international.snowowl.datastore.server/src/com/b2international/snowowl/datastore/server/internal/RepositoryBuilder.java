@@ -23,14 +23,17 @@ import com.b2international.snowowl.core.setup.Environment;
  */
 public final class RepositoryBuilder {
 	
-	private String repositoryId;
+	private final String repositoryId;
+	private final DefaultRepositoryManager manager;
+	
 	private int numberOfWorkers;
 	private int mergeMaxResults;
 
-	RepositoryBuilder(String repositoryId) {
+	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId) {
+		this.manager = defaultRepositoryManager;
 		this.repositoryId = repositoryId;
 	}
-	
+
 	public RepositoryBuilder setNumberOfWorkers(int numberOfWorkers) {
 		this.numberOfWorkers = numberOfWorkers;
 		return this;
@@ -42,6 +45,8 @@ public final class RepositoryBuilder {
 	}
 	
 	public Repository build(Environment env) {
-		return new CDOBasedRepository(repositoryId, numberOfWorkers, mergeMaxResults, env);
+		final CDOBasedRepository repository = new CDOBasedRepository(repositoryId, numberOfWorkers, mergeMaxResults, env);
+		manager.put(repositoryId, repository);
+		return repository;
 	}
 }
