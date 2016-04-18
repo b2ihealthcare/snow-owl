@@ -22,6 +22,10 @@ public class RequestTimeoutException extends RuntimeException {
 
 	private static final long serialVersionUID = 966604124125943660L;
 
+	public RequestTimeoutException() {
+		super();
+	}
+	
 	public RequestTimeoutException(Throwable cause) {
 		super(cause);
 	}
