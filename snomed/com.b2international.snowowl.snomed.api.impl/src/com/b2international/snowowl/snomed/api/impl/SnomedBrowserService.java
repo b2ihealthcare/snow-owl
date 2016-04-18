@@ -277,15 +277,15 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			commitReq.add(conceptUpdate);
 		}
 		
-		for (String descriptionDeletionId : descriptionDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteDescription().setComponentId(descriptionDeletionId).build());
-		}
 		for (String descriptionId : descriptionUpdates.keySet()) {
 			commitReq.add(descriptionUpdates.get(descriptionId));
 		}
 		for (SnomedDescriptionCreateRequest descriptionReq : descriptionInputs) {
 			descriptionReq.setConceptId(existingVersionConcept.getConceptId());
 			commitReq.add(descriptionReq);
+		}
+		for (String descriptionDeletionId : descriptionDeletionIds) {
+			commitReq.add(SnomedRequests.prepareDeleteDescription().setComponentId(descriptionDeletionId).build());
 		}
 
 		for (String relationshipId : relationshipUpdates.keySet()) {
