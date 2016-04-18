@@ -138,10 +138,6 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		if (concept.getConceptId() != null) {
-			throw new BadRequestException("The concept in the request body should not have an ID when creating. When performing an update include the concept ID in the URL.");
-		}
-		
 		return browserService.create(branchPath, concept, userId, extendedLocales);
 	}
 
