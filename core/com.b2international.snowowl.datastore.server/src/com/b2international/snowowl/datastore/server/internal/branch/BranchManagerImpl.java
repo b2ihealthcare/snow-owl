@@ -22,11 +22,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
@@ -88,16 +90,21 @@ public abstract class BranchManagerImpl implements BranchManager {
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		} else {
 			// prevents problematic branch creation from multiple threads, but allows them 
-			// to respond back successfully if branch did not exist before creation
+			// to respond back successfully if branch did not exist before creation and it does now
 			final ReentrantLock lock = locks.getUnchecked(path);
 			try {
-				lock.lock();
-				existingBranch = getBranchFromStore(path);
-				if (existingBranch != null) {
-					return (InternalBranch) existingBranch;
+				if (lock.tryLock(1L, TimeUnit.MINUTES)) {
+					existingBranch = getBranchFromStore(path);
+					if (existingBranch != null) {
+						return (InternalBranch) existingBranch;
+					} else {
+						return sendChangeEvent(reopen(parent, name, metadata)); // Explicit notification (creation)
+					}
 				} else {
-					return sendChangeEvent(reopen(parent, name, metadata)); // Explicit notification (creation)
+					throw new RequestTimeoutException();
 				}
+			} catch (InterruptedException e) {
+				throw new SnowowlRuntimeException(e); 
 			} finally {
 				lock.unlock();
 			}
