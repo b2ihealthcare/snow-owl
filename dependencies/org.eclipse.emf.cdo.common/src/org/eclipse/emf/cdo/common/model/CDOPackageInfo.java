@@ -11,7 +11,6 @@
 package org.eclipse.emf.cdo.common.model;
 
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit.State;
-import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EPackage.Descriptor;
 
@@ -32,7 +31,7 @@ import org.eclipse.emf.ecore.EPackage.Descriptor;
  * @apiviz.has {@link org.eclipse.emf.ecore.EPackage}
  * @apiviz.composedOf {@link CDOClassInfo}
  */
-public interface CDOPackageInfo extends Adapter, EPackage.Descriptor, Comparable<CDOPackageInfo>
+public interface CDOPackageInfo extends EPackage.Descriptor, Comparable<CDOPackageInfo>
 {
   /**
    * Returns the package unit containing this package info.

@@ -25,14 +25,11 @@ import org.eclipse.emf.cdo.common.model.CDOModelUtil;
 import org.eclipse.emf.cdo.common.model.CDOPackageInfo;
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit;
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit.State;
-import org.eclipse.emf.cdo.common.model.EMFUtil;
 import org.eclipse.emf.cdo.internal.common.bundle.OM;
 import org.eclipse.emf.cdo.internal.common.messages.Messages;
 import org.eclipse.emf.cdo.spi.common.model.InternalCDOPackageInfo;
 import org.eclipse.emf.cdo.spi.common.model.InternalCDOPackageRegistry;
 import org.eclipse.emf.cdo.spi.common.model.InternalCDOPackageUnit;
-import org.eclipse.emf.common.notify.Adapter;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.Enumerator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
@@ -81,6 +78,8 @@ public class CDOPackageRegistryImpl extends EPackageRegistryImpl implements Inte
   private Map<Enumerator, EEnumLiteral> enumLiterals = new HashMap<Enumerator, EEnumLiteral>();
 
   private Set<CDOPackageInfo> visitedPackages = new HashSet<CDOPackageInfo>();
+  
+  private Map<EPackage, InternalCDOPackageInfo> packageInfoMap = new HashMap<EPackage, InternalCDOPackageInfo>();
 
   public CDOPackageRegistryImpl()
   {
@@ -188,7 +187,7 @@ public class CDOPackageRegistryImpl extends EPackageRegistryImpl implements Inte
       EPackage newValue = (EPackage)value;
       if (oldPackageInfo.getEPackage(false) == null)
       {
-        EMFUtil.addAdapter(newValue, oldPackageInfo);
+    	registerPackageInfo(newValue, oldPackageInfo);
         oldPackageInfo.getPackageUnit().setState(CDOPackageUnit.State.LOADED);
       }
     }
@@ -252,7 +251,7 @@ public class CDOPackageRegistryImpl extends EPackageRegistryImpl implements Inte
       EPackage ePackage = packageInfo.getEPackage(false);
       if (ePackage != null)
       {
-        EMFUtil.addAdapter(ePackage, packageInfo);
+    	registerPackageInfo(ePackage, packageInfo);
         basicPut(ePackage.getNsURI(), ePackage);
       }
       else
@@ -277,12 +276,17 @@ public class CDOPackageRegistryImpl extends EPackageRegistryImpl implements Inte
       putPackageUnit(packageUnit);
     }
   }
+  
+  public synchronized void registerPackageInfo(EPackage ePackage, InternalCDOPackageInfo packageInfo)
+  {
+    packageInfoMap.put(ePackage, packageInfo);
+  }
 
   public synchronized InternalCDOPackageInfo getPackageInfo(EPackage ePackage)
   {
     LifecycleUtil.checkActive(this);
 
-    // Looks in the registry
+    // Looks up a package descriptor in the registry
     Object object = get(ePackage.getNsURI());
     if (object instanceof InternalCDOPackageInfo)
     {
@@ -293,25 +297,8 @@ public class CDOPackageRegistryImpl extends EPackageRegistryImpl implements Inte
       }
     }
 
-    // Looks in the adapters
-    synchronized (ePackage)
-    {
-      EList<Adapter> adapters = ePackage.eAdapters();
-      for (int i = 0, size = adapters.size(); i < size; ++i)
-      {
-        Adapter adapter = adapters.get(i);
-        if (adapter instanceof InternalCDOPackageInfo)
-        {
-          InternalCDOPackageInfo packageInfo = (InternalCDOPackageInfo)adapter;
-          if (packageInfo.getPackageUnit().getPackageRegistry() == this)
-          {
-            return packageInfo;
-          }
-        }
-      }
-    }
-
-    return null;
+    // Looks up a package info in the packageInfoMap
+    return packageInfoMap.get(ePackage);
   }
 
   public synchronized InternalCDOPackageInfo[] getPackageInfos()
@@ -607,6 +594,7 @@ public class CDOPackageRegistryImpl extends EPackageRegistryImpl implements Inte
     {
       try
       {
+    	packageInfoMap.clear();
         disposePackageUnits();
         clear();
         active = false;
