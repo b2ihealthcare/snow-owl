@@ -187,7 +187,7 @@ public class CDOTransactionAggregator implements ICDOTransactionAggregator {
 				}
 				
 				@Override
-				protected CDOPackageRegistry getPackageRegistry() {
+				public CDOPackageRegistry getPackageRegistry() {
 					return session.getPackageRegistry();
 				}
 				
