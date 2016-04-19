@@ -177,6 +177,16 @@ public class CDOPackageInfoImpl implements InternalCDOPackageInfo
    * @see InternalCDOPackageRegistry#registerPackageInfo(EPackage, InternalCDOPackageInfo)
    */
   @Deprecated
+  public void unsetTarget(Notifier oldTarget)
+  {
+    throw new UnsupportedOperationException();
+  }
+  
+  /**
+   * @deprecated As of 4.2 CDOPackageInfos are no longer mapped through Adapters.
+   * @see InternalCDOPackageRegistry#registerPackageInfo(EPackage, InternalCDOPackageInfo)
+   */
+  @Deprecated
   public boolean isAdapterForType(Object type)
   {
     throw new UnsupportedOperationException();
