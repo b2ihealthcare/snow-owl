@@ -59,7 +59,7 @@ public final class CDOCommonUtil
     return new CDODataInputImpl(inputStream)
     {
       @Override
-      protected CDOPackageRegistry getPackageRegistry()
+      public CDOPackageRegistry getPackageRegistry()
       {
         return packageRegistry;
       }

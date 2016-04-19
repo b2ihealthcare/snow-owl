@@ -68,7 +68,7 @@ public abstract class CDOClientIndication extends Indication
       }
 
       @Override
-      protected CDOPackageRegistry getPackageRegistry()
+      public CDOPackageRegistry getPackageRegistry()
       {
         return getSession().getPackageRegistry();
       }

@@ -85,7 +85,7 @@ public abstract class CDOServerIndication extends IndicationWithResponse
     indicating(new CDODataInputImpl(in)
     {
       @Override
-      protected CDOPackageRegistry getPackageRegistry()
+      public CDOPackageRegistry getPackageRegistry()
       {
         return getRepository().getPackageRegistry();
       }

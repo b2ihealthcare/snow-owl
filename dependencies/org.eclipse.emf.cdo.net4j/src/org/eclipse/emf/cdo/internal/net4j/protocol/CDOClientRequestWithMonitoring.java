@@ -123,7 +123,7 @@ public abstract class CDOClientRequestWithMonitoring<RESULT> extends RequestWith
       }
 
       @Override
-      protected CDOPackageRegistry getPackageRegistry()
+      public CDOPackageRegistry getPackageRegistry()
       {
         return getSession().getPackageRegistry();
       }

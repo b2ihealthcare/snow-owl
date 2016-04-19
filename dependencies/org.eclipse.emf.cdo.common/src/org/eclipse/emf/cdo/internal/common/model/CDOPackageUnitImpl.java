@@ -279,12 +279,24 @@ public class CDOPackageUnitImpl implements InternalCDOPackageUnit
 
   public void read(CDODataInput in, ResourceSet resourceSet) throws IOException
   {
+    if (packageRegistry == null)
+    {
+      packageRegistry = (InternalCDOPackageRegistry)in.getPackageRegistry();
+      if (packageRegistry == null)
+      {
+        EPackage.Registry resourceSetPackageRegistry = resourceSet.getPackageRegistry();
+        if (resourceSetPackageRegistry instanceof InternalCDOPackageRegistry)
+        {
+          packageRegistry = (InternalCDOPackageRegistry)resourceSetPackageRegistry;
+        }
+      }
+    }
+	  
     EPackage ePackage = null;
     boolean withPackages = in.readBoolean();
     if (withPackages)
     {
       CheckUtil.checkArg(resourceSet, "resourceSet"); //$NON-NLS-1$
-      CheckUtil.checkNull(resourceSet.getPackageRegistry(), "ResourceSet's packageRegistry == null");
       ePackage = CDOModelUtil.readPackage(in, resourceSet, true);
       EPackage globalPackage = loadPackageFromGlobalRegistry(ePackage.getNsURI());
       if (globalPackage != null)
@@ -335,8 +347,8 @@ public class CDOPackageUnitImpl implements InternalCDOPackageUnit
     packageInfo.setPackageURI(ePackage.getNsURI());
     packageInfo.setParentURI(ePackage.getESuperPackage() == null ? null : ePackage.getESuperPackage().getNsURI());
     
-    packageRegistry.registerPackageInfo(ePackage, packageInfo);
     packageRegistry.basicPut(ePackage.getNsURI(), ePackage);
+    packageRegistry.registerPackageInfo(ePackage, packageInfo);
     result.add(packageInfo);
     for (EPackage subPackage : ePackage.getESubpackages())
     {
