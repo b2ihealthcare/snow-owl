@@ -16,8 +16,10 @@ import java.util.concurrent.ExecutorService;
 import org.eclipse.internal.net4j.bundle.OM;
 import org.eclipse.net4j.buffer.BufferInputStream;
 import org.eclipse.net4j.buffer.BufferOutputStream;
+import org.eclipse.net4j.channel.IChannel;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.TimeoutMonitor;
 
@@ -126,7 +128,7 @@ public abstract class IndicationWithMonitoring extends IndicationWithResponse
         {
           sendProgress();
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
           OM.LOG.warn("ReportingMonitorTask failed " + ex.getMessage());
           cancel();
@@ -157,7 +159,24 @@ public abstract class IndicationWithMonitoring extends IndicationWithResponse
 
     private void sendProgress() throws Exception
     {
-        new MonitorProgressRequest(getProtocol(), -getCorrelationID(), getTotalWork(), getWork()).sendAsync();
+    	SignalProtocol<?> protocol = getProtocol();
+
+        try
+        {
+          int correlationID = -getCorrelationID();
+          double totalWork = getTotalWork();
+          double work = getWork();
+
+          new MonitorProgressRequest(protocol, correlationID, totalWork, work).sendAsync();
+        }
+        catch (Exception ex)
+        {
+          IChannel channel = protocol.getChannel();
+          if (LifecycleUtil.isActive(channel))
+          {
+            OM.LOG.error(ex);
+          }
+        }
     }
   }
 }
