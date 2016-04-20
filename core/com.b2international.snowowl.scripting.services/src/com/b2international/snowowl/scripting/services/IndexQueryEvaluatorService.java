@@ -21,15 +21,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IQueryEvaluatorService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
  * Service for evaluating index queries.
@@ -57,7 +63,22 @@ public class IndexQueryEvaluatorService implements IQueryEvaluatorService<Snomed
 
 	@Override
 	public List<SnomedConceptIndexEntry> evaluate(final String queryExpression) {
-		return search(new SnomedDOIQueryAdapter(queryExpression, ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId(), ids));
+		
+		ApplicationContext applicationContext = ApplicationContext.getInstance();
+		List<ExtendedLocale> languagePreference = applicationContext.getService(LanguageSetting.class).getLanguagePreference();
+		IEventBus eventBus = applicationContext.getService(IEventBus.class);
+		IBranchPath branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE);
+		
+		if (ids.length == 0) {
+			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).
+					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
+			return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
+		} else {
+			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).setComponentIds(Sets.newHashSet(ids)).
+					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
+			return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
+		}
+		
 	}
 
 	@Override
@@ -65,14 +86,4 @@ public class IndexQueryEvaluatorService implements IQueryEvaluatorService<Snomed
 		return newArrayList(ComponentUtils.getIds(evaluate(queryExpression)));
 	}
 	
-	private List<SnomedConceptIndexEntry> search(final SnomedDOIQueryAdapter snomedDOIQueryAdapter) {
-		return 0 == ids.length
-			? getIndexService().search(snomedDOIQueryAdapter)
-			: getIndexService().search(snomedDOIQueryAdapter, 100);
-	}
-
-	private SnomedClientIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-	}
-
 }

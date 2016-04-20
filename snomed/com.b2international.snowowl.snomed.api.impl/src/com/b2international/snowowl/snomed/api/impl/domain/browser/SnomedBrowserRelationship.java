@@ -137,4 +137,31 @@ public class SnomedBrowserRelationship extends SnomedBrowserComponent implements
 		builder.append("]");
 		return builder.toString();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((relationshipId == null) ? 0 : relationshipId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SnomedBrowserRelationship other = (SnomedBrowserRelationship) obj;
+		if (relationshipId == null) {
+			if (other.relationshipId != null)
+				return false;
+		} else if (!relationshipId.equals(other.relationshipId))
+			return false;
+		return true;
+	}
+
 }

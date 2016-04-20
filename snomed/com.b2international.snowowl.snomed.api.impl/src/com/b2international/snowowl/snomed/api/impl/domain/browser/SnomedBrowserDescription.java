@@ -126,4 +126,31 @@ public class SnomedBrowserDescription extends SnomedBrowserComponent implements 
 		builder.append("]");
 		return builder.toString();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((descriptionId == null) ? 0 : descriptionId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SnomedBrowserDescription other = (SnomedBrowserDescription) obj;
+		if (descriptionId == null) {
+			if (other.descriptionId != null)
+				return false;
+		} else if (!descriptionId.equals(other.descriptionId))
+			return false;
+		return true;
+	}
+	
 }
