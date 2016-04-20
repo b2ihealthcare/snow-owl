@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -51,6 +53,13 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	private final Store<SctId> store;
 	private final ItemIdGenerationStrategy generationStrategy;
 
+	/*
+	 * Tests only
+	 */
+	DefaultSnomedIdentifierService(final ItemIdGenerationStrategy generationStrategy) {
+		this(new MemStore<SctId>(), generationStrategy, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
+	}
+	
 	public DefaultSnomedIdentifierService(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
 			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
 		super(reservationService, config);
