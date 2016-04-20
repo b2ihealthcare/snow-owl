@@ -928,9 +928,11 @@ If omitted, then default strategy will be used.
 |cisMaxConnections
 |100
 |Maximum number of simultaneous connections that Snow Owl can make to the CIS host via HTTP.
+
+|maxIdGenerationAttempts
+|1000
+|Maximum number of attempts any non-CIS ID generator will take to generate a single SNOMED CT identifier, if exceeded it throws an exception.
 |===
-
-
 
 --------------------------
 snomed:

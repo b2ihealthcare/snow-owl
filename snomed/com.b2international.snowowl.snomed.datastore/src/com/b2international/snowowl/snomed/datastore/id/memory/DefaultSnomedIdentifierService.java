@@ -306,8 +306,13 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		while (componentIds.size() < quantity) {
 			String componentId = generateComponentId(namespace, category);
-			while (getReservationService().isReserved(componentId) && !store.containsKey(componentId)) {
+			int i = 1;
+			while (isReserved(componentId)) {
+				if (i == getConfig().getMaxIdGenerationAttempts()) {
+					throw new BadRequestException("Couldn't generate identifier in %s number of attempts", getConfig().getMaxIdGenerationAttempts());
+				}
 				componentId = generateComponentId(namespace, category);
+				i++;
 			}
 
 			componentIds.add(componentId);
@@ -316,6 +321,10 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		return componentIds;
 	}
 	
+	private boolean isReserved(String componentId) {
+		return getReservationService().isReserved(componentId) || store.containsKey(componentId);
+	}
+
 	@Override
 	public boolean importSupported() {
 		return true;
