@@ -15,6 +15,8 @@
  */
 package com.b2international.collections;
 
+import com.b2international.collections.bytes.ByteKeyLongMap;
+import com.b2international.collections.bytes.ByteKeyLongMapWrapper;
 import com.b2international.collections.bytes.ByteKeyMap;
 import com.b2international.collections.bytes.ByteKeyMapWrapper;
 import com.b2international.collections.bytes.ByteValueMap;
@@ -41,6 +43,16 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	@Override
 	public <V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize) {
 		return ByteKeyMapWrapper.create(expectedSize);
+	}
+	
+	@Override
+	public ByteKeyLongMap newByteKeyLongOpenHashMap() {
+		return ByteKeyLongMapWrapper.create();
+	}
+	
+	@Override
+	public ByteKeyLongMap newByteKeyLongOpenHashMap(int expectedSize) {
+		return ByteKeyLongMapWrapper.create(expectedSize);
 	}
 	
 	@Override

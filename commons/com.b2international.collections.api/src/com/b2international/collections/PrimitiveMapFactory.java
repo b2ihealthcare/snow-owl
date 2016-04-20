@@ -15,6 +15,7 @@
  */
 package com.b2international.collections;
 
+import com.b2international.collections.bytes.ByteKeyLongMap;
 import com.b2international.collections.bytes.ByteKeyMap;
 import com.b2international.collections.bytes.ByteValueMap;
 import com.b2international.collections.ints.IntKeyMap;
@@ -31,6 +32,10 @@ import com.google.common.hash.HashFunction;
 public interface PrimitiveMapFactory {
 
 	<V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize);
+	
+	ByteKeyLongMap newByteKeyLongOpenHashMap();
+	
+	ByteKeyLongMap newByteKeyLongOpenHashMap(int expectedSize);
 	
 	<V> IntKeyMap<V> newIntKeyOpenHashMap();
 
@@ -57,5 +62,6 @@ public interface PrimitiveMapFactory {
 	<K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize);
 
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize);
+
 
 }
