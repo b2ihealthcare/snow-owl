@@ -31,6 +31,8 @@ public class SnomedIdentifierConfiguration {
 		CIS // Component Identifier Service (IHTSDO) based service
 	}
 
+	public static final int DEFAULT_ID_GENERATION_ATTEMPTS = 1000;
+
 	@JsonProperty(value = "strategy", required = false)
 	private IdGenerationStrategy strategy = IdGenerationStrategy.INDEX;
 	@JsonProperty(value = "cisBaseUrl", required = false)
@@ -56,6 +58,9 @@ public class SnomedIdentifierConfiguration {
 	
 	@JsonProperty(required = false)
 	private int cisMaxConnections = 100;
+	
+	@JsonProperty(required = false)
+	private int maxIdGenerationAttempts = DEFAULT_ID_GENERATION_ATTEMPTS;
 	
 	public IdGenerationStrategy getStrategy() {
 		return strategy;
@@ -135,6 +140,14 @@ public class SnomedIdentifierConfiguration {
 	
 	public void setCisMaxConnections(int cisMaxConnections) {
 		this.cisMaxConnections = cisMaxConnections;
+	}
+
+	public int getMaxIdGenerationAttempts() {
+		return maxIdGenerationAttempts;
+	}
+	
+	public void setMaxIdGenerationAttempts(int maxIdGenerationAttempts) {
+		this.maxIdGenerationAttempts = maxIdGenerationAttempts;
 	}
 
 }
