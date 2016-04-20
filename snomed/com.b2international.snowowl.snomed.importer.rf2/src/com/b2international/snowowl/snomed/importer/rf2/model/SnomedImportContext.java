@@ -18,14 +18,14 @@ package com.b2international.snowowl.snomed.importer.rf2.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
-import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.slf4j.Logger;
 
-import com.b2international.commons.collections.LongSet;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -67,8 +67,8 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	private File stagingDirectory;
 	private String languageRefSetId;
 
-	private final LongSet visitedConcepts = new LongSet();
-	private final LongSet visitedRefSets = new LongSet();
+	private final LongSet visitedConcepts = PrimitiveSets.newLongOpenHashSet();
+	private final LongSet visitedRefSets = PrimitiveSets.newLongOpenHashSet();
 
 	@Override
 	public void close() throws Exception {
