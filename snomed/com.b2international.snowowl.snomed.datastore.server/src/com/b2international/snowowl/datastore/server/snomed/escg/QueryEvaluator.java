@@ -16,19 +16,23 @@
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
-import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -60,17 +64,14 @@ public class QueryEvaluator implements Serializable, IQueryEvaluator<Collection<
 			return Lists.newArrayList();
 		}
 		
-		//XXX akitta: this is a real performance killer
-		//instead of this create a collector that performs a concept instance initialization
-		//concept ID should be extracted from docvalues.
-		final SnomedTerminologyBrowser browser = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-		final SnomedConceptIndexEntry[] concepts = new SnomedConceptIndexEntry[conceptIds.size()];
+		ApplicationContext applicationContext = ApplicationContext.getInstance();
+		List<ExtendedLocale> languagePreference = applicationContext.getService(LanguageSetting.class).getLanguagePreference();
+		IEventBus eventBus = applicationContext.getService(IEventBus.class);
 		
-		int i = 0;
-		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /*nothing*/) {
-			concepts[i++] = browser.getConcept(branchPath, Long.toString(itr.next()));
-		}
-		return Arrays.asList(concepts);
+		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().setComponentIds(LongSets.toStringSet(conceptIds)).
+		setLimit(conceptIds.size()).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
+		
+		return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
 		
 	}
 }

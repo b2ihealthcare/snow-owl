@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
+package com.b2international.snowowl.snomed.api.rest.domain;
+
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
- * @since 4.1
+ * Mixin to allow empty items array to be serialized for {@link CollectionResource}s.
+ * 
+ * @since 4.7
  */
-public class RequestTimeoutException extends RuntimeException {
-
-	private static final long serialVersionUID = 966604124125943660L;
-
-	public RequestTimeoutException() {
-		super();
-	}
-	
-	public RequestTimeoutException(Throwable cause) {
-		super(cause);
-	}
-
+@JsonInclude(Include.NON_NULL)
+public class CollectionResourceMixin {
 }

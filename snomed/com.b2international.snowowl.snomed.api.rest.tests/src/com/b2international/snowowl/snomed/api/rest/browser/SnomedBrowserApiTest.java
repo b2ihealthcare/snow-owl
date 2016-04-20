@@ -96,8 +96,7 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, true, fsn, MODULE_SCT_CORE, descriptions, relationships,
 				creationDate);
-		assertComponentCreatedWithStatus(createMainPath(), requestBody, 400).and().body("message", equalTo(
-				"The concept in the request body should not have an ID when creating. When performing an update include the concept ID in the URL."));
+		assertComponentCreatedWithStatus(createMainPath(), requestBody, 200);
 	}
 
 	@Test

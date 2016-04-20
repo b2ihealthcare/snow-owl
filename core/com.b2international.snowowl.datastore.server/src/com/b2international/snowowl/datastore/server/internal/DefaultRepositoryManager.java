@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,8 +42,14 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 		return ImmutableList.copyOf(repositories.values());
 	}
 	
+	/*package*/ void put(String repositoryId, Repository repository) {
+		checkNotNull(repositoryId, "repositoryId");
+		checkNotNull(repository, "repository");
+		repositories.put(repositoryId, repository);
+	}
+	
 	public RepositoryBuilder prepareCreate(String repositoryId) {
-		return new RepositoryBuilder(repositoryId);
+		return new RepositoryBuilder(this, repositoryId);
 	}
 
 }
