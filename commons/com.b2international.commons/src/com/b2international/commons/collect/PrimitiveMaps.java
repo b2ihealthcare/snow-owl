@@ -91,8 +91,16 @@ public abstract class PrimitiveMaps {
 		return FACTORY.newLongKeyOpenHashMap(expectedSize);
 	}
 
+	public static <K> ByteValueMap<K> newObjectKeyByteOpenHashMap() {
+		return FACTORY.newObjectKeyByteOpenHashMap();
+	}
+	
 	public static <K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize) {
 		return FACTORY.newObjectKeyByteOpenHashMap(expectedSize);
+	}
+	
+	public static <K> LongValueMap<K> newObjectKeyLongOpenHashMap() {
+		return FACTORY.newObjectKeyLongOpenHashMap();
 	}
 
 	public static <K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize) {

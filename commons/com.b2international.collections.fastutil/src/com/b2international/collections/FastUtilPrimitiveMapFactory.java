@@ -111,10 +111,20 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
+	public <K> ByteValueMap<K> newObjectKeyByteOpenHashMap() {
+		return ObjectKeyByteMapWrapper.create();
+	}
+	
+	@Override
 	public <K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize) {
 		return ObjectKeyByteMapWrapper.create(expectedSize);
 	}
 
+	@Override
+	public <K> LongValueMap<K> newObjectKeyLongOpenHashMap() {
+		return ObjectKeyLongMapWrapper.create();
+	}
+	
 	@Override
 	public <K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize) {
 		return ObjectKeyLongMapWrapper.create(expectedSize);

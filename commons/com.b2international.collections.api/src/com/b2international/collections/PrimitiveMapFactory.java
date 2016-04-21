@@ -59,9 +59,12 @@ public interface PrimitiveMapFactory {
 
 	<V> LongKeyMap<V> newLongKeyOpenHashMap(int expectedSize);
 	
+	<K> ByteValueMap<K> newObjectKeyByteOpenHashMap();
+	
 	<K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize);
 
+	<K> LongValueMap<K> newObjectKeyLongOpenHashMap();
+	
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize);
-
 
 }
