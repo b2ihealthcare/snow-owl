@@ -27,6 +27,8 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 
+import com.b2international.collections.longs.LongValueMap;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.importer.ImportAction;
@@ -39,9 +41,6 @@ import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfigu
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import bak.pcj.map.ObjectKeyLongMap;
-import bak.pcj.map.ObjectKeyLongOpenHashMap;
 
 public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTerminologyComponentRow, C extends Component> extends AbstractSnomedImporter<T, C> {
 
@@ -67,14 +66,14 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	}
 	
 	@Override
-	protected final ObjectKeyLongMap getAvailableComponents(IndexSearcher index) throws IOException {
+	protected final LongValueMap<String> getAvailableComponents(IndexSearcher index) throws IOException {
 		final Query query = getAvailableComponentsQuery();
 		
 		final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
 		index.search(query, totalHitCollector);
 		
 		if (totalHitCollector.getTotalHits() <= 0) {
-			return new ObjectKeyLongOpenHashMap();
+			return PrimitiveMaps.newObjectKeyLongOpenHashMap();
 		} else {
 			final ComponentIdAndEffectiveTimeCollector idTimeCollector = new ComponentIdAndEffectiveTimeCollector(totalHitCollector.getTotalHits());
 			index.search(query, idTimeCollector);

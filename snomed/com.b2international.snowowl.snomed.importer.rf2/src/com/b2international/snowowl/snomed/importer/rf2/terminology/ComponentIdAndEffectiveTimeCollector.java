@@ -22,25 +22,24 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.longs.LongValueMap;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
-import bak.pcj.map.ObjectKeyLongMap;
-import bak.pcj.map.ObjectKeyLongOpenHashMap;
 
 /**
  * @since 4.7
  */
 public final class ComponentIdAndEffectiveTimeCollector extends AbstractDocsOutOfOrderCollector {
 
-	private final ObjectKeyLongMap availableComponents;
+	private final LongValueMap<String> availableComponents;
 	
 	private NumericDocValues componentIdValues;
 	private NumericDocValues effectiveTimeValues;
 
 	public ComponentIdAndEffectiveTimeCollector(int expectedSize) {
 		checkArgument(expectedSize > 0, "Expected size must be greater than zero");
-		this.availableComponents = new ObjectKeyLongOpenHashMap(expectedSize);
+		this.availableComponents = PrimitiveMaps.newObjectKeyLongOpenHashMap(expectedSize);
 	}
 	
 	@Override
@@ -60,7 +59,7 @@ public final class ComponentIdAndEffectiveTimeCollector extends AbstractDocsOutO
 		effectiveTimeValues = SnomedMappings.effectiveTime().getDocValues(leafReader);
 	}
 	
-	public ObjectKeyLongMap getAvailableComponents() {
+	public LongValueMap<String> getAvailableComponents() {
 		return availableComponents;
 	}
 	

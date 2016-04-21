@@ -48,6 +48,7 @@ import org.supercsv.io.CsvBeanReader;
 import org.supercsv.io.CsvListReader;
 import org.supercsv.io.CsvListWriter;
 
+import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -94,9 +95,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
-
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.ObjectKeyLongMap;
 
 /**
  * Represents a SNOMED CT importer that imports a single release file supplied
@@ -315,7 +313,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			}
 			
 			final CellProcessor[] validatingCellProcessors = createValidatingCellProcessors();
-			final ObjectKeyLongMap availableComponentsAndEffectiveTimes = getAvailableComponents();
+			final LongValueMap<String> availableComponentsAndEffectiveTimes = getAvailableComponents();
 			
 			while (true) {
 				
@@ -373,18 +371,18 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		return createImportUnits(importEntries);
 	}
 
-	protected final ObjectKeyLongMap getAvailableComponents() {
+	protected final LongValueMap<String> getAvailableComponents() {
 		final SnomedIndexServerService service = ((SnomedIndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class));
 		final IBranchPath branch = BranchPathUtils.createPath(getImportContext().getEditingContext().getTransaction());
-		return service.executeReadTransaction(branch, new IndexRead<ObjectKeyLongMap>() {
+		return service.executeReadTransaction(branch, new IndexRead<LongValueMap<String>>() {
 			@Override
-			public ObjectKeyLongMap execute(IndexSearcher index) throws IOException {
+			public LongValueMap<String> execute(IndexSearcher index) throws IOException {
 				return getAvailableComponents(index);
 			}
 		});
 	}
 	
-	protected abstract ObjectKeyLongMap getAvailableComponents(IndexSearcher index) throws IOException;
+	protected abstract LongValueMap<String> getAvailableComponents(IndexSearcher index) throws IOException;
 
 	private ImportAction checkHeaders(final String[] expectedHeader, final String[] actualHeader) {
 

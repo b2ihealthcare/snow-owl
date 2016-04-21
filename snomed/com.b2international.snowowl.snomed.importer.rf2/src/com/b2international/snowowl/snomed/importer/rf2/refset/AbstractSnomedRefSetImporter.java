@@ -28,6 +28,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.b2international.collections.longs.LongValueMap;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIds;
@@ -54,9 +56,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.collect.Maps;
 
-import bak.pcj.map.ObjectKeyLongMap;
-import bak.pcj.map.ObjectKeyLongOpenHashMap;
-
 public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, M extends SnomedRefSetMember> extends AbstractSnomedImporter<T, M> {
 
 	private final Map<String, SnomedRefSet> refSetMap = Maps.newHashMap(); 
@@ -72,15 +71,15 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	}
 	
 	@Override
-	protected ObjectKeyLongMap getAvailableComponents(IndexSearcher index) throws IOException {
+	protected LongValueMap<String> getAvailableComponents(IndexSearcher index) throws IOException {
 		final Query query = SnomedMappings.newQuery().memberRefSetType(getRefSetType()).matchAll();
 		final DocIdCollector docIdCollector = new DocIdCollector(index.getIndexReader().maxDoc());
 		index.search(query, docIdCollector);
 		final DocIds docIDs = docIdCollector.getDocIDs();
 		if (docIDs.size() <= 0) {
-			return new ObjectKeyLongOpenHashMap();
+			return PrimitiveMaps.newObjectKeyLongOpenHashMap();
 		} else {
-			final ObjectKeyLongMap result = new ObjectKeyLongOpenHashMap(docIDs.size());
+			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMap(docIDs.size());
 			final DocIdsIterator it = docIDs.iterator();
 			final Set<String> fields = SnomedMappings.fieldsToLoad().memberUuid().effectiveTime().build();
 			while (it.next()) {
