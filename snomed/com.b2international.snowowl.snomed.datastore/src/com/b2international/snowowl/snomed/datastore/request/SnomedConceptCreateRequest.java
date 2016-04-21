@@ -63,7 +63,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	SnomedConceptCreateRequest() {
 	}
 	
-	public String getParentId() {
+	String getParentId() {
 		return parentId;
 	}
 	
