@@ -75,8 +75,8 @@ public class SnomedAssociationRefSetImporter extends AbstractSnomedRefSetImporte
 	protected SnomedRefSetType getRefSetType() {
 		return SnomedRefSetType.ASSOCIATION;
 	}
-
-	@Override
+	
+		@Override
 	protected SnomedAssociationRefSetMember doImportRow(final AssociatingRefSetRow currentRow) {
 
 		final SnomedAssociationRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());

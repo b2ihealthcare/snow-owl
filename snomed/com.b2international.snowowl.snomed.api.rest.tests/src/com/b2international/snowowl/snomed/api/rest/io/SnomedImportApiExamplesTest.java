@@ -24,14 +24,14 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertRelationshipNotExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertPreferredTermEquals;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -146,4 +146,14 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 		assertImportFileCanBeImported("SnomedCT_Release_INT_20150204_inactivate_concept.zip");
 		assertComponentActive(testBranchPath, SnomedComponentType.CONCEPT, "63961392103", false);
 	}
+	
+	@Test
+	public void import06IndexInitBug_ImportSameNewConceptWithAdditionalDescriptionShouldNotFail() throws Exception {
+		assertConceptExists(testBranchPath, "63961392103").body("active", CoreMatchers.equalTo(false));
+		assertPreferredTermEquals(testBranchPath, "63961392103", "11320138110");
+		assertImportFileCanBeImported("SnomedCT_Release_INT_20150131_index_init_bug.zip");
+		assertConceptExists(testBranchPath, "63961392103").body("active", CoreMatchers.equalTo(false));
+		assertPreferredTermEquals(testBranchPath, "63961392103", "11320138110");
+	}
+	
 }

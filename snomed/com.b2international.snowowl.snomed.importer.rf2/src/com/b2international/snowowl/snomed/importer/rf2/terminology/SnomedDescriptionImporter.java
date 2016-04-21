@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.search.Query;
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -26,6 +27,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.importer.rf2.csv.DescriptionRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.IndexConfiguration;
@@ -92,6 +94,11 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 		editedDescription.setType(getConceptSafe(currentRow.getTypeId(), SnomedRf2Headers.FIELD_TYPE_ID, currentRow.getId()));
 		
 		getImportContext().conceptVisited(currentRow.getConceptId());
+	}
+	
+	@Override
+	protected Query getAvailableComponentsQuery() {
+		return SnomedMappings.newQuery().description().matchAll();
 	}
 	
 	@Override

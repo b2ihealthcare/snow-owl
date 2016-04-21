@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.terminology;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 
@@ -35,6 +39,9 @@ import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfigu
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import bak.pcj.map.ObjectKeyLongMap;
+import bak.pcj.map.ObjectKeyLongOpenHashMap;
 
 public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTerminologyComponentRow, C extends Component> extends AbstractSnomedImporter<T, C> {
 
@@ -59,6 +66,24 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 		return action;
 	}
 	
+	@Override
+	protected final ObjectKeyLongMap getAvailableComponents(IndexSearcher index) throws IOException {
+		final Query query = getAvailableComponentsQuery();
+		
+		final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
+		index.search(query, totalHitCollector);
+		
+		if (totalHitCollector.getTotalHits() <= 0) {
+			return new ObjectKeyLongOpenHashMap();
+		} else {
+			final ComponentIdAndEffectiveTimeCollector idTimeCollector = new ComponentIdAndEffectiveTimeCollector(totalHitCollector.getTotalHits());
+			index.search(query, idTimeCollector);
+			return idTimeCollector.getAvailableComponents();
+		}
+	}
+	
+	protected abstract Query getAvailableComponentsQuery();
+
 	protected ComponentLookup<Component> getComponentLookup() {
 		return getImportContext().getComponentLookup();
 	}
