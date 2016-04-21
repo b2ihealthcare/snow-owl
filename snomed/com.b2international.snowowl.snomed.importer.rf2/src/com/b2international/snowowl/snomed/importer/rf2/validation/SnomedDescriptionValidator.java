@@ -64,15 +64,15 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 		registerComponent(ComponentCategory.DESCRIPTION, componentId, active);
 		
 		
-		validateComponentExists(effectiveTime, concept, concept, ReleaseComponentType.CONCEPT, descriptionConceptNotExist);
-		validateComponentExists(effectiveTime, type, concept, ReleaseComponentType.CONCEPT, typeConceptNotExist);
-		validateComponentExists(effectiveTime, caseSignificance, concept, ReleaseComponentType.CONCEPT, caseSignificanceConceptNotExist);
+		final boolean descriptionConceptExists = validateComponentExists(effectiveTime, concept, concept, ReleaseComponentType.CONCEPT, descriptionConceptNotExist);
+		final boolean typeConceptExists = validateComponentExists(effectiveTime, type, concept, ReleaseComponentType.CONCEPT, typeConceptNotExist);
+		final boolean caseSignificanceConceptExists = validateComponentExists(effectiveTime, caseSignificance, concept, ReleaseComponentType.CONCEPT, caseSignificanceConceptNotExist);
 		
 		validateComponentUnique(row, descriptionIdsWithEffectivetimeStatus, descriptionIdNotUnique);
 		
 		if (Concepts.FULLY_SPECIFIED_NAME.equals(type)) {
 			final String term = row.get(7);
-			if (active) {
+			if (descriptionConceptExists && typeConceptExists && caseSignificanceConceptExists && active) {
 				fullySpecifiedNames.put(term, concept);
 			} else {
 				fullySpecifiedNames.remove(term, concept);
