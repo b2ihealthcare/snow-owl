@@ -23,9 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.AlphaNumericComparator;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -39,8 +40,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
-
-import bak.pcj.LongCollection;
 
 /**
  * @since 4.6

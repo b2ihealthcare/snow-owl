@@ -16,11 +16,9 @@
 package com.b2international.snowowl.index.diff.impl;
 
 import static com.b2international.commons.StringUtils.EMPTY_STRING;
-import static com.b2international.commons.pcj.ByteCollections.filter;
-import static com.b2international.commons.pcj.ByteCollections.getLast;
-import static com.b2international.commons.pcj.ByteCollections.isEmpty;
-import static com.b2international.commons.pcj.LongSets.forEach;
-import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash;
+import static com.b2international.commons.collect.ByteCollections.filter;
+import static com.b2international.commons.collect.ByteCollections.getLast;
+import static com.b2international.commons.collect.LongSets.forEach;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -44,14 +42,15 @@ import org.apache.lucene.index.SegmentReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.list.ByteArrayList;
-import bak.pcj.list.ByteList;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongSet;
-
-import com.b2international.commons.pcj.ByteCollections.BytePredicate;
-import com.b2international.commons.pcj.LongHashFunctionAdapter;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.collections.bytes.ByteList;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
+import com.b2international.commons.collect.ByteCollections.BytePredicate;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.b2international.snowowl.index.diff.IndexDiffException;
 import com.b2international.snowowl.index.diff.IndexDiffer;
@@ -84,10 +83,10 @@ public class IndexDifferImpl implements IndexDiffer {
 		checkNotNull(targetCommit, "targetCommit");
 		
 		final byte[] spare = new byte[1];		
-		final LongKeyOpenHashMap indexChanges = new LongKeyOpenHashMap(new LongHashFunctionAdapter(murmur3_32()));
-		final LongSet newIds = newLongSetWithMurMur3Hash();     
-		final LongSet changedIds = newLongSetWithMurMur3Hash(); 
-		final LongSet detachedIds = newLongSetWithMurMur3Hash();
+		final LongKeyMap<ByteList> indexChanges = PrimitiveMaps.newLongKeyOpenHashMap(murmur3_32());
+		final LongSet newIds = PrimitiveSets.newLongOpenHashSet(murmur3_32());
+		final LongSet changedIds = PrimitiveSets.newLongOpenHashSet(murmur3_32());
+		final LongSet detachedIds = PrimitiveSets.newLongOpenHashSet(murmur3_32());
 		
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		
@@ -143,9 +142,9 @@ public class IndexDifferImpl implements IndexDiffer {
 				@Override
 				public void apply(final long id) {
 
-					final ByteList allChanges = (ByteList) indexChanges.get(id);
-					final ByteList intersectionChanges = new ByteArrayList(allChanges.size());
-					final ByteList differenceChanges = new ByteArrayList(filter(allChanges, new BytePredicate() {
+					final ByteList allChanges = indexChanges.get(id);
+					final ByteList intersectionChanges = PrimitiveLists.newByteArrayList(allChanges.size());
+					final ByteList differenceChanges = PrimitiveLists.newByteArrayList(filter(allChanges, new BytePredicate() {
 						@Override public boolean apply(final byte input) {
 							final boolean inIntersection = isIntersection(input);
 							if (inIntersection) {
@@ -172,7 +171,7 @@ public class IndexDifferImpl implements IndexDiffer {
 						
 					} else {
 						
-						final boolean hasOutOfIntersectionChanges = isEmpty(differenceChanges);
+						final boolean hasOutOfIntersectionChanges = CompareUtils.isEmpty(differenceChanges);
 						if (hasOutOfIntersectionChanges) {
 
 							for (int i = 0; i < allChanges.size(); i++) {
@@ -293,12 +292,12 @@ public class IndexDifferImpl implements IndexDiffer {
 		});
 	}
 
-	private void registerIndexChange(final long id, final byte indexChangeFlag, final LongKeyOpenHashMap indexChanges, final byte[] spare) {
+	private void registerIndexChange(final long id, final byte indexChangeFlag, final LongKeyMap<ByteList> indexChanges, final byte[] spare) {
 		
-		final ByteList indexChangeFlags = (ByteList) indexChanges.get(id);
+		final ByteList indexChangeFlags = indexChanges.get(id);
 		if (null == indexChangeFlags) {
 			spare[0] = indexChangeFlag;
-			indexChanges.put(id, new ByteArrayList(spare));
+			indexChanges.put(id, PrimitiveLists.newByteArrayList(spare));
 		} else {
 			indexChangeFlags.add(indexChangeFlag);
 		}

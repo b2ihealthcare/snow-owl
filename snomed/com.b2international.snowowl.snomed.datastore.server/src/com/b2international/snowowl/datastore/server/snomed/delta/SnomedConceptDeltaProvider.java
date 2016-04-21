@@ -141,7 +141,7 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 			
 			if (refSet instanceof SnomedMappingRefSet) {
 				targetComponentType = ((SnomedMappingRefSet) refSet).getMapTargetComponentType();
-			} else if (refSet instanceof SnomedRefSet && SnomedRefSetType.ATTRIBUTE_VALUE.equals(refSet.getType())) {
+			} else if (SnomedRefSetType.ATTRIBUTE_VALUE.equals(refSet.getType())) {
 				targetComponentType = SnomedTerminologyComponentConstants.CONCEPT_NUMBER; // value type refset always has concepts as values /'targets'.
 			}
 					

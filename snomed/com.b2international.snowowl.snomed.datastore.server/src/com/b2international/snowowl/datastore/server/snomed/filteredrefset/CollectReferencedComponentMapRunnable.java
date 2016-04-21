@@ -25,7 +25,12 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -40,14 +45,8 @@ import com.b2international.snowowl.snomed.datastore.filteredrefset.RegularRefSet
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 /**
- * 
+ * @deprecated unsupported, will be removed in 4.7
  */
 public class CollectReferencedComponentMapRunnable implements Runnable {
 	
@@ -65,7 +64,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 	private final int maxDoc;
 	private final LongCollection conceptIds;
 	private final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes;
-	private final LongKeyMap referencedComponentToNodeMap;
+	private final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap;
 	private final boolean includeInactive;
 	private final IBranchPath branchPath;
 	private final IndexServerService<?> indexService;
@@ -74,7 +73,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 
 	public CollectReferencedComponentMapRunnable(final int maxDoc, final LongCollection conceptIds,
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes,
-			final LongKeyMap referencedComponentToNodeMap, final boolean includeInactive, final IBranchPath branchPath,
+			final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap, final boolean includeInactive, final IBranchPath branchPath,
 			final IndexServerService<?> indexService, final long refSetId, final SnomedServerTerminologyBrowser terminologyBrowser) {
 		
 		this.maxDoc = maxDoc;
@@ -98,7 +97,7 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 			memberQuery = SnomedMappings.newQuery().and(memberQuery).active().matchAll();
 		}
 
-		final LongSet visitedIds = new LongOpenHashSet();
+		final LongSet visitedIds = PrimitiveSets.newLongOpenHashSet();
 		final DocIdCollector docIdCollector = DocIdCollector.create(maxDoc);
 		IndexSearcher searcher = null;
 		ReferenceManager<IndexSearcher> manager = null;
@@ -171,9 +170,8 @@ public class CollectReferencedComponentMapRunnable implements Runnable {
 		return (null == concept) ? null : concept.getLabel();
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void put(final long conceptId, final IRefSetMemberNode node) {
-		Set<IRefSetMemberNode> values = (Set<IRefSetMemberNode>) referencedComponentToNodeMap.get(conceptId);
+		Set<IRefSetMemberNode> values = referencedComponentToNodeMap.get(conceptId);
 
 		if (values == null) {
 			values = newHashSet();

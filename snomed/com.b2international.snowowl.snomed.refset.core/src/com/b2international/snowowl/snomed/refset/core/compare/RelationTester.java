@@ -18,16 +18,15 @@ package com.b2international.snowowl.snomed.refset.core.compare;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * This class implements a recursive search for relationships between the constrained and the master refset during the comparison of two reference sets.
@@ -95,9 +94,9 @@ public class RelationTester {
 	
 	private static final long IS_A = Long.parseLong(Concepts.IS_A) ;
 	
-	public static boolean isRelated(long predicateId, long candidateId, final LongKeyMap statements) {
+	public static boolean isRelated(long predicateId, long candidateId, final LongKeyMap<List<StatementFragment>> statements) {
 		
-		final LongSet visited = new LongOpenHashSet();
+		final LongSet visited = PrimitiveSets.newLongOpenHashSet();
 		visited.add(candidateId);
 		
 		for (final StatementFragment relationship : getStatements(candidateId, statements)) {
@@ -114,13 +113,13 @@ public class RelationTester {
 		return false;
 	}
 
-	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongKeyMap statements) {
+	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongKeyMap<List<StatementFragment>> statements) {
 
 		for (StatementFragment relationship : getStatements(candidateId, statements)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
 			if (relationshipTypeId == relationship.getTypeId()) {
 				
-				final LongSet visited = new LongOpenHashSet();
+				final LongSet visited = PrimitiveSets.newLongOpenHashSet();
 				visited.add(candidateId);
 				
 				if (predicateId == relationship.getDestinationId()) {
@@ -135,7 +134,7 @@ public class RelationTester {
 		return false;
 	}
 
-	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongSet visitedIds, final LongKeyMap statements) {
+	public static boolean isRelated(long predicateId, long candidateId, long relationshipTypeId, final LongSet visitedIds, final LongKeyMap<List<StatementFragment>> statements) {
 		
 		if (visitedIds.contains(candidateId)) {
 			return false;
@@ -161,10 +160,9 @@ public class RelationTester {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
-	private static List<StatementFragment> getStatements(final long sourceConceptId, final LongKeyMap statements) {
-		final Object object = statements.get(sourceConceptId);
-		return (List<StatementFragment>) (object instanceof List<?> ? object : Lists.newArrayList());
+	private static List<StatementFragment> getStatements(final long sourceConceptId, final LongKeyMap<List<StatementFragment>> statements) {
+		final List<StatementFragment> object = statements.get(sourceConceptId);
+		return object != null ? object : Lists.<StatementFragment>newArrayList();
 	}
 	
 	

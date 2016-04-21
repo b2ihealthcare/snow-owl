@@ -15,15 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
-import com.b2international.snowowl.snomed.datastore.index.StatementMap;
 import com.google.common.base.Preconditions;
-
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.map.LongKeyMap;
 
 /**
  * Builds the taxonomy for the SNOMED&nbsp;CT ontology.
@@ -40,7 +39,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		
 		final SnomedTaxonomyBuilder $ = new SnomedTaxonomyBuilder();
 		$.nodes = new LongBidiMapWithInternalId( builder.nodes);
-		$.edges = (StatementMap) ((StatementMap) builder.edges).clone();
+		$.edges = builder.edges.dup();
 		$.setDirty(builder.isDirty());
 		$.descendants = Arrays2.copy(builder.descendants);
 		$.ancestors = Arrays2.copy(builder.ancestors);
@@ -57,7 +56,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 	 * Map for storing active IS_A type SNOMED CT relationship representations. Keys are the unique relationship identifiers.
 	 * <br>For values see: {@link IsAStatementWithId}.
 	 */
-	private LongKeyMap edges;
+	private LongKeyMap<long[]> edges;
 
 	private SnomedTaxonomyBuilder() {}
 	
@@ -68,7 +67,9 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 			nodes.put(id, id);
 		}
 		
-		edges = isAStatements.length < 1 ? new StatementMap() : new StatementMap(isAStatements.length);
+		edges = isAStatements.length < 1 
+				? PrimitiveMaps.<long[]>newLongKeyOpenHashMap() 
+				: PrimitiveMaps.<long[]>newLongKeyOpenHashMap(isAStatements.length);
 		for (final IsAStatementWithId statement : isAStatements) {
 			edges.put(statement.getRelationshipId(), new long[] { statement.getDestinationId(), statement.getSourceId() });
 		}
@@ -82,7 +83,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 	}
 
 	@Override
-	public LongKeyMap getEdges() {
+	public LongKeyMap<long[]> getEdges() {
 		return edges;
 	}
 

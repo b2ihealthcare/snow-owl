@@ -21,8 +21,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;

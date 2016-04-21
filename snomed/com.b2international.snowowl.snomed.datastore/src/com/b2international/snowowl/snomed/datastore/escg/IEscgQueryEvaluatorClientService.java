@@ -19,9 +19,8 @@ import java.util.Collection;
 
 import org.apache.lucene.search.BooleanQuery;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-
-import bak.pcj.LongCollection;
 
 /**
  * Service for evaluating ESCG query expressions.

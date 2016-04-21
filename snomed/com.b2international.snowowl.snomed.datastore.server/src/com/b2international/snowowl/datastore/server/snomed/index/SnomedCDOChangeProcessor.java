@@ -55,10 +55,14 @@ import org.eclipse.emf.spi.cdo.CDOStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -118,11 +122,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
-import bak.pcj.LongCollection;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.set.LongSet;
 
 /**
  * Change processor implementation for SNOMED&nbsp;CT ontology. This class is responsible for updating indexes based on the new, dirty and detached components 
@@ -338,7 +337,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 
 		// execute component/use case  base change processors
-		final LongSet allConceptIds = LongSets.newLongSet(conceptIds);
+		final LongSet allConceptIds = PrimitiveSets.newLongOpenHashSet(conceptIds);
 		for (Concept newConcept : FluentIterable.from(commitChangeSet.getNewComponents()).filter(Concept.class)) {
 			allConceptIds.add(Long.parseLong(newConcept.getId()));
 		}
@@ -419,7 +418,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				}
 			});
 		} else {
-			deletedComponentIds	= new LongArrayList();
+			deletedComponentIds	= PrimitiveLists.newLongArrayList();
 			deletedMemberIds = Collections.emptySet();
 		}
 		

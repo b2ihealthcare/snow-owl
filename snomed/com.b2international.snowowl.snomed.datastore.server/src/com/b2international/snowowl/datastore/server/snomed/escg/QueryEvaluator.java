@@ -19,8 +19,10 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -34,8 +36,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
-import bak.pcj.set.LongSet;
 
 public class QueryEvaluator implements Serializable, IQueryEvaluator<Collection<SnomedConceptIndexEntry>, RValue> {
 	
@@ -60,7 +60,7 @@ public class QueryEvaluator implements Serializable, IQueryEvaluator<Collection<
 		
 		final LongSet conceptIds = delegate.evaluate(expression);
 		
-		if (LongSets.isEmpty(conceptIds)) {
+		if (CompareUtils.isEmpty(conceptIds)) {
 			return Lists.newArrayList();
 		}
 		

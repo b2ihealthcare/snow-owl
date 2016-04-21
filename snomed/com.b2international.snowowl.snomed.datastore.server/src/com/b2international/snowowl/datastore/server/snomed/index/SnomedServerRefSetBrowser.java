@@ -16,8 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.commons.pcj.LongSets.newLongSet;
-import static com.b2international.commons.pcj.LongSets.parallelForEach;
+import static com.b2international.commons.collect.LongSets.parallelForEach;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -47,8 +46,15 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
@@ -83,14 +89,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Lucene based reference set browser implementation.
@@ -462,7 +460,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
 		
-		final LongSet storageKeys = new LongOpenHashSet();
+		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
 
 		try {
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
@@ -640,7 +638,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 	
 	@Override
-	public LongKeyMap getReferencedConceptIds(final IBranchPath branchPath) {
+	public LongKeyMap<LongSet> getReferencedConceptIds(final IBranchPath branchPath) {
 		
 		checkNotNull(branchPath, "branchPath");
 
@@ -658,7 +656,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 						.matchAny())
 				.matchAll();
 		
-		final LongKeyMap refSetIdReferencedConceptIds = new LongKeyOpenHashMap();
+		final LongKeyMap<LongSet> refSetIdReferencedConceptIds = PrimitiveMaps.newLongKeyOpenHashMap();
 		
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
@@ -666,7 +664,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		try {
 			
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-			final LongList docIds = new LongArrayList(collector.getDocIDs().size());
+			final LongList docIds = PrimitiveLists.newLongArrayList(collector.getDocIDs().size());
 			
 			//calculate doc IDs for parallel lookup
 			while (iterator.next()) {
@@ -682,7 +680,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 					final Document doc = service.document(branchPath, Ints.checkedCast(docId), REF_SET_MEMBERSHIP_FIELDS_TO_LOAD);
 					final long conceptId = SnomedMappings.id().getValue(doc);
 					
-					final LongSet refSetIds = new LongOpenHashSet(); 
+					final LongSet refSetIds = PrimitiveSets.newLongOpenHashSet(); 
 				    refSetIds.addAll(SnomedMappings.conceptReferringRefSetId().getValueAsLongSet(doc));
 					refSetIds.addAll(SnomedMappings.conceptReferringMappingRefSetId().getValueAsLongSet(doc));
 					
@@ -691,11 +689,11 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	
 							final long refSetId = itr.next();
 							
-							LongSet conceptIds = (LongSet) refSetIdReferencedConceptIds.get(refSetId);
-							if (conceptIds instanceof LongSet) {
-								((LongSet) conceptIds).add(conceptId);
+							LongSet conceptIds = refSetIdReferencedConceptIds.get(refSetId);
+							if (conceptIds != null) {
+								conceptIds.add(conceptId);
 							} else {
-								conceptIds = newLongSet();
+								conceptIds = PrimitiveSets.newLongOpenHashSet();
 								conceptIds.add(conceptId);
 								refSetIdReferencedConceptIds.put(refSetId, conceptIds);
 							}

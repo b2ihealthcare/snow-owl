@@ -17,8 +17,8 @@ package com.b2international.snowowl.datastore.index.mapping;
 
 import org.apache.lucene.document.Document;
 
-import bak.pcj.list.LongList;
-import bak.pcj.set.LongSet;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 
 /**
  * @since 4.3

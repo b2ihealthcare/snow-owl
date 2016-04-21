@@ -31,7 +31,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -47,11 +51,6 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Implementation of the SNOMED&nbsp;CT subset exporter. Supports RF1 output format. Used for simple type and language type reference sets.
@@ -89,7 +88,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 		super(configuration, refSetId);
 		mapper = new Id2Rf1PropertyMapper();
 		languageType = isLanguageType(refSetId);
-		distinctEffectiveTimeSet = new LongOpenHashSet();
+		distinctEffectiveTimeSet = PrimitiveSets.newLongOpenHashSet();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<ReferencedComponentIdStatus, String>() {
 			@Override public String apply(ReferencedComponentIdStatus input) {
 				return new StringBuilder(getRefSetId())
@@ -109,7 +108,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 		@SuppressWarnings("rawtypes")
 		final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
 		
-		LongKeyLongMap descriptionIdTypeMap = new LongKeyLongOpenHashMap();
+		LongKeyLongMap descriptionIdTypeMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 		
 		//get referenced component's (description) ID to description type ID mapping 
 		if (languageType) {

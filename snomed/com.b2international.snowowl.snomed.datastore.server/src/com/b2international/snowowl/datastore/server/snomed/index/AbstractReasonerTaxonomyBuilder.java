@@ -21,21 +21,16 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 
-import bak.pcj.IntIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyIntMap;
-import bak.pcj.map.LongKeyIntOpenHashMap;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.ints.IntIterator;
+import com.b2international.collections.longs.LongKeyIntMap;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.ArrayIntIterator;
-import com.b2international.commons.pcj.BitSetIntIterator;
+import com.b2international.commons.collect.ArrayIntIterator;
+import com.b2international.commons.collect.BitSetIntIterator;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -74,13 +69,13 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	protected LongSet fullyDefinedConceptIds;
 
 	/** Mapping between concept IDs and the associated active outbound relationships. */
-	protected LongKeyMap conceptIdToStatements;
+	protected LongKeyMap<Collection<StatementFragment>> conceptIdToStatements;
 
 	/** Mapping between concept IDs and the associated concrete domain members. */
-	protected LongKeyMap conceptIdToConcreteDomain;
+	protected LongKeyMap<Collection<ConcreteDomainFragment>> conceptIdToConcreteDomain;
 
 	/** Mapping between statement IDs and the associated concrete domain members. */
-	protected LongKeyMap statementIdToConcreteDomain;
+	protected LongKeyMap<Collection<ConcreteDomainFragment>> statementIdToConcreteDomain;
 
 	/** Maps internal IDs to SNOMED&nbsp;CT concept IDs. */
 	protected LongList internalIdToconceptId;
@@ -114,15 +109,15 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		this.superTypes = null; 
 		this.subTypes = null;
 		
-		this.exhaustiveConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.exhaustiveConceptIds).clone();
-		this.fullyDefinedConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.fullyDefinedConceptIds).clone();
-		this.conceptIdToStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatements).clone();
-		this.conceptIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToConcreteDomain).clone();
-		this.statementIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.statementIdToConcreteDomain).clone();
-		this.internalIdToconceptId = (LongArrayList) ((LongArrayList) source.internalIdToconceptId).clone();
-		this.conceptIdToInternalId = (LongKeyIntOpenHashMap) ((LongKeyIntOpenHashMap) source.conceptIdToInternalId).clone();
+		this.exhaustiveConceptIds = source.exhaustiveConceptIds.dup();
+		this.fullyDefinedConceptIds = source.fullyDefinedConceptIds.dup();
+		this.conceptIdToStatements = source.conceptIdToStatements.dup();
+		this.conceptIdToConcreteDomain = source.conceptIdToConcreteDomain.dup();
+		this.statementIdToConcreteDomain = source.statementIdToConcreteDomain.dup();
+		this.internalIdToconceptId = source.internalIdToconceptId.dup();
+		this.conceptIdToInternalId = source.conceptIdToInternalId.dup();
 		
-		this.componentStorageKeyToConceptId = (LongKeyLongOpenHashMap) ((LongKeyLongOpenHashMap) source.componentStorageKeyToConceptId).clone();
+		this.componentStorageKeyToConceptId = source.componentStorageKeyToConceptId.dup();
 	}
 	
 	protected boolean isReasonerMode() {
@@ -188,10 +183,9 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @param conceptId the unique ID of the SNOMED&nbsp;CT concept.
 	 * @return the concrete domains associated with a concept, if any.
 	 */
-	@SuppressWarnings("unchecked")
 	public Collection<ConcreteDomainFragment> getConceptConcreteDomainFragments(final long conceptId) {
-		final Object concreteDomains = conceptIdToConcreteDomain.get(conceptId);
-		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
+		final Collection<ConcreteDomainFragment> concreteDomains = conceptIdToConcreteDomain.get(conceptId);
+		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
 	}
 
 	/**
@@ -199,10 +193,9 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @param statementId the unique ID of the SNOMED&nbsp;CT relationships.
 	 * @return the concrete domains associated with a relationship, if any.
 	 */
-	@SuppressWarnings("unchecked")
 	public Collection<ConcreteDomainFragment> getStatementConcreteDomainFragments(final long statementId) {
-		final Object concreteDomains = statementIdToConcreteDomain.get(statementId);
-		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
+		final Collection<ConcreteDomainFragment> concreteDomains = statementIdToConcreteDomain.get(statementId);
+		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
 	}
 
 	/**
@@ -216,7 +209,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	/**
 	 * @return a {@link LongKeyMap} associating statement identifiers to their corresponding concrete domain members.
 	 */
-	public LongKeyMap getStatementIdToConcreteDomainMap() {
+	public LongKeyMap<Collection<ConcreteDomainFragment>> getStatementIdToConcreteDomainMap() {
 		return statementIdToConcreteDomain;
 	}
 
@@ -237,7 +230,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getSubTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int id = getInternalId(conceptId);
@@ -245,7 +238,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		final int[] subtypes = subTypes[id];
 
 		if (CompareUtils.isEmpty(subtypes)) { //guard against lower bound cannot be negative: 0
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		return convertToConceptIds(new ArrayIntIterator(subtypes));
@@ -259,7 +252,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getSuperTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int id = getInternalId(conceptId);
@@ -267,7 +260,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		final int[] supertypes = superTypes[id];
 
 		if (CompareUtils.isEmpty(supertypes)) { //guard against lower bound cannot be negative: 0
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		return convertToConceptIds(new ArrayIntIterator(supertypes));
@@ -281,7 +274,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getAllSubTypesIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int conceptCount = internalIdToconceptId.size();
@@ -301,7 +294,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public LongSet getAllSuperTypeIds(final long conceptId) {
 
 		if (!isActive(conceptId)) {
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 
 		final int conceptCount = internalIdToconceptId.size();
@@ -349,7 +342,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	}
 
 	private LongSet convertToConceptIds(final IntIterator it) {
-		final LongSet result = new LongOpenHashSet();
+		final LongSet result = PrimitiveSets.newLongOpenHashSet();
 
 		while (it.hasNext()) {
 			result.add(getConceptId(it.next()));

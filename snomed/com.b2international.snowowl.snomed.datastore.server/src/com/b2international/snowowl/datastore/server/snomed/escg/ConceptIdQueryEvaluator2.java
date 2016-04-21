@@ -24,8 +24,12 @@ import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ClassUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
@@ -49,11 +53,6 @@ import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.ast.RefSet;
 import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
 import com.google.common.base.Preconditions;
-
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Evaluator service for getting SNOMED&nbsp;CT concept IDs.
@@ -89,18 +88,18 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			switch (concept.getQuantifier()) {
 				
 				case SELF:
-					return new LongOpenHashSet(new long[] { Long.parseLong(conceptId) });
+					return PrimitiveSets.newLongOpenHashSet(new long[] { Long.parseLong(conceptId) });
 					
 				case ANY_SUBTYPE:
 					final Query descendatQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
 					mainQuery.add(descendatQuery, Occur.MUST);
 					service.search(branchPath, mainQuery, collector);
-					return new LongOpenHashSet(collector.getValues());
+					return PrimitiveSets.newLongOpenHashSet(collector.getValues());
 
 				case SELF_AND_ANY_SUBTYPE:
 					mainQuery.add(SnomedMappings.newQuery().id(conceptId).parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
 					service.search(branchPath, mainQuery, collector);
-					return new LongOpenHashSet(collector.getValues());
+					return PrimitiveSets.newLongOpenHashSet(collector.getValues());
 					
 				default:
 					throw new IllegalArgumentException("Unknown concept quantifier type: " + concept.getQuantifier());
@@ -135,7 +134,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			//workaround to disable scoring on MUST_NOT boolean query. See: https://issues.apache.org/jira/browse/LUCENE-4395
 			getIndexService().search(branchPath, new ConstantScoreQuery(query), collector);
 
-			return new LongOpenHashSet(collector.getObjectIds());
+			return PrimitiveSets.newLongOpenHashSet(collector.getObjectIds());
 			
 		} else if (expression instanceof RefSet) {
 			
@@ -146,7 +145,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final SnomedIndexServerService service = getIndexService();
 			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
 			service.search(branchPath, query, collector);
-			return new LongOpenHashSet(collector.getValues());
+			return PrimitiveSets.newLongOpenHashSet(collector.getValues());
 			
 		} else if (expression instanceof SubExpression) {
 			
@@ -178,8 +177,8 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 				final LongSet rightIds = evaluate(clause.getRight());
 				
 				return leftIds.size() < rightIds.size() 
-						? new LongOpenHashSet(LongSets.intersection(leftIds, rightIds)) 
-						: new LongOpenHashSet(LongSets.intersection(rightIds, leftIds));
+						? PrimitiveSets.newLongOpenHashSet(LongSets.intersection(leftIds, rightIds)) 
+						: PrimitiveSets.newLongOpenHashSet(LongSets.intersection(rightIds, leftIds));
 				
 			}
 			
@@ -210,11 +209,11 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 
 	private LongSet getByNumericalAttributes(final LongCollection conceptIds, final NumericDataClause numericDataClause) {
-		return new LongOpenHashSet();
+		return PrimitiveSets.newLongOpenHashSet();
 	}
 
 	private LongSet getByNumericalAttributesGroup(final LongCollection concepts, final NumericDataClause numericDataClause, final LongCollection substanceConcepts) {
-		return new LongOpenHashSet();
+		return PrimitiveSets.newLongOpenHashSet();
 	}
 	
 	/*returns with the server side index service*/

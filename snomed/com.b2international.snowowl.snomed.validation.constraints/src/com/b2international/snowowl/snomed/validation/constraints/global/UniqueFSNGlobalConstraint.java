@@ -33,8 +33,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IdAndTerminologyComponentIdProvider;

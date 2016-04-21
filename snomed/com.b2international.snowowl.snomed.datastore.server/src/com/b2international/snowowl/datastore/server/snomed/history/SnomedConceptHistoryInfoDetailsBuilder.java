@@ -19,33 +19,7 @@ import static com.b2international.commons.Pair.IdenticalPair.identicalPairOf;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.ACCEPTABILITY_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CASE_SIGNIFICANCE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CHARACTERISTIC_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CORRELATION_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DEFINITION_STATUS_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_FORMAT_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_LENGTH_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TERM_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EXHAUSTIVE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_TARGET_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODIFIER_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.OPERATOR_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELATIONSHIP_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELEASED_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.SOURCE_EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.STATUS_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.TARGET_EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNION_GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNIT_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_ID_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.*;
 
 import java.text.DateFormat;
 import java.util.Collection;
@@ -89,7 +63,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -374,54 +347,50 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return !Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId);
 	}
 	
-	private String getRefSetChangeDescription(final SnomedRefSetMember cdoObject, final CDOView beforeView, final CDOView currentView, final String change) {
-		if (cdoObject instanceof SnomedRefSetMember) {
-			final SnomedRefSetMember member = (SnomedRefSetMember) cdoObject;
-			String label = getReferencedComponentLabel(member);
+	private String getRefSetChangeDescription(final SnomedRefSetMember member, final CDOView beforeView, final CDOView currentView, final String change) {
+		String label = getReferencedComponentLabel(member);
+		
+		if (isEmpty(label)) {
+			label = member.getReferencedComponentId();
+		}
+		
+		if (member instanceof SnomedSimpleMapRefSetMember) {
+			return label + " " + change + getIdentifierConceptLabel(member) + "."; 
+		} else if (member instanceof SnomedDescriptionTypeRefSetMember) {
+			return label + " " + change + getIdentifierConceptLabel(member) + ".";
+		} else if (member instanceof SnomedLanguageRefSetMember) {
 			
-			if (isEmpty(label)) {
-				label = member.getReferencedComponentId();
-			}
-			
-			if (member instanceof SnomedSimpleMapRefSetMember) {
-				return label + " " + change + getIdentifierConceptLabel(member) + "."; 
-			} else if (member instanceof SnomedDescriptionTypeRefSetMember) {
-				return label + " " + change + getIdentifierConceptLabel(member) + ".";
-			} else if (member instanceof SnomedLanguageRefSetMember) {
+			if (isPtLanguageMember(member)) {
 				
-				if (isPtLanguageMember(member)) {
-					
-					//ignore deletion
-					if ("detached from ".equals(change)) {
-						return null;
-					}
-					
-					final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
-					final Description description = (Description) languageMember.eContainer();
-					final Concept concept = description.getConcept();
-					final String refSetId = languageMember.getRefSetIdentifierId();
-					final CDOObject beforeConcept = CDOUtils.getObjectIfExists(beforeView, concept.cdoID());
-					final String previousPt = tryFindPreviousPtForLanguage(beforeConcept, refSetId);
-					final String languageRefSetPt = getPreferredTerm(createPath(cdoObject), refSetId);
-
-					if (null == previousPt) {
-						return "New " + languageRefSetPt + " preferred term \"" + description.getTerm() + "\".";
-					} else {
-						return languageRefSetPt + " preferred term changed to \"" + description.getTerm() + "\" from \"" + previousPt + "\".";
-					}
+				//ignore deletion
+				if ("detached from ".equals(change)) {
+					return null;
 				}
 				
-				//intentionally null. we will ignore everything but the PT language changes
-				return null;
-			} else if (member instanceof SnomedAttributeValueRefSetMember) {	
-				return label + " " + change + getIdentifierConceptLabel(member) + ".";
-			}else if (member instanceof SnomedRefSetMember || member instanceof SnomedQueryRefSetMember) {
-				return label + " " + change + getIdentifierConceptLabel(member) + ".";
-			} else if (member instanceof SnomedConcreteDataTypeRefSetMember) {
-				
+				final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
+				final Description description = (Description) languageMember.eContainer();
+				final Concept concept = description.getConcept();
+				final String refSetId = languageMember.getRefSetIdentifierId();
+				final CDOObject beforeConcept = CDOUtils.getObjectIfExists(beforeView, concept.cdoID());
+				final String previousPt = tryFindPreviousPtForLanguage(beforeConcept, refSetId);
+				final String languageRefSetPt = getPreferredTerm(createPath(member), refSetId);
+
+				if (null == previousPt) {
+					return "New " + languageRefSetPt + " preferred term \"" + description.getTerm() + "\".";
+				} else {
+					return languageRefSetPt + " preferred term changed to \"" + description.getTerm() + "\" from \"" + previousPt + "\".";
+				}
 			}
+			
+			//intentionally null. we will ignore everything but the PT language changes
+			return null;
+		} else if (member instanceof SnomedAttributeValueRefSetMember) {	
+			return label + " " + change + getIdentifierConceptLabel(member) + ".";
+		} else if (member instanceof SnomedConcreteDataTypeRefSetMember) {
+			throw new UnsupportedOperationException("Concrete domain members are not supported");
+		} else {
+			return label + " " + change + getIdentifierConceptLabel(member) + ".";
 		}
-		throw new IllegalArgumentException("Unsupported reference set member: " + cdoObject.getClass());
 	}
 	
 	private String tryFindPreviousPtForLanguage(final CDOObject concept, final String refSetId) {

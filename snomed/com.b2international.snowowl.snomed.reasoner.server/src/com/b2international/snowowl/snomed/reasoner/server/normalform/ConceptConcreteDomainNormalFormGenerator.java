@@ -25,11 +25,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongIterator;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
@@ -38,14 +37,11 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.Co
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 
-/**
- * 
- */
 public class ConceptConcreteDomainNormalFormGenerator extends NormalFormGenerator<ConcreteDomainFragment> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConceptConcreteDomainNormalFormGenerator.class);
 	
-	private final LongKeyMap concreteDomainCache = new LongKeyOpenHashMap();
+	private final LongKeyMap<Set<ConcreteDomainFragment>> concreteDomainCache = PrimitiveMaps.newLongKeyOpenHashMap();
 
 	public ConceptConcreteDomainNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
 		super(reasonerTaxonomy, reasonerTaxonomyBuilder);
@@ -71,9 +67,8 @@ public class ConceptConcreteDomainNormalFormGenerator extends NormalFormGenerato
 		return computedItems;
 	}
 
-	@SuppressWarnings("unchecked")
 	private Collection<ConcreteDomainFragment> getCachedComponents(final long conceptId) {
-		final Collection<ConcreteDomainFragment> existingSet = (Collection<ConcreteDomainFragment>) concreteDomainCache.get(conceptId);
+		final Set<ConcreteDomainFragment> existingSet = concreteDomainCache.get(conceptId);
 		
 		if (null != existingSet) {
 			return existingSet;

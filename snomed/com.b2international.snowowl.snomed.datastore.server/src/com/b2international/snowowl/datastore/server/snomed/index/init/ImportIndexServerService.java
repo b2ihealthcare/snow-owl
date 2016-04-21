@@ -48,8 +48,11 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -72,10 +75,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
-
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.map.LongKeyOpenHashMap;
 
 /**
  * Index service for improving performance for SNOMED CT import.
@@ -124,7 +123,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     private static final String DIRECTORY_PATH_PREFIX = "sct_import";
 
     private final IBranchPath importTargetBranchPath;
-    private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
+    private final LongKeyMap<Document> pendingDescriptionDocuments = PrimitiveMaps.newLongKeyOpenHashMap();
 	
 	private LoadingCache<String, Filter> preferredFilters = CacheBuilder.newBuilder().build(new CacheLoader<String, Filter>() {
 		@Override
@@ -345,7 +344,7 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
             searcher = manager.acquire();
             
 	        final long longDescriptionId = Long.parseLong(descriptionId);
-	        Document pendingDescriptionDoc = (Document) pendingDescriptionDocuments.get(longDescriptionId);
+	        Document pendingDescriptionDoc = pendingDescriptionDocuments.get(longDescriptionId);
 	
 	        if (pendingDescriptionDoc == null) {
 	            final Query descriptionIdQuery = createDescriptionQuery(descriptionId);
@@ -467,11 +466,9 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 
     @Override
     public void commit() {
-    	for (final LongKeyMapIterator itr = pendingDescriptionDocuments.entries(); itr.hasNext(); /* empty */) {
-    		itr.next();
-    		
-    		final long descriptionId = itr.getKey();
-    		final Document descriptionDoc = (Document) itr.getValue();
+    	for (final LongIterator keys = pendingDescriptionDocuments.keySet().iterator(); keys.hasNext(); /**/) {
+			final long descriptionId = keys.next();
+    		final Document descriptionDoc = pendingDescriptionDocuments.get(descriptionId);
     		index(new Term(DESCRIPTION_ID, String.valueOf(descriptionId)), descriptionDoc);
     	}
     	

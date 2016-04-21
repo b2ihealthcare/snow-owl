@@ -23,6 +23,7 @@ import java.util.Collection;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -46,8 +47,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import bak.pcj.set.LongSet;
 
 /**
  * Publish manager for SNOMED&nbsp;CT ontology.

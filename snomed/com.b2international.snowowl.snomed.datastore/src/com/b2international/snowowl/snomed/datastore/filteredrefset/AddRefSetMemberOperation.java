@@ -17,13 +17,12 @@ package com.b2international.snowowl.snomed.datastore.filteredrefset;
 
 import java.io.Serializable;
 
-import bak.pcj.LongCollection;
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**
- * 
+ * @deprecated unsupported, will be removed in 4.7
  */
 public class AddRefSetMemberOperation extends AbstractRefSetMemberOperation implements Serializable {
 

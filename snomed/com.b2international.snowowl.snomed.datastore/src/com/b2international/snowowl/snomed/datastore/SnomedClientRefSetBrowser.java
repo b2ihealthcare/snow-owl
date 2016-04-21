@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -45,8 +46,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.Provider;
-
-import bak.pcj.set.LongSet;
 
 /**
  * Reference set hierarchy browser service for the SNOMED&nbsp;CT ontology.

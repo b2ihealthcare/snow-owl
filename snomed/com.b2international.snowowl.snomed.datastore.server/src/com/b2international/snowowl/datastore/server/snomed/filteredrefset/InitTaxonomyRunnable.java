@@ -29,6 +29,9 @@ import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
+/**
+ * @deprecated unsupported, will be removed in 4.7
+ */
 public final class InitTaxonomyRunnable implements Runnable {
 	
 	private final int maxDoc;

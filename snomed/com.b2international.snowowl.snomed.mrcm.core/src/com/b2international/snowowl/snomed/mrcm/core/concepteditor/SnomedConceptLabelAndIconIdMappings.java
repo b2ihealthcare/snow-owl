@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.mrcm.core.concepteditor;
 
 import java.io.Serializable;
 
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyMap;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
 
 public class SnomedConceptLabelAndIconIdMappings implements Serializable {
 	

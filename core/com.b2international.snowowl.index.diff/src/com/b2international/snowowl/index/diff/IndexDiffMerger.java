@@ -15,20 +15,20 @@
  */
 package com.b2international.snowowl.index.diff;
 
-import static com.b2international.commons.pcj.LongSets.filter;
-import static com.b2international.commons.pcj.LongSets.in;
-import static com.b2international.commons.pcj.LongSets.intersection;
-import static com.b2international.commons.pcj.LongSets.newLongSetWithMurMur3Hash;
-import static com.b2international.commons.pcj.LongSets.not;
+import static com.b2international.commons.collect.LongSets.filter;
+import static com.b2international.commons.collect.LongSets.in;
+import static com.b2international.commons.collect.LongSets.intersection;
+import static com.b2international.commons.collect.LongSets.not;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.index.diff.impl.IndexDiffImpl;
 import com.google.common.base.Stopwatch;
+import com.google.common.hash.Hashing;
 
 /**
  * Merges {@link IndexDiff} instances used for 3 way diff calculation.
@@ -58,9 +58,9 @@ public abstract class IndexDiffMerger {
 		trace("Source difference: " + toString(sourceDiff));
 		trace("Target difference: " + toString(targetDiff));
 		
-		final LongSet newIds = newLongSetWithMurMur3Hash();
-		final LongSet changedIds = newLongSetWithMurMur3Hash();
-		final LongSet detachedIds = newLongSetWithMurMur3Hash();
+		final LongSet newIds = PrimitiveSets.newLongOpenHashSet(Hashing.murmur3_32());
+		final LongSet changedIds = PrimitiveSets.newLongOpenHashSet(Hashing.murmur3_32());
+		final LongSet detachedIds = PrimitiveSets.newLongOpenHashSet(Hashing.murmur3_32());
 		
 		//NEW IDs
 		//target new is always new
@@ -79,7 +79,7 @@ public abstract class IndexDiffMerger {
 		//CHANGED IDs
 		//changed is the union of the source and target changed which are members of neither new nor detached
 		//XXX no need to create union as we do require a custom hash function for such large longs
-		final LongSet changedIntersectionIds = newLongSetWithMurMur3Hash();
+		final LongSet changedIntersectionIds = PrimitiveSets.newLongOpenHashSet(Hashing.murmur3_32());
 		changedIntersectionIds.addAll(sourceDiff.getChangedIds());
 		changedIntersectionIds.addAll(targetDiff.getChangedIds());
 		

@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
@@ -62,8 +63,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
-
-import bak.pcj.set.LongSet;
 
 /**
  * Provides utility methods for validating the release files.

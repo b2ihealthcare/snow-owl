@@ -22,6 +22,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
@@ -41,10 +44,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.inject.Provider;
-
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.set.LongSet;
 
 /**
  * @since 1.0
@@ -293,6 +292,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @param includeInactiveMembers {@code false} if inactive reference set members should be excluded. Otherwise {@code true}.
 	 * @param pendingOperations a list of uncommitted reference set member manipulating operations to take into account when filtering.
 	 * @return a filtered taxonomy for referenced components of reference set members.
+	 * @deprecated - unsupported, will be removed in 4.7
 	 */
 	public FilteredRefSetMemberBrowser2 createFilteredRefSetBrowser(final IBranchPath branchPath, 
 			final long refSetId, 
