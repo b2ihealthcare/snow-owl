@@ -24,6 +24,8 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -96,6 +98,10 @@ public class SnomedAttributeValueRefSetImporter extends AbstractSnomedRefSetImpo
 		final SnomedAttributeValueRefSetMember editedMember = (SnomedAttributeValueRefSetMember) getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
+			getLogger().warn("Not importing attribute value reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
+					currentRow.getUuid(), 
+					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
+
 			return null;
 		}
 

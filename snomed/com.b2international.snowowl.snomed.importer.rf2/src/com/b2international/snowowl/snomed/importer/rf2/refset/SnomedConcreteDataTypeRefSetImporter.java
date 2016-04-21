@@ -25,6 +25,8 @@ import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -128,6 +130,10 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 		final SnomedConcreteDataTypeRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
+			getLogger().warn("Not importing concrete domain reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
+					currentRow.getUuid(), 
+					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
+
 			return null;
 		}
 
