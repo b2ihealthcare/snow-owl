@@ -78,7 +78,7 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 		final Description editedDescription = getOrCreateComponent(currentRow.getConceptId(), currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedDescription)) {
-			getLogger().warn("Not importing description {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing concept '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getId(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

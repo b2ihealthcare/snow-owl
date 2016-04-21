@@ -79,7 +79,7 @@ public class SnomedSimpleTypeRefSetImporter extends AbstractSnomedRefSetImporter
 		final SnomedRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing simple reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing simple reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

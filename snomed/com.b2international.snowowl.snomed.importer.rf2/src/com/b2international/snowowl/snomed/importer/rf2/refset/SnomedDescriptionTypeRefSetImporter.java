@@ -87,7 +87,7 @@ public class SnomedDescriptionTypeRefSetImporter extends AbstractSnomedRefSetImp
 		final SnomedDescriptionTypeRefSetMember editedMember = (SnomedDescriptionTypeRefSetMember) getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing description format reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing description format reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

@@ -78,7 +78,7 @@ public class SnomedModuleDependencyRefSetImporter extends AbstractSnomedRefSetIm
 		final SnomedModuleDependencyRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing module dependency reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing module dependency reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 			

@@ -152,7 +152,7 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 		final Concept editedConcept = getOrCreateComponent(null, currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedConcept)) {
-			getLogger().warn("Not importing concept {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing concept '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getId(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 			

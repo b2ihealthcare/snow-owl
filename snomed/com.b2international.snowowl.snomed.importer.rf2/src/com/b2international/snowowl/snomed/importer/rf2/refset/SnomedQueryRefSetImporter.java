@@ -87,7 +87,7 @@ public class SnomedQueryRefSetImporter extends AbstractSnomedRefSetImporter<Quer
 		final SnomedQueryRefSetMember editedMember = (SnomedQueryRefSetMember) getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing query type reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing query type reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

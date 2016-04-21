@@ -101,7 +101,7 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 		final SnomedSimpleMapRefSetMember editedMember = (SnomedSimpleMapRefSetMember) getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing simple map reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing simple map reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

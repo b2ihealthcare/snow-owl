@@ -111,7 +111,7 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 		final SnomedComplexMapRefSetMember editedMember = (SnomedComplexMapRefSetMember) getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing complex map reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing complex map reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

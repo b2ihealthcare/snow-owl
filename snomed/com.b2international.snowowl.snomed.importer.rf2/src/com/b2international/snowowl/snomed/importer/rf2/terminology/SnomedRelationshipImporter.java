@@ -86,7 +86,7 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 		final Relationship editedRelationship = getOrCreateComponent(currentRow.getSourceId(), currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedRelationship)) {
-			getLogger().warn("Not importing relationship {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing concept '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getId(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

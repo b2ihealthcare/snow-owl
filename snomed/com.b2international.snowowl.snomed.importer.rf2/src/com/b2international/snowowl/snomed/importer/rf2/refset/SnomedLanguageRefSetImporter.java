@@ -128,7 +128,7 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 		final SnomedLanguageRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing language reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing language reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 

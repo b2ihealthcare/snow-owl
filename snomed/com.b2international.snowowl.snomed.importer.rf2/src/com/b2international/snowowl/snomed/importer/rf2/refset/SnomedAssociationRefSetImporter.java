@@ -84,7 +84,7 @@ public class SnomedAssociationRefSetImporter extends AbstractSnomedRefSetImporte
 		final SnomedAssociationRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing association reference set member {} with effective time {}; it should have been filtered from the input file.",
+			getLogger().warn("Not importing association reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
 					currentRow.getUuid(), 
 					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
 
