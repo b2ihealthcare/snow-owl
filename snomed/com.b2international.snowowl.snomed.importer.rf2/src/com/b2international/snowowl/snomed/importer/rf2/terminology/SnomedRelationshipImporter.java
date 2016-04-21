@@ -25,6 +25,8 @@ import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ParseInt;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -84,6 +86,10 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 		final Relationship editedRelationship = getOrCreateComponent(currentRow.getSourceId(), currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedRelationship)) {
+			getLogger().warn("Not importing relationship {} with effective time {}; it should have been filtered from the input file.",
+					currentRow.getId(), 
+					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
+
 			return;
 		}
 

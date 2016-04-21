@@ -24,6 +24,8 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -76,6 +78,10 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 		final Description editedDescription = getOrCreateComponent(currentRow.getConceptId(), currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedDescription)) {
+			getLogger().warn("Not importing description {} with effective time {}; it should have been filtered from the input file.",
+					currentRow.getId(), 
+					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
+
 			return;
 		}
 

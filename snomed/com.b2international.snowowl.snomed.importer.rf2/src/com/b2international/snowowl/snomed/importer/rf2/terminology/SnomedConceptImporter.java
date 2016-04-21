@@ -25,6 +25,8 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.importer.AbstractImportUnit;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.snomed.Concept;
@@ -150,6 +152,10 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 		final Concept editedConcept = getOrCreateComponent(null, currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedConcept)) {
+			getLogger().warn("Not importing concept {} with effective time {}; it should have been filtered from the input file.",
+					currentRow.getId(), 
+					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
+			
 			return;
 		}
 		
