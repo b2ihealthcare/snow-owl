@@ -18,7 +18,7 @@ package com.b2international.collections.ints;
 import com.b2international.collections.PrimitiveListIterator;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface IntListIterator extends IntIterator, PrimitiveListIterator {
 

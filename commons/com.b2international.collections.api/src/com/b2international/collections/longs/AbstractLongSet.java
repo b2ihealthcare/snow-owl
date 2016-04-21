@@ -16,7 +16,7 @@
 package com.b2international.collections.longs;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public abstract class AbstractLongSet extends AbstractLongCollection implements LongSet {
 	// Empty class body

@@ -18,7 +18,7 @@ package com.b2international.collections.longs;
 import com.b2international.collections.longs.LongListIterator;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 class LongListIteratorWrapper extends LongIteratorWrapper<it.unimi.dsi.fastutil.longs.LongListIterator> implements LongListIterator {
 

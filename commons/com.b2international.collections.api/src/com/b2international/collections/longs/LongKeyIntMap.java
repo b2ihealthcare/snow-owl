@@ -20,7 +20,7 @@ import com.b2international.collections.PrimitiveValueMap;
 import com.b2international.collections.ints.IntCollection;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface LongKeyIntMap extends PrimitiveKeyMap, PrimitiveValueMap {
 

@@ -18,7 +18,7 @@ package com.b2international.collections.ints;
 import com.b2international.collections.PrimitiveList;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface IntList extends PrimitiveList, IntCollection {
 

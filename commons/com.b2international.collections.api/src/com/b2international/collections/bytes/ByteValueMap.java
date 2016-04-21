@@ -20,7 +20,7 @@ import java.util.Set;
 import com.b2international.collections.PrimitiveValueMap;
 
 /**
- * @since 4.6
+ * @since 4.7
  * 
  * @param <K> 
  */

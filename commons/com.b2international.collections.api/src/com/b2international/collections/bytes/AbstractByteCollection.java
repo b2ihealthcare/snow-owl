@@ -18,7 +18,7 @@ package com.b2international.collections.bytes;
 import java.util.Iterator;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public abstract class AbstractByteCollection implements ByteCollection {
 

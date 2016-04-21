@@ -18,7 +18,7 @@ package com.b2international.collections.ints;
 import com.b2international.collections.ints.IntListIterator;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 class IntListIteratorWrapper extends IntIteratorWrapper<it.unimi.dsi.fastutil.ints.IntListIterator> implements IntListIterator {
 

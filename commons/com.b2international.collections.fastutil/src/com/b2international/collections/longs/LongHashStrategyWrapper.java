@@ -20,7 +20,7 @@ import com.google.common.hash.HashFunction;
 import it.unimi.dsi.fastutil.longs.LongHash.Strategy;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 final class LongHashStrategyWrapper implements Strategy {
 

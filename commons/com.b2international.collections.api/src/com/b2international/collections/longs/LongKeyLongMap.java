@@ -19,7 +19,7 @@ import com.b2international.collections.PrimitiveKeyMap;
 import com.b2international.collections.PrimitiveValueMap;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface LongKeyLongMap extends PrimitiveKeyMap, PrimitiveValueMap {
 

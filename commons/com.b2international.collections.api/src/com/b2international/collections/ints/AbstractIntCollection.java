@@ -16,7 +16,7 @@
 package com.b2international.collections.ints;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public abstract class AbstractIntCollection implements IntCollection {
 

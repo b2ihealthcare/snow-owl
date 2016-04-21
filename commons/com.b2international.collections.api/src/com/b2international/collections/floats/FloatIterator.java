@@ -18,7 +18,7 @@ package com.b2international.collections.floats;
 import com.b2international.collections.PrimitiveIterator;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface FloatIterator extends PrimitiveIterator {
 	

@@ -18,7 +18,7 @@ package com.b2international.collections.longs;
 import com.b2international.collections.PrimitiveIterator;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface LongIterator extends PrimitiveIterator {
 	long next();

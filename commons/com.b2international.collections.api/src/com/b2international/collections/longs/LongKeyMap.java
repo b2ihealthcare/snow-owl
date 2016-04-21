@@ -20,7 +20,7 @@ import java.util.Collection;
 import com.b2international.collections.PrimitiveKeyMap;
 
 /**
- * @since 4.6
+ * @since 4.7
  * 
  * @param <V>
  */

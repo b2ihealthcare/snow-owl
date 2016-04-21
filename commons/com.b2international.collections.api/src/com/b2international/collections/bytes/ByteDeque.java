@@ -16,7 +16,7 @@
 package com.b2international.collections.bytes;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface ByteDeque extends ByteList {
 

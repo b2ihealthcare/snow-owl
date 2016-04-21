@@ -18,7 +18,7 @@ package com.b2international.collections;
 import java.io.Serializable;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface PrimitiveCollection extends Serializable {
 

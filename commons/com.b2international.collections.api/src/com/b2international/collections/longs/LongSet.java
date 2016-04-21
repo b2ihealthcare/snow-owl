@@ -18,7 +18,7 @@ package com.b2international.collections.longs;
 import com.b2international.collections.PrimitiveSet;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public interface LongSet extends PrimitiveSet, LongCollection {
 

@@ -18,7 +18,7 @@ package com.b2international.collections.bytes;
 import com.b2international.collections.bytes.ByteIterator;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
 public class ByteIteratorWrapper<T extends it.unimi.dsi.fastutil.bytes.ByteIterator> implements ByteIterator {
 
