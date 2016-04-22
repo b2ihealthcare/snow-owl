@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Lucene impementation of Index API
+Bundle-SymbolicName: com.b2international.index.lucene;singleton:=true
+Bundle-Version: 4.7.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.b2international.index.api,
+ com.b2international.org.apache.lucene;bundle-version="4.9.0"
