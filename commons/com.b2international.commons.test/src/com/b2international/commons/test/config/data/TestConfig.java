@@ -13,30 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.config.data;
+package com.b2international.commons.test.config.data;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * @since 3.4
  */
-public class ModuleConfig1 {
+public class TestConfig {
 
-	private boolean attribute1_1;
-	private String attribute1_2;
+	@NotEmpty
+	private String attribute;
+	private boolean valid = false;
 
-	public String getAttribute1_2() {
-		return attribute1_2;
+	public String getAttribute() {
+		return attribute;
 	}
-	
-	public boolean isAttribute1_1() {
-		return attribute1_1;
+
+	public void setValid(boolean valid) {
+		this.valid = valid;
 	}
-	
-	public void setAttribute1_2(String attribute1_2) {
-		this.attribute1_2 = attribute1_2;
+
+	public boolean isValid() {
+		return valid;
 	}
-	
-	public void setAttribute1_1(boolean attribute1_1) {
-		this.attribute1_1 = attribute1_1;
+
+	public void setAttribute(String attribute) {
+		this.attribute = attribute;
 	}
-	
+
 }

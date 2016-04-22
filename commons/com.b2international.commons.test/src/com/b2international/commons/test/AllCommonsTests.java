@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.commons.config.ConfigurationFactoryTest;
+import com.b2international.commons.test.config.ConfigurationFactoryTest;
 
 /**
  * @since 2.5

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.config.data;
+package com.b2international.commons.test.config.data;
 
 import javax.validation.constraints.NotNull;
 

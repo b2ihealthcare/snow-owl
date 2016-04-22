@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.config;
+package com.b2international.commons.test.config;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static org.junit.Assert.assertEquals;
@@ -31,12 +31,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.b2international.commons.config.data.DefaultSettings;
-import com.b2international.commons.config.data.DynamicConfig;
-import com.b2international.commons.config.data.ModuleConfig1;
-import com.b2international.commons.config.data.ModuleConfig2;
-import com.b2international.commons.config.data.NestedConfig;
-import com.b2international.commons.config.data.TestConfig;
+import com.b2international.commons.config.ConfigurationFactory;
+import com.b2international.commons.config.ConfigurationValidationException;
+import com.b2international.commons.test.config.data.DefaultSettings;
+import com.b2international.commons.test.config.data.DynamicConfig;
+import com.b2international.commons.test.config.data.ModuleConfig1;
+import com.b2international.commons.test.config.data.ModuleConfig2;
+import com.b2international.commons.test.config.data.NestedConfig;
+import com.b2international.commons.test.config.data.TestConfig;
 import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 
 /**

@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.config.data;
+package com.b2international.commons.test.config.data;
 
 /**
- * @since 4.0
+ * @since 3.4
  */
-public class DefaultSettings {
+public class ModuleConfig1 {
 
-	private String setting1 = "setting1";
-	private String setting2 = "setting2";
-	
-	public void setSetting1(String setting1) {
-		this.setting1 = setting1;
+	private boolean attribute1_1;
+	private String attribute1_2;
+
+	public String getAttribute1_2() {
+		return attribute1_2;
 	}
 	
-	public void setSetting2(String setting2) {
-		this.setting2 = setting2;
+	public boolean isAttribute1_1() {
+		return attribute1_1;
 	}
 	
-	public String getSetting1() {
-		return setting1;
+	public void setAttribute1_2(String attribute1_2) {
+		this.attribute1_2 = attribute1_2;
 	}
 	
-	public String getSetting2() {
-		return setting2;
+	public void setAttribute1_1(boolean attribute1_1) {
+		this.attribute1_1 = attribute1_1;
 	}
 	
 }
