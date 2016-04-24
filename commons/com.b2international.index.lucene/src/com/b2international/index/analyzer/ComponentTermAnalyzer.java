@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.lucene;
+package com.b2international.index.analyzer;
 
 import java.io.Reader;
 
@@ -22,7 +22,7 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 
-import com.b2international.snowowl.core.TextConstants;
+import com.b2international.index.TextConstants;
 
 /**
  * A variant of {@link Analyzer} that uses {@link CharMatcherTokenizer} to tokenize incoming text and convert it to lower case,
