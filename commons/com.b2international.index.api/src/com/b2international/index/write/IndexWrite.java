@@ -13,15 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.write;
 
-import com.b2international.index.request.SearchResponse;
+import java.io.IOException;
+
+import com.b2international.index.Index;
 
 /**
+ * Transactional write operation over a single {@link Index}.
+ * 
  * @since 4.7
+ * @param <T>
+ *            - the type of object to return from this operation
+ * @see Index#write(IndexWrite)
  */
-public interface SearchResponseProcessor {
+public interface IndexWrite<T> {
 
-	<T> Iterable<T> process(SearchResponse response, Class<T> resultType);
-	
+	/**
+	 * Execute this write operation.
+	 * 
+	 * @param index
+	 *            - an access object to the underlying index, can be used to modify the index
+	 * @return
+	 * @throws IOException
+	 */
+	T execute(Writer index) throws IOException;
+
 }

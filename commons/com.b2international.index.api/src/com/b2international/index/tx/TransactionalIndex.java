@@ -17,19 +17,14 @@ package com.b2international.index.tx;
 
 import java.util.Collection;
 
-import com.b2international.index.Searchable;
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.mapping.MappingProvider;
-import com.b2international.index.tx.query.TransactionalQueryBuilder;
 
 /**
  * @since 4.7
  */
-public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingProvider, Searchable {
-
-	@Override
-	TransactionalQueryBuilder query();
+public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingProvider {
 
 	/**
 	 * Adds a revision to the transactional index.

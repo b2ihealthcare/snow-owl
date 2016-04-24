@@ -15,7 +15,7 @@
  */
 package com.b2international.index.query;
 
-import com.b2international.index.SearchExecutor;
+import com.b2international.index.read.SearchExecutor;
 
 /**
  * Represents a generic query on any kind of storage and model.

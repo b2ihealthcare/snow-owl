@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.read;
 
-import com.b2international.index.query.Query.AfterWhereBuilder;
+import com.b2international.index.request.SearchResponse;
 
 /**
  * @since 4.7
  */
-public interface Searchable extends QueryBuilderProvider {
+public interface SearchResponseProcessor {
 
-	/**
-	 * Execute the given query among all stored items.
-	 * 
-	 * @param query
-	 *            - the query builder
-	 * @param type
-	 *            - the type to restrict the execution of the query
-	 * @return - an iterable of matching values
-	 */
-	<T> Iterable<T> search(AfterWhereBuilder query, Class<T> type);
-
+	<T> Iterable<T> process(SearchResponse response, Class<T> resultType);
+	
 }

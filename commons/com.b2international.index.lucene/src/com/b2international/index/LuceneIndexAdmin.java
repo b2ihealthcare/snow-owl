@@ -15,20 +15,21 @@
  */
 package com.b2international.index;
 
-import com.b2international.index.query.Query.AfterWhereBuilder;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ReferenceManager;
+
+import com.b2international.index.admin.IndexAdmin;
 
 /**
  * @since 4.7
  */
-public interface TypedSearchable<T> extends QueryBuilderProvider {
+public interface LuceneIndexAdmin extends IndexAdmin {
+	
+	void close();
+	
+	IndexWriter getWriter();
 
-	/**
-	 * Execute the given query among all stored items.
-	 * 
-	 * @param query
-	 *            - the query builder
-	 * @return - an iterable of matching values
-	 */
-	Iterable<T> search(AfterWhereBuilder query);
-
+	ReferenceManager<IndexSearcher> getManager();
+	
 }

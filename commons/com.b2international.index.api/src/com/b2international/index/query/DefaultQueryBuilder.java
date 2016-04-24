@@ -15,12 +15,11 @@
  */
 package com.b2international.index.query;
 
-import com.b2international.index.SearchExecutor;
-import com.b2international.index.Searchable;
 import com.b2international.index.query.Query.AfterSelectBuilder;
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.query.Query.SearchContextBuilder;
+import com.b2international.index.read.SearchExecutor;
 
 /**
  * @since 4.7
@@ -35,8 +34,6 @@ public class DefaultQueryBuilder implements QueryBuilder, AfterSelectBuilder, Se
 	private Expression where;
 	private SortBy sortBy = SortBy.NONE;
 	private SearchExecutor executor;
-
-	private Searchable searchable;
 
 	public int getLimit() {
 		return limit;
@@ -102,10 +99,6 @@ public class DefaultQueryBuilder implements QueryBuilder, AfterSelectBuilder, Se
 	@Override
 	public SearchExecutor executor() {
 		return executor;
-	}
-	
-	protected Searchable getSearchable() {
-		return searchable;
 	}
 	
 	@Override

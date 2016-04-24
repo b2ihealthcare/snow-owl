@@ -13,19 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.read;
 
-import com.b2international.index.query.Query.QueryBuilder;
+import java.io.IOException;
+
+import com.b2international.index.Index;
 
 /**
+ * Transactional read operation over a single {@link Index}.
+ * 
  * @since 4.7
+ * @param <T>
+ *            - return type
+ * @see Index#read(IndexRead)
  */
-public interface QueryBuilderProvider {
-	
+public interface IndexRead<T> {
+
 	/**
-	 * Returns a query builder to build and run a query against this searchable object.
+	 * Execute this read transaction.
 	 * 
-	 * @return a {@link QueryBuilder} instance
+	 * @param index
+	 *            - a {@link Searcher} instance to execute various read operations over a single consistent index.
+	 * @return
+	 * @throws IOException
 	 */
-	QueryBuilder query();
+	T execute(Searcher index) throws IOException;
+
 }

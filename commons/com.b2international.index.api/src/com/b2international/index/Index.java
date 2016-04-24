@@ -15,18 +15,15 @@
  */
 package com.b2international.index;
 
-import java.util.Map;
-
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.mapping.MappingProvider;
+import com.b2international.index.read.IndexRead;
+import com.b2international.index.write.IndexWrite;
 
 /**
- * Generic interface for an elasticsearch index.
- * 
  * @since 4.7
  */
-public interface Index extends MappingProvider, Searchable, Administrable<IndexAdmin> {
+public interface Index extends Administrable<IndexAdmin> {
 
 	/**
 	 * Returns the name of the index.
@@ -36,70 +33,19 @@ public interface Index extends MappingProvider, Searchable, Administrable<IndexA
 	String name();
 
 	/**
-	 * Fetch an object by type and key from the index.
+	 * Reads from the index via a {@link IndexRead read transaction}.
 	 * 
-	 * @param type
-	 *            - the object's type to retrieve
-	 * @param key
-	 *            - the unique identifier of the object
-	 * @return the object
+	 * @param read
+	 * @return
 	 */
-	<T> T get(Class<T> type, String key);
+	<T> T read(IndexRead<T> read);
 
 	/**
-	 * Fetch an object by type and key from the index.
+	 * Writes to this index via an {@link IndexWrite write transaction}.
 	 * 
-	 * @param type
-	 *            - the object's type to retrieve
-	 * @param key
-	 *            - the unique identifier of the object
-	 * @return a {@link Map} of String, Object pairs representing the object
+	 * @param write
+	 * @return
 	 */
-	Map<String, Object> get(String type, String key);
-
-	/**
-	 * Store/Put an object represented by the given {@link Map} of String, Object pairs in this index under the given type, identified with the given
-	 * key.
-	 * 
-	 * @param type
-	 *            - the object's type
-	 * @param key
-	 *            - the unique identifier of the object
-	 * @param object
-	 *            - the object to store
-	 */
-	void put(String type, String key, Object object);
-
-	<T> void put(String key, T object);
-
-	/**
-	 * Put an object into the index with an index generated random identifier.
-	 * 
-	 * @param object
-	 */
-	<T> void put(T object);
-
-	/**
-	 * Remove a document from the index from the given types with the given id.
-	 * 
-	 * @param type
-	 *            - the object's type
-	 * @param key
-	 *            - the unique identifier of the object
-	 * @return - <code>true</code> if the document was found and removed, <code>false</code> otherwise
-	 */
-	boolean remove(String type, String key);
-
-	/**
-	 * Remove a document from the index from the given types with the given id.
-	 * 
-	 * @param type
-	 *            - the object's type
-	 * @param key
-	 *            - the unique identifier of the object
-	 * @return - <code>true</code> if the document was found and removed, <code>false</code> otherwise
-	 */
-	<T> boolean remove(Class<T> type, String key);
-
+	<T> T write(IndexWrite<T> write);
 
 }

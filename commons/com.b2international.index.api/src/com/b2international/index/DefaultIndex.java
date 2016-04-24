@@ -17,137 +17,146 @@ package com.b2international.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Map;
-
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.mapping.MappingStrategy;
-import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.AfterWhereBuilder;
-import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.index.query.Query.SearchContextBuilder;
-import com.b2international.index.request.DeleteRequestBuilder;
-import com.b2international.index.request.GetResponse;
-import com.b2international.index.request.IndexRequestBuilder;
-import com.b2international.index.request.SearchRequestBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.b2international.index.read.IndexRead;
+import com.b2international.index.read.Searcher;
+import com.b2international.index.write.IndexWrite;
+import com.b2international.index.write.Writer;
 
 /**
- * General purpose index service implementation on top of Elasticsearch library.
- * 
  * @since 4.7
  */
 public class DefaultIndex implements Index {
 
-	private final IndexAdmin admin;
 	private final IndexClient client;
 
-	protected DefaultIndex(IndexClient client, IndexAdmin admin) {
+	protected DefaultIndex(IndexClient client) {
 		this.client = checkNotNull(client, "client");
-		this.admin = checkNotNull(admin, "admin");
 	}
 	
 	@Override
-	public <T> T get(Class<T> type, String key) {
-		final MappingStrategy<T> mapping = mapping(type);
-		return mapping.convert(get(mapping.getType(), key));
-	}
-	
-	@Override
-	public Map<String, Object> get(String type, String key) {
-		final GetResponse getResponse = this.client.prepareGet(type, key).get();
-		if (getResponse.isExists()) {
-			return getResponse.getSource();
-		} else {
-			return null;
+	public <T> T read(IndexRead<T> read) {
+		try (Searcher searcher = client.searcher()) {
+			return read.execute(searcher);
+		} catch (Exception e) {
+			throw new IndexException("Failed to execute index read", e);
 		}
 	}
 	
 	@Override
-	public <T> void put(T object) {
-		prepareIndex(getType(object.getClass()), null, object).withRefresh().get();
-	}
-	
-	@Override
-	public <T> void put(String key, T object) {
-		put(getType(object.getClass()), key, object);
-	}
-	
-	@Override
-	public void put(String type, String key, Object object) {
-		prepareIndex(type, key, object).withRefresh().get();
-	}
-
-	private byte[] toJSON(Object object) {
-		try {
-			return admin().mappings().mapper().writeValueAsBytes(object);
-		} catch (JsonProcessingException e) {
-			throw new IndexException("Failed to serialized object", e);
+	public <T> T write(IndexWrite<T> write) {
+		try (Writer writer = client.writer()) {
+			return write.execute(writer);
+		} catch (Exception e) {
+			throw new IndexException("Failed to execute index write", e);
 		}
 	}
-
-	@Override
-	public <T> boolean remove(Class<T> type, String key) {
-		return remove(getType(type), key);
-	}
 	
-	@Override
-	public boolean remove(String type, String key) {
-		return prepareDelete(type, key).withRefresh().get().isFound();
-	}
+//	@Override
+//	public <T> T get(Class<T> type, String key) {
+//		final MappingStrategy<T> mapping = mapping(type);
+//		return mapping.convert(get(mapping.getType(), key));
+//	}
+//	
+//	@Override
+//	public Map<String, Object> get(final String type, final String key) {
+//		return client.read(new IndexRead<Map<String, Object>>() {
+//			@Override
+//			public Map<String, Object> execute(Searcher index) throws IOException {
+//				final GetResponse res = index.prepareGet(type, key).get();
+//				return res.isExists() ? res.getSource() : null;
+//			}
+//		});
+//	}
+//	
+//	@Override
+//	public <T> void put(T object) {
+//		prepareIndex(getType(object.getClass()), null, object).withRefresh().get();
+//	}
+//	
+//	@Override
+//	public <T> void put(String key, T object) {
+//		put(getType(object.getClass()), key, object);
+//	}
 	
-	private IndexRequestBuilder prepareIndex(String type, String key, Object object) {
-		if (key != null) {
-			return this.client.prepareIndex(type, key).setSource(toJSON(object));
-		} else {
-			return this.client.prepareIndex(type).setSource(toJSON(object));
-		}
-	}
+//	@Override
+//	public void put(final String type, final String key, final Object object) {
+//		this.client.write(new IndexWrite<Void>() {
+//			@Override
+//			public void execute(Writer index) throws IOException {
+//				index.prepareIndex(type, key).setSource(object).get();
+//			}
+//		});
+//	}
+//
+//	@Override
+//	public <T> boolean remove(Class<T> type, String key) {
+//		return remove(getType(type), key);
+//	}
+//	
+//	@Override
+//	public boolean remove(String type, String key) {
+//		return prepareDelete(type, key).withRefresh().get().isFound();
+//	}
+//	
+//	private IndexRequestBuilder prepareIndex(String type, String key, Object object) {
+//		if (key != null) {
+//			return this.client.prepareIndex(type, key).setSource(object);
+//		} else {
+//			return this.client.prepareIndex(type).setSource(object);
+//		}
+//	}
+//
+//	private DeleteRequestBuilder prepareDelete(String type, String key) {
+//		return this.client.prepareDelete(type, key);
+//	}
 
-	private DeleteRequestBuilder prepareDelete(String type, String key) {
-		return this.client.prepareDelete(type, key);
-	}
-
-	private <T> String getType(Class<T> type) {
-		return mapping(type).getType();
-	}
+//	private <T> String getType(Class<T> type) {
+//		return mapping(type).getType();
+//	}
 
 	@Override
 	public String name() {
 		return admin().name();
 	}
 	
-	@Override
-	public <T> MappingStrategy<T> mapping(Class<T> type) {
-		return admin().mappings().getMapping(type);
-	}
+//	@Override
+//	public <T> MappingStrategy<T> mapping(Class<T> type) {
+//		return admin().mappings().getMapping(type);
+//	}
 
 	@Override
 	public IndexAdmin admin() {
-		return admin;
+		return client.admin();
 	}
 	
-	@Override
-	public QueryBuilder query() {
-		return Query.builder();
-	}
+//	@Override
+//	public QueryBuilder query() {
+//		return Query.builder();
+//	}
 	
-	@Override
-	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
-		final SearchContextBuilder context = (SearchContextBuilder) query;
-		final MappingStrategy<T> mapping = mapping(type);
-		final String typeName = mapping.getType();
-		final SearchRequestBuilder req = this.client.prepareSearch(typeName);
-		final SearchExecutor executor = getExecutor(context);
-		return executor.execute(req, type);
-	}
+//	@Override
+//	public <T> Iterable<T> search(final AfterWhereBuilder query, final Class<T> type) {
+//		final SearchContextBuilder context = (SearchContextBuilder) query;
+//		final MappingStrategy<T> mapping = mapping(type);
+//		final String typeName = mapping.getType();
+//		return this.client.read(new IndexRead<Iterable<T>>() {
+//			@Override
+//			public Iterable<T> execute(Searcher index) throws IOException {
+//				final SearchRequestBuilder req = index.prepareSearch(typeName);
+//				final SearchExecutor executor = getExecutor(context);
+//				return executor.execute(req, type);
+//			}
+//		});
+//	}
 
-	protected SearchExecutor getExecutor(final SearchContextBuilder context) {
-		SearchExecutor executor = context.executor();
-		if (executor == null) {
-			executor = client.getDefaultExecutor(admin().mappings().mapper());
-		}
-		return executor;
-	}
+//	protected SearchExecutor getExecutor(final SearchContextBuilder context) {
+//		SearchExecutor executor = context.executor();
+//		if (executor == null) {
+//			executor = client.getDefaultExecutor(admin().mappings().mapper());
+//		}
+//		return executor;
+//	}
 
 //	@Override
 //	public Iterator<SearchHit> scan(org.elasticsearch.index.query.QueryBuilder queryBuilder) {

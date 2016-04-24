@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.write;
 
-import com.b2international.index.request.SearchRequestBuilder;
+import java.io.IOException;
 
 /**
  * @since 4.7
  */
-public interface SearchExecutor {
+public interface Writer extends AutoCloseable {
 
-	/**
-	 * Executes the given search request with this search executor.
-	 * 
-	 * @param req
-	 * @param resultType
-	 * @return
-	 */
-	<T> Iterable<T> execute(SearchRequestBuilder req, Class<T> resultType);
+	void put(String type, String key, Object object) throws IOException;
 
+	boolean remove(String type, String key) throws IOException;
+
+	<T> boolean remove(Class<T> type, String key) throws IOException;
+
+	void commit() throws IOException;
+	
 }

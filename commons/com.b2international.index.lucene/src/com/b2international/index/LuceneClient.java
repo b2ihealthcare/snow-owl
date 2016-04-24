@@ -15,45 +15,46 @@
  */
 package com.b2international.index;
 
-import com.b2international.index.request.DeleteRequestBuilder;
-import com.b2international.index.request.GetRequestBuilder;
-import com.b2international.index.request.IndexRequestBuilder;
-import com.b2international.index.request.SearchRequestBuilder;
+import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.json.JsonDocumentSearcher;
+import com.b2international.index.json.JsonDocumentWriter;
+import com.b2international.index.read.Searcher;
+import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.7
  */
-public class LuceneClient implements IndexClient {
+public final class LuceneClient implements IndexClient {
 
-	@Override
-	public GetRequestBuilder prepareGet(String type, String key) {
-		return null;
+	private final LuceneIndexAdmin admin;
+	// TODO move mapper to factory
+	private final ObjectMapper mapper;
+
+	public LuceneClient(LuceneIndexAdmin admin, ObjectMapper mapper) {
+		this.admin = admin;
+		this.mapper = mapper;
 	}
-
+	
 	@Override
-	public IndexRequestBuilder prepareIndex(String type, String key) {
-		return null;
+	public IndexAdmin admin() {
+		return admin;
 	}
-
+	
 	@Override
-	public IndexRequestBuilder prepareIndex(String type) {
-		return null;
+	public Writer writer() {
+		// TODO move writer and searcher creation to factory
+		return new JsonDocumentWriter(admin.getWriter(), admin.getManager(), mapper);
 	}
-
+	
 	@Override
-	public DeleteRequestBuilder prepareDelete(String type, String key) {
-		return null;
+	public Searcher searcher() {
+		return new JsonDocumentSearcher(admin.getManager(), mapper);
 	}
-
+	
 	@Override
-	public SearchRequestBuilder prepareSearch(String type) {
-		return null;
-	}
-
-	@Override
-	public SearchExecutor getDefaultExecutor(ObjectMapper mapper) {
-		return null;
+	public void close() {
+		admin.close();
 	}
 
 }

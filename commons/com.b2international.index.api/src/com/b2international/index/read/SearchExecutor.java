@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.read;
 
-import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.read.Searcher;
-import com.b2international.index.write.Writer;
+import com.b2international.index.request.SearchRequestBuilder;
 
 /**
  * @since 4.7
  */
-public interface IndexClient {
+public interface SearchExecutor {
 
-	IndexAdmin admin();
+	/**
+	 * Executes the given search request with this search executor.
+	 * 
+	 * @param req
+	 * @param resultType
+	 * @return
+	 */
+	<T> Iterable<T> execute(SearchRequestBuilder req, Class<T> resultType);
 
-	Searcher searcher();
-	
-	Writer writer();
-
-	void close();
-	
 }
