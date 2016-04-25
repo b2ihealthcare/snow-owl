@@ -15,6 +15,8 @@
  */
 package com.b2international.commons.collect;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.collections.FastUtilPrimitiveCollections;
 import com.b2international.collections.PrimitiveMapFactory;
 import com.b2international.collections.bytes.ByteKeyLongMap;
@@ -110,6 +112,7 @@ public abstract class PrimitiveMaps {
 	}
 
 	public static <V> LongKeyMap<V> newLongKeyOpenHashMap(HashFunction hashFunction) {
+		checkNotNull(hashFunction, "hashFunction may not be null.");
 		return FACTORY.newLongKeyOpenHashMap(hashFunction);
 	}
 

@@ -15,6 +15,8 @@
  */
 package com.b2international.commons.collect;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.BitSet;
 
 import com.b2international.collections.FastUtilPrimitiveCollections;
@@ -103,6 +105,7 @@ public abstract class PrimitiveSets {
 	}
 
 	public static LongSet newLongOpenHashSet(HashFunction hashFunction) {
+		checkNotNull(hashFunction, "hashFunction may not be null.");
 		return FACTORY.newLongOpenHashSet(hashFunction);
 	}
 
