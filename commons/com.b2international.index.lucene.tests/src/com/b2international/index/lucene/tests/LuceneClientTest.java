@@ -15,7 +15,7 @@
  */
 package com.b2international.index.lucene.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -65,6 +65,18 @@ public class LuceneClientTest {
 		try (Searcher searcher = client.searcher()) {
 			final Data actual = searcher.get(Data.class, KEY);
 			assertEquals(data, actual);
+		}
+	}
+	
+	@Test
+	public void deleteDocument() throws Exception {
+		addDocument();
+		try (final Writer writer = client.writer()) {
+			writer.remove(TYPE, KEY);
+			writer.commit();
+		}
+		try (Searcher searcher = client.searcher()) {
+			assertNull(searcher.get(Data.class, KEY));
 		}
 	}
 	
