@@ -19,12 +19,11 @@ import java.util.Collection;
 
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.mapping.MappingProvider;
 
 /**
  * @since 4.7
  */
-public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingProvider {
+public interface TransactionalIndex extends Administrable<IndexAdmin> {
 
 	/**
 	 * Adds a revision to the transactional index.
