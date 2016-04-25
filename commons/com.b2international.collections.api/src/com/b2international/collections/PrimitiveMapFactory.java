@@ -31,40 +31,40 @@ import com.google.common.hash.HashFunction;
  */
 public interface PrimitiveMapFactory {
 
-	<V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize);
+	<V> ByteKeyMap<V> newByteKeyOpenHashMapWithExpectedSize(int expectedSize);
 	
 	ByteKeyLongMap newByteKeyLongOpenHashMap();
 	
-	ByteKeyLongMap newByteKeyLongOpenHashMap(int expectedSize);
+	ByteKeyLongMap newByteKeyLongOpenHashMapWithExpectedSize(int expectedSize);
 	
 	<V> IntKeyMap<V> newIntKeyOpenHashMap();
 
-	<V> IntKeyMap<V> newIntKeyOpenHashMap(int expectedSize);
+	<V> IntKeyMap<V> newIntKeyOpenHashMapWithExpectedSize(int expectedSize);
 	
 	LongKeyFloatMap newLongKeyFloatOpenHashMap();
 
-	LongKeyFloatMap newLongKeyFloatOpenHashMap(int expectedSize);
+	LongKeyFloatMap newLongKeyFloatOpenHashMapWithExpectedSize(int expectedSize);
 
 	LongKeyIntMap newLongKeyIntOpenHashMap();
 
-	LongKeyIntMap newLongKeyIntOpenHashMap(int expectedSize);
+	LongKeyIntMap newLongKeyIntOpenHashMapWithExpectedSize(int expectedSize);
 
 	LongKeyLongMap newLongKeyLongOpenHashMap();
 
-	LongKeyLongMap newLongKeyLongOpenHashMap(int expectedSize);
+	LongKeyLongMap newLongKeyLongOpenHashMapWithExpectedSize(int expectedSize);
 
 	<V> LongKeyMap<V> newLongKeyOpenHashMap();
 
 	<V> LongKeyMap<V> newLongKeyOpenHashMap(HashFunction hashFunction);
 
-	<V> LongKeyMap<V> newLongKeyOpenHashMap(int expectedSize);
+	<V> LongKeyMap<V> newLongKeyOpenHashMapWithExpectedSize(int expectedSize);
 	
 	<K> ByteValueMap<K> newObjectKeyByteOpenHashMap();
 	
-	<K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize);
+	<K> ByteValueMap<K> newObjectKeyByteOpenHashMapWithExpectedSize(int expectedSize);
 
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMap();
 	
-	<K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize);
+	<K> LongValueMap<K> newObjectKeyLongOpenHashMapWithExpectedSize(int expectedSize);
 
 }

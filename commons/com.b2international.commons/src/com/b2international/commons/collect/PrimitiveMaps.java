@@ -35,48 +35,50 @@ public abstract class PrimitiveMaps {
 
 	private static final PrimitiveMapFactory FACTORY = FastUtilPrimitiveCollections.maps();
 	
-	public static <V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize) {
-		return FACTORY.newByteKeyOpenHashMap(expectedSize);
+	private PrimitiveMaps() {}
+	
+	public static <V> ByteKeyMap<V> newByteKeyOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newByteKeyOpenHashMapWithExpectedSize(expectedSize);
 	}
 	
 	public static ByteKeyLongMap newByteKeyLongOpenHashMap() {
 		return FACTORY.newByteKeyLongOpenHashMap();
 	}
 	
-	public static ByteKeyLongMap newByteKeyLongOpenHashMap(int expectedSize) {
-		return FACTORY.newByteKeyLongOpenHashMap(expectedSize);
+	public static ByteKeyLongMap newByteKeyLongOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newByteKeyLongOpenHashMapWithExpectedSize(expectedSize);
 	}
 
 	public static <V> IntKeyMap<V> newIntKeyOpenHashMap() {
 		return FACTORY.newIntKeyOpenHashMap();
 	}
 
-	public static <V> IntKeyMap<V> newIntKeyOpenHashMap(int expectedSize) {
-		return FACTORY.newIntKeyOpenHashMap(expectedSize);
+	public static <V> IntKeyMap<V> newIntKeyOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newIntKeyOpenHashMapWithExpectedSize(expectedSize);
 	}
 
 	public static LongKeyFloatMap newLongKeyFloatOpenHashMap() {
 		return FACTORY.newLongKeyFloatOpenHashMap();
 	}
 
-	public static LongKeyFloatMap newLongKeyFloatOpenHashMap(int expectedSize) {
-		return FACTORY.newLongKeyFloatOpenHashMap(expectedSize);
+	public static LongKeyFloatMap newLongKeyFloatOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newLongKeyFloatOpenHashMapWithExpectedSize(expectedSize);
 	}
 
 	public static LongKeyIntMap newLongKeyIntOpenHashMap() {
 		return FACTORY.newLongKeyIntOpenHashMap();
 	}
 
-	public static LongKeyIntMap newLongKeyIntOpenHashMap(int expectedSize) {
-		return FACTORY.newLongKeyIntOpenHashMap(expectedSize);
+	public static LongKeyIntMap newLongKeyIntOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newLongKeyIntOpenHashMapWithExpectedSize(expectedSize);
 	}
 
 	public static LongKeyLongMap newLongKeyLongOpenHashMap() {
 		return FACTORY.newLongKeyLongOpenHashMap();
 	}
 
-	public static LongKeyLongMap newLongKeyLongOpenHashMap(int expectedSize) {
-		return FACTORY.newLongKeyLongOpenHashMap(expectedSize);
+	public static LongKeyLongMap newLongKeyLongOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newLongKeyLongOpenHashMapWithExpectedSize(expectedSize);
 	}
 
 	public static <V> LongKeyMap<V> newLongKeyOpenHashMap() {
@@ -87,27 +89,23 @@ public abstract class PrimitiveMaps {
 		return FACTORY.newLongKeyOpenHashMap(hashFunction);
 	}
 
-	public static <V> LongKeyMap<V> newLongKeyOpenHashMap(int expectedSize) {
-		return FACTORY.newLongKeyOpenHashMap(expectedSize);
+	public static <V> LongKeyMap<V> newLongKeyOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newLongKeyOpenHashMapWithExpectedSize(expectedSize);
 	}
 
 	public static <K> ByteValueMap<K> newObjectKeyByteOpenHashMap() {
 		return FACTORY.newObjectKeyByteOpenHashMap();
 	}
 	
-	public static <K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize) {
-		return FACTORY.newObjectKeyByteOpenHashMap(expectedSize);
+	public static <K> ByteValueMap<K> newObjectKeyByteOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newObjectKeyByteOpenHashMapWithExpectedSize(expectedSize);
 	}
 	
 	public static <K> LongValueMap<K> newObjectKeyLongOpenHashMap() {
 		return FACTORY.newObjectKeyLongOpenHashMap();
 	}
 
-	public static <K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize) {
-		return FACTORY.newObjectKeyLongOpenHashMap(expectedSize);
+	public static <K> LongValueMap<K> newObjectKeyLongOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newObjectKeyLongOpenHashMapWithExpectedSize(expectedSize);
 	}
-	
-	private PrimitiveMaps() {
-	}
-
 }

@@ -96,7 +96,7 @@ public final class LongKeyIntMapWrapper implements LongKeyIntMap {
 			final Long2IntMap sourceDelegate = ((LongKeyIntMapWrapper) map).delegate;
 			return new LongKeyIntMapWrapper(clone(sourceDelegate));
 		} else {
-			final LongKeyIntMap result = create(map.size());
+			final LongKeyIntMap result = createWithExpectedSize(map.size());
 			final LongIterator keys = map.keySet().iterator();
 			while (keys.hasNext()) {
 				final long key = keys.next();
@@ -110,7 +110,7 @@ public final class LongKeyIntMapWrapper implements LongKeyIntMap {
 		return new LongKeyIntMapWrapper(new Long2IntOpenHashMap());
 	}
 	
-	public static LongKeyIntMap create(int expectedSize) {
+	public static LongKeyIntMap createWithExpectedSize(int expectedSize) {
 		return new LongKeyIntMapWrapper(new Long2IntOpenHashMap(expectedSize));
 	}
 	

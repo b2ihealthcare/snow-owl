@@ -91,7 +91,7 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 		return delegate.values();
 	}
 	
-	public static <V> ByteKeyMap<V> create(int expectedSize) {
+	public static <V> ByteKeyMap<V> createWithExpectedSize(int expectedSize) {
 		return new ByteKeyMapWrapper<>(new Byte2ObjectOpenHashMap<V>(expectedSize));
 	}
 	
@@ -100,7 +100,7 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 			final Byte2ObjectMap<V> sourceDelegate = ((ByteKeyMapWrapper<V>) map).delegate;
 			return new ByteKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final ByteKeyMap<V> result = create(map.size());
+			final ByteKeyMap<V> result = createWithExpectedSize(map.size());
 			final ByteIterator iter = map.keySet().iterator();
 			while (iter.hasNext()) {
 				final byte key = iter.next();

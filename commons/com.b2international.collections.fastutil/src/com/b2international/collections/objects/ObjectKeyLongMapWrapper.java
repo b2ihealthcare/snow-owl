@@ -99,7 +99,7 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 			final Object2LongMap<K> sourceDelegate = ((ObjectKeyLongMapWrapper<K>) map).delegate;
 			return new ObjectKeyLongMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final LongValueMap<K> result = create(map.size());
+			final LongValueMap<K> result = createWithExpectedSize(map.size());
 			final Iterator<K> keys = map.keySet().iterator();
 			while (keys.hasNext()) {
 				final K key = keys.next();
@@ -109,7 +109,7 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 		}
 	}
 	
-	public static <K> LongValueMap<K> create(int expectedSize) {
+	public static <K> LongValueMap<K> createWithExpectedSize(int expectedSize) {
 		return new ObjectKeyLongMapWrapper<>(new Object2LongOpenHashMap<K>(expectedSize));
 	}
 	

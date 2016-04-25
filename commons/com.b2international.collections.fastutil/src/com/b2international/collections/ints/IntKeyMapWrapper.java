@@ -91,7 +91,7 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 		return new IntKeyMapWrapper<>(new Int2ObjectOpenHashMap<V>());
 	}
 	
-	public static <V> IntKeyMap<V> create(int expectedSize) {
+	public static <V> IntKeyMap<V> createWithExpectedSize(int expectedSize) {
 		return new IntKeyMapWrapper<>(new Int2ObjectOpenHashMap<V>(expectedSize));
 	}
 	
@@ -100,7 +100,7 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 			final Int2ObjectMap<V> sourceDelegate = ((IntKeyMapWrapper<V>) map).delegate;
 			return new IntKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final IntKeyMap<V> result = create(map.size());
+			final IntKeyMap<V> result = createWithExpectedSize(map.size());
 			final IntIterator iter = map.keySet().iterator();
 			while (iter.hasNext()) {
 				final int key = iter.next();

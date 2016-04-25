@@ -99,7 +99,7 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 			final Object2ByteMap<K> sourceDelegate = ((ObjectKeyByteMapWrapper<K>) map).delegate;
 			return new ObjectKeyByteMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final ByteValueMap<K> result = create(map.size());
+			final ByteValueMap<K> result = createWithExpectedSize(map.size());
 			final Iterator<K> keys = map.keySet().iterator();
 			while (keys.hasNext()) {
 				final K key = keys.next();
@@ -109,7 +109,7 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 		}
 	}
 	
-	public static <K> ByteValueMap<K> create(int expectedSize) {
+	public static <K> ByteValueMap<K> createWithExpectedSize(int expectedSize) {
 		return new ObjectKeyByteMapWrapper<>(new Object2ByteOpenHashMap<K>(expectedSize));
 	}
 	

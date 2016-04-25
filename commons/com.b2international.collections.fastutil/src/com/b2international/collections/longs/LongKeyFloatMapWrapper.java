@@ -96,7 +96,7 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 			final Long2FloatMap sourceDelegate = ((LongKeyFloatMapWrapper) map).delegate;
 			return new LongKeyFloatMapWrapper(clone(sourceDelegate));
 		} else {
-			final LongKeyFloatMap result = create(map.size());
+			final LongKeyFloatMap result = createWithExpectedSize(map.size());
 			final LongIterator keys = map.keySet().iterator();
 			while (keys.hasNext()) {
 				final long key = keys.next();
@@ -110,7 +110,7 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 		return new LongKeyFloatMapWrapper(new Long2FloatOpenHashMap());
 	}
 	
-	public static LongKeyFloatMap create(int expectedSize) {
+	public static LongKeyFloatMap createWithExpectedSize(int expectedSize) {
 		return new LongKeyFloatMapWrapper(new Long2FloatOpenHashMap(expectedSize));
 	}
 	

@@ -41,8 +41,8 @@ import com.google.common.hash.HashFunction;
 public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 
 	@Override
-	public <V> ByteKeyMap<V> newByteKeyOpenHashMap(int expectedSize) {
-		return ByteKeyMapWrapper.create(expectedSize);
+	public <V> ByteKeyMap<V> newByteKeyOpenHashMapWithExpectedSize(int expectedSize) {
+		return ByteKeyMapWrapper.createWithExpectedSize(expectedSize);
 	}
 	
 	@Override
@@ -51,8 +51,8 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 	
 	@Override
-	public ByteKeyLongMap newByteKeyLongOpenHashMap(int expectedSize) {
-		return ByteKeyLongMapWrapper.create(expectedSize);
+	public ByteKeyLongMap newByteKeyLongOpenHashMapWithExpectedSize(int expectedSize) {
+		return ByteKeyLongMapWrapper.createWithExpectedSize(expectedSize);
 	}
 	
 	@Override
@@ -61,8 +61,8 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
-	public <V> IntKeyMap<V> newIntKeyOpenHashMap(int expectedSize) {
-		return IntKeyMapWrapper.create(expectedSize);
+	public <V> IntKeyMap<V> newIntKeyOpenHashMapWithExpectedSize(int expectedSize) {
+		return IntKeyMapWrapper.createWithExpectedSize(expectedSize);
 	}
 	
 	@Override
@@ -71,8 +71,8 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
-	public LongKeyFloatMap newLongKeyFloatOpenHashMap(int expectedSize) {
-		return LongKeyFloatMapWrapper.create(expectedSize);
+	public LongKeyFloatMap newLongKeyFloatOpenHashMapWithExpectedSize(int expectedSize) {
+		return LongKeyFloatMapWrapper.createWithExpectedSize(expectedSize);
 	}
 
 	@Override
@@ -81,8 +81,8 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
-	public LongKeyIntMap newLongKeyIntOpenHashMap(int expectedSize) {
-		return LongKeyIntMapWrapper.create(expectedSize);
+	public LongKeyIntMap newLongKeyIntOpenHashMapWithExpectedSize(int expectedSize) {
+		return LongKeyIntMapWrapper.createWithExpectedSize(expectedSize);
 	}
 
 	@Override
@@ -91,8 +91,8 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
-	public LongKeyLongMap newLongKeyLongOpenHashMap(int expectedSize) {
-		return LongKeyLongMapWrapper.create(expectedSize);
+	public LongKeyLongMap newLongKeyLongOpenHashMapWithExpectedSize(int expectedSize) {
+		return LongKeyLongMapWrapper.createWithExpectedSize(expectedSize);
 	}
 
 	@Override
@@ -101,8 +101,8 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
-	public <V> LongKeyMap<V> newLongKeyOpenHashMap(int expectedSize) {
-		return LongKeyMapWrapper.create(expectedSize);
+	public <V> LongKeyMap<V> newLongKeyOpenHashMapWithExpectedSize(int expectedSize) {
+		return LongKeyMapWrapper.createWithExpectedSize(expectedSize);
 	}
 	
 	@Override
@@ -116,8 +116,8 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 	
 	@Override
-	public <K> ByteValueMap<K> newObjectKeyByteOpenHashMap(int expectedSize) {
-		return ObjectKeyByteMapWrapper.create(expectedSize);
+	public <K> ByteValueMap<K> newObjectKeyByteOpenHashMapWithExpectedSize(int expectedSize) {
+		return ObjectKeyByteMapWrapper.createWithExpectedSize(expectedSize);
 	}
 
 	@Override
@@ -126,8 +126,7 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 	
 	@Override
-	public <K> LongValueMap<K> newObjectKeyLongOpenHashMap(int expectedSize) {
-		return ObjectKeyLongMapWrapper.create(expectedSize);
+	public <K> LongValueMap<K> newObjectKeyLongOpenHashMapWithExpectedSize(int expectedSize) {
+		return ObjectKeyLongMapWrapper.createWithExpectedSize(expectedSize);
 	}
-	
 }

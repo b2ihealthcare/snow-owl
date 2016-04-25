@@ -93,7 +93,7 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 		return new ByteKeyLongMapWrapper(new Byte2LongOpenHashMap());
 	}
 	
-	public static  ByteKeyLongMap create(int expectedSize) {
+	public static  ByteKeyLongMap createWithExpectedSize(int expectedSize) {
 		return new ByteKeyLongMapWrapper(new Byte2LongOpenHashMap(expectedSize));
 	}
 	
@@ -102,7 +102,7 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 			final Byte2LongMap sourceDelegate = ((ByteKeyLongMapWrapper) map).delegate;
 			return new ByteKeyLongMapWrapper(clone(sourceDelegate));
 		} else {
-			final ByteKeyLongMap result = create(map.size());
+			final ByteKeyLongMap result = createWithExpectedSize(map.size());
 			final ByteIterator iter = map.keySet().iterator();
 			while (iter.hasNext()) {
 				final byte key = iter.next();
