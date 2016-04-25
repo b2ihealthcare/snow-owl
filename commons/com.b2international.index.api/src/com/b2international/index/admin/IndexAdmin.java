@@ -17,8 +17,6 @@ package com.b2international.index.admin;
 
 import java.util.Map;
 
-import com.b2international.index.mapping.Mappings;
-
 /**
  * Administration interface managing an elasticsearch index.
  * 
@@ -48,13 +46,6 @@ public interface IndexAdmin {
 	 *            - the type to remove completely from the index
 	 */
 	<T> void clear(Class<T> type);
-
-	/**
-	 * Returns all defined mappings.
-	 * 
-	 * @return
-	 */
-	Mappings mappings();
 
 	/**
 	 * Returns the settings of this index.

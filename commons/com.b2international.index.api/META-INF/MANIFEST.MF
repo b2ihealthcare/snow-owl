@@ -11,7 +11,6 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2
  com.google.guava;bundle-version="[15.0.0,16.0.0)"
 Export-Package: com.b2international.index,
  com.b2international.index.admin,
- com.b2international.index.mapping,
  com.b2international.index.query,
  com.b2international.index.read,
  com.b2international.index.request,

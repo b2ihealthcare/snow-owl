@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
 import java.io.IOException;
 
@@ -23,28 +23,35 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 /**
- * @since 4.3
+ * @since 4.3 
+ * @param <T> - the type of the field
  */
-public class DocValuesLongIndexField extends LongIndexField implements NumericDocValuesIndexField<Long> {
+public class StoredOnlyDocValuesLongIndexField<T extends Number> extends IndexFieldDelegate<T> implements NumericDocValuesIndexField<T> {
 
-	public DocValuesLongIndexField(String fieldName) {
-		super(fieldName);
+	public StoredOnlyDocValuesLongIndexField(StoredIndexField<T> delegate) {
+		super(delegate);
 	}
-	
+
 	@Override
-	public void addTo(Document doc, Long value) {
+	public void addTo(Document doc, T value) {
 		super.addTo(doc, value);
 		doc.add(toDocValuesField(value));
 	}
-
+	
 	@Override
-	public NumericDocValuesField toDocValuesField(Long value) {
-		return new NumericDocValuesField(fieldName(), value);
+	public NumericDocValuesField toDocValuesField(T value) {
+		if (value instanceof Long) {
+			return new NumericDocValuesField(fieldName(), (long) value);
+		} else if (value instanceof Integer) {
+			return new NumericDocValuesField(fieldName(), (int) value);
+		} else {
+			throw new IllegalArgumentException("Integer and Long types only");
+		}
 	}
 
 	@Override
 	public NumericDocValues getDocValues(AtomicReader reader) throws IOException {
 		return reader.getNumericDocValues(fieldName());
 	}
-	
+
 }

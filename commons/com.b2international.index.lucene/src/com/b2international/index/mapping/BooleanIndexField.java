@@ -13,39 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 
-
 /**
  * @since 4.3
  */
-public abstract class StringIndexFieldBase extends IndexFieldBase<String> {
+public class BooleanIndexField extends IndexFieldBase<Boolean> {
 
-	public StringIndexFieldBase(String fieldName) {
-		this(fieldName, true);
+	public BooleanIndexField(String fieldName) {
+		this(fieldName, false);
 	}
 	
-	public StringIndexFieldBase(String fieldName, boolean stored) {
+	public BooleanIndexField(String fieldName, boolean stored) {
 		super(fieldName, stored);
 	}
-	
+
 	@Override
-	protected BytesRef toBytesRef(String value) {
-		return new BytesRef(value);
+	protected Boolean getValue(IndexableField field) {
+		return convertFromString(field.stringValue());
 	}
-	
+
+	@Override
+	protected BytesRef toBytesRef(Boolean value) {
+		return new BytesRef(convertToString(value));
+	}
+
+	@Override
+	protected IndexableField toField(Boolean value) {
+		return new StringField(fieldName(), convertToString(value), Store.YES);
+	}
+
 	@Override
 	protected Type getSortFieldType() {
 		return Type.STRING;
 	}
 	
-	@Override
-	public String getValue(IndexableField field) {
-		return field.stringValue();
+	private String convertToString(Boolean value) {
+		return value ? "1" : "0";
+	}
+	
+	private Boolean convertFromString(String value) {
+		return "1".equals(value);
 	}
 
 }

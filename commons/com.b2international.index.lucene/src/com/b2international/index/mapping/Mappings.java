@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase.DocumentBuilder;
-import com.b2international.snowowl.datastore.index.mapping.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
-import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
+import com.b2international.index.mapping.DocumentBuilderBase.DocumentBuilder;
+import com.b2international.index.mapping.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
+import com.b2international.index.mapping.QueryBuilderBase.QueryBuilder;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 

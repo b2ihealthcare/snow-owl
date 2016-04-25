@@ -45,7 +45,6 @@ import org.apache.lucene.util.Constants;
 import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
-import com.b2international.index.mapping.Mappings;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
 
@@ -63,14 +62,14 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 	
 	private final String name;
 	private final Path indexPath;
+	private final AtomicReference<PeriodicCommit> periodicCommit = new AtomicReference<>();
+	private final AtomicBoolean open = new AtomicBoolean(false);
+	private final Map<String, Object> settings;
 	
 	private Closer closer;
 	private FSDirectory directory;
 	private IndexWriter writer;
 	private ReferenceManager<IndexSearcher> manager;
-	private AtomicReference<PeriodicCommit> periodicCommit = new AtomicReference<>();
-	private Map<String, Object> settings;
-	private AtomicBoolean open = new AtomicBoolean(false);
 
 	public FSIndexAdmin(File directory, String name) {
 		this(directory, name, Maps.<String, Object>newHashMap());
@@ -174,6 +173,7 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 			manager = null;
 			closer.close();
 			closer = null;
+			open.set(false);
 		} catch (IOException e) {
 			throw new IndexException("Couldn't close index " + name(), e);
 		}
@@ -196,11 +196,6 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 	@Override
 	public <T> void clear(Class<T> type) {
 		// TODO remove all documents matching the given type, based on mappings
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Mappings mappings() {
 		throw new UnsupportedOperationException();
 	}
 

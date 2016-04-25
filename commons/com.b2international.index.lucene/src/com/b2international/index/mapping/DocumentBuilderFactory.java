@@ -13,21 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
-import java.io.IOException;
+import org.apache.lucene.document.Document;
 
-import org.apache.lucene.document.BinaryDocValuesField;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.BinaryDocValues;
+import com.b2international.index.mapping.DocumentBuilderBase.DocumentBuilder;
 
 /**
  * @since 4.3
  */
-public interface BinaryDocValuesIndexField extends IndexField<String> {
+public interface DocumentBuilderFactory<D extends DocumentBuilderBase<D>> {
 
-	BinaryDocValuesField toDocValuesField(String value);
+	D createBuilder();
 	
-	BinaryDocValues getDocValues(AtomicReader reader) throws IOException;
+	D createBuilder(Document doc);
+	
+	/**
+	 * @since 4.3
+	 */
+	class DefaultDocumentBuilderFactory implements DocumentBuilderFactory<DocumentBuilder> {
+
+		@Override
+		public DocumentBuilder createBuilder() {
+			return new DocumentBuilder();
+		}
+
+		@Override
+		public DocumentBuilder createBuilder(Document doc) {
+			return new DocumentBuilder(doc);
+		}
+		
+	}
 	
 }

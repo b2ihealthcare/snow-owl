@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -36,7 +36,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.datastore.index.lucene.MatchNoDocsFilter;
+import com.b2international.index.filter.MatchNoDocsFilter;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;

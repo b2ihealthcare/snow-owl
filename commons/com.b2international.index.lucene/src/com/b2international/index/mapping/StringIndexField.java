@@ -13,36 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
-import org.apache.lucene.document.Document;
-
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase.DocumentBuilder;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.IndexableField;
 
 /**
  * @since 4.3
  */
-public interface DocumentBuilderFactory<D extends DocumentBuilderBase<D>> {
+public class StringIndexField extends StringIndexFieldBase {
 
-	D createBuilder();
-	
-	D createBuilder(Document doc);
-	
-	/**
-	 * @since 4.3
-	 */
-	class DefaultDocumentBuilderFactory implements DocumentBuilderFactory<DocumentBuilder> {
-
-		@Override
-		public DocumentBuilder createBuilder() {
-			return new DocumentBuilder();
-		}
-
-		@Override
-		public DocumentBuilder createBuilder(Document doc) {
-			return new DocumentBuilder(doc);
-		}
-		
+	public StringIndexField(String fieldName) {
+		this(fieldName, true);
 	}
 	
+	public StringIndexField(String fieldName, boolean stored) {
+		super(fieldName, stored);
+	}
+
+	@Override
+	protected IndexableField toField(String value) {
+		return new StringField(fieldName(), value, isStored());
+	}
+
 }

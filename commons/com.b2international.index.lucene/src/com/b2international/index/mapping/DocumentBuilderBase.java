@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,9 +21,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-
-import com.b2international.snowowl.datastore.index.DocumentUpdater;
-import com.b2international.snowowl.datastore.index.SortKeyMode;
 
 /**
  * @since 4.3
@@ -178,9 +175,10 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	}
 	
 	public T labelWithSort(String value) {
-		label(value);
-		SortKeyMode.INSTANCE.update(this, value);
-		return getSelf();
+		throw new UnsupportedOperationException();
+//		label(value);
+//		SortKeyMode.INSTANCE.update(this, value);
+//		return getSelf();
 	}
 	
 	public <F> T array(IndexField<F> field, List<F> terms) {
@@ -233,10 +231,10 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	
 	protected abstract T getSelf();
 	
-	public final T with(DocumentUpdater<T> updater) {
-		updater.update(getSelf());
-		return getSelf();
-	}
+//	public final T with(DocumentUpdater<T> updater) {
+//		updater.update(getSelf());
+//		return getSelf();
+//	}
 	
 	protected final int toIntValue(boolean value) {
 		return value ? 1 : 0;

@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.IndexableField;
+import java.io.IOException;
+
+import org.apache.lucene.document.BinaryDocValuesField;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.BinaryDocValues;
 
 /**
  * @since 4.3
  */
-public class StringIndexField extends StringIndexFieldBase {
+public interface BinaryDocValuesIndexField extends IndexField<String> {
 
-	public StringIndexField(String fieldName) {
-		this(fieldName, true);
-	}
+	BinaryDocValuesField toDocValuesField(String value);
 	
-	public StringIndexField(String fieldName, boolean stored) {
-		super(fieldName, stored);
-	}
-
-	@Override
-	protected IndexableField toField(String value) {
-		return new StringField(fieldName(), value, isStored());
-	}
-
+	BinaryDocValues getDocValues(AtomicReader reader) throws IOException;
+	
 }

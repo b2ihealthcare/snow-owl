@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
@@ -25,26 +26,26 @@ import org.apache.lucene.index.NumericDocValues;
 /**
  * @since 4.3
  */
-public class DocValuesIntIndexField extends IntIndexField implements NumericDocValuesIndexField<Integer> {
+public class DocValuesFloatIndexField extends FloatIndexField implements NumericDocValuesIndexField<Float> {
 
-	public DocValuesIntIndexField(String fieldName) {
+	public DocValuesFloatIndexField(String fieldName) {
 		super(fieldName);
-	}
-
-	@Override
-	public void addTo(Document doc, Integer value) {
-		super.addTo(doc, value);
-		doc.add(toDocValuesField(value));
 	}
 	
 	@Override
-	public NumericDocValuesField toDocValuesField(Integer value) {
-		return new NumericDocValuesField(fieldName(), value);
+	public void addTo(Document doc, Float value) {
+		super.addTo(doc, value);
+		doc.add(toDocValuesField(value));
+	}
+
+	@Override
+	public NumericDocValuesField toDocValuesField(Float value) {
+		return new FloatDocValuesField(fieldName(), value);
 	}
 
 	@Override
 	public NumericDocValues getDocValues(AtomicReader reader) throws IOException {
 		return reader.getNumericDocValues(fieldName());
 	}
-
+	
 }

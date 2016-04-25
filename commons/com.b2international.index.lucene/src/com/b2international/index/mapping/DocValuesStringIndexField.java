@@ -13,39 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
 import java.io.IOException;
 
+import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.FloatDocValuesField;
-import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.NumericDocValues;
+import org.apache.lucene.index.BinaryDocValues;
 
 /**
  * @since 4.3
  */
-public class DocValuesFloatIndexField extends FloatIndexField implements NumericDocValuesIndexField<Float> {
+public class DocValuesStringIndexField extends StringIndexField implements BinaryDocValuesIndexField {
 
-	public DocValuesFloatIndexField(String fieldName) {
+	public DocValuesStringIndexField(String fieldName) {
 		super(fieldName);
 	}
-	
+
 	@Override
-	public void addTo(Document doc, Float value) {
+	public void addTo(Document doc, String value) {
 		super.addTo(doc, value);
 		doc.add(toDocValuesField(value));
 	}
-
-	@Override
-	public NumericDocValuesField toDocValuesField(Float value) {
-		return new FloatDocValuesField(fieldName(), value);
-	}
-
-	@Override
-	public NumericDocValues getDocValues(AtomicReader reader) throws IOException {
-		return reader.getNumericDocValues(fieldName());
-	}
 	
+	@Override
+	public BinaryDocValuesField toDocValuesField(String value) {
+		return new BinaryDocValuesField(fieldName(), toBytesRef(value));
+	}
+
+	@Override
+	public BinaryDocValues getDocValues(AtomicReader reader) throws IOException {
+		return reader.getBinaryDocValues(fieldName());
+	}
+
 }

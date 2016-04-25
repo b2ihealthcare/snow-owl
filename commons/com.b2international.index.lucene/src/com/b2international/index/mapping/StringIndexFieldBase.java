@@ -13,44 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
-import org.apache.lucene.document.FloatField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 
+
 /**
  * @since 4.3
  */
-public class FloatIndexField extends IndexFieldBase<Float> {
+public abstract class StringIndexFieldBase extends IndexFieldBase<String> {
 
-	public FloatIndexField(String fieldName) {
+	public StringIndexFieldBase(String fieldName) {
 		this(fieldName, true);
 	}
 	
-	public FloatIndexField(String fieldName, boolean store) {
-		super(fieldName, store);
+	public StringIndexFieldBase(String fieldName, boolean stored) {
+		super(fieldName, stored);
 	}
-
+	
 	@Override
-	protected Float getValue(IndexableField field) {
-		return field.numericValue().floatValue();
+	protected BytesRef toBytesRef(String value) {
+		return new BytesRef(value);
 	}
-
-	@Override
-	protected BytesRef toBytesRef(Float value) {
-		return null;
-	}
-
-	@Override
-	protected IndexableField toField(Float value) {
-		return new FloatField(fieldName(), value, isStored());
-	}
-
+	
 	@Override
 	protected Type getSortFieldType() {
-		return Type.FLOAT;
+		return Type.STRING;
+	}
+	
+	@Override
+	public String getValue(IndexableField field) {
+		return field.stringValue();
 	}
 
 }

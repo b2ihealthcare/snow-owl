@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.FloatField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
@@ -24,42 +23,34 @@ import org.apache.lucene.util.BytesRef;
 /**
  * @since 4.3
  */
-public class BooleanIndexField extends IndexFieldBase<Boolean> {
+public class FloatIndexField extends IndexFieldBase<Float> {
 
-	public BooleanIndexField(String fieldName) {
-		this(fieldName, false);
+	public FloatIndexField(String fieldName) {
+		this(fieldName, true);
 	}
 	
-	public BooleanIndexField(String fieldName, boolean stored) {
-		super(fieldName, stored);
+	public FloatIndexField(String fieldName, boolean store) {
+		super(fieldName, store);
 	}
 
 	@Override
-	protected Boolean getValue(IndexableField field) {
-		return convertFromString(field.stringValue());
+	protected Float getValue(IndexableField field) {
+		return field.numericValue().floatValue();
 	}
 
 	@Override
-	protected BytesRef toBytesRef(Boolean value) {
-		return new BytesRef(convertToString(value));
+	protected BytesRef toBytesRef(Float value) {
+		return null;
 	}
 
 	@Override
-	protected IndexableField toField(Boolean value) {
-		return new StringField(fieldName(), convertToString(value), Store.YES);
+	protected IndexableField toField(Float value) {
+		return new FloatField(fieldName(), value, isStored());
 	}
 
 	@Override
 	protected Type getSortFieldType() {
-		return Type.STRING;
-	}
-	
-	private String convertToString(Boolean value) {
-		return value ? "1" : "0";
-	}
-	
-	private Boolean convertFromString(String value) {
-		return "1".equals(value);
+		return Type.FLOAT;
 	}
 
 }

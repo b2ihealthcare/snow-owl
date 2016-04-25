@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index.mapping;
+package com.b2international.index.mapping;
 
 import java.io.IOException;
 
@@ -25,18 +25,18 @@ import org.apache.lucene.index.BinaryDocValues;
 /**
  * @since 4.3
  */
-public class DocValuesStringIndexField extends StringIndexField implements BinaryDocValuesIndexField {
+public class DocValuesTextIndexField extends TextIndexField implements BinaryDocValuesIndexField {
 
-	public DocValuesStringIndexField(String fieldName) {
+	public DocValuesTextIndexField(String fieldName) {
 		super(fieldName);
 	}
-
+	
 	@Override
 	public void addTo(Document doc, String value) {
 		super.addTo(doc, value);
 		doc.add(toDocValuesField(value));
 	}
-	
+
 	@Override
 	public BinaryDocValuesField toDocValuesField(String value) {
 		return new BinaryDocValuesField(fieldName(), toBytesRef(value));
