@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.write;
+package com.b2international.index;
 
-import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @since 4.7
  */
-public interface Writer extends AutoCloseable {
-
-	void put(String key, Object object) throws IOException;
-
-	boolean remove(Class<?> type, String key) throws IOException;
-
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Analyzed {
 }

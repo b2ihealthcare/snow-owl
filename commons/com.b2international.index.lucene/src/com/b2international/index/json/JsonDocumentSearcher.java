@@ -16,15 +16,11 @@
 package com.b2international.index.json;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.index.IndexException;
@@ -59,8 +55,7 @@ public class JsonDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
-		final BooleanQuery bq = new BooleanQuery(true);
-		bq.add(new TermQuery(new Term("_id", key)), Occur.MUST);
+		final Query bq = JsonDocumentMapping.matchIdAndType(type, key);
 		final TopDocs topDocs = searcher.search(bq, 1);
 		if (isEmpty(topDocs)) {
 			return null;
@@ -69,11 +64,6 @@ public class JsonDocumentSearcher implements Searcher {
 			final byte[] source = doc.getField("_source").binaryValue().bytes;
 			return mapper.readValue(source, type);
 		}
-	}
-
-	@Override
-	public Map<String, Object> get(String type, String key) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

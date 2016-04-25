@@ -18,12 +18,8 @@ package com.b2international.index.json;
 import java.io.IOException;
 
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,23 +46,15 @@ public class JsonDocumentWriter implements Writer {
 	}
 
 	@Override
-	public void put(String type, String key, Object object) throws IOException {
-		writer.addDocument(mappingStrategy.map(type, key, object));
+	public void put(String key, Object object) throws IOException {
+		writer.addDocument(mappingStrategy.map(key, object));
 	}
 
 	@Override
-	public boolean remove(String type, String key) throws IOException {
-		final BooleanQuery bq = new BooleanQuery(true);
-		bq.add(new TermQuery(new Term("_id", key)), Occur.MUST);
-		bq.add(new TermQuery(new Term("_type", type)), Occur.MUST);
-		writer.deleteDocuments(bq);
+	public boolean remove(Class<?> type, String key) throws IOException {
+		writer.deleteDocuments(JsonDocumentMapping.matchIdAndType(type, key));
 		// TODO do we need boolean return value here???
 		return true;
-	}
-
-	@Override
-	public <T> boolean remove(Class<T> type, String key) throws IOException {
-		return false;
 	}
 
 }

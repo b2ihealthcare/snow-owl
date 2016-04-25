@@ -16,7 +16,6 @@
 package com.b2international.index.read;
 
 import java.io.IOException;
-import java.util.Map;
 
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.query.Query.QueryBuilder;
@@ -38,17 +37,6 @@ public interface Searcher extends AutoCloseable {
 	 */
 	<T> T get(Class<T> type, String key) throws IOException;
 
-	/**
-	 * Fetch an object by type and key from the index.
-	 * 
-	 * @param type
-	 *            - the object's type to retrieve
-	 * @param key
-	 *            - the unique identifier of the object
-	 * @return a {@link Map} of String, Object pairs representing the object
-	 */
-	Map<String, Object> get(String type, String key);
-	
 	/**
 	 * Execute the given query among all stored items.
 	 * 

@@ -15,7 +15,8 @@
  */
 package com.b2international.index.lucene.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -40,7 +41,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class LuceneClientTest {
 
-	private static final String TYPE = "type";
 	private static final String KEY = "key";
 
 	@Rule
@@ -66,7 +66,7 @@ public class LuceneClientTest {
 	public void indexDocument() throws Exception {
 		final Data data = new Data();
 		try (final Writer writer = client.writer()) {
-			writer.put(TYPE, KEY, data);
+			writer.put(KEY, data);
 		}
 		try (Searcher searcher = client.searcher()) {
 			final Data actual = searcher.get(Data.class, KEY);
@@ -78,7 +78,7 @@ public class LuceneClientTest {
 	public void indexDocumentWithSearchDuringTransaction() throws Exception {
 		final Data data = new Data();
 		try (final Writer writer = client.writer()) {
-			writer.put(TYPE, KEY, data);
+			writer.put(KEY, data);
 			try (Searcher searcher = client.searcher()) {
 				assertNull(searcher.get(Data.class, KEY));
 			}
@@ -89,7 +89,7 @@ public class LuceneClientTest {
 	public void deleteDocument() throws Exception {
 		indexDocument();
 		try (final Writer writer = client.writer()) {
-			writer.remove(TYPE, KEY);
+			writer.remove(Data.class, KEY);
 		}
 		try (Searcher searcher = client.searcher()) {
 			assertNull(searcher.get(Data.class, KEY));

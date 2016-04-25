@@ -15,6 +15,7 @@
  */
 package com.b2international.index.json;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -25,9 +26,8 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.Field.Store;
 
+import com.b2international.index.Analyzed;
 import com.b2international.index.IndexException;
 import com.b2international.index.mapping.IndexField;
 import com.b2international.index.mapping.Mappings;
@@ -41,14 +41,15 @@ public class JsonDocumentMappingStrategy {
 	private final ObjectMapper mapper;
 
 	public JsonDocumentMappingStrategy(ObjectMapper mapper) {
-		this.mapper = mapper;
+		this.mapper = checkNotNull(mapper, "mapper");
 	}
 	
-	public Document map(String type, String key, Object object) throws IOException {
+	public Document map(String key, Object object) throws IOException {
 		final Document doc = new Document();
-		// basic fields
-		doc.add(new StringField("_id", key, Store.YES));
-		doc.add(new StringField("_type", type, Store.YES));
+		// metadata fields
+		JsonDocumentMapping._id().addTo(doc, key);
+		JsonDocumentMapping._type().addTo(doc, JsonDocumentMapping.getType(object));
+		// TODO create byte fields
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
 		// add all other fields
 		for (Field field : getFields(object.getClass())) {
@@ -67,9 +68,7 @@ public class JsonDocumentMappingStrategy {
 		final String fieldName = field.getName();
 		final Class<?> fieldType = field.getType();
 		if (fieldType == String.class) {
-			// check if field is not analyzed, otherwise return text field
-			boolean analyzed = false;
-			return analyzed ? Mappings.textField(fieldName) : Mappings.stringField(fieldName);
+			return field.isAnnotationPresent(Analyzed.class) ? Mappings.textField(fieldName) : Mappings.stringField(fieldName);
 		} else if (fieldType == Boolean.class || fieldType == boolean.class) {
 			return Mappings.boolField(fieldName);
 		} else if (fieldType == Integer.class || fieldType == int.class) {
