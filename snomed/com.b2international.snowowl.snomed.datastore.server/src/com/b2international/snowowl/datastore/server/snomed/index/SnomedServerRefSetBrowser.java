@@ -664,7 +664,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		try {
 			
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-			final LongList docIds = PrimitiveLists.newLongArrayList(collector.getDocIDs().size());
+			final LongList docIds = PrimitiveLists.newLongArrayListWithExpectedSize(collector.getDocIDs().size());
 			
 			//calculate doc IDs for parallel lookup
 			while (iterator.next()) {

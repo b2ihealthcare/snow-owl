@@ -57,7 +57,7 @@ public class LongDocValuesCollector extends AbstractDocsOutOfOrderCollector {
 	 */
 	public LongDocValuesCollector(final String fieldName, final int expectedSize) {
 		this.fieldName = checkNotNull(fieldName, "Field name argument cannot be null.");
-		this.collectedValues = (0 > expectedSize) ? PrimitiveSets.newLongOpenHashSet(expectedSize) : PrimitiveSets.newLongOpenHashSet();
+		this.collectedValues = (0 > expectedSize) ? PrimitiveSets.newLongOpenHashSetWithExpectedSize(expectedSize) : PrimitiveSets.newLongOpenHashSet();
 	}
 
 	@Override

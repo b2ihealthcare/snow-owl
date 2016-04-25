@@ -750,7 +750,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<String> getIds(final IntCollection internalIds) {
-		final LongList ids = PrimitiveLists.newLongArrayList(internalIds.size());
+		final LongList ids = PrimitiveLists.newLongArrayListWithExpectedSize(internalIds.size());
 		for (final IntIterator itr = internalIds.iterator(); itr.hasNext(); /**/) {
 			ids.add(concepts.get(itr.next()));
 		}
@@ -823,7 +823,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			return PrimitiveSets.newBitSet();
 		}
 		
-		final BitSet internalIds = PrimitiveSets.newBitSet(values.size());
+		final BitSet internalIds = PrimitiveSets.newBitSetWithExpectedSize(values.size());
 		for (final LongIterator itr = values.iterator(); itr.hasNext(); /**/) {
 			internalIds.set(getInternalId(itr.next()));
 		}

@@ -143,7 +143,7 @@ public class IndexDifferImpl implements IndexDiffer {
 				public void apply(final long id) {
 
 					final ByteList allChanges = indexChanges.get(id);
-					final ByteList intersectionChanges = PrimitiveLists.newByteArrayList(allChanges.size());
+					final ByteList intersectionChanges = PrimitiveLists.newByteArrayListWithExpectedSize(allChanges.size());
 					final ByteList differenceChanges = PrimitiveLists.newByteArrayList(filter(allChanges, new BytePredicate() {
 						@Override public boolean apply(final byte input) {
 							final boolean inIntersection = isIntersection(input);

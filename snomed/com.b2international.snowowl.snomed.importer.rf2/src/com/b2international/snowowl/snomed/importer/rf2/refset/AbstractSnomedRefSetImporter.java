@@ -79,7 +79,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 		if (docIDs.size() <= 0) {
 			return PrimitiveMaps.newObjectKeyLongOpenHashMap();
 		} else {
-			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMap(docIDs.size());
+			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(docIDs.size());
 			final DocIdsIterator it = docIDs.iterator();
 			final Set<String> fields = SnomedMappings.fieldsToLoad().memberUuid().effectiveTime().build();
 			while (it.next()) {

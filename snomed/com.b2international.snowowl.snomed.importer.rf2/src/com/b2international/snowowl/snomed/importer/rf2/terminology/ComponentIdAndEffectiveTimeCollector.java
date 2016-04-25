@@ -39,7 +39,7 @@ public final class ComponentIdAndEffectiveTimeCollector extends AbstractDocsOutO
 
 	public ComponentIdAndEffectiveTimeCollector(int expectedSize) {
 		checkArgument(expectedSize > 0, "Expected size must be greater than zero");
-		this.availableComponents = PrimitiveMaps.newObjectKeyLongOpenHashMap(expectedSize);
+		this.availableComponents = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(expectedSize);
 	}
 	
 	@Override

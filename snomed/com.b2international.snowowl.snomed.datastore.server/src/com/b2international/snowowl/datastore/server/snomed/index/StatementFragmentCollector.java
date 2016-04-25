@@ -71,7 +71,8 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	 * @param expectedSize the expected number of source concept identifiers, or <= 0 to use the built-in default hash map size
 	 */
 	public StatementFragmentCollector(final int expectedSize) {
-		statementMap = (0 > expectedSize) ? PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMap(expectedSize)
+		statementMap = (0 > expectedSize) 
+				? PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMapWithExpectedSize(expectedSize)
 				: PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMap();
 	}
 

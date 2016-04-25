@@ -168,8 +168,8 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final long[][] conceptIds = conceptIdsReference.get();
 			final int conceptCount = conceptIds.length;
 
-			internalIdToconceptId = PrimitiveLists.newLongArrayList(conceptCount);
-			conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMap(conceptCount);
+			internalIdToconceptId = PrimitiveLists.newLongArrayListWithExpectedSize(conceptCount);
+			conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(conceptCount);
 
 			for (final long[] conceptIdAndKey : conceptIds) {
 				final long conceptId = conceptIdAndKey[0];
@@ -297,7 +297,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 			
 			conceptIdToStatements = getStatements(getAllowedCharacteristicTypes());
-			final LongKeyLongMap statementIdToConceptIds = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIdToStatements.size());
+			final LongKeyLongMap statementIdToConceptIds = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(conceptIdToStatements.size());
 
 			for (final LongIterator itr = conceptIdToStatements.keySet().iterator(); itr.hasNext(); /* nothing */) {
 
@@ -406,7 +406,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			conceptIds.add(conceptIdAndKey[0]);
 		}
 
-		componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIds.size()); // Lower bound estimate
+		componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(conceptIds.size()); // Lower bound estimate
 		
 		final AtomicReference<LongSet> exhaustiveConceptIdsReference = createAtomicReference();
 		final AtomicReference<LongSet> fullyDefinedConceptIdsReference = createAtomicReference();

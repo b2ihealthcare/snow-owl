@@ -128,7 +128,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		if (parents.isEmpty() && ancestors.isEmpty()) {
 			return LongCollections.emptySet();
 		} else {
-			final LongSet ids = PrimitiveSets.newLongOpenHashSet(parents.size() + ancestors.size());
+			final LongSet ids = PrimitiveSets.newLongOpenHashSetWithExpectedSize(parents.size() + ancestors.size());
 			ids.addAll(parents);
 			ids.addAll(ancestors);
 			return ids;

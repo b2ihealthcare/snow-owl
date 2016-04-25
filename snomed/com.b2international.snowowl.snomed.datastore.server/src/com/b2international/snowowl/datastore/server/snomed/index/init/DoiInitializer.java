@@ -57,7 +57,7 @@ public class DoiInitializer {
 			
 			final int size = dis.readInt();
 			
-			final LongKeyFloatMap data = size > 0 ? PrimitiveMaps.newLongKeyFloatOpenHashMap(size) : PrimitiveMaps.newLongKeyFloatOpenHashMap();
+			final LongKeyFloatMap data = size > 0 ? PrimitiveMaps.newLongKeyFloatOpenHashMapWithExpectedSize(size) : PrimitiveMaps.newLongKeyFloatOpenHashMap();
 			
 			for (int i = 0; i < size; i++) {
 				

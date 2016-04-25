@@ -73,7 +73,7 @@ public class ReasonerTaxonomyWalker {
 		this.reasoner = reasoner;
 		this.taxonomy = changeSet;
 		this.pm = SnomedOntologyUtils.createPrefixManager(SnomedOntologyUtils.BASE_IRI.resolve(branchPath.getPath()));
-		processedConceptIds = PrimitiveSets.newLongOpenHashSet(600000);
+		processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(600000);
 		idToStorageKeyMap = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConceptIdToStorageKeyMap(branchPath);
 	}
 
@@ -213,7 +213,7 @@ public class ReasonerTaxonomyWalker {
 			conceptIds.add(conceptId);
 		}
 		
-		final LongKeyLongMap map = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIds.size());
+		final LongKeyLongMap map = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(conceptIds.size());
 		
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /* nothing */) {
 			final long conceptId = itr.next();

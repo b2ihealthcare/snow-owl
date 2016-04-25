@@ -984,7 +984,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				
 			}
 			
-			final LongSet $ = PrimitiveSets.newLongOpenHashSet(hitCount);
+			final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(hitCount);
 
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
@@ -1198,7 +1198,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return LongCollections.emptySet();
 			}
 			
-			final LongSet $ = PrimitiveSets.newLongOpenHashSet(hitCount);
+			final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(hitCount);
 			final DocIdsIterator itr = collector.getDocIDs().iterator();
 			
 			while (itr.next()) {

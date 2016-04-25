@@ -68,7 +68,9 @@ public class StatementObjectIdCollector extends AbstractDocsOutOfOrderCollector 
 	public StatementObjectIdCollector(final LongCollection typeIdsToMatch, final LongCollection destinationIdsToMatch, final int expectedSize) {
 		this.typeIdsToMatch = checkNotNull(typeIdsToMatch, "Attribute IDs collection argument cannot be null");
 		this.destinationIdsToMatch = checkNotNull(destinationIdsToMatch, "Value IDs collection argument cannot be null");
-		this.sourceIds = (0 > expectedSize) ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
+		this.sourceIds = (0 > expectedSize) 
+				? PrimitiveLists.newLongArrayListWithExpectedSize(expectedSize) 
+				: PrimitiveLists.newLongArrayList();
 	}
 
 	@Override

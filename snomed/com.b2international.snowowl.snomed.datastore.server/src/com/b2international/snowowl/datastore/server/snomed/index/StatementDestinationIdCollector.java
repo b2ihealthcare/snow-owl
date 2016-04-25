@@ -56,7 +56,7 @@ public class StatementDestinationIdCollector extends AbstractDocsOutOfOrderColle
 	 * @param expectedSize the expected number of source-destination pairs, or <= 0 to use the built-in defaults
 	 */
 	public StatementDestinationIdCollector(final int expectedSize) {
-		this.sourceToDestinationIds = (0 > expectedSize) ? PrimitiveMaps.newLongKeyLongOpenHashMap(expectedSize) : PrimitiveMaps.newLongKeyLongOpenHashMap();
+		this.sourceToDestinationIds = (0 > expectedSize) ? PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(expectedSize) : PrimitiveMaps.newLongKeyLongOpenHashMap();
 	}
 
 	@Override

@@ -64,8 +64,9 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 	 * @param expectedSize the expected size
 	 */
 	public ConcreteDomainFragmentCollector(final int expectedSize) {
-		dataTypeMap = (0 > expectedSize) ? PrimitiveMaps.<Collection<ConcreteDomainFragment>> newLongKeyOpenHashMap(expectedSize)
-				: PrimitiveMaps.<Collection<ConcreteDomainFragment>> newLongKeyOpenHashMap();
+		dataTypeMap = (0 > expectedSize) 
+				? PrimitiveMaps.<Collection<ConcreteDomainFragment>>newLongKeyOpenHashMapWithExpectedSize(expectedSize)
+				: PrimitiveMaps.<Collection<ConcreteDomainFragment>>newLongKeyOpenHashMap();
 	}
 
 	@Override

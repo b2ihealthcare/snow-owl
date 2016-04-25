@@ -199,12 +199,12 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				return;
 			}
 
-			final ByteKeyMap<UnionGroup> oldNumberMap = PrimitiveMaps.newByteKeyOpenHashMap(unionGroups.size());
+			final ByteKeyMap<UnionGroup> oldNumberMap = PrimitiveMaps.newByteKeyOpenHashMapWithExpectedSize(unionGroups.size());
 			for (final UnionGroup unionGroup : unionGroups) {
 				oldNumberMap.put(unionGroup.getUnionGroupNumber(), unionGroup);
 			}
 
-			final ByteValueMap<UnionGroup> newNumberMap = PrimitiveMaps.newObjectKeyByteOpenHashMap(unionGroups.size());
+			final ByteValueMap<UnionGroup> newNumberMap = PrimitiveMaps.newObjectKeyByteOpenHashMapWithExpectedSize(unionGroups.size());
 			for (final UnionGroup unionGroup : unionGroups) {
 				final Optional<UnionGroup> otherUnionGroup = Iterables.tryFind(other.unionGroups, Predicates.equalTo(unionGroup));
 				if (otherUnionGroup.isPresent()) {
@@ -605,12 +605,12 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				return;
 			}
 
-			final ByteKeyMap<Group> oldNumberMap = PrimitiveMaps.newByteKeyOpenHashMap(groups.size());
+			final ByteKeyMap<Group> oldNumberMap = PrimitiveMaps.newByteKeyOpenHashMapWithExpectedSize(groups.size());
 			for (final Group group : groups) {
 				oldNumberMap.put(group.getGroupNumber(), group);
 			}
 
-			final ByteValueMap<Group> newNumberMap = PrimitiveMaps.newObjectKeyByteOpenHashMap(groups.size());
+			final ByteValueMap<Group> newNumberMap = PrimitiveMaps.newObjectKeyByteOpenHashMapWithExpectedSize(groups.size());
 			for (final Group group : groups) {
 				final Optional<Group> otherGroup = Iterables.tryFind(other.groups, Predicates.equalTo(group));
 				if (otherGroup.isPresent()) {

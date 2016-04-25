@@ -50,7 +50,7 @@ public class SnomedConceptIconIdCollector extends AbstractDocsOutOfOrderCollecto
 	 */
 	public SnomedConceptIconIdCollector(final LongCollection conceptIds) {
 		this.conceptIds = checkNotNull(conceptIds, "Concept identifier collection may not be null.");
-		this.idIconIdMapping = PrimitiveMaps.newLongKeyLongOpenHashMap(CompareUtils.isEmpty(conceptIds) ? 1 : conceptIds.size());
+		this.idIconIdMapping = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(CompareUtils.isEmpty(conceptIds) ? 1 : conceptIds.size());
 	}
 
 	@Override

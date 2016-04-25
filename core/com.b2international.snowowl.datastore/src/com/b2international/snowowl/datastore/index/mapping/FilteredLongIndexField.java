@@ -37,7 +37,7 @@ public class FilteredLongIndexField extends FilteredIndexField<Long> implements 
 	@Override
 	public LongSet getValueAsLongSet(Document doc) {
 		final IndexableField[] fields = getDelegate().getFields(doc);
-		final LongSet longIds = PrimitiveSets.newLongOpenHashSet(fields.length + 1);
+		final LongSet longIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}
@@ -45,7 +45,7 @@ public class FilteredLongIndexField extends FilteredIndexField<Long> implements 
 	@Override
 	public LongList getValueAsLongList(Document doc) {
 		final IndexableField[] fields = getDelegate().getFields(doc);
-		final LongList longIds = PrimitiveLists.newLongArrayList(fields.length + 1);
+		final LongList longIds = PrimitiveLists.newLongArrayListWithExpectedSize(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}

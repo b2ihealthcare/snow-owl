@@ -363,7 +363,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 		if (parents.isEmpty() && ancestors.isEmpty()) {
 			return LongCollections.emptySet();
 		} else {
-			final LongSet ids = PrimitiveSets.newLongOpenHashSet(parents.size() + ancestors.size());
+			final LongSet ids = PrimitiveSets.newLongOpenHashSetWithExpectedSize(parents.size() + ancestors.size());
 			ids.addAll(parents);
 			ids.addAll(ancestors);
 			return ids;
@@ -389,7 +389,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 				return PrimitiveSets.newLongOpenHashSet(); // guard against lower bound cannot be negative: 0
 			}
 			
-			final LongSet ids = PrimitiveSets.newLongOpenHashSet(resultSize, 1.0D); //optimized load factor
+			final LongSet ids = PrimitiveSets.newLongOpenHashSetWithExpectedSize(resultSize, 1.0D); //optimized load factor
 	
 			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 			service.search(branchPath, query, collector);
@@ -560,7 +560,7 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 			return PrimitiveMaps.newLongKeyLongOpenHashMap();
 		}
 		
-		final LongKeyLongMap $ = PrimitiveMaps.newLongKeyLongOpenHashMap(idPairs.length);
+		final LongKeyLongMap $ = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(idPairs.length);
 		for (int i = 0; i < idPairs.length; i++) {
 			$.put(idPairs[i][0], idPairs[i][1]);
 		}

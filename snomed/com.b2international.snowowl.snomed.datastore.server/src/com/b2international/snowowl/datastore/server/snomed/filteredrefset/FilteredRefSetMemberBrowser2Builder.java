@@ -149,7 +149,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		}
 
 		final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes = new BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode>(EXPECTED_REFERENCE_SET_SIZE);
-		final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap = PrimitiveMaps.newLongKeyOpenHashMap(EXPECTED_REFERENCE_SET_SIZE);
+		final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(EXPECTED_REFERENCE_SET_SIZE);
 		
 		final Runnable collectReferencedComponentMapRunnable = new CollectReferencedComponentMapRunnable(maxDoc, 
 				filteredMemberConceptIds.get(), 
@@ -182,8 +182,8 @@ public class FilteredRefSetMemberBrowser2Builder {
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes, 
 			final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap) {
 		
-		final IntKeyMap<IntSet> subTypeMap = PrimitiveMaps.newIntKeyOpenHashMap(refSetMemberNodes.size());
-		final IntKeyMap<IntSet> superTypeMap = PrimitiveMaps.newIntKeyOpenHashMap(refSetMemberNodes.size());
+		final IntKeyMap<IntSet> subTypeMap = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(refSetMemberNodes.size());
+		final IntKeyMap<IntSet> superTypeMap = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(refSetMemberNodes.size());
 
 		addTopLevels(hierarchy,
 				refSetMemberNodes,

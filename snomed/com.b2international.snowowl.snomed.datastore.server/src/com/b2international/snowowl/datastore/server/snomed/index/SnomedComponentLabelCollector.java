@@ -69,7 +69,7 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	 * @param componentIds the component identifiers to accept
 	 */
 	public SnomedComponentLabelCollector(final LongCollection componentIds) {
-		this(LongSets.in(componentIds), PrimitiveMaps.<String>newLongKeyOpenHashMap(getExpectedSize(componentIds)));
+		this(LongSets.in(componentIds), PrimitiveMaps.<String>newLongKeyOpenHashMapWithExpectedSize(getExpectedSize(componentIds)));
 	}
 
 	private SnomedComponentLabelCollector(final LongPredicate componentIdsPredicate, final LongKeyMap<String> idLabelMapping) {

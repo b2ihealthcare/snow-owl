@@ -51,7 +51,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 		
 		final Rf2BasedSnomedTaxonomyBuilder $ = new Rf2BasedSnomedTaxonomyBuilder(characteristicTypeId);
 		$.nodes = new LongBidiMapWithInternalId(builder.getNodes());
-		$.edges = builder.getEdges().dup();
+		$.edges = PrimitiveMaps.newLongKeyOpenHashMap(builder.getEdges());
 		$.setDirty(builder.isDirty());
 		$.descendants = Arrays2.copy(builder.getDescendants());
 		$.ancestors = Arrays2.copy(builder.getAncestors());

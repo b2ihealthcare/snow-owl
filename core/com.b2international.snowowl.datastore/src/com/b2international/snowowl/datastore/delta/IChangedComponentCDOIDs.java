@@ -71,7 +71,7 @@ public interface IChangedComponentCDOIDs extends Serializable {
 					final LongSet $ = PrimitiveSets.newLongOpenHashSet();
 					$.addAll(relatedCdoIds);
 					$.add(cdoId);
-					return PrimitiveSets.newUnmodifiableLongSet($); 
+					return LongCollections.unmodifiableSet($); 
 				}
 				@Override public long getCdoId() { return cdoId; }
 			};

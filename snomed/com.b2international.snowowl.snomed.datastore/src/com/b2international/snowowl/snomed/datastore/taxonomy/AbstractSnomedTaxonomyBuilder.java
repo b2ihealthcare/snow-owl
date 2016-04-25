@@ -423,7 +423,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		}
 		final int count = bitSet.cardinality();
 	
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(count);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(count);
 		for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
 			long convertedId = function.apply(i);
 			if (convertedId == conceptId) {
@@ -440,7 +440,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		if (CompareUtils.isEmpty(internalIds)) {
 			return PrimitiveSets.newLongOpenHashSet();
 		}
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(internalIds.length); //optimized load factor
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(internalIds.length);
 		final long conceptIdLong = Long.parseLong(conceptId);
 		for (final int i : internalIds) {
 			long convertedId = function.apply(i);

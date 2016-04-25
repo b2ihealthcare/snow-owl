@@ -35,13 +35,13 @@ public class LongBidiMapWithInternalId implements Serializable {
 	private LongList elements;
 
 	public LongBidiMapWithInternalId(int expectedSize) {
-		keyMap = expectedSize < 1 ? PrimitiveMaps.newLongKeyIntOpenHashMap() : PrimitiveMaps.newLongKeyIntOpenHashMap(expectedSize);
-		elements = expectedSize < 1 ? PrimitiveLists.newLongArrayList() : PrimitiveLists.newLongArrayList(expectedSize);
+		keyMap = expectedSize < 1 ? PrimitiveMaps.newLongKeyIntOpenHashMap() : PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(expectedSize);
+		elements = expectedSize < 1 ? PrimitiveLists.newLongArrayList() : PrimitiveLists.newLongArrayListWithExpectedSize(expectedSize);
 	}
 
 	public LongBidiMapWithInternalId(final LongBidiMapWithInternalId original) {
-		keyMap = original.keyMap.dup();
-		elements = original.elements.dup();
+		keyMap = PrimitiveMaps.newLongKeyIntOpenHashMap(original.keyMap);
+		elements = PrimitiveLists.newLongArrayList(original.elements);
 	}
 
 	/**

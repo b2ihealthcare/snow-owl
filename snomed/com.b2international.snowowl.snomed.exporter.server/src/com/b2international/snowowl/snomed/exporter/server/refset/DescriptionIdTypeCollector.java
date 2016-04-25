@@ -42,7 +42,9 @@ public class DescriptionIdTypeCollector extends AbstractDocsOutOfOrderCollector 
 	 * @param expectedSize the expected number of entries in the collector's backing map, or <= 0 to use the default size
 	 */
 	public DescriptionIdTypeCollector(final int expectedSize) {
-		map = expectedSize > 0 ? PrimitiveMaps.newLongKeyLongOpenHashMap(expectedSize) : PrimitiveMaps.newLongKeyLongOpenHashMap();
+		map = expectedSize > 0 
+				? PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(expectedSize) 
+				: PrimitiveMaps.newLongKeyLongOpenHashMap();
 	}
 
 	@Override

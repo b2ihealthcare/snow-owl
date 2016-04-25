@@ -54,8 +54,8 @@ public class ConceptIdStorageKeyCollector extends AbstractDocsOutOfOrderCollecto
 	 * @param expectedSize the expected size for the backing 2D array.
 	 */
 	public ConceptIdStorageKeyCollector(final int expectedSize) {
-		conceptIds = 0 > expectedSize ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
-		storageKeys = 0 > expectedSize ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
+		conceptIds = 0 > expectedSize ? PrimitiveLists.newLongArrayListWithExpectedSize(expectedSize) : PrimitiveLists.newLongArrayList();
+		storageKeys = 0 > expectedSize ? PrimitiveLists.newLongArrayListWithExpectedSize(expectedSize) : PrimitiveLists.newLongArrayList();
 	}
 
 	@Override

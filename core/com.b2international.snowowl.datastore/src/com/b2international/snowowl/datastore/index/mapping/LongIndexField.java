@@ -76,7 +76,7 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	@Override
 	public final LongSet getValueAsLongSet(Document doc) {
 		final IndexableField[] fields = getFields(doc);
-		final LongSet longIds = PrimitiveSets.newLongOpenHashSet(fields.length + 1);
+		final LongSet longIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}
@@ -84,7 +84,7 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	@Override
 	public final LongList getValueAsLongList(Document doc) {
 		final IndexableField[] fields = getFields(doc);
-		final LongList longIds = PrimitiveLists.newLongArrayList(fields.length + 1);
+		final LongList longIds = PrimitiveLists.newLongArrayListWithExpectedSize(fields.length + 1);
 		addIdsToLongCollection(fields, longIds);
 		return longIds;
 	}

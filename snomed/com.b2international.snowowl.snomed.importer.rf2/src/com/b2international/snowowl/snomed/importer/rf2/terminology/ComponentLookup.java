@@ -56,7 +56,7 @@ public class ComponentLookup<C extends CDOObject> {
 
 	private static final int EXPECTED_COMPONENT_SIZE = 50000;
 
-	private final LongKeyLongMap componentIdMap = PrimitiveMaps.newLongKeyLongOpenHashMap(EXPECTED_COMPONENT_SIZE);
+	private final LongKeyLongMap componentIdMap = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(EXPECTED_COMPONENT_SIZE);
 	private final CDOEditingContext editingContext;
 	private final EnumSet<ComponentImportType> initializedComponents = EnumSet.noneOf(ComponentImportType.class);
 	private final Map<String, C> newComponents = Maps.newHashMap();
