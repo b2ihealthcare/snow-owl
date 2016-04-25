@@ -419,14 +419,14 @@ public class LongSets {
 	
 	/**
 	 * Returns the elements of {@code unfiltered} that satisfy the given {@link LongPredicate predicate}. 
-	 * @param unfiltered the collection to filter.
+	 * @param unfiltered the set to filter.
 	 * @param predicate the predicate.
 	 * @return a modifiable filtered collection based on the {@code unfiltered} one.
 	 */
-	public static LongCollection filter(final LongCollection unfiltered, final LongPredicate predicate) {
+	public static LongSet filter(final LongSet unfiltered, final LongPredicate predicate) {
 		checkNotNull(unfiltered, "unfiltered");
 		checkNotNull(predicate, "predicate");
-		final LongCollection copy = unfiltered.dup();
+		final LongSet copy = PrimitiveSets.newLongOpenHashSet(unfiltered);
 		for (final LongIterator itr = copy.iterator(); itr.hasNext(); /* */) {
 			final long value = itr.next();
 			if (!predicate.apply(value)) {
