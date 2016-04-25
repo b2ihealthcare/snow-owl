@@ -15,8 +15,6 @@
  */
 package com.b2international.collections.bytes;
 
-import java.util.Iterator;
-
 /**
  * @since 4.7
  */
