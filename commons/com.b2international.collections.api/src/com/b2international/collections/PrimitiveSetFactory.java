@@ -15,8 +15,6 @@
  */
 package com.b2international.collections;
 
-import java.util.Set;
-
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteSet;
 import com.b2international.collections.ints.IntSet;
@@ -29,25 +27,23 @@ import com.google.common.hash.HashFunction;
  */
 public interface PrimitiveSetFactory {
 
+	ByteSet newByteOpenHashSet();
+	
 	ByteSet newByteOpenHashSet(ByteCollection source);
 	
 	IntSet newIntOpenHashSet();
 
-	IntSet newIntOpenHashSet(int expectedSize);
+	IntSet newIntOpenHashSetWithExpectedSize(int expectedSize);
 	
 	LongSet newLongOpenHashSet();
 
 	LongSet newLongOpenHashSet(HashFunction hashFunction);
 
-	LongSet newLongOpenHashSet(int expectedSize);
+	LongSet newLongOpenHashSetWithExpectedSize(int expectedSize);
 
-	LongSet newLongOpenHashSet(int expectedSize, double fillFactor);
+	LongSet newLongOpenHashSetWithExpectedSize(int expectedSize, double fillFactor);
 
-	LongSet newLongOpenHashSet(long[] source);
+	LongSet newLongOpenHashSet(long... source);
 
 	LongSet newLongOpenHashSet(LongCollection source);
-	
-	LongSet newUnmodifiableLongSet(LongSet source);
-	
-	Set<Long> newLongSetToSetAdapter(LongSet source);
 }

@@ -16,7 +16,6 @@
 package com.b2international.commons.collect;
 
 import java.util.BitSet;
-import java.util.Set;
 
 import com.b2international.collections.FastUtilPrimitiveCollections;
 import com.b2international.collections.PrimitiveSetFactory;
@@ -32,12 +31,16 @@ import com.google.common.hash.HashFunction;
 /**
  * @since 4.7
  */
-public class PrimitiveSets {
+public abstract class PrimitiveSets {
 
 	private static final PrimitiveSetFactory FACTORY = FastUtilPrimitiveCollections.sets();
 	
 	private PrimitiveSets() {}
 
+	public static ByteSet newByteOpenHashSet() {
+		return FACTORY.newByteOpenHashSet();
+	}
+	
 	public static ByteSet newByteOpenHashSet(ByteCollection source) {
 		return FACTORY.newByteOpenHashSet(source);
 	}
@@ -46,15 +49,15 @@ public class PrimitiveSets {
 		return new BitSet();
 	}
 
-	public static BitSet newBitSet(int expectedSize) {
+	public static BitSet newBitSetWithExpectedSize(int expectedSize) {
 		return new BitSet(expectedSize);
 	}
 
-	public static BitSet newBitSet(int[] source) {
+	public static BitSet newBitSet(int... source) {
 		if (source == null) {
 			return newBitSet();
 		} else {
-			final BitSet bitSet = newBitSet(source.length);
+			final BitSet bitSet = newBitSetWithExpectedSize(source.length);
 			for (int value : source) {
 				bitSet.set(value);
 			}
@@ -66,7 +69,7 @@ public class PrimitiveSets {
 		if (source == null) {
 			return newBitSet();
 		} else {
-			final BitSet bitSet = newBitSet(source.size());
+			final BitSet bitSet = newBitSetWithExpectedSize(source.size());
 			final IntIterator iter = source.iterator();
 			while (iter.hasNext()) {
 				bitSet.set(iter.next());
@@ -79,8 +82,8 @@ public class PrimitiveSets {
 		return FACTORY.newIntOpenHashSet();
 	}
 
-	public static IntSet newIntOpenHashSet(int expectedSize) {
-		return FACTORY.newIntOpenHashSet(expectedSize);
+	public static IntSet newIntOpenHashSetWithExpectedSize(int expectedSize) {
+		return FACTORY.newIntOpenHashSetWithExpectedSize(expectedSize);
 	}
 
 	public static LongSet newLongOpenHashSet() {
@@ -91,15 +94,15 @@ public class PrimitiveSets {
 		return FACTORY.newLongOpenHashSet(hashFunction);
 	}
 
-	public static LongSet newLongOpenHashSet(int expectedSize) {
-		return FACTORY.newLongOpenHashSet(expectedSize);
+	public static LongSet newLongOpenHashSetWithExpectedSize(int expectedSize) {
+		return FACTORY.newLongOpenHashSetWithExpectedSize(expectedSize);
 	}
 
-	public static LongSet newLongOpenHashSet(int expectedSize, double fillFactor) {
-		return FACTORY.newLongOpenHashSet(expectedSize, fillFactor);
+	public static LongSet newLongOpenHashSetWithExpectedSize(int expectedSize, double fillFactor) {
+		return FACTORY.newLongOpenHashSetWithExpectedSize(expectedSize, fillFactor);
 	}
 
-	public static LongSet newLongOpenHashSet(long[] source) {
+	public static LongSet newLongOpenHashSet(long... source) {
 		if (source == null) {
 			return newLongOpenHashSet();
 		} else {
@@ -108,15 +111,10 @@ public class PrimitiveSets {
 	}
 
 	public static LongSet newLongOpenHashSet(LongCollection source) {
-		return FACTORY.newLongOpenHashSet(source);
+		if (source == null) {
+			return newLongOpenHashSet();
+		} else {
+			return FACTORY.newLongOpenHashSet(source);
+		}
 	}
-
-	public static LongSet newUnmodifiableLongSet(LongSet source) {
-		return FACTORY.newUnmodifiableLongSet(source);
-	}
-
-	public static Set<Long> newLongSetToSetAdapter(LongSet source) {
-		return FACTORY.newLongSetToSetAdapter(source);
-	}
-	
 }
