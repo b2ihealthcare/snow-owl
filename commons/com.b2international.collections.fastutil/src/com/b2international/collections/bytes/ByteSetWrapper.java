@@ -32,4 +32,14 @@ public class ByteSetWrapper extends ByteCollectionWrapper implements ByteSet {
 	public static ByteSet wrap(it.unimi.dsi.fastutil.bytes.ByteSet collection) {
 		return new ByteSetWrapper(collection);
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return AbstractByteSet.equals(this, obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return AbstractByteSet.hashCode(this);
+	}
 }

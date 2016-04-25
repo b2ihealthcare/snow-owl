@@ -19,5 +19,35 @@ package com.b2international.collections.bytes;
  * @since 4.7
  */
 public abstract class AbstractByteSet extends AbstractByteCollection implements ByteSet {
-	// Empty class body
+	
+	@Override
+	public boolean equals(Object obj) {
+		return equals(this, obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return hashCode(this);
+	}
+
+	public static boolean equals(ByteSet obj1, Object obj2) {
+		if (obj1 == obj2) { return true; }
+		if (!(obj2 instanceof ByteSet)) { return false; }
+		
+		ByteSet other = (ByteSet) obj2;
+		if (obj1.size() != other.size()) { return false; }
+		return obj1.containsAll(other);
+	}
+
+	public static int hashCode(ByteSet byteSet) {
+		int result = 1;
+		ByteIterator itr = byteSet.iterator();
+	    
+	    while (itr.hasNext()) {
+	    	byte element = itr.next();
+	        result = 31 * result + element;
+	    }
+	
+	    return result;
+	}
 }

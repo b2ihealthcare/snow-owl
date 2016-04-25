@@ -32,4 +32,14 @@ public class IntSetWrapper extends IntCollectionWrapper implements IntSet {
 	public static IntSet wrap(it.unimi.dsi.fastutil.ints.IntSet collection) {
 		return new IntSetWrapper(collection);
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return AbstractIntSet.equals(this, obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return AbstractIntSet.hashCode(this);
+	}
 }

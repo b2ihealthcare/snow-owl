@@ -32,4 +32,14 @@ public class LongSetWrapper extends LongCollectionWrapper implements LongSet {
 	public static LongSet wrap(it.unimi.dsi.fastutil.longs.LongSet collection) {
 		return new LongSetWrapper(collection);
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return AbstractLongSet.equals(this, obj);
+	}
+	
+	@Override
+	public int hashCode() {
+        return AbstractLongSet.hashCode(this);
+	}
 }

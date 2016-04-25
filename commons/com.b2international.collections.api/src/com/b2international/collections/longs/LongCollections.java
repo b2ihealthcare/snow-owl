@@ -188,6 +188,16 @@ public abstract class LongCollections {
 		UnmodifiableLongSet(LongCollection collection) {
 			super(collection);
 		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			return AbstractLongSet.equals(this, obj);
+		}
+		
+		@Override
+		public int hashCode() {
+	        return AbstractLongSet.hashCode(this);
+		}
 	}
 	
 	private static class UnmodifiableLongIterator implements LongIterator {
