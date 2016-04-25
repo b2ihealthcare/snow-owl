@@ -29,13 +29,7 @@ public class LongSetWrapper extends LongCollectionWrapper implements LongSet {
 		return (it.unimi.dsi.fastutil.longs.LongSet) super.delegate();
 	}
 	
-	@Override
-	public com.b2international.collections.longs.LongSet dup() {
-		return LongOpenHashSetWrapper.create(this);
-	}
-	
 	public static LongSet wrap(it.unimi.dsi.fastutil.longs.LongSet collection) {
 		return new LongSetWrapper(collection);
 	}
-
 }

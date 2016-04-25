@@ -17,6 +17,7 @@ package com.b2international.collections;
 
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteSet;
+import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
@@ -34,6 +35,8 @@ public interface PrimitiveSetFactory {
 	IntSet newIntOpenHashSet();
 
 	IntSet newIntOpenHashSetWithExpectedSize(int expectedSize);
+	
+	IntSet newIntOpenHashSet(IntCollection source);
 	
 	LongSet newLongOpenHashSet();
 

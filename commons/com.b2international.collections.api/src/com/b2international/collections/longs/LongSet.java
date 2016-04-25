@@ -21,7 +21,5 @@ import com.b2international.collections.PrimitiveSet;
  * @since 4.7
  */
 public interface LongSet extends PrimitiveSet, LongCollection {
-
-	@Override
-	LongSet dup();
+	// Empty interface body
 }

@@ -41,11 +41,6 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 	}
 
 	@Override
-	public FloatList dup() {
-		return create(this);
-	}
-
-	@Override
 	public float get(int index) {
 		return delegate().getFloat(index);
 	}

@@ -22,8 +22,10 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
+import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntSet;
+import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.commons.collect.PrimitiveSets;
 
 /**
@@ -46,6 +48,27 @@ public class IntOpenHashSetTest {
 	@Test(expected=IllegalArgumentException.class)
 	public void create_negative_size() {
 		PrimitiveSets.newIntOpenHashSetWithExpectedSize(-1);
+	}
+
+	@Test
+	public void create_collection() {
+		IntSet intSet = PrimitiveSets.newIntOpenHashSet(PrimitiveLists.newIntArrayList(0, 5, 10, 5));
+		assertEquals("Integer set size should be 3.", 3, intSet.size());
+		assertTrue("Integer set should contain element 0.", intSet.contains(0));
+		assertTrue("Integer set should contain element 5.", intSet.contains(5));
+		assertTrue("Integer set should contain element 10.", intSet.contains(10));
+	}
+
+	@Test
+	public void create_empty_collection() {
+		IntSet intSet = PrimitiveSets.newIntOpenHashSet(PrimitiveLists.newIntArrayList());
+		assertTrue("Integer set should be empty.", intSet.isEmpty());
+	}
+
+	@Test
+	public void create_null_collection() {
+		IntSet intSet = PrimitiveSets.newIntOpenHashSet((IntCollection) null);
+		assertTrue("Integer set should be empty.", intSet.isEmpty());
 	}
 
 	@Test
@@ -221,30 +244,6 @@ public class IntOpenHashSetTest {
 	public void trimToSize() {
 		IntSet intSet = PrimitiveSets.newIntOpenHashSet();
 		intSet.trimToSize();
-	}
-
-	@Test
-	public void dup() {
-		IntSet intSet = PrimitiveSets.newIntOpenHashSet();
-
-		intSet.add(0);
-		intSet.add(5);
-		intSet.add(10);
-
-		IntSet otherSet = intSet.dup();
-
-		assertTrue("First set should contain all elements from second set.", intSet.containsAll(otherSet));
-		assertTrue("Second set should contain all elements from first set.", otherSet.containsAll(intSet));
-		assertTrue("First set should be equal to second set.", intSet.equals(otherSet));
-		assertTrue("Second set should be equal to first set.", otherSet.equals(intSet));
-	}
-
-	@Test
-	public void dup_empty() {
-		IntSet intSet = PrimitiveSets.newIntOpenHashSet();
-		IntSet otherSet = intSet.dup();
-		assertTrue("Integer set should be empty.", intSet.isEmpty());
-		assertTrue("Other integer set should be empty.", otherSet.isEmpty());
 	}
 
 	@Test

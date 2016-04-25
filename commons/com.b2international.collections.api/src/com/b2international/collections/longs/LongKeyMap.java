@@ -28,9 +28,6 @@ public interface LongKeyMap<V> extends PrimitiveKeyMap {
 
 	boolean containsKey(long key);
 
-	@Override
-	LongKeyMap<V> dup();
-
 	V get(long key);
 
 	@Override

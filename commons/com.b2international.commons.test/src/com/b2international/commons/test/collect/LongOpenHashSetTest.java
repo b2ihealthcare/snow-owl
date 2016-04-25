@@ -319,30 +319,6 @@ public class LongOpenHashSetTest {
 	}
 
 	@Test
-	public void dup() {
-		LongSet longSet = PrimitiveSets.newLongOpenHashSet();
-
-		longSet.add(0L);
-		longSet.add(5L);
-		longSet.add(10L);
-
-		LongSet otherSet = longSet.dup();
-
-		assertTrue("First set should contain all elements from second set.", longSet.containsAll(otherSet));
-		assertTrue("Second set should contain all elements from first set.", otherSet.containsAll(longSet));
-		assertTrue("First set should be equal to second set.", longSet.equals(otherSet));
-		assertTrue("Second set should be equal to first set.", otherSet.equals(longSet));
-	}
-
-	@Test
-	public void dup_empty() {
-		LongSet longSet = PrimitiveSets.newLongOpenHashSet();
-		LongSet otherSet = longSet.dup();
-		assertTrue("Long set should be empty.", longSet.isEmpty());
-		assertTrue("Other long set should be empty.", otherSet.isEmpty());
-	}
-
-	@Test
 	public void iterator() {
 		LongSet longSet = PrimitiveSets.newLongOpenHashSet();
 

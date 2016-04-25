@@ -28,9 +28,6 @@ public interface IntKeyMap<V> extends PrimitiveKeyMap {
 
 	boolean containsKey(int key);
 	
-	@Override
-	IntKeyMap<V> dup();
-
 	V get(int key);
 
 	@Override

@@ -63,11 +63,6 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 	}
 
 	@Override
-	public LongKeyMap<V> dup() {
-		return create(this);
-	}
-
-	@Override
 	public V get(long key) {
 		return delegate.get(key);
 	}

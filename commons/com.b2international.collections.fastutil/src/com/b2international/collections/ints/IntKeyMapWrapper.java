@@ -58,11 +58,6 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 	}
 
 	@Override
-	public IntKeyMap<V> dup() {
-		return create(this);
-	}
-
-	@Override
 	public V get(int key) {
 		return delegate.get(key);
 	}

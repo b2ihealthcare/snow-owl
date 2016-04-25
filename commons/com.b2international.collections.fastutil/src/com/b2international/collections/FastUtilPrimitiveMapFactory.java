@@ -76,6 +76,11 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
+	public LongKeyFloatMap newLongKeyFloatOpenHashMap(LongKeyFloatMap source) {
+		return LongKeyFloatMapWrapper.create(source);
+	}
+	
+	@Override
 	public LongKeyIntMap newLongKeyIntOpenHashMap() {
 		return LongKeyIntMapWrapper.create();
 	}
@@ -86,6 +91,11 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	}
 
 	@Override
+	public LongKeyIntMap newLongKeyIntOpenHashMap(LongKeyIntMap source) {
+		return LongKeyIntMapWrapper.create(source);
+	}
+
+	@Override
 	public LongKeyLongMap newLongKeyLongOpenHashMap() {
 		return LongKeyLongMapWrapper.create();
 	}
@@ -93,6 +103,11 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	@Override
 	public LongKeyLongMap newLongKeyLongOpenHashMapWithExpectedSize(int expectedSize) {
 		return LongKeyLongMapWrapper.createWithExpectedSize(expectedSize);
+	}
+
+	@Override
+	public LongKeyLongMap newLongKeyLongOpenHashMap(LongKeyLongMap source) {
+		return LongKeyLongMapWrapper.create(source);
 	}
 
 	@Override
@@ -108,6 +123,11 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	@Override
 	public <V> LongKeyMap<V> newLongKeyOpenHashMap(HashFunction hashFunction) {
 		return LongKeyMapWrapper.create(hashFunction);
+	}
+
+	@Override
+	public <V> LongKeyMap<V> newLongKeyOpenHashMap(LongKeyMap<V> source) {
+		return LongKeyMapWrapper.create(source);
 	}
 
 	@Override

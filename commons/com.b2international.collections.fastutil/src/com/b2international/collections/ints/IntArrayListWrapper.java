@@ -42,11 +42,6 @@ public class IntArrayListWrapper extends IntCollectionWrapper implements IntList
 	}
 
 	@Override
-	public IntList dup() {
-		return create(this);
-	}
-
-	@Override
 	public int get(int index) {
 		return delegate().getInt(index);
 	}

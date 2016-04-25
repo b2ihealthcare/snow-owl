@@ -42,7 +42,11 @@ public abstract class PrimitiveSets {
 	}
 	
 	public static ByteSet newByteOpenHashSet(ByteCollection source) {
-		return FACTORY.newByteOpenHashSet(source);
+		if (source == null) {
+			return newByteOpenHashSet();
+		} else {
+			return FACTORY.newByteOpenHashSet(source);
+		}
 	}
 
 	public static BitSet newBitSet() {
@@ -84,6 +88,14 @@ public abstract class PrimitiveSets {
 
 	public static IntSet newIntOpenHashSetWithExpectedSize(int expectedSize) {
 		return FACTORY.newIntOpenHashSetWithExpectedSize(expectedSize);
+	}
+	
+	public static IntSet newIntOpenHashSet(IntCollection source) {
+		if (source == null) {
+			return newIntOpenHashSet();
+		} else {
+			return FACTORY.newIntOpenHashSet(source);
+		}
 	}
 
 	public static LongSet newLongOpenHashSet() {

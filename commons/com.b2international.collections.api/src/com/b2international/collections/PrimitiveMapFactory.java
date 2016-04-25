@@ -45,19 +45,27 @@ public interface PrimitiveMapFactory {
 
 	LongKeyFloatMap newLongKeyFloatOpenHashMapWithExpectedSize(int expectedSize);
 
+	LongKeyFloatMap newLongKeyFloatOpenHashMap(LongKeyFloatMap source);
+
 	LongKeyIntMap newLongKeyIntOpenHashMap();
 
 	LongKeyIntMap newLongKeyIntOpenHashMapWithExpectedSize(int expectedSize);
 
+	LongKeyIntMap newLongKeyIntOpenHashMap(LongKeyIntMap source);
+	
 	LongKeyLongMap newLongKeyLongOpenHashMap();
 
 	LongKeyLongMap newLongKeyLongOpenHashMapWithExpectedSize(int expectedSize);
 
+	LongKeyLongMap newLongKeyLongOpenHashMap(LongKeyLongMap source);
+	
 	<V> LongKeyMap<V> newLongKeyOpenHashMap();
 
 	<V> LongKeyMap<V> newLongKeyOpenHashMap(HashFunction hashFunction);
 
 	<V> LongKeyMap<V> newLongKeyOpenHashMapWithExpectedSize(int expectedSize);
+	
+	<V> LongKeyMap<V> newLongKeyOpenHashMap(LongKeyMap<V> source);
 	
 	<K> ByteValueMap<K> newObjectKeyByteOpenHashMap();
 	
@@ -66,5 +74,4 @@ public interface PrimitiveMapFactory {
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMap();
 	
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMapWithExpectedSize(int expectedSize);
-
 }

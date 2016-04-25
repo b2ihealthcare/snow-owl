@@ -60,11 +60,6 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 	}
 
 	@Override
-	public ByteKeyLongMap dup() {
-		return create(this);
-	}
-
-	@Override
 	public long get(byte key) {
 		return delegate.get(key);
 	}

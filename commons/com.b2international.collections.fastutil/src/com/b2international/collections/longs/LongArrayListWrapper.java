@@ -41,11 +41,6 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 	}
 
 	@Override
-	public LongList dup() {
-		return create(this);
-	}
-
-	@Override
 	public long get(int index) {
 		return delegate().getLong(index);
 	}

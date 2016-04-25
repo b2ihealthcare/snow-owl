@@ -62,11 +62,6 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 	}
 
 	@Override
-	public LongKeyFloatMap dup() {
-		return create(this);
-	}
-
-	@Override
 	public float get(long key) {
 		return delegate.get(key);
 	}
@@ -91,7 +86,7 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 		return FloatCollectionWrapper.wrap(delegate.values());
 	}
 
-	private LongKeyFloatMap create(LongKeyFloatMap map) {
+	public static LongKeyFloatMap create(LongKeyFloatMap map) {
 		if (map instanceof LongKeyFloatMapWrapper) {
 			final Long2FloatMap sourceDelegate = ((LongKeyFloatMapWrapper) map).delegate;
 			return new LongKeyFloatMapWrapper(clone(sourceDelegate));

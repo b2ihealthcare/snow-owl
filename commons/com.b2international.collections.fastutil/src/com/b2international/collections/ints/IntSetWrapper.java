@@ -29,13 +29,7 @@ public class IntSetWrapper extends IntCollectionWrapper implements IntSet {
 		return (it.unimi.dsi.fastutil.ints.IntSet) super.delegate();
 	}
 	
-	@Override
-	public com.b2international.collections.ints.IntSet dup() {
-		return IntOpenHashSetWrapper.create(this);
-	}
-	
 	public static IntSet wrap(it.unimi.dsi.fastutil.ints.IntSet collection) {
 		return new IntSetWrapper(collection);
 	}
-	
 }

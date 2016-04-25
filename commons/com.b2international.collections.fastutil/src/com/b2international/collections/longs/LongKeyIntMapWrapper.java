@@ -62,11 +62,6 @@ public final class LongKeyIntMapWrapper implements LongKeyIntMap {
 	}
 
 	@Override
-	public LongKeyIntMap dup() {
-		return create(this);
-	}
-
-	@Override
 	public int get(long key) {
 		return delegate.get(key);
 	}
@@ -91,7 +86,7 @@ public final class LongKeyIntMapWrapper implements LongKeyIntMap {
 		return IntCollectionWrapper.wrap(delegate.values());
 	}
 
-	private LongKeyIntMap create(LongKeyIntMap map) {
+	public static LongKeyIntMap create(LongKeyIntMap map) {
 		if (map instanceof LongKeyIntMapWrapper) {
 			final Long2IntMap sourceDelegate = ((LongKeyIntMapWrapper) map).delegate;
 			return new LongKeyIntMapWrapper(clone(sourceDelegate));

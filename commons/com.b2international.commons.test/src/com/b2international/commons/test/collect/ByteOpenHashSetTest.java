@@ -252,30 +252,6 @@ public class ByteOpenHashSetTest {
 	}
 
 	@Test
-	public void dup() {
-		ByteSet byteSet = PrimitiveSets.newByteOpenHashSet();
-
-		byteSet.add(_0);
-		byteSet.add(_5);
-		byteSet.add(_10);
-
-		ByteSet otherSet = byteSet.dup();
-
-		assertTrue("First set should contain all elements from second set.", byteSet.containsAll(otherSet));
-		assertTrue("Second set should contain all elements from first set.", otherSet.containsAll(byteSet));
-		assertTrue("First set should be equal to second set.", byteSet.equals(otherSet));
-		assertTrue("Second set should be equal to first set.", otherSet.equals(byteSet));
-	}
-
-	@Test
-	public void dup_empty() {
-		ByteSet byteSet = PrimitiveSets.newByteOpenHashSet();
-		ByteSet otherSet = byteSet.dup();
-		assertTrue("Byte set should be empty.", byteSet.isEmpty());
-		assertTrue("Other byte set should be empty.", otherSet.isEmpty());
-	}
-
-	@Test
 	public void iterator() {
 		ByteSet byteSet = PrimitiveSets.newByteOpenHashSet();
 

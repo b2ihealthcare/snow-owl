@@ -28,9 +28,6 @@ public interface ByteKeyMap<V> extends PrimitiveKeyMap {
 
 	boolean containsKey(byte key);
 	
-	@Override
-	ByteKeyMap<V> dup();
-
 	V get(byte key);
 
 	@Override

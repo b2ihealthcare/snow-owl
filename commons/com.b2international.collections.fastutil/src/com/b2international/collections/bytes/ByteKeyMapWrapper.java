@@ -62,11 +62,6 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 	}
 
 	@Override
-	public ByteKeyMap<V> dup() {
-		return create(this);
-	}
-
-	@Override
 	public V get(byte key) {
 		return delegate.get(key);
 	}

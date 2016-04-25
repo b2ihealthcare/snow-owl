@@ -59,10 +59,6 @@ public class IntKeySetMultimap<V> {
 		return map.containsKey(key);
 	}
 
-	public IntKeySetMultimap<V> dup() {
-		return new IntKeySetMultimap<V>(map.dup());
-	}
-
 	public IntSet keySet() {
 		return map.keySet();
 	}

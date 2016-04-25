@@ -35,11 +35,6 @@ public abstract class LongCollections {
 		}
 		
 		@Override
-		public EmptyLongSet dup() {
-			return this;
-		}
-		
-		@Override
 		public boolean add(long value) {
 			throw new UnsupportedOperationException("Can't add value " + value + " to a SingletonLongSet.");
 		}
@@ -76,11 +71,6 @@ public abstract class LongCollections {
 		@Override
 		public LongIterator iterator() {
 			return singletonIterator(value);
-		}
-	
-		@Override
-		public LongSet dup() {
-			return this;
 		}
 	
 		@Override
@@ -191,22 +181,12 @@ public abstract class LongCollections {
 		public final long[] toArray() {
 			return delegate.toArray();
 		}
-
-		@Override
-		public LongCollection dup() {
-			return this;
-		}
 	}
 
 	private static final class UnmodifiableLongSet extends UnmodifiableLongCollection implements LongSet {
 
 		UnmodifiableLongSet(LongCollection collection) {
 			super(collection);
-		}
-
-		@Override
-		public LongSet dup() {
-			return (LongSet) super.dup();
 		}
 	}
 	

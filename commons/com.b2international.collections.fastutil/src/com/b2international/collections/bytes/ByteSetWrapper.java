@@ -29,13 +29,7 @@ public class ByteSetWrapper extends ByteCollectionWrapper implements ByteSet {
 		return (it.unimi.dsi.fastutil.bytes.ByteSet) super.delegate();
 	}
 	
-	@Override
-	public com.b2international.collections.bytes.ByteSet dup() {
-		return ByteOpenHashSetWrapper.create(this);
-	}
-	
 	public static ByteSet wrap(it.unimi.dsi.fastutil.bytes.ByteSet collection) {
 		return new ByteSetWrapper(collection);
 	}
-	
 }

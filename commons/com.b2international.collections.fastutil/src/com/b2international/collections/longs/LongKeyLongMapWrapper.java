@@ -62,11 +62,6 @@ public final class LongKeyLongMapWrapper implements LongKeyLongMap {
 	}
 
 	@Override
-	public LongKeyLongMap dup() {
-		return create(this);
-	}
-
-	@Override
 	public long get(long key) {
 		return delegate.get(key);
 	}
@@ -91,7 +86,7 @@ public final class LongKeyLongMapWrapper implements LongKeyLongMap {
 		return LongCollectionWrapper.wrap(delegate.values());
 	}
 
-	private LongKeyLongMap create(LongKeyLongMap map) {
+	public static LongKeyLongMap create(LongKeyLongMap map) {
 		if (map instanceof LongKeyLongMapWrapper) {
 			final Long2LongMap sourceDelegate = ((LongKeyLongMapWrapper) map).delegate;
 			return new LongKeyLongMapWrapper(clone(sourceDelegate));

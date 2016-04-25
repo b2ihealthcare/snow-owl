@@ -42,11 +42,6 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 	}
 
 	@Override
-	public ByteList dup() {
-		return create(this);
-	}
-
-	@Override
 	public byte get(int index) {
 		return delegate().getByte(index);
 	}

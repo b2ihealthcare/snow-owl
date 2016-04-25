@@ -63,11 +63,6 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 	}
 
 	@Override
-	public ByteValueMap<K> dup() {
-		return create(this);
-	}
-
-	@Override
 	public byte get(K key) {
 		return delegate.getByte(key);
 	}

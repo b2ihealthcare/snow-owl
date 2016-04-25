@@ -64,6 +64,14 @@ public abstract class PrimitiveMaps {
 	public static LongKeyFloatMap newLongKeyFloatOpenHashMapWithExpectedSize(int expectedSize) {
 		return FACTORY.newLongKeyFloatOpenHashMapWithExpectedSize(expectedSize);
 	}
+	
+	public static LongKeyFloatMap newLongKeyFloatOpenHashMap(LongKeyFloatMap source) {
+		if (source == null) {
+			return newLongKeyFloatOpenHashMap();
+		} else {
+			return FACTORY.newLongKeyFloatOpenHashMap(source);
+		}
+	}
 
 	public static LongKeyIntMap newLongKeyIntOpenHashMap() {
 		return FACTORY.newLongKeyIntOpenHashMap();
@@ -71,6 +79,14 @@ public abstract class PrimitiveMaps {
 
 	public static LongKeyIntMap newLongKeyIntOpenHashMapWithExpectedSize(int expectedSize) {
 		return FACTORY.newLongKeyIntOpenHashMapWithExpectedSize(expectedSize);
+	}
+	
+	public static LongKeyIntMap newLongKeyIntOpenHashMap(LongKeyIntMap source) {
+		if (source == null) {
+			return newLongKeyIntOpenHashMap();
+		} else {
+			return FACTORY.newLongKeyIntOpenHashMap(source);
+		}
 	}
 
 	public static LongKeyLongMap newLongKeyLongOpenHashMap() {
@@ -81,6 +97,14 @@ public abstract class PrimitiveMaps {
 		return FACTORY.newLongKeyLongOpenHashMapWithExpectedSize(expectedSize);
 	}
 
+	public static LongKeyLongMap newLongKeyLongOpenHashMap(LongKeyLongMap source) {
+		if (source == null) {
+			return newLongKeyLongOpenHashMap();
+		} else {
+			return FACTORY.newLongKeyLongOpenHashMap(source);
+		}
+	}
+	
 	public static <V> LongKeyMap<V> newLongKeyOpenHashMap() {
 		return FACTORY.newLongKeyOpenHashMap();
 	}
@@ -91,6 +115,14 @@ public abstract class PrimitiveMaps {
 
 	public static <V> LongKeyMap<V> newLongKeyOpenHashMapWithExpectedSize(int expectedSize) {
 		return FACTORY.newLongKeyOpenHashMapWithExpectedSize(expectedSize);
+	}
+	
+	public static <V> LongKeyMap<V> newLongKeyOpenHashMap(LongKeyMap<V> source) {
+		if (source == null) {
+			return newLongKeyOpenHashMap();
+		} else {
+			return FACTORY.newLongKeyOpenHashMap(source);
+		}
 	}
 
 	public static <K> ByteValueMap<K> newObjectKeyByteOpenHashMap() {
