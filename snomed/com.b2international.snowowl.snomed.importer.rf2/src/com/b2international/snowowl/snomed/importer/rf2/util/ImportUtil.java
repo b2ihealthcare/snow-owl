@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -49,8 +50,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ConsoleProgressMonitor;
-import com.b2international.commons.collections.LongSet;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -450,7 +451,10 @@ public final class ImportUtil {
 	}
 	
 	private ImmutableList<String> getAsStringList(final LongSet longIds) {
-		return FluentIterable.from(Longs.asList(longIds.toSortedArray())).transform(new Function<Long, String>() {
+		final long[] longIdArray = longIds.toArray();
+		Arrays.sort(longIdArray);
+		
+		return FluentIterable.from(Longs.asList(longIdArray)).transform(new Function<Long, String>() {
 			@Override
 			public String apply(Long input) {
 				return String.valueOf(input);

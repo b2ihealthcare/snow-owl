@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
@@ -53,8 +54,6 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
-
-import bak.pcj.LongCollection;
 
 /**
  * Class for validating the taxonomy of active concepts and active IS_A relationships.

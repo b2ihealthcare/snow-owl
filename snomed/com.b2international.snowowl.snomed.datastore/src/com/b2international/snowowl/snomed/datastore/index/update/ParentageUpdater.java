@@ -17,10 +17,9 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Objects;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-
-import com.b2international.commons.pcj.LongCollections;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongCollections;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;

@@ -48,6 +48,7 @@ import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.Version;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -58,7 +59,7 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.b2international.snowowl.datastore.index.lucene.MultiPhrasePrefixQuery;
-import com.b2international.snowowl.datastore.index.mapping.IndexField;
+import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -73,9 +74,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
-
-import bak.pcj.LongCollection;
-import bak.pcj.adapter.LongCollectionToCollectionAdapter;
 
 /**
  * @since 4.5
@@ -168,8 +166,8 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		addComponentIdFilter(filters, ops);
 		addConceptIdsFilter(filters, ops);
 		addLanguageFilter(filters, ops);
-		addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, SnomedMappings.descriptionConcept());
-		addEscgFilter(context, filters, ops, OptionKey.TYPE, SnomedMappings.descriptionType());
+		addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, (LongIndexField) SnomedMappings.descriptionConcept());
+		addEscgFilter(context, filters, ops, OptionKey.TYPE, (LongIndexField) SnomedMappings.descriptionType());
 		addLocaleFilter(context, filters, ops, languageRefSetId); 
 		
 		final Query query = createFilteredQuery(queryBuilder.matchAll(), filters, ops);
@@ -377,12 +375,12 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 	}
 
-	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, IndexField<Long> field) {
+	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, LongIndexField field) {
 		if (containsKey(key)) {
 			try {
 				IBranchPath branchPath = context.branch().branchPath();
 				LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, getString(key));
-				Filter conceptFilter = field.createTermsFilter(new LongCollectionToCollectionAdapter(conceptIds));
+				Filter conceptFilter = field.createTermsFilter(conceptIds);
 				addFilterClause(filters, conceptFilter);
 				ops.add(ChainedFilter.AND);
 			} catch (SyntaxErrorException e) {

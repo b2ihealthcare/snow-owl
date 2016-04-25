@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -926,7 +927,7 @@ public class CDOServerCommitBuilder {
 		this.transactionAggregator = transactionAggregator;
 		this.userId = userId;
 		final String truncatedMessage = StringUtils.truncate(comment, 255 - UUID_LENGTH);
-		if (!truncatedMessage.equals(comment)) {
+		if (!Objects.equals(truncatedMessage, comment)) {
 			LOGGER.warn("Truncated commit message (original message: {})", comment);
 		}
 		this.comment = truncatedMessage;

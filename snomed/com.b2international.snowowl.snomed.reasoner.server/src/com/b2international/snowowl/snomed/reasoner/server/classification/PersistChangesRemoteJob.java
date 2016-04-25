@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -52,8 +53,6 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.Rela
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
 import com.google.common.collect.Lists;
-
-import bak.pcj.set.LongSet;
 
 /**
  * Represents a remote job responsible for saving changes to the repository.

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.commons.pcj.LongSets.newLongSetWithExpectedSize;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
@@ -30,7 +29,10 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.collections.longs.LongCollections;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -42,9 +44,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Server-side terminology browser implementation for SNOMED CT which uses only the STATED relationships when computing parent-child relationships.
@@ -104,7 +103,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(String.valueOf(conceptId)), 1); // concept
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().build();
@@ -118,7 +117,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(String.valueOf(conceptId)), 1); // concept
 		
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new LongOpenHashSet();
+			return PrimitiveSets.newLongOpenHashSet();
 		}
 		
 		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().statedAncestor().build(); // all parents
@@ -126,10 +125,14 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		
 		final LongSet parents = SnomedMappings.statedParent().getValueAsLongSet(doc);
 		final LongSet ancestors = SnomedMappings.statedAncestor().getValueAsLongSet(doc);
-		final LongSet ids = newLongSetWithExpectedSize(parents.size() + ancestors.size());
-		ids.addAll(parents);
-		ids.addAll(ancestors);
-		return ids;
+		if (parents.isEmpty() && ancestors.isEmpty()) {
+			return LongCollections.emptySet();
+		} else {
+			final LongSet ids = PrimitiveSets.newLongOpenHashSet(parents.size() + ancestors.size());
+			ids.addAll(parents);
+			ids.addAll(ancestors);
+			return ids;
+		}
 	}
 	
 	@Override

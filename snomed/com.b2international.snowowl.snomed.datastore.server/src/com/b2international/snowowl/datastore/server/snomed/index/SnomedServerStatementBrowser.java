@@ -34,8 +34,12 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -53,11 +57,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongMapIterator;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongSet;
 
 /**
  * Index based statement browser implementation.
@@ -434,33 +433,37 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 		}
 	}
 	
+	/**
+	 * @deprecated - unsupported, will be removed in 4.7 
+	 */
 	@Override
 	public Map<String, String> getAllStatementImageIdsById(final IBranchPath branchPath, final String conceptId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
-
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(getRelationshipSourceOrDestinationQuery(conceptId), Occur.MUST);
-		
-		final StatementIdCollector collector = new StatementIdCollector();
-		service.search(branchPath, query, collector);
-
-		final LongSet idsSet = collector.getIds();
-		final Map<String, String> $ = Maps.newHashMapWithExpectedSize(idsSet.size());
-
-		if (idsSet.size() > 1000) {
-			final SnomedConceptIconIdCollector labelCollector = new SnomedConceptIconIdCollector(idsSet);
-			service.search(branchPath, SnomedMappings.newQuery().concept().matchAll(), labelCollector);
-			return labelCollector.getIdIconIdStringMapping();
-		} else {
-			final String[] ids = LongSets.toStringArray(collector.getIds());
-			final String[] iconIds = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getIconId(branchPath, ids);
-
-			for (int i = 0; i < ids.length; i++) {
-				$.put(ids[i], iconIds[i]);
-			}
-			return $;
-		}
+		throw new UnsupportedOperationException();
+//		checkNotNull(branchPath, "Branch path argument cannot be null.");
+//		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
+//
+//		final BooleanQuery query = new BooleanQuery(true);
+//		query.add(getRelationshipSourceOrDestinationQuery(conceptId), Occur.MUST);
+//		
+//		final StatementIdCollector collector = new StatementIdCollector();
+//		service.search(branchPath, query, collector);
+//
+//		final LongSet idsSet = collector.getIds();
+//		final Map<String, String> $ = Maps.newHashMapWithExpectedSize(idsSet.size());
+//
+//		if (idsSet.size() > 1000) {
+//			final SnomedConceptIconIdCollector labelCollector = new SnomedConceptIconIdCollector(idsSet);
+//			service.search(branchPath, SnomedMappings.newQuery().concept().matchAll(), labelCollector);
+//			return labelCollector.getIdIconIdStringMapping();
+//		} else {
+//			final String[] ids = LongSets.toStringArray(collector.getIds());
+//			final String[] iconIds = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getIconId(branchPath, ids);
+//
+//			for (int i = 0; i < ids.length; i++) {
+//				$.put(ids[i], iconIds[i]);
+//			}
+//			return $;
+//		}
 	}
 
 	private Query getRelationshipSourceOrDestinationQuery(final String conceptId) {
@@ -471,33 +474,36 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 				.matchAny();
 	}
 
+	/**
+	 * @deprecated - unsupported, will be removed in 4.7
+	 */
 	@Override
 	public Map<String, String> getAllDestinationLabels(final IBranchPath branchPath, final Collection<String> sourceIds,
 			final String typeId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(sourceIds, "sourceIds");
-		checkNotNull(typeId, "typeId");
-		final StatementDestinationIdCollector collector = new StatementDestinationIdCollector();
-
-		final Query query = SnomedMappings.newQuery().relationshipType(typeId).matchAll();
-		service.search(branchPath, query, collector);
-
-		final LongKeyLongMap idsSet = collector.getIds();
-		final LongKeyLongMapIterator iter = idsSet.entries();
-		while (iter.hasNext()) {
-			iter.next();
-			if (!sourceIds.contains(String.valueOf(iter.getKey()))) {
-				iter.remove();
-			}
-		}
-		final Map<String, String> result = Maps.newHashMapWithExpectedSize(idsSet.size());
-		final String[] ids = LongSets.toStringArray(idsSet.keySet());
-		final String[] values = LongSets.toStringArray(idsSet.values());
-		final String[] labels = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getLabels(branchPath, values);
-		for (int i = 0; i < ids.length; i++) {
-			result.put(ids[i], labels[i]);
-		}
-		return result;
+		throw new UnsupportedOperationException();
+//		checkNotNull(branchPath, "Branch path argument cannot be null.");
+//		checkNotNull(sourceIds, "sourceIds");
+//		checkNotNull(typeId, "typeId");
+//		final StatementDestinationIdCollector collector = new StatementDestinationIdCollector();
+//
+//		final Query query = SnomedMappings.newQuery().relationshipType(typeId).matchAll();
+//		service.search(branchPath, query, collector);
+//
+//		final LongKeyLongMap idsSet = collector.getIds();
+//		for (final LongIterator keys = idsSet.keySet().iterator(); keys.hasNext(); /**/) {
+//			final long key = keys.next();
+//			if (!sourceIds.contains(String.valueOf(key))) {
+//				keys.remove();
+//			}
+//		}
+//		final Map<String, String> result = Maps.newHashMapWithExpectedSize(idsSet.size());
+//		final String[] ids = LongSets.toStringArray(idsSet.keySet());
+//		final String[] values = LongSets.toStringArray(idsSet.values());
+//		final String[] labels = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getLabels(branchPath, values);
+//		for (int i = 0; i < ids.length; i++) {
+//			result.put(ids[i], labels[i]);
+//		}
+//		return result;
 	}
 	
 	private Query queryActiveRelationshipsWhereObjectId(long conceptId) {

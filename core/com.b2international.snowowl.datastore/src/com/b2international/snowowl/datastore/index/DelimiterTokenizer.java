@@ -20,11 +20,8 @@ import java.io.Reader;
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.Version;
 
-import bak.pcj.set.IntOpenHashSet;
-import bak.pcj.set.IntSet;
-import bak.pcj.set.UnmodifiableIntSet;
-
 import com.b2international.snowowl.core.TextConstants;
+import com.google.common.base.CharMatcher;
 
 /**
  * A character-oriented tokenizer which splits tokens on whitespace and delimiters enumerated in
@@ -42,38 +39,15 @@ public class DelimiterTokenizer extends CharTokenizer {
 	/**
 	 * @see TextConstants#WHITESPACE_OR_DELIMITER_MATCHER
 	 */
-	private static final IntSet TOKEN_CHARS;
+	private static final CharMatcher TOKEN_CHARS;
 	
 	static {
-		
-		final IntSet set = new IntOpenHashSet();
-		
-		char[] charArray = TextConstants.DELIMITERS.toCharArray();
-		for (int i = 0; i < charArray.length; i++) {
-			set.add(charArray[i]);
-		}
-		
-		charArray = BREAKING_WHITESPACE_CHARS.toCharArray();
-		for (int i = 0; i < charArray.length; i++) {
-			set.add(charArray[i]);
-		}
-		
-		charArray = NON_BREAKING_WHITESPACE_CHARS.toCharArray();
-		for (int i = 0; i < charArray.length; i++) {
-			set.add(charArray[i]);
-		}
-		
-		final int first = '\u2000';
-		final int last = '\u200a';
-		
-		for (int i = first; i < last; i++) {
-			set.add(i);
-		}
-		
-		set.trimToSize();
-		
-		TOKEN_CHARS = new UnmodifiableIntSet(set);
-		
+		TOKEN_CHARS = CharMatcher.ANY
+			.and(CharMatcher.anyOf(BREAKING_WHITESPACE_CHARS))
+			.and(CharMatcher.anyOf(NON_BREAKING_WHITESPACE_CHARS))
+			.and(CharMatcher.anyOf(TextConstants.DELIMITERS))
+			.and(CharMatcher.inRange('\u2000', '\u200a'))
+			.precomputed();
 	}
 	
 	public DelimiterTokenizer(Reader input) {
@@ -88,6 +62,6 @@ public class DelimiterTokenizer extends CharTokenizer {
 	@Override
 	protected boolean isTokenChar(int c) {
 		// We don't have whitespace characters to match in the supplementary code point range
-		return c >= Character.MIN_SUPPLEMENTARY_CODE_POINT || !TOKEN_CHARS.contains(c);
+		return c >= Character.MIN_SUPPLEMENTARY_CODE_POINT || !TOKEN_CHARS.matches((char) c);
 	}
 }

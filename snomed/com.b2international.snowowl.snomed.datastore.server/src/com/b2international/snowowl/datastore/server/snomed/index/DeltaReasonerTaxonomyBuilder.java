@@ -21,7 +21,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -30,10 +29,9 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.ecore.EClass;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Concept;
@@ -58,8 +56,8 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 			SnomedPackage.Literals.RELATIONSHIP,
 			SnomedPackage.Literals.CONCEPT);
 
-	private final LongSet conceptIdsToRemove = new LongOpenHashSet();
-	private final LongSet conceptIdsToAdd = new LongOpenHashSet();
+	private final LongSet conceptIdsToRemove = PrimitiveSets.newLongOpenHashSet();
+	private final LongSet conceptIdsToAdd = PrimitiveSets.newLongOpenHashSet();
 	
 	/**
 	 * Creates a new {@link DeltaReasonerTaxonomyBuilder} instance with the specified arguments.
@@ -357,15 +355,12 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 		conceptIdsToAdd.add(conceptId);
 	}
 
-	private <T> void addToMultimap(final LongKeyMap multimap, final long key, final T fragment) {
-		@SuppressWarnings("unchecked")
-		List<T> fragments = (List<T>) multimap.get(key);
-		
+	private <T> void addToMultimap(final LongKeyMap<Collection<T>> multimap, final long key, final T fragment) {
+		Collection<T> fragments = multimap.get(key);
 		if (null == fragments) {
 			fragments = newArrayList();
 			multimap.put(key, fragments);
 		}
-			
 		fragments.add(fragment);
 	}
 

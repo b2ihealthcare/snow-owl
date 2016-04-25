@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.index.AtomicReader;
@@ -25,9 +26,8 @@ import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.util.BytesRef;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -49,7 +49,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 	private NumericDocValues storageKeyValues;
 	private NumericDocValues refSetIdValues;
 
-	private final LongKeyMap dataTypeMap;
+	private final LongKeyMap<Collection<ConcreteDomainFragment>> dataTypeMap;
 
 	/**
 	 * Creates a data type collector instance with the default expected size ({@value #DEFAULT_SIZE} items).
@@ -64,7 +64,8 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 	 * @param expectedSize the expected size
 	 */
 	public ConcreteDomainFragmentCollector(final int expectedSize) {
-		dataTypeMap = (0 > expectedSize) ? new LongKeyOpenHashMap(expectedSize) : new LongKeyOpenHashMap();
+		dataTypeMap = (0 > expectedSize) ? PrimitiveMaps.<Collection<ConcreteDomainFragment>> newLongKeyOpenHashMap(expectedSize)
+				: PrimitiveMaps.<Collection<ConcreteDomainFragment>> newLongKeyOpenHashMap();
 	}
 
 	@Override
@@ -119,7 +120,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 		final List<ConcreteDomainFragment> dataTypes;
 
 		if (dataTypeMap.containsKey(id)) {
-			dataTypes = getDataTypesById(id);
+			dataTypes = (List<ConcreteDomainFragment>) getDataTypesById(id);
 		} else {
 			dataTypes = newArrayList();
 			dataTypeMap.put(id, dataTypes);
@@ -133,12 +134,11 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 	 * 
 	 * @return the collected map of data types
 	 */
-	public LongKeyMap getDataTypeMap() {
+	public LongKeyMap<Collection<ConcreteDomainFragment>> getDataTypeMap() {
 		return dataTypeMap;
 	}
 
-	@SuppressWarnings("unchecked")
-	private List<ConcreteDomainFragment> getDataTypesById(final long id) {
-		return (List<ConcreteDomainFragment>) dataTypeMap.get(id);
+	private Collection<ConcreteDomainFragment> getDataTypesById(final long id) {
+		return dataTypeMap.get(id);
 	}
 }

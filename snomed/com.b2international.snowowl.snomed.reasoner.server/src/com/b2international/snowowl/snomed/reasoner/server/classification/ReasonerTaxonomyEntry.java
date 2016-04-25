@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.classification;
 
-import bak.pcj.set.LongSet;
+import com.b2international.collections.longs.LongSet;
 
 /**
  * 

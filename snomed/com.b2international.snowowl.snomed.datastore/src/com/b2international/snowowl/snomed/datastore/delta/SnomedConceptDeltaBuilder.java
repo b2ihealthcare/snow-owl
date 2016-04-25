@@ -35,10 +35,11 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.util.AdapterUtil;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentTextProvider;
 import com.b2international.snowowl.datastore.BranchPointUtils;
@@ -69,8 +70,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import bak.pcj.set.LongSet;
 
 /**
  * Visitor to collect feature changes that are specific for SNOMED CT.
@@ -391,7 +390,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	@Override
 	protected String getParentIdFromTerminologyBrowser(String id) {
 		final LongSet ancestorIds = getTerminologyBrowser().getSuperTypeIds(getBranchPath(), Long.parseLong(id));
-		return LongSets.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
+		return CompareUtils.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
 	}
 	
 	@Override

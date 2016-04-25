@@ -41,9 +41,11 @@ import org.eclipse.net4j.util.event.IListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.status.SerializableStatus;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
@@ -103,9 +105,6 @@ import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConc
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongSet;
 
 /**
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 

@@ -305,8 +305,8 @@ public abstract class SnomedComponentApiAssert {
 	 * @param branchPath the branch path to check
 	 * @param conceptId the concept identifier to check
 	 */
-	public static void assertConceptExists(final IBranchPath branchPath, final String conceptId) {
-		assertComponentExists(branchPath, SnomedComponentType.CONCEPT, conceptId);
+	public static ValidatableResponse assertConceptExists(final IBranchPath branchPath, final String conceptId) {
+		return assertComponentExists(branchPath, SnomedComponentType.CONCEPT, conceptId);
 	}
 
 	/**

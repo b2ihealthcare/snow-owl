@@ -22,8 +22,8 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import bak.pcj.LongCollection;
-import bak.pcj.list.LongArrayList;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveSets;
 
 /**
  * Collector instance for gathering long doc values from the matching documents.
@@ -36,7 +36,7 @@ public class LongDocValuesCollector extends AbstractDocsOutOfOrderCollector {
 	private static final int DEFAULT_SIZE = 10000;
 
 	private final String fieldName;
-	private final LongCollection collectedValues;
+	private final LongSet collectedValues;
 
 	private NumericDocValues numericDocValues;
 
@@ -57,7 +57,7 @@ public class LongDocValuesCollector extends AbstractDocsOutOfOrderCollector {
 	 */
 	public LongDocValuesCollector(final String fieldName, final int expectedSize) {
 		this.fieldName = checkNotNull(fieldName, "Field name argument cannot be null.");
-		this.collectedValues = (0 > expectedSize) ? new LongArrayList(expectedSize) : new LongArrayList();
+		this.collectedValues = (0 > expectedSize) ? PrimitiveSets.newLongOpenHashSet(expectedSize) : PrimitiveSets.newLongOpenHashSet();
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class LongDocValuesCollector extends AbstractDocsOutOfOrderCollector {
 	 * 
 	 * @return the collected values
 	 */
-	public LongCollection getValues() {
+	public LongSet getValues() {
 		return collectedValues;
 	}
 }

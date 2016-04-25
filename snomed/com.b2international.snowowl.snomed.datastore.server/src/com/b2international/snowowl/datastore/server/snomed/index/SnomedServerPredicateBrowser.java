@@ -39,7 +39,7 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;

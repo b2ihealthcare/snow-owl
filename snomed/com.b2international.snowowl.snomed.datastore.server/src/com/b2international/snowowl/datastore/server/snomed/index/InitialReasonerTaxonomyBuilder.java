@@ -27,7 +27,14 @@ import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -45,16 +52,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBui
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
-
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.map.LongKeyIntOpenHashMap;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyMapIterator;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
 
 /**
  * Class for building the bare minimum representation of the state of the SNOMED&nbsp;CT ontology before processing changes.
@@ -120,7 +117,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final int hitCount = getIndexServerService().getHitCount(branchPath, query, null);
 			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName(), hitCount);
 			getIndexServerService().search(branchPath, query, collector);
-			conceptIdsReference.set(new LongOpenHashSet(collector.getValues()));
+			conceptIdsReference.set(PrimitiveSets.newLongOpenHashSet(collector.getValues()));
 			checkpoint(taskName, MessageFormat.format("active concept IDs collection ({0})", additionalClause.getTerm().field()), stopwatch);
 		}
 	}
@@ -171,8 +168,8 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final long[][] conceptIds = conceptIdsReference.get();
 			final int conceptCount = conceptIds.length;
 
-			internalIdToconceptId = new LongArrayList(conceptCount);
-			conceptIdToInternalId = new LongKeyIntOpenHashMap(conceptCount);
+			internalIdToconceptId = PrimitiveLists.newLongArrayList(conceptCount);
+			conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMap(conceptCount);
 
 			for (final long[] conceptIdAndKey : conceptIds) {
 				final long conceptId = conceptIdAndKey[0];
@@ -239,13 +236,13 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		private final LongSet componentIds;
 		private final short referencedComponentType;
 		private final Collection<String> characteristicTypes;
-		private final AtomicReference<LongKeyMap> concreteDomainMapReference;
+		private final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> concreteDomainMapReference;
 
 		private GetConcreteDomainRunnable(final String taskName,
 				final LongSet componentIds,
 				final short referencedComponentType,
 				final Collection<String> characteristicTypes,
-				final AtomicReference<LongKeyMap> concreteDomainMapReference) {
+				final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> concreteDomainMapReference) {
 
 			this.taskName = taskName;
 			this.componentIds = componentIds;
@@ -267,14 +264,12 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final ConcreteDomainFragmentCollector collector = new ConcreteDomainFragmentCollector(hitCount);
 			getIndexServerService().search(branchPath, getConceptConcreteDomainQuery, collector);
 
-			final LongKeyMap concreteDomainMap = collector.getDataTypeMap();
+			final LongKeyMap<Collection<ConcreteDomainFragment>> concreteDomainMap = collector.getDataTypeMap();
 
-			for (final LongKeyMapIterator itr = concreteDomainMap.entries(); itr.hasNext(); /* not much */) {
-				itr.next();
-
-				final long componentId = itr.getKey();
+			for (final LongIterator keys = concreteDomainMap.keySet().iterator(); keys.hasNext(); /**/) {
+				final long componentId = keys.next();
 				if (!componentIds.contains(componentId)) {
-					itr.remove(); //no matching active SNOMED CT component
+					keys.remove(); //no matching active SNOMED CT component
 				}
 			}
 
@@ -302,7 +297,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 			
 			conceptIdToStatements = getStatements(getAllowedCharacteristicTypes());
-			final LongKeyLongMap statementIdToConceptIds = new LongKeyLongOpenHashMap(conceptIdToStatements.size());
+			final LongKeyLongMap statementIdToConceptIds = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIdToStatements.size());
 
 			for (final LongIterator itr = conceptIdToStatements.keySet().iterator(); itr.hasNext(); /* nothing */) {
 
@@ -327,7 +322,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			checkpoint(taskName, "mapping statements for classification", stopwatch);
 		}
 
-		private LongKeyMap getStatements(final Collection<String> characteristicTypes) {
+		private LongKeyMap<Collection<StatementFragment>> getStatements(final Collection<String> characteristicTypes) {
 			final SnomedQueryBuilder qb = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER);
 			if (characteristicTypes.size() == 1) {
 				qb.relationshipCharacteristicType(Iterables.getOnlyElement(characteristicTypes));
@@ -337,12 +332,11 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final Query statementQuery = qb.matchAll();
 			final StatementFragmentCollector collector = new StatementFragmentCollector();
 			getIndexServerService().search(branchPath, statementQuery, collector);
-			final LongKeyMap statementMap = collector.getStatementMap();
-			for (final LongKeyMapIterator itr = statementMap.entries(); itr.hasNext(); /* nothing */) {
-				itr.next();
-				final long sourceConceptId = itr.getKey();
+			final LongKeyMap<Collection<StatementFragment>> statementMap = collector.getStatementMap();
+			for (final LongIterator keys = statementMap.keySet().iterator(); keys.hasNext(); /**/) {
+				final long sourceConceptId = keys.next();
 				if (!conceptIds.contains(sourceConceptId)) { // active relationship, but source concept is not active?
-					itr.remove();
+					keys.remove();
 				}
 			}
 			return statementMap;
@@ -381,8 +375,8 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private final IBranchPath branchPath;
 	private final Stopwatch stopwatch;
 	
-	private LongKeyMap inferredStatementMap;
-	private LongKeyMap inferredConcreteDomainMap;
+	private LongKeyMap<Collection<StatementFragment>> inferredStatementMap;
+	private LongKeyMap<Collection<ConcreteDomainFragment>> inferredConcreteDomainMap;
 
 	/**
 	 * Creates a taxonomy builder instance.
@@ -407,18 +401,18 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		ForkJoinUtils.runInParallel(getIsAStatementsRunnable, getConceptIdsRunnable);
 
-		final LongSet conceptIds = new LongOpenHashSet();
+		final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet();
 		for (final long[] conceptIdAndKey : conceptIdsReference.get()) {
 			conceptIds.add(conceptIdAndKey[0]);
 		}
 
-		componentStorageKeyToConceptId = new LongKeyLongOpenHashMap(conceptIds.size()); // Lower bound estimate
+		componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIds.size()); // Lower bound estimate
 		
 		final AtomicReference<LongSet> exhaustiveConceptIdsReference = createAtomicReference();
 		final AtomicReference<LongSet> fullyDefinedConceptIdsReference = createAtomicReference();
-		final AtomicReference<LongKeyMap> conceptConcreteDomainReference = createAtomicReference();
-		final AtomicReference<LongKeyMap> inferredConceptConcreteDomainReference = createAtomicReference();
-		final AtomicReference<LongKeyMap> relationshipConcreteDomainReference = createAtomicReference();
+		final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> conceptConcreteDomainReference = createAtomicReference();
+		final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> inferredConceptConcreteDomainReference = createAtomicReference();
+		final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> relationshipConcreteDomainReference = createAtomicReference();
 		final AtomicReference<LongKeyLongMap> statementIdToConceptIdReference = createAtomicReference();
 
 		new StatementMapperRunnable(taskName, conceptIds, statementIdToConceptIdReference).run();
@@ -499,16 +493,14 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		leaving(taskName, stopwatch);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Collection<StatementFragment> getInferredStatementFragments(final long conceptId) {
-		final Object statements = inferredStatementMap.get(conceptId);
-		return (Collection<StatementFragment>) (null == statements ? Collections.emptySet() : statements);
+		final Collection<StatementFragment> statements = inferredStatementMap.get(conceptId);
+		return null == statements ? Collections.<StatementFragment>emptySet() : statements;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Collection<ConcreteDomainFragment> getInferredConceptConcreteDomainFragments(final long conceptId) {
-		final Object concreteDomains = inferredConcreteDomainMap.get(conceptId);
-		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
+		final Collection<ConcreteDomainFragment> concreteDomains = inferredConcreteDomainMap.get(conceptId);
+		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
 	}
 
 	private Collection<String> getAllowedCharacteristicTypes() {

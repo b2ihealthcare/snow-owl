@@ -20,9 +20,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.IClientRefSetBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyAndRefSetBrowser;
@@ -237,6 +236,6 @@ public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<Snomed
 	 * @param branchPath the branch path.
 	 * @return a mapping between regular reference set IDs and the contained referenced concept IDs.
 	 */
-	LongKeyMap getReferencedConceptIds(final IBranchPath branchPath);
+	LongKeyMap<LongSet> getReferencedConceptIds(final IBranchPath branchPath);
 	
 }

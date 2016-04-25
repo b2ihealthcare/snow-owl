@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
-import static com.b2international.commons.pcj.LongSets.toStringSet;
+import static com.b2international.commons.collect.LongSets.toStringSet;
 import static com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy.forBranch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.cache.CacheBuilder.newBuilder;
@@ -24,8 +24,7 @@ import static java.lang.Long.parseLong;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.browser.SuperTypeIdProvider;

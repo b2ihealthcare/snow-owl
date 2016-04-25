@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.commons.pcj.LongSets.toStringSet;
+import static com.b2international.commons.collect.LongSets.toStringSet;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.commit;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
@@ -41,9 +41,8 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyMap;
-
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;

@@ -22,11 +22,10 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-
-import bak.pcj.LongCollection;
-import bak.pcj.list.LongArrayList;
 
 /**
  * Collects all SNOMED CT relationship's source concept IDs where the statement's type ID and destination ID fulfills
@@ -69,7 +68,7 @@ public class StatementObjectIdCollector extends AbstractDocsOutOfOrderCollector 
 	public StatementObjectIdCollector(final LongCollection typeIdsToMatch, final LongCollection destinationIdsToMatch, final int expectedSize) {
 		this.typeIdsToMatch = checkNotNull(typeIdsToMatch, "Attribute IDs collection argument cannot be null");
 		this.destinationIdsToMatch = checkNotNull(destinationIdsToMatch, "Value IDs collection argument cannot be null");
-		this.sourceIds = (0 > expectedSize) ? new LongArrayList(expectedSize) : new LongArrayList();
+		this.sourceIds = (0 > expectedSize) ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
 	}
 
 	@Override

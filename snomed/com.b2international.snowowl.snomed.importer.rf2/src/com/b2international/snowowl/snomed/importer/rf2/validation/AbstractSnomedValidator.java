@@ -375,14 +375,16 @@ public abstract class AbstractSnomedValidator {
 		}
 	}
 	
-	protected void validateComponentExists(final String effectiveTime, final String componentId, final String partOfComponentId, final ReleaseComponentType componentType, final Set<String> messages) {
+	protected boolean validateComponentExists(final String effectiveTime, final String componentId, final String partOfComponentId, final ReleaseComponentType componentType, final Set<String> messages) {
 		if (!isComponentExists(componentId, componentType)) {
 			if (componentId.equals(partOfComponentId)) {
 				messages.add(String.format("Missing component '%s' in effective time '%s'", componentId, effectiveTime));
 			} else {
 				messages.add(String.format("Component '%s' references missing component '%' in effective time '%s'", partOfComponentId, componentId, effectiveTime));
 			}
+			return false;
 		}
+		return true;
 	}
 
 	/**

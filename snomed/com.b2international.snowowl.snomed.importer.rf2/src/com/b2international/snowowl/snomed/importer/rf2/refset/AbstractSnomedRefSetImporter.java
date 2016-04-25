@@ -15,15 +15,25 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.b2international.collections.longs.LongValueMap;
+import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
+import com.b2international.snowowl.datastore.index.DocIdCollector;
+import com.b2international.snowowl.datastore.index.DocIdCollector.DocIds;
+import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;
@@ -33,6 +43,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractRefSetRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
@@ -57,6 +68,29 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 
 	protected SnomedRefSetEditingContext getRefSetEditingContext() {
 		return getImportContext().getEditingContext().getRefSetEditingContext();
+	}
+	
+	@Override
+	protected LongValueMap<String> getAvailableComponents(IndexSearcher index) throws IOException {
+		final Query query = SnomedMappings.newQuery().memberRefSetType(getRefSetType()).matchAll();
+		final DocIdCollector docIdCollector = new DocIdCollector(index.getIndexReader().maxDoc());
+		index.search(query, docIdCollector);
+		final DocIds docIDs = docIdCollector.getDocIDs();
+		if (docIDs.size() <= 0) {
+			return PrimitiveMaps.newObjectKeyLongOpenHashMap();
+		} else {
+			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMap(docIDs.size());
+			final DocIdsIterator it = docIDs.iterator();
+			final Set<String> fields = SnomedMappings.fieldsToLoad().memberUuid().effectiveTime().build();
+			while (it.next()) {
+				final int docID = it.getDocID();
+				final Document doc = index.doc(docID, fields);
+				final String memberUuid = SnomedMappings.memberUuid().getValue(doc);
+				final long effectiveTime = SnomedMappings.effectiveTime().getValue(doc);
+				result.put(memberUuid, effectiveTime);
+			}
+			return result;
+		}
 	}
 
 	@Override

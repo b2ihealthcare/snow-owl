@@ -20,15 +20,14 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.List;
 
-import bak.pcj.LongIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
-import com.b2international.commons.pcj.LongCollections;
+import com.b2international.collections.longs.LongCollections;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveLists;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 
 /**
@@ -38,10 +37,10 @@ public class ReasonerTaxonomy implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private final List<LongSet> equivalentConceptIds = newArrayList();
-	private final LongSet unsatisfiableConceptIds = new LongOpenHashSet();
-	private final LongKeyMap parentIds = new LongKeyOpenHashMap();
-	private final LongKeyMap ancestorIds = new LongKeyOpenHashMap();
-	private final LongList insertionOrderedIds = new LongArrayList();
+	private final LongSet unsatisfiableConceptIds = PrimitiveSets.newLongOpenHashSet();
+	private final LongKeyMap<LongSet> parentIds = PrimitiveMaps.newLongKeyOpenHashMap();
+	private final LongKeyMap<LongSet> ancestorIds = PrimitiveMaps.newLongKeyOpenHashMap();
+	private final LongList insertionOrderedIds = PrimitiveLists.newLongArrayList();
 
 	private final IBranchPath branchPath;
 	private final long elapsedTimeMillis;
@@ -69,7 +68,7 @@ public class ReasonerTaxonomy implements Serializable {
 	}
 	
 	public void addEquivalentConceptIds(final LongSet conceptIds) {
-		equivalentConceptIds.add(new LongOpenHashSet(conceptIds));
+		equivalentConceptIds.add(PrimitiveSets.newLongOpenHashSet(conceptIds));
 	}
 	
 	public List<LongSet> getEquivalentConceptIds() {
@@ -93,19 +92,19 @@ public class ReasonerTaxonomy implements Serializable {
 		}
 	}
 
-	private LongSet getOrCreateSet(final LongKeyMap map, final long key) {
+	private LongSet getOrCreateSet(final LongKeyMap<LongSet> map, final long key) {
 		if (map.containsKey(key)) {
-			return (LongSet) map.get(key);
+			return map.get(key);
 		} else {
-			final LongSet newSet = new LongOpenHashSet();
+			final LongSet newSet = PrimitiveSets.newLongOpenHashSet();
 			map.put(key, newSet);
 			return newSet;
 		}
 	}
 
-	private LongSet getOrReturnEmptySet(final LongKeyMap map, final long key) {
+	private LongSet getOrReturnEmptySet(final LongKeyMap<LongSet> map, final long key) {
 		if (map.containsKey(key)) {
-			return (LongSet) map.get(key);
+			return map.get(key);
 		} else {
 			return LongCollections.emptySet();
 		}

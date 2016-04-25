@@ -15,14 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.filteredrefset;
 
-import bak.pcj.LongCollection;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 
 /**
- * 
+ * @deprecated - unsupported will be removed in 4.7
  */
 public class AddMultipleRefSetMemberOperation implements IRefSetMemberOperation {
 	
@@ -41,7 +40,7 @@ public class AddMultipleRefSetMemberOperation implements IRefSetMemberOperation 
 	public void apply(final LongCollection candidateIds, final LongCollection collectedIds, final SnomedHierarchy hierarchy) {
 		
 		if (!candidateIds.isEmpty()) {
-			final LongSet conceptIdsCopy = new LongOpenHashSet(conceptIds);
+			final LongSet conceptIdsCopy = PrimitiveSets.newLongOpenHashSet(conceptIds);
 			conceptIdsCopy.retainAll(candidateIds);
 			collectedIds.addAll(conceptIdsCopy);
 		} else {

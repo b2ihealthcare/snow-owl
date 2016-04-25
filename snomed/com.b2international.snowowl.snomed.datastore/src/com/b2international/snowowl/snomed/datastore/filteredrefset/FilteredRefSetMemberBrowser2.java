@@ -22,10 +22,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import bak.pcj.IntIterator;
-import bak.pcj.map.IntKeyMap;
-import bak.pcj.set.IntSet;
-
+import com.b2international.collections.ints.IntIterator;
+import com.b2international.collections.ints.IntKeyMap;
+import com.b2international.collections.ints.IntSet;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
 import com.b2international.snowowl.core.ClientTerminologyBrowserAdapter;
 import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
@@ -33,6 +32,7 @@ import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrow
 import com.google.common.collect.Lists;
 
 /**
+ * @deprecated unsupported, will be removed in 4.7
  */
 public class FilteredRefSetMemberBrowser2 
 		extends ClientTerminologyBrowserAdapter<IRefSetMemberNode, IRefSetMemberNode> 

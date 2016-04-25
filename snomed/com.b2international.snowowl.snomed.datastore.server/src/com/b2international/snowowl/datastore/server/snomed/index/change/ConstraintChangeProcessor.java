@@ -24,6 +24,7 @@ import java.util.Set;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -47,8 +48,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-
-import bak.pcj.set.LongSet;
 
 /**
  * @since 4.3

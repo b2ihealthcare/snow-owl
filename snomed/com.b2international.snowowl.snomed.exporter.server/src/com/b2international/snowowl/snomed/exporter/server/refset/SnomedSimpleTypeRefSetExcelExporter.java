@@ -35,6 +35,7 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -54,8 +55,6 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembers
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import bak.pcj.set.LongSet;
 
 /**
  * Exporter class to export simple type reference sets to Excel format where the 

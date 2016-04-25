@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
+import com.b2international.collections.PrimitiveCollection;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
 
@@ -79,6 +80,10 @@ public class CompareUtils {
 		
 		if (object instanceof Stack) {
 			return ((Stack<?>) object).isEmpty();
+		}
+		
+		if (object instanceof PrimitiveCollection) {
+			return ((PrimitiveCollection) object).isEmpty();
 		}
 		
 		throw new IllegalArgumentException("Don't know how to check emptiness of " + object.getClass());

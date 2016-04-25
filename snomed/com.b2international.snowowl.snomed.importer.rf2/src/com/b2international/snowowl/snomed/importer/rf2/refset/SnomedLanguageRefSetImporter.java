@@ -40,15 +40,16 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongSet;
-
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.pcj.LongSets.LongFunction;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.collect.PrimitiveMaps;
+import com.b2international.commons.collect.LongSets.LongFunction;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -126,6 +127,10 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 		final SnomedLanguageRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
 		
 		if (skipCurrentRow(currentRow, editedMember)) {
+			getLogger().warn("Not importing language reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
+					currentRow.getUuid(), 
+					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
+
 			return null;
 		}
 
@@ -229,7 +234,7 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 		}
 		
 		//mapping between SNOMED CT description storage key and the CDO revision
-		final LongKeyMap storageKeyToRevisionMap = new LongKeyOpenHashMap();
+		final LongKeyMap<InternalCDORevision> storageKeyToRevisionMap = PrimitiveMaps.newLongKeyOpenHashMap();
 		for (final Iterator<CDORevision> itr = revisions.iterator(); itr.hasNext(); /**/) {
 			
 			final InternalCDORevision revision = (InternalCDORevision) itr.next();
