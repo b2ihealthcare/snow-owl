@@ -38,7 +38,7 @@ import com.b2international.collections.longs.LongList;
 public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory {
 
 	@Override
-	public ByteList newByteArrayList(byte[] source) {
+	public ByteList newByteArrayList(byte... source) {
 		return ByteArrayListWrapper.create(source);
 	}
 
@@ -48,8 +48,8 @@ public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory 
 	}
 
 	@Override
-	public ByteList newByteArrayList(int expectedSize) {
-		return ByteArrayListWrapper.create(expectedSize);
+	public ByteList newByteArrayListWithExpectedSize(int expectedSize) {
+		return ByteArrayListWrapper.createWithExpectedSize(expectedSize);
 	}
 	
 	@Override
@@ -58,7 +58,7 @@ public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory 
 	}
 
 	@Override
-	public IntList newIntArrayList(int[] source) {
+	public IntList newIntArrayList(int... source) {
 		return IntArrayListWrapper.create(source);
 	}
 	
@@ -68,8 +68,8 @@ public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory 
 	}
 	
 	@Override
-	public FloatList newFloatArrayList(int expectedSize) {
-		return FloatArrayListWrapper.create(expectedSize);
+	public FloatList newFloatArrayListWithExpectedSize(int expectedSize) {
+		return FloatArrayListWrapper.createWithExpectedSize(expectedSize);
 	}
 	
 	@Override
@@ -88,8 +88,8 @@ public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory 
 	}
 
 	@Override
-	public LongList newLongArrayList(int expectedSize) {
-		return LongArrayListWrapper.create(expectedSize);
+	public LongList newLongArrayListWithExpectedSize(int expectedSize) {
+		return LongArrayListWrapper.createWithExpectedSize(expectedSize);
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory 
 	}
 	
 	@Override
-	public IntDeque newIntArrayDeque(int[] source) {
+	public IntDeque newIntArrayDeque(int... source) {
 		return IntArrayDequeWrapper.create(source);
 	}
 	
@@ -111,5 +111,4 @@ public final class FastUtilPrimitiveListFactory implements PrimitiveListFactory 
 	public LongDeque newLongArrayDeque() {
 		return LongArrayDequeWrapper.create();
 	}
-	
 }

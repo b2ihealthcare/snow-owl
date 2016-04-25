@@ -19,6 +19,8 @@ import com.b2international.collections.FastUtilPrimitiveCollections;
 import com.b2international.collections.PrimitiveListFactory;
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteList;
+import com.b2international.collections.floats.FloatCollection;
+import com.b2international.collections.floats.FloatList;
 import com.b2international.collections.ints.IntDeque;
 import com.b2international.collections.ints.IntList;
 import com.b2international.collections.longs.LongCollection;
@@ -28,14 +30,13 @@ import com.b2international.collections.longs.LongList;
 /**
  * @since 4.7
  */
-public class PrimitiveLists {
+public abstract class PrimitiveLists {
 
 	private static final PrimitiveListFactory FACTORY = FastUtilPrimitiveCollections.lists();
 	
-	private PrimitiveLists() {
-	}
+	private PrimitiveLists() {}
 
-	public static ByteList newByteArrayList(byte[] source) {
+	public static ByteList newByteArrayList(byte... source) {
 		return FACTORY.newByteArrayList(source);
 	}
 
@@ -43,15 +44,15 @@ public class PrimitiveLists {
 		return FACTORY.newByteArrayList(source);
 	}
 
-	public static ByteList newByteArrayList(int expectedSize) {
-		return FACTORY.newByteArrayList(expectedSize);
+	public static ByteList newByteArrayListWithExpectedSize(int expectedSize) {
+		return FACTORY.newByteArrayListWithExpectedSize(expectedSize);
 	}
 
 	public static IntList newIntArrayList() {
 		return FACTORY.newIntArrayList();
 	}
 
-	public static IntList newIntArrayList(int[] source) {
+	public static IntList newIntArrayList(int... source) {
 		return FACTORY.newIntArrayList(source);
 	}
 
@@ -59,8 +60,24 @@ public class PrimitiveLists {
 		return FACTORY.newLongArrayList();
 	}
 
-	public static LongList newLongArrayList(int expectedSize) {
-		return FACTORY.newLongArrayList(expectedSize);
+	public static FloatList newFloatArrayList() {
+		return FACTORY.newFloatArrayList();
+	}
+	
+	public static FloatList newFloatArrayListWithExpectedSize(int expectedSize) {
+		return FACTORY.newFloatArrayListWithExpectedSize(expectedSize);
+	}
+	
+	public static FloatList newFloatArrayList(float... source) {
+		return FACTORY.newFloatArrayList(source);
+	}
+	
+	public static FloatList newFloatArrayList(FloatCollection source) {
+		return FACTORY.newFloatArrayList(source);
+	}
+	
+	public static LongList newLongArrayListWithExpectedSize(int expectedSize) {
+		return FACTORY.newLongArrayListWithExpectedSize(expectedSize);
 	}
 
 	public static LongList newLongArrayList(long... source) {
@@ -71,14 +88,11 @@ public class PrimitiveLists {
 		return FACTORY.newLongArrayList(source);
 	}
 
-	public static IntDeque newIntArrayDeque(int[] source) {
+	public static IntDeque newIntArrayDeque(int... source) {
 		return FACTORY.newIntArrayDeque(source);
 	}
 
 	public static LongDeque newLongArrayDeque() {
 		return FACTORY.newLongArrayDeque();
 	}
-	
-	
-	
 }

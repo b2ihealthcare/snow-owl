@@ -70,7 +70,7 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 			final it.unimi.dsi.fastutil.floats.FloatList sourceDelegate = ((FloatArrayListWrapper) collection).delegate();
 			return new FloatArrayListWrapper(clone(sourceDelegate));
 		} else {
-			final FloatList result = create(collection.size());
+			final FloatList result = createWithExpectedSize(collection.size());
 			result.addAll(collection);
 			return result;
 		}
@@ -80,7 +80,7 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 		return new FloatArrayListWrapper(new it.unimi.dsi.fastutil.floats.FloatArrayList(source));
 	}
 	
-	public static FloatList create(int expectedSize) {
+	public static FloatList createWithExpectedSize(int expectedSize) {
 		return new FloatArrayListWrapper(new FloatArrayList(expectedSize));
 	}
 	

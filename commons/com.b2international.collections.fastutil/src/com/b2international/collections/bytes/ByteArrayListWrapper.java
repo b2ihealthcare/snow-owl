@@ -73,7 +73,7 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 			final it.unimi.dsi.fastutil.bytes.ByteList sourceDelegate = ((ByteArrayListWrapper) collection).delegate();
 			return new ByteArrayListWrapper(clone(sourceDelegate));
 		} else {
-			final ByteList result = create(collection.size());
+			final ByteList result = createWithExpectedSize(collection.size());
 			result.addAll(collection);
 			return result;
 		}
@@ -83,7 +83,7 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 		return new ByteArrayListWrapper(new ByteArrayList(source));
 	}
 	
-	public static ByteList create(int expectedSize) {
+	public static ByteList createWithExpectedSize(int expectedSize) {
 		return new ByteArrayListWrapper(new ByteArrayList(expectedSize));
 	}
 	
