@@ -56,11 +56,17 @@ public class LuceneClientTest {
 	}
 	
 	@Test
-	public void addDocument() throws Exception {
+	public void searchEmptyIndexShouldReturnNullDocument() throws Exception {
+		try (Searcher searcher = client.searcher()) {
+			assertNull(searcher.get(Data.class, KEY));
+		}
+	}
+	
+	@Test
+	public void indexDocument() throws Exception {
 		final Data data = new Data();
 		try (final Writer writer = client.writer()) {
 			writer.put(TYPE, KEY, data);
-			writer.commit();
 		}
 		try (Searcher searcher = client.searcher()) {
 			final Data actual = searcher.get(Data.class, KEY);
@@ -69,11 +75,21 @@ public class LuceneClientTest {
 	}
 	
 	@Test
+	public void indexDocumentWithSearchDuringTransaction() throws Exception {
+		final Data data = new Data();
+		try (final Writer writer = client.writer()) {
+			writer.put(TYPE, KEY, data);
+			try (Searcher searcher = client.searcher()) {
+				assertNull(searcher.get(Data.class, KEY));
+			}
+		}
+	}
+	
+	@Test
 	public void deleteDocument() throws Exception {
-		addDocument();
+		indexDocument();
 		try (final Writer writer = client.writer()) {
 			writer.remove(TYPE, KEY);
-			writer.commit();
 		}
 		try (Searcher searcher = client.searcher()) {
 			assertNull(searcher.get(Data.class, KEY));

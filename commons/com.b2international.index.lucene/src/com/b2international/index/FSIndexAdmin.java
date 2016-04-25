@@ -15,10 +15,17 @@
  */
 package com.b2international.index;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -27,6 +34,7 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.MMapDirectory;
@@ -38,6 +46,7 @@ import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.mapping.Mappings;
+import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
 
 /**
@@ -45,6 +54,13 @@ import com.google.common.io.Closer;
  */
 public final class FSIndexAdmin implements LuceneIndexAdmin {
 
+	private static class Holder {
+		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
+	}
+
+	private static final long DEFAULT_COMMIT_INTERVAL = TimeUnit.MINUTES.toMillis(5L);
+	private static final String COMMIT_INTERVAL_KEY = "hardCommitInterval";
+	
 	private final String name;
 	private final Path indexPath;
 	
@@ -52,21 +68,41 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 	private FSDirectory directory;
 	private IndexWriter writer;
 	private ReferenceManager<IndexSearcher> manager;
+	private AtomicReference<PeriodicCommit> periodicCommit = new AtomicReference<>();
+	private Map<String, Object> settings;
+	private AtomicBoolean open = new AtomicBoolean(false);
 
 	public FSIndexAdmin(File directory, String name) {
+		this(directory, name, Maps.<String, Object>newHashMap());
+	}
+	
+	public FSIndexAdmin(File directory, String name, Map<String, Object> settings) {
 		this.name = name;
 		this.indexPath = directory.toPath().resolve(name);
+		
+		// init default settings
+		if (!settings.containsKey(COMMIT_INTERVAL_KEY)) {
+			settings.put(COMMIT_INTERVAL_KEY, DEFAULT_COMMIT_INTERVAL);
+		}
+		
+		this.settings = settings;
+	}
+	
+	private void ensureOpen() {
+		if (!open.get()) {
+			throw new IllegalStateException("Index is not available");
+		}
 	}
 
 	@Override
 	public IndexWriter getWriter() {
-		exists();
+		ensureOpen();
 		return writer;
 	}
 	
 	@Override
 	public ReferenceManager<IndexSearcher> getManager() {
-		exists();
+		ensureOpen();
 		return manager;
 	}
 	
@@ -85,20 +121,37 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 
 	@Override
 	public void create() {
+		if (exists() || open.get()) {
+			throw new IllegalStateException("Index already exists " + name());
+		}
 		try {
 			closer = Closer.create();
 			directory = open(indexPath.toFile());
 			closer.register(directory);
 			writer = new IndexWriter(directory, createConfig(false));
+			initPeriodicCommit(writer);
 			closer.register(writer);
-			writer.commit(); // actually create the index
-			// TODO configure warmer, use NRT??? via config???
-			manager = new SearcherManager(directory, null);
+			if (!DirectoryReader.indexExists(directory)) {
+				writer.commit(); // actually create the index
+			}
+			// TODO configure warmer???
+			manager = new SearcherManager(writer, true, null);
 			closer.register(manager);
+			open.set(true);
 		} catch (IOException e) {
 			close();
 			throw new IndexException("Couldn't create index " + name(), e);
 		}
+	}
+
+	private void initPeriodicCommit(IndexWriter writer) {
+		final long periodicCommitInterval = (long) settings().get(COMMIT_INTERVAL_KEY);
+		final PeriodicCommit newPc = new PeriodicCommit(writer);
+		final PeriodicCommit previousPc = periodicCommit.getAndSet(newPc);
+		if (previousPc != null) {
+			previousPc.cancel();
+		}
+		Holder.CLEANUP_TIMER.schedule(newPc, periodicCommitInterval, periodicCommitInterval);
 	}
 
 	private IndexWriterConfig createConfig(boolean clean) {
@@ -110,7 +163,12 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 	
 	@Override
 	public void close() {
+		ensureOpen();
 		try {
+			final PeriodicCommit pc = periodicCommit.getAndSet(null);
+			if (pc != null) {
+				pc.cancel();
+			}
 			directory = null;
 			writer = null;
 			manager = null;
@@ -123,6 +181,7 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 
 	@Override
 	public void delete() {
+		ensureOpen();
 		try {
 			// reopen writer with clean option to clear directory
 			writer.close();
@@ -147,7 +206,7 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 
 	@Override
 	public Map<String, Object> settings() {
-		throw new UnsupportedOperationException();
+		return settings;
 	}
 
 	@Override
@@ -186,6 +245,31 @@ public final class FSIndexAdmin implements LuceneIndexAdmin {
 			return new SimpleFSDirectory(path, lockFactory);
 		} else {
 			return new NIOFSDirectory(path, lockFactory);
+		}
+	}
+	
+	/**
+	 * Periodically commits an {@link IndexWriter}.
+	 *  
+	 * @since 4.7
+	 */
+	private static class PeriodicCommit extends TimerTask {
+		
+		private final IndexWriter writer;
+		
+		public PeriodicCommit(IndexWriter writer) {
+			this.writer = checkNotNull(writer, "writer");
+		}
+
+		@Override
+		public void run() {
+			try {
+				writer.commit();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (AlreadyClosedException e) {
+				cancel();
+			}
 		}
 	}
 

@@ -47,6 +47,12 @@ public class FSIndexAdminTest {
 		admin.create();
 		assertTrue(admin.exists());
 	}
+	
+	@Test(expected = IllegalStateException.class)
+	public void createIndexTwice() throws Exception {
+		createIndex();
+		admin.create();
+	}
 
 	@Test
 	public void deleteIndex() throws Exception {

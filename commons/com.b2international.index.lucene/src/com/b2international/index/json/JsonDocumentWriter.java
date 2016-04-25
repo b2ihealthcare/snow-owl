@@ -23,11 +23,11 @@ import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 
 import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +49,8 @@ public class JsonDocumentWriter implements Writer {
 	
 	@Override
 	public void close() throws Exception {
-		// nothing to do yet
+		// TODO rollback changes if there were exceptions
+		searchers.maybeRefreshBlocking();
 	}
 
 	@Override
@@ -74,18 +75,6 @@ public class JsonDocumentWriter implements Writer {
 	@Override
 	public <T> boolean remove(Class<T> type, String key) throws IOException {
 		return false;
-	}
-
-	@Override
-	public void commit() throws IOException {
-		try {
-			writer.commit();
-			searchers.maybeRefreshBlocking();
-		} catch (IOException e) {
-			writer.rollback();
-			// TODO recreate writer
-			throw e;
-		}
 	}
 
 }

@@ -28,6 +28,4 @@ public interface Writer extends AutoCloseable {
 
 	<T> boolean remove(Class<T> type, String key) throws IOException;
 
-	void commit() throws IOException;
-	
 }
