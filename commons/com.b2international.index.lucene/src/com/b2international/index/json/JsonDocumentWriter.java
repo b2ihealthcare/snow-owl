@@ -17,10 +17,6 @@ package com.b2international.index.json;
 
 import java.io.IOException;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -38,13 +34,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JsonDocumentWriter implements Writer {
 
 	private final IndexWriter writer;
-	private final ObjectMapper mapper;
 	private final ReferenceManager<IndexSearcher> searchers;
+	private final JsonDocumentMappingStrategy mappingStrategy;
 
 	public JsonDocumentWriter(IndexWriter writer, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper) {
 		this.writer = writer;
 		this.searchers = searchers;
-		this.mapper = mapper;
+		this.mappingStrategy = new JsonDocumentMappingStrategy(mapper);
 	}
 	
 	@Override
@@ -55,11 +51,7 @@ public class JsonDocumentWriter implements Writer {
 
 	@Override
 	public void put(String type, String key, Object object) throws IOException {
-		final Document doc = new Document();
-		doc.add(new StringField("_id", key, Store.YES));
-		doc.add(new StringField("_type", type, Store.YES));
-		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
-		writer.addDocument(doc);
+		writer.addDocument(mappingStrategy.map(type, key, object));
 	}
 
 	@Override
