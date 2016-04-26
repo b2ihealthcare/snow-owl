@@ -16,18 +16,24 @@
 package com.b2international.index.json;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.index.IndexException;
-import com.b2international.index.query.Query.AfterWhereBuilder;
-import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.query.LuceneQueryBuilder;
+import com.b2international.index.query.Query;
 import com.b2international.index.read.Searcher;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 4.7
@@ -55,7 +61,7 @@ public class JsonDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
-		final Query bq = JsonDocumentMapping.matchIdAndType(type, key);
+		final org.apache.lucene.search.Query bq = JsonDocumentMapping.matchIdAndType(type, key);
 		final TopDocs topDocs = searcher.search(bq, 1);
 		if (isEmpty(topDocs)) {
 			return null;
@@ -67,15 +73,44 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	@Override
-	public <T> Iterable<T> search(Class<T> type, AfterWhereBuilder query) {
-		throw new UnsupportedOperationException();
+	public <T> Iterable<T> search(Class<T> type, Query query) throws IOException {
+		final org.apache.lucene.search.Query lq = toLuceneQuery(query);
+		
+		final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
+		searcher.search(lq, totalHitCollector);
+		final int totalHits = totalHitCollector.getTotalHits();
+		
+		if (query.getLimit() < 1 || totalHits < 1) {
+			return Collections.emptySet();
+		}
+		
+		final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(query, totalHits), Sort.INDEXORDER, true, false);
+		
+		if (topDocs.scoreDocs.length < 1) {
+			return Collections.emptySet();
+		}
+		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		final ImmutableList.Builder<T> matches = ImmutableList.builder();
+		for (int i = query.getOffset(); i < scoreDocs.length; i++) {
+			final Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
+			final byte[] source = doc.getField("_source").binaryValue().bytes;
+			matches.add(mapper.readValue(source, type));
+		}
+		return matches.build();
 	}
 
-	@Override
-	public QueryBuilder query() {
-		throw new UnsupportedOperationException();
+	private int numDocsToRetrieve(Query query, int totalHits) {
+		return numDocsToRetrieve(query.getOffset(), query.getLimit(), totalHits);
 	}
 	
+	protected int numDocsToRetrieve(final int offset, final int limit, final int totalHits) {
+		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
+	}
+
+	private org.apache.lucene.search.Query toLuceneQuery(Query query) {
+		return new LuceneQueryBuilder().build(query.getWhere());
+	}
+
 	private static boolean isEmpty(TopDocs docs) {
 		return docs == null || docs.scoreDocs == null || docs.scoreDocs.length == 0;
 	}

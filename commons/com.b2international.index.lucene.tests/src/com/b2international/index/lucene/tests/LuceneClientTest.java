@@ -15,6 +15,7 @@
  */
 package com.b2international.index.lucene.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -30,6 +31,8 @@ import org.junit.rules.TemporaryFolder;
 import com.b2international.index.FSIndexAdmin;
 import com.b2international.index.IndexClient;
 import com.b2international.index.LuceneClient;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.read.Searcher;
 import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -42,6 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class LuceneClientTest {
 
 	private static final String KEY = "key";
+	private static final String KEY2 = "key2";
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -93,6 +97,24 @@ public class LuceneClientTest {
 		}
 		try (Searcher searcher = client.searcher()) {
 			assertNull(searcher.get(Data.class, KEY));
+		}
+	}
+	
+	@Test
+	public void searchDocuments() throws Exception {
+		final Data data = new Data();
+		final Data data2 = new Data();
+		data2.field1 = "field1Changed";
+		try (final Writer writer = client.writer()) {
+			writer.put(KEY, data);
+			writer.put(KEY2, data2);
+		}
+		// seach for field1Changed value, it should return a single doc
+		try (Searcher searcher = client.searcher()) {
+			final Query query = Query.builder().selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+			final Iterable<Data> matches = searcher.search(Data.class, query);
+			assertThat(matches).hasSize(1);
+			assertThat(matches).containsOnly(data);
 		}
 	}
 	

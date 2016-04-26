@@ -17,8 +17,7 @@ package com.b2international.index.read;
 
 import java.io.IOException;
 
-import com.b2international.index.query.Query.AfterWhereBuilder;
-import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.query.Query;
 
 /**
  * @since 4.7
@@ -41,18 +40,12 @@ public interface Searcher extends AutoCloseable {
 	 * Execute the given query among all stored items.
 	 * 
 	 * @param query
-	 *            - the query builder
+	 *            - the query
 	 * @param type
 	 *            - the type to restrict the execution of the query
 	 * @return - an iterable of matching values
+	 * @throws IOException 
 	 */
-	<T> Iterable<T> search(Class<T> type, AfterWhereBuilder query);
-	
-	/**
-	 * Returns a query builder to build and run a query against this searchable object.
-	 * 
-	 * @return a {@link QueryBuilder} instance
-	 */
-	QueryBuilder query();
+	<T> Iterable<T> search(Class<T> type, Query query) throws IOException;
 	
 }
