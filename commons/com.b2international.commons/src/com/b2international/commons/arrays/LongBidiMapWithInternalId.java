@@ -17,10 +17,10 @@ package com.b2international.commons.arrays;
 
 import java.io.Serializable;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongList;
-import com.b2international.commons.collect.PrimitiveLists;
-import com.b2international.commons.collect.PrimitiveMaps;
 
 /**
  * Bidirectional map for primitive longs with primitive integer internal IDs.

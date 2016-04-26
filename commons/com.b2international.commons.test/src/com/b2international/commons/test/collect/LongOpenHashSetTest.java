@@ -22,11 +22,11 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.PrimitiveLists;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 

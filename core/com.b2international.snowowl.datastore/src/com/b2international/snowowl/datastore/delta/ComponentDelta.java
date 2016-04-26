@@ -22,10 +22,10 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Change;
 import com.b2international.commons.ChangeKind;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.core.api.component.LabelProvider;

@@ -22,11 +22,11 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntSet;
-import com.b2international.commons.collect.PrimitiveLists;
-import com.b2international.commons.collect.PrimitiveSets;
 
 /**
  * @since 4.7

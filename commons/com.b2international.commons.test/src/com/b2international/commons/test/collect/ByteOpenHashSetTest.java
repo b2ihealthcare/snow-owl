@@ -25,11 +25,11 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteIterator;
 import com.b2international.collections.bytes.ByteSet;
-import com.b2international.commons.collect.PrimitiveLists;
-import com.b2international.commons.collect.PrimitiveSets;
 
 /**
  * @since 4.7

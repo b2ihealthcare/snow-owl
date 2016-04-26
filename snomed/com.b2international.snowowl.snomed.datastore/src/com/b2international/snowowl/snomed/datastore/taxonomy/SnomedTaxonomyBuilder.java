@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.google.common.base.Preconditions;
 

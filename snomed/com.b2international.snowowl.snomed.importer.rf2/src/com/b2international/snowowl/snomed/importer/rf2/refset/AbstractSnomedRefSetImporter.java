@@ -28,8 +28,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongValueMap;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIds;

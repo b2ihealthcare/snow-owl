@@ -21,10 +21,10 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.LongSets.LongPredicate;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;

@@ -22,8 +22,8 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.PrimitiveSets;
 
 /**
  * Collector instance for gathering long doc values from the matching documents.

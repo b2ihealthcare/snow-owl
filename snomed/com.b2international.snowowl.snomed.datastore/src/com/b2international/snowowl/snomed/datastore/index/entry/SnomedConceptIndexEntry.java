@@ -20,9 +20,9 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.BooleanUtils;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;

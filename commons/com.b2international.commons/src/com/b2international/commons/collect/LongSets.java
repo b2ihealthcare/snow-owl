@@ -35,6 +35,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.AbstractLongIterator;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollections;
@@ -47,8 +48,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
-
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 /**
  * Utility class for {@link LongSet}s.
