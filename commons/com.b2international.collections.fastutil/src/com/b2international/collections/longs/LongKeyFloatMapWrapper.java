@@ -15,10 +15,9 @@
  */
 package com.b2international.collections.longs;
 
-import java.util.Objects;
-
 import com.b2international.collections.floats.FloatCollection;
 import com.b2international.collections.floats.FloatCollectionWrapper;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.longs.Long2FloatMap;
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenCustomHashMap;
@@ -37,7 +36,14 @@ public final class LongKeyFloatMapWrapper implements LongKeyFloatMap {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(delegate);
+		int h = 0;
+		final LongIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            long key = i.next();
+            float value = get(key);
+            h += Longs.hashCode(key) ^ Float.floatToIntBits(value);
+        }
+		return h;
 	}
 	
 	@Override

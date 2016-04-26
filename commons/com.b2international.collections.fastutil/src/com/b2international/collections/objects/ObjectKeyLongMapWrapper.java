@@ -16,12 +16,12 @@
 package com.b2international.collections.objects;
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollectionWrapper;
 import com.b2international.collections.longs.LongValueMap;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenCustomHashMap;
@@ -40,7 +40,14 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(delegate);
+		int h = 0;
+		final Iterator<K> i = keySet().iterator();
+        while (i.hasNext()) {
+            K key = i.next();
+            long value = get(key);
+            h += (key==null ? 0 : key.hashCode()) ^ Longs.hashCode(value);
+        }
+		return h;
 	}
 	
 	@Override

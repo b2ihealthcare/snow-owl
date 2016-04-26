@@ -16,7 +16,8 @@
 package com.b2international.collections.bytes;
 
 import java.util.Collection;
-import java.util.Objects;
+
+import com.google.common.primitives.Bytes;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenCustomHashMap;
@@ -35,7 +36,14 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(delegate);
+		int h = 0;
+		final ByteIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            byte key = i.next();
+            V value = get(key);
+            h += Bytes.hashCode(key) ^ (value==null ? 0 : value.hashCode());
+        }
+		return h;
 	}
 	
 	@Override

@@ -16,9 +16,9 @@
 package com.b2international.collections.longs;
 
 import java.util.Collection;
-import java.util.Objects;
 
 import com.google.common.hash.HashFunction;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenCustomHashMap;
@@ -37,7 +37,14 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(delegate);
+		int h = 0;
+		final LongIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            long key = i.next();
+            V value = get(key);
+            h += Longs.hashCode(key) ^ (value==null ? 0 : value.hashCode());
+        }
+		return h;
 	}
 	
 	@Override

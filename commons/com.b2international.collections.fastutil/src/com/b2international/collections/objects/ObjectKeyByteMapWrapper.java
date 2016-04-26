@@ -16,12 +16,12 @@
 package com.b2international.collections.objects;
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteCollectionWrapper;
 import com.b2international.collections.bytes.ByteValueMap;
+import com.google.common.primitives.Bytes;
 
 import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenCustomHashMap;
@@ -40,7 +40,14 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(delegate);
+		int h = 0;
+		final Iterator<K> i = keySet().iterator();
+        while (i.hasNext()) {
+            K key = i.next();
+            byte value = get(key);
+            h += (key==null ? 0 : key.hashCode()) ^ Bytes.hashCode(value);
+        }
+		return h;
 	}
 	
 	@Override

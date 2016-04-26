@@ -15,10 +15,10 @@
  */
 package com.b2international.collections.bytes;
 
-import java.util.Objects;
-
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollectionWrapper;
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.bytes.Byte2LongMap;
 import it.unimi.dsi.fastutil.bytes.Byte2LongOpenCustomHashMap;
@@ -38,7 +38,14 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(delegate);
+		int h = 0;
+		final ByteIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            byte key = i.next();
+            long value = get(key);
+            h += Bytes.hashCode(key) ^ Longs.hashCode(value);
+        }
+		return h;
 	}
 	
 	@Override
