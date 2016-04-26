@@ -25,6 +25,21 @@ public class IntArrayListWrapper extends IntCollectionWrapper implements IntList
 	protected IntArrayListWrapper(it.unimi.dsi.fastutil.ints.IntList delegate) {
 		super(delegate);
 	}
+	
+	@Override
+	public int hashCode() {
+		return AbstractIntCollection.hashCode(this);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (!(obj instanceof IntList)) { return false; }
+		
+		IntList other = (IntList) obj;
+		if (size() != other.size()) { return false; }
+		return AbstractIntCollection.elementsEqual(iterator(), other.iterator());
+	}
 
 	@Override
 	protected it.unimi.dsi.fastutil.ints.IntList delegate() {

@@ -27,6 +27,21 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 	}
 
 	@Override
+	public int hashCode() {
+		return AbstractByteCollection.hashCode(this);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (!(obj instanceof ByteList)) { return false; }
+		
+		ByteList other = (ByteList) obj;
+		if (size() != other.size()) { return false; }
+		return AbstractByteCollection.elementsEqual(iterator(), other.iterator());
+	}
+	
+	@Override
 	protected it.unimi.dsi.fastutil.bytes.ByteList delegate() {
 		return (it.unimi.dsi.fastutil.bytes.ByteArrayList) super.delegate();
 	}

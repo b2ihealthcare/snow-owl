@@ -27,6 +27,21 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 	}
 	
 	@Override
+	public int hashCode() {
+		return AbstractLongCollection.hashCode(this);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (!(obj instanceof LongList)) { return false; }
+		
+		LongList other = (LongList) obj;
+		if (size() != other.size()) { return false; }
+		return AbstractLongCollection.elementsEqual(iterator(), other.iterator());
+	}
+	
+	@Override
 	protected it.unimi.dsi.fastutil.longs.LongList delegate() {
 		return (it.unimi.dsi.fastutil.longs.LongList) super.delegate();
 	}

@@ -40,6 +40,6 @@ public class ByteSetWrapper extends ByteCollectionWrapper implements ByteSet {
 
 	@Override
 	public int hashCode() {
-		return AbstractByteSet.hashCode(this);
+		return AbstractByteCollection.hashCode(this);
 	}
 }
