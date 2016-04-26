@@ -18,9 +18,6 @@ package com.b2international.collections.longs;
 import java.util.Collection;
 import java.util.Objects;
 
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongKeyMap;
-import com.b2international.collections.longs.LongSet;
 import com.google.common.hash.HashFunction;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;

@@ -17,12 +17,6 @@ package com.b2international.collections.longs;
 
 import java.util.Objects;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongCollectionWrapper;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.collections.longs.LongSet;
-
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenCustomHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;

@@ -15,7 +15,6 @@
  */
 package com.b2international.collections;
 
-import com.b2international.collections.PrimitiveListFactory;
 import com.b2international.collections.bytes.ByteArrayListWrapper;
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteList;
