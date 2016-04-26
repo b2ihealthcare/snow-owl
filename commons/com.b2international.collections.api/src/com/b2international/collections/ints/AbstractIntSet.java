@@ -39,15 +39,4 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 		return obj1.containsAll(other);
 	}
 
-	public static int hashCode(IntSet intSet) {
-		int result = 1;
-		IntIterator itr = intSet.iterator();
-	    
-	    while (itr.hasNext()) {
-	    	int element = itr.next();
-	        result = 31 * result + element;
-	    }
-	
-	    return result;
-	}
 }

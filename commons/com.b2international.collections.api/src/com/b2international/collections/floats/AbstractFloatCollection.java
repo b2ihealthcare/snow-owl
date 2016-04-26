@@ -166,4 +166,40 @@ public abstract class AbstractFloatCollection implements FloatCollection {
         }
 	}
 	
+	public static int hashCode(FloatCollection floatCollection) {
+		int result = 1;
+		FloatIterator itr = floatCollection.iterator();
+	    
+	    while (itr.hasNext()) {
+	    	float element = itr.next();
+	        result = 31 * result + Float.floatToIntBits(element);
+	    }
+	
+	    return result;
+	}
+	
+	/**
+	 * Determines whether two iterators contain equal elements in the same order.
+	 * More specifically, this method returns {@code true} if {@code iterator1}
+	 * and {@code iterator2} contain the same number of elements and every element
+	 * of {@code iterator1} is equal to the corresponding element of
+	 * {@code iterator2}.
+	 *
+	 * <p>Note that this will modify the supplied iterators, since they will have
+	 * been advanced some number of elements forward.
+	 */
+	public static boolean elementsEqual(FloatIterator iterator1, FloatIterator iterator2) {
+		while (iterator1.hasNext()) {
+			if (!iterator2.hasNext()) {
+				return false;
+			}
+			float b1 = iterator1.next();
+			float b2 = iterator2.next();
+			if (b1 != b2) {
+				return false;
+			}
+		}
+		return !iterator2.hasNext();
+	}
+	
 }

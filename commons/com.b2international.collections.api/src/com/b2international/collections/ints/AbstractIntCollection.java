@@ -165,5 +165,41 @@ public abstract class AbstractIntCollection implements IntCollection {
             sb.append(',').append(' ');
         }
 	}
+	
+	public static int hashCode(IntCollection intCollection) {
+		int result = 1;
+		IntIterator itr = intCollection.iterator();
+	    
+	    while (itr.hasNext()) {
+	    	int element = itr.next();
+	        result = 31 * result + element;
+	    }
+	
+	    return result;
+	}
+	
+	/**
+	 * Determines whether two iterators contain equal elements in the same order.
+	 * More specifically, this method returns {@code true} if {@code iterator1}
+	 * and {@code iterator2} contain the same number of elements and every element
+	 * of {@code iterator1} is equal to the corresponding element of
+	 * {@code iterator2}.
+	 *
+	 * <p>Note that this will modify the supplied iterators, since they will have
+	 * been advanced some number of elements forward.
+	 */
+	public static boolean elementsEqual(IntIterator iterator1, IntIterator iterator2) {
+		while (iterator1.hasNext()) {
+			if (!iterator2.hasNext()) {
+				return false;
+			}
+			int b1 = iterator1.next();
+			int b2 = iterator2.next();
+			if (b1 != b2) {
+				return false;
+			}
+		}
+		return !iterator2.hasNext();
+	}
 
 }

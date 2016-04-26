@@ -44,16 +44,4 @@ public abstract class AbstractLongSet extends AbstractLongCollection implements 
 		return obj1.containsAll(other);
 	}
 
-	public static int hashCode(LongSet longSet) {
-		int result = 1;
-		LongIterator itr = longSet.iterator();
-	    
-	    while (itr.hasNext()) {
-	    	long element = itr.next();
-            int elementHash = (int)(element ^ (element >>> 32));
-            result = 31 * result + elementHash;
-	    }
-	
-	    return result;
-	}
 }

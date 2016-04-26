@@ -39,15 +39,4 @@ public abstract class AbstractByteSet extends AbstractByteCollection implements 
 		return obj1.containsAll(other);
 	}
 
-	public static int hashCode(ByteSet byteSet) {
-		int result = 1;
-		ByteIterator itr = byteSet.iterator();
-	    
-	    while (itr.hasNext()) {
-	    	byte element = itr.next();
-	        result = 31 * result + element;
-	    }
-	
-	    return result;
-	}
 }
