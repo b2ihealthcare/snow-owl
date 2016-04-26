@@ -16,6 +16,7 @@
 package com.b2international.collections.ints;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenCustomHashMap;
@@ -32,6 +33,36 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(delegate);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof IntKeyMap)) return false;
+		
+		final IntKeyMap<?> other = (IntKeyMap<?>) obj;
+        if (other.size() != size()) return false;
+
+        final IntIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            int key = i.next();
+            V value = get(key);
+            if (value == null) {
+                if (!(other.get(key) == null && other.containsKey(key)))
+                    return false;
+            } else {
+            	if (value.equals(other.get(key))) {
+            		return false;
+            	}
+            }
+        }
+
+        return true;
+	}
+	
 	@Override
 	public void clear() {
 		delegate.clear();

@@ -15,6 +15,8 @@
  */
 package com.b2international.collections.bytes;
 
+import java.util.Objects;
+
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollectionWrapper;
 
@@ -34,6 +36,31 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(delegate);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof ByteKeyLongMap)) return false;
+		
+		final ByteKeyLongMap other = (ByteKeyLongMap) obj;
+        if (other.size() != size()) return false;
+
+        final ByteIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            byte key = i.next();
+            long value = get(key);
+            if (value != other.get(key)) {
+            	return false;
+            }
+        }
+
+        return true;
+	}
+	
 	@Override
 	public void clear() {
 		delegate.clear();

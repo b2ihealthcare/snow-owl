@@ -16,11 +16,14 @@
 package com.b2international.collections.objects;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteCollectionWrapper;
 import com.b2international.collections.bytes.ByteValueMap;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyLongMap;
 
 import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenCustomHashMap;
@@ -36,7 +39,36 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 	private ObjectKeyByteMapWrapper(Object2ByteMap<K> delegate) {
 		this.delegate = delegate;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(delegate);
+	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof ByteValueMap)) return false;
+		
+		try {
+			final ByteValueMap<K> other = (ByteValueMap<K>) obj;
+			if (other.size() != size()) return false;
+			
+			final Iterator<K> i = keySet().iterator();
+			while (i.hasNext()) {
+				K key = i.next();
+				byte value = get(key);
+				if (value != other.get(key)) {
+					return false;
+				}
+			}
+		} catch (ClassCastException e) {
+			return false;
+		}
+
+        return true;
+	}
+
 	@Override
 	public void clear() {
 		delegate.clear();

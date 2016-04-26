@@ -16,6 +16,7 @@
 package com.b2international.collections.longs;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
@@ -37,6 +38,36 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(delegate);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof LongKeyMap)) return false;
+		
+		final LongKeyMap<?> other = (LongKeyMap<?>) obj;
+        if (other.size() != size()) return false;
+
+        final LongIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            long key = i.next();
+            V value = get(key);
+            if (value == null) {
+                if (!(other.get(key) == null && other.containsKey(key)))
+                    return false;
+            } else {
+            	if (value.equals(other.get(key))) {
+            		return false;
+            	}
+            }
+        }
+
+        return true;
+	}
+	
 	@Override
 	public void clear() {
 		delegate.clear();

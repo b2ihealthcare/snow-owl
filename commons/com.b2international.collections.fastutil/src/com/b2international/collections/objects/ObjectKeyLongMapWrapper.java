@@ -16,8 +16,10 @@
 package com.b2international.collections.objects;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
+import com.b2international.collections.bytes.ByteValueMap;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollectionWrapper;
 import com.b2international.collections.longs.LongValueMap;
@@ -35,6 +37,35 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 
 	private ObjectKeyLongMapWrapper(Object2LongMap<K> delegate) {
 		this.delegate = delegate;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(delegate);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof LongValueMap)) return false;
+		
+		try {
+			final LongValueMap<K> other = (LongValueMap<K>) obj;
+			if (other.size() != size()) return false;
+			
+			final Iterator<K> i = keySet().iterator();
+			while (i.hasNext()) {
+				K key = i.next();
+				long value = get(key);
+				if (value != other.get(key)) {
+					return false;
+				}
+			}
+		} catch (ClassCastException e) {
+			return false;
+		}
+
+        return true;
 	}
 	
 	@Override
