@@ -16,8 +16,7 @@
 package com.b2international.index.lucene.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -28,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.b2international.index.Doc;
 import com.b2international.index.FSIndexAdmin;
 import com.b2international.index.IndexClient;
 import com.b2international.index.LuceneClient;
@@ -123,6 +123,7 @@ public class LuceneClientTest {
 		client.close();
 	}
 	
+	@Doc
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Data {
 		String field1 = "field1";

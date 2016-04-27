@@ -47,8 +47,9 @@ public class JsonDocumentMapping {
 	}
 	
 	public static String getType(Class<?> type) {
+		checkArgument(type.isAnnotationPresent(Doc.class), "Doc annotation must be present on types need to be indexed as separated documents");
 		final Doc annotation = type.getAnnotation(Doc.class);
-		final String docType = annotation == null ? type.getSimpleName().toLowerCase() : annotation.type();
+		final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
 		checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
 		return docType;
 	}

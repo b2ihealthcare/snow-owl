@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Doc {
 	
-	String type();
+	String type() default "";
+	
+	boolean nested() default false;
 
 }
