@@ -63,7 +63,7 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
                 if (!(other.get(key) == null && other.containsKey(key)))
                     return false;
             } else {
-            	if (value.equals(other.get(key))) {
+            	if (!value.equals(other.get(key))) {
             		return false;
             	}
             }
