@@ -15,15 +15,12 @@
  */
 package com.b2international.collections;
 
-import java.util.Set;
-
-import com.b2international.collections.PrimitiveSetFactory;
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteOpenHashSetWrapper;
 import com.b2international.collections.bytes.ByteSet;
+import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.ints.IntOpenHashSetWrapper;
 import com.b2international.collections.ints.IntSet;
-import com.b2international.collections.longs.ImmutableLongSet;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongOpenHashSetWrapper;
 import com.b2international.collections.longs.LongSet;
@@ -33,6 +30,11 @@ import com.google.common.hash.HashFunction;
  * @since 4.7
  */
 public final class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
+	
+	@Override
+	public ByteSet newByteOpenHashSet() {
+		return ByteOpenHashSetWrapper.create();
+	}
 	
 	@Override
 	public ByteSet newByteOpenHashSet(ByteCollection source) {
@@ -45,8 +47,13 @@ public final class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 	}
 
 	@Override
-	public IntSet newIntOpenHashSet(int expectedSize) {
-		return IntOpenHashSetWrapper.create(expectedSize);
+	public IntSet newIntOpenHashSetWithExpectedSize(int expectedSize) {
+		return IntOpenHashSetWrapper.createWithExpectedSize(expectedSize);
+	}
+
+	@Override
+	public IntSet newIntOpenHashSet(IntCollection source) {
+		return IntOpenHashSetWrapper.create(source);
 	}
 
 	@Override
@@ -60,32 +67,22 @@ public final class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 	}
 
 	@Override
-	public LongSet newLongOpenHashSet(int expectedSize) {
-		return LongOpenHashSetWrapper.create(expectedSize);
+	public LongSet newLongOpenHashSetWithExpectedSize(int expectedSize) {
+		return LongOpenHashSetWrapper.createWithExpectedSize(expectedSize);
 	}
 
 	@Override
-	public LongSet newLongOpenHashSet(int expectedSize, double fillFactor) {
-		return LongOpenHashSetWrapper.create(expectedSize, fillFactor);
+	public LongSet newLongOpenHashSetWithExpectedSize(int expectedSize, double fillFactor) {
+		return LongOpenHashSetWrapper.createWithExpectedSize(expectedSize, fillFactor);
 	}
 
 	@Override
-	public LongSet newLongOpenHashSet(long[] source) {
+	public LongSet newLongOpenHashSet(long... source) {
 		return LongOpenHashSetWrapper.create(source);
 	}
 
 	@Override
 	public LongSet newLongOpenHashSet(LongCollection source) {
 		return LongOpenHashSetWrapper.create(source);
-	}
-
-	@Override
-	public Set<Long> newLongSetToSetAdapter(LongSet source) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LongSet newUnmodifiableLongSet(LongSet source) {
-		return ImmutableLongSet.of(LongOpenHashSetWrapper.create(source));
 	}
 }

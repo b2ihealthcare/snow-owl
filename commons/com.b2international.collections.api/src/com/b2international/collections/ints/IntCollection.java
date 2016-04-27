@@ -40,7 +40,4 @@ public interface IntCollection extends PrimitiveCollection {
 	boolean retainAll(IntCollection collection);
 	
 	int[] toArray();
-	
-	@Override
-	IntCollection dup();
 }

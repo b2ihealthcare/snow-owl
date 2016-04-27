@@ -25,8 +25,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyFloatMap;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.google.common.base.Preconditions;
@@ -57,7 +57,7 @@ public class DoiInitializer {
 			
 			final int size = dis.readInt();
 			
-			final LongKeyFloatMap data = size > 0 ? PrimitiveMaps.newLongKeyFloatOpenHashMap(size) : PrimitiveMaps.newLongKeyFloatOpenHashMap();
+			final LongKeyFloatMap data = size > 0 ? PrimitiveMaps.newLongKeyFloatOpenHashMapWithExpectedSize(size) : PrimitiveMaps.newLongKeyFloatOpenHashMap();
 			
 			for (int i = 0; i < size; i++) {
 				

@@ -19,10 +19,10 @@ import java.io.Serializable;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.google.common.base.Preconditions;
 
 /**
@@ -71,7 +71,7 @@ public interface IChangedComponentCDOIDs extends Serializable {
 					final LongSet $ = PrimitiveSets.newLongOpenHashSet();
 					$.addAll(relatedCdoIds);
 					$.add(cdoId);
-					return PrimitiveSets.newUnmodifiableLongSet($); 
+					return LongCollections.unmodifiableSet($); 
 				}
 				@Override public long getCdoId() { return cdoId; }
 			};

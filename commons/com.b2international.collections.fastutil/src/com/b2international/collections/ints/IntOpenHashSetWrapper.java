@@ -42,13 +42,13 @@ public final class IntOpenHashSetWrapper extends IntSetWrapper {
 			final it.unimi.dsi.fastutil.ints.IntSet sourceDelegate = ((IntOpenHashSetWrapper) source).delegate();
 			return new IntOpenHashSetWrapper(clone(sourceDelegate));
 		} else {
-			final IntSet result = create(source.size());
+			final IntSet result = createWithExpectedSize(source.size());
 			result.addAll(source);
 			return result;
 		}
 	}
 	
-	public static IntSet create(int expectedSize) {
+	public static IntSet createWithExpectedSize(int expectedSize) {
 		return new IntOpenHashSetWrapper(new it.unimi.dsi.fastutil.ints.IntOpenHashSet(expectedSize));
 	}
 	

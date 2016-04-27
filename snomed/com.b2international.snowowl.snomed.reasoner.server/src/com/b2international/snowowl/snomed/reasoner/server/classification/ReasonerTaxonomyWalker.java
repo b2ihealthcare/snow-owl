@@ -28,11 +28,11 @@ import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.PrimitiveMaps;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -73,7 +73,7 @@ public class ReasonerTaxonomyWalker {
 		this.reasoner = reasoner;
 		this.taxonomy = changeSet;
 		this.pm = SnomedOntologyUtils.createPrefixManager(SnomedOntologyUtils.BASE_IRI.resolve(branchPath.getPath()));
-		processedConceptIds = PrimitiveSets.newLongOpenHashSet(600000);
+		processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(600000);
 		idToStorageKeyMap = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConceptIdToStorageKeyMap(branchPath);
 	}
 
@@ -213,7 +213,7 @@ public class ReasonerTaxonomyWalker {
 			conceptIds.add(conceptId);
 		}
 		
-		final LongKeyLongMap map = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIds.size());
+		final LongKeyLongMap map = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(conceptIds.size());
 		
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /* nothing */) {
 			final long conceptId = itr.next();

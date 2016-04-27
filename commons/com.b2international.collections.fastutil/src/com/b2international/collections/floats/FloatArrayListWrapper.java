@@ -27,6 +27,21 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 	}
 	
 	@Override
+	public int hashCode() {
+		return AbstractFloatCollection.hashCode(this);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (!(obj instanceof FloatList)) { return false; }
+		
+		FloatList other = (FloatList) obj;
+		if (size() != other.size()) { return false; }
+		return AbstractFloatCollection.elementsEqual(iterator(), other.iterator());
+	}
+	
+	@Override
 	protected it.unimi.dsi.fastutil.floats.FloatList delegate() {
 		return (it.unimi.dsi.fastutil.floats.FloatList) super.delegate();
 	}
@@ -38,11 +53,6 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 		} else {
 			super.trimToSize();
 		}
-	}
-
-	@Override
-	public FloatList dup() {
-		return create(this);
 	}
 
 	@Override
@@ -70,7 +80,7 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 			final it.unimi.dsi.fastutil.floats.FloatList sourceDelegate = ((FloatArrayListWrapper) collection).delegate();
 			return new FloatArrayListWrapper(clone(sourceDelegate));
 		} else {
-			final FloatList result = create(collection.size());
+			final FloatList result = createWithExpectedSize(collection.size());
 			result.addAll(collection);
 			return result;
 		}
@@ -80,7 +90,7 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 		return new FloatArrayListWrapper(new it.unimi.dsi.fastutil.floats.FloatArrayList(source));
 	}
 	
-	public static FloatList create(int expectedSize) {
+	public static FloatList createWithExpectedSize(int expectedSize) {
 		return new FloatArrayListWrapper(new FloatArrayList(expectedSize));
 	}
 	

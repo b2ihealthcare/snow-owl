@@ -19,5 +19,24 @@ package com.b2international.collections.ints;
  * @since 4.7
  */
 public abstract class AbstractIntSet extends AbstractIntCollection implements IntSet {
-	// Empty class body
+
+	@Override
+	public boolean equals(Object obj) {
+		return equals(this, obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return hashCode(this);
+	}
+
+	public static boolean equals(IntSet obj1, Object obj2) {
+		if (obj1 == obj2) { return true; }
+		if (!(obj2 instanceof IntSet)) { return false; }
+		
+		IntSet other = (IntSet) obj2;
+		if (obj1.size() != other.size()) { return false; }
+		return obj1.containsAll(other);
+	}
+
 }

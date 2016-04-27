@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.search.Query;
 
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntSet;
@@ -35,8 +37,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StopWatch;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
-import com.b2international.commons.collect.PrimitiveMaps;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
@@ -149,7 +149,7 @@ public class FilteredRefSetMemberBrowser2Builder {
 		}
 
 		final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes = new BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode>(EXPECTED_REFERENCE_SET_SIZE);
-		final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap = PrimitiveMaps.newLongKeyOpenHashMap(EXPECTED_REFERENCE_SET_SIZE);
+		final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(EXPECTED_REFERENCE_SET_SIZE);
 		
 		final Runnable collectReferencedComponentMapRunnable = new CollectReferencedComponentMapRunnable(maxDoc, 
 				filteredMemberConceptIds.get(), 
@@ -182,8 +182,8 @@ public class FilteredRefSetMemberBrowser2Builder {
 			final BidiMapWithInternalId<IRefSetMemberNode, IRefSetMemberNode> refSetMemberNodes, 
 			final LongKeyMap<Set<IRefSetMemberNode>> referencedComponentToNodeMap) {
 		
-		final IntKeyMap<IntSet> subTypeMap = PrimitiveMaps.newIntKeyOpenHashMap(refSetMemberNodes.size());
-		final IntKeyMap<IntSet> superTypeMap = PrimitiveMaps.newIntKeyOpenHashMap(refSetMemberNodes.size());
+		final IntKeyMap<IntSet> subTypeMap = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(refSetMemberNodes.size());
+		final IntKeyMap<IntSet> superTypeMap = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(refSetMemberNodes.size());
 
 		addTopLevels(hierarchy,
 				refSetMemberNodes,

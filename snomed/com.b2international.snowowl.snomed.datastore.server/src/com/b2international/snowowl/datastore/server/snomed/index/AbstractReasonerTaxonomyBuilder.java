@@ -21,6 +21,9 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongKeyLongMap;
@@ -30,7 +33,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.ArrayIntIterator;
 import com.b2international.commons.collect.BitSetIntIterator;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -109,15 +111,15 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		this.superTypes = null; 
 		this.subTypes = null;
 		
-		this.exhaustiveConceptIds = source.exhaustiveConceptIds.dup();
-		this.fullyDefinedConceptIds = source.fullyDefinedConceptIds.dup();
-		this.conceptIdToStatements = source.conceptIdToStatements.dup();
-		this.conceptIdToConcreteDomain = source.conceptIdToConcreteDomain.dup();
-		this.statementIdToConcreteDomain = source.statementIdToConcreteDomain.dup();
-		this.internalIdToconceptId = source.internalIdToconceptId.dup();
-		this.conceptIdToInternalId = source.conceptIdToInternalId.dup();
+		this.exhaustiveConceptIds = PrimitiveSets.newLongOpenHashSet(source.exhaustiveConceptIds);
+		this.fullyDefinedConceptIds = PrimitiveSets.newLongOpenHashSet(source.fullyDefinedConceptIds);
+		this.conceptIdToStatements = PrimitiveMaps.newLongKeyOpenHashMap(source.conceptIdToStatements);
+		this.conceptIdToConcreteDomain = PrimitiveMaps.newLongKeyOpenHashMap(source.conceptIdToConcreteDomain);
+		this.statementIdToConcreteDomain = PrimitiveMaps.newLongKeyOpenHashMap(source.statementIdToConcreteDomain);
+		this.internalIdToconceptId = PrimitiveLists.newLongArrayList(source.internalIdToconceptId);
+		this.conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMap(source.conceptIdToInternalId);
 		
-		this.componentStorageKeyToConceptId = source.componentStorageKeyToConceptId.dup();
+		this.componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMap(source.componentStorageKeyToConceptId);
 	}
 	
 	protected boolean isReasonerMode() {

@@ -26,9 +26,6 @@ public interface LongKeyIntMap extends PrimitiveKeyMap, PrimitiveValueMap {
 
 	boolean containsKey(long key);
 
-	@Override
-	LongKeyIntMap dup();
-	
 	int get(long key);
 
 	@Override

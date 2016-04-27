@@ -46,15 +46,15 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.collect.PrimitiveLists;
-import com.b2international.commons.collect.PrimitiveMaps;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
@@ -664,7 +664,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 		try {
 			
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-			final LongList docIds = PrimitiveLists.newLongArrayList(collector.getDocIDs().size());
+			final LongList docIds = PrimitiveLists.newLongArrayListWithExpectedSize(collector.getDocIDs().size());
 			
 			//calculate doc IDs for parallel lookup
 			while (iterator.next()) {

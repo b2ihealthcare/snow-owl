@@ -17,9 +17,8 @@ package com.b2international.commons.test;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Sets.newHashSet;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -31,23 +30,6 @@ import com.b2international.commons.collect.IntKeySetMultimap;
  */
 public class IntKeySetMultimapTest {
 
-	@Test(expected = NullPointerException.class)
-	public void putNullValueTest() {
-		new IntKeySetMultimap<>().put(0, null);
-	}
-	
-	@Test(expected = IllegalArgumentException.class)
-	public void putInvalidValueTest() {
-		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
-	}
-	
-	@Test
-	public void putValidValueTest() {
-		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
-		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
-		new IntKeySetMultimap<>().put(0, Integer.valueOf(111));
-	}
-	
 	@Test
 	public void putAndCheckDistinctValues() {
 		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
@@ -68,7 +50,7 @@ public class IntKeySetMultimapTest {
 	@Test
 	public void checkNotExistingValues() {
 		final IntKeySetMultimap<String> multimap = new IntKeySetMultimap<>();
-		assertTrue(multimap.get(-1) instanceof Set);
+		assertTrue(multimap.get(-1).isEmpty());
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
@@ -138,11 +120,11 @@ public class IntKeySetMultimapTest {
 
 		final IntIterator keys = multimap.keySet().iterator();
 		while (keys.hasNext()) {
-			final int key = keys.next();
-			multimap.get(key);
+			keys.next();
+			keys.remove();
 		}
 		
-		assertTrue(multimap.size() == 0);
+		assertEquals(0, multimap.size());
 		assertTrue(multimap.isEmpty());
 	}
 	

@@ -21,7 +21,5 @@ import com.b2international.collections.PrimitiveSet;
  * @since 4.7
  */
 public interface ByteSet extends PrimitiveSet, ByteCollection {
-	
-	@Override
-	ByteSet dup();
+	// Empty interface body
 }

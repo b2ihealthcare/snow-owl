@@ -19,10 +19,29 @@ package com.b2international.collections.longs;
  * @since 4.7
  */
 public abstract class AbstractLongSet extends AbstractLongCollection implements LongSet {
-	// Empty class body
 	
 	@Override
 	public void trimToSize() {
+		// Default implementation does nothing
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		return equals(this, obj);
+	}
+	
+	@Override
+	public int hashCode() {
+        return hashCode(this);
+	}
+	
+	public static boolean equals(LongSet obj1, Object obj2) {
+		if (obj1 == obj2) { return true; }
+		if (!(obj2 instanceof LongSet)) { return false; }
+		
+		LongSet other = (LongSet) obj2;
+		if (obj1.size() != other.size()) { return false; }
+		return obj1.containsAll(other);
+	}
+
 }

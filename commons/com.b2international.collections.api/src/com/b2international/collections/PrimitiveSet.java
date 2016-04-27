@@ -19,7 +19,5 @@ package com.b2international.collections;
  * @since 4.7
  */
 public interface PrimitiveSet extends PrimitiveCollection {
-
-	@Override
-	PrimitiveSet dup();
+	// Empty interface body
 }

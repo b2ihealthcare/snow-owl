@@ -30,34 +30,33 @@ import com.b2international.collections.longs.LongList;
  */
 public interface PrimitiveListFactory {
 
-	ByteList newByteArrayList(byte[] source);
+	ByteList newByteArrayList(byte... source);
 
 	ByteList newByteArrayList(ByteCollection source);
 
-	ByteList newByteArrayList(int expectedSize);
+	ByteList newByteArrayListWithExpectedSize(int expectedSize);
 	
 	IntList newIntArrayList();
 
-	IntList newIntArrayList(int[] source);
+	IntList newIntArrayList(int... source);
 	
-	IntDeque newIntArrayDeque(int[] source);
+	IntDeque newIntArrayDeque(int... source);
 	
 	FloatList newFloatArrayList();
 	
-	FloatList newFloatArrayList(int expectedSize);
+	FloatList newFloatArrayListWithExpectedSize(int expectedSize);
 	
-	FloatList newFloatArrayList(float...source);
+	FloatList newFloatArrayList(float... source);
 	
 	FloatList newFloatArrayList(FloatCollection source);
 	
 	LongList newLongArrayList();
 
-	LongList newLongArrayList(int expectedSize);
+	LongList newLongArrayListWithExpectedSize(int expectedSize);
 
 	LongList newLongArrayList(long... source);
 
 	LongList newLongArrayList(LongCollection source);
 
 	LongDeque newLongArrayDeque();
-	
 }

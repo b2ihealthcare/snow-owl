@@ -24,8 +24,8 @@ import java.util.Collection;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.slf4j.Logger;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.ContentSubType;

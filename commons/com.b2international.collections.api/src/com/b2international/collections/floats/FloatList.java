@@ -22,9 +22,6 @@ import com.b2international.collections.PrimitiveList;
  */
 public interface FloatList extends PrimitiveList, FloatCollection {
 
-	@Override
-	FloatList dup();
-	
 	float get(int index);
 
 	@Override
@@ -34,5 +31,4 @@ public interface FloatList extends PrimitiveList, FloatCollection {
 	FloatListIterator listIterator(int startIndex);
 	
 	float set(int index, float value);
-	
 }

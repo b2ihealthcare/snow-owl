@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.google.common.base.Preconditions;
 
@@ -38,8 +38,8 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		Preconditions.checkNotNull(builder, "Builder argument cannot be null.");
 		
 		final SnomedTaxonomyBuilder $ = new SnomedTaxonomyBuilder();
-		$.nodes = new LongBidiMapWithInternalId( builder.nodes);
-		$.edges = builder.edges.dup();
+		$.nodes = new LongBidiMapWithInternalId(builder.nodes);
+		$.edges = PrimitiveMaps.newLongKeyOpenHashMap(builder.edges);
 		$.setDirty(builder.isDirty());
 		$.descendants = Arrays2.copy(builder.descendants);
 		$.ancestors = Arrays2.copy(builder.ancestors);
@@ -67,9 +67,10 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 			nodes.put(id, id);
 		}
 		
-		edges = isAStatements.length < 1 
-				? PrimitiveMaps.<long[]>newLongKeyOpenHashMap() 
-				: PrimitiveMaps.<long[]>newLongKeyOpenHashMap(isAStatements.length);
+		edges = isAStatements.length > 0 
+				? PrimitiveMaps.<long[]>newLongKeyOpenHashMapWithExpectedSize(isAStatements.length) 
+				: PrimitiveMaps.<long[]>newLongKeyOpenHashMap();
+
 		for (final IsAStatementWithId statement : isAStatements) {
 			edges.put(statement.getRelationshipId(), new long[] { statement.getDestinationId(), statement.getSourceId() });
 		}

@@ -21,6 +21,7 @@ import java.util.Set;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollectionWrapper;
 import com.b2international.collections.longs.LongValueMap;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenCustomHashMap;
@@ -35,6 +36,42 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 
 	private ObjectKeyLongMapWrapper(Object2LongMap<K> delegate) {
 		this.delegate = delegate;
+	}
+	
+	@Override
+	public int hashCode() {
+		int h = 0;
+		final Iterator<K> i = keySet().iterator();
+        while (i.hasNext()) {
+            K key = i.next();
+            long value = get(key);
+            h += (key==null ? 0 : key.hashCode()) ^ Longs.hashCode(value);
+        }
+		return h;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof LongValueMap)) return false;
+		
+		try {
+			final LongValueMap<K> other = (LongValueMap<K>) obj;
+			if (other.size() != size()) return false;
+			
+			final Iterator<K> i = keySet().iterator();
+			while (i.hasNext()) {
+				K key = i.next();
+				long value = get(key);
+				if (value != other.get(key)) {
+					return false;
+				}
+			}
+		} catch (ClassCastException e) {
+			return false;
+		}
+
+        return true;
 	}
 	
 	@Override
@@ -60,11 +97,6 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 	@Override
 	public boolean containsKey(K key) {
 		return delegate.containsKey(key);
-	}
-
-	@Override
-	public LongValueMap<K> dup() {
-		return create(this);
 	}
 
 	@Override
@@ -99,7 +131,7 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 			final Object2LongMap<K> sourceDelegate = ((ObjectKeyLongMapWrapper<K>) map).delegate;
 			return new ObjectKeyLongMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final LongValueMap<K> result = create(map.size());
+			final LongValueMap<K> result = createWithExpectedSize(map.size());
 			final Iterator<K> keys = map.keySet().iterator();
 			while (keys.hasNext()) {
 				final K key = keys.next();
@@ -109,7 +141,7 @@ public final class ObjectKeyLongMapWrapper<K> implements LongValueMap<K> {
 		}
 	}
 	
-	public static <K> LongValueMap<K> create(int expectedSize) {
+	public static <K> LongValueMap<K> createWithExpectedSize(int expectedSize) {
 		return new ObjectKeyLongMapWrapper<>(new Object2LongOpenHashMap<K>(expectedSize));
 	}
 	
