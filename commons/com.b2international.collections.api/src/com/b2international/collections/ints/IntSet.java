@@ -21,7 +21,5 @@ import com.b2international.collections.PrimitiveSet;
  * @since 4.7
  */
 public interface IntSet extends PrimitiveSet, IntCollection {
-
-	@Override
-	IntSet dup();
+	// Empty interface body
 }

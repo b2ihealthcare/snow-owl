@@ -29,10 +29,10 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -128,7 +128,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		if (parents.isEmpty() && ancestors.isEmpty()) {
 			return LongCollections.emptySet();
 		} else {
-			final LongSet ids = PrimitiveSets.newLongOpenHashSet(parents.size() + ancestors.size());
+			final LongSet ids = PrimitiveSets.newLongOpenHashSetWithExpectedSize(parents.size() + ancestors.size());
 			ids.addAll(parents);
 			ids.addAll(ancestors);
 			return ids;

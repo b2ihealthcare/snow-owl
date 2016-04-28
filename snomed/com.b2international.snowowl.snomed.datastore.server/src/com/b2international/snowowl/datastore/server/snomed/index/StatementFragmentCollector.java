@@ -21,8 +21,8 @@ import java.util.Collection;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyMap;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -71,7 +71,8 @@ public class StatementFragmentCollector extends AbstractDocsOutOfOrderCollector 
 	 * @param expectedSize the expected number of source concept identifiers, or <= 0 to use the built-in default hash map size
 	 */
 	public StatementFragmentCollector(final int expectedSize) {
-		statementMap = (0 > expectedSize) ? PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMap(expectedSize)
+		statementMap = (0 > expectedSize) 
+				? PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMapWithExpectedSize(expectedSize)
 				: PrimitiveMaps.<Collection<StatementFragment>> newLongKeyOpenHashMap();
 	}
 

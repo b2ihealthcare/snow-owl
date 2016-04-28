@@ -22,9 +22,6 @@ import com.b2international.collections.PrimitiveList;
  */
 public interface LongList extends PrimitiveList, LongCollection {
 
-	@Override
-	LongList dup();
-
 	long get(int index);
 
 	@Override

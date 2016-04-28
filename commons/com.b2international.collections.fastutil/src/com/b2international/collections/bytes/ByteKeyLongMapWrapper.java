@@ -17,6 +17,8 @@ package com.b2international.collections.bytes;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollectionWrapper;
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.bytes.Byte2LongMap;
 import it.unimi.dsi.fastutil.bytes.Byte2LongOpenCustomHashMap;
@@ -34,6 +36,38 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public int hashCode() {
+		int h = 0;
+		final ByteIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            byte key = i.next();
+            long value = get(key);
+            h += Bytes.hashCode(key) ^ Longs.hashCode(value);
+        }
+		return h;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof ByteKeyLongMap)) return false;
+		
+		final ByteKeyLongMap other = (ByteKeyLongMap) obj;
+        if (other.size() != size()) return false;
+
+        final ByteIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            byte key = i.next();
+            long value = get(key);
+            if (value != other.get(key)) {
+            	return false;
+            }
+        }
+
+        return true;
+	}
+	
 	@Override
 	public void clear() {
 		delegate.clear();
@@ -57,11 +91,6 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 	@Override
 	public boolean containsKey(byte key) {
 		return delegate.containsKey(key);
-	}
-
-	@Override
-	public ByteKeyLongMap dup() {
-		return create(this);
 	}
 
 	@Override
@@ -93,7 +122,7 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 		return new ByteKeyLongMapWrapper(new Byte2LongOpenHashMap());
 	}
 	
-	public static  ByteKeyLongMap create(int expectedSize) {
+	public static  ByteKeyLongMap createWithExpectedSize(int expectedSize) {
 		return new ByteKeyLongMapWrapper(new Byte2LongOpenHashMap(expectedSize));
 	}
 	
@@ -102,7 +131,7 @@ public final class ByteKeyLongMapWrapper implements ByteKeyLongMap {
 			final Byte2LongMap sourceDelegate = ((ByteKeyLongMapWrapper) map).delegate;
 			return new ByteKeyLongMapWrapper(clone(sourceDelegate));
 		} else {
-			final ByteKeyLongMap result = create(map.size());
+			final ByteKeyLongMap result = createWithExpectedSize(map.size());
 			final ByteIterator iter = map.keySet().iterator();
 			while (iter.hasNext()) {
 				final byte key = iter.next();

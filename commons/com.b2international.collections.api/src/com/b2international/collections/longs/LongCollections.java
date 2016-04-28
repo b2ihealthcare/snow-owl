@@ -15,6 +15,8 @@
  */
 package com.b2international.collections.longs;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Serializable;
 import java.util.NoSuchElementException;
 
@@ -30,11 +32,6 @@ public abstract class LongCollections {
 		@Override
 		public LongIterator iterator() {
 			return EmptyLongIterator.INSTANCE;
-		}
-		
-		@Override
-		public EmptyLongSet dup() {
-			return this;
 		}
 		
 		@Override
@@ -77,11 +74,6 @@ public abstract class LongCollections {
 		}
 	
 		@Override
-		public LongSet dup() {
-			return this;
-		}
-	
-		@Override
 		public boolean add(long value) {
 			throw new UnsupportedOperationException("Can't add value " + value + " to a SingletonLongSet.");
 		}
@@ -117,6 +109,121 @@ public abstract class LongCollections {
 		}
 	}
 	
+	private static abstract class UnmodifiableLongCollection implements LongCollection {
+
+		protected final LongCollection delegate;
+
+		UnmodifiableLongCollection(LongCollection collection) {
+			this.delegate = checkNotNull(collection, "collection");
+		}
+
+		@Override
+		public final void clear() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public final boolean isEmpty() {
+			return delegate.isEmpty();
+		}
+
+		@Override
+		public final int size() {
+			return delegate.size();
+		}
+
+		@Override
+		public final void trimToSize() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public final boolean add(long value) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public final boolean addAll(LongCollection collection) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public final boolean contains(long value) {
+			return delegate.contains(value);
+		}
+
+		@Override
+		public final boolean containsAll(LongCollection collection) {
+			return delegate.containsAll(collection);
+		}
+
+		@Override
+		public final LongIterator iterator() {
+			return unmodifiableLongIterator(delegate.iterator());
+		}
+
+		@Override
+		public final boolean remove(long value) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public final boolean removeAll(LongCollection collection) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public final boolean retainAll(LongCollection collection) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public final long[] toArray() {
+			return delegate.toArray();
+		}
+	}
+
+	private static final class UnmodifiableLongSet extends UnmodifiableLongCollection implements LongSet {
+
+		UnmodifiableLongSet(LongCollection collection) {
+			super(collection);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			return AbstractLongSet.equals(this, obj);
+		}
+		
+		@Override
+		public int hashCode() {
+	        return AbstractLongSet.hashCode(this);
+		}
+	}
+	
+	private static class UnmodifiableLongIterator implements LongIterator {
+		
+		private final LongIterator iterator;
+
+		public UnmodifiableLongIterator(LongIterator iterator) {
+			this.iterator = checkNotNull(iterator, "iterator");
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+		
+		@Override
+		public long next() {
+			return iterator.next();
+		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
+	
 	/**
 	 * @return an unmodifiable, empty {@link LongSet}
 	 */
@@ -137,6 +244,22 @@ public abstract class LongCollections {
 	
 	public static final LongIterator singletonIterator(final long value) {
 		return new SingletonLongIterator(value);
+	}
+	
+	public static final LongSet unmodifiableSet(LongSet source) {
+		if (source instanceof UnmodifiableLongSet) {
+			return source;
+		} else {
+			return new UnmodifiableLongSet(source);
+		}
+	}
+	
+	public static LongIterator unmodifiableLongIterator(LongIterator iterator) {
+		if (iterator instanceof UnmodifiableLongIterator) {
+			return iterator;
+		} else {
+			return new UnmodifiableLongIterator(iterator);
+		}
 	}
 	
 	private LongCollections() {

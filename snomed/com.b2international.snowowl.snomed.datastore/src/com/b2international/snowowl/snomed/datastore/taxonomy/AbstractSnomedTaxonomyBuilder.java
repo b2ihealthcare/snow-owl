@@ -24,6 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
@@ -32,7 +33,6 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
@@ -423,7 +423,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		}
 		final int count = bitSet.cardinality();
 	
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(count);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(count);
 		for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
 			long convertedId = function.apply(i);
 			if (convertedId == conceptId) {
@@ -440,7 +440,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		if (CompareUtils.isEmpty(internalIds)) {
 			return PrimitiveSets.newLongOpenHashSet();
 		}
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(internalIds.length); //optimized load factor
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(internalIds.length);
 		final long conceptIdLong = Long.parseLong(conceptId);
 		for (final int i : internalIds) {
 			long convertedId = function.apply(i);

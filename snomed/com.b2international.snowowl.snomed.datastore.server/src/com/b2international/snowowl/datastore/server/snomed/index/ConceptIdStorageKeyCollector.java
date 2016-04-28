@@ -22,8 +22,8 @@ import java.io.IOException;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.longs.LongList;
-import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -54,8 +54,8 @@ public class ConceptIdStorageKeyCollector extends AbstractDocsOutOfOrderCollecto
 	 * @param expectedSize the expected size for the backing 2D array.
 	 */
 	public ConceptIdStorageKeyCollector(final int expectedSize) {
-		conceptIds = 0 > expectedSize ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
-		storageKeys = 0 > expectedSize ? PrimitiveLists.newLongArrayList(expectedSize) : PrimitiveLists.newLongArrayList();
+		conceptIds = 0 > expectedSize ? PrimitiveLists.newLongArrayListWithExpectedSize(expectedSize) : PrimitiveLists.newLongArrayList();
+		storageKeys = 0 > expectedSize ? PrimitiveLists.newLongArrayListWithExpectedSize(expectedSize) : PrimitiveLists.newLongArrayList();
 	}
 
 	@Override

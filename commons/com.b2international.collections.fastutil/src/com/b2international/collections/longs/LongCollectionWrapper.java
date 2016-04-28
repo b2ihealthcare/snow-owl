@@ -105,11 +105,6 @@ public class LongCollectionWrapper extends AbstractLongCollection implements Lon
 	public final long[] toArray() {
 		return delegate.toLongArray();
 	}
-
-	@Override
-	public LongCollection dup() {
-		throw new UnsupportedOperationException();
-	}
 	
 	@Override
 	public void trimToSize() {

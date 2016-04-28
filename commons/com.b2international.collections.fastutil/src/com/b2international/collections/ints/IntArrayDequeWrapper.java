@@ -17,8 +17,6 @@ package com.b2international.collections.ints;
 
 import java.util.NoSuchElementException;
 
-import com.b2international.collections.ints.IntDeque;
-
 /**
  * @since 4.7
  */

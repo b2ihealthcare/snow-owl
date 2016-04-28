@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.NoSuchElementException;
 
+import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongListIterator;

@@ -75,9 +75,9 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.longs.LongList;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.CDOEditingContext;

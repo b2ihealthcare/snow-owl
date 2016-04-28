@@ -17,10 +17,8 @@ package com.b2international.collections.longs;
 
 import java.util.Collection;
 
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongKeyMap;
-import com.b2international.collections.longs.LongSet;
 import com.google.common.hash.HashFunction;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenCustomHashMap;
@@ -37,6 +35,43 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public int hashCode() {
+		int h = 0;
+		final LongIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            long key = i.next();
+            V value = get(key);
+            h += Longs.hashCode(key) ^ (value==null ? 0 : value.hashCode());
+        }
+		return h;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof LongKeyMap)) return false;
+		
+		final LongKeyMap<?> other = (LongKeyMap<?>) obj;
+        if (other.size() != size()) return false;
+
+        final LongIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            long key = i.next();
+            V value = get(key);
+            if (value == null) {
+                if (!(other.get(key) == null && other.containsKey(key)))
+                    return false;
+            } else {
+            	if (!value.equals(other.get(key))) {
+            		return false;
+            	}
+            }
+        }
+
+        return true;
+	}
+	
 	@Override
 	public void clear() {
 		delegate.clear();
@@ -60,11 +95,6 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 	@Override
 	public boolean containsKey(long key) {
 		return delegate.containsKey(key);
-	}
-
-	@Override
-	public LongKeyMap<V> dup() {
-		return create(this);
 	}
 
 	@Override
@@ -97,7 +127,7 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 			final Long2ObjectMap<V> sourceDelegate = ((LongKeyMapWrapper<V>) map).delegate;
 			return new LongKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final LongKeyMap<V> result = create(map.size());
+			final LongKeyMap<V> result = createWithExpectedSize(map.size());
 			final LongIterator iter = map.keySet().iterator();
 			while (iter.hasNext()) {
 				final long key = iter.next();
@@ -111,7 +141,7 @@ public final class LongKeyMapWrapper<V> implements LongKeyMap<V> {
 		return new LongKeyMapWrapper<>(new Long2ObjectOpenCustomHashMap<V>(new LongHashStrategyWrapper(hashFunction)));
 	}
 	
-	public static <V> LongKeyMap<V> create(int expectedSize) {
+	public static <V> LongKeyMap<V> createWithExpectedSize(int expectedSize) {
 		return new LongKeyMapWrapper<>(new Long2ObjectOpenHashMap<V>(expectedSize));
 	}
 	

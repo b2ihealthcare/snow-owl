@@ -54,10 +54,10 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Constants;
 import org.apache.lucene.util.NumericUtils;
 
+import com.b2international.collections.PrimitiveLists;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;

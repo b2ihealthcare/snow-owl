@@ -19,15 +19,33 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.commons.config.ConfigurationFactoryTest;
+import com.b2international.commons.test.collect.BitSetTest;
+import com.b2international.commons.test.collect.ByteOpenHashSetTest;
+import com.b2international.commons.test.collect.IntOpenHashSetTest;
+import com.b2international.commons.test.collect.LongOpenHashSetTest;
+import com.b2international.commons.test.config.ConfigurationFactoryTest;
 
 /**
  * @since 2.5
  */
 @RunWith(Suite.class)
-@SuiteClasses({ ArabicToRomanNumeralConverterTest.class, BidiMapWithInternalIdTest.class,
-		ConcurrentCollectionUtilsTest.class, ConsoleProgressMonitorTest.class, DfsDirectedPathServiceTest.class,
-		DirectedGraphTest.class, TopologicalSortTest.class, VersionNumberComparatorTest.class, VersionTest.class, ConfigurationFactoryTest.class, PreorderIteratorTest.class })
+@SuiteClasses({ 
+	ArabicToRomanNumeralConverterTest.class, 
+	BidiMapWithInternalIdTest.class,
+	ConcurrentCollectionUtilsTest.class, 
+	ConsoleProgressMonitorTest.class, 
+	DfsDirectedPathServiceTest.class,
+	DirectedGraphTest.class, 
+	TopologicalSortTest.class, 
+	VersionNumberComparatorTest.class, 
+	VersionTest.class, 
+	ConfigurationFactoryTest.class, 
+	PreorderIteratorTest.class,
+	BitSetTest.class,
+	ByteOpenHashSetTest.class,
+	IntOpenHashSetTest.class,
+	LongOpenHashSetTest.class
+})
 public class AllCommonsTests {
-
+	// Empty class body
 }

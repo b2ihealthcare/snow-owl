@@ -27,8 +27,8 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongValueMap;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.importer.ImportAction;

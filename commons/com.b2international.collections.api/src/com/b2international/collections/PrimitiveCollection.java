@@ -24,8 +24,6 @@ public interface PrimitiveCollection extends Serializable {
 
 	void clear();
 
-	PrimitiveCollection dup();
-
 	boolean isEmpty();
 
 	PrimitiveIterator iterator();

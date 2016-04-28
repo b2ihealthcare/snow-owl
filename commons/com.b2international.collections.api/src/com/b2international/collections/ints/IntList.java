@@ -22,9 +22,6 @@ import com.b2international.collections.PrimitiveList;
  */
 public interface IntList extends PrimitiveList, IntCollection {
 
-	@Override
-	IntList dup();
-
 	int get(int index);
 
 	@Override

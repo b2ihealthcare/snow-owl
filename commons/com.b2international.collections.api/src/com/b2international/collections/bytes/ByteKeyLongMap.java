@@ -26,9 +26,6 @@ public interface ByteKeyLongMap extends PrimitiveKeyMap, PrimitiveValueMap {
 
 	boolean containsKey(byte key);
 
-	@Override
-	ByteKeyLongMap dup();
-	
 	long get(byte key);
 
 	@Override

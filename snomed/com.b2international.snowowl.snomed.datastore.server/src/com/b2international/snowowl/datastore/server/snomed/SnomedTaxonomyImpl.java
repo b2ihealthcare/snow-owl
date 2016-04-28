@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.longs.LongCollection;
@@ -49,8 +51,6 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.commons.collect.PrimitiveLists;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -750,7 +750,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	private Collection<String> getIds(final IntCollection internalIds) {
-		final LongList ids = PrimitiveLists.newLongArrayList(internalIds.size());
+		final LongList ids = PrimitiveLists.newLongArrayListWithExpectedSize(internalIds.size());
 		for (final IntIterator itr = internalIds.iterator(); itr.hasNext(); /**/) {
 			ids.add(concepts.get(itr.next()));
 		}
@@ -823,7 +823,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			return PrimitiveSets.newBitSet();
 		}
 		
-		final BitSet internalIds = PrimitiveSets.newBitSet(values.size());
+		final BitSet internalIds = PrimitiveSets.newBitSetWithExpectedSize(values.size());
 		for (final LongIterator itr = values.iterator(); itr.hasNext(); /**/) {
 			internalIds.set(getInternalId(itr.next()));
 		}

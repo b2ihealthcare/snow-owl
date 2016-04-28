@@ -21,10 +21,10 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.LongSets.LongPredicate;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
@@ -69,7 +69,7 @@ public class SnomedComponentLabelCollector extends AbstractDocsOutOfOrderCollect
 	 * @param componentIds the component identifiers to accept
 	 */
 	public SnomedComponentLabelCollector(final LongCollection componentIds) {
-		this(LongSets.in(componentIds), PrimitiveMaps.<String>newLongKeyOpenHashMap(getExpectedSize(componentIds)));
+		this(LongSets.in(componentIds), PrimitiveMaps.<String>newLongKeyOpenHashMapWithExpectedSize(getExpectedSize(componentIds)));
 	}
 
 	private SnomedComponentLabelCollector(final LongPredicate componentIdsPredicate, final LongKeyMap<String> idLabelMapping) {

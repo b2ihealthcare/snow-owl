@@ -33,8 +33,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
+import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.ints.IntList;
-import com.b2international.commons.collect.PrimitiveLists;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;

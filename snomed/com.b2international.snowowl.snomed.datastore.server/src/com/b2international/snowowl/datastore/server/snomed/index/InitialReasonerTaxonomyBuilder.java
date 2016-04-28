@@ -27,14 +27,14 @@ import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ClassUtils;
-import com.b2international.commons.collect.PrimitiveLists;
-import com.b2international.commons.collect.PrimitiveMaps;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -168,8 +168,8 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final long[][] conceptIds = conceptIdsReference.get();
 			final int conceptCount = conceptIds.length;
 
-			internalIdToconceptId = PrimitiveLists.newLongArrayList(conceptCount);
-			conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMap(conceptCount);
+			internalIdToconceptId = PrimitiveLists.newLongArrayListWithExpectedSize(conceptCount);
+			conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(conceptCount);
 
 			for (final long[] conceptIdAndKey : conceptIds) {
 				final long conceptId = conceptIdAndKey[0];
@@ -297,7 +297,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 			
 			conceptIdToStatements = getStatements(getAllowedCharacteristicTypes());
-			final LongKeyLongMap statementIdToConceptIds = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIdToStatements.size());
+			final LongKeyLongMap statementIdToConceptIds = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(conceptIdToStatements.size());
 
 			for (final LongIterator itr = conceptIdToStatements.keySet().iterator(); itr.hasNext(); /* nothing */) {
 
@@ -406,7 +406,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			conceptIds.add(conceptIdAndKey[0]);
 		}
 
-		componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMap(conceptIds.size()); // Lower bound estimate
+		componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(conceptIds.size()); // Lower bound estimate
 		
 		final AtomicReference<LongSet> exhaustiveConceptIdsReference = createAtomicReference();
 		final AtomicReference<LongSet> fullyDefinedConceptIdsReference = createAtomicReference();

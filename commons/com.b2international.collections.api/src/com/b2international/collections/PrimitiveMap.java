@@ -22,8 +22,6 @@ public interface PrimitiveMap {
 
 	void clear();
 
-	PrimitiveMap dup();
-
 	boolean isEmpty();
 
 	int size();
