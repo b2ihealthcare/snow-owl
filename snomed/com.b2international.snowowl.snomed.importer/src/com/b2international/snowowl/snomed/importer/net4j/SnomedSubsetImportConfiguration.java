@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.importer.net4j;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -49,20 +48,6 @@ public class SnomedSubsetImportConfiguration {
 	private Set<SubsetEntry> entries = Sets.newHashSet();
 	private final List<SnomedUnimportedRefSets> unimportedRefSets = Lists.newArrayList();
 
-	private static final Map<String, String> XLS_FILE_NAME_SPECIAL_CASES;
-	
-	static {
-		
-		final Map<String, String> $ = Maps.newHashMap();
-		$.put("Hxofand F Hxof", "Hx of and FHx of");
-		$.put("Orthopedics Non Extremity Fractures", "Orthopedics Non-Extremity Fractures");
-		$.put("Obstetricsand Gynecology", "Obstetrics and Gynecology");
-		$.put("Injuries Part 1", "Injuries [Part 1]");
-		$.put("KPINT", "KP Problem List");
-		XLS_FILE_NAME_SPECIAL_CASES = Collections.unmodifiableMap($);
-		
-	}
-	
 	/**
 	 * Gets the name of the subset from the {@code refSetURL} and creates a
 	 * {@link SubsetEntry}.
@@ -119,6 +104,10 @@ public class SnomedSubsetImportConfiguration {
 
 		String subsetName = term;
 		
+		if (Concepts.CMT_REFSET_NAME_ID_MAP.containsKey(subsetName)) {
+			subsetEntry.setSubsetName(subsetName);
+			return;
+		}
 		
 		subsetName = retainAfter(subsetName, "Concepts_");
 		subsetName = retainAfter(subsetName, "Refset");
@@ -129,10 +118,6 @@ public class SnomedSubsetImportConfiguration {
 		
 		subsetName = subsetName.trim();
 		subsetName = StringUtils.splitCamelCaseAndCapitalize(subsetName);
-		
-		if (XLS_FILE_NAME_SPECIAL_CASES.containsKey(subsetName)) {
-			subsetName = XLS_FILE_NAME_SPECIAL_CASES.get(subsetName);
-		}
 		
 		subsetEntry.setSubsetName(subsetName);
 	}
