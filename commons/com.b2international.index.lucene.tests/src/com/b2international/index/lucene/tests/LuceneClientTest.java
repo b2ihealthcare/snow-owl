@@ -16,7 +16,8 @@
 package com.b2international.index.lucene.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -35,8 +36,10 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.read.Searcher;
 import com.b2international.index.write.Writer;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -55,6 +58,7 @@ public class LuceneClientTest {
 	@Before
 	public void givenClient() {
 		final ObjectMapper mapper = new ObjectMapper();
+		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		client = new LuceneClient(new FSIndexAdmin(folder.getRoot(), UUID.randomUUID().toString()), mapper);
 		client.admin().create();
 	}
@@ -118,13 +122,68 @@ public class LuceneClientTest {
 		}
 	}
 	
+	@Test
+	public void indexNestedDocument() throws Exception {
+		final ParentData data = new ParentData();
+		try (Writer writer = client.writer()) {
+			writer.put(KEY, data);
+		}
+		// try to get nested document as is first
+		try (Searcher searcher = client.searcher()) {
+			final ParentData actual = searcher.get(ParentData.class, KEY);
+			assertEquals(data, actual);
+		}
+	}
+	
+	@Test
+	public void searchNestedDocument() throws Exception {
+		final ParentData data = new ParentData();
+		final ParentData data2 = new ParentData();
+		data2.nestedData.field2 = "field2Changed";
+		try (Writer writer = client.writer()) {
+			writer.put(KEY, data);
+			writer.put(KEY2, data2);
+		}
+		// try to get nested document as is first
+		try (Searcher searcher = client.searcher()) {
+			final Query query = Query.builder().selectAll().where(Expressions.nestedMatch("nestedData", Expressions.exactMatch("field2", "field2"))).build();
+			final Iterable<ParentData> matches = searcher.search(ParentData.class, query);
+			assertThat(matches).hasSize(1);
+			assertThat(matches).containsOnly(data);
+		}
+	}
+	
+	@Test
+	public void indexDeeplyNestedDocument() throws Exception {
+		final DeepData data = new DeepData(new ParentData());
+		final DeepData data2 = new DeepData(new ParentData());
+		data2.parentData.nestedData.field2 = "field2Changed";
+		try (Writer writer = client.writer()) {
+			writer.put(KEY, data);
+			writer.put(KEY2, data2);
+		}
+		// try to get nested document as is first
+		try (Searcher searcher = client.searcher()) {
+			// get single data
+			final DeepData actual = searcher.get(DeepData.class, KEY);
+			assertEquals(data, actual);
+			// try nested query
+			final Query query = Query.builder().selectAll()
+					.where(Expressions.nestedMatch("parentData.nestedData", 
+							Expressions.exactMatch("field2", "field2"))
+							).build();
+			final Iterable<DeepData> matches = searcher.search(DeepData.class, query);
+			assertThat(matches).hasSize(1);
+			assertThat(matches).containsOnly(data);
+		}
+	}
+	
 	@After
 	public void after() {
 		client.close();
 	}
 	
 	@Doc
-	@JsonAutoDetect(fieldVisibility = Visibility.ANY)
 	static class Data {
 		String field1 = "field1";
 		String field2 = "field2";
@@ -141,6 +200,80 @@ public class LuceneClientTest {
 		@Override
 		public int hashCode() {
 			return Objects.hash(field1, field2);
+		}
+		
+	}
+	
+	@Doc
+	static class ParentData {
+		
+		String field1 = "field1";
+		NestedData nestedData = new NestedData("field2");
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			ParentData other = (ParentData) obj;
+			return Objects.equals(field1, other.field1) && Objects.equals(nestedData, other.nestedData);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field1);
+		}
+		
+	}
+	
+	@Doc
+	static class NestedData {
+		
+		String field2;
+
+		@JsonCreator()
+		public NestedData(@JsonProperty("field2") String field2) {
+			this.field2 = field2;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			NestedData other = (NestedData) obj;
+			return Objects.equals(field2, other.field2);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field2);
+		}
+		
+	}
+	
+	@Doc
+	static class DeepData {
+		
+		final ParentData parentData;
+		
+		@JsonCreator
+		public DeepData(@JsonProperty("parentData") ParentData parentData) {
+			this.parentData = parentData;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			DeepData other = (DeepData) obj;
+			return Objects.equals(parentData, other.parentData);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(parentData);
 		}
 		
 	}

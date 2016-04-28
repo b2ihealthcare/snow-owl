@@ -201,4 +201,8 @@ public class Mappings {
 		return new DocumentBuilder();
 	}
 
+	public static IndexField<Object> none() {
+		return EmptyIndexField.INSTANCE;
+	}
+
 }

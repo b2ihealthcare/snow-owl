@@ -15,7 +15,11 @@
  */
 package com.b2international.index.query;
 
+import java.util.List;
+
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 /**
  * @since 4.7
@@ -71,6 +75,15 @@ public class Expressions {
 			return previous.get();
 		}
 		
+	}
+	
+	public static Expression nestedMatch(final String field, Expression expression) {
+		final List<String> pathSegments = Lists.reverse(Splitter.on(".").splitToList(field));
+		Expression previous = expression;
+		for (String segment : pathSegments) {
+			previous = new NestedPredicate(segment, previous);
+		}
+		return previous;
 	}
 	
 	public static Expression prefixMatch(final String field, final String prefix) {

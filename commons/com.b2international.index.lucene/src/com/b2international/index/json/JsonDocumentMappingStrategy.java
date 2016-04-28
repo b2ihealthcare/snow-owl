@@ -77,22 +77,26 @@ public class JsonDocumentMappingStrategy {
 			return Mappings.floatField(fieldName);
 		} else if (fieldType == Long.class || fieldType == long.class) {
 			return Mappings.longField(fieldName);
+		} else if (Iterable.class.isAssignableFrom(fieldType) || fieldType.isArray()) {
+			throw new UnsupportedOperationException("Iterables/Arrays are not supported: " + field);
+		} else if (fieldType.isEnum()) {
+			throw new UnsupportedOperationException("Enums are not supported: " + field);
 		} else {
-			throw new UnsupportedOperationException("Unsupported field type: " + field);
+			return Mappings.none();
 		}
 	}
 
-	private Collection<Field> getFields(Class<?> type) {
+	static Collection<Field> getFields(Class<?> type) {
 		if (type == Object.class) {
 			return Collections.emptySet();
 		}
 		final Set<Field> fields = newHashSet();
+		if (type.getSuperclass() != null) {
+			fields.addAll(getFields(type.getSuperclass()));
+		}
 		for (Field field : type.getDeclaredFields()) {
 			field.setAccessible(true);
 			fields.add(field);
-		}
-		if (type.getSuperclass() != null) {
-			fields.addAll(getFields(type.getSuperclass()));
 		}
 		return fields;
 	}

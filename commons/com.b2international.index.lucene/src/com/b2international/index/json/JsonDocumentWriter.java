@@ -15,12 +15,20 @@
  */
 package com.b2international.index.json;
 
-import java.io.IOException;
+import static com.google.common.collect.Lists.newLinkedList;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.UUID;
+
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 
+import com.b2international.index.Doc;
+import com.b2international.index.IndexException;
 import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -47,7 +55,28 @@ public class JsonDocumentWriter implements Writer {
 
 	@Override
 	public void put(String key, Object object) throws IOException {
-		writer.addDocument(mappingStrategy.map(key, object));
+		final Collection<Document> docs = newLinkedList();
+		collectDocs(key, object, docs);
+		writer.addDocuments(docs);
+	}
+
+	/* traverse the fields and map the given object and its nested objects */
+	private void collectDocs(String key, Object object, final Collection<Document> docs) throws IOException {
+		for (Field field : JsonDocumentMappingStrategy.getFields(object.getClass())) {
+			final Class<?> fieldType = field.getType();
+			if (fieldType.isAnnotationPresent(Doc.class)) {
+				if (fieldType.getAnnotation(Doc.class).nested()) {
+					try {
+						final Object nestedObject = field.get(object);
+						collectDocs(UUID.randomUUID().toString(), nestedObject, docs);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						throw new IndexException("Couldn't index nested type " + field.getName(), e);
+					}
+				}
+			}
+		}
+		final Document doc = mappingStrategy.map(key, object);
+		docs.add(doc);
 	}
 
 	@Override

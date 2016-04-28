@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package com.b2international.index.query;
 
 /**
  * @since 4.7
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Doc {
+public class NestedPredicate extends Predicate {
+
+	private final Expression expression;
+
+	public NestedPredicate(String path, Expression expression) {
+		super(path);
+		this.expression = expression;
+	}
 	
-	String type() default "";
+	public Expression getExpression() {
+		return expression;
+	}
 	
-	boolean nested() default true;
+	@Override
+	public String toString() {
+		return String.format("NESTED(%s, %s)", getField(), getExpression());
+	}
 
 }

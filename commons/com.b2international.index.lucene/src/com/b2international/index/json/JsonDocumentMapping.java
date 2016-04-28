@@ -17,6 +17,9 @@ package com.b2international.index.json;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Collections;
+
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 
 import com.b2international.index.Doc;
@@ -52,6 +55,10 @@ public class JsonDocumentMapping {
 		final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
 		checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
 		return docType;
+	}
+
+	public static Filter filterByType(Class<?> type) {
+		return _type().createTermsFilter(Collections.singleton(getType(type)));
 	}
 	
 }

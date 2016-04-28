@@ -17,6 +17,7 @@ package com.b2international.index.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Deque;
 
@@ -25,10 +26,15 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.join.ScoreMode;
+import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.index.IndexException;
+import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.google.common.collect.Queues;
 
@@ -84,7 +90,12 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private final Deque<DequeItem> deque = Queues.newLinkedBlockingDeque();
+	private final Class<?> type;
 	
+	public LuceneQueryBuilder(Class<?> type) {
+		this.type = type;
+	}
+
 	private FormattedRuntimeException newIllegalStateException() {
 		return new FormattedRuntimeException(ILLEGAL_STACK_STATE_MESSAGE, deque);
 	}
@@ -134,8 +145,31 @@ public final class LuceneQueryBuilder {
 //		} else if (expression instanceof DateRangePredicate) {
 //			DateRangePredicate predicate = (DateRangePredicate) expression;
 //			visit(predicate);
+		} else if (expression instanceof NestedPredicate) {
+			visit((NestedPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
+		}
+	}
+	
+	private void visit(NestedPredicate predicate) {
+		final Filter parentFilter = JsonDocumentMapping.filterByType(type);
+		// TODO only one level deep nesting is supported right now
+		final Class<?> childType = getField(type, predicate.getField()).getType();
+		final Filter childFilter = JsonDocumentMapping.filterByType(childType);
+		final Query innerQuery = new LuceneQueryBuilder(childType).build(predicate.getExpression());
+		final Query childQuery = new FilteredQuery(innerQuery, childFilter);
+		// TODO scoring???
+		final Query nestedQuery = new ToParentBlockJoinQuery(childQuery, parentFilter, ScoreMode.None);
+		System.out.println(nestedQuery);
+		deque.push(new DequeItem(nestedQuery));
+	}
+
+	private static Field getField(Class<?> type, String field) {
+		try {
+			return type.getDeclaredField(field);
+		} catch (NoSuchFieldException | SecurityException e) {
+			throw new IndexException("Couldn't find field " + field, e);
 		}
 	}
 

@@ -74,7 +74,7 @@ public class JsonDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Iterable<T> search(Class<T> type, Query query) throws IOException {
-		final org.apache.lucene.search.Query lq = toLuceneQuery(query);
+		final org.apache.lucene.search.Query lq = toLuceneQuery(type, query);
 		
 		final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
 		searcher.search(lq, totalHitCollector);
@@ -107,8 +107,8 @@ public class JsonDocumentSearcher implements Searcher {
 		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
 	}
 
-	private org.apache.lucene.search.Query toLuceneQuery(Query query) {
-		return new LuceneQueryBuilder().build(query.getWhere());
+	private org.apache.lucene.search.Query toLuceneQuery(Class<?> root, Query query) {
+		return new LuceneQueryBuilder(root).build(query.getWhere());
 	}
 
 	private static boolean isEmpty(TopDocs docs) {
