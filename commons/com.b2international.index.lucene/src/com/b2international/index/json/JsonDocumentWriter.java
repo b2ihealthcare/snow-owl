@@ -27,8 +27,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 
-import com.b2international.index.Doc;
-import com.b2international.index.IndexException;
+import com.b2international.index.util.Reflections;
 import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -62,16 +61,16 @@ public class JsonDocumentWriter implements Writer {
 
 	/* traverse the fields and map the given object and its nested objects */
 	private void collectDocs(String key, Object object, final Collection<Document> docs) throws IOException {
-		for (Field field : JsonDocumentMappingStrategy.getFields(object.getClass())) {
-			final Class<?> fieldType = field.getType();
-			if (fieldType.isAnnotationPresent(Doc.class)) {
-				if (fieldType.getAnnotation(Doc.class).nested()) {
-					try {
-						final Object nestedObject = field.get(object);
-						collectDocs(UUID.randomUUID().toString(), nestedObject, docs);
-					} catch (IllegalArgumentException | IllegalAccessException e) {
-						throw new IndexException("Couldn't index nested type " + field.getName(), e);
+		for (Field field : Reflections.getFields(object.getClass())) {
+			final Class<?> fieldType = Reflections.getType(field);
+			if (JsonDocumentMapping.isNestedDoc(fieldType)) {
+				final Object fieldValue = Reflections.getValue(object, field);
+				if (fieldValue instanceof Iterable) {
+					for (Object item : (Iterable<?>) fieldValue) {
+						collectDocs(UUID.randomUUID().toString(), item, docs);
 					}
+				} else {
+					collectDocs(UUID.randomUUID().toString(), fieldValue, docs);
 				}
 			}
 		}

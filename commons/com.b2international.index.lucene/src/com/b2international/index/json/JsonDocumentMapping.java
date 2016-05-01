@@ -60,5 +60,9 @@ public class JsonDocumentMapping {
 	public static Filter filterByType(Class<?> type) {
 		return _type().createTermsFilter(Collections.singleton(getType(type)));
 	}
+
+	public static boolean isNestedDoc(Class<?> fieldType) {
+		return fieldType.isAnnotationPresent(Doc.class) && fieldType.getAnnotation(Doc.class).nested();
+	}
 	
 }

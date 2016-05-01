@@ -15,10 +15,13 @@
  */
 package com.b2international.index.lucene.tests;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -178,6 +181,31 @@ public class LuceneClientTest {
 		}
 	}
 	
+	@Test
+	public void indexCollectionOfNestedDocs() throws Exception {
+		final MultipleNestedData data = new MultipleNestedData(Arrays.asList(new NestedData("field2"), new NestedData("field2Another")));
+		final MultipleNestedData data2 = new MultipleNestedData(Arrays.asList(new NestedData("field2Changed"), new NestedData("field2AnotherChanged")));
+		// index multi nested data
+		try (Writer writer = client.writer()) {
+			writer.put(KEY, data);
+			writer.put(KEY2, data2);
+		}
+		
+		try (Searcher searcher = client.searcher()) {
+			// get data by key
+			final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY);
+			assertEquals(data, actual);
+			// try nested query on collections
+			final Query query = Query.builder().selectAll()
+					.where(Expressions.nestedMatch("nestedDatas", 
+							Expressions.exactMatch("field2", "field2"))
+							).build();
+			final Iterable<MultipleNestedData> matches = searcher.search(MultipleNestedData.class, query);
+			assertThat(matches).hasSize(1);
+			assertThat(matches).containsOnly(data);
+		}
+	}
+	
 	@After
 	public void after() {
 		client.close();
@@ -221,7 +249,34 @@ public class LuceneClientTest {
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(field1);
+			return Objects.hash(field1, nestedData);
+		}
+		
+	}
+	
+	@Doc
+	static class MultipleNestedData {
+		
+		String field1 = "field1";
+		Collection<NestedData> nestedDatas = newHashSet();
+		
+		@JsonCreator
+		public MultipleNestedData(@JsonProperty("nestedDatas") Collection<NestedData> nestedDatas) {
+			this.nestedDatas.addAll(nestedDatas);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			MultipleNestedData other = (MultipleNestedData) obj;
+			return Objects.equals(field1, other.field1) && Objects.equals(nestedDatas, other.nestedDatas);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field1, nestedDatas);
 		}
 		
 	}

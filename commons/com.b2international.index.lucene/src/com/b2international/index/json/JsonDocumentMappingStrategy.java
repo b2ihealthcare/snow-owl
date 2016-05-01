@@ -16,21 +16,17 @@
 package com.b2international.index.json;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 
 import com.b2international.index.Analyzed;
-import com.b2international.index.IndexException;
 import com.b2international.index.mapping.IndexField;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -52,23 +48,28 @@ public class JsonDocumentMappingStrategy {
 		// TODO create byte fields
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
 		// add all other fields
-		for (Field field : getFields(object.getClass())) {
-			try {
-				final IndexField indexField = getIndexField(field);
-				final Object value = field.get(object);
-				indexField.addTo(doc, value);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				throw new IndexException("Couldn't index document", e);
+		for (Field field : Reflections.getFields(object.getClass())) {
+			final Object value = Reflections.getValue(object, field);
+			final IndexField indexField = getIndexField(field);
+			if (Mappings.none() != indexField) {
+				if (value instanceof Iterable) {
+					for (Object item : (Iterable<?>) value) {
+						indexField.addTo(doc, item);
+					}
+				} else {
+					indexField.addTo(doc, value);
+				}
 			}
 		}
 		return doc;
 	}
 	
 	private IndexField getIndexField(Field field) {
+		final Class<?> fieldType = Reflections.getType(field);
 		final String fieldName = field.getName();
-		final Class<?> fieldType = field.getType();
+		final boolean analyzed = field.isAnnotationPresent(Analyzed.class);
 		if (fieldType == String.class) {
-			return field.isAnnotationPresent(Analyzed.class) ? Mappings.textField(fieldName) : Mappings.stringField(fieldName);
+			return analyzed ? Mappings.textField(fieldName) : Mappings.stringField(fieldName);
 		} else if (fieldType == Boolean.class || fieldType == boolean.class) {
 			return Mappings.boolField(fieldName);
 		} else if (fieldType == Integer.class || fieldType == int.class) {
@@ -77,8 +78,8 @@ public class JsonDocumentMappingStrategy {
 			return Mappings.floatField(fieldName);
 		} else if (fieldType == Long.class || fieldType == long.class) {
 			return Mappings.longField(fieldName);
-		} else if (Iterable.class.isAssignableFrom(fieldType) || fieldType.isArray()) {
-			throw new UnsupportedOperationException("Iterables/Arrays are not supported: " + field);
+		} else if (fieldType.isArray()) {
+			throw new UnsupportedOperationException("Arrays are not supported: " + field);
 		} else if (fieldType.isEnum()) {
 			throw new UnsupportedOperationException("Enums are not supported: " + field);
 		} else {
@@ -86,19 +87,4 @@ public class JsonDocumentMappingStrategy {
 		}
 	}
 
-	static Collection<Field> getFields(Class<?> type) {
-		if (type == Object.class) {
-			return Collections.emptySet();
-		}
-		final Set<Field> fields = newHashSet();
-		if (type.getSuperclass() != null) {
-			fields.addAll(getFields(type.getSuperclass()));
-		}
-		for (Field field : type.getDeclaredFields()) {
-			field.setAccessible(true);
-			fields.add(field);
-		}
-		return fields;
-	}
-	
 }

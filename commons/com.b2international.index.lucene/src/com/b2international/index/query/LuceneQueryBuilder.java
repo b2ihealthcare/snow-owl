@@ -17,7 +17,6 @@ package com.b2international.index.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Deque;
 
@@ -33,9 +32,9 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.index.IndexException;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.util.Reflections;
 import com.google.common.collect.Queues;
 
 /**
@@ -154,23 +153,13 @@ public final class LuceneQueryBuilder {
 	
 	private void visit(NestedPredicate predicate) {
 		final Filter parentFilter = JsonDocumentMapping.filterByType(type);
-		// TODO only one level deep nesting is supported right now
-		final Class<?> childType = getField(type, predicate.getField()).getType();
+		final Class<?> childType = Reflections.getFieldType(type, predicate.getField());
 		final Filter childFilter = JsonDocumentMapping.filterByType(childType);
 		final Query innerQuery = new LuceneQueryBuilder(childType).build(predicate.getExpression());
 		final Query childQuery = new FilteredQuery(innerQuery, childFilter);
 		// TODO scoring???
 		final Query nestedQuery = new ToParentBlockJoinQuery(childQuery, parentFilter, ScoreMode.None);
-		System.out.println(nestedQuery);
 		deque.push(new DequeItem(nestedQuery));
-	}
-
-	private static Field getField(Class<?> type, String field) {
-		try {
-			return type.getDeclaredField(field);
-		} catch (NoSuchFieldException | SecurityException e) {
-			throw new IndexException("Couldn't find field " + field, e);
-		}
 	}
 
 //	private void visit(TextPredicate predicate) {
