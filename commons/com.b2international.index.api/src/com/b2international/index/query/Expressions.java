@@ -77,8 +77,8 @@ public class Expressions {
 		
 	}
 	
-	public static Expression nestedMatch(final String field, Expression expression) {
-		final List<String> pathSegments = Lists.reverse(Splitter.on(".").splitToList(field));
+	public static Expression nestedMatch(final String path, Expression expression) {
+		final List<String> pathSegments = Lists.reverse(Splitter.on(".").splitToList(path));
 		Expression previous = expression;
 		for (String segment : pathSegments) {
 			previous = new NestedPredicate(segment, previous);
