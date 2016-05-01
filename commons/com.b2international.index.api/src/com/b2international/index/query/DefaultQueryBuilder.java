@@ -18,22 +18,25 @@ package com.b2international.index.query;
 import com.b2international.index.query.Query.AfterSelectBuilder;
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.index.query.Query.SearchContextBuilder;
-import com.b2international.index.read.SearchExecutor;
 
 /**
  * @since 4.7
  */
-public class DefaultQueryBuilder implements QueryBuilder, AfterSelectBuilder, SearchContextBuilder {
+class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterSelectBuilder<T>, AfterWhereBuilder<T> {
 
-	private static final int DEFAULT_LIMIT = 10;
+	private static final int DEFAULT_LIMIT = 50;
 
+	private final Class<T> type;
+	
 	private int offset = 0;
 	private int limit = DEFAULT_LIMIT;
 	private Select select;
 	private Expression where;
 	private SortBy sortBy = SortBy.NONE;
-	private SearchExecutor executor;
+
+	public DefaultQueryBuilder(Class<T> type) {
+		this.type = type;
+	}
 
 	public int getLimit() {
 		return limit;
@@ -56,54 +59,44 @@ public class DefaultQueryBuilder implements QueryBuilder, AfterSelectBuilder, Se
 	}
 	
 	@Override
-	public AfterWhereBuilder offset(int offset) {
+	public AfterWhereBuilder<T> offset(int offset) {
 		this.offset = offset;
 		return this;
 	}
 
 	@Override
-	public AfterWhereBuilder limit(int limit) {
+	public AfterWhereBuilder<T> limit(int limit) {
 		this.limit = limit;
 		return this;
 	}
 
 	@Override
-	public AfterSelectBuilder select(Select select) {
+	public AfterSelectBuilder<T> select(Select select) {
 		this.select = select;
 		return this;
 	}
 	
 	@Override
-	public AfterSelectBuilder selectAll() {
+	public AfterSelectBuilder<T> selectAll() {
 		return select(Select.all());
 	}
 
 	@Override
-	public AfterWhereBuilder where(Expression expression) {
+	public AfterWhereBuilder<T> where(Expression expression) {
 		this.where = expression;
 		return this;
 	}
 
 	@Override
-	public AfterWhereBuilder sortBy(SortBy sortBy) {
+	public AfterWhereBuilder<T> sortBy(SortBy sortBy) {
 		this.sortBy = sortBy;
 		return this;
 	}
 
 	@Override
-	public SearchContextBuilder executeWith(SearchExecutor executor) {
-		this.executor = executor;
-		return this;
-	}
-	
-	@Override
-	public SearchExecutor executor() {
-		return executor;
-	}
-	
-	@Override
-	public Query build() {
-		Query query = new Query();
+	public Query<T> build() {
+		Query<T> query = new Query<T>();
+		query.setType(type);
 		query.setSelect(select);
 		query.setWhere(where);
 		query.setLimit(limit);

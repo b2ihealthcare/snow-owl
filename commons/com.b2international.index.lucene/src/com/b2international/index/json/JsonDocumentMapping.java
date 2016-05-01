@@ -25,6 +25,8 @@ import org.apache.lucene.search.Query;
 import com.b2international.index.Doc;
 import com.b2international.index.mapping.IndexField;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.google.common.base.Strings;
 
 /**
@@ -63,6 +65,10 @@ public class JsonDocumentMapping {
 
 	public static boolean isNestedDoc(Class<?> fieldType) {
 		return fieldType.isAnnotationPresent(Doc.class) && fieldType.getAnnotation(Doc.class).nested();
+	}
+
+	public static Expression matchType(Class<?> type) {
+		return Expressions.exactMatch(_type().fieldName(), getType(type));
 	}
 	
 }

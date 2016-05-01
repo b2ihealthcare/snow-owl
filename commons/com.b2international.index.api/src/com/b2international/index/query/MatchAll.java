@@ -20,6 +20,8 @@ package com.b2international.index.query;
  */
 public class MatchAll implements Expression {
 
+	MatchAll() {}
+	
 	@Override
 	public String toString() {
 		return "MATCH ALL";

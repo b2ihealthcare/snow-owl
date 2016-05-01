@@ -118,8 +118,8 @@ public class LuceneClientTest {
 		}
 		// seach for field1Changed value, it should return a single doc
 		try (Searcher searcher = client.searcher()) {
-			final Query query = Query.builder().selectAll().where(Expressions.exactMatch("field1", "field1")).build();
-			final Iterable<Data> matches = searcher.search(Data.class, query);
+			final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+			final Iterable<Data> matches = searcher.search(query);
 			assertThat(matches).hasSize(1);
 			assertThat(matches).containsOnly(data);
 		}
@@ -127,7 +127,7 @@ public class LuceneClientTest {
 	
 	@Test
 	public void indexNestedDocument() throws Exception {
-		final ParentData data = new ParentData();
+		final ParentData data = new ParentData(new NestedData("field2"));
 		try (Writer writer = client.writer()) {
 			writer.put(KEY, data);
 		}
@@ -140,8 +140,8 @@ public class LuceneClientTest {
 	
 	@Test
 	public void searchNestedDocument() throws Exception {
-		final ParentData data = new ParentData();
-		final ParentData data2 = new ParentData();
+		final ParentData data = new ParentData(new NestedData("field2"));
+		final ParentData data2 = new ParentData(new NestedData("field2"));
 		data2.nestedData.field2 = "field2Changed";
 		try (Writer writer = client.writer()) {
 			writer.put(KEY, data);
@@ -149,8 +149,8 @@ public class LuceneClientTest {
 		}
 		// try to get nested document as is first
 		try (Searcher searcher = client.searcher()) {
-			final Query query = Query.builder().selectAll().where(Expressions.nestedMatch("nestedData", Expressions.exactMatch("field2", "field2"))).build();
-			final Iterable<ParentData> matches = searcher.search(ParentData.class, query);
+			final Query<ParentData> query = Query.builder(ParentData.class).selectAll().where(Expressions.nestedMatch("nestedData", Expressions.exactMatch("field2", "field2"))).build();
+			final Iterable<ParentData> matches = searcher.search(query);
 			assertThat(matches).hasSize(1);
 			assertThat(matches).containsOnly(data);
 		}
@@ -158,8 +158,8 @@ public class LuceneClientTest {
 	
 	@Test
 	public void indexDeeplyNestedDocument() throws Exception {
-		final DeepData data = new DeepData(new ParentData());
-		final DeepData data2 = new DeepData(new ParentData());
+		final DeepData data = new DeepData(new ParentData(new NestedData("field2")));
+		final DeepData data2 = new DeepData(new ParentData(new NestedData("field2")));
 		data2.parentData.nestedData.field2 = "field2Changed";
 		try (Writer writer = client.writer()) {
 			writer.put(KEY, data);
@@ -171,11 +171,11 @@ public class LuceneClientTest {
 			final DeepData actual = searcher.get(DeepData.class, KEY);
 			assertEquals(data, actual);
 			// try nested query
-			final Query query = Query.builder().selectAll()
+			final Query<DeepData> query = Query.builder(DeepData.class).selectAll()
 					.where(Expressions.nestedMatch("parentData.nestedData", 
 							Expressions.exactMatch("field2", "field2"))
 							).build();
-			final Iterable<DeepData> matches = searcher.search(DeepData.class, query);
+			final Iterable<DeepData> matches = searcher.search(query);
 			assertThat(matches).hasSize(1);
 			assertThat(matches).containsOnly(data);
 		}
@@ -196,11 +196,11 @@ public class LuceneClientTest {
 			final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY);
 			assertEquals(data, actual);
 			// try nested query on collections
-			final Query query = Query.builder().selectAll()
+			final Query<MultipleNestedData> query = Query.builder(MultipleNestedData.class).selectAll()
 					.where(Expressions.nestedMatch("nestedDatas", 
 							Expressions.exactMatch("field2", "field2"))
 							).build();
-			final Iterable<MultipleNestedData> matches = searcher.search(MultipleNestedData.class, query);
+			final Iterable<MultipleNestedData> matches = searcher.search(query);
 			assertThat(matches).hasSize(1);
 			assertThat(matches).containsOnly(data);
 		}
@@ -236,7 +236,12 @@ public class LuceneClientTest {
 	static class ParentData {
 		
 		String field1 = "field1";
-		NestedData nestedData = new NestedData("field2");
+		NestedData nestedData;
+		
+		@JsonCreator
+		public ParentData(@JsonProperty("nestedData") NestedData nestedData) {
+			this.nestedData = nestedData;
+		}
 		
 		@Override
 		public boolean equals(Object obj) {

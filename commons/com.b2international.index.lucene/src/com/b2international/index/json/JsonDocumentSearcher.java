@@ -28,6 +28,7 @@ import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.index.IndexException;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.LuceneQueryBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.read.Searcher;
@@ -73,7 +74,8 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	@Override
-	public <T> Iterable<T> search(Class<T> type, Query query) throws IOException {
+	public <T> Iterable<T> search(Query<T> query) throws IOException {
+		final Class<T> type = query.getType();
 		final org.apache.lucene.search.Query lq = toLuceneQuery(type, query);
 		
 		final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
@@ -99,7 +101,7 @@ public class JsonDocumentSearcher implements Searcher {
 		return matches.build();
 	}
 
-	private int numDocsToRetrieve(Query query, int totalHits) {
+	private int numDocsToRetrieve(Query<?> query, int totalHits) {
 		return numDocsToRetrieve(query.getOffset(), query.getLimit(), totalHits);
 	}
 	
@@ -107,8 +109,11 @@ public class JsonDocumentSearcher implements Searcher {
 		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
 	}
 
-	private org.apache.lucene.search.Query toLuceneQuery(Class<?> root, Query query) {
-		return new LuceneQueryBuilder(root).build(query.getWhere());
+	private <T> org.apache.lucene.search.Query toLuceneQuery(Class<T> root, Query<T> query) {
+		return new LuceneQueryBuilder(root).build(
+				Expressions.and(
+						JsonDocumentMapping.matchType(root),
+						query.getWhere()));
 	}
 
 	private static boolean isEmpty(TopDocs docs) {

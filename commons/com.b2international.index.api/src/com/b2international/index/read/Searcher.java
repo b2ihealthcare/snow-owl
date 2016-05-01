@@ -32,7 +32,7 @@ public interface Searcher extends AutoCloseable {
 	 * @param key
 	 *            - the unique identifier of the object
 	 * @return the object
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	<T> T get(Class<T> type, String key) throws IOException;
 
@@ -40,12 +40,11 @@ public interface Searcher extends AutoCloseable {
 	 * Execute the given query among all stored items.
 	 * 
 	 * @param query
-	 *            - the query
-	 * @param type
-	 *            - the type to restrict the execution of the query
-	 * @return - an iterable of matching values
-	 * @throws IOException 
+	 *            - the query to execute
+	 * @return - an {@link Iterable} of matching values
+	 * @throws IOException
+	 *             - if something goes wrong during the execution of the query
 	 */
-	<T> Iterable<T> search(Class<T> type, Query query) throws IOException;
-	
+	<T> Iterable<T> search(Query<T> query) throws IOException;
+
 }

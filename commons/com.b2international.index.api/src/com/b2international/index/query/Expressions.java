@@ -93,6 +93,14 @@ public class Expressions {
 	public static Expression not(Expression inner) {
 		return new Not(inner);
 	}
+	
+	public static Expression and(Expression left, Expression right) {
+		return new And(left, right);
+	}
+	
+	public static Expression or(Expression left, Expression right) {
+		return new Or(left, right);
+	}
 
 	public static Expression exactMatch(String field, String value) {
 		return new StringPredicate(field, value);
@@ -105,4 +113,9 @@ public class Expressions {
 	public static PredicateBuilder builder() {
 		return new BuilderImpl();
 	}
+
+	public static Expression matchAll() {
+		return new MatchAll();
+	}
+
 }

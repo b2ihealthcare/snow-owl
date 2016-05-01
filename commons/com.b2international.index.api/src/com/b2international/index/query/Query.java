@@ -15,59 +15,48 @@
  */
 package com.b2international.index.query;
 
-import com.b2international.index.read.SearchExecutor;
-
 /**
  * Represents a generic query on any kind of storage and model.
  * 
  * @since 4.7
  */
-public class Query {
+public final class Query<T> {
 
 	/**
 	 * @since 4.7
 	 */
-	public interface QueryBuilder {
-		AfterSelectBuilder select(Select select);
+	public interface QueryBuilder<T> {
+		AfterSelectBuilder<T> select(Select select);
 		
-		AfterSelectBuilder selectAll();
+		AfterSelectBuilder<T> selectAll();
 	}
 
 	/**
 	 * @since 4.7
 	 */
-	public interface AfterSelectBuilder {
-		AfterWhereBuilder where(Expression expression);
+	public interface AfterSelectBuilder<T> {
+		AfterWhereBuilder<T> where(Expression expression);
 	}
 
 	/**
 	 * @since 4.7
 	 */
-	public interface AfterWhereBuilder extends Buildable<Query> {
-		AfterWhereBuilder offset(int offset);
+	public interface AfterWhereBuilder<T> extends Buildable<Query<T>> {
+		AfterWhereBuilder<T> offset(int offset);
 
-		AfterWhereBuilder limit(int limit);
+		AfterWhereBuilder<T> limit(int limit);
 
-		AfterWhereBuilder sortBy(SortBy sortBy);
+		AfterWhereBuilder<T> sortBy(SortBy sortBy);
 	}
 	
-	/**
-	 * @since 4.7
-	 */
-	public interface SearchContextBuilder extends AfterWhereBuilder {
-		SearchContextBuilder executeWith(SearchExecutor executor);
-		
-		SearchExecutor executor();
-	}
-
 	private int offset;
 	private int limit;
 	private Select select;
 	private Expression where;
 	private SortBy sortBy = SortBy.NONE;
+	private Class<T> type;
 
-	protected Query() {
-	}
+	Query() {}
 
 	public int getOffset() {
 		return offset;
@@ -108,7 +97,15 @@ public class Query {
 	void setSortBy(SortBy sortBy) {
 		this.sortBy = sortBy;
 	}
-
+	
+	public Class<T> getType() {
+		return type;
+	}
+	
+	void setType(Class<T> type) {
+		this.type = type;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -123,7 +120,8 @@ public class Query {
 		return sb.toString();
 	}
 
-	public static QueryBuilder builder() {
-		return new DefaultQueryBuilder();
+	public static <T> QueryBuilder<T> builder(Class<T> type) {
+		return new DefaultQueryBuilder<T>(type);
 	}
+
 }
