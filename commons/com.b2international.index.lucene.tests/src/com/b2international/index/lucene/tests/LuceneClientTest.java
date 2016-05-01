@@ -139,6 +139,22 @@ public class LuceneClientTest {
 	}
 	
 	@Test
+	public void deleteDocumentWithNestedDocShouldDeleteNested() throws Exception {
+		indexNestedDocument();
+		try (Writer writer = client.writer()) {
+			writer.remove(ParentData.class, KEY);
+		}
+		try (Searcher searcher = client.searcher()) {
+			final Query<ParentData> parentDataQuery = Query.builder(ParentData.class).selectAll().where(Expressions.matchAll()).build();
+			final Iterable<ParentData> matches = searcher.search(parentDataQuery);
+			assertThat(matches).isEmpty();
+			final Query<NestedData> nestedDataQuery = Query.builder(NestedData.class).selectAll().where(Expressions.matchAll()).build();
+			final Iterable<NestedData> nestedMatches = searcher.search(nestedDataQuery);
+			assertThat(nestedMatches).isEmpty();
+		}
+	}
+	
+	@Test
 	public void searchNestedDocument() throws Exception {
 		final ParentData data = new ParentData(new NestedData("field2"));
 		final ParentData data2 = new ParentData(new NestedData("field2"));
