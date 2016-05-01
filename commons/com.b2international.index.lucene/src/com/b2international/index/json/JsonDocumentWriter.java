@@ -20,12 +20,17 @@ import static com.google.common.collect.Lists.newLinkedList;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
+import org.apache.lucene.search.BooleanClause.Occur;
 
 import com.b2international.index.util.Reflections;
 import com.b2international.index.write.Writer;
@@ -54,8 +59,15 @@ public class JsonDocumentWriter implements Writer {
 
 	@Override
 	public void put(String key, Object object) throws IOException {
+		putAll(Collections.singletonMap(key, object));
+	}
+	
+	@Override
+	public void putAll(Map<String, Object> objectByKeys) throws IOException {
 		final Collection<Document> docs = newLinkedList();
-		collectDocs(key, object, docs);
+		for (Entry<String, Object> entry : objectByKeys.entrySet()) {
+			collectDocs(entry.getKey(), entry.getValue(), docs);
+		}
 		writer.addDocuments(docs);
 	}
 
@@ -79,10 +91,17 @@ public class JsonDocumentWriter implements Writer {
 	}
 
 	@Override
-	public boolean remove(Class<?> type, String key) throws IOException {
-		writer.deleteDocuments(JsonDocumentMapping.matchIdAndType(type, key));
-		// TODO do we need boolean return value here???
-		return true;
+	public void remove(Class<?> type, String key) throws IOException {
+		removeAll(Collections.<Class<?>, String>singletonMap(type, key));
+	}
+	
+	@Override
+	public void removeAll(Map<Class<?>, String> keysByType) throws IOException {
+		final BooleanQuery deleteQuery = new BooleanQuery(true);
+		for (Entry<Class<?>, String> entry : keysByType.entrySet()) {
+			deleteQuery.add(JsonDocumentMapping.matchIdAndType(entry.getKey(), entry.getValue()), Occur.SHOULD);
+		}
+		writer.deleteDocuments(deleteQuery);
 	}
 
 }
