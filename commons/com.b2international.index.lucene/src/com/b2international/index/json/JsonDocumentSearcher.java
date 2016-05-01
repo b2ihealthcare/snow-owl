@@ -28,7 +28,6 @@ import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.index.IndexException;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.LuceneQueryBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.read.Searcher;
@@ -110,10 +109,7 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	private <T> org.apache.lucene.search.Query toLuceneQuery(Class<T> root, Query<T> query) {
-		return new LuceneQueryBuilder(root).build(
-				Expressions.and(
-						JsonDocumentMapping.matchType(root),
-						query.getWhere()));
+		return new LuceneQueryBuilder(root).build(query.getWhere());
 	}
 
 	private static boolean isEmpty(TopDocs docs) {

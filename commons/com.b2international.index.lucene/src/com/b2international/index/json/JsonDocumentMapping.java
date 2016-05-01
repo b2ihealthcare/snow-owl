@@ -70,5 +70,9 @@ public class JsonDocumentMapping {
 	public static Expression matchType(Class<?> type) {
 		return Expressions.exactMatch(_type().fieldName(), getType(type));
 	}
+
+	public static Expression matchId(String id) {
+		return Expressions.exactMatch(_id().fieldName(), id);
+	}
 	
 }
