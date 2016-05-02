@@ -27,10 +27,10 @@ import java.util.UUID;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.BooleanClause.Occur;
 
 import com.b2international.index.util.Reflections;
 import com.b2international.index.write.Writer;
@@ -73,20 +73,24 @@ public class JsonDocumentWriter implements Writer {
 
 	/* traverse the fields and map the given object and its nested objects */
 	private void collectDocs(String key, Object object, final Collection<Document> docs) throws IOException {
+		collectDocs(JsonDocumentMapping.toUid(object.getClass(), key), key, object, docs);
+	}
+	
+	private void collectDocs(String uid, String key, Object object, final Collection<Document> docs) throws IOException {
 		for (Field field : Reflections.getFields(object.getClass())) {
 			final Class<?> fieldType = Reflections.getType(field);
 			if (JsonDocumentMapping.isNestedDoc(fieldType)) {
 				final Object fieldValue = Reflections.getValue(object, field);
 				if (fieldValue instanceof Iterable) {
 					for (Object item : (Iterable<?>) fieldValue) {
-						collectDocs(UUID.randomUUID().toString(), item, docs);
+						collectDocs(uid, UUID.randomUUID().toString(), item, docs);
 					}
 				} else {
-					collectDocs(UUID.randomUUID().toString(), fieldValue, docs);
+					collectDocs(uid, UUID.randomUUID().toString(), fieldValue, docs);
 				}
 			}
 		}
-		final Document doc = mappingStrategy.map(key, object);
+		final Document doc = mappingStrategy.map(uid, key, object);
 		docs.add(doc);
 	}
 
@@ -99,7 +103,7 @@ public class JsonDocumentWriter implements Writer {
 	public void removeAll(Map<Class<?>, String> keysByType) throws IOException {
 		final BooleanQuery deleteQuery = new BooleanQuery(true);
 		for (Entry<Class<?>, String> entry : keysByType.entrySet()) {
-			deleteQuery.add(JsonDocumentMapping.matchIdAndType(entry.getKey(), entry.getValue()), Occur.SHOULD);
+			deleteQuery.add(JsonDocumentMapping._uid().toQuery(JsonDocumentMapping.toUid(entry.getKey(), entry.getValue())), Occur.SHOULD);
 		}
 		writer.deleteDocuments(deleteQuery);
 	}

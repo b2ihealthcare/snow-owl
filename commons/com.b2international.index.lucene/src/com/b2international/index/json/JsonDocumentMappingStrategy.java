@@ -40,11 +40,12 @@ public class JsonDocumentMappingStrategy {
 		this.mapper = checkNotNull(mapper, "mapper");
 	}
 	
-	public Document map(String key, Object object) throws IOException {
+	Document map(String uid, String key, Object object) throws IOException {
 		final Document doc = new Document();
 		// metadata fields
 		JsonDocumentMapping._id().addTo(doc, key);
 		JsonDocumentMapping._type().addTo(doc, JsonDocumentMapping.getType(object));
+		JsonDocumentMapping._uid().addTo(doc, uid);
 		// TODO create byte fields
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
 		// add all other fields

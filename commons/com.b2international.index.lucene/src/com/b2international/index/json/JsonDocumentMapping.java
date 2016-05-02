@@ -42,6 +42,10 @@ public class JsonDocumentMapping {
 	public static IndexField<String> _id() {
 		return Mappings.stringField("_id");
 	}
+	
+	public static IndexField<String> _uid() {
+		return Mappings.stringField("_uid");
+	}
 
 	public static IndexField<String> _type() {
 		return Mappings.stringField("_type");
@@ -75,4 +79,8 @@ public class JsonDocumentMapping {
 		return Expressions.exactMatch(_id().fieldName(), id);
 	}
 	
+	public static String toUid(Class<?> type, String key) {
+		return String.format("%s#%s", getType(type), key);
+	}
+
 }
