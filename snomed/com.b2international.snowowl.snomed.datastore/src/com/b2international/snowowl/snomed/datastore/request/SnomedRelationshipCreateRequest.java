@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import javax.annotation.Nonnull;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -33,6 +34,9 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
  */
 public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
 
+	@Nonnull
+	private Boolean active;
+	
 	@NotEmpty
 	private String sourceId;
 
@@ -91,6 +95,10 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	public RelationshipModifier getModifier() {
 		return modifier;
 	}
+	
+	public Boolean isActive() {
+		return active;
+	}
 
 	void setSourceId(final String sourceId) {
 		this.sourceId = sourceId;
@@ -123,6 +131,10 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
 	}
+	
+	void setActive(final Boolean active) {
+		this.active = active;
+	}
 
 	@Override
 	public String execute(TransactionContext context) {
@@ -130,6 +142,7 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		
 		try {
 			final Relationship relationship = SnomedComponents.newRelationship()
+					.withActive(isActive())
 					.withId(getIdGenerationStrategy())
 					.withModule(getModuleId())
 					.withSource(getSourceId())
@@ -140,7 +153,6 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 					.withCharacteristicType(getCharacteristicType())
 					.withModifier(getModifier())
 					.withDestinationNegated(isDestinationNegated())
-					// TODO: add a refinability refset member here?
 					.build(context);
 
 			return relationship.getId();
