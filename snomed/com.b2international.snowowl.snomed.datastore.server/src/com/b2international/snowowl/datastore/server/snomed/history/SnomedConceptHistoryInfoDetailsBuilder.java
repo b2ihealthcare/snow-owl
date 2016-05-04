@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -64,35 +63,35 @@ import com.google.common.cache.LoadingCache;
  */
 public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoDetailsBuilder {
 
-private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<CDOObject, String>() {
+	private final LoadingCache<Pair<? extends CDOObject, CDOView>, String> objectToLabelCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<? extends CDOObject, CDOView>, String>() {
 		@Override
-		public String load(final CDOObject object) throws Exception {
-			if (object instanceof Concept) {
-				return SnomedHistoryUtils.getLabelForConcept((Concept) object);
-			} else if (object instanceof Description) {
-				return SnomedHistoryUtils.getLabelForDescription((Description) object);
-			} else if (object instanceof Relationship) {
-				return SnomedHistoryUtils.getLabelForRelationship((Relationship) object);
+		public String load(final Pair<? extends CDOObject, CDOView> pair) throws Exception {
+			if (pair.getA() instanceof Concept) {
+				return SnomedHistoryUtils.getLabelForConcept((Concept) pair.getA());
+			} else if (pair.getA() instanceof Description) {
+				return SnomedHistoryUtils.getLabelForDescription((Description) pair.getA());
+			} else if (pair.getA() instanceof Relationship) {
+				return SnomedHistoryUtils.getLabelForRelationship((Relationship) pair.getA());
 			}
-			throw new IllegalArgumentException("Unknown object type: " + object.getClass());
+			throw new IllegalArgumentException("Unknown object type: " + pair.getA().getClass());
 		}
 	});
 	
-	private final LoadingCache<Pair<String, CDOView>, Concept> idToConceptCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<Pair<String, CDOView>, Concept>() {
+	private final LoadingCache<Pair<String, CDOView>, Concept> idToConceptCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Concept>() {
 		@Override
 		public Concept load(Pair<String, CDOView> pair) throws Exception {
 			return SnomedHistoryUtils.getConcept(pair.getA(), pair.getB());
 		}
 	});
 	
-	private final LoadingCache<Pair<String, CDOView>, Description> idToDescriptionCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<Pair<String, CDOView>, Description>() {
+	private final LoadingCache<Pair<String, CDOView>, Description> idToDescriptionCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Description>() {
 		@Override
 		public Description load(Pair<String, CDOView> pair) throws Exception {
 			return SnomedHistoryUtils.getDescription(pair.getA(), pair.getB());
 		}
 	});
 	
-	private final LoadingCache<Pair<String, CDOView>, Relationship> idToRelationshipCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<Pair<String, CDOView>, Relationship>() {
+	private final LoadingCache<Pair<String, CDOView>, Relationship> idToRelationshipCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Relationship>() {
 		@Override
 		public Relationship load(Pair<String, CDOView> pair) throws Exception {
 			return SnomedHistoryUtils.getRelationship(pair.getA(), pair.getB());
@@ -102,15 +101,15 @@ private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.
 	private static HashMap<String, String> map;
 
 	private String getConceptLabel(Concept concept) {
-		return objectToLabelCache.getUnchecked(concept);
+		return objectToLabelCache.getUnchecked(Pair.of(concept, concept.cdoView()));
 	}
 	
 	private String getDescriptionLabel(Description description) {
-		return objectToLabelCache.getUnchecked(description);
+		return objectToLabelCache.getUnchecked(Pair.of(description, description.cdoView()));
 	}
 	
 	private String getRelationshipLabel(Relationship relationship) {
-		return objectToLabelCache.getUnchecked(relationship);
+		return objectToLabelCache.getUnchecked(Pair.of(relationship, relationship.cdoView()));
 	}
 	
 	private String getNewConceptLabel(Object value, CDOView view) {
@@ -134,7 +133,7 @@ private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.
 	private Relationship getRelationship(String id, CDOView view) {
 		return idToRelationshipCache.getUnchecked(Pair.of(id, view));
 	}
-
+	
 	@Override
 	protected Collection<? extends IHistoryInfoDetails> processNewObjects(final List<CDOIDAndVersion> newObjects, final CDOView beforeView, final CDOView currentView) {
 		return processNewObjects(newObjects, beforeView, currentView, true);
@@ -376,41 +375,41 @@ private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.
 	private String getRefSetChangeDescription(final SnomedRefSetMember member, final CDOView beforeView, final CDOView currentView, final String change) {
 		
 		String referencedComponentLabel = getReferencedComponentLabel(member);
-			
+		
 		if (isEmpty(referencedComponentLabel)) {
 			referencedComponentLabel = member.getReferencedComponentId();
 		}
+		
+		if (member instanceof SnomedSimpleMapRefSetMember) {
+			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + "."; 
+		} else if (member instanceof SnomedDescriptionTypeRefSetMember) {
+			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + ".";
+		} else if (member instanceof SnomedLanguageRefSetMember) {
 			
-			if (member instanceof SnomedSimpleMapRefSetMember) {
-				return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + "."; 
-			} else if (member instanceof SnomedDescriptionTypeRefSetMember) {
-				return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + ".";
-			} else if (member instanceof SnomedLanguageRefSetMember) {
+			if (isPtLanguageMember(member)) {
 				
-				if (isPtLanguageMember(member)) {
-					
-					//ignore deletion
-					if ("detached from ".equals(change)) {
-						return null;
-					}
-					
-					final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
-					final Description description = (Description) languageMember.eContainer();
-					final Concept concept = description.getConcept();
-					final String refSetId = languageMember.getRefSetIdentifierId();
-					final CDOObject beforeConcept = CDOUtils.getObjectIfExists(beforeView, concept.cdoID());
-					final String previousPt = tryFindPreviousPtForLanguage(beforeConcept, refSetId);
-					final String languageRefSetPt = getConceptLabel(getConcept(refSetId, member.cdoView()));
-
-					if (null == previousPt) {
-						return "New " + languageRefSetPt + " preferred term \"" + description.getTerm() + "\".";
-					} else {
-						return languageRefSetPt + " preferred term changed to \"" + description.getTerm() + "\" from \"" + previousPt + "\".";
-					}
+				//ignore deletion
+				if ("detached from ".equals(change)) {
+					return null;
 				}
 				
-				//intentionally null. we will ignore everything but the PT language changes
-				return null;
+				final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
+				final Description description = (Description) languageMember.eContainer();
+				final Concept concept = description.getConcept();
+				final String refSetId = languageMember.getRefSetIdentifierId();
+				final CDOObject beforeConcept = CDOUtils.getObjectIfExists(beforeView, concept.cdoID());
+				final String previousPt = tryFindPreviousPtForLanguage(beforeConcept, refSetId);
+				final String languageRefSetPt = getConceptLabel(getConcept(refSetId, member.cdoView()));
+
+				if (null == previousPt) {
+					return "New " + languageRefSetPt + " preferred term \"" + description.getTerm() + "\".";
+				} else {
+					return languageRefSetPt + " preferred term changed to \"" + description.getTerm() + "\" from \"" + previousPt + "\".";
+				}
+			}
+			
+			//intentionally null. we will ignore everything but the PT language changes
+			return null;
 		} else if (member instanceof SnomedAttributeValueRefSetMember) {	
 			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + ".";
 		} else if (member instanceof SnomedConcreteDataTypeRefSetMember) {
@@ -419,7 +418,7 @@ private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.
 			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + ".";
 		}
 	}
-		
+	
 	private String tryFindPreviousPtForLanguage(final CDOObject concept, final String refSetId) {
 
 		if (concept instanceof Concept) {
@@ -450,7 +449,7 @@ private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.
 			.append(String.valueOf(cdtMember.getSerializedValue()))
 			.append(cdtMember.getUomComponentId() != null ? getConceptLabel(getConcept(cdtMember.getUomComponentId(), cdtMember.cdoView())) : "")
 			.toString();
-		}
+	}
 	
 	private String getComponent(final CDOObject cdoObject) {
 		if (isPtLanguageMember(cdoObject)) { //act as a concept change if the PT changed
@@ -549,9 +548,9 @@ private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.
 				return getRelationshipLabel(getRelationship(member.getReferencedComponentId(), member.cdoView()));
 			default:
 				throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + member.getReferencedComponentType());
+		}
 	}
-	}
-	
+
 	private String getIdentifierConceptLabel(final SnomedRefSetMember member) {
 		final String refSetIdentifierId = member.getRefSetIdentifierId();
 		final String label = getConceptLabel(getConcept(refSetIdentifierId, member.cdoView()));
