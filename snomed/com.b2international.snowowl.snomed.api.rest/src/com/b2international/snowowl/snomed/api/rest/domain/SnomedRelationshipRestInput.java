@@ -26,6 +26,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequestBuilder> {
 
+	private Boolean active = Boolean.TRUE;
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;
 	private boolean destinationNegated = false;
@@ -35,6 +36,10 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	private String typeId;
 	private int unionGroup = 0;
 
+	public Boolean isActive() {
+		return active;
+	}
+	
 	public CharacteristicType getCharacteristicType() {
 		return characteristicType;
 	}
@@ -107,6 +112,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	@Override
 	public SnomedRelationshipCreateRequestBuilder toRequestBuilder() {
 		return super.toRequestBuilder()
+				.setActive(isActive())
 				.setCharacteristicType(getCharacteristicType())
 				.setDestinationId(getDestinationId())
 				.setDestinationNegated(isDestinationNegated())

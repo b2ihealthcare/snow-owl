@@ -85,13 +85,13 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 	}
 	
-	private static Builder<Object, Object> createRelationshipRequestBuilder(final String sourceId, 
+	private static Builder<String, Object> createRelationshipRequestBuilder(final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
 			final String moduleId, 
 			final String comment) {
 
-		return ImmutableMap.builder()
+		return ImmutableMap.<String, Object>builder()
 				.put("sourceId", sourceId)
 				.put("typeId", typeId)
 				.put("destinationId", destinationId)
@@ -99,7 +99,7 @@ public abstract class SnomedComponentApiAssert {
 				.put("commitComment", comment);
 	}
 
-	public static Map<?, ?> givenRelationshipRequestBody(final String sourceId, 
+	public static Map<String, Object> givenRelationshipRequestBody(final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
 			final String moduleId, 
@@ -109,7 +109,7 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 	}
 
-	public static Map<?, ?> givenRelationshipRequestBody(final String sourceId, 
+	public static Map<String, Object> givenRelationshipRequestBody(final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
 			final String moduleId, 
