@@ -92,35 +92,35 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		return modifier;
 	}
 
-	public void setSourceId(final String sourceId) {
+	void setSourceId(final String sourceId) {
 		this.sourceId = sourceId;
 	}
 
-	public void setDestinationId(final String destinationId) {
+	void setDestinationId(final String destinationId) {
 		this.destinationId = destinationId;
 	}
 
-	public void setDestinationNegated(final boolean destinationNegated) {
+	void setDestinationNegated(final boolean destinationNegated) {
 		this.destinationNegated = destinationNegated;
 	}
 
-	public void setTypeId(final String typeId) {
+	void setTypeId(final String typeId) {
 		this.typeId = typeId;
 	}
 
-	public void setGroup(final int group) {
+	void setGroup(final int group) {
 		this.group = group;
 	}
 
-	public void setUnionGroup(final int unionGroup) {
+	void setUnionGroup(final int unionGroup) {
 		this.unionGroup = unionGroup;
 	}
 
-	public void setCharacteristicType(final CharacteristicType characteristicType) {
+	void setCharacteristicType(final CharacteristicType characteristicType) {
 		this.characteristicType = characteristicType;
 	}
 
-	public void setModifier(final RelationshipModifier modifier) {
+	void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
 	}
 
