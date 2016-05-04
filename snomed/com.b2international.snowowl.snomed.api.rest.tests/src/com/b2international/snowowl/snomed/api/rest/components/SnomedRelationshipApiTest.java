@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
 
 /**
@@ -255,4 +256,25 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> body = givenRelationshipRequestBody(DISEASE, IS_A, DISEASE, MODULE_SCT_CORE, "New cyclic ISA relationship");
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, body);
 	}
+	
+	@Test
+	public void createInactiveNonIsaRelationship() throws Exception {
+		createInactiveRelationship(TEMPORAL_CONTEXT);
+	}
+	
+	@Test
+	public void createInactiveIsaRelationship() throws Exception {
+		createInactiveRelationship(IS_A);
+	}
+
+	private void createInactiveRelationship(final String type) {
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		final Builder<String, Object> req = ImmutableMap.builder();
+		final Map<String, Object> requestBody = givenRelationshipRequestBody(DISEASE, type, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		req.putAll(requestBody);
+		req.put("active", false);
+		final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, req.build());
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "active", false);
+	}
+	
 }
