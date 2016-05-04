@@ -24,10 +24,8 @@ import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExis
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
-import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_DUE_TO_ISA_RSHIP_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
-import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_RELATIONSHIP_MESSAGE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Sets.newHashSet;
@@ -1314,32 +1312,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		if (relationship.isReleased()) {
 			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", toString(relationship)));
 			return deletionPlan;
-		}
-		
-		if (IS_A.equals(relationship.getType().getId())) {
-			// don't delete relationship if it is the only only parent relationship of a concept that can't be deleted
-			// otherwise the relationship can still be deleted without deleting that concept
-			if (relationship.getSource() != null) {
-				boolean hasOtherParent = false;
-				for(Relationship otherPotentialIsa: relationship.getSource().getOutboundRelationships()) {
-					// This condition also considers relationships which still exist in CDO, but have already been marked for deletion.
-					// See: https://github.com/b2ihealthcare/snowowl/issues/631
-					if (relationship != otherPotentialIsa && IS_A.equals(otherPotentialIsa.getType().getId())
-							&& otherPotentialIsa.isActive() && !deletionPlan.getDeletedItems().contains(otherPotentialIsa)) {
-						hasOtherParent = true;
-						break;
-					}
-				}
-			
-				if(!hasOtherParent) {
-					deletionPlan = canDelete(relationship.getSource(), deletionPlan);
-					if(deletionPlan.isRejected()) {
-						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_ISA_RSHIP_MESSAGE, toString(relationship.getSource())));
-						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_RELATIONSHIP_MESSAGE, toString(relationship)));
-						return deletionPlan;
-					}
-				}
-			}
 		}
 		
 		// a released refset member cannot be deleted. however, since a released refset member can
