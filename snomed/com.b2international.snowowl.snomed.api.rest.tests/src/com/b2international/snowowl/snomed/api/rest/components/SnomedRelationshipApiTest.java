@@ -15,21 +15,13 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentActive;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentUpdatedWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertRelationshipExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertRelationshipNotExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
@@ -48,7 +40,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
 
 /**
- * @since 2.0
+ * @since 4.0
  */
 public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
@@ -87,10 +79,6 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
-	private void assertCharacteristicType(final IBranchPath branchPath, final String relationshipId, final CharacteristicType characteristicType) {
-		assertComponentHasProperty(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "characteristicType", characteristicType.name());
-	}
-	
 	@Test
 	public void createRelationship() {
 		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
@@ -125,14 +113,6 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		assertRelationshipNotExists(createMainPath(), relationshipId);
 	}
 
-	private void assertRelationshipCanBeDeleted(final IBranchPath branchPath, final String relationshipId, final String... segments) {
-		assertComponentCanBeDeleted(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId);
-	}
-
-	private void assertRelationshipCanBeUpdated(final IBranchPath branchPath, final String relationshipId, final Map<?, ?> requestBody) {
-		assertComponentCanBeUpdated(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody);
-	}
-
 	@Test
 	public void inactivateRelationship() {
 		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
@@ -146,6 +126,37 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
 		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, false);
+	}
+	
+	@Test
+	public void deleteInactiveNonIsaRelationship() throws Exception {
+		deleteInactiveRelationship(TEMPORAL_CONTEXT);
+	}
+	
+	@Test
+	public void deleteInactiveIsaRelationship() throws Exception {
+		deleteInactiveRelationship(IS_A);
+	}
+
+	private void deleteInactiveRelationship(final String relationshipType) {
+		givenBranchWithPath(testBranchPath);
+		// create relationship on active but released concept
+		final Map<?, ?> requestBody = givenRelationshipRequestBody(BLEEDING, relationshipType, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
+		final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);
+		assertComponentActive(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, true);
+		
+		final Map<String, Object> inactivationBody = newHashMap();
+		inactivationBody.put("active", false);
+		inactivationBody.put("commitComment", "Inactivated " + BLEEDING);
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, BLEEDING, inactivationBody);
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.CONCEPT, BLEEDING, "active", false);
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "active", false);
+		
+		// try to delete the relationship
+		assertRelationshipCanBeDeleted(testBranchPath, relationshipId);
+		assertRelationshipNotExists(testBranchPath, relationshipId);
+		// assert that the concept is still exists
+		assertConceptExists(testBranchPath, BLEEDING);
 	}
 	
 	@Test
@@ -275,6 +286,18 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		req.put("active", false);
 		final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, req.build());
 		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "active", false);
+	}
+	
+	private static void assertRelationshipCanBeDeleted(final IBranchPath branchPath, final String relationshipId, final String... segments) {
+		assertComponentCanBeDeleted(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId);
+	}
+
+	private static void assertRelationshipCanBeUpdated(final IBranchPath branchPath, final String relationshipId, final Map<?, ?> requestBody) {
+		assertComponentCanBeUpdated(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody);
+	}
+	
+	private static void assertCharacteristicType(final IBranchPath branchPath, final String relationshipId, final CharacteristicType characteristicType) {
+		assertComponentHasProperty(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "characteristicType", characteristicType.name());
 	}
 	
 }
