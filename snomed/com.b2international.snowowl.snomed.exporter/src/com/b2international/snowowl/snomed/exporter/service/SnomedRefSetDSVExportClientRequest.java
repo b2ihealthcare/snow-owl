@@ -23,6 +23,8 @@ import org.eclipse.net4j.signal.RequestWithMonitoring;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
@@ -36,12 +38,12 @@ import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportMo
  * server-side. All requisite information is stored in the
  * {@link SnomedDSVExportSetting} field.
  * 
- * 
  */
 public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<File> {
 
 	private final SnomedRefSetDSVExportModel exportModel;
 	private SnomedExportResult result;
+	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRefSetDSVExportClientRequest.class);
 
 	public SnomedRefSetDSVExportClientRequest(final SnomedClientProtocol protocol, final SnomedRefSetDSVExportModel exportModel) {
 		super(protocol, Net4jProtocolConstants.REFSET_TO_DSV_SIGNAL);
@@ -107,13 +109,13 @@ public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<Fi
 				}
 			}
 		} catch (Exception e) {
+			LOGGER.error("Exception while exporting a reference set to DSV format.", e);
 			result = new SnomedExportResult(Result.EXCEPTION);
 		} finally {
 			if (out != null) {
 				out.close();
 			}
 		}
-				
 		return file;
 	}
 
