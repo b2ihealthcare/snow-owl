@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.exporter.server.refset;
 
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -24,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
@@ -32,20 +34,34 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * This class implements the export process of the DSV export for map type reference sets. 
@@ -72,8 +88,18 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	@Override
 	public File executeDSVExport(final OMMonitor monitor) throws SnowowlServiceException {
 		
-		final SnomedRefSetBrowser refSetBrowser = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
-		monitor.begin(refSetBrowser.getActiveMemberCount(branchPath, exportSetting.getRefSetId()));
+		final int memberNumberToSignal = 100;
+		ApplicationContext applicationContext = ApplicationContext.getInstance();
+		final SnomedRefSetBrowser refSetBrowser = applicationContext.getService(SnomedRefSetBrowser.class);
+		LanguageSetting languageSetting = applicationContext.getService(LanguageSetting.class);
+		IEventBus eventBus = applicationContext.getService(IEventBus.class);
+		
+		int activeMemberCount = refSetBrowser.getActiveMemberCount(branchPath, exportSetting.getRefSetId());
+		if (activeMemberCount < memberNumberToSignal) {
+			monitor.begin(1);
+		} else {
+			monitor.begin(activeMemberCount/memberNumberToSignal);
+		}
 		final File file = new File(TEMPORARY_WORKING_DIRECTORY);
 		DataOutputStream os = null;
 		try {
@@ -85,8 +111,71 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			os.writeBytes(getHeader());
 			final SnomedRefSetType refSetType = SnomedRefSetType.get(refSetBrowser.getTypeOrdinal(branchPath, exportSetting.getRefSetId()));
 			final Collection<SnomedRefSetMemberIndexEntry> members = getMembers(refSetType, branchPath);
+			
+			SnomedReferenceSet snomedRefset = SnomedRequests.prepareGetReferenceSet()
+				.setComponentId(exportSetting.getRefSetId())
+				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(pt()))))")
+				.setLocales(languageSetting.getLanguagePreference())
+				.build(branchPath.getPath()).executeSync(eventBus);
+				
+			Map<String, String> labelMap = Maps.newHashMap();
+			
+			for (SnomedReferenceSetMember snomedReferenceSetMember : snomedRefset.getMembers()) {
+				SnomedCoreComponent referencedComponent = snomedReferenceSetMember.getReferencedComponent();
+				String id = referencedComponent.getId();
+				if (referencedComponent instanceof ISnomedConcept) {
+					ISnomedDescription pt = ((ISnomedConcept) referencedComponent).getPt();
+					if (pt == null) {
+						labelMap.put(id, id); 
+					} else {
+						labelMap.put(id, pt.getTerm());
+					}
+				} else if (referencedComponent instanceof ISnomedDescription) {
+					labelMap.put(id, ((ISnomedDescription) referencedComponent).getTerm());
+				} else if (referencedComponent instanceof ISnomedRelationship) {
+					ISnomedRelationship relationship = (ISnomedRelationship) referencedComponent;
+					labelMap.put(id, String.format("%s - %s - %s",relationship.getSourceId(), relationship.getTypeId(), relationship.getDestinationId()));
+				}
+			}
+			
+			Collection<SnomedConceptIndexEntry> modelComponents = SnomedRequests
+					.prepareSearchConcept()
+					.setComponentIds(ImmutableSet.of(
+							Concepts.MODULE_ROOT,
+							Concepts.REFSET_ATTRIBUTE))
+					.setExpand("pt(),descendants(limit:100,form:\"inferred\",direct:false,expand(pt(),parentIds(),ancestorIds()))")
+					.setLocales(languageSetting.getLanguagePreference())
+					.build(branchPath.getPath())
+					.execute(eventBus)
+							.then(new Function<SnomedConcepts, Collection<ISnomedConcept>>() {
+								@Override
+								public Collection<ISnomedConcept> apply(SnomedConcepts input) {
+									final Collection<ISnomedConcept> additionalConcepts = newHashSet();
+									additionalConcepts.addAll(input.getItems());
+									for (ISnomedConcept concept : input) {
+										additionalConcepts.addAll(concept.getDescendants().getItems());
+									}
+									return additionalConcepts;
+								}
+							})
+							.then(new Function<Collection<ISnomedConcept>, Collection<SnomedConceptIndexEntry>>() {
+								@Override
+								public Collection<SnomedConceptIndexEntry> apply(Collection<ISnomedConcept> input) {
+									return SnomedConceptIndexEntry.fromConcepts(input);
+								}
+							}).getSync();
+				
+			for (SnomedConceptIndexEntry modelComponentIndexEntry : modelComponents) {
+				labelMap.put(modelComponentIndexEntry.getId(), modelComponentIndexEntry.getLabel());
+			}
+			
+			int count = 0;
 			for (final SnomedRefSetMemberIndexEntry entry : members) {
-				os.writeBytes(getLineForConcept(entry));
+				os.writeBytes(getLineForConcept(entry, labelMap));
+				count++;
+				if (count % memberNumberToSignal == 0) {
+					monitor.worked();
+				}
 			}
 		} catch (final Exception e) {
 			throw new SnowowlServiceException(e);
@@ -129,20 +218,20 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return buffer.toString();
 	}
 
-	private String getLineForConcept(final SnomedRefSetMemberIndexEntry entry) {
+	private String getLineForConcept(final SnomedRefSetMemberIndexEntry entry, Map<String, String> labelMap) {
 		final StringBuffer buffer = new StringBuffer();
 		for (final AbstractSnomedDsvExportItem exportItem : exportSetting.getExportItems()) {
-			buffer.append(getExportItemForConcept(entry, exportItem.getType()));
+			buffer.append(getExportItemForConcept(entry, exportItem.getType(), labelMap));
 			buffer.append(DELIMITER);
 		}
 		buffer.append(LINE_SEPARATOR);
 		return buffer.toString();
 	}
 
-	private String getExportItemForConcept(final SnomedRefSetMemberIndexEntry member, final SnomedDsvExportItemType type) {
+	private String getExportItemForConcept(final SnomedRefSetMemberIndexEntry member, final SnomedDsvExportItemType type, Map<String, String> labelMap) {
 		switch (type) {
 			case REFERENCED_COMPONENT:
-				return getComponentLabel(member.getReferencedComponentType(), member.getReferencedComponentId());
+				return labelMap.get(member.getReferencedComponentId());
 			case REFERENCED_COMPONENT_ID:
 				return member.getReferencedComponentId();
 			case MAP_TARGET:
@@ -158,7 +247,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case MODULE_ID:
 				return member.getModuleId();
 			case MODULE_LABEL:
-				return getConceptLabel(member.getModuleId());
+				return labelMap.get(member.getModuleId());
 			case MEMBER_ID:
 				return member.getId();
 			case MAP_GROUP:
@@ -184,7 +273,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case CORRELATION:
 				if (member instanceof SnomedRefSetMemberIndexEntry) {
 					final SnomedRefSetMemberIndexEntry complexEntry = (SnomedRefSetMemberIndexEntry) member;
-					return getConceptLabel(complexEntry.getCorrelationId());
+					return labelMap.get(complexEntry.getCorrelationId());
 				}
 			case SDD_CLASS:
 				final List<SnomedRelationshipIndexEntry> relationships = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class)
@@ -198,7 +287,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				if (member instanceof SnomedRefSetMemberIndexEntry) {
 					final SnomedRefSetMemberIndexEntry complexMember = (SnomedRefSetMemberIndexEntry) member;
 					final String mapCategoryId = complexMember.getMapCategoryId();
-					return isEmpty(mapCategoryId) ? nullToEmpty(mapCategoryId) : getConceptLabel(mapCategoryId);
+					return isEmpty(mapCategoryId) ? nullToEmpty(mapCategoryId) : labelMap.get(mapCategoryId);
 				}
 			case MAP_TARGET_DESCRIPTION:
 				return nullToEmpty(member.getMapTargetDescription());
@@ -212,6 +301,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return CoreTerminologyBroker.getInstance().getNameProviderFactory(componentType).getNameProvider().getComponentLabel(branchPath, componentId);
 	}
 
+	@Deprecated
 	private String getConceptLabel(String conceptId) {
 		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
 	}
