@@ -51,6 +51,20 @@ public interface IClassificationRun extends IClassificationInput {
 	Date getCompletionDate();
 
 	/**
+	 * Returns the date the classification results were saved, or {@code null} if the classification results haven't been saved yet.
+	 * 
+	 * @return
+	 */
+	Date getSaveDate();
+
+	/**
+	 * Returns a boolean indicating if any inferred relationship were found, or {@code null} if the classification hasn't finished yet.
+	 * 
+	 * @return
+	 */
+	Boolean getInferredRelationshipChangesFound();
+	
+	/**
 	 * Returns a boolean indicating if any redundant stated relationships were found, or {@code null} if the classification hasn't finished yet.
 	 *
 	 * @return the classification completion date
@@ -63,4 +77,5 @@ public interface IClassificationRun extends IClassificationInput {
 	 * @return the classification completion date
 	 */
 	Boolean getEquivalentConceptsFound();
+
 }

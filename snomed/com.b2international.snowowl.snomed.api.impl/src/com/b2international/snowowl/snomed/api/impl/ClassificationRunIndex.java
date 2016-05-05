@@ -238,8 +238,11 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			}
 			
 			final ClassificationIssueFlags issueFlags = indexChanges(sourceDocument, changes);
+			classificationRun.setInferredRelationshipChangesFound(!changes.getRelationshipEntries().isEmpty());
 			classificationRun.setRedundantStatedRelationshipsFound(issueFlags.isRedundantStatedFound());
 			classificationRun.setEquivalentConceptsFound(issueFlags.isEquivalentConceptsFound());
+		} else if (ClassificationStatus.SAVED.equals(newStatus)) {
+			classificationRun.setSaveDate(new Date());
 		}
 
 		upsertClassificationRun(branchPath, classificationRun);
