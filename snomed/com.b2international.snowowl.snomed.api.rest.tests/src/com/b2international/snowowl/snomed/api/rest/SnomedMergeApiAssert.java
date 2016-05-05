@@ -228,6 +228,10 @@ public abstract class SnomedMergeApiAssert {
 	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, final String symbolicName, final SnomedComponentType componentType) {
 		SnomedComponentApiAssert.assertComponentCanBeDeleted(branchPath, componentType, symbolicNameMap.get(symbolicName));
 	}
+	
+	public static void assertRelationshipCanBeUpdated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> requestBody) {
+		assertComponentCanBeUpdated(branchPath, symbolicName, SnomedComponentType.RELATIONSHIP, requestBody);
+	}
 
 	public static void assertConceptCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
 		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.CONCEPT);
@@ -239,6 +243,10 @@ public abstract class SnomedMergeApiAssert {
 	
 	public static void assertRefSetMemberCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
 		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.MEMBER);
+	}
+	
+	public static void assertRelationshipCanBeDeleted(IBranchPath branch, String symbolicName) {
+		assertComponentCanBeDeleted(branch, symbolicName, SnomedComponentType.RELATIONSHIP);
 	}
 	
 	public static List<Map<String, String>> createAttributesMap(ConflictingAttribute attribute) {

@@ -168,9 +168,17 @@ protected boolean merge(Object targetData, Object sourceData)
     else if (targetData instanceof CDORevisionDelta && sourceData instanceof CDOID)
     {
       data = changedInTargetAndDetachedInSource((CDORevisionDelta)targetData);
+    } 
+    else if (targetData instanceof CDORevision && sourceData instanceof CDORevisionDelta) {
+      data = changedInSourceAndNewInTarget((CDORevision) targetData, (CDORevisionDelta) sourceData);
     }
 
     return take(data);
+  }
+
+  // select the feature delta if something is new on target and changed on source by default
+  protected Object changedInSourceAndNewInTarget(CDORevision targetData, CDORevisionDelta sourceData) {
+	return sourceData;
   }
 
   protected Object addedInTarget(CDORevision revision)
