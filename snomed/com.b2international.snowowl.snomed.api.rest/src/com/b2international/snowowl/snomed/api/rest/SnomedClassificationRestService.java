@@ -51,7 +51,7 @@ import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentC
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestInput;
-import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestRun;
+import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRunRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
@@ -275,7 +275,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The updated classification parameters")
 			@RequestBody 
-			final ClassificationRestRun updatedRun,
+			final ClassificationRunRestUpdate updatedRun,
 
 			final Principal principal) {
 		
