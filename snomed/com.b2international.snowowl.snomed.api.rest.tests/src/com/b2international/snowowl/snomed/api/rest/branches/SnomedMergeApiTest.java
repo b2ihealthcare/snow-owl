@@ -38,6 +38,7 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableList;
@@ -116,13 +117,13 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.CONCEPT, conceptBuilder.build());
 	}
 
-	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> acceptabilityMap) {
+	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final String typeId, final Map<?, ?> acceptabilityMap) {
 		final Date creationDate = new Date();
 
 		final Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("conceptId", Concepts.ROOT_CONCEPT)
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("typeId", Concepts.SYNONYM)
+				.put("typeId", typeId)
 				.put("term", "New description at " + creationDate)
 				.put("languageCode", "en")
 				.put("acceptability", acceptabilityMap)
@@ -130,6 +131,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.DESCRIPTION, requestBody);
+	}
+	
+	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> acceptabilityMap) {
+		assertDescriptionCreated(branchPath, symbolicName, Concepts.SYNONYM, acceptabilityMap);
 	}
 
 	private void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName) {
@@ -584,4 +589,19 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
 		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
 	}
+	
+	@Test
+	public void rebaseTwoNewTextDefinitionsWithDifferentAcceptabilityMapShouldNotConflict() throws Exception {
+		// create two new text definitions with different lang. acceptability on testBranchPath
+		assertDescriptionCreated(testBranchPath, "D1", Concepts.TEXT_DEFINITION, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE));
+		assertDescriptionCreated(testBranchPath, "D2", Concepts.TEXT_DEFINITION, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+		
+		// create change on parent
+		assertRelationshipCreated(testBranchPath.getParent(), "R1");
+		
+		assertBranchCanBeRebased(testBranchPath, "Rebase two new text definitions");
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionExists(testBranchPath, "D2");
+	}
+	
 }
