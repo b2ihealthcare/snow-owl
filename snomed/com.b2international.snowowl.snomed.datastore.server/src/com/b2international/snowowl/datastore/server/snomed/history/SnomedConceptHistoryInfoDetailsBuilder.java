@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -63,35 +64,35 @@ import com.google.common.cache.LoadingCache;
  */
 public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoDetailsBuilder {
 
-	private final LoadingCache<Pair<? extends CDOObject, CDOView>, String> objectToLabelCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<? extends CDOObject, CDOView>, String>() {
+	private final LoadingCache<CDOObject, String> objectToLabelCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<CDOObject, String>() {
 		@Override
-		public String load(final Pair<? extends CDOObject, CDOView> pair) throws Exception {
-			if (pair.getA() instanceof Concept) {
-				return SnomedHistoryUtils.getLabelForConcept((Concept) pair.getA());
-			} else if (pair.getA() instanceof Description) {
-				return SnomedHistoryUtils.getLabelForDescription((Description) pair.getA());
-			} else if (pair.getA() instanceof Relationship) {
-				return SnomedHistoryUtils.getLabelForRelationship((Relationship) pair.getA());
+		public String load(final CDOObject object) throws Exception {
+			if (object instanceof Concept) {
+				return SnomedHistoryUtils.getLabelForConcept((Concept) object);
+			} else if (object instanceof Description) {
+				return SnomedHistoryUtils.getLabelForDescription((Description) object);
+			} else if (object instanceof Relationship) {
+				return SnomedHistoryUtils.getLabelForRelationship((Relationship) object);
 			}
-			throw new IllegalArgumentException("Unknown object type: " + pair.getA().getClass());
+			throw new IllegalArgumentException("Unknown object type: " + object.getClass());
 		}
 	});
 	
-	private final LoadingCache<Pair<String, CDOView>, Concept> idToConceptCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Concept>() {
+	private final LoadingCache<Pair<String, CDOView>, Concept> idToConceptCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<Pair<String, CDOView>, Concept>() {
 		@Override
 		public Concept load(Pair<String, CDOView> pair) throws Exception {
 			return SnomedHistoryUtils.getConcept(pair.getA(), pair.getB());
 		}
 	});
 	
-	private final LoadingCache<Pair<String, CDOView>, Description> idToDescriptionCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Description>() {
+	private final LoadingCache<Pair<String, CDOView>, Description> idToDescriptionCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<Pair<String, CDOView>, Description>() {
 		@Override
 		public Description load(Pair<String, CDOView> pair) throws Exception {
 			return SnomedHistoryUtils.getDescription(pair.getA(), pair.getB());
 		}
 	});
 	
-	private final LoadingCache<Pair<String, CDOView>, Relationship> idToRelationshipCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Relationship>() {
+	private final LoadingCache<Pair<String, CDOView>, Relationship> idToRelationshipCache = CacheBuilder.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new CacheLoader<Pair<String, CDOView>, Relationship>() {
 		@Override
 		public Relationship load(Pair<String, CDOView> pair) throws Exception {
 			return SnomedHistoryUtils.getRelationship(pair.getA(), pair.getB());
@@ -101,15 +102,15 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	private static HashMap<String, String> map;
 
 	private String getConceptLabel(Concept concept) {
-		return objectToLabelCache.getUnchecked(Pair.of(concept, concept.cdoView()));
+		return objectToLabelCache.getUnchecked(concept);
 	}
 	
 	private String getDescriptionLabel(Description description) {
-		return objectToLabelCache.getUnchecked(Pair.of(description, description.cdoView()));
+		return objectToLabelCache.getUnchecked(description);
 	}
 	
 	private String getRelationshipLabel(Relationship relationship) {
-		return objectToLabelCache.getUnchecked(Pair.of(relationship, relationship.cdoView()));
+		return objectToLabelCache.getUnchecked(relationship);
 	}
 	
 	private String getNewConceptLabel(Object value, CDOView view) {
