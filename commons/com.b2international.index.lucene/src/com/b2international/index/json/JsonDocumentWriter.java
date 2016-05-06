@@ -15,24 +15,20 @@
  */
 package com.b2international.index.json;
 
-import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.UUID;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 
-import com.b2international.index.util.Reflections;
 import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -44,6 +40,7 @@ public class JsonDocumentWriter implements Writer {
 	private final IndexWriter writer;
 	private final ReferenceManager<IndexSearcher> searchers;
 	private final JsonDocumentMappingStrategy mappingStrategy;
+	private final Collection<Operation> operations = newArrayList();
 
 	public JsonDocumentWriter(IndexWriter writer, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper) {
 		this.writer = writer;
@@ -53,10 +50,18 @@ public class JsonDocumentWriter implements Writer {
 	
 	@Override
 	public void close() throws Exception {
-		// TODO rollback changes if there were exceptions
-		searchers.maybeRefreshBlocking();
+		this.operations.clear();
 	}
-
+	
+	@Override
+	public void commit() throws IOException {
+		// TODO add a txId to new documents, so we will be able to delete all changes
+		for (Operation op : this.operations) {
+			op.execute(writer);
+		}
+		searchers.maybeRefreshBlocking();		
+	}
+	
 	@Override
 	public void put(String key, Object object) throws IOException {
 		putAll(Collections.singletonMap(key, object));
@@ -65,33 +70,13 @@ public class JsonDocumentWriter implements Writer {
 	@Override
 	public void putAll(Map<String, Object> objectByKeys) throws IOException {
 		for (Entry<String, Object> entry : objectByKeys.entrySet()) {
-			final String uid = JsonDocumentMapping.toUid(entry.getValue().getClass(), entry.getKey());
-			final Collection<Document> docs = newLinkedList();
-			collectDocs(uid, entry.getKey(), entry.getValue(), docs);
-			// update all documents with the same uid
-			writer.updateDocuments(JsonDocumentMapping._uid().toTerm(uid), docs);
+			final String key = entry.getKey();
+			final Object doc = entry.getValue();
+			final String uid = JsonDocumentMapping.toUid(doc.getClass(), key);
+			operations.add(new Index(uid, key, doc, mappingStrategy));
 		}
 	}
-
-	/* traverse the fields and map the given object and its nested objects */
-	private void collectDocs(String uid, String key, Object object, final Collection<Document> docs) throws IOException {
-		for (Field field : Reflections.getFields(object.getClass())) {
-			final Class<?> fieldType = Reflections.getType(field);
-			if (JsonDocumentMapping.isNestedDoc(fieldType)) {
-				final Object fieldValue = Reflections.getValue(object, field);
-				if (fieldValue instanceof Iterable) {
-					for (Object item : (Iterable<?>) fieldValue) {
-						collectDocs(uid, UUID.randomUUID().toString(), item, docs);
-					}
-				} else {
-					collectDocs(uid, UUID.randomUUID().toString(), fieldValue, docs);
-				}
-			}
-		}
-		final Document doc = mappingStrategy.map(uid, key, object);
-		docs.add(doc);
-	}
-
+	
 	@Override
 	public void remove(Class<?> type, String key) throws IOException {
 		removeAll(Collections.<Class<?>, String>singletonMap(type, key));
@@ -103,7 +88,7 @@ public class JsonDocumentWriter implements Writer {
 		for (Entry<Class<?>, String> entry : keysByType.entrySet()) {
 			deleteQuery.add(JsonDocumentMapping._uid().toQuery(JsonDocumentMapping.toUid(entry.getKey(), entry.getValue())), Occur.SHOULD);
 		}
-		writer.deleteDocuments(deleteQuery);
+		this.operations.add(new DeleteByQuery(deleteQuery));
 	}
 
 }

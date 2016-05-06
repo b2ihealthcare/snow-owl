@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.write;
+package com.b2international.index.json;
 
 import java.io.IOException;
-import java.util.Map;
+
+import org.apache.lucene.index.IndexWriter;
 
 /**
  * @since 4.7
  */
-public interface Writer extends AutoCloseable {
+public interface Operation {
 
-	void put(String key, Object object) throws IOException;
-	
-	void putAll(Map<String, Object> objectByKeys) throws IOException;
-
-	void remove(Class<?> type, String key) throws IOException;
-	
-	void removeAll(Map<Class<?>, String> keysByType) throws IOException;
-
-	void commit() throws IOException;
+	void execute(IndexWriter writer) throws IOException;
 	
 }

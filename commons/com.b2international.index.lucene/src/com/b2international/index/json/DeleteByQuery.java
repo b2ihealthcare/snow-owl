@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.write;
+package com.b2international.index.json;
 
 import java.io.IOException;
-import java.util.Map;
+
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.search.Query;
 
 /**
  * @since 4.7
  */
-public interface Writer extends AutoCloseable {
+public class DeleteByQuery implements Operation {
 
-	void put(String key, Object object) throws IOException;
-	
-	void putAll(Map<String, Object> objectByKeys) throws IOException;
+	private final Query query;
 
-	void remove(Class<?> type, String key) throws IOException;
+	public DeleteByQuery(Query query) {
+		this.query = query;
+		
+	}
 	
-	void removeAll(Map<Class<?>, String> keysByType) throws IOException;
+	@Override
+	public void execute(IndexWriter writer) throws IOException {
+		writer.deleteDocuments(query);
+	}
 
-	void commit() throws IOException;
-	
 }

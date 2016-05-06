@@ -78,6 +78,7 @@ public class LuceneClientTest {
 		final Data data = new Data();
 		try (final Writer writer = client.writer()) {
 			writer.put(KEY, data);
+			writer.commit();
 		}
 		try (Searcher searcher = client.searcher()) {
 			final Data actual = searcher.get(Data.class, KEY);
@@ -93,6 +94,7 @@ public class LuceneClientTest {
 		data.field2 = "field2Updated";
 		try (final Writer writer = client.writer()) {
 			writer.put(KEY, data);
+			writer.commit();
 		}
 		try (Searcher searcher = client.searcher()) {
 			final Iterable<Data> matches = searcher.search(Query.builder(Data.class).selectAll().where(JsonDocumentMapping.matchId(KEY)).build());
@@ -109,6 +111,7 @@ public class LuceneClientTest {
 			try (Searcher searcher = client.searcher()) {
 				assertNull(searcher.get(Data.class, KEY));
 			}
+			writer.commit();
 		}
 	}
 	
@@ -117,6 +120,7 @@ public class LuceneClientTest {
 		indexDocument();
 		try (final Writer writer = client.writer()) {
 			writer.remove(Data.class, KEY);
+			writer.commit();
 		}
 		try (Searcher searcher = client.searcher()) {
 			assertNull(searcher.get(Data.class, KEY));
@@ -131,6 +135,7 @@ public class LuceneClientTest {
 		try (final Writer writer = client.writer()) {
 			writer.put(KEY, data);
 			writer.put(KEY2, data2);
+			writer.commit();
 		}
 		// seach for field1Changed value, it should return a single doc
 		try (Searcher searcher = client.searcher()) {
@@ -146,6 +151,7 @@ public class LuceneClientTest {
 		final ParentData data = new ParentData(new NestedData("field2"));
 		try (Writer writer = client.writer()) {
 			writer.put(KEY, data);
+			writer.commit();
 		}
 		// try to get nested document as is first
 		try (Searcher searcher = client.searcher()) {
@@ -159,6 +165,7 @@ public class LuceneClientTest {
 		indexNestedDocument();
 		try (Writer writer = client.writer()) {
 			writer.remove(ParentData.class, KEY);
+			writer.commit();
 		}
 		try (Searcher searcher = client.searcher()) {
 			final Query<ParentData> parentDataQuery = Query.builder(ParentData.class).selectAll().where(Expressions.matchAll()).build();
@@ -178,6 +185,7 @@ public class LuceneClientTest {
 		try (Writer writer = client.writer()) {
 			writer.put(KEY, data);
 			writer.put(KEY2, data2);
+			writer.commit();
 		}
 		// try to get nested document as is first
 		try (Searcher searcher = client.searcher()) {
@@ -196,6 +204,7 @@ public class LuceneClientTest {
 		try (Writer writer = client.writer()) {
 			writer.put(KEY, data);
 			writer.put(KEY2, data2);
+			writer.commit();
 		}
 		// try to get nested document as is first
 		try (Searcher searcher = client.searcher()) {
@@ -221,6 +230,7 @@ public class LuceneClientTest {
 		try (Writer writer = client.writer()) {
 			writer.put(KEY, data);
 			writer.put(KEY2, data2);
+			writer.commit();
 		}
 		
 		try (Searcher searcher = client.searcher()) {
@@ -235,6 +245,42 @@ public class LuceneClientTest {
 			final Iterable<MultipleNestedData> matches = searcher.search(query);
 			assertThat(matches).hasSize(1);
 			assertThat(matches).containsOnly(data);
+		}
+	}
+	
+	@Test
+	public void uncommittedTransactionShouldNotChangeTheIndex() throws Exception {
+		final Data data = new Data();
+		try (Writer writer = client.writer()) {
+			writer.put(KEY, data);
+		}
+		// after the failed transaction data should not be in the index
+		try (Searcher searcher = client.searcher()) {
+			assertNull(searcher.get(Data.class, KEY));
+		}
+	}
+	
+	@Test
+	public void tx1CommitShouldNotCommitTx2Changes() throws Exception {
+		final Data data = new Data();
+		try (Writer tx1 = client.writer(); 
+				Writer tx2 = client.writer()) {
+			tx1.put(KEY, data);
+			tx2.put(KEY2, data);
+			tx1.commit();
+			
+			// at this point tx2 content should not be visible
+			try (Searcher searcher = client.searcher()) {
+				assertEquals(data, searcher.get(Data.class, KEY));
+				assertNull(searcher.get(Data.class, KEY2));
+			}
+			
+			tx2.commit();
+			
+			try (Searcher searcher = client.searcher()) {
+				assertEquals(data, searcher.get(Data.class, KEY));
+				assertEquals(data, searcher.get(Data.class, KEY2));
+			}
 		}
 	}
 	
