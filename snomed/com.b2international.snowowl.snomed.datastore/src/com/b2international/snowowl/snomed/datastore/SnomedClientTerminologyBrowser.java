@@ -93,7 +93,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 			public IComponentWithChildFlag<String> apply(ISnomedConcept input) {
 				final SnomedConceptIndexEntry entry = SnomedConceptIndexEntry
 					.builder(input)
-					.label(input.getPt().getTerm())
+					.label(input.getPt() == null ? input.getId() : input.getPt().getTerm())
 					.build();
 				return new SnomedConceptIndexEntryWithChildFlag(entry, input.getDescendants().getTotal() > 0);
 			}
