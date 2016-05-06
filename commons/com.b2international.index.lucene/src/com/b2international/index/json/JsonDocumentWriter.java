@@ -64,18 +64,16 @@ public class JsonDocumentWriter implements Writer {
 	
 	@Override
 	public void putAll(Map<String, Object> objectByKeys) throws IOException {
-		final Collection<Document> docs = newLinkedList();
 		for (Entry<String, Object> entry : objectByKeys.entrySet()) {
-			collectDocs(entry.getKey(), entry.getValue(), docs);
+			final String uid = JsonDocumentMapping.toUid(entry.getValue().getClass(), entry.getKey());
+			final Collection<Document> docs = newLinkedList();
+			collectDocs(uid, entry.getKey(), entry.getValue(), docs);
+			// update all documents with the same uid
+			writer.updateDocuments(JsonDocumentMapping._uid().toTerm(uid), docs);
 		}
-		writer.addDocuments(docs);
 	}
 
 	/* traverse the fields and map the given object and its nested objects */
-	private void collectDocs(String key, Object object, final Collection<Document> docs) throws IOException {
-		collectDocs(JsonDocumentMapping.toUid(object.getClass(), key), key, object, docs);
-	}
-	
 	private void collectDocs(String uid, String key, Object object, final Collection<Document> docs) throws IOException {
 		for (Field field : Reflections.getFields(object.getClass())) {
 			final Class<?> fieldType = Reflections.getType(field);

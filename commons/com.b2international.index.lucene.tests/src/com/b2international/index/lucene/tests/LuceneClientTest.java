@@ -17,8 +17,7 @@ package com.b2international.index.lucene.tests;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +34,7 @@ import com.b2international.index.Doc;
 import com.b2international.index.FSIndexAdmin;
 import com.b2international.index.IndexClient;
 import com.b2international.index.LuceneClient;
+import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.read.Searcher;
@@ -82,6 +82,22 @@ public class LuceneClientTest {
 		try (Searcher searcher = client.searcher()) {
 			final Data actual = searcher.get(Data.class, KEY);
 			assertEquals(data, actual);
+		}
+	}
+	
+	@Test
+	public void updateDocument() throws Exception {
+		indexDocument();
+		final Data data = new Data();
+		data.field1 = "field1Updated";
+		data.field2 = "field2Updated";
+		try (final Writer writer = client.writer()) {
+			writer.put(KEY, data);
+		}
+		try (Searcher searcher = client.searcher()) {
+			final Iterable<Data> matches = searcher.search(Query.builder(Data.class).selectAll().where(JsonDocumentMapping.matchId(KEY)).build());
+			assertThat(matches).hasSize(1);
+			assertThat(matches).containsOnly(data);
 		}
 	}
 	
