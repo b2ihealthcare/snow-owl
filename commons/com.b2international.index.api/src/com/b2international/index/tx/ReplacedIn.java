@@ -25,8 +25,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class ReplacedIn {
 
-	private String branchPath;
-	private long commitTimestamp;
+	private final String branchPath;
+	private final long commitTimestamp;
 	
 	@JsonCreator
 	ReplacedIn(@JsonProperty("branchPath") String branchPath, @JsonProperty("commitTimestamp") long commitTimestamp) {
@@ -44,11 +44,7 @@ public final class ReplacedIn {
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((branchPath == null) ? 0 : branchPath.hashCode());
-		result = prime * result + (int) (commitTimestamp ^ (commitTimestamp >>> 32));
-		return result;
+		return Objects.hash(branchPath, commitTimestamp);
 	}
 
 	@Override

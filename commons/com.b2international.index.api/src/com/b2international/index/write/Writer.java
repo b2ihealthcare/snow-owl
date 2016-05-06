@@ -17,6 +17,7 @@ package com.b2international.index.write;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @since 4.7
@@ -25,11 +26,11 @@ public interface Writer extends AutoCloseable {
 
 	void put(String key, Object object) throws IOException;
 	
-	void putAll(Map<String, Object> objectByKeys) throws IOException;
+	void putAll(Map<String, Object> objectsByKey) throws IOException;
 
 	void remove(Class<?> type, String key) throws IOException;
 	
-	void removeAll(Map<Class<?>, String> keysByType) throws IOException;
+	void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException;
 
 	void commit() throws IOException;
 	

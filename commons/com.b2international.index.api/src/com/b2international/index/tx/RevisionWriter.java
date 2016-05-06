@@ -13,30 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.read;
+package com.b2international.index.tx;
 
 import java.io.IOException;
-
-import com.b2international.index.Index;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Read operation over a single {@link Index}.
+ * Writer working on top of a {@link RevisionIndex}. A {@link RevisionWriter} is always working on a single {@link IndexBranch}.
  * 
  * @since 4.7
- * @param <T>
- *            - the return type of the read op
- * @see Index#read(IndexRead)
  */
-public interface IndexRead<T> {
+public interface RevisionWriter {
 
-	/**
-	 * Execute this read transaction.
-	 * 
-	 * @param index
-	 *            - a {@link Searcher} instance to execute various read operations over a single consistent index.
-	 * @return
-	 * @throws IOException
-	 */
-	T execute(Searcher index) throws IOException;
+	void put(long storageKey, Revision object) throws IOException;
+
+	void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException;
+
+	<T extends Revision> void remove(Class<T> type, long storageKey) throws IOException;
+
+	<T extends Revision> void removeAll(Map<Class<T>, Set<Long>> storageKeysByType) throws IOException;
+
+	void commit(String commitMessage) throws IOException;
+
+	String branch();
 
 }

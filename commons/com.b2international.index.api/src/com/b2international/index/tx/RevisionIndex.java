@@ -23,51 +23,31 @@ import com.b2international.index.admin.IndexAdmin;
 /**
  * @since 4.7
  */
-public interface TransactionalIndex extends Administrable<IndexAdmin> {
+public interface RevisionIndex extends Administrable<IndexAdmin> {
 
 	/**
-	 * Adds a revision to the transactional index.
+	 * Returns the name of the index.
 	 * 
-	 * @param commitId
-	 *            - the commitId this revision belongs to
-	 * @param revision
-	 *            - the revision
-	 */
-	void addRevision(int commitId, Revision revision);
-
-	/**
-	 * Loads the latest revision of an object from the index with the given type and storageKey as identifier.
-	 * 
-	 * @param type
-	 *            - the type of the object
-	 * @param branchPath
-	 *            - the branchPath to restrict the loading of the revision
-	 * @param storageKey
-	 *            - the storage identifier of the revision
-	 * @return the loaded revision object
-	 */
-	<T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey);
-
-	/**
-	 * Indexes a commit group as parent for all previously added revision (with the given commitId) available for search.
-	 * 
-	 * @param commitId
-	 * @param commitTimestamp
-	 * @param branchPath
-	 * @param commitMessage
-	 */
-	void commit(int commitId, long commitTimestamp, String branchPath, String commitMessage);
-
-	/**
-	 * Opens a new IndexTransaction with the given id and timestamp.
-	 * 
-	 * @param commitId
-	 * @param commitTimestamp
-	 * @param branchPath
 	 * @return
 	 */
-	IndexTransaction transaction(int commitId, long commitTimestamp, String branchPath);
+	String name();
 
+	/**
+	 * Reads from the index via a {@link RevisionIndexRead read transaction}.
+	 * 
+	 * @param read
+	 * @return
+	 */
+	<T> T read(RevisionIndexRead<T> read);
+
+	/**
+	 * Writes to this index via an {@link RevisionIndexWrite write transaction}.
+	 * 
+	 * @param write
+	 * @return
+	 */
+	<T> T write(RevisionIndexWrite<T> write);	
+	
 	/**
 	 * Update a set of revision's {@link ReplacedIn} entries for the given branchPath with the given commitTimestamp to indicate that a newer revision
 	 * is visible from that branch.

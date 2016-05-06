@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.lucene.index.IndexWriter;
@@ -59,7 +60,7 @@ public class JsonDocumentWriter implements Writer {
 		for (Operation op : this.operations) {
 			op.execute(writer);
 		}
-		searchers.maybeRefreshBlocking();		
+		searchers.maybeRefreshBlocking();
 	}
 	
 	@Override
@@ -68,8 +69,8 @@ public class JsonDocumentWriter implements Writer {
 	}
 	
 	@Override
-	public void putAll(Map<String, Object> objectByKeys) throws IOException {
-		for (Entry<String, Object> entry : objectByKeys.entrySet()) {
+	public void putAll(Map<String, Object> objectsByKey) throws IOException {
+		for (Entry<String, Object> entry : objectsByKey.entrySet()) {
 			final String key = entry.getKey();
 			final Object doc = entry.getValue();
 			final String uid = JsonDocumentMapping.toUid(doc.getClass(), key);
@@ -79,14 +80,19 @@ public class JsonDocumentWriter implements Writer {
 	
 	@Override
 	public void remove(Class<?> type, String key) throws IOException {
-		removeAll(Collections.<Class<?>, String>singletonMap(type, key));
+		removeAll(Collections.<Class<?>, Set<String>>singletonMap(type, Collections.singleton(key)));
 	}
 	
 	@Override
-	public void removeAll(Map<Class<?>, String> keysByType) throws IOException {
+	public void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException {
 		final BooleanQuery deleteQuery = new BooleanQuery(true);
-		for (Entry<Class<?>, String> entry : keysByType.entrySet()) {
-			deleteQuery.add(JsonDocumentMapping._uid().toQuery(JsonDocumentMapping.toUid(entry.getKey(), entry.getValue())), Occur.SHOULD);
+		// TODO more than max clauses
+		for (Entry<Class<?>, Set<String>> entry : keysByType.entrySet()) {
+			final Class<?> type = entry.getKey();
+			final Set<String> keys = entry.getValue();
+			for (String key : keys) {
+				deleteQuery.add(JsonDocumentMapping._uid().toQuery(JsonDocumentMapping.toUid(type, key)), Occur.SHOULD);
+			}
 		}
 		this.operations.add(new DeleteByQuery(deleteQuery));
 	}

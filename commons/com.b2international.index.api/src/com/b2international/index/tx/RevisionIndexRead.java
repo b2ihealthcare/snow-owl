@@ -15,19 +15,26 @@
  */
 package com.b2international.index.tx;
 
+import java.io.IOException;
+
 /**
- * Transaction working on top of a {@link TransactionalIndex}.
+ * Read operation over a single {@link RevisionIndex}.
  * 
  * @since 4.7
+ * @param <T>
+ *            - the return type of the read op
+ * @see RevisionIndex#read(RevisionIndexRead)
  */
-public interface IndexTransaction {
-	
-	void add(long storageKey, Revision object);
-	
-	<T extends Revision> void delete(long storageKey, Class<T> type);
-	
-	void commit(String commitMessage);
+public interface RevisionIndexRead<T> {
 
-	String branch();
-	
+	/**
+	 * Execute this read transaction.
+	 * 
+	 * @param index
+	 *            - a {@link RevisionSearcher} instance to execute various read operations over a single consistent index.
+	 * @return
+	 * @throws IOException
+	 */
+	T execute(RevisionSearcher index) throws IOException;
+
 }
