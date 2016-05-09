@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -30,6 +30,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 
+import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -42,11 +43,18 @@ public class JsonDocumentWriter implements Writer {
 	private final ReferenceManager<IndexSearcher> searchers;
 	private final JsonDocumentMappingStrategy mappingStrategy;
 	private final Collection<Operation> operations = newArrayList();
+	private final JsonDocumentSearcher searcher;
 
 	public JsonDocumentWriter(IndexWriter writer, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper) {
 		this.writer = writer;
 		this.searchers = searchers;
+		this.searcher = new JsonDocumentSearcher(searchers, mapper);
 		this.mappingStrategy = new JsonDocumentMappingStrategy(mapper);
+	}
+	
+	@Override
+	public Searcher searcher() {
+		return searcher;
 	}
 	
 	@Override

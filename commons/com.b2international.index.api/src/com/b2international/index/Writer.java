@@ -33,5 +33,7 @@ public interface Writer extends AutoCloseable {
 	void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException;
 
 	void commit() throws IOException;
+
+	Searcher searcher();
 	
 }
