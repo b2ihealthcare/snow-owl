@@ -28,7 +28,6 @@ public class Expressions {
 	
 	public interface PredicateBuilder {
 		BinaryOperatorBuilder exactMatch(String field, String value);
-		BinaryOperatorBuilder not(BinaryOperatorBuilder expressionBuilder);
 	}
 
 	public interface BinaryOperatorBuilder extends Buildable<Expression> {
@@ -45,12 +44,6 @@ public class Expressions {
 		@Override
 		public BinaryOperatorBuilder exactMatch(String field, String value) {
 			previous = Optional.<Expression>of(Expressions.exactMatch(field, value));
-			return this;
-		}
-
-		@Override
-		public BinaryOperatorBuilder not(BinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(Expressions.not(expressionBuilder.build()));
 			return this;
 		}
 
@@ -90,12 +83,12 @@ public class Expressions {
 		return new PrefixPredicate(field, prefix);
 	}
 	
-	public static Expression not(Expression inner) {
-		return new Not(inner);
-	}
-	
 	public static Expression and(Expression left, Expression right) {
 		return new And(left, right);
+	}
+	
+	public static Expression andNot(Expression left, Expression right) {
+		return new AndNot(left, right);
 	}
 	
 	public static Expression or(Expression left, Expression right) {
@@ -116,6 +109,10 @@ public class Expressions {
 
 	public static Expression matchAll() {
 		return new MatchAll();
+	}
+
+	public static Expression matchRange(String fieldName, long from, long to) {
+		return new RangePredicate(fieldName, from, to);
 	}
 
 }

@@ -27,6 +27,7 @@ import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.NumericRangeFilter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
@@ -119,9 +120,8 @@ public final class LuceneQueryBuilder {
 		} else if (expression instanceof Or) {
 			Or or = (Or) expression;
 			visit(or);
-		} else if (expression instanceof Not) {
-			Not not = (Not) expression;
-			visit(not);
+		} else if (expression instanceof AndNot) {
+			visit((AndNot) expression);
 //		} else if (expression instanceof Same) {
 //			Same same = (Same) expression;
 //			visit(same);
@@ -145,6 +145,8 @@ public final class LuceneQueryBuilder {
 //		} else if (expression instanceof DateRangePredicate) {
 //			DateRangePredicate predicate = (DateRangePredicate) expression;
 //			visit(predicate);
+		} else if (expression instanceof RangePredicate) {
+			visit((RangePredicate) expression);
 		} else if (expression instanceof NestedPredicate) {
 			visit((NestedPredicate) expression);
 		} else {
@@ -222,6 +224,11 @@ public final class LuceneQueryBuilder {
 //		}
 //		deque.push(new DequeItem(filter));
 //	}
+	
+	private void visit(RangePredicate range) {
+		final Filter filter = NumericRangeFilter.newLongRange(range.getField(), range.from(), range.to(), true, true);
+		deque.push(new DequeItem(filter));
+	}
 
 	private void visit(And and) {
 		if (and.getRight().isPresent() && deque.size() >= 2) {
@@ -232,14 +239,37 @@ public final class LuceneQueryBuilder {
 				filter.add(left.getFilter(), Occur.MUST);
 				filter.add(right.getFilter(), Occur.MUST);
 				deque.push(new DequeItem(filter));
-			} else if (right.isFilter() && left.isQuery()) {
-				final Query query = Mappings.newQuery().and(right.toQuery()).and(left.getQuery()).matchAll();
+			} else {
+				final Query query = Mappings.newQuery().and(left.toQuery()).and(right.toQuery()).matchAll();
 				deque.push(new DequeItem(query));
-			} else if (right.isQuery() && left.isFilter()) {
-				final Query query = Mappings.newQuery().and(right.getQuery()).and(left.toQuery()).matchAll();
-				deque.push(new DequeItem(query));
-			} else if (right.isQuery() && left.isQuery()) {
-				final Query query = Mappings.newQuery().and(right.getQuery()).and(left.getQuery()).matchAll();
+			}
+		} else if (deque.size() >= 1) {
+			DequeItem item = deque.pop();
+			if (item.isFilter()) {
+				deque.push(new DequeItem(item.getFilter()));
+			} else if (item.isQuery()) {
+				deque.push(new DequeItem(item.getQuery()));
+			} else {
+				throw newIllegalStateException();
+			}
+		} else {
+			throw newIllegalStateException();
+		}
+	}
+	
+	private void visit(AndNot and) {
+		if (and.getRight().isPresent() && deque.size() >= 2) {
+			DequeItem right = deque.pop();
+			DequeItem left = deque.pop();
+			if (right.isFilter() && left.isFilter()) {
+				final BooleanFilter filter = new BooleanFilter();
+				filter.add(left.getFilter(), Occur.MUST);
+				filter.add(right.getFilter(), Occur.MUST_NOT);
+				deque.push(new DequeItem(filter));
+			} else {
+				final BooleanQuery query = new BooleanQuery();
+				query.add(left.toQuery(), Occur.MUST);
+				query.add(right.toQuery(), Occur.MUST_NOT);
 				deque.push(new DequeItem(query));
 			}
 		} else if (deque.size() >= 1) {
@@ -265,14 +295,8 @@ public final class LuceneQueryBuilder {
 				filter.add(left.getFilter(), Occur.SHOULD);
 				filter.add(right.getFilter(), Occur.SHOULD);
 				deque.push(new DequeItem(filter));
-			} else if (right.isFilter() && left.isQuery()) {
-				final Query query = Mappings.newQuery().and(right.toQuery()).and(left.getQuery()).matchAny();
-				deque.push(new DequeItem(query));
-			} else if (right.isQuery() && left.isFilter()) {
-				final Query query = Mappings.newQuery().and(right.getQuery()).and(left.toQuery()).matchAny();
-				deque.push(new DequeItem(query));
-			} else if (right.isQuery() && left.isQuery()) {
-				final Query query = Mappings.newQuery().and(right.getQuery()).and(left.getQuery()).matchAny();
+			} else {
+				final Query query = Mappings.newQuery().and(left.toQuery()).and(right.toQuery()).matchAny();
 				deque.push(new DequeItem(query));
 			}
 		} else if (deque.size() >= 1) {
@@ -293,21 +317,6 @@ public final class LuceneQueryBuilder {
 		}
 	}
 	
-//	private void visit(Not not) {
-//		if (deque.size() >= 1) {
-//			DequeItem item = deque.pop();
-//			if (item.isFilter()) {
-//				deque.push(new DequeItem(FilterBuilders.notFilter(item.getFilterBuilder())));
-//			} else if (item.isQuery()) {
-//				deque.push(new DequeItem(QueryBuilders.boolQuery().mustNot(item.getQueryBuilder())));
-//			} else {
-//				handleIllegalDequeState();
-//			}
-//		} else {
-//			handleIllegalDequeState();
-//		}
-//	}
-
 //	private void visit(Same same) {
 //		if (deque.size() >= 1) {
 //			DequeItem item = deque.pop();
