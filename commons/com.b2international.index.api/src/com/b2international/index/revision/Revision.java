@@ -15,42 +15,60 @@
  */
 package com.b2international.index.revision;
 
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 
+import com.b2international.index.WithId;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.google.common.collect.ImmutableList;
 
 
 /**
  * @since 4.7
  */
-public abstract class Revision {
+public abstract class Revision implements WithId {
 
-	public static final String ADD_REPLACED_BY_ENTRY_SCRIPT_KEY = "addReplacedByEntryScript";
-	public static final String ADD_REPLACED_BY_ENTRY_SCRIPT = "ctx._source.replacedIns += [branchPath: branch, commitTimestamp: timestamp]";
+//	public static final String ADD_REPLACED_BY_ENTRY_SCRIPT_KEY = "addReplacedByEntryScript";
+//	public static final String ADD_REPLACED_BY_ENTRY_SCRIPT = "ctx._source.replacedIns += [branchPath: branch, commitTimestamp: timestamp]";
 	public static final String STORAGE_KEY = "storageKey";
 	public static final String BRANCH_PATH = "branchPath";
 	public static final String COMMIT_TIMESTAMP = "commitTimestamp";
 
+	// move the following fields up to a abstract doc???
+	private String _id;
+	
 	private long storageKey;
 	private long commitTimestamp;
 	private String branchPath;
-	private Collection<ReplacedIn> replacedIns = newHashSet();
 	
-	public void setBranchPath(String branchPath) {
+	private Collection<ReplacedIn> replacedIns = Collections.emptySet();
+	
+	@Override
+	public void set_id(String _id) {
+		this._id = _id;
+	}
+	
+	@Override
+	public String _id() {
+		return checkNotNull(_id);
+	}
+	
+	void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
 	}
 	
-	public void setCommitTimestamp(long createdTimestamp) {
+	void setCommitTimestamp(long createdTimestamp) {
 		this.commitTimestamp = createdTimestamp;
 	}
 	
-	public void setStorageKey(long storageKey) {
+	void setStorageKey(long storageKey) {
 		this.storageKey = storageKey;
 	}
 	
-	public void setReplacedIns(Collection<ReplacedIn> replacedIns) {
+	void setReplacedIns(Collection<ReplacedIn> replacedIns) {
 		this.replacedIns = replacedIns;
 	}
 	
@@ -70,74 +88,78 @@ public abstract class Revision {
 		return commitTimestamp;
 	}
 
-	public static FilterBuilder createBranchFilter(RevisionBranch branch) {
-		return FilterBuilders.andFilter(branchRevisionFilter(branch), notReplacedInFilter(branch));
+	public static Expression matchRevisionOnBranch(RevisionBranch branch, long storageKey) {
+		return Expressions.and(Expressions.exactMatch(STORAGE_KEY, storageKey), branchFilter(branch));
 	}
 
-	private static FilterBuilder notReplacedInFilter(RevisionBranch branch) {
-		return notFilter(nestedFilter("replacedIns", createBranchSegmentFilter(branch, new ReplacedSegmentFilterBuilder())));
+	public static Expression branchFilter(RevisionBranch branch) {
+		return Expressions.andNot(branchRevisionFilter(branch), replacedInFilter(branch));
 	}
 
-	private static FilterBuilder branchRevisionFilter(RevisionBranch branch) {
-		return createBranchSegmentFilter(branchPath, new RevisionSegmentFilterBuilder());
+	private static Expression replacedInFilter(RevisionBranch branch) {
+		return Expressions.nestedMatch("replacedIns", createBranchSegmentFilter(branch, new ReplacedSegmentFilterBuilder()));
 	}
 
-	private static FilterBuilder createBranchSegmentFilter(String branchPath, SegmentFilterBuilder builder) {
-		final String[] segments = branchPath.split(Branch.SEPARATOR);
-		if (segments.length > 1) {
-			final OrFilterBuilder or = orFilter();
-			String prev = "";
-			for (int i = 0; i < segments.length; i++) {
-				final String segment = segments[i];
-				// we need the current segment + prevSegment to make it full path and the next one to restrict head timestamp on current based on base of the next one
-				String current = "";
-				String next = null;
-				if (!Branch.MAIN_PATH.equals(segment)) {
-					current = prev.concat(Branch.SEPARATOR);
-				}
-				// if not the last segment, compute next one
-				current = current.concat(segment);
-				if (!segments[segments.length - 1].equals(segment)) {
-					if (!current.endsWith(Branch.SEPARATOR)) {
-						next = current.concat(Branch.SEPARATOR);
-					}
-					next = next.concat(segments[i+1]);
-				}
-				or.add(builder.createSegmentFilter(current, next));
-				prev = current;
-			}
-			return or;
-		} else {
-			return builder.createSegmentFilter(branchPath, null);
-		}
+	private static Expression branchRevisionFilter(RevisionBranch branch) {
+		return createBranchSegmentFilter(branch, new RevisionSegmentFilterBuilder());
+	}
+
+	private static Expression createBranchSegmentFilter(RevisionBranch branch, SegmentFilterBuilder builder) {
+//		final String[] segments = branch.path().split(RevisionBranch.SEPARATOR);
+//		if (branch.path().equals(anObject)) {
+//			final OrFilterBuilder or = orFilter();
+//			String prev = "";
+//			for (int i = 0; i < segments.length; i++) {
+//				final String segment = segments[i];
+//				// we need the current segment + prevSegment to make it full path and the next one to restrict head timestamp on current based on base of the next one
+//				String current = "";
+//				String next = null;
+//				if (!RevisionBranch.MAIN_PATH.equals(segment)) {
+//					current = prev.concat(RevisionBranch.SEPARATOR);
+//				}
+//				// if not the last segment, compute next one
+//				current = current.concat(segment);
+//				if (!segments[segments.length - 1].equals(segment)) {
+//					if (!current.endsWith(RevisionBranch.SEPARATOR)) {
+//						next = current.concat(RevisionBranch.SEPARATOR);
+//					}
+//					next = next.concat(segments[i+1]);
+//				}
+//				or.add(builder.createSegmentFilter(current, next));
+//				prev = current;
+//			}
+//			return or;
+//		} else {
+		return builder.createSegmentFilter(branch, null);
+//		}
 	}
 
 	private static interface SegmentFilterBuilder {
 		
-		FilterBuilder createSegmentFilter(RevisionBranch parent, RevisionBranch child);
+		Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child);
 		
 	}
 	
 	private static class RevisionSegmentFilterBuilder implements SegmentFilterBuilder {
 
 		@Override
-		public FilterBuilder createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
-			final FilterBuilder currentBranchFilter = termFilter(Revision.BRANCH_PATH, parent.path());
-			final FilterBuilder commitTimestampFilter = child == null ? timestampFilter(parent) : timestampFilter(parent, child);
-			return andFilter(currentBranchFilter, commitTimestampFilter);
+		public Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
+			final Expression currentBranchFilter = Expressions.exactMatch(Revision.BRANCH_PATH, parent.path());
+			final Expression commitTimestampFilter = child == null ? timestampFilter(parent) : timestampFilter(parent, child);
+			return Expressions.and(currentBranchFilter, commitTimestampFilter);
 		}
 		
 		/*restricts given branchPath's HEAD to baseTimestamp of child*/
-		private static FilterBuilder timestampFilter(RevisionBranch parent, RevisionBranch child) {
+		private static Expression timestampFilter(RevisionBranch parent, RevisionBranch child) {
 			return timestampFilter(parent.baseTimestamp(), child.baseTimestamp());
 		}
 		
-		private static FilterBuilder timestampFilter(RevisionBranch branch) {
+		private static Expression timestampFilter(RevisionBranch branch) {
 			return timestampFilter(branch.baseTimestamp(), branch.headTimestamp());
 		}
 		
-		private static FilterBuilder timestampFilter(long from, long to) {
-			return rangeFilter(Revision.COMMIT_TIMESTAMP).gte(from).lte(to);
+		private static Expression timestampFilter(long from, long to) {
+			return Expressions.matchRange(Revision.COMMIT_TIMESTAMP, from, to);
 		}
 		
 	}
@@ -145,10 +167,10 @@ public abstract class Revision {
 	private static class ReplacedSegmentFilterBuilder implements SegmentFilterBuilder {
 
 		@Override
-		public FilterBuilder createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
+		public Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
 			final long maxHead = child != null ? child.baseTimestamp() : Long.MAX_VALUE;
 			final long head = Math.min(maxHead, parent.headTimestamp());
-			return andFilter(termFilter("replacedIns."+Revision.BRANCH_PATH, parent.path()), rangeFilter("replacedIns."+Revision.COMMIT_TIMESTAMP).gte(0L).lte(head));
+			return Expressions.and(Expressions.exactMatch(Revision.BRANCH_PATH, parent.path()), Expressions.matchRange(Revision.COMMIT_TIMESTAMP, 0L, head));
 		}
 		
 	}

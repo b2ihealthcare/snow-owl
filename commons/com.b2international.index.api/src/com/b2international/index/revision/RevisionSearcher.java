@@ -29,14 +29,13 @@ public interface RevisionSearcher {
 	 * 
 	 * @param type
 	 *            - the type of the object
-	 * @param branchPath
-	 *            - the branchPath to restrict the loading of the revision
 	 * @param storageKey
 	 *            - the storage identifier of the revision
 	 * @return the loaded revision object
+	 * @throws IOException 
 	 */
-	<T extends Revision> T get(Class<T> type, String branchPath, long storageKey);
-	
+	<T extends Revision> T get(Class<T> type, long storageKey) throws IOException;
+
 	/**
 	 * Execute the given query among all stored items.
 	 * 
@@ -47,5 +46,5 @@ public interface RevisionSearcher {
 	 *             - if something goes wrong during the execution of the query
 	 */
 	<T> Iterable<T> search(Query<T> query) throws IOException;
-	
+
 }

@@ -24,38 +24,37 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.7
  */
-@Doc
-public final class ReplacedIn {
+public class RevisionFixtures {
 
-	private final String branchPath;
-	private final long commitTimestamp;
-	
-	@JsonCreator
-	ReplacedIn(@JsonProperty("branchPath") String branchPath, @JsonProperty("commitTimestamp") long commitTimestamp) {
-		this.branchPath = branchPath;
-		this.commitTimestamp = commitTimestamp;
+	private RevisionFixtures() {
 	}
 	
-	public String getBranchPath() {
-		return branchPath;
-	}
+	@Doc
+	public static class Data extends Revision {
+		
+		String field1;
+		String field2;
 
-	public long getCommitTimestamp() {
-		return commitTimestamp;
+		@JsonCreator
+		public Data(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2) {
+			this.field1 = field1;
+			this.field2 = field2;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			Data other = (Data) obj;
+			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2); 
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field1, field2);
+		}
+		
 	}
 	
-	@Override
-	public int hashCode() {
-		return Objects.hash(branchPath, commitTimestamp);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		ReplacedIn other = (ReplacedIn) obj;
-		return Objects.equals(branchPath, other.branchPath) && Objects.equals(commitTimestamp, other.commitTimestamp); 
-	}
-
 }

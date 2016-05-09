@@ -15,8 +15,6 @@
  */
 package com.b2international.index.revision;
 
-import java.util.Collection;
-
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
 
@@ -35,28 +33,20 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	/**
 	 * Reads from the index via a {@link RevisionIndexRead read transaction}.
 	 * 
+	 * @param branchPath
 	 * @param read
 	 * @return
 	 */
-	<T> T read(RevisionIndexRead<T> read);
+	<T> T read(String branchPath, RevisionIndexRead<T> read);
 
 	/**
 	 * Writes to this index via an {@link RevisionIndexWrite write transaction}.
 	 * 
-	 * @param write
+	 * @param branchPath - put all modifications to this branch
+	 * @param commitTimestamp - all modifications should appear with this timestamp
+	 * @param write - transactional write operation
 	 * @return
 	 */
-	<T> T write(RevisionIndexWrite<T> write);	
+	<T> T write(String branchPath, long commitTimestamp, RevisionIndexWrite<T> write);	
 	
-	/**
-	 * Update a set of revision's {@link ReplacedIn} entries for the given branchPath with the given commitTimestamp to indicate that a newer revision
-	 * is visible from that branch.
-	 * 
-	 * @param type
-	 * @param storageKeys
-	 * @param branchPath
-	 * @param commitTimestamp
-	 */
-	<T extends Revision> void updateRevisions(int commitId, String type, Collection<Long> storageKeys, String branchPath, long commitTimestamp);
-
 }

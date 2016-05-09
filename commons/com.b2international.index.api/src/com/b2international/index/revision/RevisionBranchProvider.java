@@ -15,27 +15,17 @@
  */
 package com.b2international.index.revision;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Writer working on top of a {@link RevisionIndex}. A {@link RevisionWriter} is always working on a single {@link RevisionBranch}.
- * 
  * @since 4.7
  */
-public interface RevisionWriter {
+public interface RevisionBranchProvider {
 
-	void put(long storageKey, Revision object) throws IOException;
-
-	void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException;
-
-	void remove(Class<? extends Revision> type, long storageKey) throws IOException;
-
-	void removeAll(Map<Class<? extends Revision>, Set<Long>> storageKeysByType) throws IOException;
-
-	void commit() throws IOException;
-
-	String branch();
+	/**
+	 * Returns a {@link RevisionBranch} for the given branchPath.
+	 * 
+	 * @param branchPath
+	 * @return
+	 */
+	RevisionBranch getBranch(String branchPath);
 
 }
