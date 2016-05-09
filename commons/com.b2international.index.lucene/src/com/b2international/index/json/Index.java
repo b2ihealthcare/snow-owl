@@ -19,6 +19,7 @@ import static com.google.common.collect.Lists.newLinkedList;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -55,6 +56,8 @@ class Index implements Operation {
 	/* traverse the fields and map the given object and its nested objects */
 	private void collectDocs(String uid, String key, Object object, final Collection<Document> docs) throws IOException {
 		for (Field field : Reflections.getFields(object.getClass())) {
+			// skip static fields
+			if (Modifier.isStatic(field.getModifiers())) continue;
 			final Class<?> fieldType = Reflections.getType(field);
 			if (JsonDocumentMapping.isNestedDoc(fieldType)) {
 				final Object fieldValue = Reflections.getValue(object, field);

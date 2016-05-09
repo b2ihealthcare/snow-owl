@@ -50,6 +50,10 @@ public class JsonDocumentMappingStrategy {
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
 		// add all other fields
 		for (Field field : Reflections.getFields(object.getClass())) {
+			if (JsonDocumentMapping._id().fieldName().equals(field.getName())) {
+				// skip _id field we add that manually
+				continue;
+			}
 			final Object value = Reflections.getValue(object, field);
 			final IndexField indexField = getIndexField(field);
 			if (Mappings.none() != indexField) {
