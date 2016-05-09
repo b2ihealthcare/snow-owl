@@ -29,6 +29,7 @@ import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
+import com.b2international.index.WithId;
 import com.b2international.index.query.LuceneQueryBuilder;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -95,7 +96,11 @@ public class JsonDocumentSearcher implements Searcher {
 		for (int i = query.getOffset(); i < scoreDocs.length; i++) {
 			final Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
 			final byte[] source = doc.getField("_source").binaryValue().bytes;
-			matches.add(mapper.readValue(source, type));
+			final T readValue = mapper.readValue(source, type);
+			if (readValue instanceof WithId) {
+				((WithId) readValue).set_id(JsonDocumentMapping._id().getValue(doc));
+			}
+			matches.add(readValue);
 		}
 		return matches.build();
 	}
