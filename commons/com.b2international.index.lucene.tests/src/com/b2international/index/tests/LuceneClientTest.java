@@ -15,13 +15,11 @@
  */
 package com.b2international.index.tests;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.junit.After;
@@ -30,7 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.b2international.index.Doc;
 import com.b2international.index.FSIndexAdmin;
 import com.b2international.index.IndexClient;
 import com.b2international.index.LuceneClient;
@@ -39,9 +36,12 @@ import com.b2international.index.Writer;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.tests.Fixtures.Data;
+import com.b2international.index.tests.Fixtures.DeepData;
+import com.b2international.index.tests.Fixtures.MultipleNestedData;
+import com.b2international.index.tests.Fixtures.NestedData;
+import com.b2international.index.tests.Fixtures.ParentData;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -287,133 +287,6 @@ public class LuceneClientTest {
 	@After
 	public void after() {
 		client.close();
-	}
-	
-	@Doc
-	static class Data {
-		String field1 = "field1";
-		String field2 = "field2";
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			Data other = (Data) obj;
-			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2); 
-		}
-		
-		@Override
-		public int hashCode() {
-			return Objects.hash(field1, field2);
-		}
-		
-	}
-	
-	@Doc
-	static class ParentData {
-		
-		String field1 = "field1";
-		NestedData nestedData;
-		
-		@JsonCreator
-		public ParentData(@JsonProperty("nestedData") NestedData nestedData) {
-			this.nestedData = nestedData;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			ParentData other = (ParentData) obj;
-			return Objects.equals(field1, other.field1) && Objects.equals(nestedData, other.nestedData);
-		}
-		
-		@Override
-		public int hashCode() {
-			return Objects.hash(field1, nestedData);
-		}
-		
-	}
-	
-	@Doc
-	static class MultipleNestedData {
-		
-		String field1 = "field1";
-		Collection<NestedData> nestedDatas = newHashSet();
-		
-		@JsonCreator
-		public MultipleNestedData(@JsonProperty("nestedDatas") Collection<NestedData> nestedDatas) {
-			this.nestedDatas.addAll(nestedDatas);
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			MultipleNestedData other = (MultipleNestedData) obj;
-			return Objects.equals(field1, other.field1) && Objects.equals(nestedDatas, other.nestedDatas);
-		}
-		
-		@Override
-		public int hashCode() {
-			return Objects.hash(field1, nestedDatas);
-		}
-		
-	}
-	
-	@Doc
-	static class NestedData {
-		
-		String field2;
-
-		@JsonCreator()
-		public NestedData(@JsonProperty("field2") String field2) {
-			this.field2 = field2;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			NestedData other = (NestedData) obj;
-			return Objects.equals(field2, other.field2);
-		}
-		
-		@Override
-		public int hashCode() {
-			return Objects.hash(field2);
-		}
-		
-	}
-	
-	@Doc
-	static class DeepData {
-		
-		final ParentData parentData;
-		
-		@JsonCreator
-		public DeepData(@JsonProperty("parentData") ParentData parentData) {
-			this.parentData = parentData;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (obj == null) return false;
-			if (getClass() != obj.getClass()) return false;
-			DeepData other = (DeepData) obj;
-			return Objects.equals(parentData, other.parentData);
-		}
-		
-		@Override
-		public int hashCode() {
-			return Objects.hash(parentData);
-		}
-		
 	}
 	
 }

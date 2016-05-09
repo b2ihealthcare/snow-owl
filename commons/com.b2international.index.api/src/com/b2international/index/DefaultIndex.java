@@ -22,11 +22,11 @@ import com.b2international.index.admin.IndexAdmin;
 /**
  * @since 4.7
  */
-public class DefaultIndex implements Index {
+public final class DefaultIndex implements Index {
 
 	private final IndexClient client;
 
-	protected DefaultIndex(IndexClient client) {
+	public DefaultIndex(IndexClient client) {
 		this.client = checkNotNull(client, "client");
 	}
 	
