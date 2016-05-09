@@ -18,10 +18,6 @@ package com.b2international.index;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.read.IndexRead;
-import com.b2international.index.read.Searcher;
-import com.b2international.index.write.IndexWrite;
-import com.b2international.index.write.Writer;
 
 /**
  * @since 4.7

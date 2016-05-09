@@ -16,8 +16,6 @@
 package com.b2international.index;
 
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.read.Searcher;
-import com.b2international.index.write.Writer;
 
 /**
  * @since 4.7

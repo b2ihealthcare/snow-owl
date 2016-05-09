@@ -28,9 +28,9 @@ import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.index.IndexException;
+import com.b2international.index.Searcher;
 import com.b2international.index.query.LuceneQueryBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.index.read.Searcher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;

@@ -13,30 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.read;
+package com.b2international.index;
 
 import java.io.IOException;
 
-import com.b2international.index.Index;
-
 /**
- * Read operation over a single {@link Index}.
+ * Transactional write operation over a single {@link Index}.
  * 
  * @since 4.7
  * @param <T>
- *            - the return type of the read op
- * @see Index#read(IndexRead)
+ *            - the type of object to return from this operation
+ * @see Index#write(IndexWrite)
  */
-public interface IndexRead<T> {
+public interface IndexWrite<T> {
 
 	/**
-	 * Execute this read transaction.
+	 * Execute this write operation.
 	 * 
 	 * @param index
-	 *            - a {@link Searcher} instance to execute various read operations over a single consistent index.
+	 *            - an access object to the underlying index, can be used to modify the index
 	 * @return
 	 * @throws IOException
 	 */
-	T execute(Searcher index) throws IOException;
+	T execute(Writer index) throws IOException;
 
 }

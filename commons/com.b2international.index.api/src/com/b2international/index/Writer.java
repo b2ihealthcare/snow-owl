@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.write;
+package com.b2international.index;
 
 import java.io.IOException;
-
-import com.b2international.index.Index;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Transactional write operation over a single {@link Index}.
- * 
  * @since 4.7
- * @param <T>
- *            - the type of object to return from this operation
- * @see Index#write(IndexWrite)
  */
-public interface IndexWrite<T> {
+public interface Writer extends AutoCloseable {
 
-	/**
-	 * Execute this write operation.
-	 * 
-	 * @param index
-	 *            - an access object to the underlying index, can be used to modify the index
-	 * @return
-	 * @throws IOException
-	 */
-	T execute(Writer index) throws IOException;
+	void put(String key, Object object) throws IOException;
+	
+	void putAll(Map<String, Object> objectsByKey) throws IOException;
 
+	void remove(Class<?> type, String key) throws IOException;
+	
+	void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException;
+
+	void commit() throws IOException;
+	
 }

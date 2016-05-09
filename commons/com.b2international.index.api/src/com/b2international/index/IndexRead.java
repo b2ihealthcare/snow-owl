@@ -13,25 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.write;
+package com.b2international.index;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
 
 /**
+ * Read operation over a single {@link Index}.
+ * 
  * @since 4.7
+ * @param <T>
+ *            - the return type of the read op
+ * @see Index#read(IndexRead)
  */
-public interface Writer extends AutoCloseable {
+public interface IndexRead<T> {
 
-	void put(String key, Object object) throws IOException;
-	
-	void putAll(Map<String, Object> objectsByKey) throws IOException;
+	/**
+	 * Execute this read transaction.
+	 * 
+	 * @param index
+	 *            - a {@link Searcher} instance to execute various read operations over a single consistent index.
+	 * @return
+	 * @throws IOException
+	 */
+	T execute(Searcher index) throws IOException;
 
-	void remove(Class<?> type, String key) throws IOException;
-	
-	void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException;
-
-	void commit() throws IOException;
-	
 }

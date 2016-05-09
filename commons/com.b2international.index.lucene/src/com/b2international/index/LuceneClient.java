@@ -18,8 +18,6 @@ package com.b2international.index;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.json.JsonDocumentSearcher;
 import com.b2international.index.json.JsonDocumentWriter;
-import com.b2international.index.read.Searcher;
-import com.b2international.index.write.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

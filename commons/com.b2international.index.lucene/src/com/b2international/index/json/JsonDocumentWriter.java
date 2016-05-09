@@ -30,7 +30,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 
-import com.b2international.index.write.Writer;
+import com.b2international.index.Writer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
