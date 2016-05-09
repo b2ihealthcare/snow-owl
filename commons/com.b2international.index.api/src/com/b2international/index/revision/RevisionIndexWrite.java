@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.tx;
+package com.b2international.index.revision;
 
 import java.io.IOException;
 
 /**
- * Read operation over a single {@link RevisionIndex}.
+ * Transactional write operation over a single {@link RevisionIndex}.
  * 
  * @since 4.7
  * @param <T>
- *            - the return type of the read op
- * @see RevisionIndex#read(RevisionIndexRead)
+ *            - the type of object to return from this operation
+ * @see RevisionIndex#write(RevisionIndexWrite)
  */
-public interface RevisionIndexRead<T> {
+public interface RevisionIndexWrite<T> {
 
 	/**
-	 * Execute this read transaction.
+	 * Execute this write operation.
 	 * 
 	 * @param index
-	 *            - a {@link RevisionSearcher} instance to execute various read operations over a single consistent index.
+	 *            - an access object to the underlying index, can be used to modify the index
 	 * @return
 	 * @throws IOException
 	 */
-	T execute(RevisionSearcher index) throws IOException;
-
+	T execute(RevisionWriter index) throws IOException;
+	
 }

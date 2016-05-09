@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.tx;
+package com.b2international.index.revision;
 
 import java.io.IOException;
 

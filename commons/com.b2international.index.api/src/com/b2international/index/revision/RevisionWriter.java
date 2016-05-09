@@ -13,28 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.tx;
+package com.b2international.index.revision;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Transactional write operation over a single {@link RevisionIndex}.
+ * Writer working on top of a {@link RevisionIndex}. A {@link RevisionWriter} is always working on a single {@link RevisionBranch}.
  * 
  * @since 4.7
- * @param <T>
- *            - the type of object to return from this operation
- * @see RevisionIndex#write(RevisionIndexWrite)
  */
-public interface RevisionIndexWrite<T> {
+public interface RevisionWriter {
 
-	/**
-	 * Execute this write operation.
-	 * 
-	 * @param index
-	 *            - an access object to the underlying index, can be used to modify the index
-	 * @return
-	 * @throws IOException
-	 */
-	T execute(RevisionWriter index) throws IOException;
-	
+	void put(long storageKey, Revision object) throws IOException;
+
+	void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException;
+
+	<T extends Revision> void remove(Class<T> type, long storageKey) throws IOException;
+
+	<T extends Revision> void removeAll(Map<Class<T>, Set<Long>> storageKeysByType) throws IOException;
+
+	void commit(String commitMessage) throws IOException;
+
+	String branch();
+
 }
