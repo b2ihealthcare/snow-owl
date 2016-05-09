@@ -70,15 +70,15 @@ public abstract class Revision {
 		return commitTimestamp;
 	}
 
-	public static FilterBuilder createBranchFilter(IndexBranch branch) {
+	public static FilterBuilder createBranchFilter(RevisionBranch branch) {
 		return FilterBuilders.andFilter(branchRevisionFilter(branch), notReplacedInFilter(branch));
 	}
 
-	private static FilterBuilder notReplacedInFilter(IndexBranch branch) {
+	private static FilterBuilder notReplacedInFilter(RevisionBranch branch) {
 		return notFilter(nestedFilter("replacedIns", createBranchSegmentFilter(branch, new ReplacedSegmentFilterBuilder())));
 	}
 
-	private static FilterBuilder branchRevisionFilter(IndexBranch branch) {
+	private static FilterBuilder branchRevisionFilter(RevisionBranch branch) {
 		return createBranchSegmentFilter(branchPath, new RevisionSegmentFilterBuilder());
 	}
 
@@ -114,25 +114,25 @@ public abstract class Revision {
 
 	private static interface SegmentFilterBuilder {
 		
-		FilterBuilder createSegmentFilter(IndexBranch parent, IndexBranch child);
+		FilterBuilder createSegmentFilter(RevisionBranch parent, RevisionBranch child);
 		
 	}
 	
 	private static class RevisionSegmentFilterBuilder implements SegmentFilterBuilder {
 
 		@Override
-		public FilterBuilder createSegmentFilter(IndexBranch parent, IndexBranch child) {
+		public FilterBuilder createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
 			final FilterBuilder currentBranchFilter = termFilter(Revision.BRANCH_PATH, parent.path());
 			final FilterBuilder commitTimestampFilter = child == null ? timestampFilter(parent) : timestampFilter(parent, child);
 			return andFilter(currentBranchFilter, commitTimestampFilter);
 		}
 		
 		/*restricts given branchPath's HEAD to baseTimestamp of child*/
-		private static FilterBuilder timestampFilter(IndexBranch parent, IndexBranch child) {
+		private static FilterBuilder timestampFilter(RevisionBranch parent, RevisionBranch child) {
 			return timestampFilter(parent.baseTimestamp(), child.baseTimestamp());
 		}
 		
-		private static FilterBuilder timestampFilter(IndexBranch branch) {
+		private static FilterBuilder timestampFilter(RevisionBranch branch) {
 			return timestampFilter(branch.baseTimestamp(), branch.headTimestamp());
 		}
 		
@@ -145,7 +145,7 @@ public abstract class Revision {
 	private static class ReplacedSegmentFilterBuilder implements SegmentFilterBuilder {
 
 		@Override
-		public FilterBuilder createSegmentFilter(IndexBranch parent, IndexBranch child) {
+		public FilterBuilder createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
 			final long maxHead = child != null ? child.baseTimestamp() : Long.MAX_VALUE;
 			final long head = Math.min(maxHead, parent.headTimestamp());
 			return andFilter(termFilter("replacedIns."+Revision.BRANCH_PATH, parent.path()), rangeFilter("replacedIns."+Revision.COMMIT_TIMESTAMP).gte(0L).lte(head));

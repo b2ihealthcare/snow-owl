@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Writer working on top of a {@link RevisionIndex}. A {@link RevisionWriter} is always working on a single {@link IndexBranch}.
+ * Writer working on top of a {@link RevisionIndex}. A {@link RevisionWriter} is always working on a single {@link RevisionBranch}.
  * 
  * @since 4.7
  */
