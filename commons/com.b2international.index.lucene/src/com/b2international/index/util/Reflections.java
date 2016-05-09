@@ -70,11 +70,12 @@ public class Reflections {
 	}
 
 	public static Field getField(Class<?> type, String field) {
-		try {
-			return type.getDeclaredField(field);
-		} catch (NoSuchFieldException | SecurityException e) {
-			throw new IndexException("Couldn't find field " + field, e);
+		for (Field f : getFields(type)) {
+			if (f.getName().equals(field)) {
+				return f;
+			}
 		}
+		throw new IndexException("Couldn't find field " + field + " on type " + type.getName(), null);
 	}
 
 	public static Class<?> getFieldType(Class<?> type, String field) {
