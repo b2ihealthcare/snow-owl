@@ -62,7 +62,7 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	}
 	
 	public T id(String value) {
-		return addToDoc(Mappings.id(), value);
+		return addToDoc(Fields.id(), value);
 	}
 	
 	public T type(Short value) {
@@ -70,83 +70,83 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	}
 	
 	public T type(Integer value) {
-		return addToDoc(Mappings.type(), value);
+		return addToDoc(Fields.type(), value);
 	}
 	
 	public T storageKey(Long value) {
-		return addToDoc(Mappings.storageKey(), value);
+		return addToDoc(Fields.storageKey(), value);
 	}
 	
 	public T compareUniqueKey(Long value) {
-		return addToDoc(Mappings.compareUniqueKey(), value);
+		return addToDoc(Fields.compareUniqueKey(), value);
 	}
 	
 	public T compareIgnoreUniqueKey(Long value) {
-		return addToDoc(Mappings.compareIgnoreUniqueKey(), value);
+		return addToDoc(Fields.compareIgnoreUniqueKey(), value);
 	}
 	
 	public T parent(String value) {
-		return addToDoc(Mappings.parent(), value);
+		return addToDoc(Fields.parent(), value);
 	}
 	
 	public T ancestor(String value) {
-		return addToDoc(Mappings.ancestor(), value);
+		return addToDoc(Fields.ancestor(), value);
 	}
 	
 	public T iconId(String value) {
-		return addToDoc(Mappings.iconId(), value);
+		return addToDoc(Fields.iconId(), value);
 	}
 	
 	public T label(String value) {
-		return update(Mappings.label(), value);
+		return update(Fields.label(), value);
 	}
 	
 	public T field(String fieldName, String value) {
-		return addToDoc(Mappings.stringField(fieldName), value);
+		return addToDoc(Fields.stringField(fieldName), value);
 	}
 	
 	public T field(String fieldName, Integer value) {
-		return addToDoc(Mappings.intField(fieldName), value);
+		return addToDoc(Fields.intField(fieldName), value);
 	}
 	
 	public T field(String fieldName, Long value) {
-		return addToDoc(Mappings.longField(fieldName), value);
+		return addToDoc(Fields.longField(fieldName), value);
 	}
 	
 	public T field(String fieldName, Boolean value) {
-		return addToDoc(Mappings.boolField(fieldName), value);
+		return addToDoc(Fields.boolField(fieldName), value);
 	}
 	
 	public T update(String fieldName, Long value) {
-		return update(Mappings.longField(fieldName), value);
+		return update(Fields.longField(fieldName), value);
 	}
 	
 	public T update(String fieldName, String value) {
-		return update(Mappings.stringField(fieldName), value);
+		return update(Fields.stringField(fieldName), value);
 	}
 	
 	public T update(String fieldName, Integer value) {
-		return update(Mappings.intField(fieldName), value);
+		return update(Fields.intField(fieldName), value);
 	}
 	
 	public T update(String fieldName, Boolean value) {
-		return update(Mappings.boolField(fieldName), value);
+		return update(Fields.boolField(fieldName), value);
 	}
 	
 	public T tokenizedField(String fieldName, String value) {
-		return addToDoc(Mappings.textField(fieldName), value);
+		return addToDoc(Fields.textField(fieldName), value);
 	}
 	
 	public T docValuesField(String fieldName, Long value) {
-		return addToDoc(Mappings.longDocValuesField(fieldName), value);
+		return addToDoc(Fields.longDocValuesField(fieldName), value);
 	}
 	
 	public T docValuesField(String fieldName, String value) {
-		return addToDoc(Mappings.stringDocValuesField(fieldName), value);
+		return addToDoc(Fields.stringDocValuesField(fieldName), value);
 	}
 	
 	public T docValuesField(String fieldName, Float value) {
-		return addToDoc(Mappings.floatDocValuesField(fieldName), value);
+		return addToDoc(Fields.floatDocValuesField(fieldName), value);
 	}
 	
 	public T textDocValuesField(String fieldName, String value) {
@@ -189,27 +189,27 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	}
 	
 	public T storedOnly(String fieldName, int value) {
-		return addToDoc(Mappings.storedOnlyIntField(fieldName), value);
+		return addToDoc(Fields.storedOnlyIntField(fieldName), value);
 	}
 	
 	public T storedOnly(String fieldName, String value) {
-		return addToDoc(Mappings.storedOnlyStringField(fieldName), value);
+		return addToDoc(Fields.storedOnlyStringField(fieldName), value);
 	}
 	
 	public T storedOnly(String fieldName, Long value) {
-		return addToDoc(Mappings.storedOnlyLongField(fieldName), value);
+		return addToDoc(Fields.storedOnlyLongField(fieldName), value);
 	}
 	
 	public T storedOnly(String fieldName, Float value) {
-		return addToDoc(Mappings.storedOnlyFloatField(fieldName), value);
+		return addToDoc(Fields.storedOnlyFloatField(fieldName), value);
 	}
 	
 	public T storedOnlyWithDocValues(String fieldName, Integer value) {
-		return addToDoc(Mappings.storedOnlyIntFieldWithDocValues(fieldName), value);
+		return addToDoc(Fields.storedOnlyIntFieldWithDocValues(fieldName), value);
 	}
 	
 	public T storedOnlyWithDocValues(String fieldName, Long value) {
-		return addToDoc(Mappings.storedOnlyLongFieldWithDocValues(fieldName), value);
+		return addToDoc(Fields.storedOnlyLongFieldWithDocValues(fieldName), value);
 	}
 	
 	public final Document build() {
@@ -218,15 +218,15 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	}
 	
 	public T searchOnlyField(String fieldName, int value) {
-		return addToDoc(Mappings.searchOnlyIntField(fieldName), value);
+		return addToDoc(Fields.searchOnlyIntField(fieldName), value);
 	}
 
 	public T searchOnlyField(String fieldName, long value) {
-		return addToDoc(Mappings.searchOnlyLongField(fieldName), value);
+		return addToDoc(Fields.searchOnlyLongField(fieldName), value);
 	}
 
 	public T searchOnlyField(String fieldName, String value) {
-		return addToDoc(Mappings.searchOnlyStringField(fieldName), value);
+		return addToDoc(Fields.searchOnlyStringField(fieldName), value);
 	}
 	
 	protected abstract T getSelf();

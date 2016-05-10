@@ -32,31 +32,31 @@ public class FieldsToLoadBuilderBase<T extends FieldsToLoadBuilderBase<T>> {
 	}
 	
 	public T id() {
-		return field(Mappings.id());
+		return field(Fields.id());
 	}
 	
 	public T type() {
-		return field(Mappings.type());
+		return field(Fields.type());
 	}
 	
 	public T parent() {
-		return field(Mappings.parent());
+		return field(Fields.parent());
 	}
 	
 	public T ancestor() {
-		return field(Mappings.ancestor());
+		return field(Fields.ancestor());
 	}
 
 	public T storageKey() {
-		return field(Mappings.storageKey());
+		return field(Fields.storageKey());
 	}
 	
 	public T label() {
-		return field(Mappings.label());
+		return field(Fields.label());
 	}
 	
 	public T iconId() {
-		return field(Mappings.iconId());
+		return field(Fields.iconId());
 	}
 	
 	public final T field(IndexField<?> field) {

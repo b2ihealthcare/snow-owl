@@ -50,11 +50,11 @@ public class QueryBuilderBase<Q extends QueryBuilderBase<Q>> {
 	}
 	
 	public Q id(String value) {
-		return addToQuery(Mappings.id(), value);
+		return addToQuery(Fields.id(), value);
 	}
 	
 	public Q type(int value) {
-		return addToQuery(Mappings.type(), value);
+		return addToQuery(Fields.type(), value);
 	}
 	
 	public Q type(short value) {
@@ -62,31 +62,31 @@ public class QueryBuilderBase<Q extends QueryBuilderBase<Q>> {
 	}
 	
 	public Q ancestor(String value) {
-		return addToQuery(Mappings.ancestor(), value);
+		return addToQuery(Fields.ancestor(), value);
 	}
 	
 	public Q parent(String value) {
-		return addToQuery(Mappings.parent(), value);
+		return addToQuery(Fields.parent(), value);
 	}
 	
 	public Q storageKey(Long value) {
-		return addToQuery(Mappings.storageKey(), value);
+		return addToQuery(Fields.storageKey(), value);
 	}
 	
 	public Q field(String fieldName, String value) {
-		return addToQuery(Mappings.stringField(fieldName), value);
+		return addToQuery(Fields.stringField(fieldName), value);
 	}
 	
 	public Q field(String fieldName, Long value) {
-		return addToQuery(Mappings.longField(fieldName), value);
+		return addToQuery(Fields.longField(fieldName), value);
 	}
 	
 	public Q field(String fieldName, Integer value) {
-		return addToQuery(Mappings.intField(fieldName), value);
+		return addToQuery(Fields.intField(fieldName), value);
 	}
 	
 	public Q field(String fieldName, boolean value) {
-		return addToQuery(Mappings.boolField(fieldName), value);
+		return addToQuery(Fields.boolField(fieldName), value);
 	}
 	
 	public Query matchAll() {

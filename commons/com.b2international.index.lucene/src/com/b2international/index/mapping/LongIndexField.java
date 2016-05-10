@@ -115,7 +115,7 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	/**
 	 * @param value
 	 * @return
-	 * @deprecated - if possible don't use this API, use {@link Mappings} or {@link #LongIndexField(String) constructor} instead
+	 * @deprecated - if possible don't use this API, use {@link Fields} or {@link #LongIndexField(String) constructor} instead
 	 */
 	public static BytesRef _toBytesRef(Long value) {
 		final BytesRef bytesRef = new BytesRef();

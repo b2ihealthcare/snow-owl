@@ -24,7 +24,7 @@ import com.google.common.base.Predicates;
 /**
  * @since 4.3
  */
-public class Mappings {
+public class Fields {
 	
 	public static final String ROOT_ID_STRING = "ROOT";
 
@@ -186,11 +186,11 @@ public class Mappings {
 	}
 	
 	public static NumericDocValuesIndexField<Integer> storedOnlyIntFieldWithDocValues(String fieldName) {
-		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyIntField(fieldName));
+		return new StoredOnlyDocValuesLongIndexField<>(Fields.storedOnlyIntField(fieldName));
 	}
 
 	public static NumericDocValuesIndexField<Long> storedOnlyLongFieldWithDocValues(String fieldName) {
-		return new StoredOnlyDocValuesLongIndexField<>(Mappings.storedOnlyLongField(fieldName));
+		return new StoredOnlyDocValuesLongIndexField<>(Fields.storedOnlyLongField(fieldName));
 	}
 	
 	public static BinaryDocValuesIndexField stringDocValuesField(String fieldName) {

@@ -68,7 +68,7 @@ public class IntIndexField extends IndexFieldBase<Integer> {
 	/**
 	 * @param value
 	 * @return
-	 * @deprecated - if possible don't use this API, use {@link Mappings} or {@link #IntIndexField(String) constructor} instead.
+	 * @deprecated - if possible don't use this API, use {@link Fields} or {@link #IntIndexField(String) constructor} instead.
 	 */
 	public static BytesRef _toBytesRef(Integer value) {
 		final BytesRef bytesRef = new BytesRef();

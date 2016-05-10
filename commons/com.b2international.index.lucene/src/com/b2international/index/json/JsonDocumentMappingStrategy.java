@@ -26,7 +26,7 @@ import org.apache.lucene.document.StoredField;
 import com.b2international.index.Analyzed;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.IndexField;
-import com.b2international.index.mapping.Mappings;
+import com.b2international.index.mapping.Fields;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,7 +57,7 @@ public class JsonDocumentMappingStrategy {
 			}
 			final Object value = Reflections.getValue(object, field);
 			final IndexField indexField = getIndexField(field);
-			if (Mappings.none() != indexField) {
+			if (Fields.none() != indexField) {
 				if (value instanceof Iterable) {
 					for (Object item : (Iterable<?>) value) {
 						indexField.addTo(doc, item);
@@ -75,21 +75,21 @@ public class JsonDocumentMappingStrategy {
 		final String fieldName = field.getName();
 		final boolean analyzed = field.isAnnotationPresent(Analyzed.class);
 		if (fieldType == String.class) {
-			return analyzed ? Mappings.textField(fieldName) : Mappings.stringField(fieldName);
+			return analyzed ? Fields.textField(fieldName) : Fields.stringField(fieldName);
 		} else if (fieldType == Boolean.class || fieldType == boolean.class) {
-			return Mappings.boolField(fieldName);
+			return Fields.boolField(fieldName);
 		} else if (fieldType == Integer.class || fieldType == int.class) {
-			return Mappings.intField(fieldName);
+			return Fields.intField(fieldName);
 		} else if (fieldType == Float.class || fieldType == float.class) {
-			return Mappings.floatField(fieldName);
+			return Fields.floatField(fieldName);
 		} else if (fieldType == Long.class || fieldType == long.class) {
-			return Mappings.longField(fieldName);
+			return Fields.longField(fieldName);
 		} else if (fieldType.isArray()) {
 			throw new UnsupportedOperationException("Arrays are not supported: " + field);
 		} else if (fieldType.isEnum()) {
 			throw new UnsupportedOperationException("Enums are not supported: " + field);
 		} else {
-			return Mappings.none();
+			return Fields.none();
 		}
 	}
 

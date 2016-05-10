@@ -35,7 +35,7 @@ import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.Mappings;
+import com.b2international.index.mapping.Fields;
 import com.b2international.index.util.Reflections;
 import com.google.common.collect.Queues;
 
@@ -205,12 +205,12 @@ public final class LuceneQueryBuilder {
 //	}
 
 	private void visit(StringPredicate predicate) {
-		final Filter filter = Mappings.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
 		deque.push(new DequeItem(filter));
 	}
 	
 	private void visit(LongPredicate predicate) {
-		final Filter filter = Mappings.longField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Filter filter = Fields.longField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
 		deque.push(new DequeItem(filter));
 	}
 	
@@ -241,7 +241,7 @@ public final class LuceneQueryBuilder {
 				filter.add(right.getFilter(), Occur.MUST);
 				deque.push(new DequeItem(filter));
 			} else {
-				final Query query = Mappings.newQuery().and(left.toQuery()).and(right.toQuery()).matchAll();
+				final Query query = Fields.newQuery().and(left.toQuery()).and(right.toQuery()).matchAll();
 				deque.push(new DequeItem(query));
 			}
 		} else if (deque.size() >= 1) {
@@ -297,7 +297,7 @@ public final class LuceneQueryBuilder {
 				filter.add(right.getFilter(), Occur.SHOULD);
 				deque.push(new DequeItem(filter));
 			} else {
-				final Query query = Mappings.newQuery().and(left.toQuery()).and(right.toQuery()).matchAny();
+				final Query query = Fields.newQuery().and(left.toQuery()).and(right.toQuery()).matchAny();
 				deque.push(new DequeItem(query));
 			}
 		} else if (deque.size() >= 1) {

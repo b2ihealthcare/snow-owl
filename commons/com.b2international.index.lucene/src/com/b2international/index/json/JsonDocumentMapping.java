@@ -22,7 +22,7 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.IndexField;
-import com.b2international.index.mapping.Mappings;
+import com.b2international.index.mapping.Fields;
 
 /**
  * @since 4.7
@@ -31,19 +31,19 @@ public class JsonDocumentMapping {
 
 	public static Query matchIdAndType(Class<?> type, String key) {
 		final String docType = DocumentMapping.getType(type);
-		return Mappings.newQuery().and(_id().toQuery(key)).and(_type().toQuery(docType)).matchAll();
+		return Fields.newQuery().and(_id().toQuery(key)).and(_type().toQuery(docType)).matchAll();
 	}
 	
 	public static IndexField<String> _id() {
-		return Mappings.stringField(DocumentMapping._ID);
+		return Fields.stringField(DocumentMapping._ID);
 	}
 	
 	public static IndexField<String> _uid() {
-		return Mappings.stringField(DocumentMapping._UID);
+		return Fields.stringField(DocumentMapping._UID);
 	}
 
 	public static IndexField<String> _type() {
-		return Mappings.stringField(DocumentMapping._TYPE);
+		return Fields.stringField(DocumentMapping._TYPE);
 	}
 
 	public static Filter filterByType(Class<?> type) {
