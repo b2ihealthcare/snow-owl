@@ -26,6 +26,7 @@ import java.util.UUID;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.util.Reflections;
 
 /**
@@ -59,7 +60,7 @@ class Index implements Operation {
 			// skip static fields
 			if (Modifier.isStatic(field.getModifiers())) continue;
 			final Class<?> fieldType = Reflections.getType(field);
-			if (JsonDocumentMapping.isNestedDoc(fieldType)) {
+			if (DocumentMapping.isNestedDoc(fieldType)) {
 				final Object fieldValue = Reflections.getValue(object, field);
 				if (fieldValue instanceof Iterable) {
 					for (Object item : (Iterable<?>) fieldValue) {

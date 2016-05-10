@@ -15,19 +15,14 @@
  */
 package com.b2international.index.json;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Collections;
 
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 
-import com.b2international.index.Doc;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.IndexField;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
-import com.google.common.base.Strings;
 
 /**
  * @since 4.7
@@ -35,52 +30,24 @@ import com.google.common.base.Strings;
 public class JsonDocumentMapping {
 
 	public static Query matchIdAndType(Class<?> type, String key) {
-		final String docType = getType(type);
+		final String docType = DocumentMapping.getType(type);
 		return Mappings.newQuery().and(_id().toQuery(key)).and(_type().toQuery(docType)).matchAll();
 	}
 	
 	public static IndexField<String> _id() {
-		return Mappings.stringField("_id");
+		return Mappings.stringField(DocumentMapping._ID);
 	}
 	
 	public static IndexField<String> _uid() {
-		return Mappings.stringField("_uid");
+		return Mappings.stringField(DocumentMapping._UID);
 	}
 
 	public static IndexField<String> _type() {
-		return Mappings.stringField("_type");
-	}
-
-	public static String getType(Object object) {
-		return getType(object.getClass());
-	}
-	
-	public static String getType(Class<?> type) {
-		checkArgument(type.isAnnotationPresent(Doc.class), "Doc annotation must be present on types need to be indexed as separated documents");
-		final Doc annotation = type.getAnnotation(Doc.class);
-		final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
-		checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
-		return docType;
+		return Mappings.stringField(DocumentMapping._TYPE);
 	}
 
 	public static Filter filterByType(Class<?> type) {
-		return _type().createTermsFilter(Collections.singleton(getType(type)));
-	}
-
-	public static boolean isNestedDoc(Class<?> fieldType) {
-		return fieldType.isAnnotationPresent(Doc.class) && fieldType.getAnnotation(Doc.class).nested();
-	}
-
-	public static Expression matchType(Class<?> type) {
-		return Expressions.exactMatch(_type().fieldName(), getType(type));
-	}
-
-	public static Expression matchId(String id) {
-		return Expressions.exactMatch(_id().fieldName(), id);
-	}
-	
-	public static String toUid(Class<?> type, String key) {
-		return String.format("%s#%s", getType(type), key);
+		return _type().createTermsFilter(Collections.singleton(DocumentMapping.getType(type)));
 	}
 
 }

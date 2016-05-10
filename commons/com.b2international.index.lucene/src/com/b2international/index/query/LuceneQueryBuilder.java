@@ -34,6 +34,7 @@ import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.json.JsonDocumentMapping;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.Reflections;
 import com.google.common.collect.Queues;
@@ -103,7 +104,7 @@ public final class LuceneQueryBuilder {
 	public org.apache.lucene.search.Query build(Expression expression) {
 		checkNotNull(expression, "expression");
 		// always filter by type
-		traversePostOrder(Expressions.and(JsonDocumentMapping.matchType(type), expression));
+		traversePostOrder(Expressions.and(DocumentMapping.matchType(type), expression));
 		if (deque.size() == 1) {
 			return deque.pop().toQuery();
 		} else {

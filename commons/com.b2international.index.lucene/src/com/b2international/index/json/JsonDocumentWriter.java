@@ -32,6 +32,7 @@ import org.apache.lucene.search.ReferenceManager;
 
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
+import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -81,7 +82,7 @@ public class JsonDocumentWriter implements Writer {
 		for (Entry<String, Object> entry : objectsByKey.entrySet()) {
 			final String key = entry.getKey();
 			final Object doc = entry.getValue();
-			final String uid = JsonDocumentMapping.toUid(doc.getClass(), key);
+			final String uid = DocumentMapping.toUid(doc.getClass(), key);
 			operations.add(new Index(uid, key, doc, mappingStrategy));
 		}
 	}
@@ -99,7 +100,7 @@ public class JsonDocumentWriter implements Writer {
 			final Class<?> type = entry.getKey();
 			final Set<String> keys = entry.getValue();
 			for (String key : keys) {
-				deleteQuery.add(JsonDocumentMapping._uid().toQuery(JsonDocumentMapping.toUid(type, key)), Occur.SHOULD);
+				deleteQuery.add(JsonDocumentMapping._uid().toQuery(DocumentMapping.toUid(type, key)), Occur.SHOULD);
 			}
 		}
 		this.operations.add(new DeleteByQuery(deleteQuery));

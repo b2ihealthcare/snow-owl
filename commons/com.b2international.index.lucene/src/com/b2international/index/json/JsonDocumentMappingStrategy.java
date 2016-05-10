@@ -24,6 +24,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.IndexField;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.Reflections;
@@ -44,7 +45,7 @@ public class JsonDocumentMappingStrategy {
 		final Document doc = new Document();
 		// metadata fields
 		JsonDocumentMapping._id().addTo(doc, key);
-		JsonDocumentMapping._type().addTo(doc, JsonDocumentMapping.getType(object));
+		JsonDocumentMapping._type().addTo(doc, DocumentMapping.getType(object));
 		JsonDocumentMapping._uid().addTo(doc, uid);
 		// TODO create byte fields
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
