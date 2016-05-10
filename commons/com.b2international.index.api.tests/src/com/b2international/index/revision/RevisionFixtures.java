@@ -35,8 +35,8 @@ public class RevisionFixtures {
 	@Doc
 	public static class Data extends Revision {
 		
-		String field1;
-		String field2;
+		private String field1;
+		private String field2;
 
 		@JsonCreator
 		public Data(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2) {
@@ -56,6 +56,35 @@ public class RevisionFixtures {
 		@Override
 		public int hashCode() {
 			return Objects.hash(field1, field2);
+		}
+		
+	}
+	
+	@Doc
+	public static class NestedData extends Revision {
+		
+		private String field1;
+		// using unversioned data not the revision based one here
+		private com.b2international.index.Fixtures.Data data;
+		
+		@JsonCreator
+		public NestedData(@JsonProperty("field1") String field1, @JsonProperty("data") com.b2international.index.Fixtures.Data data) {
+			this.field1 = field1;
+			this.data = data;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			NestedData other = (NestedData) obj;
+			return Objects.equals(field1, other.field1) && Objects.equals(data, other.data); 
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field1, data);
 		}
 		
 	}

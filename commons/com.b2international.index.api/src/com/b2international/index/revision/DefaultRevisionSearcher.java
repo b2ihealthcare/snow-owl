@@ -43,14 +43,17 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 
 	@Override
 	public <T> Iterable<T> search(Query<T> query) throws IOException {
-		final Query<T> revisionQuery = Query
-			.builder(query.getType())
-			.select(query.getSelect())
-			.where(Expressions.and(query.getWhere(), Revision.branchFilter(branch)))
-			.sortBy(query.getSortBy())
-			.limit(query.getLimit())
-			.offset(query.getOffset()).build();
-		return searcher.search(revisionQuery);
+		if (Revision.class.isAssignableFrom(query.getType())) {
+			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
+			query = Query
+					.builder(query.getType())
+					.select(query.getSelect())
+					.where(Expressions.and(query.getWhere(), Revision.branchFilter(branch)))
+					.sortBy(query.getSortBy())
+					.limit(query.getLimit())
+					.offset(query.getOffset()).build();
+		}
+		return searcher.search(query);
 	}
 
 }

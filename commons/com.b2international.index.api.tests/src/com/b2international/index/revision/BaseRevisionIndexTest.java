@@ -27,7 +27,6 @@ import org.junit.Before;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.IndexClient;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionFixtures.Data;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,7 +86,7 @@ public abstract class BaseRevisionIndexTest {
 		});
 	}
 	
-	protected final void indexRevision(final String branchPath, final long storageKey, final Data data) {
+	protected final void indexRevision(final String branchPath, final long storageKey, final Revision data) {
 		final long commitTimestamp = nextCommitTimestamp();
 		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
 			@Override
@@ -113,7 +112,7 @@ public abstract class BaseRevisionIndexTest {
 		});
 	}
 	
-	protected final <T extends Revision> Iterable<T> search(final String branchPath, final Query<T> query) {
+	protected final <T> Iterable<T> search(final String branchPath, final Query<T> query) {
 		return index().read(branchPath, new RevisionIndexRead<Iterable<T>>() {
 			@Override
 			public Iterable<T> execute(RevisionSearcher index) throws IOException {
