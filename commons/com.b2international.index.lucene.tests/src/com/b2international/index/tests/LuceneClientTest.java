@@ -30,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.b2international.index.FSIndexAdmin;
 import com.b2international.index.IndexClient;
-import com.b2international.index.LuceneClient;
+import com.b2international.index.LuceneIndexClient;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.json.JsonDocumentMapping;
@@ -62,7 +62,7 @@ public class LuceneClientTest {
 	public void givenClient() {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		client = new LuceneClient(new FSIndexAdmin(folder.getRoot(), UUID.randomUUID().toString()), mapper);
+		client = new LuceneIndexClient(new FSIndexAdmin(folder.getRoot(), UUID.randomUUID().toString()), mapper);
 		client.admin().create();
 	}
 	

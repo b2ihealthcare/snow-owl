@@ -33,7 +33,7 @@ import org.junit.rules.TemporaryFolder;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.FSIndexAdmin;
 import com.b2international.index.IndexClient;
-import com.b2international.index.LuceneClient;
+import com.b2international.index.LuceneIndexClient;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.Data;
@@ -64,7 +64,7 @@ public class RevisionIndexTest {
 		
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		client = new LuceneClient(new FSIndexAdmin(folder.getRoot(), UUID.randomUUID().toString()), mapper);
+		client = new LuceneIndexClient(new FSIndexAdmin(folder.getRoot(), UUID.randomUUID().toString()), mapper);
 		index = new DefaultRevisionIndex(new DefaultIndex(client), new RevisionBranchProvider() {
 			@Override
 			public RevisionBranch getBranch(String branchPath) {

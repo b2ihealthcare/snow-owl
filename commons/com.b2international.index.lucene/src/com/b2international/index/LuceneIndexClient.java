@@ -23,13 +23,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 4.7
  */
-public final class LuceneClient implements IndexClient {
+public final class LuceneIndexClient implements IndexClient {
 
 	private final LuceneIndexAdmin admin;
 	// TODO move mapper to factory
 	private final ObjectMapper mapper;
 
-	public LuceneClient(LuceneIndexAdmin admin, ObjectMapper mapper) {
+	public LuceneIndexClient(LuceneIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
 	}
