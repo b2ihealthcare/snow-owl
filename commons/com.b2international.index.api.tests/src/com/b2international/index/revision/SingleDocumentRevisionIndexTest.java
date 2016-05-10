@@ -18,9 +18,8 @@ package com.b2international.index.revision;
 import static com.b2international.index.revision.RevisionFixtures.STORAGE_KEY1;
 import static com.b2international.index.revision.RevisionFixtures.STORAGE_KEY2;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
 
 import org.junit.Test;
 
@@ -30,39 +29,41 @@ import com.b2international.index.revision.RevisionFixtures.Data;
 
 public abstract class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
+	private final String branchPath = RevisionBranch.MAIN_PATH;
+	
 	@Test
 	public void searchEmptyIndexShouldReturnNullRevision() throws Exception {
-		final Data revision = index().read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<Data>() {
-			@Override
-			public Data execute(RevisionSearcher index) throws IOException {
-				return index.get(Data.class, STORAGE_KEY1);
-			}
-		});
-		
+		final Data revision = getDocument(branchPath, Data.class, STORAGE_KEY1);
 		assertNull(revision);
 	}
 	
 	@Test
 	public void indexRevision() throws Exception {
-		indexRevision(STORAGE_KEY1, new Data("field1", "field2"));
+		final Data data = new Data("field1", "field2");
+		indexRevision(branchPath, STORAGE_KEY1, data);
+		assertEquals(data, getDocument(branchPath, Data.class, STORAGE_KEY1));
 	}
 
 	@Test
-	public void indexTwoRevisions() throws Exception {
+	public void updateRevisions() throws Exception {
 		indexRevision();
-		indexRevision(STORAGE_KEY1, new Data("field1Changed", "field2Changed"));
+		final Data data = new Data("field1Changed", "field2Changed");
+		indexRevision(branchPath, STORAGE_KEY1, data);
+		assertEquals(data, getDocument(branchPath, Data.class, STORAGE_KEY1));
 	}
 
 	@Test
 	public void deleteRevision() throws Exception {
 		indexRevision();
-		deleteRevision(STORAGE_KEY1);
+		deleteRevision(branchPath, Data.class, STORAGE_KEY1);
+		assertNull(getDocument(branchPath, Data.class, STORAGE_KEY1));
 	}
 	
 	@Test
 	public void updateThenDeleteRevision() throws Exception {
-		indexTwoRevisions();
-		deleteRevision(STORAGE_KEY1);
+		updateRevisions();
+		deleteRevision(branchPath, Data.class, STORAGE_KEY1);
+		assertNull(getDocument(branchPath, Data.class, STORAGE_KEY1));
 	}
 	
 	@Test
@@ -70,16 +71,11 @@ public abstract class SingleDocumentRevisionIndexTest extends BaseRevisionIndexT
 		final Data first = new Data("field1", "field2");
 		final Data second = new Data("field1Changed", "field2");
 		
-		indexRevision(STORAGE_KEY1, first);
-		indexRevision(STORAGE_KEY2, second);
+		indexRevision(branchPath, STORAGE_KEY1, first);
+		indexRevision(branchPath, STORAGE_KEY2, second);
 		
-		final Iterable<Data> matches = index().read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<Iterable<Data>>() {
-			@Override
-			public Iterable<Data> execute(RevisionSearcher index) throws IOException {
-				final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
-				return index.search(query);
-			}
-		});
+		final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+		final Iterable<Data> matches = search(branchPath, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(first);
 	}
@@ -89,16 +85,11 @@ public abstract class SingleDocumentRevisionIndexTest extends BaseRevisionIndexT
 		final Data first = new Data("field1", "field2");
 		final Data second = new Data("field1", "field2Changed");
 		
-		indexRevision(STORAGE_KEY1, first);
-		indexRevision(STORAGE_KEY1, second);
+		indexRevision(branchPath, STORAGE_KEY1, first);
+		indexRevision(branchPath, STORAGE_KEY1, second);
 		
-		final Iterable<Data> matches = index().read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<Iterable<Data>>() {
-			@Override
-			public Iterable<Data> execute(RevisionSearcher index) throws IOException {
-				final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
-				return index.search(query);
-			}
-		});
+		final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+		final Iterable<Data> matches = search(branchPath, query);
 		// only second version should match, the first revision should be unaccessible without timestamp
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(second);

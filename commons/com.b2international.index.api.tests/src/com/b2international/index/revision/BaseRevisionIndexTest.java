@@ -16,8 +16,6 @@
 package com.b2international.index.revision;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.Map;
@@ -28,9 +26,10 @@ import org.junit.Before;
 
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.IndexClient;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.Data;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -79,9 +78,17 @@ public abstract class BaseRevisionIndexTest {
 	
 	protected abstract IndexClient createIndexClient(ObjectMapper mapper);
 	
-	protected final void indexRevision(final long storageKey, final Data data) {
-		final String branchPath = RevisionBranch.MAIN_PATH;
-		final long commitTimestamp = clock.incrementAndGet();
+	protected final <T extends Revision> T getDocument(final String branch, final Class<T> type, final long storageKey) {
+		return index().read(branch, new RevisionIndexRead<T>() {
+			@Override
+			public T execute(RevisionSearcher index) throws IOException {
+				return index.get(type, storageKey);
+			}
+		});
+	}
+	
+	protected final void indexRevision(final String branchPath, final long storageKey, final Data data) {
+		final long commitTimestamp = nextCommitTimestamp();
 		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(RevisionWriter index) throws IOException {
@@ -91,38 +98,28 @@ public abstract class BaseRevisionIndexTest {
 				return null;
 			}
 		});
-		
-		final Data actual = index().read(branchPath, new RevisionIndexRead<Data>() {
-			@Override
-			public Data execute(RevisionSearcher index) throws IOException {
-				return index.get(Data.class, storageKey);
-			}
-		});
-		
-		assertEquals(data, actual);
 	}
 	
-	protected final void deleteRevision(final long storageKey) {
-		final String branchPath = RevisionBranch.MAIN_PATH;
-		final long commitTimestamp = clock.incrementAndGet();
-		index.write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
+	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final long storageKey) {
+		final long commitTimestamp = nextCommitTimestamp();
+		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(RevisionWriter index) throws IOException {
-				index.remove(Data.class, storageKey);
+				index.remove(type, storageKey);
 				index.commit();
 				commitBranch(branchPath, commitTimestamp);
 				return null;
 			}
 		});
-		
-		final Data revision = index.read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<Data>() {
+	}
+	
+	protected final <T extends Revision> Iterable<T> search(final String branchPath, final Query<T> query) {
+		return index().read(branchPath, new RevisionIndexRead<Iterable<T>>() {
 			@Override
-			public Data execute(RevisionSearcher index) throws IOException {
-				return index.get(Data.class, storageKey);
+			public Iterable<T> execute(RevisionSearcher index) throws IOException {
+				return index.search(query);
 			}
 		});
-		
-		assertNull(revision);		
-	}
+	} 
 	
 }
