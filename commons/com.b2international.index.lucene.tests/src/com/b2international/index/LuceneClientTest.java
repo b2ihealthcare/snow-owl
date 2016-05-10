@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.tests;
+package com.b2international.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -33,14 +33,14 @@ import com.b2international.index.IndexClient;
 import com.b2international.index.LuceneIndexClient;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
+import com.b2international.index.Fixtures.Data;
+import com.b2international.index.Fixtures.DeepData;
+import com.b2international.index.Fixtures.MultipleNestedData;
+import com.b2international.index.Fixtures.NestedData;
+import com.b2international.index.Fixtures.ParentData;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.tests.Fixtures.Data;
-import com.b2international.index.tests.Fixtures.DeepData;
-import com.b2international.index.tests.Fixtures.MultipleNestedData;
-import com.b2international.index.tests.Fixtures.NestedData;
-import com.b2international.index.tests.Fixtures.ParentData;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;

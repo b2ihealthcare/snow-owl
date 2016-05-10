@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.tests;
+package com.b2international.index;
 
 import static org.junit.Assert.*;
 
