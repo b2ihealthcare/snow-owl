@@ -13,4 +13,5 @@ Export-Package: com.b2international.index,
  com.b2international.index.admin,
  com.b2international.index.mapping,
  com.b2international.index.query,
- com.b2international.index.revision
+ com.b2international.index.revision,
+ com.b2international.index.util
