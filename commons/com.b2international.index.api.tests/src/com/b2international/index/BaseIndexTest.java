@@ -15,10 +15,14 @@
  */
 package com.b2international.index;
 
+import java.io.IOException;
+
+import org.junit.After;
 import org.junit.Before;
 
-import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -27,18 +31,70 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class BaseIndexTest {
 
 	private Index index;
+	private IndexClient client;
 	
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		index = new DefaultIndex(createIndexClient(mapper));
+		client = createIndexClient(mapper);
+		index = new DefaultIndex(client);
+		index.admin().create();
+	}
+	
+	@After
+	public void teardown() {
+		index.admin().delete();
 	}
 
 	protected abstract IndexClient createIndexClient(ObjectMapper mapper);
 	
 	protected final Index index() {
 		return index;
+	}
+	
+	protected final IndexClient client() {
+		return client;
+	}
+	
+	protected final <T> T getDocument(final Class<T> type, final String key) {
+		return index().read(new IndexRead<T>() {
+			@Override
+			public T execute(Searcher index) throws IOException {
+				return index.get(type, key);
+			}
+		});
+	}
+	
+	protected final void indexDocument(final String key, final Object doc) {
+		index().write(new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.put(key, doc);
+				index.commit();
+				return null;
+			}
+		});
+	}
+	
+	protected final <T> Iterable<T> search(final Query<T> query) {
+		return index().read(new IndexRead<Iterable<T>>() {
+			@Override
+			public Iterable<T> execute(Searcher index) throws IOException {
+				return index.search(query);
+			}
+		});
+	}
+	
+	protected final void deleteDocument(final Class<?> type, final String key) {
+		index().write(new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.remove(type, key);
+				index.commit();
+				return null;
+			}
+		});
 	}
 	
 }

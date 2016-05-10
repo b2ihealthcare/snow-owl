@@ -29,10 +29,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Fixtures {
 
+	public static final String KEY = "key";
+	public static final String KEY2 = "key2";
+	
 	@Doc
 	public static class Data {
-		String field1 = "field1";
-		String field2 = "field2";
+		
+		private String field1;
+		private String field2;
+
+		public Data() {
+			this("field1", "field2");
+		}
+		
+		@JsonCreator
+		public Data(@JsonProperty("field1") String field1, @JsonProperty("field2") String field2) {
+			this.field1 = field1;
+			this.field2 = field2;
+		}
 
 		@Override
 		public boolean equals(Object obj) {
