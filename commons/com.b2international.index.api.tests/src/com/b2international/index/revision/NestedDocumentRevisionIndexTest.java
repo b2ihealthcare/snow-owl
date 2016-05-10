@@ -19,12 +19,15 @@ import static com.b2international.index.revision.RevisionFixtures.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collection;
+
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.NestedData;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
@@ -32,6 +35,11 @@ import com.b2international.index.revision.RevisionFixtures.NestedData;
 public abstract class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	private final String branchPath = RevisionBranch.MAIN_PATH;
+	
+	@Override
+	protected Collection<Class<?>> getTypes() {
+		return ImmutableList.<Class<?>>of(NestedData.class);
+	}
 	
 	@Test
 	public void indexNestedDocument() throws Exception {

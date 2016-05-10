@@ -27,9 +27,8 @@ public class DeleteByQuery implements Operation {
 
 	private final Query query;
 
-	public DeleteByQuery(Query query) {
+	DeleteByQuery(Query query) {
 		this.query = query;
-		
 	}
 	
 	@Override

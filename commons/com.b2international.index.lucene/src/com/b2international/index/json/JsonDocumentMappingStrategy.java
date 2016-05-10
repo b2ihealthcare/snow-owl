@@ -25,8 +25,8 @@ import org.apache.lucene.document.StoredField;
 
 import com.b2international.index.Analyzed;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.IndexField;
 import com.b2international.index.mapping.Fields;
+import com.b2international.index.mapping.IndexField;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,7 +41,7 @@ public class JsonDocumentMappingStrategy {
 		this.mapper = checkNotNull(mapper, "mapper");
 	}
 	
-	Document map(String uid, String key, Object object) throws IOException {
+	Document map(String uid, String key, Object object, DocumentMapping mapping) throws IOException {
 		final Document doc = new Document();
 		// metadata fields
 		JsonDocumentMapping._id().addTo(doc, key);
@@ -50,7 +50,7 @@ public class JsonDocumentMappingStrategy {
 		// TODO create byte fields
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
 		// add all other fields
-		for (Field field : Reflections.getFields(object.getClass())) {
+		for (Field field : mapping.getFields()) {
 			if (JsonDocumentMapping._id().fieldName().equals(field.getName())) {
 				// skip _id field we add that manually
 				continue;

@@ -33,6 +33,7 @@ import org.apache.lucene.search.ReferenceManager;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -42,13 +43,15 @@ public class JsonDocumentWriter implements Writer {
 
 	private final IndexWriter writer;
 	private final ReferenceManager<IndexSearcher> searchers;
-	private final JsonDocumentMappingStrategy mappingStrategy;
 	private final Collection<Operation> operations = newArrayList();
 	private final JsonDocumentSearcher searcher;
+	private final Mappings mappings;
+	private final JsonDocumentMappingStrategy mappingStrategy;
 
-	public JsonDocumentWriter(IndexWriter writer, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper) {
+	public JsonDocumentWriter(IndexWriter writer, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper, Mappings mappings) {
 		this.writer = writer;
 		this.searchers = searchers;
+		this.mappings = mappings;
 		this.searcher = new JsonDocumentSearcher(searchers, mapper);
 		this.mappingStrategy = new JsonDocumentMappingStrategy(mapper);
 	}
@@ -61,6 +64,7 @@ public class JsonDocumentWriter implements Writer {
 	@Override
 	public void close() throws Exception {
 		this.operations.clear();
+		this.searcher.close();
 	}
 	
 	@Override
@@ -83,7 +87,7 @@ public class JsonDocumentWriter implements Writer {
 			final String key = entry.getKey();
 			final Object doc = entry.getValue();
 			final String uid = DocumentMapping.toUid(doc.getClass(), key);
-			operations.add(new Index(uid, key, doc, mappingStrategy));
+			operations.add(new Index(uid, key, doc, mappingStrategy, mappings.getMapping(doc.getClass())));
 		}
 	}
 	

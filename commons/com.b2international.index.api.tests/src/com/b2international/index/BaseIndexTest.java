@@ -16,10 +16,12 @@
 package com.b2international.index;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;
 
+import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -32,12 +34,14 @@ public abstract class BaseIndexTest {
 
 	private Index index;
 	private IndexClient client;
+	private Mappings mappings;
 	
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		client = createIndexClient(mapper);
+		mappings = new Mappings(getTypes());
+		client = createIndexClient(mapper, mappings);
 		index = new DefaultIndex(client);
 		index.admin().create();
 	}
@@ -46,8 +50,14 @@ public abstract class BaseIndexTest {
 	public void teardown() {
 		index.admin().delete();
 	}
+	
+	/**
+	 * Returns the document types used by this test case.
+	 * @return
+	 */
+	protected abstract Collection<Class<?>> getTypes();
 
-	protected abstract IndexClient createIndexClient(ObjectMapper mapper);
+	protected abstract IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings);
 	
 	protected final Index index() {
 		return index;

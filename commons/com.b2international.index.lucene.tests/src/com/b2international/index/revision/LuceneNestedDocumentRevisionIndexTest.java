@@ -23,6 +23,7 @@ import org.junit.rules.TemporaryFolder;
 import com.b2international.index.FSIndexAdmin;
 import com.b2international.index.IndexClient;
 import com.b2international.index.LuceneIndexClient;
+import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -34,8 +35,8 @@ public class LuceneNestedDocumentRevisionIndexTest extends NestedDocumentRevisio
 	public TemporaryFolder folder = new TemporaryFolder();
 
 	@Override
-	protected IndexClient createIndexClient(ObjectMapper mapper) {
-		return new LuceneIndexClient(new FSIndexAdmin(folder.getRoot(), UUID.randomUUID().toString()), mapper);
+	protected IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings) {
+		return new LuceneIndexClient(new FSIndexAdmin(folder.getRoot(), UUID.randomUUID().toString()), mapper, mappings);
 	}
 
 }

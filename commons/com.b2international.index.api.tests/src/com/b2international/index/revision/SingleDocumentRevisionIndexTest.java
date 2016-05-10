@@ -21,15 +21,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.Collection;
+
 import org.junit.Test;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.Data;
+import com.google.common.collect.ImmutableList;
 
 public abstract class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	private final String branchPath = RevisionBranch.MAIN_PATH;
+	
+	@Override
+	protected Collection<Class<?>> getTypes() {
+		return ImmutableList.<Class<?>>of(Data.class);
+	}
 	
 	@Test
 	public void searchEmptyIndexShouldReturnNullRevision() throws Exception {

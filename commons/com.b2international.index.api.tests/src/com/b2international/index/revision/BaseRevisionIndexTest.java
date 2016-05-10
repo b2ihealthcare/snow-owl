@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -26,6 +27,7 @@ import org.junit.Before;
 
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.IndexClient;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -36,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class BaseRevisionIndexTest {
 	
+	private Mappings mappings;
 	private RevisionIndex index;
 	private Map<String, RevisionBranch> branches = newHashMap();
 	private AtomicLong clock = new AtomicLong(0L);
@@ -53,7 +56,8 @@ public abstract class BaseRevisionIndexTest {
 		
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		index = new DefaultRevisionIndex(new DefaultIndex(createIndexClient(mapper)), branchProvider);
+		mappings = new Mappings(getTypes());
+		index = new DefaultRevisionIndex(new DefaultIndex(createIndexClient(mapper, mappings)), branchProvider);
 		index.admin().create();
 	}
 
@@ -75,7 +79,13 @@ public abstract class BaseRevisionIndexTest {
 		return index;
 	}
 	
-	protected abstract IndexClient createIndexClient(ObjectMapper mapper);
+	/**
+	 * Returns the document types used by this test case.
+	 * @return
+	 */
+	protected abstract Collection<Class<?>> getTypes();
+	
+	protected abstract IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings);
 	
 	protected final <T extends Revision> T getDocument(final String branch, final Class<T> type, final long storageKey) {
 		return index().read(branch, new RevisionIndexRead<T>() {

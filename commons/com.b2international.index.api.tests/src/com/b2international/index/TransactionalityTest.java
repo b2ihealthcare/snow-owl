@@ -15,20 +15,29 @@
  */
 package com.b2international.index;
 
+import static com.b2international.index.Fixtures.KEY;
+import static com.b2international.index.Fixtures.KEY2;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.junit.Test;
 
-import static com.b2international.index.Fixtures.*;
+import com.b2international.index.Fixtures.Data;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
  */
 public abstract class TransactionalityTest extends BaseIndexTest {
 
+	@Override
+	protected Collection<Class<?>> getTypes() {
+		return ImmutableList.<Class<?>>of(Data.class);
+	}
+	
 	@Test
 	public void uncommittedTransactionShouldNotChangeTheIndex() throws Exception {
 		final Data data = new Data();

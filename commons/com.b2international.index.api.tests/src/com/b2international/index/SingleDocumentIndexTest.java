@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.junit.Test;
 
@@ -29,12 +30,18 @@ import com.b2international.index.Fixtures.Data;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
  */
 public abstract class SingleDocumentIndexTest extends BaseIndexTest {
 
+	@Override
+	protected Collection<Class<?>> getTypes() {
+		return ImmutableList.<Class<?>>of(Data.class);
+	}
+	
 	@Test
 	public void searchEmptyIndexShouldReturnNullDocument() throws Exception {
 		assertNull(getDocument(Data.class, KEY));

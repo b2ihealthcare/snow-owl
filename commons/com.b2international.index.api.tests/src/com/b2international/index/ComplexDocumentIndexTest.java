@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.junit.Test;
 
@@ -30,12 +31,18 @@ import com.b2international.index.Fixtures.NestedData;
 import com.b2international.index.Fixtures.ParentData;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
  */
 public abstract class ComplexDocumentIndexTest extends BaseIndexTest {
 
+	@Override
+	protected final Collection<Class<?>> getTypes() {
+		return ImmutableList.of(DeepData.class, MultipleNestedData.class);
+	}
+	
 	@Test
 	public void indexDeeplyNestedDocument() throws Exception {
 		final DeepData data = new DeepData(new ParentData(new NestedData("field2")));
