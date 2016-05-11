@@ -50,7 +50,7 @@ public final class LuceneIndexClient implements IndexClient {
 	
 	@Override
 	public Searcher searcher() {
-		return new JsonDocumentSearcher(admin.getManager(), mapper);
+		return new JsonDocumentSearcher(admin.getManager(), mapper, mappings);
 	}
 	
 	@Override

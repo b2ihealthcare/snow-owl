@@ -36,7 +36,6 @@ import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Fields;
-import com.b2international.index.util.Reflections;
 import com.google.common.collect.Queues;
 
 /**
@@ -91,10 +90,10 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private final Deque<DequeItem> deque = Queues.newLinkedBlockingDeque();
-	private final Class<?> type;
+	private final DocumentMapping mapping;
 	
-	public LuceneQueryBuilder(Class<?> type) {
-		this.type = type;
+	public LuceneQueryBuilder(DocumentMapping mapping) {
+		this.mapping = checkNotNull(mapping, "mapping");
 	}
 
 	private FormattedRuntimeException newIllegalStateException() {
@@ -104,7 +103,7 @@ public final class LuceneQueryBuilder {
 	public org.apache.lucene.search.Query build(Expression expression) {
 		checkNotNull(expression, "expression");
 		// always filter by type
-		traversePostOrder(Expressions.and(DocumentMapping.matchType(type), expression));
+		traversePostOrder(Expressions.and(mapping.matchType(), expression));
 		if (deque.size() == 1) {
 			return deque.pop().toQuery();
 		} else {
@@ -156,10 +155,11 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(NestedPredicate predicate) {
+		final Class<?> type = mapping.type();
 		final Filter parentFilter = JsonDocumentMapping.filterByType(type);
-		final Class<?> childType = Reflections.getFieldType(type, predicate.getField());
-		final Filter childFilter = JsonDocumentMapping.filterByType(childType);
-		final Query innerQuery = new LuceneQueryBuilder(childType).build(predicate.getExpression());
+		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
+		final Filter childFilter = JsonDocumentMapping.filterByType(nestedMapping.type());
+		final Query innerQuery = new LuceneQueryBuilder(nestedMapping).build(predicate.getExpression());
 		final Query childQuery = new FilteredQuery(innerQuery, childFilter);
 		// TODO scoring???
 		final Query nestedQuery = new ToParentBlockJoinQuery(childQuery, parentFilter, ScoreMode.None);

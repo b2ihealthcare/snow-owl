@@ -20,8 +20,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collection;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.7
@@ -33,14 +35,15 @@ public final class Mappings {
 	public Mappings(Collection<Class<?>> types) {
 		checkArgument(!types.isEmpty(), "At least one document type should be specified");
 		final Builder<Class<?>, DocumentMapping> builder = ImmutableMap.builder();
-		for (Class<?> type : types) {
+		for (Class<?> type : ImmutableSet.copyOf(types)) {
+			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
 			builder.put(type, new DocumentMapping(type));
 		}
 		mappingsByType = builder.build();
 	}
 	
-	public Map<Class<?>, DocumentMapping> getMappings() {
-		return mappingsByType;
+	public Collection<DocumentMapping> getMappings() {
+		return ImmutableList.copyOf(mappingsByType.values());
 	}
 	
 	public DocumentMapping getMapping(Class<?> type) {

@@ -30,6 +30,8 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.LuceneQueryBuilder;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,10 +46,12 @@ public class JsonDocumentSearcher implements Searcher {
 	private final ObjectMapper mapper;
 	private final IndexSearcher searcher;
 	private final ReferenceManager<IndexSearcher> searchers;
+	private final Mappings mappings;
 
-	public JsonDocumentSearcher(ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper) {
+	public JsonDocumentSearcher(ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper, Mappings mappings) {
 		this.searchers = searchers;
 		this.mapper = mapper;
+		this.mappings = mappings;
 		try {
 			searcher = searchers.acquire();
 		} catch (IOException e) {
@@ -113,8 +117,14 @@ public class JsonDocumentSearcher implements Searcher {
 		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
 	}
 
-	private <T> org.apache.lucene.search.Query toLuceneQuery(Class<T> root, Query<T> query) {
-		return new LuceneQueryBuilder(root).build(query.getWhere());
+	private <T> org.apache.lucene.search.Query toLuceneQuery(Class<T> type, Query<T> query) {
+		final DocumentMapping mapping;
+		if (query.getParentType() != null) {
+			mapping = mappings.getMapping(query.getParentType()).getNestedMapping(type);
+		} else {
+			mapping = mappings.getMapping(type);
+		}
+		return new LuceneQueryBuilder(mapping).build(query.getWhere());
 	}
 
 	private static boolean isEmpty(TopDocs docs) {

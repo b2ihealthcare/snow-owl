@@ -52,7 +52,7 @@ public class JsonDocumentWriter implements Writer {
 		this.writer = writer;
 		this.searchers = searchers;
 		this.mappings = mappings;
-		this.searcher = new JsonDocumentSearcher(searchers, mapper);
+		this.searcher = new JsonDocumentSearcher(searchers, mapper, mappings);
 		this.mappingStrategy = new JsonDocumentMappingStrategy(mapper);
 	}
 	

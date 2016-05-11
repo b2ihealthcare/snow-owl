@@ -55,6 +55,7 @@ public final class Query<T> {
 	private Expression where;
 	private SortBy sortBy = SortBy.NONE;
 	private Class<T> type;
+	private Class<?> parentType;
 
 	Query() {}
 
@@ -106,6 +107,14 @@ public final class Query<T> {
 		this.type = type;
 	}
 	
+	public Class<?> getParentType() {
+		return parentType;
+	}
+	
+	void setParentType(Class<?> parentType) {
+		this.parentType = parentType;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -120,8 +129,12 @@ public final class Query<T> {
 		return sb.toString();
 	}
 
-	public static <T> QueryBuilder<T> builder(Class<T> type) {
-		return new DefaultQueryBuilder<T>(type);
+	public static <T> QueryBuilder<T> builder(Class<T> documentType) {
+		return new DefaultQueryBuilder<T>(documentType, null);
+	}
+	
+	public static <T> QueryBuilder<T> builder(Class<T> documentType, Class<?> parentScope) {
+		return new DefaultQueryBuilder<T>(documentType, parentScope);
 	}
 
 }

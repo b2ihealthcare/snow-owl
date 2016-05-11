@@ -27,6 +27,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterSelectBuilder<T>, 
 	private static final int DEFAULT_LIMIT = 50;
 
 	private final Class<T> type;
+	private final Class<?> parentType;
 	
 	private int offset = 0;
 	private int limit = DEFAULT_LIMIT;
@@ -34,8 +35,9 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterSelectBuilder<T>, 
 	private Expression where;
 	private SortBy sortBy = SortBy.NONE;
 
-	public DefaultQueryBuilder(Class<T> type) {
-		this.type = type;
+	public DefaultQueryBuilder(Class<T> documentType, Class<?> parentType) {
+		this.type = documentType;
+		this.parentType = parentType;
 	}
 
 	public int getLimit() {
@@ -96,6 +98,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterSelectBuilder<T>, 
 	@Override
 	public Query<T> build() {
 		Query<T> query = new Query<T>();
+		query.setParentType(parentType);
 		query.setType(type);
 		query.setSelect(select);
 		query.setWhere(where);

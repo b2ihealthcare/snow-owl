@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -44,8 +45,14 @@ public final class DocumentMapping {
 	private final Class<?> type;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
+	private final DocumentMapping parent;
 
 	DocumentMapping(Class<?> type) {
+		this(null, type);
+	}
+		
+	DocumentMapping(DocumentMapping parent, Class<?> type) {
+		this.parent = parent;
 		this.type = type;
 		this.fieldMap = FluentIterable.from(Reflections.getFields(type))
 			.filter(new Predicate<Field>() {
@@ -75,22 +82,36 @@ public final class DocumentMapping {
 			.toMap(new Function<Class<?>, DocumentMapping>() {
 				@Override
 				public DocumentMapping apply(Class<?> input) {
-					return new DocumentMapping(input);
+					return new DocumentMapping(DocumentMapping.this, input);
 				}
 			});
+	}
+	
+	public DocumentMapping getParent() {
+		return parent;
 	}
 	
 	public Collection<DocumentMapping> getNestedMappings() {
 		return ImmutableList.copyOf(nestedTypes.values());
 	}
 	
+	public DocumentMapping getNestedMapping(String field) {
+		return nestedTypes.get(getNestedType(field));
+	}
+	
 	public DocumentMapping getNestedMapping(Class<?> nestedType) {
-		checkArgument(nestedTypes.containsKey(nestedType), "Missing nested type '%s' on type '%s'", nestedType, type);
+		checkArgument(nestedTypes.containsKey(nestedType), "Missing nested type '%s' on mapping of '%s'", nestedType, type);
 		return nestedTypes.get(nestedType);
 	}
 	
+	private Class<?> getNestedType(String field) {
+		final Class<?> nestedType = Reflections.getType(getField(field));
+		checkArgument(nestedTypes.containsKey(nestedType), "Missing nested type '%s' on mapping of '%s'", field, type);
+		return nestedType;
+	}
+	
 	public Field getField(String name) {
-		checkArgument(fieldMap.containsKey(name), "Missing field '%s' on type '%s'", name, type);
+		checkArgument(fieldMap.containsKey(name), "Missing field '%s' on mapping of '%s'", name, type);
 		return fieldMap.get(name);
 	}
 	
@@ -106,12 +127,26 @@ public final class DocumentMapping {
 		return getType(type);
 	}
 	
-	// static helpers
-	
-	public static Expression matchType(Class<?> type) {
+	public Expression matchType() {
 		return Expressions.exactMatch(_TYPE, getType(type));
 	}
-
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, parent);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		final DocumentMapping other = (DocumentMapping) obj;
+		return Objects.equals(type, other.type) && Objects.equals(parent, other.parent);
+	}
+	
+	// static helpers
+	
 	public static Expression matchId(String id) {
 		return Expressions.exactMatch(_ID, id);
 	}
