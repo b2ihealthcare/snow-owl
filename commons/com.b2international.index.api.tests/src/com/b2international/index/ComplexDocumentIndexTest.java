@@ -45,8 +45,8 @@ public abstract class ComplexDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexDeeplyNestedDocument() throws Exception {
-		final DeepData data = new DeepData(new ParentData(new NestedData("field2")));
-		final DeepData data2 = new DeepData(new ParentData(new NestedData("field2Changed")));
+		final DeepData data = new DeepData(new ParentData("field1", new NestedData("field2")));
+		final DeepData data2 = new DeepData(new ParentData("field1", new NestedData("field2Changed")));
 		try (Writer writer = client().writer()) {
 			writer.put(KEY, data);
 			writer.put(KEY2, data2);

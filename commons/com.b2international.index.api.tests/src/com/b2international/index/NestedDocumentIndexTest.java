@@ -39,7 +39,7 @@ public abstract class NestedDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexNestedDocument() throws Exception {
-		final ParentData data = new ParentData(new NestedData("field2"));
+		final ParentData data = new ParentData("field1", new NestedData("field2"));
 		indexDocument(KEY, data);
 		assertEquals(data, getDocument(ParentData.class, KEY));
 	}
@@ -62,8 +62,8 @@ public abstract class NestedDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void searchNestedDocument() throws Exception {
-		final ParentData data = new ParentData(new NestedData("field2"));
-		final ParentData data2 = new ParentData(new NestedData("field2Changed"));
+		final ParentData data = new ParentData("field1", new NestedData("field2"));
+		final ParentData data2 = new ParentData("field1", new NestedData("field2Changed"));
 		indexDocument(KEY, data);
 		indexDocument(KEY2, data2);
 		

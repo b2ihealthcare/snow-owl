@@ -67,11 +67,12 @@ public class Fixtures {
 	@Doc
 	public static class ParentData {
 		
-		String field1 = "field1";
-		NestedData nestedData;
+		private final String field1;
+		private final NestedData nestedData;
 		
 		@JsonCreator
-		public ParentData(@JsonProperty("nestedData") NestedData nestedData) {
+		public ParentData(@JsonProperty("field1") String field1, @JsonProperty("nestedData") NestedData nestedData) {
+			this.field1 = field1;
 			this.nestedData = nestedData;
 		}
 		
@@ -123,7 +124,7 @@ public class Fixtures {
 		
 		String field2;
 
-		@JsonCreator()
+		@JsonCreator
 		public NestedData(@JsonProperty("field2") String field2) {
 			this.field2 = field2;
 		}
