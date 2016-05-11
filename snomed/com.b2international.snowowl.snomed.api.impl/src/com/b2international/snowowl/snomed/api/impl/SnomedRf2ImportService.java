@@ -155,9 +155,9 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
 		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
 		return new ImportUtil().doImport(
-				branch, 
 				configuration.getLanguageRefSetId(), 
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
+				branch,
 				archiveFile,
 				configuration.shouldCreateVersion());
 	}
