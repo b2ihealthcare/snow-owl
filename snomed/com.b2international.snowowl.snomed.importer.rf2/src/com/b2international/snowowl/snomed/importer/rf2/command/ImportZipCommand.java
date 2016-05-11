@@ -22,6 +22,8 @@ import org.eclipse.osgi.framework.console.CommandInterpreter;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ConsoleProgressMonitor;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -29,14 +31,20 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 
+/**
+ * Command provider for SNOMED CT RF2 import operations.
+ */
 public class ImportZipCommand extends AbstractRf2ImporterCommand {
 
+	private static final String SNOMED_STORE = "snomedStore";
+	
 	private ImportUtil importUtil;
 
 	public ImportZipCommand() {
-		super("rf2_release", "-l <languageRefSetId> -t <type> <path>", "Imports core terminology and reference sets from a release archive", new String[] {
+		super("rf2_release", "-l <languageRefSetId> -t <type> [-b <branch>] <path>", "Imports core terminology and reference sets from a release archive", new String[] {
 				"-l <languageRefSetId>\tThe language reference set identifier to use for component labels.",
 				"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",
+				"-b <branch>\t\tThe existing branch to import the content onto. Optional, when omitted, content will be imported to the MAIN branch.",
 				"<path>\t\tSpecifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release)."
 		});
 		
@@ -79,10 +87,22 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				printDetailedHelp(interpreter);
 				return;
 			}
+			
+		} 
+		
+		String branchPath = null;
+		if ("-b".equals(interpreter.nextArgument())) {
+			
+			branchPath = interpreter.nextArgument();
+			if (!BranchPathUtils.exists(SNOMED_STORE, branchPath)) {
+				interpreter.println("Invalid branch path '" + branchPath + ".");
+				printDetailedHelp(interpreter);
+				return;
+			}
+			
 		} else {
-			interpreter.println("Import type needs to be specified (one of FULL, SNAPSHOT or DELTA).");
-			printDetailedHelp(interpreter);
-			return;
+			interpreter.println("Branch path is not specified, importing to MAIN.");
+			branchPath = IBranchPath.MAIN_BRANCH;
 		}
 
 		final String archivePath = interpreter.nextArgument();
@@ -105,7 +125,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			
 			final String userId = authenticator.getUsername();
 			
-			final SnomedImportResult result = importUtil.doImport(userId, languageRefSetId, contentSubType, archiveFile, new ConsoleProgressMonitor());
+			final SnomedImportResult result = importUtil.doImport(userId, languageRefSetId, contentSubType, branchPath, archiveFile, new ConsoleProgressMonitor());
 			if (!CompareUtils.isEmpty(result.getValidationDefects())) {
 				interpreter.println("SNOMED CT import has been canceled due to validation errors in the RF2 release.");
 				for (final SnomedValidationDefect defect : result.getValidationDefects()) {
@@ -120,4 +140,5 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			interpreter.printStackTrace(e);
 		}
 	}
+	
 }
