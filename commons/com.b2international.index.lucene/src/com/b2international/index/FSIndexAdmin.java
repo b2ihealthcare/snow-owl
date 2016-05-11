@@ -51,7 +51,7 @@ import com.google.common.io.Closer;
 /**
  * @since 4.7
  */
-public final class FSIndexAdmin implements LuceneIndexAdmin {
+final class FSIndexAdmin implements LuceneIndexAdmin {
 
 	private static class Holder {
 		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);

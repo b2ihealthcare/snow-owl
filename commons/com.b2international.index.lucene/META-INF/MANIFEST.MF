@@ -5,6 +5,6 @@ Bundle-SymbolicName: com.b2international.index.lucene;singleton:=true
 Bundle-Version: 4.7.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.b2international.index.api,
- com.b2international.org.apache.lucene;bundle-version="4.9.0",
- com.b2international.commons;bundle-version="4.7.0"
+Fragment-Host: com.b2international.index.api
+Require-Bundle: com.b2international.org.apache.lucene;bundle-version="4.9.0",
+ com.b2international.commons

@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-public abstract class NestedDocumentIndexTest extends BaseIndexTest {
+public class NestedDocumentIndexTest extends BaseIndexTest {
 
 	@Override
 	protected final Collection<Class<?>> getTypes() {

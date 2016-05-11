@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-public abstract class TransactionalityTest extends BaseIndexTest {
+public class TransactionalityTest extends BaseIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {

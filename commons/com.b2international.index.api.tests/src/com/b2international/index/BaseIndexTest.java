@@ -17,15 +17,19 @@ package com.b2international.index;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -35,6 +39,9 @@ public abstract class BaseIndexTest {
 	private Index index;
 	private IndexClient client;
 	private Mappings mappings;
+	
+	@Rule
+	public TemporaryFolder folder = new TemporaryFolder();
 	
 	@Before
 	public void setup() {
@@ -57,7 +64,9 @@ public abstract class BaseIndexTest {
 	 */
 	protected abstract Collection<Class<?>> getTypes();
 
-	protected abstract IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings);
+	private final IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings) {
+		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings, ImmutableMap.<String, Object>of(IndexClientFactory.DIRECTORY, folder.getRoot()));
+	}
 	
 	protected final Index index() {
 		return index;

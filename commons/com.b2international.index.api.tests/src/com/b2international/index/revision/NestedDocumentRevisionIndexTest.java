@@ -32,7 +32,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-public abstract class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
+public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	private final String branchPath = RevisionBranch.MAIN_PATH;
 	

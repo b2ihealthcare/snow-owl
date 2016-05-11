@@ -30,7 +30,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.Data;
 import com.google.common.collect.ImmutableList;
 
-public abstract class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
+public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	private final String branchPath = RevisionBranch.MAIN_PATH;
 	

@@ -6,10 +6,7 @@ Bundle-Version: 4.7.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.b2international.index.api,
- org.junit;bundle-version="4.11.0",
+Fragment-Host: com.b2international.index.api
+Require-Bundle: org.junit;bundle-version="4.11.0",
  org.assertj.core;bundle-version="1.7.1",
  com.google.guava;bundle-version="[15.0.0,16.0.0)"
-Export-Package: com.b2international.index,
- com.b2international.index.revision
-Import-Package: org.apache.poi.hssf.record.formula.functions

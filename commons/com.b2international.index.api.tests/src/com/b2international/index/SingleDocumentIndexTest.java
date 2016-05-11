@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-public abstract class SingleDocumentIndexTest extends BaseIndexTest {
+public class SingleDocumentIndexTest extends BaseIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {

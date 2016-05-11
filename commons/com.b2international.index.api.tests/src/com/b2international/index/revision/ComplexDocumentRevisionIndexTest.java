@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-public abstract class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
+public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	private final String branchPath = RevisionBranch.MAIN_PATH;
 	
