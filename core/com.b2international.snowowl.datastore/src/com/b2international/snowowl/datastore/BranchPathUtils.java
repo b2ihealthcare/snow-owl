@@ -21,6 +21,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,11 +36,14 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.tasks.Task;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -47,6 +51,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * Utility class for creating {@link IBranchPath branch paths}.
@@ -287,9 +292,7 @@ public abstract class BranchPathUtils {
 			}
 			
 		}
-		
 		return new BackwardListIterator<IBranchPath>(unmodifiableList($));
-		
 	}
 	
 	/**
@@ -301,6 +304,34 @@ public abstract class BranchPathUtils {
 	 */
 	public static Iterator<IBranchPath> bottomToTopIterator(final IBranchPath branchPath) {
 		return new BackwardListIterator<IBranchPath>(newArrayList(topToBottomIterator(checkNotNull(branchPath, "branchPath"))));
+	}
+	
+	/**
+	 * Returns true if the branch with the path specified exists within the specified repository.
+	 * @param repositoryName
+	 * @param branchName
+	 * @return true if the branch exists in the repository
+	 */
+	public static boolean exists(String repositoryName, String branchName) {
+
+		List<String> branchPaths = Lists.newArrayList();
+		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
+		
+		Branch mainBranch = RepositoryRequests.branching(repositoryName).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(eventBus, 1000);
+		branchPaths.add(mainBranch.path());
+		collectBranches(mainBranch, branchPaths);
+		
+		return branchPaths.contains(branchName);
+	}
+	
+	// Depth-first traversal
+	private static void collectBranches(Branch parentBranch, List<String> branches) {
+		
+		branches.add(parentBranch.path());
+		Collection<? extends Branch> children = parentBranch.children();
+		for (Branch branch : children) {
+			collectBranches(branch, branches);
+		}
 	}
 	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {
