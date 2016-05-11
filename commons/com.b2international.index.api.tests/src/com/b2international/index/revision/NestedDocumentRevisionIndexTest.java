@@ -49,7 +49,7 @@ public abstract class NestedDocumentRevisionIndexTest extends BaseRevisionIndexT
 	}
 
 	@Test
-	public void deleteRevisionShouldKeepNestedDocsAround() throws Exception {
+	public void nestedDocumentOfDeletedRevisionShouldNotBeAccessible() throws Exception {
 		indexNestedDocument();
 		deleteRevision(branchPath, NestedData.class, STORAGE_KEY1);
 		
@@ -59,9 +59,9 @@ public abstract class NestedDocumentRevisionIndexTest extends BaseRevisionIndexT
 		assertThat(parentDocs).isEmpty();
 		
 		// query to get nested child document, should be none
-		final Query<Data> nestedDataQuery = Query.builder(Data.class).selectAll().where(Expressions.matchAll()).build();
+		final Query<Data> nestedDataQuery = Query.builder(Data.class, NestedData.class).selectAll().where(Expressions.matchAll()).build();
 		final Iterable<Data> nestedDocs = search(branchPath, nestedDataQuery);
-		assertThat(nestedDocs).hasSize(1);
+		assertThat(nestedDocs).hasSize(0);
 	}
 	
 	@Test
