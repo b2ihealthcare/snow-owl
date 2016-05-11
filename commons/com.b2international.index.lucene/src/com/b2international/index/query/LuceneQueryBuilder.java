@@ -155,7 +155,7 @@ public final class LuceneQueryBuilder {
 		final Class<?> parentType = predicate.getParentType();
 		
 		final DocumentMapping parentMapping = mapping.getParent();
-		checkArgument(parentMapping.type() == parentType, "Deeply nested query are unsupported at the moment");
+		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
 		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
 		
 		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, JsonDocumentMapping.filterByType(parentMapping.type()), false);

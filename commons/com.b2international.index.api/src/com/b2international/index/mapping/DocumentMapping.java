@@ -82,7 +82,7 @@ public final class DocumentMapping {
 			.toMap(new Function<Class<?>, DocumentMapping>() {
 				@Override
 				public DocumentMapping apply(Class<?> input) {
-					return new DocumentMapping(DocumentMapping.this, input);
+					return new DocumentMapping(DocumentMapping.this.parent == null ? DocumentMapping.this : DocumentMapping.this.parent, input);
 				}
 			});
 	}
@@ -100,8 +100,18 @@ public final class DocumentMapping {
 	}
 	
 	public DocumentMapping getNestedMapping(Class<?> nestedType) {
-		checkArgument(nestedTypes.containsKey(nestedType), "Missing nested type '%s' on mapping of '%s'", nestedType, type);
-		return nestedTypes.get(nestedType);
+		if (nestedTypes.containsKey(nestedType)) {
+			return nestedTypes.get(nestedType);
+		} else {
+			for (DocumentMapping nestedMapping : nestedTypes.values()) {
+				try {
+					return nestedMapping.getNestedMapping(nestedType);
+				} catch (IllegalArgumentException ignored) {
+					continue;
+				}
+			}
+			throw new IllegalArgumentException(String.format("Missing nested type '%s' on mapping of '%s'", nestedType, type));
+		}
 	}
 	
 	private Class<?> getNestedType(String field) {
