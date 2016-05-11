@@ -89,4 +89,30 @@ public class RevisionFixtures {
 		
 	}
 	
+	@Doc
+	public static class DeeplyNestedData extends Revision {
+		
+		private com.b2international.index.Fixtures.ParentData parentData;
+		
+		@JsonCreator
+		public DeeplyNestedData(@JsonProperty("parentData") com.b2international.index.Fixtures.ParentData parentData) {
+			this.parentData = parentData;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(parentData);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			DeeplyNestedData other = (DeeplyNestedData) obj;
+			return Objects.equals(parentData, other.parentData); 
+		}
+		
+	}
+	
 }
