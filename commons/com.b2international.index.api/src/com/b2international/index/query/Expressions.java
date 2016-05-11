@@ -115,4 +115,8 @@ public class Expressions {
 		return new RangePredicate(fieldName, from, to);
 	}
 
+	public static Expression hasParent(Class<?> parentType, Expression expression) {
+		return new HasParentPredicate(parentType, expression);
+	}
+
 }

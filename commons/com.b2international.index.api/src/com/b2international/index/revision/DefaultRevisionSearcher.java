@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 
 import com.b2international.index.Searcher;
@@ -45,15 +47,22 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	public <T> Iterable<T> search(Query<T> query) throws IOException {
 		if (Revision.class.isAssignableFrom(query.getType())) {
 			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
-			query = Query
-					.builder(query.getType())
+			query = Query.builder(query.getType())
 					.select(query.getSelect())
 					.where(Expressions.and(query.getWhere(), Revision.branchFilter(branch)))
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.offset(query.getOffset()).build();
 		} else {
-			// TODO if not revision based query then get the mapping and find the parent document and use has parent query
+			checkArgument(Revision.class.isAssignableFrom(query.getParentType()), "Searching non-revision documents require a revision parent type: %s", query);
+			// run a query on the parent documents with nested match on the children
+			query = Query.builder(query.getType(), query.getParentType())
+					.select(query.getSelect())
+					.where(Expressions.and(query.getWhere(), Expressions.hasParent(query.getParentType(), Revision.branchFilter(branch))))
+					.sortBy(query.getSortBy())
+					.limit(query.getLimit())
+					.offset(query.getOffset())
+					.build();
 		}
 		return searcher.search(query);
 	}

@@ -15,6 +15,8 @@
  */
 package com.b2international.index.query;
 
+import com.b2international.index.mapping.DocumentMapping;
+
 /**
  * Represents a generic query on any kind of storage and model.
  * 
@@ -118,13 +120,18 @@ public final class Query<T> {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT " + select + " WHERE " + where);
+		sb.append("SELECT " + select);
+		sb.append(" FROM " + DocumentMapping.getType(type));
+		sb.append(" WHERE " + where);
 		if (SortBy.NONE != sortBy) {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);
 		if (offset != 0) {
 			sb.append(" OFFSET " + offset);
+		}
+		if (parentType != null) {
+			sb.append(" HAS_PARENT(" + DocumentMapping.getType(parentType) + ")");
 		}
 		return sb.toString();
 	}

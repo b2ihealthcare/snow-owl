@@ -15,6 +15,7 @@
  */
 package com.b2international.index.query;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collections;
@@ -30,6 +31,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeFilter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.join.ScoreMode;
+import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
@@ -48,7 +50,7 @@ public final class LuceneQueryBuilder {
 	private final class DequeItem {
 		private final Object query;
 		
-		public DequeItem(org.apache.lucene.search.Query query) {
+		DequeItem(org.apache.lucene.search.Query query) {
 			this.query = query;
 		}
 		
@@ -115,40 +117,22 @@ public final class LuceneQueryBuilder {
 		if (expression instanceof MatchAll) {
 			deque.push(new DequeItem(new MatchAllDocsQuery()));
 		} else if (expression instanceof And) {
-			And and = (And) expression;
-			visit(and);
+			visit((And) expression);
 		} else if (expression instanceof Or) {
-			Or or = (Or) expression;
-			visit(or);
+			visit((Or) expression);
 		} else if (expression instanceof AndNot) {
 			visit((AndNot) expression);
-//		} else if (expression instanceof Same) {
-//			Same same = (Same) expression;
-//			visit(same);
-//		} else if (expression instanceof Group) {
-//			Group group = (Group) expression;
-//			visit(group);
 		} else if (expression instanceof StringPredicate) {
 			StringPredicate predicate = (StringPredicate) expression;
 			visit(predicate);
-//		} else if (expression instanceof BooleanPredicate) {
-//			BooleanPredicate predicate = (BooleanPredicate) expression;
-//			visit(predicate);
-//		} else if (expression instanceof StringSetPredicate) {
-//			StringSetPredicate predicate = (StringSetPredicate) expression;
-//			visit(predicate);
 		} else if (expression instanceof LongPredicate) {
 			visit((LongPredicate) expression);
-//		} else if (expression instanceof TextPredicate) {
-//			TextPredicate predicate = (TextPredicate) expression;
-//			visit(predicate);
-//		} else if (expression instanceof DateRangePredicate) {
-//			DateRangePredicate predicate = (DateRangePredicate) expression;
-//			visit(predicate);
 		} else if (expression instanceof RangePredicate) {
 			visit((RangePredicate) expression);
 		} else if (expression instanceof NestedPredicate) {
 			visit((NestedPredicate) expression);
+		} else if (expression instanceof HasParentPredicate) {
+			visit((HasParentPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -164,6 +148,18 @@ public final class LuceneQueryBuilder {
 		// TODO scoring???
 		final Query nestedQuery = new ToParentBlockJoinQuery(childQuery, parentFilter, ScoreMode.None);
 		deque.push(new DequeItem(nestedQuery));
+	}
+	
+	private void visit(HasParentPredicate predicate) {
+		final Expression parentExpression = predicate.getExpression();
+		final Class<?> parentType = predicate.getParentType();
+		
+		final DocumentMapping parentMapping = mapping.getParent();
+		checkArgument(parentMapping.type() == parentType, "Deeply nested query are unsupported at the moment");
+		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
+		
+		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, JsonDocumentMapping.filterByType(parentMapping.type()), false);
+		deque.push(new DequeItem(toChildQuery));
 	}
 
 //	private void visit(TextPredicate predicate) {

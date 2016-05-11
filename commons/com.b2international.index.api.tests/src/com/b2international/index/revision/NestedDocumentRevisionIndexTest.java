@@ -17,7 +17,7 @@ package com.b2international.index.revision;
 
 import static com.b2international.index.revision.RevisionFixtures.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 
@@ -65,9 +65,10 @@ public abstract class NestedDocumentRevisionIndexTest extends BaseRevisionIndexT
 	}
 	
 	@Test
-	public void searchNestedDocument() throws Exception {
+	public void searchParentDocumentWithNestedQuery() throws Exception {
 		final NestedData data = new NestedData("field1", new Data("field1", "field2"));
-		final NestedData data2 = new NestedData("field1", new Data("field1Changed", "field2"));
+		final Data nestedData2 = new Data("field1Changed", "field2");
+		final NestedData data2 = new NestedData("field1", nestedData2);
 		indexRevision(branchPath, STORAGE_KEY1, data);
 		indexRevision(branchPath, STORAGE_KEY2, data2);
 		
@@ -75,6 +76,20 @@ public abstract class NestedDocumentRevisionIndexTest extends BaseRevisionIndexT
 		final Iterable<NestedData> matches = search(branchPath, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
+	}
+	
+	@Test
+	public void searchNestedDocumentWithParentQuery() throws Exception {
+		indexNestedDocument();
+		deleteRevision(branchPath, NestedData.class, STORAGE_KEY1);
+		final Data nestedData2 = new Data("field1", "field2");
+		final NestedData data2 = new NestedData("field1", nestedData2);
+		indexRevision(branchPath, STORAGE_KEY2, data2);
+		
+		final Query<Data> nestedQuery = Query.builder(Data.class, NestedData.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+		final Iterable<Data> nestedMatches = search(branchPath, nestedQuery);
+		assertThat(nestedMatches).hasSize(1);
+		assertThat(nestedMatches).containsOnly(nestedData2);
 	}
 	
 }
