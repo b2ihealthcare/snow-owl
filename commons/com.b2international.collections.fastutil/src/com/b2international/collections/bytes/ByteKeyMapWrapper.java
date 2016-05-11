@@ -17,9 +17,7 @@ package com.b2international.collections.bytes;
 
 import java.util.Collection;
 
-import com.b2international.collections.bytes.ByteIterator;
-import com.b2international.collections.bytes.ByteKeyMap;
-import com.b2international.collections.bytes.ByteSet;
+import com.google.common.primitives.Bytes;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenCustomHashMap;
@@ -36,6 +34,43 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public int hashCode() {
+		int h = 0;
+		final ByteIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            byte key = i.next();
+            V value = get(key);
+            h += Bytes.hashCode(key) ^ (value==null ? 0 : value.hashCode());
+        }
+		return h;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof ByteKeyMap)) return false;
+		
+		final ByteKeyMap<?> other = (ByteKeyMap<?>) obj;
+        if (other.size() != size()) return false;
+
+        final ByteIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            byte key = i.next();
+            V value = get(key);
+            if (value == null) {
+                if (!(other.get(key) == null && other.containsKey(key)))
+                    return false;
+            } else {
+            	if (!value.equals(other.get(key))) {
+            		return false;
+            	}
+            }
+        }
+
+        return true;
+	}
+	
 	@Override
 	public void clear() {
 		delegate.clear();
@@ -59,11 +94,6 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 	@Override
 	public boolean containsKey(byte key) {
 		return delegate.containsKey(key);
-	}
-
-	@Override
-	public ByteKeyMap<V> dup() {
-		return create(this);
 	}
 
 	@Override
@@ -91,7 +121,7 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 		return delegate.values();
 	}
 	
-	public static <V> ByteKeyMap<V> create(int expectedSize) {
+	public static <V> ByteKeyMap<V> createWithExpectedSize(int expectedSize) {
 		return new ByteKeyMapWrapper<>(new Byte2ObjectOpenHashMap<V>(expectedSize));
 	}
 	
@@ -100,7 +130,7 @@ public final class ByteKeyMapWrapper<V> implements ByteKeyMap<V> {
 			final Byte2ObjectMap<V> sourceDelegate = ((ByteKeyMapWrapper<V>) map).delegate;
 			return new ByteKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final ByteKeyMap<V> result = create(map.size());
+			final ByteKeyMap<V> result = createWithExpectedSize(map.size());
 			final ByteIterator iter = map.keySet().iterator();
 			while (iter.hasNext()) {
 				final byte key = iter.next();

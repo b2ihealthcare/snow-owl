@@ -49,6 +49,10 @@ public final class ByteOpenHashSetWrapper extends ByteSetWrapper {
 	public static ByteSet create(int expectedSize) {
 		return new ByteOpenHashSetWrapper(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet(expectedSize));
 	}
+
+	public static ByteSet create() {
+		return new ByteOpenHashSetWrapper(new it.unimi.dsi.fastutil.bytes.ByteOpenHashSet());
+	}
 	
 	// FastUtil helpers
 	
@@ -59,5 +63,4 @@ public final class ByteOpenHashSetWrapper extends ByteSetWrapper {
 			throw new UnsupportedOperationException("Unsupported set implementation: " + set.getClass().getSimpleName());
 		}
 	}
-	
 }

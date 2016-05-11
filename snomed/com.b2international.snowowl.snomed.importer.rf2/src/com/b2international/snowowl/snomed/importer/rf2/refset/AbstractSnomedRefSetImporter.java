@@ -28,8 +28,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongValueMap;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIds;
@@ -79,7 +79,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 		if (docIDs.size() <= 0) {
 			return PrimitiveMaps.newObjectKeyLongOpenHashMap();
 		} else {
-			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMap(docIDs.size());
+			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(docIDs.size());
 			final DocIdsIterator it = docIDs.iterator();
 			final Set<String> fields = SnomedMappings.fieldsToLoad().memberUuid().effectiveTime().build();
 			while (it.next()) {

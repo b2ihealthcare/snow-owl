@@ -70,7 +70,7 @@ public class SnomedUnimportedRefSets {
 	 *            the fully specified name for the refset member
 	 */
 	public void addRefSetMember(String reason, String conceptId, String fullySpecifiedName) {
-		StoreRefSetMember storeRefSetMembers = new StoreRefSetMember(reason, conceptId, fullySpecifiedName);
+		StoreRefSetMember storeRefSetMembers = new StoreRefSetMember(this, reason, conceptId, fullySpecifiedName);
 		unimportedRefSetMembers.add(storeRefSetMembers);
 	}
 
@@ -80,15 +80,15 @@ public class SnomedUnimportedRefSets {
 
 	/**
 	 * Contains information about a reference set member.
-	 * 
-	 * 
 	 */
 	public final class StoreRefSetMember {
 		private String reason;
 		private String conceptId;
 		private String fullySpecifiedName;
+		private SnomedUnimportedRefSets parent;
 
-		public StoreRefSetMember(String reason, String conceptId, String fullySpecifiedName) {
+		private StoreRefSetMember(SnomedUnimportedRefSets parent, String reason, String conceptId, String fullySpecifiedName) {
+			this.parent = parent;
 			this.reason = reason;
 			this.conceptId = conceptId;
 			this.fullySpecifiedName = fullySpecifiedName;
@@ -105,6 +105,11 @@ public class SnomedUnimportedRefSets {
 		public String getFullySpecifiedName() {
 			return fullySpecifiedName;
 		}
+
+		public SnomedUnimportedRefSets getParent() {
+			return parent;
+		}
+
 	}
 
 }

@@ -22,10 +22,10 @@ import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.List;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
@@ -51,7 +51,7 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 		
 		final Rf2BasedSnomedTaxonomyBuilder $ = new Rf2BasedSnomedTaxonomyBuilder(characteristicTypeId);
 		$.nodes = new LongBidiMapWithInternalId(builder.getNodes());
-		$.edges = builder.getEdges().dup();
+		$.edges = PrimitiveMaps.newLongKeyOpenHashMap(builder.getEdges());
 		$.setDirty(builder.isDirty());
 		$.descendants = Arrays2.copy(builder.getDescendants());
 		$.ancestors = Arrays2.copy(builder.getAncestors());

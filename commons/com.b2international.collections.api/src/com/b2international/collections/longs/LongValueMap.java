@@ -28,9 +28,6 @@ public interface LongValueMap<K> extends PrimitiveValueMap {
 
 	boolean containsKey(K key);
 	
-	@Override
-	LongValueMap<K> dup();
-
 	long get(K key);
 
 	Set<K> keySet();

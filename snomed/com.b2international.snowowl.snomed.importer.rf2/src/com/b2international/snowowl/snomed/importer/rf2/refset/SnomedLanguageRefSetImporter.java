@@ -40,12 +40,12 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.commons.collect.LongSets.LongFunction;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.DateFormats;

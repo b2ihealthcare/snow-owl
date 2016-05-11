@@ -27,6 +27,21 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 	}
 
 	@Override
+	public int hashCode() {
+		return AbstractByteCollection.hashCode(this);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (!(obj instanceof ByteList)) { return false; }
+		
+		ByteList other = (ByteList) obj;
+		if (size() != other.size()) { return false; }
+		return AbstractByteCollection.elementsEqual(iterator(), other.iterator());
+	}
+	
+	@Override
 	protected it.unimi.dsi.fastutil.bytes.ByteList delegate() {
 		return (it.unimi.dsi.fastutil.bytes.ByteArrayList) super.delegate();
 	}
@@ -39,11 +54,6 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 		} else {
 			super.trimToSize();
 		}
-	}
-
-	@Override
-	public ByteList dup() {
-		return create(this);
 	}
 
 	@Override
@@ -73,7 +83,7 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 			final it.unimi.dsi.fastutil.bytes.ByteList sourceDelegate = ((ByteArrayListWrapper) collection).delegate();
 			return new ByteArrayListWrapper(clone(sourceDelegate));
 		} else {
-			final ByteList result = create(collection.size());
+			final ByteList result = createWithExpectedSize(collection.size());
 			result.addAll(collection);
 			return result;
 		}
@@ -83,7 +93,7 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 		return new ByteArrayListWrapper(new ByteArrayList(source));
 	}
 	
-	public static ByteList create(int expectedSize) {
+	public static ByteList createWithExpectedSize(int expectedSize) {
 		return new ByteArrayListWrapper(new ByteArrayList(expectedSize));
 	}
 	

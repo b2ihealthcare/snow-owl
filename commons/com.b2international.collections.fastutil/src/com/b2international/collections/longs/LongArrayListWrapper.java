@@ -27,6 +27,21 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 	}
 	
 	@Override
+	public int hashCode() {
+		return AbstractLongCollection.hashCode(this);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (!(obj instanceof LongList)) { return false; }
+		
+		LongList other = (LongList) obj;
+		if (size() != other.size()) { return false; }
+		return AbstractLongCollection.elementsEqual(iterator(), other.iterator());
+	}
+	
+	@Override
 	protected it.unimi.dsi.fastutil.longs.LongList delegate() {
 		return (it.unimi.dsi.fastutil.longs.LongList) super.delegate();
 	}
@@ -38,11 +53,6 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 		} else {
 			super.trimToSize();
 		}
-	}
-
-	@Override
-	public LongList dup() {
-		return create(this);
 	}
 
 	@Override
@@ -71,7 +81,7 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 			final it.unimi.dsi.fastutil.longs.LongList sourceDelegate = ((LongArrayListWrapper) source).delegate();
 			return new LongArrayListWrapper(clone(sourceDelegate));
 		} else {
-			final LongList result = create(source.size());
+			final LongList result = createWithExpectedSize(source.size());
 			result.addAll(source);
 			return result;
 		}
@@ -81,7 +91,7 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(source));
 	}
 	
-	public static LongList create(int expectedSize) {
+	public static LongList createWithExpectedSize(int expectedSize) {
 		return new LongArrayListWrapper(new it.unimi.dsi.fastutil.longs.LongArrayList(expectedSize));
 	}
 

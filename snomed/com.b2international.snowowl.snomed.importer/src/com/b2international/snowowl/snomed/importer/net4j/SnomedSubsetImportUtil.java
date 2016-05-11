@@ -35,6 +35,9 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedSubsetImportConfiguration.SubsetEntry;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 
 /**
@@ -133,9 +136,18 @@ public class SnomedSubsetImportUtil {
 			entry.setHeadings(row);
 			entry.setSheetNumber(sheetNumber);
 			
-			for (int i = 0; i < row.size(); i++) {
-				if (isConceptId(row.get(i).trim())) {
-					entry.setIdColumnNumber(i);
+			if (entry.isHasHeader()) {
+				Optional<String> match = FluentIterable.from(row).firstMatch(new Predicate<String>() {
+					@Override public boolean apply(String input) {
+						return input.contains("concept") && (input.contains("id") || input.contains("sctid"));
+					}
+				});
+				entry.setIdColumnNumber(match.isPresent() ? row.indexOf(match.get()) : 0); // default to first?
+			} else {
+				for (int i = 0; i < row.size(); i++) {
+					if (isConceptId(row.get(i).trim())) {
+						entry.setIdColumnNumber(i);
+					}
 				}
 			}
 			

@@ -105,11 +105,6 @@ public class ByteCollectionWrapper extends AbstractByteCollection {
 	public final byte[] toArray() {
 		return delegate.toByteArray();
 	}
-
-	@Override
-	public ByteCollection dup() {
-		throw new UnsupportedOperationException();
-	}
 	
 	@Override
 	public void trimToSize() {

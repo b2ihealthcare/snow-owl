@@ -52,22 +52,22 @@ public final class LongOpenHashSetWrapper extends LongSetWrapper {
 			final it.unimi.dsi.fastutil.longs.LongSet sourceDelegate = ((LongOpenHashSetWrapper) source).delegate();
 			return new LongOpenHashSetWrapper(clone(sourceDelegate));
 		} else {
-			final LongSet result = create(source.size());
+			final LongSet result = createWithExpectedSize(source.size());
 			result.addAll(source);
 			return result;
 		}
 	}
 	
-	public static LongSet create(long[] source) {
+	public static LongSet create(long... source) {
 		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(source));
 	}
 
 	// XXX: Fill factor parameter loses precision on API boundary
-	public static LongSet create(int expectedSize, double fillFactor) {
+	public static LongSet createWithExpectedSize(int expectedSize, double fillFactor) {
 		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(expectedSize, (float) fillFactor));
 	}
 	
-	public static LongSet create(int expectedSize) {
+	public static LongSet createWithExpectedSize(int expectedSize) {
 		return new LongOpenHashSetWrapper(new it.unimi.dsi.fastutil.longs.LongOpenHashSet(expectedSize));
 	}
 	

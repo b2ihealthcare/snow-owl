@@ -33,6 +33,43 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 	}
 
 	@Override
+	public int hashCode() {
+		int h = 0;
+		final IntIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            int key = i.next();
+            V value = get(key);
+            h += key ^ (value==null ? 0 : value.hashCode());
+        }
+		return h;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof IntKeyMap)) return false;
+		
+		final IntKeyMap<?> other = (IntKeyMap<?>) obj;
+        if (other.size() != size()) return false;
+
+        final IntIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            int key = i.next();
+            V value = get(key);
+            if (value == null) {
+                if (!(other.get(key) == null && other.containsKey(key)))
+                    return false;
+            } else {
+            	if (!value.equals(other.get(key))) {
+            		return false;
+            	}
+            }
+        }
+
+        return true;
+	}
+	
+	@Override
 	public void clear() {
 		delegate.clear();
 	}
@@ -55,11 +92,6 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 	@Override
 	public boolean containsKey(int key) {
 		return delegate.containsKey(key);
-	}
-
-	@Override
-	public IntKeyMap<V> dup() {
-		return create(this);
 	}
 
 	@Override
@@ -91,7 +123,7 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 		return new IntKeyMapWrapper<>(new Int2ObjectOpenHashMap<V>());
 	}
 	
-	public static <V> IntKeyMap<V> create(int expectedSize) {
+	public static <V> IntKeyMap<V> createWithExpectedSize(int expectedSize) {
 		return new IntKeyMapWrapper<>(new Int2ObjectOpenHashMap<V>(expectedSize));
 	}
 	
@@ -100,7 +132,7 @@ public final class IntKeyMapWrapper<V> implements IntKeyMap<V> {
 			final Int2ObjectMap<V> sourceDelegate = ((IntKeyMapWrapper<V>) map).delegate;
 			return new IntKeyMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final IntKeyMap<V> result = create(map.size());
+			final IntKeyMap<V> result = createWithExpectedSize(map.size());
 			final IntIterator iter = map.keySet().iterator();
 			while (iter.hasNext()) {
 				final int key = iter.next();

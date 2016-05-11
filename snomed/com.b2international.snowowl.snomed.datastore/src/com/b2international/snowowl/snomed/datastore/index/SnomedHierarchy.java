@@ -19,12 +19,12 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collect.PrimitiveMaps;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -110,7 +110,7 @@ public class SnomedHierarchy {
 		Preconditions.checkNotNull(conceptIds, "Array of concept IDs argument cannot be null.");
 		Preconditions.checkNotNull(statements, "Array of statements argument cannot be null.");
 	
-		this.conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMap(conceptIds.length);
+		this.conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(conceptIds.length);
 		this.conceptIds = Arrays.copyOf(conceptIds, conceptIds.length);
 		
 		for (int i = 0; i < conceptIds.length; i++) {
@@ -178,7 +178,7 @@ public class SnomedHierarchy {
 	}
 	
 	public LongSet getRootConceptIds() {
-		final LongSet result = PrimitiveSets.newLongOpenHashSet(roots.length);
+		final LongSet result = PrimitiveSets.newLongOpenHashSetWithExpectedSize(roots.length);
 		for (int i = 0; i < roots.length; i++) {
 			result.add(getConceptId(roots[i]));
 		}
@@ -212,7 +212,7 @@ public class SnomedHierarchy {
 			return PrimitiveSets.newLongOpenHashSet();
 		}
 
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(subtypes.length);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(subtypes.length);
 
 		for (int i = 0; i < subtypes.length; i++) {
 			$.add(getConceptId(subtypes[i]));
@@ -240,7 +240,7 @@ public class SnomedHierarchy {
 			return PrimitiveSets.newLongOpenHashSet();
 		}
 
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(supertypes.length);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(supertypes.length);
 
 		for (int i = 0; i < supertypes.length; i++) {
 			$.add(getConceptId(supertypes[i]));
@@ -272,7 +272,7 @@ public class SnomedHierarchy {
 			return PrimitiveSets.newLongOpenHashSet();
 		}
 	
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(count);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(count);
 		for (int i = subTypeMap.nextSetBit(0); i >= 0; i = subTypeMap.nextSetBit(i + 1)) {
 			$.add(getConceptId(i));
 	
@@ -304,7 +304,7 @@ public class SnomedHierarchy {
 			return PrimitiveSets.newLongOpenHashSet();
 		}
 	
-		final LongSet $ = PrimitiveSets.newLongOpenHashSet(count);
+		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(count);
 		for (int i = superTypeMap.nextSetBit(0); i >= 0; i = superTypeMap.nextSetBit(i + 1)) {
 			$.add(getConceptId(i));
 	

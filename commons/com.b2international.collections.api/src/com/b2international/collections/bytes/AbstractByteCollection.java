@@ -15,8 +15,6 @@
  */
 package com.b2international.collections.bytes;
 
-import java.util.Iterator;
-
 /**
  * @since 4.7
  */
@@ -166,6 +164,42 @@ public abstract class AbstractByteCollection implements ByteCollection {
                 return sb.append(']').toString();
             sb.append(',').append(' ');
         }
+	}
+	
+	public static int hashCode(ByteCollection byteCollection) {
+		int result = 1;
+		ByteIterator itr = byteCollection.iterator();
+	    
+	    while (itr.hasNext()) {
+	    	byte element = itr.next();
+	        result = 31 * result + element;
+	    }
+	
+	    return result;
+	}
+	
+	/**
+	 * Determines whether two iterators contain equal elements in the same order.
+	 * More specifically, this method returns {@code true} if {@code iterator1}
+	 * and {@code iterator2} contain the same number of elements and every element
+	 * of {@code iterator1} is equal to the corresponding element of
+	 * {@code iterator2}.
+	 *
+	 * <p>Note that this will modify the supplied iterators, since they will have
+	 * been advanced some number of elements forward.
+	 */
+	public static boolean elementsEqual(ByteIterator iterator1, ByteIterator iterator2) {
+		while (iterator1.hasNext()) {
+			if (!iterator2.hasNext()) {
+				return false;
+			}
+			byte b1 = iterator1.next();
+			byte b2 = iterator2.next();
+			if (b1 != b2) {
+				return false;
+			}
+		}
+		return !iterator2.hasNext();
 	}
 
 }

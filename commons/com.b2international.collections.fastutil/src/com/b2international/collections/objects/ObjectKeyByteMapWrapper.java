@@ -21,6 +21,7 @@ import java.util.Set;
 import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.bytes.ByteCollectionWrapper;
 import com.b2international.collections.bytes.ByteValueMap;
+import com.google.common.primitives.Bytes;
 
 import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenCustomHashMap;
@@ -36,7 +37,43 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 	private ObjectKeyByteMapWrapper(Object2ByteMap<K> delegate) {
 		this.delegate = delegate;
 	}
+
+	@Override
+	public int hashCode() {
+		int h = 0;
+		final Iterator<K> i = keySet().iterator();
+        while (i.hasNext()) {
+            K key = i.next();
+            byte value = get(key);
+            h += (key==null ? 0 : key.hashCode()) ^ Bytes.hashCode(value);
+        }
+		return h;
+	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof ByteValueMap)) return false;
+		
+		try {
+			final ByteValueMap<K> other = (ByteValueMap<K>) obj;
+			if (other.size() != size()) return false;
+			
+			final Iterator<K> i = keySet().iterator();
+			while (i.hasNext()) {
+				K key = i.next();
+				byte value = get(key);
+				if (value != other.get(key)) {
+					return false;
+				}
+			}
+		} catch (ClassCastException e) {
+			return false;
+		}
+
+        return true;
+	}
+
 	@Override
 	public void clear() {
 		delegate.clear();
@@ -60,11 +97,6 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 	@Override
 	public boolean containsKey(K key) {
 		return delegate.containsKey(key);
-	}
-
-	@Override
-	public ByteValueMap<K> dup() {
-		return create(this);
 	}
 
 	@Override
@@ -99,7 +131,7 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 			final Object2ByteMap<K> sourceDelegate = ((ObjectKeyByteMapWrapper<K>) map).delegate;
 			return new ObjectKeyByteMapWrapper<>(clone(sourceDelegate));
 		} else {
-			final ByteValueMap<K> result = create(map.size());
+			final ByteValueMap<K> result = createWithExpectedSize(map.size());
 			final Iterator<K> keys = map.keySet().iterator();
 			while (keys.hasNext()) {
 				final K key = keys.next();
@@ -109,7 +141,7 @@ public final class ObjectKeyByteMapWrapper<K> implements ByteValueMap<K> {
 		}
 	}
 	
-	public static <K> ByteValueMap<K> create(int expectedSize) {
+	public static <K> ByteValueMap<K> createWithExpectedSize(int expectedSize) {
 		return new ObjectKeyByteMapWrapper<>(new Object2ByteOpenHashMap<K>(expectedSize));
 	}
 	

@@ -22,9 +22,6 @@ import com.b2international.collections.PrimitiveList;
  */
 public interface ByteList extends PrimitiveList, ByteCollection {
 
-	@Override
-	ByteList dup();
-
 	byte get(int index);
 
 	@Override

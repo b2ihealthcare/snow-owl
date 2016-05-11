@@ -20,9 +20,6 @@ package com.b2international.collections;
  */
 public interface PrimitiveList extends PrimitiveCollection {
 
-	@Override
-	PrimitiveList dup();
-	
 	PrimitiveListIterator listIterator();
 	
 	PrimitiveListIterator listIterator(int startIndex);

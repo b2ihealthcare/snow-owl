@@ -165,5 +165,42 @@ public abstract class AbstractLongCollection implements LongCollection {
             sb.append(',').append(' ');
         }
 	}
+	
+	public static int hashCode(LongCollection longCollection) {
+		int result = 1;
+		LongIterator itr = longCollection.iterator();
+	    
+	    while (itr.hasNext()) {
+	    	long element = itr.next();
+            int elementHash = (int)(element ^ (element >>> 32));
+            result = 31 * result + elementHash;
+	    }
+	
+	    return result;
+	}
+	
+	/**
+	 * Determines whether two iterators contain equal elements in the same order.
+	 * More specifically, this method returns {@code true} if {@code iterator1}
+	 * and {@code iterator2} contain the same number of elements and every element
+	 * of {@code iterator1} is equal to the corresponding element of
+	 * {@code iterator2}.
+	 *
+	 * <p>Note that this will modify the supplied iterators, since they will have
+	 * been advanced some number of elements forward.
+	 */
+	public static boolean elementsEqual(LongIterator iterator1, LongIterator iterator2) {
+		while (iterator1.hasNext()) {
+			if (!iterator2.hasNext()) {
+				return false;
+			}
+			long b1 = iterator1.next();
+			long b2 = iterator2.next();
+			if (b1 != b2) {
+				return false;
+			}
+		}
+		return !iterator2.hasNext();
+	}
 
 }

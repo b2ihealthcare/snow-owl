@@ -26,8 +26,8 @@ import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyMap;
-import com.b2international.commons.collect.PrimitiveMaps;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -64,8 +64,9 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 	 * @param expectedSize the expected size
 	 */
 	public ConcreteDomainFragmentCollector(final int expectedSize) {
-		dataTypeMap = (0 > expectedSize) ? PrimitiveMaps.<Collection<ConcreteDomainFragment>> newLongKeyOpenHashMap(expectedSize)
-				: PrimitiveMaps.<Collection<ConcreteDomainFragment>> newLongKeyOpenHashMap();
+		dataTypeMap = (0 > expectedSize) 
+				? PrimitiveMaps.<Collection<ConcreteDomainFragment>>newLongKeyOpenHashMapWithExpectedSize(expectedSize)
+				: PrimitiveMaps.<Collection<ConcreteDomainFragment>>newLongKeyOpenHashMap();
 	}
 
 	@Override

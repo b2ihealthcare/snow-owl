@@ -26,9 +26,6 @@ public interface LongKeyFloatMap extends PrimitiveKeyMap, PrimitiveValueMap {
 
 	boolean containsKey(long key);
 
-	@Override
-	LongKeyFloatMap dup();
-
 	float get(long key);
 
 	@Override

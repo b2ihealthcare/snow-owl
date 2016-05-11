@@ -105,11 +105,6 @@ public class FloatCollectionWrapper extends AbstractFloatCollection implements F
 	public final float[] toArray() {
 		return delegate.toFloatArray();
 	}
-
-	@Override
-	public FloatCollection dup() {
-		throw new UnsupportedOperationException();
-	}
 	
 	@Override
 	public void trimToSize() {
@@ -119,5 +114,4 @@ public class FloatCollectionWrapper extends AbstractFloatCollection implements F
 	public static FloatCollection wrap(it.unimi.dsi.fastutil.floats.FloatCollection collection) {
 		return new FloatCollectionWrapper(collection);
 	}
-
 }

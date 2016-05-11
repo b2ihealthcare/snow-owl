@@ -40,7 +40,4 @@ public interface LongCollection extends PrimitiveCollection {
 	boolean retainAll(LongCollection collection);
 	
 	long[] toArray();
-	
-	@Override
-	LongCollection dup();
 }

@@ -15,11 +15,7 @@
  */
 package com.b2international.collections.longs;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongCollectionWrapper;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.collections.longs.LongSet;
+import com.google.common.primitives.Longs;
 
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenCustomHashMap;
@@ -36,6 +32,38 @@ public final class LongKeyLongMapWrapper implements LongKeyLongMap {
 		this.delegate = delegate;
 	}
 
+	@Override
+	public int hashCode() {
+		int h = 0;
+		final LongIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            long key = i.next();
+            long value = get(key);
+            h += Longs.hashCode(key) ^ Longs.hashCode(value);
+        }
+		return h;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!(obj instanceof LongKeyLongMap)) return false;
+		
+		final LongKeyLongMap other = (LongKeyLongMap) obj;
+        if (other.size() != size()) return false;
+
+        final LongIterator i = keySet().iterator();
+        while (i.hasNext()) {
+            long key = i.next();
+            long value = get(key);
+            if (value != other.get(key)) {
+            	return false;
+            }
+        }
+
+        return true;
+	}
+	
 	@Override
 	public void clear() {
 		delegate.clear();
@@ -59,11 +87,6 @@ public final class LongKeyLongMapWrapper implements LongKeyLongMap {
 	@Override
 	public boolean containsKey(long key) {
 		return delegate.containsKey(key);
-	}
-
-	@Override
-	public LongKeyLongMap dup() {
-		return create(this);
 	}
 
 	@Override
@@ -91,12 +114,12 @@ public final class LongKeyLongMapWrapper implements LongKeyLongMap {
 		return LongCollectionWrapper.wrap(delegate.values());
 	}
 
-	private LongKeyLongMap create(LongKeyLongMap map) {
+	public static LongKeyLongMap create(LongKeyLongMap map) {
 		if (map instanceof LongKeyLongMapWrapper) {
 			final Long2LongMap sourceDelegate = ((LongKeyLongMapWrapper) map).delegate;
 			return new LongKeyLongMapWrapper(clone(sourceDelegate));
 		} else {
-			final LongKeyLongMap result = create(map.size());
+			final LongKeyLongMap result = createWithExpectedSize(map.size());
 			final LongIterator keys = map.keySet().iterator();
 			while (keys.hasNext()) {
 				final long key = keys.next();
@@ -110,7 +133,7 @@ public final class LongKeyLongMapWrapper implements LongKeyLongMap {
 		return new LongKeyLongMapWrapper(new Long2LongOpenHashMap());
 	}
 	
-	public static LongKeyLongMap create(int expectedSize) {
+	public static LongKeyLongMap createWithExpectedSize(int expectedSize) {
 		return new LongKeyLongMapWrapper(new Long2LongOpenHashMap(expectedSize));
 	}
 	

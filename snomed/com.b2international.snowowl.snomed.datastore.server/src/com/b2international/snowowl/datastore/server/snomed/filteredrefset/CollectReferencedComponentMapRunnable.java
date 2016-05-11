@@ -25,12 +25,12 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.arrays.BidiMapWithInternalId;
-import com.b2international.commons.collect.PrimitiveSets;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
