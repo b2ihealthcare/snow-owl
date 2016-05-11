@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index;
+package com.b2international.index.analyzer;
 
 import java.io.Reader;
 
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.Version;
 
-import com.b2international.index.TextConstants;
 import com.google.common.base.CharMatcher;
 
 /**
