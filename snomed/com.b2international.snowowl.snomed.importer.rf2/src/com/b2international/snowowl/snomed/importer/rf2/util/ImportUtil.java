@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.importer.rf2.util;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.snowowl.core.users.SpecialUserStore.SYSTEM_USER_NAME;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind.FILES;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.CONCEPT;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.DESCRIPTION;
@@ -128,13 +127,16 @@ public final class ImportUtil {
 	private static final org.slf4j.Logger IMPORT_LOGGER = org.slf4j.LoggerFactory.getLogger(ImportUtil.class);
 	private static final String SNOMED_IMPORT_POST_PROCESSOR_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor";
 
-	public SnomedImportResult doImport(final IBranchPath branchPath, final String languageRefSetId, 
-			final ContentSubType contentSubType, final File releaseArchive, final boolean shouldCreateVersions) throws Exception {
+	public SnomedImportResult doImport(final String languageRefSetId, 
+			final ContentSubType contentSubType, final IBranchPath branchPath, final File releaseArchive, final boolean shouldCreateVersions) throws Exception {
 		return doImport(branchPath, languageRefSetId, contentSubType, releaseArchive, shouldCreateVersions, SYSTEM_USER_NAME, new NullProgressMonitor());
 	}
 	
-	public SnomedImportResult doImport(final String userId, final String languageRefSetId, final ContentSubType contentSubType, final File releaseArchive, final IProgressMonitor monitor) throws ImportException {
-		return doImport(createMainPath(), languageRefSetId, contentSubType, releaseArchive, true, userId, new ConsoleProgressMonitor());
+	public SnomedImportResult doImport(final String userId, final String languageRefSetId, final ContentSubType contentSubType, 
+			String branchPathName, final File releaseArchive, final IProgressMonitor monitor) throws ImportException {
+		
+		IBranchPath branchPath = BranchPathUtils.createPath(branchPathName);
+		return doImport(branchPath, languageRefSetId, contentSubType, releaseArchive, true, userId, new ConsoleProgressMonitor());
 	}
 
 	private SnomedImportResult doImport(final IBranchPath branchPath, final String languageRefSetId, 
@@ -145,6 +147,7 @@ public final class ImportUtil {
 		checkNotNull(contentSubType, "contentSubType");
 		checkNotNull(releaseArchive, "releaseArchive");
 		checkArgument(releaseArchive.canRead(), "Cannot read SNOMED CT RF2 release archive content.");
+		checkArgument(BranchPathUtils.exists("snomedStore", branchPath.getPath()));
 		
 		final ImportConfiguration config = new ImportConfiguration();
 		config.setVersion(contentSubType);
