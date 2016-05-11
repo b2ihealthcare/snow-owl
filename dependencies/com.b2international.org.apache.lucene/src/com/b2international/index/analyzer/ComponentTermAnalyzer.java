@@ -22,8 +22,6 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 
-import com.b2international.index.TextConstants;
-
 /**
  * A variant of {@link Analyzer} that uses {@link CharMatcherTokenizer} to tokenize incoming text and convert it to lower case,
  * then passes tokens through {@link ASCIIFoldingFilter} to convert any non-ASCII characters to their closest ASCII alternative,

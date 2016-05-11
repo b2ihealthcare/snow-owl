@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.analyzer;
 
 import com.google.common.base.CharMatcher;
 
