@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.serviceconfig;
+package com.b2international.snowowl.datastore.server.tasks;
 
 import java.io.File;
 
@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
-import com.b2international.snowowl.datastore.server.tasks.TaskStateManager;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.b2international.snowowl.rpc.RpcUtil;
