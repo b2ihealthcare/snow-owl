@@ -19,17 +19,12 @@ import static com.b2international.commons.collect.LongSets.parallelForEach;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
@@ -53,14 +48,13 @@ import com.b2international.commons.collect.LongSets;
 import com.b2international.index.analyzer.TextConstants;
 import com.b2international.index.lucene.DocIdCollector.DocIds;
 import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
+import com.b2international.index.lucene.Highlighting;
 import com.b2international.index.lucene.LongIndexField;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
 /**
@@ -215,56 +209,6 @@ public abstract class IndexUtils {
 		return fieldable.numericValue();
 	}
 	
-	/**
-	 * Splits a string to a list of tokens using the specified Lucene analyzer.
-	 * 
-	 * @param analyzer the analyzer determining token boundaries (may not be {@code null})
-	 * @param s the string to split
-	 * @return a list of tokens, or an empty list if {@code s} is {@code null} or empty
-	 */
-	public static List<String> split(final @Nonnull Analyzer analyzer, @Nullable final String s) {
-		
-		checkNotNull(analyzer, "analyzer");
-		
-		if (StringUtils.isEmpty(s)) {
-			return ImmutableList.of();
-		}
-		
-		final List<String> tokens = Lists.newArrayList();
-		TokenStream stream = null;
-		
-		try {
-			
-			stream = analyzer.tokenStream(null, new StringReader(s));
-			stream.reset();
-			
-			while (stream.incrementToken()) {
-				tokens.add(stream.getAttribute(CharTermAttribute.class).toString());
-			}
-			
-		} catch (final IOException ignored) {
-			// Should not be thrown when using a string reader
-		} finally {
-			endAndCloseQuietly(stream);
-		}
-		
-		return tokens;
-	}
-
-	private static void endAndCloseQuietly(final TokenStream stream) {
-
-		if (null == stream) {
-			return;
-		}
-		
-		try (final TokenStream tokenStream = stream; ) {
-			tokenStream.end();
-		} catch (final IOException e) {
-			// Should not be thrown when using a string reader
-		}
-		
-	}
-
 	private IndexUtils() {
 		// Suppress instantiation
 	}
@@ -374,5 +318,13 @@ public abstract class IndexUtils {
 				}
 			}
 		});
+	}
+
+	public static int[][] getMatchRegions(String queryExpression, String label) {
+		return Highlighting.getMatchRegions(queryExpression, getSortKey(label.toLowerCase(Locale.ENGLISH)));
+	}
+
+	public static String[] getSuffixes(String queryExpression, String label) {
+		return Highlighting.getSuffixes(queryExpression, label);
 	}
 }
