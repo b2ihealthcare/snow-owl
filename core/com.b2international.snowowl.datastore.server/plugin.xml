@@ -41,16 +41,6 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.serviceconfig.PreviousPicksConfigJob"
-            id="com.b2international.snowowl.datastore.server.serviceconfig.PreviousPicksConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.serviceconfig.BookmarksConfigJob"
-            id="com.b2international.snowowl.datastore.server.serviceconfig.BookmarksConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.CDOServerBranchManagerConfigJob"
             id="com.b2international.snowowl.datastore.server.CDOServerBranchManagerConfigJob"
             terminologyId="UNSPECIFIED">
@@ -73,11 +63,6 @@
       <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.serviceconfig.RemoteJobManagerServiceConfigJob"
             id="com.b2international.snowowl.datastore.server.serviceconfig.RemoteJobManagerServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.index.diff.IndexDifferServiceConfigJob"
-            id="com.b2international.snowowl.datastore.server.index.diff.IndexDifferServiceConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob

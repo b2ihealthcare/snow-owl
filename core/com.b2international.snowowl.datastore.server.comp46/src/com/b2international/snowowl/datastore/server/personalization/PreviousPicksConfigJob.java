@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.serviceconfig;
+package com.b2international.snowowl.datastore.server.personalization;
 
 import java.io.File;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.personalization.IBookmarksManager;
+import com.b2international.snowowl.datastore.personalization.IPreviousPicksManager;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
-import com.b2international.snowowl.datastore.server.personalization.BookmarksManager;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 
 /**
  */
-public class BookmarksConfigJob extends AbstractServerServiceConfigJob<IBookmarksManager> {
+public class PreviousPicksConfigJob extends AbstractServerServiceConfigJob<IPreviousPicksManager> {
 
-	private static final String INDEX_DIRECTORY = "bookmarks";
+	private static final String INDEX_DIRECTORY = "previous_picks";
 	
-	private static final String JOB_NAME = "Bookmarks server service configuration...";
+	private static final String JOB_NAME = "Previous picks service configuration...";
 
-	public BookmarksConfigJob() {
+	public PreviousPicksConfigJob() {
 		super(JOB_NAME, DatastoreServerActivator.PLUGIN_ID);
 	}
 
@@ -42,8 +41,8 @@ public class BookmarksConfigJob extends AbstractServerServiceConfigJob<IBookmark
 	 * @see com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob#getServiceClass()
 	 */
 	@Override
-	protected Class<IBookmarksManager> getServiceClass() {
-		return IBookmarksManager.class;
+	protected Class<IPreviousPicksManager> getServiceClass() {
+		return IPreviousPicksManager.class;
 	}
 
 	/*
@@ -51,11 +50,10 @@ public class BookmarksConfigJob extends AbstractServerServiceConfigJob<IBookmark
 	 * @see com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob#createServiceImplementation()
 	 */
 	@Override
-	protected BookmarksManager createServiceImplementation() throws SnowowlServiceException {
+	protected PreviousPicksManager createServiceImplementation() throws SnowowlServiceException {
 		final File dir = new File(new File(getEnvironment().getDataDirectory(), "indexes"), INDEX_DIRECTORY);
-		final BookmarksManager manager = new BookmarksManager(dir);
-		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(manager);
-		return manager;
+		final PreviousPicksManager previousPicks = new PreviousPicksManager(dir);
+		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(previousPicks);
+		return previousPicks;
 	}
-	
 }
