@@ -715,24 +715,6 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	}
 	
 	@Override
-	public FilteredRefSetMemberBrowser2 createFilteredRefSetBrowser(final IBranchPath branchPath, 
-			final long refSetId, 
-			@Nullable final String filterExpression, 
-			final boolean includeInactiveMembers, 
-			final List<IRefSetMemberOperation> pendingOperations) {
-		
-		final FilteredRefSetMemberBrowser2Builder builder = new FilteredRefSetMemberBrowser2Builder(branchPath, 
-				refSetId, 
-				filterExpression, 
-				includeInactiveMembers, 
-				pendingOperations, 
-				service, 
-				this);
-		
-		return builder.build();
-	}
-	
-	@Override
 	protected short getConceptTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 	}

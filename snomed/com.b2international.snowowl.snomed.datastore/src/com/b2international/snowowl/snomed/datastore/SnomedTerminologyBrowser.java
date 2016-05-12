@@ -187,22 +187,6 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	long getStorageKey(final IBranchPath branchPath, final String conceptId);
 	
 	/**
-	 * Builds a taxonomy among the referenced components of a SNOMED&nbsp;CT reference set.
-	 * @param branchPath the branch path.
-	 * @param refSetId the reference set identifier concept ID.
-	 * @param filterExpression the query expression. Used for filtering reference set member referenced components based on their labels. Can be {@code null} if nothing to filter.
-	 * @param includeInactiveMembers {@code false} if inactive reference set members should be excluded. Otherwise {@code true}.
-	 * @param pendingOperations a list of uncommitted reference set member manipulating operations to take into account when filtering.
-	 * @return a filtered taxonomy for referenced components of reference set members.
-	 * @deprecated unsupported, will be removed in 4.7
-	 */
-	FilteredRefSetMemberBrowser2 createFilteredRefSetBrowser(final IBranchPath branchPath,
-			final long refSetId, 
-			@Nullable final String filterExpression,
-			final boolean includeInactiveMembers, 
-			final List<IRefSetMemberOperation> pendingOperations);
-	
-	/**
 	 * Returns the sub types of the specified concept, with an additional boolean flag to indicate whether the concept has children or not.
 	 * 
 	 * @param branchPath the branch path
