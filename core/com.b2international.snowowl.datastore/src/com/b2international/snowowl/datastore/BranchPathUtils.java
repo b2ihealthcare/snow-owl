@@ -161,20 +161,6 @@ public abstract class BranchPathUtils {
 	}
 	
 	/**
-	 * Returns with a new {@link IBranchPath branch path} representing a version branch. 
-	 * The ancestor of the returning branch path is always the {@link IBranchPath#MAIN_BRANCH}.
-	 * <p>This method will return with a path representing the MAIN branch only and if only the 
-	 * given version name argument equals with the {@link IBranchPath#MAIN_BRANCH}. 
-	 * @param versionName the version name.
-	 * @return the branch path representing the version branch.
-	 */
-	public static IBranchPath createVersionPath(final String versionName) {
-		return IBranchPath.MAIN_BRANCH.equals(versionName) 
-				? createMainPath() 
-				: createPath(createMainPath(), checkNotNull(versionName, "versionName"));
-	}
-	
-	/**
 	 * Returns a new {@code IBranchPath} instance where the path has this instance's path and the specified segment concatenated. Multiple
 	 * separators at the insertion point will be converted to a single separator.
 	 * 
