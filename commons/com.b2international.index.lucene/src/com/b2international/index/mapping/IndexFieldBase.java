@@ -36,7 +36,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.index.filter.MatchNoDocsFilter;
+import com.b2international.index.lucene.MatchNoDocsFilter;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;

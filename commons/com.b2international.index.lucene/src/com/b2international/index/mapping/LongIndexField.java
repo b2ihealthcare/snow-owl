@@ -36,7 +36,7 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.index.filter.MatchNoDocsFilter;
+import com.b2international.index.lucene.MatchNoDocsFilter;
 
 /**
  * @since 4.3
