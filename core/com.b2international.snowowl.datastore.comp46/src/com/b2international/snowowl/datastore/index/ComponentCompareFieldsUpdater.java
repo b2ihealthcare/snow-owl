@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.index;
 
 import com.b2international.index.lucene.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentUpdaterBase;
 import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 

@@ -21,6 +21,7 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.index.lucene.DocumentBuilderBase;
 import com.b2international.index.lucene.DocumentBuilderFactory;
+import com.b2international.index.lucene.DocumentUpdater;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;

@@ -19,6 +19,7 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.lucene.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentUpdaterBase;
 
 /**
  * @since 4.3

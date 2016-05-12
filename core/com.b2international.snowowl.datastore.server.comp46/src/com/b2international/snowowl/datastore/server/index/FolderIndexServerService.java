@@ -41,7 +41,6 @@ import com.b2international.snowowl.datastore.index.FolderIndexEntry;
 import com.b2international.snowowl.datastore.index.IFolderIndexService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.ParentFolderAwareIndexEntry;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -61,7 +60,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	@Override
 	public Set<FolderIndexEntry> getTopLevelFolders(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path must not be null.");
-		return getSubFoldersByParentField(branchPath, Mappings.ROOT_ID_STRING);
+		return getSubFoldersByParentField(branchPath, Fields.ROOT_ID_STRING);
 	}
 	
 	private FolderIndexEntry createFolderResultObject(final IBranchPath branchPath, final Document document) {

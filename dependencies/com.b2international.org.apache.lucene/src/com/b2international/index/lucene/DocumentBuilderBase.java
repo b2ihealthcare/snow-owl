@@ -231,10 +231,10 @@ public abstract class DocumentBuilderBase<T extends DocumentBuilderBase<T>> {
 	
 	protected abstract T getSelf();
 	
-//	public final T with(DocumentUpdater<T> updater) {
-//		updater.update(getSelf());
-//		return getSelf();
-//	}
+	public final T with(DocumentUpdater<T> updater) {
+		updater.update(getSelf());
+		return getSelf();
+	}
 	
 	protected final int toIntValue(boolean value) {
 		return value ? 1 : 0;

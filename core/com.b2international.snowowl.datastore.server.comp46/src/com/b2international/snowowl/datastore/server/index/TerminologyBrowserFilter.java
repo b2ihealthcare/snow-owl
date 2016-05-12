@@ -42,7 +42,6 @@ import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrow
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
