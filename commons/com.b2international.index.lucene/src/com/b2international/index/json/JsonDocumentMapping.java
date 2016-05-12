@@ -20,9 +20,9 @@ import java.util.Collections;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 
+import com.b2international.index.lucene.Fields;
+import com.b2international.index.lucene.IndexField;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.IndexField;
-import com.b2international.index.mapping.Fields;
 
 /**
  * @since 4.7

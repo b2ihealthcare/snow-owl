@@ -13,13 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
+
+import java.io.IOException;
+
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.NumericDocValues;
 
 /**
- * Simple designator interface for stored only {@link IndexField} implementations.
- * 
  * @since 4.3 
- * @param <T> - type of the field
+ * @param <T> - the type of the numeric field value
  */
-public interface StoredIndexField<T> extends IndexField<T> {
+public interface NumericDocValuesIndexField<T extends Number> extends IndexField<T> {
+
+	NumericDocValuesField toDocValuesField(T value);
+	
+	NumericDocValues getDocValues(AtomicReader reader) throws IOException;
+	
 }

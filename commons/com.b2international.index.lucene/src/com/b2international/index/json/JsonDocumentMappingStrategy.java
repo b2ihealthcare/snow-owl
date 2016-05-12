@@ -24,9 +24,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.lucene.Fields;
+import com.b2international.index.lucene.IndexField;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.Fields;
-import com.b2international.index.mapping.IndexField;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

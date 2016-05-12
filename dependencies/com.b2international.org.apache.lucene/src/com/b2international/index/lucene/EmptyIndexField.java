@@ -1,4 +1,4 @@
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
 import java.util.List;
 import java.util.Set;

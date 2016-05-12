@@ -13,39 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
+import org.apache.lucene.document.FloatField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 
-
 /**
  * @since 4.3
  */
-public abstract class StringIndexFieldBase extends IndexFieldBase<String> {
+public class FloatIndexField extends IndexFieldBase<Float> {
 
-	public StringIndexFieldBase(String fieldName) {
+	public FloatIndexField(String fieldName) {
 		this(fieldName, true);
 	}
 	
-	public StringIndexFieldBase(String fieldName, boolean stored) {
-		super(fieldName, stored);
+	public FloatIndexField(String fieldName, boolean store) {
+		super(fieldName, store);
 	}
-	
+
 	@Override
-	protected BytesRef toBytesRef(String value) {
-		return new BytesRef(value);
+	protected Float getValue(IndexableField field) {
+		return field.numericValue().floatValue();
 	}
-	
+
+	@Override
+	protected BytesRef toBytesRef(Float value) {
+		return null;
+	}
+
+	@Override
+	protected IndexableField toField(Float value) {
+		return new FloatField(fieldName(), value, isStored());
+	}
+
 	@Override
 	protected Type getSortFieldType() {
-		return Type.STRING;
-	}
-	
-	@Override
-	public String getValue(IndexableField field) {
-		return field.stringValue();
+		return Type.FLOAT;
 	}
 
 }

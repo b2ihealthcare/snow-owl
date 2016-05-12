@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
-import com.b2international.index.mapping.DocumentBuilderBase.DocumentBuilder;
-import com.b2international.index.mapping.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
-import com.b2international.index.mapping.QueryBuilderBase.QueryBuilder;
+import com.b2international.index.lucene.DocumentBuilderBase.DocumentBuilder;
+import com.b2international.index.lucene.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
+import com.b2international.index.lucene.QueryBuilderBase.QueryBuilder;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 

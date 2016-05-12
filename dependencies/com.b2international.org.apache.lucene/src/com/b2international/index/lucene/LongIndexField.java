@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -35,8 +35,6 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.CompareUtils;
-import com.b2international.index.lucene.MatchNoDocsFilter;
 
 /**
  * @since 4.3
@@ -96,7 +94,7 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	}
 	
 	public final Filter createTermsFilter(LongCollection values) {
-		if (CompareUtils.isEmpty(values)) {
+		if (values == null || values.isEmpty()) {
 			return new MatchNoDocsFilter(); 
 		} else {
 			// Converted BytesRef values should be unique, but TermsFilter requires a writable list for sorting

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
 import java.io.IOException;
 
@@ -23,23 +23,30 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
 /**
- * @since 4.3
+ * @since 4.3 
+ * @param <T> - the type of the field
  */
-public class DocValuesIntIndexField extends IntIndexField implements NumericDocValuesIndexField<Integer> {
+public class StoredOnlyDocValuesLongIndexField<T extends Number> extends IndexFieldDelegate<T> implements NumericDocValuesIndexField<T> {
 
-	public DocValuesIntIndexField(String fieldName) {
-		super(fieldName);
+	public StoredOnlyDocValuesLongIndexField(StoredIndexField<T> delegate) {
+		super(delegate);
 	}
 
 	@Override
-	public void addTo(Document doc, Integer value) {
+	public void addTo(Document doc, T value) {
 		super.addTo(doc, value);
 		doc.add(toDocValuesField(value));
 	}
 	
 	@Override
-	public NumericDocValuesField toDocValuesField(Integer value) {
-		return new NumericDocValuesField(fieldName(), value);
+	public NumericDocValuesField toDocValuesField(T value) {
+		if (value instanceof Long) {
+			return new NumericDocValuesField(fieldName(), (long) value);
+		} else if (value instanceof Integer) {
+			return new NumericDocValuesField(fieldName(), (int) value);
+		} else {
+			throw new IllegalArgumentException("Integer and Long types only");
+		}
 	}
 
 	@Override

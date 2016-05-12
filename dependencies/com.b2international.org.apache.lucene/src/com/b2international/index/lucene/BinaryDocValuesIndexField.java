@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
-import org.apache.lucene.document.Document;
+import java.io.IOException;
 
-import com.b2international.collections.longs.LongList;
-import com.b2international.collections.longs.LongSet;
+import org.apache.lucene.document.BinaryDocValuesField;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.BinaryDocValues;
 
 /**
  * @since 4.3
  */
-public interface LongCollectionIndexField extends IndexField<Long> {
+public interface BinaryDocValuesIndexField extends IndexField<String> {
 
-	LongSet getValueAsLongSet(Document doc);
+	BinaryDocValuesField toDocValuesField(String value);
 	
-	LongList getValueAsLongList(Document doc);
+	BinaryDocValues getDocValues(AtomicReader reader) throws IOException;
+	
 }

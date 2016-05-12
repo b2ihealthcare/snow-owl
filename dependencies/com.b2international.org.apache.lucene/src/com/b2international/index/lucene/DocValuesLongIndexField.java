@@ -13,38 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
 import java.io.IOException;
 
-import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.NumericDocValues;
 
 /**
  * @since 4.3
  */
-public class DocValuesStringIndexField extends StringIndexField implements BinaryDocValuesIndexField {
+public class DocValuesLongIndexField extends LongIndexField implements NumericDocValuesIndexField<Long> {
 
-	public DocValuesStringIndexField(String fieldName) {
+	public DocValuesLongIndexField(String fieldName) {
 		super(fieldName);
-	}
-
-	@Override
-	public void addTo(Document doc, String value) {
-		super.addTo(doc, value);
-		doc.add(toDocValuesField(value));
 	}
 	
 	@Override
-	public BinaryDocValuesField toDocValuesField(String value) {
-		return new BinaryDocValuesField(fieldName(), toBytesRef(value));
+	public void addTo(Document doc, Long value) {
+		super.addTo(doc, value);
+		doc.add(toDocValuesField(value));
 	}
 
 	@Override
-	public BinaryDocValues getDocValues(AtomicReader reader) throws IOException {
-		return reader.getBinaryDocValues(fieldName());
+	public NumericDocValuesField toDocValuesField(Long value) {
+		return new NumericDocValuesField(fieldName(), value);
 	}
 
+	@Override
+	public NumericDocValues getDocValues(AtomicReader reader) throws IOException {
+		return reader.getNumericDocValues(fieldName());
+	}
+	
 }

@@ -13,21 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
-
-import java.io.IOException;
-
-import org.apache.lucene.document.BinaryDocValuesField;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.BinaryDocValues;
+package com.b2international.index.lucene;
 
 /**
- * @since 4.3
+ * Simple designator interface for stored only {@link IndexField} implementations.
+ * 
+ * @since 4.3 
+ * @param <T> - type of the field
  */
-public interface BinaryDocValuesIndexField extends IndexField<String> {
-
-	BinaryDocValuesField toDocValuesField(String value);
-	
-	BinaryDocValues getDocValues(AtomicReader reader) throws IOException;
-	
+public interface StoredIndexField<T> extends IndexField<T> {
 }

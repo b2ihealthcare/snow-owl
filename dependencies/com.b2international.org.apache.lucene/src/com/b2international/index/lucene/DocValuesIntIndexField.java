@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
 import java.io.IOException;
 
@@ -25,20 +25,20 @@ import org.apache.lucene.index.NumericDocValues;
 /**
  * @since 4.3
  */
-public class DocValuesLongIndexField extends LongIndexField implements NumericDocValuesIndexField<Long> {
+public class DocValuesIntIndexField extends IntIndexField implements NumericDocValuesIndexField<Integer> {
 
-	public DocValuesLongIndexField(String fieldName) {
+	public DocValuesIntIndexField(String fieldName) {
 		super(fieldName);
 	}
-	
+
 	@Override
-	public void addTo(Document doc, Long value) {
+	public void addTo(Document doc, Integer value) {
 		super.addTo(doc, value);
 		doc.add(toDocValuesField(value));
 	}
-
+	
 	@Override
-	public NumericDocValuesField toDocValuesField(Long value) {
+	public NumericDocValuesField toDocValuesField(Integer value) {
 		return new NumericDocValuesField(fieldName(), value);
 	}
 
@@ -46,5 +46,5 @@ public class DocValuesLongIndexField extends LongIndexField implements NumericDo
 	public NumericDocValues getDocValues(AtomicReader reader) throws IOException {
 		return reader.getNumericDocValues(fieldName());
 	}
-	
+
 }

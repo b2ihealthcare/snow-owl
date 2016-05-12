@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
-import java.io.IOException;
+import org.apache.lucene.document.Document;
 
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.NumericDocValues;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 
 /**
- * @since 4.3 
- * @param <T> - the type of the numeric field value
+ * @since 4.3
  */
-public interface NumericDocValuesIndexField<T extends Number> extends IndexField<T> {
+public interface LongCollectionIndexField extends IndexField<Long> {
 
-	NumericDocValuesField toDocValuesField(T value);
+	LongSet getValueAsLongSet(Document doc);
 	
-	NumericDocValues getDocValues(AtomicReader reader) throws IOException;
-	
+	LongList getValueAsLongList(Document doc);
 }

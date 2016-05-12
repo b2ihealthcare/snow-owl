@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;

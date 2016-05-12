@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.mapping;
+package com.b2international.index.lucene;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -35,13 +35,12 @@ import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.index.lucene.MatchNoDocsFilter;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.3
@@ -160,7 +159,7 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	
 	@Override
 	public final Filter createTermsFilter(final Iterable<T> values) {
-		if (CompareUtils.isEmpty(values)) {
+		if (values == null || Iterables.isEmpty(values)) {
 			return new MatchNoDocsFilter(); 
 		} else {
 			// Converted BytesRef values should be unique, but TermsFilter requires a writable list for sorting
@@ -177,7 +176,7 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 
 	@Override
 	public final Filter createBytesRefFilter(final Iterable<BytesRef> bytesRefs) {
-		if (CompareUtils.isEmpty(bytesRefs)) {
+		if (bytesRefs == null || Iterables.isEmpty(bytesRefs)) {
 			return new MatchNoDocsFilter();
 		} else {
 			// BytesRef values should be unique, but TermsFilter requires a writable list for sorting

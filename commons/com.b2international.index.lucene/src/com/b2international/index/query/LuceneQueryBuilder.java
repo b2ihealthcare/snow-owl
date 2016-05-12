@@ -36,8 +36,8 @@ import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.json.JsonDocumentMapping;
+import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.Fields;
 import com.google.common.collect.Queues;
 
 /**
