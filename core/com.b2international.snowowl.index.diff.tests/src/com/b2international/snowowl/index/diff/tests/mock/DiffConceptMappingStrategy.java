@@ -19,10 +19,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.lucene.document.Document;
 
+import com.b2international.index.lucene.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentBuilderBase.DocumentBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase.DocumentBuilder;
 
 /**
  * Abstract superclass creating an indexed document representation from an incoming concept.
