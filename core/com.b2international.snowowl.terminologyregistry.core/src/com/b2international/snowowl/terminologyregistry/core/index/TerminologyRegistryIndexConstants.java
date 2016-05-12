@@ -25,6 +25,7 @@ public abstract class TerminologyRegistryIndexConstants {
 	public static final String VERSION_EFFECTIVE_DATE = "versionVersionEffectiveDate";
 	public static final String VERSION_DESCRIPTION = "versionVersionDescription";
 	public static final String VERSION_VERSION_ID = "versionVersionId";
+	public static final String VERSION_PARENT_BRANCH_PATH = "parentBranchPath";
 	public static final String VERSION_LATEST_UPDATE_DATE = "versionLatestUpdateDate";
 	public static final String VERSION_STORAGE_KEY = "versionStorageKey";
 	public static final String VERSION_REPOSITORY_UUID = "versionRepositoryUuid";

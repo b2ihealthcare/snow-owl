@@ -44,6 +44,8 @@ public abstract class CodeSystemVersionFactory {
 			IndexUtils.getLongValue(doc.getField(VERSION_LATEST_UPDATE_DATE)),
 			doc.get(VERSION_DESCRIPTION), 
 			doc.get(VERSION_VERSION_ID), 
+			doc.get(TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH) != null 
+			? doc.get(TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH): "MAIN",
 			getLongValue(doc.getField(VERSION_STORAGE_KEY)),
 			doc.get(VERSION_REPOSITORY_UUID));
 	}
