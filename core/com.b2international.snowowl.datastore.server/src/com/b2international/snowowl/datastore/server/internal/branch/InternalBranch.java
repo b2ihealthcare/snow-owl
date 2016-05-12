@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.branch.Branch;
 
 
 /**
  * @since 4.1
  */
+@Doc(type = "branch")
 public interface InternalBranch extends Branch {
 
 	void setBranchManager(BranchManagerImpl branchManager);

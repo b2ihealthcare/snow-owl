@@ -20,20 +20,22 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * @since 4.1
  */
 public class BranchSerializationTest {
 
 	private BranchImpl branch;
-	private BranchSerializer mapper;
+	private ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 	private CDOBranchImpl cdoBranch;
 
 	@Before
 	public void givenBranch() {
 		this.branch = new BranchImpl("name", "parent", 0L, 0L, false);
 		this.cdoBranch = new CDOBranchImpl("name", "parent", 0L, 0L, false, 0);
-		this.mapper = new BranchSerializer();
 	}
 	
 	@Test

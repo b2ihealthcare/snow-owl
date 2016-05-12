@@ -122,7 +122,7 @@ public class BranchManagerTest {
 	
 	@Test
 	public void whenCreatingBranch_ThenItShouldBeReturnedViaGet() throws Exception {
-		assertEquals(a, (InternalBranch) manager.getBranch("MAIN/a"));
+		assertEquals(a, manager.getBranch("MAIN/a"));
 	}
 	
 	@Test
