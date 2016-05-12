@@ -26,12 +26,12 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getRepositoryUuid <em>Repository Uuid</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getCodeSystems <em>Code Systems</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getCodeSystemVersions <em>Code System Versions</em>}</li>
  * </ul>
- * </p>
  *
  * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystemVersionGroup()
  * @model abstract="true"

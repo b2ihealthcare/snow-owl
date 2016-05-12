@@ -32,12 +32,12 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionGroupImpl#getRepositoryUuid <em>Repository Uuid</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionGroupImpl#getCodeSystems <em>Code Systems</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionGroupImpl#getCodeSystemVersions <em>Code System Versions</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

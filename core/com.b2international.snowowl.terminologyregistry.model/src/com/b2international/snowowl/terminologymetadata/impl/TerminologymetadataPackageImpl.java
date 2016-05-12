@@ -266,7 +266,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getCodeSystemVersion_EffectiveDate() {
+	public EAttribute getCodeSystemVersion_ParentBranchPath() {
 		return (EAttribute)codeSystemVersionEClass.getEStructuralFeatures().get(2);
 	}
 
@@ -275,7 +275,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getCodeSystemVersion_ImportDate() {
+	public EAttribute getCodeSystemVersion_EffectiveDate() {
 		return (EAttribute)codeSystemVersionEClass.getEStructuralFeatures().get(3);
 	}
 
@@ -284,8 +284,17 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getCodeSystemVersion_LastUpdateDate() {
+	public EAttribute getCodeSystemVersion_ImportDate() {
 		return (EAttribute)codeSystemVersionEClass.getEStructuralFeatures().get(4);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystemVersion_LastUpdateDate() {
+		return (EAttribute)codeSystemVersionEClass.getEStructuralFeatures().get(5);
 	}
 
 	/**
@@ -324,6 +333,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		codeSystemVersionEClass = createEClass(CODE_SYSTEM_VERSION);
 		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__VERSION_ID);
 		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__DESCRIPTION);
+		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH);
 		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__EFFECTIVE_DATE);
 		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__IMPORT_DATE);
 		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__LAST_UPDATE_DATE);
@@ -377,6 +387,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		initEClass(codeSystemVersionEClass, CodeSystemVersion.class, "CodeSystemVersion", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getCodeSystemVersion_VersionId(), ecorePackage.getEString(), "versionId", null, 1, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystemVersion_Description(), ecorePackage.getEString(), "description", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getCodeSystemVersion_ParentBranchPath(), ecorePackage.getEString(), "parentBranchPath", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystemVersion_EffectiveDate(), ecorePackage.getEDate(), "effectiveDate", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystemVersion_ImportDate(), ecorePackage.getEDate(), "importDate", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystemVersion_LastUpdateDate(), ecorePackage.getEDate(), "lastUpdateDate", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

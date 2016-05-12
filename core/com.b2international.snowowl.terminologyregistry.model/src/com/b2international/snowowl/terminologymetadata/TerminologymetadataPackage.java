@@ -196,13 +196,22 @@ public interface TerminologymetadataPackage extends EPackage {
 	int CODE_SYSTEM_VERSION__DESCRIPTION = 1;
 
 	/**
+	 * The feature id for the '<em><b>Parent Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH = 2;
+
+	/**
 	 * The feature id for the '<em><b>Effective Date</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION__EFFECTIVE_DATE = 2;
+	int CODE_SYSTEM_VERSION__EFFECTIVE_DATE = 3;
 
 	/**
 	 * The feature id for the '<em><b>Import Date</b></em>' attribute.
@@ -211,7 +220,7 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION__IMPORT_DATE = 3;
+	int CODE_SYSTEM_VERSION__IMPORT_DATE = 4;
 
 	/**
 	 * The feature id for the '<em><b>Last Update Date</b></em>' attribute.
@@ -220,7 +229,7 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION__LAST_UPDATE_DATE = 4;
+	int CODE_SYSTEM_VERSION__LAST_UPDATE_DATE = 5;
 
 	/**
 	 * The number of structural features of the '<em>Code System Version</em>' class.
@@ -229,7 +238,7 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION_FEATURE_COUNT = 5;
+	int CODE_SYSTEM_VERSION_FEATURE_COUNT = 6;
 
 	/**
 	 * The feature id for the '<em><b>Short Name</b></em>' attribute.
@@ -444,6 +453,17 @@ public interface TerminologymetadataPackage extends EPackage {
 	EAttribute getCodeSystemVersion_Description();
 
 	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getParentBranchPath <em>Parent Branch Path</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Parent Branch Path</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getParentBranchPath()
+	 * @see #getCodeSystemVersion()
+	 * @generated
+	 */
+	EAttribute getCodeSystemVersion_ParentBranchPath();
+
+	/**
 	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getEffectiveDate <em>Effective Date</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -631,6 +651,14 @@ public interface TerminologymetadataPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute CODE_SYSTEM_VERSION__DESCRIPTION = eINSTANCE.getCodeSystemVersion_Description();
+
+		/**
+		 * The meta object literal for the '<em><b>Parent Branch Path</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH = eINSTANCE.getCodeSystemVersion_ParentBranchPath();
 
 		/**
 		 * The meta object literal for the '<em><b>Effective Date</b></em>' attribute feature.

@@ -28,6 +28,7 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackag
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getShortName <em>Short Name</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getCodeSystemOID <em>Code System OID</em>}</li>
@@ -38,7 +39,6 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackag
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getIconPath <em>Icon Path</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getTerminologyComponentId <em>Terminology Component Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

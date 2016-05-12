@@ -21,5 +21,6 @@ Package terminologymetadata <urn:com:b2international:snowowl:terminologymetadata
   Class CodeSystemVersion
     Attribute versionId : EString
     Attribute description : EString
+    Attribute parentBranchPath : EString
     Attribute effectiveDate : EDate
     Attribute importDate : EDate

@@ -30,14 +30,15 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackag
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl#getVersionId <em>Version Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl#getDescription <em>Description</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl#getParentBranchPath <em>Parent Branch Path</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl#getEffectiveDate <em>Effective Date</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl#getImportDate <em>Import Date</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl#getLastUpdateDate <em>Last Update Date</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -105,6 +106,24 @@ public abstract class CodeSystemVersionImpl extends CDOObjectImpl implements Cod
 	 */
 	public void setDescription(String newDescription) {
 		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION__DESCRIPTION, newDescription);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getParentBranchPath() {
+		return (String)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setParentBranchPath(String newParentBranchPath) {
+		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH, newParentBranchPath);
 	}
 
 	/**
