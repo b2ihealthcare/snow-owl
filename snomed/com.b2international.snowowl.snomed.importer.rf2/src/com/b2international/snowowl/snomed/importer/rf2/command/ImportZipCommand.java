@@ -95,7 +95,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			
 			branchPath = interpreter.nextArgument();
 			if (!BranchPathUtils.exists(SNOMED_STORE, branchPath)) {
-				interpreter.println("Invalid branch path '" + branchPath + ".");
+				interpreter.println("Invalid branch path '" + branchPath + "'.");
 				printDetailedHelp(interpreter);
 				return;
 			}
