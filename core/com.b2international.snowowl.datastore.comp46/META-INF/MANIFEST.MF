@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Compatibility layer for nested index implementation
+Bundle-SymbolicName: com.b2international.snowowl.datastore.comp46
+Bundle-Version: 4.7.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
