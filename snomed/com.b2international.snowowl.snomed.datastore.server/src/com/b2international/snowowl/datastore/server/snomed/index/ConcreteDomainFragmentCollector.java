@@ -28,7 +28,7 @@ import org.apache.lucene.util.BytesRef;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyMap;
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.index.lucene.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;

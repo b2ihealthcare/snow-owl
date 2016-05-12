@@ -22,7 +22,7 @@ import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.index.lucene.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**

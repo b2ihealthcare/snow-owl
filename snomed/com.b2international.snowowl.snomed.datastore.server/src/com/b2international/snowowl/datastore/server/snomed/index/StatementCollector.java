@@ -23,7 +23,7 @@ import java.util.Arrays;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.NumericDocValues;
 
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.index.lucene.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;

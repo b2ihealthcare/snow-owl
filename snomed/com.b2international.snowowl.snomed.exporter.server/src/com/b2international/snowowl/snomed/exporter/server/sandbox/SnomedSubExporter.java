@@ -35,11 +35,11 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.util.Bits;
 
+import com.b2international.index.lucene.DocIdCollector;
+import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.google.common.base.Supplier;

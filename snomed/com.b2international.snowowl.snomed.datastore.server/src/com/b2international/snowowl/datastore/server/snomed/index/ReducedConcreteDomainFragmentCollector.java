@@ -24,7 +24,7 @@ import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.util.BytesRefHash;
 
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.index.lucene.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 

@@ -36,6 +36,8 @@ import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.lucene.DocIdCollector;
+import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -46,8 +48,6 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.FieldsToLoadBuilderBase.FieldsToLoadBuilder;

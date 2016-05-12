@@ -55,6 +55,8 @@ import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
+import com.b2international.index.lucene.DocIdCollector;
+import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
@@ -64,8 +66,6 @@ import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrow
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;

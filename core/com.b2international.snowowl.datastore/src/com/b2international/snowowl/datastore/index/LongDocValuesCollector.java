@@ -24,6 +24,7 @@ import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.lucene.AbstractDocsOutOfOrderCollector;
 
 /**
  * Collector instance for gathering long doc values from the matching documents.

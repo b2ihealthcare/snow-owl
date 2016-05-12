@@ -31,6 +31,8 @@ import org.apache.lucene.search.Query;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.lucene.DocIdCollector;
+import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -38,8 +40,6 @@ import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.collect.HashMultimap;

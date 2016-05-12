@@ -28,10 +28,10 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Query;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.index.lucene.DocumentWithScore;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexService;
-import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;

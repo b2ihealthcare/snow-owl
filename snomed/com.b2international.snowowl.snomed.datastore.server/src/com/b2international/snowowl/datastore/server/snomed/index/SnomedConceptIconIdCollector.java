@@ -29,7 +29,7 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
+import com.b2international.index.lucene.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**

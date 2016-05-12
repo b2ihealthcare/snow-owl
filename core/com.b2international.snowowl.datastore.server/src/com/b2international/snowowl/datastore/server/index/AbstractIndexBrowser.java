@@ -37,6 +37,7 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -44,7 +45,6 @@ import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;

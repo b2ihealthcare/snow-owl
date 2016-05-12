@@ -30,10 +30,10 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongValueMap;
+import com.b2international.index.lucene.DocIdCollector;
+import com.b2international.index.lucene.DocIdCollector.DocIds;
+import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIds;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;

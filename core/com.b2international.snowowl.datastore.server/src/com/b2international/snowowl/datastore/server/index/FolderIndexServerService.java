@@ -29,13 +29,13 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.index.lucene.DocumentWithScore;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.SuperTypeIdProvider;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
-import com.b2international.snowowl.datastore.index.DocumentWithScore;
 import com.b2international.snowowl.datastore.index.FolderIndexEntry;
 import com.b2international.snowowl.datastore.index.IFolderIndexService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
