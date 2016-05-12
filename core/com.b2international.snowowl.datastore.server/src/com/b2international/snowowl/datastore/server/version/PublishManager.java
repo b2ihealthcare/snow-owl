@@ -105,15 +105,14 @@ public abstract class PublishManager implements IPublishManager {
 			logWork(monitor);
 			publishTerminologyMetadateChanges(configuration);
 			logWork(monitor);
-
+			
 		} catch (final SnowowlServiceException e) {
 			handleError(e);
-		} finally {
 			ToolingIdThreadLocal.reset();
 		}
-
-		format(NEW_VERSION_CREATED_TEMPLATE, configuration.getVersionId(), getToolingName());
-
+		
+		LOGGER.info(format(NEW_VERSION_CREATED_TEMPLATE, configuration.getVersionId(), getToolingName()));
+		ToolingIdThreadLocal.reset();
 	}
 	
 	/**
@@ -316,6 +315,7 @@ public abstract class PublishManager implements IPublishManager {
 	@Nullable
 	private ICodeSystemVersion getVersion(final IBranchPath branchPath, final String versionId) {
 		final ICodeSystemVersion version = uniqueIndex(getAllVersions(branchPath), new Function<ICodeSystemVersion, String>() {
+			@Override
 			public String apply(final ICodeSystemVersion version) {
 				return checkNotNull(version, "version").getVersionId();
 			}
