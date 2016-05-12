@@ -50,13 +50,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
+import com.b2international.index.lucene.SearchWarmerFactory;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
-import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
 import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;

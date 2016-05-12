@@ -32,12 +32,12 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
 
 import com.b2international.commons.collections.BackwardListIterator;
+import com.b2international.index.lucene.SearchWarmerFactory;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
