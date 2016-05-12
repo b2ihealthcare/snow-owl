@@ -97,22 +97,22 @@ public class IndexServiceSmokeTest {
 		indexSingleDoc();
 		service.tag("v1");
 		assertConceptIdsExactly(MAIN, "1");
-		assertConceptIdsExactly(BranchPathUtils.createVersionPath("v1"), "1");
+		assertConceptIdsExactly(createVersionPath("v1"), "1");
 	}
 
 	@Test
 	public void testTagVisibility() throws Exception {
 		service.tag("v1");
-		assertConceptIdsExactly(BranchPathUtils.createVersionPath("v1"));
+		assertConceptIdsExactly(createVersionPath("v1"));
 
 		service.indexRelevantDocs(MAIN, "1", "2", "3", "4");
 		service.tag("v2");
-		assertConceptIdsExactly(BranchPathUtils.createVersionPath("v2"), "1", "2", "3", "4");
+		assertConceptIdsExactly(createVersionPath("v2"), "1", "2", "3", "4");
 
 		service.indexRelevantDocs(MAIN, "3", "4", "5", "6");
 		service.tag("v3");
 		assertConceptIdsExactly(MAIN, "1", "2", "3", "4", "5", "6");
-		assertConceptIdsExactly(BranchPathUtils.createVersionPath("v3"), "1", "2", "3", "4", "5", "6");
+		assertConceptIdsExactly(createVersionPath("v3"), "1", "2", "3", "4", "5", "6");
 	}
 
 	@Test
@@ -193,37 +193,37 @@ public class IndexServiceSmokeTest {
 		IndexDiff diff;
 
 		// v1 and v2: new: 3, 4, 6 and 7. modified 1 and 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createVersionPath("v2"));
+		diff = createDiff(createVersionPath("v1"), createVersionPath("v2"));
 		assertIdsExactly(diff.getNewIds(), 3L, 4L, 6L, 7L);
 		assertIdsExactly(diff.getChangedIds(), 1L, 2L);
 		assertIdsExactly(diff.getDetachedIds());
 
 		// v1 and v3: new 3 and 4. modified 1 and 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createVersionPath("v3"));
+		diff = createDiff(createVersionPath("v1"), createVersionPath("v3"));
 		assertIdsExactly(diff.getNewIds(), 3L, 4L);
 		assertIdsExactly(diff.getChangedIds(), 1L, 2L);
 		assertIdsExactly(diff.getDetachedIds());
 
 		// v1 and v4: new 3, 4 and 5. modified 1. detached 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createVersionPath("v4"));
+		diff = createDiff(createVersionPath("v1"), createVersionPath("v4"));
 		assertIdsExactly(diff.getNewIds(), 3L, 4L, 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L);
 		assertIdsExactly(diff.getDetachedIds(), 2L);
 
 		// v1 and v5: new 3, 4 and 5. modified 1. detached 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createVersionPath("v5"));
+		diff = createDiff(createVersionPath("v1"), createVersionPath("v5"));
 		assertIdsExactly(diff.getNewIds(), 3L, 4L, 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L);
 		assertIdsExactly(diff.getDetachedIds(), 2L);
 
 		// v1 and v6: new 3, 4 and 5. modified 1. detached 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createVersionPath("v6"));
+		diff = createDiff(createVersionPath("v1"), createVersionPath("v6"));
 		assertIdsExactly(diff.getNewIds(), 3L, 4L, 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L);
 		assertIdsExactly(diff.getDetachedIds(), 2L);
 
 		// v1 and HEAD: new 3, 4, 8. modified 10 and detached 1, 2
-		diff = createDiffAgainstHead(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createMainPath());
+		diff = createDiffAgainstHead(createVersionPath("v1"), BranchPathUtils.createMainPath());
 		assertIdsExactly(diff.getNewIds(), 3L, 4L, 8L);
 		assertIdsExactly(diff.getChangedIds(), 10L);
 		assertIdsExactly(diff.getDetachedIds(), 1L, 2L);
@@ -233,31 +233,31 @@ public class IndexServiceSmokeTest {
 		IndexDiff diff;
 
 		// v2 and v3: detached 6 and 7.
-		diff = createDiff(BranchPathUtils.createVersionPath("v2"), BranchPathUtils.createVersionPath("v3"));
+		diff = createDiff(createVersionPath("v2"), createVersionPath("v3"));
 		assertIdsExactly(diff.getNewIds());
 		assertIdsExactly(diff.getChangedIds());
 		assertIdsExactly(diff.getDetachedIds(), 6L, 7L);
 
 		// v2 and v4: new 5. modified 1. detached 2, 6 and 7.
-		diff = createDiff(BranchPathUtils.createVersionPath("v2"), BranchPathUtils.createVersionPath("v4"));
+		diff = createDiff(createVersionPath("v2"), createVersionPath("v4"));
 		assertIdsExactly(diff.getNewIds(), 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L);
 		assertIdsExactly(diff.getDetachedIds(), 2L, 6L, 7L);
 
 		// v2 and v5: new 5. modified 1, 3. detached 2, 6 and 7.
-		diff = createDiff(BranchPathUtils.createVersionPath("v2"), BranchPathUtils.createVersionPath("v5"));
+		diff = createDiff(createVersionPath("v2"), createVersionPath("v5"));
 		assertIdsExactly(diff.getNewIds(), 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L, 3L);
 		assertIdsExactly(diff.getDetachedIds(), 2L, 6L, 7L);
 
 		// v2 and v6: new 5. modified 1, 3. detached 2, 6 and 7.
-		diff = createDiff(BranchPathUtils.createVersionPath("v2"), BranchPathUtils.createVersionPath("v6"));
+		diff = createDiff(createVersionPath("v2"), createVersionPath("v6"));
 		assertIdsExactly(diff.getNewIds(), 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L, 3L);
 		assertIdsExactly(diff.getDetachedIds(), 2L, 6L, 7L);
 
 		// v2 and HEAD: new 8. modified 3, 10 and detached 1, 2, 6, 7
-		diff = createDiffAgainstHead(BranchPathUtils.createVersionPath("v2"), BranchPathUtils.createMainPath());
+		diff = createDiffAgainstHead(createVersionPath("v2"), BranchPathUtils.createMainPath());
 		assertIdsExactly(diff.getNewIds(), 8L);
 		assertIdsExactly(diff.getChangedIds(), 3L, 10L);
 		assertIdsExactly(diff.getDetachedIds(), 1L, 2L, 6L, 7L);
@@ -267,25 +267,25 @@ public class IndexServiceSmokeTest {
 		IndexDiff diff;
 
 		// v3 and v4: new 5, modified 1 and detached 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v3"), BranchPathUtils.createVersionPath("v4"));
+		diff = createDiff(createVersionPath("v3"), createVersionPath("v4"));
 		assertIdsExactly(diff.getNewIds(), 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L);
 		assertIdsExactly(diff.getDetachedIds(), 2L);
 
 		// v3 and v5: new 5, modified 1, 3. detached 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v3"), BranchPathUtils.createVersionPath("v5"));
+		diff = createDiff(createVersionPath("v3"), createVersionPath("v5"));
 		assertIdsExactly(diff.getNewIds(), 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L, 3L);
 		assertIdsExactly(diff.getDetachedIds(), 2L);
 
 		// v3 and v6: new 5, modified 1, 3. detached 2.
-		diff = createDiff(BranchPathUtils.createVersionPath("v3"), BranchPathUtils.createVersionPath("v6"));
+		diff = createDiff(createVersionPath("v3"), createVersionPath("v6"));
 		assertIdsExactly(diff.getNewIds(), 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L, 3L);
 		assertIdsExactly(diff.getDetachedIds(), 2L);
 
 		// v3 and HEAD: new 8, modified 3 and 10. detached 1 and 2.
-		diff = createDiffAgainstHead(BranchPathUtils.createVersionPath("v3"), BranchPathUtils.createMainPath());
+		diff = createDiffAgainstHead(createVersionPath("v3"), BranchPathUtils.createMainPath());
 		assertIdsExactly(diff.getNewIds(), 8L);
 		assertIdsExactly(diff.getChangedIds(), 3L, 10L);
 		assertIdsExactly(diff.getDetachedIds(), 1L, 2L);
@@ -295,19 +295,19 @@ public class IndexServiceSmokeTest {
 		IndexDiff diff;
 
 		// v4 and v5: modified 3.
-		diff = createDiff(BranchPathUtils.createVersionPath("v4"), BranchPathUtils.createVersionPath("v5"));
+		diff = createDiff(createVersionPath("v4"), createVersionPath("v5"));
 		assertIdsExactly(diff.getNewIds());
 		assertIdsExactly(diff.getChangedIds(), 3L);
 		assertIdsExactly(diff.getDetachedIds());
 
 		// v4 and v6: modified 3.
-		diff = createDiff(BranchPathUtils.createVersionPath("v4"), BranchPathUtils.createVersionPath("v6"));
+		diff = createDiff(createVersionPath("v4"), createVersionPath("v6"));
 		assertIdsExactly(diff.getNewIds());
 		assertIdsExactly(diff.getChangedIds(), 3L);
 		assertIdsExactly(diff.getDetachedIds());
 
 		// v4 and HEAD: new 8. modified 3 and 10. detached 1 and 5.
-		diff = createDiffAgainstHead(BranchPathUtils.createVersionPath("v4"), BranchPathUtils.createMainPath());
+		diff = createDiffAgainstHead(createVersionPath("v4"), BranchPathUtils.createMainPath());
 		assertIdsExactly(diff.getNewIds(), 8L);
 		assertIdsExactly(diff.getChangedIds(), 3L, 10L);
 		assertIdsExactly(diff.getDetachedIds(), 1L, 5L);
@@ -317,13 +317,13 @@ public class IndexServiceSmokeTest {
 		IndexDiff diff;
 
 		// v5 and v6: modified 3.
-		diff = createDiff(BranchPathUtils.createVersionPath("v5"), BranchPathUtils.createVersionPath("v6"));
+		diff = createDiff(createVersionPath("v5"), createVersionPath("v6"));
 		assertIdsExactly(diff.getNewIds());
 		assertIdsExactly(diff.getChangedIds(), 3L);
 		assertIdsExactly(diff.getDetachedIds());
 
 		// v5 and HEAD: new 8. modified 10, 3. detached 1 and 5.
-		diff = createDiffAgainstHead(BranchPathUtils.createVersionPath("v5"), BranchPathUtils.createMainPath());
+		diff = createDiffAgainstHead(createVersionPath("v5"), BranchPathUtils.createMainPath());
 		assertIdsExactly(diff.getNewIds(), 8L);
 		assertIdsExactly(diff.getChangedIds(), 3L, 10L);
 		assertIdsExactly(diff.getDetachedIds(), 1L, 5L);
@@ -333,7 +333,7 @@ public class IndexServiceSmokeTest {
 		IndexDiff diff;
 
 		// v6 and HEAD: new 8. modified 10. detached 1 and 5.
-		diff = createDiffAgainstHead(BranchPathUtils.createVersionPath("v6"), BranchPathUtils.createMainPath());
+		diff = createDiffAgainstHead(createVersionPath("v6"), BranchPathUtils.createMainPath());
 		assertIdsExactly(diff.getNewIds(), 8L);
 		assertIdsExactly(diff.getChangedIds(), 10L);
 		assertIdsExactly(diff.getDetachedIds(), 1L, 5L);
@@ -359,7 +359,7 @@ public class IndexServiceSmokeTest {
 		assertConceptIdsExactly(MAIN, "1", "2");
 
 		// v1 and v2: modified 2, even though 1 and 2 have changed "irrelevantly" in the meantime.
-		final IndexDiff diff = createDiff(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createVersionPath("v2"));
+		final IndexDiff diff = createDiff(createVersionPath("v1"), createVersionPath("v2"));
 		assertIdsExactly(diff.getNewIds());
 		assertIdsExactly(diff.getChangedIds(), 2L);
 		assertIdsExactly(diff.getDetachedIds());
@@ -379,26 +379,26 @@ public class IndexServiceSmokeTest {
 		service.tag("v2");
 
 		// v1*: update 1 and 3, add 4, delete 2 and 6
-		service.indexRelevantDocs(BranchPathUtils.createVersionPath("v1"), ImmutableMap.<String, String>builder()
+		service.indexRelevantDocs(createVersionPath("v1"), ImmutableMap.<String, String>builder()
 				.put("1", "A")
 				.put("3", "C")
 				.put("4", "D")
 				.build());
 
-		service.deleteDocs(BranchPathUtils.createVersionPath("v1"), 2L, 6L);
+		service.deleteDocs(createVersionPath("v1"), 2L, 6L);
 
 		// v2*: update 1 and 2, add 5, delete 3 and 6
-		service.indexRelevantDocs(BranchPathUtils.createVersionPath("v2"), ImmutableMap.<String, String>builder()
+		service.indexRelevantDocs(createVersionPath("v2"), ImmutableMap.<String, String>builder()
 				.put("1", "AA")
 				.put("2", "B")
 				.put("5", "E")
 				.build());
 
-		service.deleteDocs(BranchPathUtils.createVersionPath("v2"), 3L, 6L);
+		service.deleteDocs(createVersionPath("v2"), 3L, 6L);
 
 		assertConceptIdsExactly(MAIN, "1", "2", "3", "6");
-		assertConceptIdsExactly(BranchPathUtils.createVersionPath("v1"), "1", "3", "4");
-		assertConceptIdsExactly(BranchPathUtils.createVersionPath("v2"), "1", "2", "5");
+		assertConceptIdsExactly(createVersionPath("v1"), "1", "3", "4");
+		assertConceptIdsExactly(createVersionPath("v2"), "1", "2", "5");
 
 		/* 
 		 * v1* to v2*: 
@@ -406,7 +406,7 @@ public class IndexServiceSmokeTest {
 		 * - changed 1 (both branches)
 		 * - deleted 3 (deleted on v2*) and 4 (had to revert the addition on v1*) 
 		 */
-		final IndexDiff diff = createThreeWayDiff(BranchPathUtils.createVersionPath("v1"), BranchPathUtils.createVersionPath("v2"));
+		final IndexDiff diff = createThreeWayDiff(createVersionPath("v1"), createVersionPath("v2"));
 		assertIdsExactly(diff.getNewIds(), 2L, 5L);
 		assertIdsExactly(diff.getChangedIds(), 1L);
 		assertIdsExactly(diff.getDetachedIds(), 3L, 4L);
@@ -514,5 +514,14 @@ public class IndexServiceSmokeTest {
 		final IndexCommit targetCommit = service.getBranchService(targetBranchPath).getLastIndexCommit();
 
 		return IndexDifferFactory.INSTANCE.createDiffer().calculateDiff(ancestorCommit, sourceCommit, targetCommit);
+	}
+	
+	/**
+	 * @param string
+	 * @return
+	 */
+	private IBranchPath createVersionPath(String version) {
+		BranchPathUtils.createPath(BranchPathUtils.createMainPath(), version);
+		return null;
 	}
 }
