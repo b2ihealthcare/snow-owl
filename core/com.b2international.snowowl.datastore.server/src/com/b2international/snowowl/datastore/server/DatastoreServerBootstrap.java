@@ -42,8 +42,6 @@ import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexMa
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
-import com.b2international.snowowl.datastore.server.internal.branch.BranchSerializer;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewSerializer;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
@@ -136,8 +134,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		LOG.debug(">>> Initializing branch and review services.");
 		
 		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
-		env.services().registerService(BranchSerializer.class, new BranchSerializer());
-		env.services().registerService(ReviewSerializer.class, new ReviewSerializer());
 		
 		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 		for (String repositoryId : env.service(ICDORepositoryManager.class).uuidKeySet()) {

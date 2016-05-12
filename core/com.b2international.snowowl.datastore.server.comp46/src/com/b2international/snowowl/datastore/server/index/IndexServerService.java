@@ -868,8 +868,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		}
 	}
 	
-	@Override
-	public <T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read) {
+	public final <T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read) {
 		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
 		IndexSearcher searcher = null;	
 		try {

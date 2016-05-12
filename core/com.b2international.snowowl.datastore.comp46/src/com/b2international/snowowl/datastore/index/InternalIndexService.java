@@ -41,7 +41,7 @@ import com.google.common.collect.Multimap;
  * 
  * @param E the {@link IIndexEntry} subtype this index service uses
  */
-public interface InternalIndexService<E extends IIndexEntry> extends IIndexService<E>, IndexTransactionProvider {
+public interface InternalIndexService<E extends IIndexEntry> extends IIndexService<E> {
 
 	List<DocumentWithScore> search(IBranchPath branchPath, Query query, Filter filter, 
 			Sort sort, 
