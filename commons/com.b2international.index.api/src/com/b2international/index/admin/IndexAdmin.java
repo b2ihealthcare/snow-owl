@@ -61,4 +61,9 @@ public interface IndexAdmin {
 	 */
 	String name();
 
+	/**
+	 * Closes the underlying index.
+	 */
+	void close();
+
 }
