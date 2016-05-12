@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index;
+package com.b2international.index.lucene;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,8 +21,6 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.b2international.index.lucene.DocumentBuilderBase;
 
 
 /**

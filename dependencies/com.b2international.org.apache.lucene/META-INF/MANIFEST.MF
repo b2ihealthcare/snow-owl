@@ -29,7 +29,8 @@ Bundle-ClassPath: .,
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Import-Package: javax.management,
- org.osgi.framework;version="1.6.0"
+ org.osgi.framework;version="1.6.0",
+ org.slf4j;version="1.7.2"
 Bundle-Activator: com.b2international.org.apache.lucene.Activator
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.index.analyzer,

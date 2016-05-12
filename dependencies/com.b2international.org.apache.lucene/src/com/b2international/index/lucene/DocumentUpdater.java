@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.index;
-
-import com.b2international.index.lucene.DocumentBuilderBase;
+package com.b2international.index.lucene;
 
 /**
  * @since 4.3
