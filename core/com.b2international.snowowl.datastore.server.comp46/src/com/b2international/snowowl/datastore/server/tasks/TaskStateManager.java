@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -56,7 +57,6 @@ import com.b2international.snowowl.datastore.TaskBranchPathMap;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.net4j.push.PushServiceException;
 import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.net4j.push.PushServerService;
@@ -106,7 +106,7 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	 */
 	@Override
 	public boolean isClosed(final String taskId) {
-		return documentExists(Mappings.newQuery()
+		return documentExists(Fields.newQuery()
 				.field(FIELD_TASK_ID, taskId)
 				.field(FIELD_IS_CLOSED, "1")
 				.matchAll());
@@ -162,7 +162,7 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	
 	@Override
 	public boolean exists(final String taskId) {
-		return documentExists(Mappings.newQuery()
+		return documentExists(Fields.newQuery()
 				.field(FIELD_TASK_ID, taskId)
 				.matchAll());
 	}
@@ -545,7 +545,7 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	private void insertOrUpdate(final String taskId, final boolean promoted, final IBranchPathMap taskBranchPathMap, final String contextId, final String repositoryUrl, 
 			final String description, final TaskScenario scenario) {
 
-		final Document document = Mappings.doc()
+		final Document document = Fields.doc()
 				.field(FIELD_TASK_ID, taskId)
 				.field(FIELD_IS_CLOSED, promoted ? "1" : "0")
 				.field(FIELD_CONTEXT_ID, contextId)
