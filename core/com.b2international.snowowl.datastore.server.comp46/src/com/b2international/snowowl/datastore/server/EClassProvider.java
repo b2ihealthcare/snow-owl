@@ -29,10 +29,10 @@ import org.apache.lucene.search.TopDocs;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * Abstract implementation of the {@link IEClassProvider} interface.
@@ -104,7 +104,7 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return a set of field names to load.
 	 */
 	protected Set<String> getFieldsToLoad() {
-		return Mappings.fieldsToLoad().type().build();
+		return Fields.fieldsToLoad().type().build();
 	}
 	
 	/**
@@ -112,7 +112,7 @@ public abstract class EClassProvider implements IEClassProvider {
 	 * @return the query.
 	 */
 	private Query getQuery(final long storageKey) {
-		return Mappings.newQuery().storageKey(storageKey).matchAll();
+		return Fields.newQuery().storageKey(storageKey).matchAll();
 	}
 
 	/**
