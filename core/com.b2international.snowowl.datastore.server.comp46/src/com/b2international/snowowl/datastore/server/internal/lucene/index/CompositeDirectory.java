@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.lucene.store;
+package com.b2international.snowowl.datastore.server.internal.lucene.index;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -50,6 +50,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
+import com.b2international.index.analyzer.ComponentTermAnalyzer;
+import com.b2international.index.lucene.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentBuilderFactory;
 import com.b2international.index.lucene.NullSearcherManager;
 import com.b2international.index.lucene.SearchWarmerFactory;
 import com.b2international.snowowl.core.api.BranchPath;
@@ -57,12 +60,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.internal.lucene.index.FilteringMergePolicy;
-import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
+import com.b2international.snowowl.datastore.server.internal.lucene.index.ReadOnlyDirectory;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 

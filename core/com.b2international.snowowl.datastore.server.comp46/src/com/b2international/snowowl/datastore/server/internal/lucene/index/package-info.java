@@ -1,0 +1,1 @@
+package com.b2international.snowowl.datastore.server.internal.lucene.index;
