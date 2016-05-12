@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.b2international.snowowl.datastore.index.lucene;
+package com.b2international.index.lucene;
 
 import java.io.IOException;
 import java.util.ArrayList;
