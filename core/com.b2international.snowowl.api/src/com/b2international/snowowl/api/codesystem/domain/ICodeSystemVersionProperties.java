@@ -44,4 +44,10 @@ public interface ICodeSystemVersionProperties {
 	 * @return the effective date of this code system version (can be {@code null})
 	 */
 	Date getEffectiveDate();
+	
+	/**
+	 * Returns the parent branch path of the version
+	 * @return parent branch path
+	 */
+	String getParentBranchPath();
 }

@@ -32,6 +32,10 @@ public class VersionInput implements ICodeSystemVersionProperties {
 	private String version;
 	private String description = "";
 	
+	//the parent branch location of the version
+	@NotEmpty
+	private String parentBranchPath = "MAIN";
+	
 	@NotNull
 	private Date effectiveDate;
 	
@@ -54,12 +58,21 @@ public class VersionInput implements ICodeSystemVersionProperties {
 		this.description = description;
 	}
 	
+	@Override
+	public String getParentBranchPath() {
+		return parentBranchPath;
+	}
+	
 	public void setEffectiveDate(Date effectiveDate) {
 		this.effectiveDate = effectiveDate;
 	}
 	
 	public void setVersion(String version) {
 		this.version = version;
+	}
+	
+	public void setParentBranch(String parentBranch) {
+		this.parentBranchPath = parentBranch;
 	}
 	
 }
