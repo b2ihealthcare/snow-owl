@@ -29,12 +29,12 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 
 import com.b2international.index.lucene.DocumentWithScore;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -80,7 +80,7 @@ public abstract class QueryDslIndexQueryAdapter<E extends IIndexEntry> extends A
 
 	@Nullable
 	protected Filter createFilter() {
-		return (componentIds != null) ? Mappings.id().createTermsFilter(ImmutableSet.copyOf(componentIds)) : null;
+		return (componentIds != null) ? Fields.id().createTermsFilter(ImmutableSet.copyOf(componentIds)) : null;
 	}
 
 	/**

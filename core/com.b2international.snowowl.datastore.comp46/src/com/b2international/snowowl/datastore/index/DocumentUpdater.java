@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentBuilderBase;
 
 /**
  * @since 4.3

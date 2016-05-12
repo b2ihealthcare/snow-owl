@@ -19,12 +19,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 
+import com.b2international.index.lucene.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentBuilderFactory;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexMappingStrategy;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
 
 /**
  * Abstract superclass for {@link IIndexUpdater} implementations which provides a Lucene-specific (non-API) interface and routes

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.index;
 
+import org.apache.lucene.search.IndexSearcher;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 
 /**

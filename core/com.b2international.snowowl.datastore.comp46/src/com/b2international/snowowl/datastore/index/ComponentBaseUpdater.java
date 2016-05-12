@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.index;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentBuilderBase;
 
 /**
  * @since 4.3

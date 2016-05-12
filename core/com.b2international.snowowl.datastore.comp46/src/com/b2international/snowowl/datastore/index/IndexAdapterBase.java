@@ -30,11 +30,11 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 
+import com.b2international.index.analyzer.ComponentTermAnalyzer;
+import com.b2international.index.analyzer.TextConstants;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
-import com.b2international.snowowl.core.TextConstants;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.google.common.base.Splitter;
 
 /**

@@ -19,8 +19,8 @@ import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.index.lucene.DocumentBuilderBase;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 
 /**
  * Enumerates different sort key modes.  

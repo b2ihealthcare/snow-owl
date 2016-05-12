@@ -25,9 +25,9 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EClass;
 
+import com.b2international.index.lucene.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;

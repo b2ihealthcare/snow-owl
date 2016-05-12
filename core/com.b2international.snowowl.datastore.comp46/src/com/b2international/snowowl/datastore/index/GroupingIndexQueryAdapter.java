@@ -21,11 +21,11 @@ import java.util.Set;
 
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IGroupingIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexService;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
@@ -39,7 +39,7 @@ public abstract class GroupingIndexQueryAdapter<E extends IIndexEntry, G> extend
 	private final Set<String> valueFields;
 	
 	public GroupingIndexQueryAdapter(String searchString, int searchFlags, String[] componentIds, String groupField) {
-		this(searchString, searchFlags, componentIds, groupField, Mappings.fieldsToLoad().id().build());
+		this(searchString, searchFlags, componentIds, groupField, Fields.fieldsToLoad().id().build());
 	}
 	public GroupingIndexQueryAdapter(String searchString, int searchFlags, String[] componentIds, String groupField, Set<String> valueFields) {
 		super(searchString, searchFlags, componentIds);

@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.index;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentBuilderBase;
 
 /**
  * @since 4.3 
