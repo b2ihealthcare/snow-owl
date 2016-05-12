@@ -52,8 +52,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.lucene.DocIdCollector;
-import com.b2international.index.lucene.DocumentWithScore;
 import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
+import com.b2international.index.lucene.DocumentBuilderBase;
+import com.b2international.index.lucene.DocumentBuilderFactory;
+import com.b2international.index.lucene.DocumentWithScore;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.BranchPath;
@@ -68,9 +71,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.AbstractIndexUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -182,11 +182,11 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 
 	private Term toTerm(final long storageKey) {
-		return Mappings.storageKey().toTerm(storageKey);
+		return Fields.storageKey().toTerm(storageKey);
 	}
 	
 	private Query toQuery(final long storageKey) {
-		return Mappings.storageKey().toQuery(storageKey);
+		return Fields.storageKey().toQuery(storageKey);
 	}
 
 	@Override
@@ -443,8 +443,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			int size = 0;
 			
 			for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				final Document doc = searcher.doc(scoreDoc.doc, Mappings.fieldsToLoad().id().build());
-				ids[size++] = Mappings.id().getValue(doc);
+				final Document doc = searcher.doc(scoreDoc.doc, Fields.fieldsToLoad().id().build());
+				ids[size++] = Fields.id().getValue(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));
@@ -598,8 +598,8 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 			int size = 0;
 			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), Mappings.fieldsToLoad().id().build());
-				ids[size++] = Mappings.id().getValue(doc);
+				final Document doc = searcher.doc(itr.getDocID(), Fields.fieldsToLoad().id().build());
+				ids[size++] = Fields.id().getValue(doc);
 			}
 			
 			return Arrays.asList(Arrays.copyOf(ids, size));

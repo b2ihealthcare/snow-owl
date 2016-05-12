@@ -38,6 +38,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.lucene.DocIdCollector;
 import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
+import com.b2international.index.lucene.Fields;
+import com.b2international.index.lucene.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
 import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -50,8 +52,6 @@ import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -74,7 +74,7 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		checkNotNull(branchPath, "branchPath");
 		checkArgument(storageKey > CDOUtils.NO_STORAGE_KEY);
 		
-		final TopDocs topDocs = service.search(branchPath, Mappings.newQuery().storageKey(storageKey).matchAll(), 1);
+		final TopDocs topDocs = service.search(branchPath, Fields.newQuery().storageKey(storageKey).matchAll(), 1);
 		
 		if (IndexUtils.isEmpty(topDocs)) {
 			return null;
@@ -86,19 +86,19 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	protected ExtendedComponent convertDocToExtendedComponent(final IBranchPath branchPath, final Document doc) {
 		return new ExtendedComponentImpl(
-				Mappings.id().getValue(doc), 
-				Mappings.label().getValue(doc), 
-				Mappings.iconId().getValue(doc), 
-				Mappings.type().getShortValue(doc));
+				Fields.id().getValue(doc), 
+				Fields.label().getValue(doc), 
+				Fields.iconId().getValue(doc), 
+				Fields.type().getShortValue(doc));
 	}
 	
 	protected Set<String> getExtendedComponentFieldsToLoad() {
-		return Mappings.fieldsToLoad().id().type().label().iconId().build();
+		return Fields.fieldsToLoad().id().type().label().iconId().build();
 	}
 	
 	@Override
 	protected Set<String> getFieldNamesToLoad() {
-		final FieldsToLoadBuilder defaultFieldsToLoad = Mappings.fieldsToLoad().id().label().iconId().storageKey().parent();
+		final FieldsToLoadBuilder defaultFieldsToLoad = Fields.fieldsToLoad().id().label().iconId().storageKey().parent();
 		addAdditionalFieldsToLoad(defaultFieldsToLoad);
 		return defaultFieldsToLoad.build();
 	}
@@ -110,7 +110,7 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(conceptId, "Concept ID argument cannot be null.");
-		final Query query = Mappings.newQuery().type(getConceptTerminologyComponentId()).id(conceptId).matchAll();
+		final Query query = Fields.newQuery().type(getConceptTerminologyComponentId()).id(conceptId).matchAll();
 		return getStorageKey(branchPath, query);
 	}
 
@@ -122,8 +122,8 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			return CDOUtils.NO_STORAGE_KEY;
 		}
 		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().storageKey().build());
-		return Mappings.storageKey().getValue(doc);
+		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, Fields.fieldsToLoad().storageKey().build());
+		return Fields.storageKey().getValue(doc);
 	}	
 		
 	@Override
@@ -159,8 +159,8 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		try {
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
 			while (iterator.next()) {
-				final Document doc = service.document(branchPath, iterator.getDocID(), Mappings.fieldsToLoad().id().build());
-				rootConceptIds.add(Mappings.id().getValue(doc));
+				final Document doc = service.document(branchPath, iterator.getDocID(), Fields.fieldsToLoad().id().build());
+				rootConceptIds.add(Fields.id().getValue(doc));
 			}
 		} catch (final IOException e) {
 			throw new IndexException("Error when querying root concepts.", e);
@@ -170,7 +170,7 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	
 	protected Query getRootConceptsQuery() {
 		return new IndexQueryBuilder()
-			.require(Mappings.parent().toQuery(Mappings.ROOT_ID_STRING))
+			.require(Fields.parent().toQuery(Fields.ROOT_ID_STRING))
 			.require(getRootTerminologyComponentTypeQuery()).toQuery();
 	}
 
@@ -182,8 +182,8 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
-		return Mappings.parent().getValues(document);
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Fields.fieldsToLoad().parent().build());
+		return Fields.parent().getValues(document);
 	}
 	
 	@Override
@@ -196,7 +196,7 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	}
 
 	protected Query getConceptByIdQueryBuilder(final String conceptId) {
-		return Mappings.newQuery().id(conceptId).matchAll();
+		return Fields.newQuery().id(conceptId).matchAll();
 	}
 
 	@Override
@@ -208,8 +208,8 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		if (CompareUtils.isEmpty(topDocs.scoreDocs)) {
 			return Collections.emptyList();
 		}
-		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
-		final Collection<String> parents = Mappings.parent().getValues(document);
+		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Fields.fieldsToLoad().parent().build());
+		final Collection<String> parents = Fields.parent().getValues(document);
 		final Builder<E> builder = ImmutableList.builder();
 		for (final String parent : parents) {
 			builder.add(getConcept(branchPath, parent));
@@ -247,8 +247,8 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 			final DocIdsIterator iterator = collector.getDocIDs().iterator();
 			
 			while (iterator.next()) {
-				final Document doc = service.document(branchPath, iterator.getDocID(), Mappings.fieldsToLoad().id().build());
-				subTypeIds.add(Mappings.id().getValue(doc));
+				final Document doc = service.document(branchPath, iterator.getDocID(), Fields.fieldsToLoad().id().build());
+				subTypeIds.add(Fields.id().getValue(doc));
 			}
 			
 			return subTypeIds;
@@ -259,7 +259,7 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	}
 	
 	protected Query getSubTypesQuery(final String id) {
-		return Mappings.newQuery()
+		return Fields.newQuery()
 				.type(getConceptTerminologyComponentId())
 				.parent(id)
 				.matchAll();
@@ -337,7 +337,7 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	// The default implementation restricts the query to a single component type only
 	private Query getDefaultTerminologyComponentTypeQuery() {
-		return Mappings.newQuery().type(getConceptTerminologyComponentId()).matchAll();
+		return Fields.newQuery().type(getConceptTerminologyComponentId()).matchAll();
 	}
 
 	/**

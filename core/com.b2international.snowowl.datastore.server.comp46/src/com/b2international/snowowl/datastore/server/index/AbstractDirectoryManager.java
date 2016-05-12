@@ -28,8 +28,8 @@ import org.apache.lucene.store.Directory;
 
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.server.internal.lucene.store.CompositeDirectory;
-import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
+import com.b2international.snowowl.datastore.server.internal.lucene.index.CompositeDirectory;
+import com.b2international.snowowl.datastore.server.internal.lucene.index.ReadOnlyDirectory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 

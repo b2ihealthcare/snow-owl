@@ -25,13 +25,12 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
 
 /**
  * Abstract superclass for index based name providers.
@@ -66,7 +65,7 @@ public abstract class AbstractIndexNameProvider implements IComponentNameProvide
 					return null;
 				}
 
-				final Document doc = index.doc(topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad()
+				final Document doc = index.doc(topDocs.scoreDocs[0].doc, Fields.fieldsToLoad()
 						.label()
 						.build());
 
@@ -97,7 +96,7 @@ public abstract class AbstractIndexNameProvider implements IComponentNameProvide
 					return null;
 				}
 
-				final Document doc = index.doc(topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad()
+				final Document doc = index.doc(topDocs.scoreDocs[0].doc, Fields.fieldsToLoad()
 						.id()
 						.label()
 						.build());
@@ -110,18 +109,18 @@ public abstract class AbstractIndexNameProvider implements IComponentNameProvide
 	}
 
 	protected Query getIdQuery(final String componentId) {
-		return new QueryBuilder().id(componentId).matchAll();
+		return Fields.newQuery().id(componentId).matchAll();
 	}
 
 	protected Query getStorageKeyQuery(final long storageKey) {
-		return new QueryBuilder().storageKey(storageKey).matchAll();
+		return Fields.newQuery().storageKey(storageKey).matchAll();
 	}
 
 	protected String getId(final Document doc) {
-		return Mappings.id().getValue(doc);
+		return Fields.id().getValue(doc);
 	}
 
 	protected String getLabel(final Document doc) {
-		return Mappings.label().getValue(doc);
+		return Fields.label().getValue(doc);
 	}
 }

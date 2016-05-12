@@ -53,6 +53,7 @@ import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.lucene.DocumentBuilderBase;
 import com.b2international.index.lucene.DocumentBuilderFactory;
+import com.b2international.index.lucene.Fields;
 import com.b2international.index.lucene.NullSearcherManager;
 import com.b2international.index.lucene.SearchWarmerFactory;
 import com.b2international.snowowl.core.api.BranchPath;
@@ -228,7 +229,7 @@ public class IndexBranchService implements Closeable {
 	}
 
 	public void updateDocument(final long storageKey, final Document document) throws IOException {
-		updateDocument(Mappings.storageKey().toTerm(storageKey), document);
+		updateDocument(Fields.storageKey().toTerm(storageKey), document);
 	}
 	
 	public void updateDocument(final Term term, final Document document) throws IOException {
@@ -279,7 +280,7 @@ public class IndexBranchService implements Closeable {
 	 * @throws IOException
 	 */
 	public void updateDocument(final Document docWithStorageKey) throws IOException {
-		updateDocument(Mappings.storageKey().getValue(docWithStorageKey), docWithStorageKey);
+		updateDocument(Fields.storageKey().getValue(docWithStorageKey), docWithStorageKey);
 	}
 
 	public void commit() throws IOException {

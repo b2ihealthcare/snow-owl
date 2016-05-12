@@ -27,6 +27,7 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.Dates;
@@ -40,7 +41,6 @@ import com.b2international.snowowl.datastore.advancedsearch.DateRangeSearchCrite
 import com.b2international.snowowl.datastore.advancedsearch.LongSearchCriteria;
 import com.b2international.snowowl.datastore.advancedsearch.StringSearchCriteria;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 
 /**
  * @since 3.0.1
@@ -69,7 +69,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 			occur = Occur.SHOULD;
 		}
 		// TODO: handle unexpected match type
-		compoundQuery.add(Mappings.newQuery().type(terminologyComponentTypeId).matchAll(), Occur.MUST);
+		compoundQuery.add(Fields.newQuery().type(terminologyComponentTypeId).matchAll(), Occur.MUST);
 		if (!searchCriterias.isEmpty()) {
 			final BooleanQuery subQuery = new BooleanQuery();
 
@@ -114,7 +114,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 			} else if (criteria instanceof BooleanSearchCriteria) {
 				
 				final BooleanSearchCriteria booleanSearchCriteria = (BooleanSearchCriteria) criteria;
-				return Mappings.newQuery().field(indexKey, toIntValue(booleanSearchCriteria.getValue())).matchAll();
+				return Fields.newQuery().field(indexKey, toIntValue(booleanSearchCriteria.getValue())).matchAll();
 				
 			} else if (criteria instanceof DateRangeSearchCriteria) {
 
@@ -144,7 +144,7 @@ public abstract class AbstractAdvancedSearchQueryBuilder {
 			
 			} else if (criteria instanceof LongSearchCriteria) {
 				final LongSearchCriteria longSearchCriteria = (LongSearchCriteria) criteria;
-				return Mappings.newQuery().field(indexKey, longSearchCriteria.getSearchValue()).matchAll();
+				return Fields.newQuery().field(indexKey, longSearchCriteria.getSearchValue()).matchAll();
 			}
 		}
 		return new BooleanQuery(); // empty clause

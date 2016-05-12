@@ -38,6 +38,7 @@ import org.apache.lucene.search.TopDocs;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -46,7 +47,6 @@ import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.TerminologyRegistryServiceWrapper;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.collect.ImmutableList;
@@ -212,6 +212,6 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 	
 	/**Returns with the query for the unique ID of the component.*/
 	protected Query getComponentIdQuery(final String componentId) {
-		return Mappings.newQuery().id(componentId).matchAll();
+		return Fields.newQuery().id(componentId).matchAll();
 	}
 }

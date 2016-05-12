@@ -32,9 +32,9 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StringField;
 
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
@@ -61,7 +61,7 @@ public class CodeSystemIndexMappingStrategy extends AbstractIndexMappingStrategy
 		addStringFieldIfExists(doc, SYSTEM_ICON_PATH, codeSystem.getIconPath());
 		addStringFieldIfExists(doc, SYSTEM_TERMINOLOGY_COMPONENT_ID, codeSystem.getTerminologyComponentId());
 		doc.add(new LongField(SYSTEM_STORAGE_KEY, getStorageKey(), Store.YES));
-		Mappings.storageKey().addTo(doc, getStorageKey());
+		Fields.storageKey().addTo(doc, getStorageKey());
 		addStringFieldIfExists(doc, SYSTEM_REPOSITORY_UUID, codeSystem.getCodeSystemVersionGroup().getRepositoryUuid());
 		return doc;
 	}

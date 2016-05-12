@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.lucene.DocIdCollector;
+import com.b2international.index.lucene.Fields;
 import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
@@ -101,8 +102,8 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				while (itr.next()) {
 					final int docId = itr.getDocID();
 					final Document doc = index.doc(docId);
-					final Collection<String> parentIds = Mappings.parent().getValues(doc);
-					final String componentId = Mappings.id().getValue(doc);
+					final Collection<String> parentIds = Fields.parent().getValues(doc);
+					final String componentId = Fields.id().getValue(doc);
 					
 					filteredComponents.add(componentId);
 					componentIdDocMap.put(componentId, doc);
