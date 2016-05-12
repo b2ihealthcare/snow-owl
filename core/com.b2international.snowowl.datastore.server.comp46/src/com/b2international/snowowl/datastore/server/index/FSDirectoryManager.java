@@ -41,6 +41,7 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
 
+import com.b2international.index.lucene.Directories;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -51,7 +52,6 @@ import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
@@ -71,7 +71,7 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 
 	@Override
 	protected Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException {
-		return IndexUtils.open(folderForBranchPath);
+		return Directories.open(folderForBranchPath);
 	}
 
 	@Override
@@ -133,9 +133,7 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 								final CDOResource resource = transaction.getOrCreateResource(rootResourceName);
 
 								if (!CDOUtils.isTransient(resource)) {
-
-									final CDOResource cdoResource = (CDOResource) resource;
-									final EObject object = find(cdoResource.getContents(), new Predicate<EObject>() {
+									final EObject object = find(resource.getContents(), new Predicate<EObject>() {
 										@Override
 										public boolean apply(final EObject eObject) {
 											return TerminologymetadataPackage.eINSTANCE.getCodeSystemVersionGroup().isSuperTypeOf(eObject.eClass());

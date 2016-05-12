@@ -36,15 +36,10 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.LockFactory;
-import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.store.NIOFSDirectory;
-import org.apache.lucene.store.NativeFSLockFactory;
-import org.apache.lucene.store.SimpleFSDirectory;
-import org.apache.lucene.util.Constants;
 import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
+import com.b2international.index.lucene.Directories;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
 
@@ -125,7 +120,7 @@ final class FSIndexAdmin implements LuceneIndexAdmin {
 		}
 		try {
 			closer = Closer.create();
-			directory = open(indexPath.toFile());
+			directory = Directories.open(indexPath.toFile());
 			closer.register(directory);
 			writer = new IndexWriter(directory, createConfig(false));
 			initPeriodicCommit(writer);
@@ -209,40 +204,6 @@ final class FSIndexAdmin implements LuceneIndexAdmin {
 		return name;
 	}
 
-	/**
-	 * Creates an FSDirectory instance, trying to pick the best implementation given the current environment. The directory returned uses the
-	 * {@link NativeFSLockFactory}.
-	 *
-	 * <p>
-	 * Currently this returns {@link MMapDirectory} for most Solaris, Mac OS X and Windows 64-bit JREs, {@link NIOFSDirectory} for other non-Windows
-	 * JREs, and {@link SimpleFSDirectory} for other JREs on Windows. It is highly recommended that you consult the implementation's documentation for
-	 * your platform before using this method.
-	 *
-	 * <p>
-	 * <b>NOTE</b>: this method may suddenly change which implementation is returned from release to release, in the event that higher performance
-	 * defaults become possible; if the precise implementation is important to your application, please instantiate it directly, instead. For optimal
-	 * performance you should consider using {@link MMapDirectory} on 64 bit JVMs.
-	 *
-	 */
-	private static FSDirectory open(final File path) throws IOException {
-		return open(path, null);
-	}
-
-	/**
-	 * Just like {@link #open(File)}, but allows you to also specify a custom {@link LockFactory}.
-	 */
-	private static FSDirectory open(final File path, final LockFactory lockFactory) throws IOException {
-		if ((Constants.WINDOWS || Constants.SUN_OS || Constants.LINUX || Constants.MAC_OS_X) && Constants.JRE_IS_64BIT
-				&& MMapDirectory.UNMAP_SUPPORTED) {
-
-			return new MMapDirectory(path, lockFactory);
-		} else if (Constants.WINDOWS) {
-			return new SimpleFSDirectory(path, lockFactory);
-		} else {
-			return new NIOFSDirectory(path, lockFactory);
-		}
-	}
-	
 	/**
 	 * Periodically commits an {@link IndexWriter}.
 	 *  
