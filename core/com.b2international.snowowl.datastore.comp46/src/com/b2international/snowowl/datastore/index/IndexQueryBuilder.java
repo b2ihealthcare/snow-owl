@@ -38,6 +38,7 @@ import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.analyzer.TextConstants;
+import com.b2international.index.lucene.Highlighting;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.google.common.base.Splitter;
 
@@ -246,7 +247,7 @@ public class IndexQueryBuilder {
 	 */
 	public IndexQueryBuilder matchAnyTokenizedTerms(final String fieldName, final String searchString) {
 		
-		final List<String> tokens = IndexUtils.split(analyzer, searchString);
+		final List<String> tokens = Highlighting.split(analyzer, searchString);
 		
 		for (final String token : tokens) {
 			builtQuery.add(new TermQuery(new Term(fieldName, token)), Occur.SHOULD);
@@ -380,7 +381,7 @@ public class IndexQueryBuilder {
 	
 	public IndexQueryBuilder requireAllTokenizedTerms(final String fieldName, final String searchString) {
 		
-		final List<String> tokens = IndexUtils.split(analyzer, searchString);
+		final List<String> tokens = Highlighting.split(analyzer, searchString);
 		
 		for (final String token : tokens) {
 			builtQuery.add(new BooleanClause(new TermQuery(new Term(fieldName, token)), Occur.MUST));

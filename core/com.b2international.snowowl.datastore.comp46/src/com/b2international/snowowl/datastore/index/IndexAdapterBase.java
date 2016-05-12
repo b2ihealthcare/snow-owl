@@ -32,6 +32,7 @@ import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.analyzer.TextConstants;
+import com.b2international.index.lucene.Highlighting;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -111,7 +112,7 @@ public abstract class IndexAdapterBase<E extends IIndexEntry> extends QueryDslIn
 	 */
 	protected Query addTermClause(final BooleanQuery query, final String fieldName, final String searchString) {
 		
-		final List<String> tokens = IndexUtils.split(new ComponentTermAnalyzer(), searchString);
+		final List<String> tokens = Highlighting.split(new ComponentTermAnalyzer(), searchString);
 		
 		for (final String token : tokens) {
 			query.add(new BooleanClause(new TermQuery(new Term(fieldName, token)), Occur.SHOULD));
@@ -133,7 +134,7 @@ public abstract class IndexAdapterBase<E extends IIndexEntry> extends QueryDslIn
 	protected Query addTermClauseWithAndOperator(final BooleanQuery query, final String fieldName, final String searchString) throws ParseException {
 		
 		final BooleanQuery wrapper = new BooleanQuery();
-		final List<String> tokens = IndexUtils.split(new ComponentTermAnalyzer(), searchString);
+		final List<String> tokens = Highlighting.split(new ComponentTermAnalyzer(), searchString);
 		
 		for (final String token : tokens) {
 			wrapper.add(new BooleanClause(new TermQuery(new Term(fieldName, token)), Occur.MUST));
