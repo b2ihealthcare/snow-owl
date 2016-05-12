@@ -93,7 +93,7 @@ public interface IRepositoryService {
 	 * Retrieves the relative path of all files that make up the index of the specified repository and version.
 	 * 
 	 * @param repositoryUuid      a unique identifier pointing to a particular repository (may not be {@code null})
-	 * @param repositoryVersionId the identifier of a repository version, as returned by {@link #getRepositoryVersionIds(String)} (may not be {@code null})
+	 * @param repositoryVersionPath the path of a repository version, as returned by {@link #getRepositoryVersionIds(String)} (may not be {@code null})
 	 * 
 	 * @return a list of relative paths to files which make up the index of the given version, in alphabetical order (never {@code null})
 	 * 
@@ -101,5 +101,5 @@ public interface IRepositoryService {
 	 * @throws RepositoryVersionNotFoundException if the specified version identifier does not correspond to a version
 	 *                                            in the repository
 	 */
-	List<String> getRepositoryVersionIndexFiles(String repositoryUuid, String repositoryVersionId);
+	List<String> getRepositoryVersionIndexFiles(String repositoryUuid, String repositoryVersionPath);
 }

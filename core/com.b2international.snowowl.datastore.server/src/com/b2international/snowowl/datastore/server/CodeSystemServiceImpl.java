@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server;
 import static com.b2international.commons.collections.Collections3.forEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.PATCHED_PREDICATE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
@@ -207,7 +206,7 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 		forEach(versions, new Procedure<ICodeSystemVersion>() {
 			@Override protected void doApply(final ICodeSystemVersion version) {
 				if (version instanceof CodeSystemVersionEntry) {
-					if (isPatched(repositoryUuid, createVersionPath(version.getVersionId()))) {
+					if (isPatched(repositoryUuid, BranchPathUtils.createPath(version.getPath()))) {
 						((CodeSystemVersionEntry) version).setPatched();
 					}
 				}

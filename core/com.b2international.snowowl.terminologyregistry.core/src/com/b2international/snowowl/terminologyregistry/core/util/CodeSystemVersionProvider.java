@@ -16,7 +16,6 @@
 package com.b2international.snowowl.terminologyregistry.core.util;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 
 import java.util.Collection;
@@ -33,6 +32,7 @@ import org.eclipse.emf.ecore.EPackage;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.AbstractLookupService;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
@@ -164,7 +164,7 @@ public abstract class CodeSystemVersionProvider implements ICodeSystemVersionPro
 
 	private CDOObject tryLoadSpecificVersion(String componentId, IBranchPath branchPath, String version) {
 		CDOID cdoId = getCdoId(componentId, branchPath);
-		IBranchPath versionBranch = createVersionPath(version);
+		IBranchPath versionBranch = BranchPathUtils.createPath(branchPath, version);
 		ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(cdoId);
 		CDOBranch oldestBranch = connection.getOldestBranch(versionBranch);
 		long timeStamp = oldestBranch.getBase().getTimeStamp();

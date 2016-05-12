@@ -444,6 +444,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		codeSystemVersion.setImportDate(new Date());
 		codeSystemVersion.setVersionId(formattedEffectiveDate); 
 		codeSystemVersion.setDescription("RF2 import of SNOMED Clinical Terms");
+		codeSystemVersion.setParentBranchPath(getImportBranchPath().getPath());
 		codeSystemVersion.setEffectiveDate(effectiveDate);
 		return codeSystemVersion;
 	}

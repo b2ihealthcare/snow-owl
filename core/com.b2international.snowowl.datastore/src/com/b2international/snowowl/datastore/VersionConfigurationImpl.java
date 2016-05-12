@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore;
 import static com.b2international.commons.status.Statuses.error;
 import static com.b2international.commons.status.Statuses.ok;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.datastore.CodeSystemUtils.TOOLING_FEATURE_NAME_COMPARATOR;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.INITIAL_STATE;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -139,10 +138,9 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		
 		for (final Entry<String, ICodeSystemVersion> entry : currentVersions.entrySet()) {
 			if (!isLocked(entry.getValue())) {
-				currentBranchPathMap.put(entry.getKey(), createVersionPath(entry.getValue().getVersionId()));
+				currentBranchPathMap.put(entry.getKey(), BranchPathUtils.createPath(entry.getValue().getPath()));
 			}
 		}
-		
 		return new UserBranchPathMap(currentBranchPathMap);
 	}
 
@@ -248,6 +246,14 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	
 	private String toVersionString(final String versionId) {
 		return ICodeSystemVersion.INITIAL_STATE.equals(versionId) ? "initial state" : "'" + versionId + "'";
+	}
+	
+	/**
+	 * @param versionString
+	 * @return full branch path
+	 */
+	protected IBranchPath createVersionPath(String versionString) {
+		return BranchPathUtils.createPath(IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + versionString);
 	}
 
 }

@@ -44,6 +44,7 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 	private final String userId;
 	private Date effectiveTime;
 	private String versionId;
+	private String parentBranchPath; 
 	private String description;
 
 	/**Creates a publication operation configuration for the given tooling features with a random remote job identifier.*/
@@ -122,6 +123,16 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 		this.description = nullToEmpty(description);
 	}
 
+
+	@Override
+	public String getParentBranchPath() {
+		return parentBranchPath;
+	}
+
+	public void setParentBranchPath(String parentBranchPath) {
+		this.parentBranchPath = parentBranchPath;
+	}
+	
 	@Override
 	public String toString() {
 		return toStringHelper(this)

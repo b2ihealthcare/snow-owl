@@ -34,7 +34,7 @@ public abstract class LatestCodeSystemVersionUtils {
 	 */
 	public static ICodeSystemVersion createLatestCodeSystemVersion(final String repositoryUuid) {
 
-		return new CodeSystemVersionEntry(MAX_VALUE, MAX_VALUE, UNSET_EFFECTIVE_TIME, LATEST_VERSION, MAIN_BRANCH, NO_STORAGE_KEY, repositoryUuid) {
+		return new CodeSystemVersionEntry(MAX_VALUE, MAX_VALUE, UNSET_EFFECTIVE_TIME, LATEST_VERSION, MAIN_BRANCH, MAIN_BRANCH, NO_STORAGE_KEY, repositoryUuid) {
 			
 			private static final long serialVersionUID = 3431197771869140761L;
 

@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 import static com.b2international.commons.StringUtils.EMPTY_STRING;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
@@ -39,6 +38,7 @@ import org.apache.lucene.index.IndexCommit;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.server.index.IndexBranchService;
@@ -74,7 +74,7 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 					
 					final List<IBranchPath> versionPaths = newArrayList();
 					for (final ICodeSystemVersion version : getAllVersion()) {
-						versionPaths.add(createVersionPath(version.getVersionId()));
+						versionPaths.add(BranchPathUtils.createPath(version.getPath()));
 					}
 					versionPaths.add(createMainPath());
 					

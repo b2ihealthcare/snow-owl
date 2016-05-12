@@ -101,7 +101,7 @@ public abstract class PublishManager implements IPublishManager {
 			aggregator.add(getTransaction());
 			publishTerminologyChanges();
 			logWork(monitor);
-			publishTerminologyMetadateChanges(configuration);
+			publishTerminologyMetadataChanges(configuration);
 			logWork(monitor);
 
 		} catch (final SnowowlServiceException e) {
@@ -267,17 +267,6 @@ public abstract class PublishManager implements IPublishManager {
 		return getEffectiveTime();
 	}
 
-	/** Processes all changes for the given terminology as a part of the publication. */
-	private void processTerminologyChanges() {
-		checkNotNull(getConfiguration(), "Publish operation configuration was null.");
-		LOGGER.info("Collecting unversioned components...");
-		final LongSet storageKeys = getUnversionedComponentStorageKeys(getBranchPathForPublication());
-		LOGGER.info("Unversioned components have been successfully collected.");
-		preProcess(storageKeys);
-		adjustComponents(storageKeys);
-		postProcess();
-	}
-
 	protected abstract LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath);
 
 	private boolean couldCreateVersion(final IPublishOperationConfiguration configuration) {
@@ -294,7 +283,7 @@ public abstract class PublishManager implements IPublishManager {
 				getRepositoryUuid());
 	}
 
-	private void publishTerminologyMetadateChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {
+	private void publishTerminologyMetadataChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {
 		if (couldCreateVersion(configuration)) {
 			processTerminologyMetadataChanges();
 		} else {
@@ -322,8 +311,15 @@ public abstract class PublishManager implements IPublishManager {
 		return version;
 	}
 
+	/** Processes all changes for the given terminology as a part of the publication. */
 	private void publishTerminologyChanges() throws SnowowlServiceException {
-		processTerminologyChanges();
+		checkNotNull(getConfiguration(), "Publish operation configuration was null.");
+		LOGGER.info("Collecting unversioned components...");
+		final LongSet storageKeys = getUnversionedComponentStorageKeys(getBranchPathForPublication());
+		LOGGER.info("Unversioned components have been successfully collected.");
+		preProcess(storageKeys);
+		adjustComponents(storageKeys);
+		postProcess();
 	}
 
 	private IBranchPath getMainPath() {
@@ -391,6 +387,7 @@ public abstract class PublishManager implements IPublishManager {
 		version.setEffectiveDate(getEffectiveTime());
 		version.setImportDate(new Date());
 		version.setVersionId(getVersionName());
+		version.setParentBranchPath(getConfiguration().getParentBranchPath());
 		version.setDescription(getCodeSystemVersionDescription());
 		return version;
 	}

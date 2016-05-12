@@ -187,11 +187,8 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					sb.append(",");
 				}
 			}
-			
 		}
-		
 		sb.append(".");
-		
 		return sb.toString();
 	}
 	
@@ -260,9 +257,10 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	private void doTag(final Map<String, Boolean> performTagPerToolingFeatures, final IProgressMonitor monitor) {
 		final IPublishOperationConfiguration publishConfiguration = ConfigurationThreadLocal.getConfiguration();
 		final Collection<String> toolingIds = publishConfiguration.getToolingIds();
+		final ITagService tagService = getServiceForClass(ITagService.class);
+
 		for (final String toolingId : toolingIds) {
 			if (performTagPerToolingFeatures.get(toolingId)) {
-				final ITagService tagService = getServiceForClass(ITagService.class);
 				final ITagConfiguration tagConfiguration = createTagConfiguration(toolingId);
 				tagService.tag(tagConfiguration);
 				monitor.worked(1);
