@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.6
  */
-public abstract class BaseResourceRequestBuilder<B extends BaseResourceRequestBuilder<B, R>, R> extends BaseIndexReadRequestBuilder<B, R> {
+public abstract class BaseResourceRequestBuilder<B extends BaseResourceRequestBuilder<B, R>, R> extends BaseRevisionIndexReadRequestBuilder<B, R> {
 
 	private Options expand = OptionsBuilder.newBuilder().build();
 	private List<ExtendedLocale> locales = Collections.emptyList();

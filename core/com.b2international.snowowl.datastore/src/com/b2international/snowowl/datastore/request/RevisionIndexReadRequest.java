@@ -17,15 +17,13 @@ package com.b2international.snowowl.datastore.request;
 
 import java.io.IOException;
 
-import org.apache.lucene.search.IndexSearcher;
-
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.IndexTransactionProvider;
 
 /**
  * A subclass of {@link DelegatingRequest} that:
@@ -37,28 +35,27 @@ import com.b2international.snowowl.datastore.index.IndexTransactionProvider;
  * 
  * @since 4.5
  */
-public final class IndexReadRequest<B> extends DelegatingRequest<BranchContext, BranchContext, B> {
+public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchContext, BranchContext, B> {
 
-	IndexReadRequest(Request<BranchContext, B> next) {
+	RevisionIndexReadRequest(Request<BranchContext, B> next) {
 		super(next);
 	}
 	
 	@Override
 	public B execute(final BranchContext context) {
-		final IBranchPath branchPath = context.branch().branchPath();
-		return context.service(IndexTransactionProvider.class).executeReadTransaction(branchPath, new IndexRead<B>() {
+		return context.service(RevisionIndex.class).read(context.branch().path(), new RevisionIndexRead<B>() {
 			@Override
-			public B execute(IndexSearcher index) throws IOException {
+			public B execute(RevisionSearcher index) throws IOException {
 				return wrapAndExecute(context, index);
 			}
 		});
 	}
 	
-	private B wrapAndExecute(final BranchContext context, final IndexSearcher index) {
+	private B wrapAndExecute(final BranchContext context, final RevisionSearcher index) {
 		final BranchContext decoratedContext = new DelegatingBranchContext(context) {
 			@Override
 			public <T> T service(Class<T> type) {
-				if (type.isAssignableFrom(IndexSearcher.class)) {
+				if (type.isAssignableFrom(RevisionSearcher.class)) {
 					return type.cast(index);
 				} else {
 					return super.service(type);

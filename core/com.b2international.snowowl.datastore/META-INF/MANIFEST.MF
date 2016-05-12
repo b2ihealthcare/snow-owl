@@ -20,6 +20,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
  com.b2international.snowowl.rpc;visibility:=reexport,
  com.b2international.snowowl.eventbus;visibility:=reexport,
  com.b2international.snowowl.core;visibility:=reexport,
+ com.b2international.index.api;visibility:=reexport,
  com.b2international.snowowl.index.diff,
  com.b2international.snowowl.terminologyregistry.model
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

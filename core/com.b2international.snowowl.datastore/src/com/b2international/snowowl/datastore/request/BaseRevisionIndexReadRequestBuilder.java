@@ -21,15 +21,15 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.6
  */
-public abstract class BaseIndexReadRequestBuilder<B extends BaseIndexReadRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
+public abstract class BaseRevisionIndexReadRequestBuilder<B extends BaseRevisionIndexReadRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
 
-	protected BaseIndexReadRequestBuilder(final String repositoryId) {
+	protected BaseRevisionIndexReadRequestBuilder(final String repositoryId) {
 		super(repositoryId);
 	}
 
 	@Override
 	protected Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
-		return new IndexReadRequest<>(super.wrap(req));
+		return new RevisionIndexReadRequest<>(super.wrap(req));
 	}
 
 }

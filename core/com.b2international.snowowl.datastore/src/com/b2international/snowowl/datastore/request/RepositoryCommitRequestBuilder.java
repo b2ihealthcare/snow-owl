@@ -66,7 +66,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 		return new RepositoryRequest<>(repositoryId, 
 				new BranchRequest<>(branch,
 					// additional functionality can be extended here after BranchRequest
-					extend(new IndexReadRequest<>(new TransactionalRequest(userId, commitComment, body)))
+					extend(new RevisionIndexReadRequest<>(new TransactionalRequest(userId, commitComment, body)))
 				));
 	}
 	
