@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -49,12 +48,9 @@ import com.google.common.io.Closer;
 final class FSIndexAdmin implements LuceneIndexAdmin {
 
 	private static class Holder {
-		private static final Timer CLEANUP_TIMER = new Timer("Review cleanup", true);
+		private static final Timer PERIODIC_COMMIT_TIMER = new Timer("Review cleanup", true);
 	}
 
-	private static final long DEFAULT_COMMIT_INTERVAL = TimeUnit.MINUTES.toMillis(5L);
-	private static final String COMMIT_INTERVAL_KEY = "hardCommitInterval";
-	
 	private final String name;
 	private final Path indexPath;
 	private final AtomicReference<PeriodicCommit> periodicCommit = new AtomicReference<>();
@@ -75,8 +71,8 @@ final class FSIndexAdmin implements LuceneIndexAdmin {
 		this.indexPath = directory.toPath().resolve(name);
 		
 		// init default settings
-		if (!settings.containsKey(COMMIT_INTERVAL_KEY)) {
-			settings.put(COMMIT_INTERVAL_KEY, DEFAULT_COMMIT_INTERVAL);
+		if (!settings.containsKey(IndexClientFactory.COMMIT_INTERVAL_KEY)) {
+			settings.put(IndexClientFactory.COMMIT_INTERVAL_KEY, IndexClientFactory.DEFAULT_COMMIT_INTERVAL);
 		}
 		
 		this.settings = settings;
@@ -139,13 +135,13 @@ final class FSIndexAdmin implements LuceneIndexAdmin {
 	}
 
 	private void initPeriodicCommit(IndexWriter writer) {
-		final long periodicCommitInterval = (long) settings().get(COMMIT_INTERVAL_KEY);
+		final long periodicCommitInterval = (long) settings().get(IndexClientFactory.COMMIT_INTERVAL_KEY);
 		final PeriodicCommit newPc = new PeriodicCommit(writer);
 		final PeriodicCommit previousPc = periodicCommit.getAndSet(newPc);
 		if (previousPc != null) {
 			previousPc.cancel();
 		}
-		Holder.CLEANUP_TIMER.schedule(newPc, periodicCommitInterval, periodicCommitInterval);
+		Holder.PERIODIC_COMMIT_TIMER.schedule(newPc, periodicCommitInterval, periodicCommitInterval);
 	}
 
 	private IndexWriterConfig createConfig(boolean clean) {

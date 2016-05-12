@@ -16,6 +16,7 @@
 package com.b2international.index;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +30,16 @@ public interface IndexClientFactory {
 	 * Configuration key to use when creating file system based index.
 	 */
 	String DIRECTORY = "directory";
+
+	/**
+	 * Configuration key to use to specify the hard commit interval of an index.
+	 */
+	String COMMIT_INTERVAL_KEY = "commitInterval";
+
+	/**
+	 * The default commit interval is 5 minutes.
+	 */
+	long DEFAULT_COMMIT_INTERVAL = TimeUnit.MINUTES.toMillis(5L);
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.
