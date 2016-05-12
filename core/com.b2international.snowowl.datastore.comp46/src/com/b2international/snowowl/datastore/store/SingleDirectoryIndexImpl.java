@@ -45,12 +45,12 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.lucene.SearchWarmerFactory;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;
