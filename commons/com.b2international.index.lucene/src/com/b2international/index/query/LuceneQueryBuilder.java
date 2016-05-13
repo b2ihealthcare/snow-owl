@@ -32,6 +32,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeFilter;
 import org.apache.lucene.search.PrefixFilter;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
@@ -131,6 +132,8 @@ public final class LuceneQueryBuilder {
 			visit((LongPredicate) expression);
 		} else if (expression instanceof RangePredicate) {
 			visit((RangePredicate) expression);
+		} else if (expression instanceof StringRangePredicate) {
+			visit((StringRangePredicate) expression);
 		} else if (expression instanceof NestedPredicate) {
 			visit((NestedPredicate) expression);
 		} else if (expression instanceof HasParentPredicate) {
@@ -233,6 +236,11 @@ public final class LuceneQueryBuilder {
 	
 	private void visit(RangePredicate range) {
 		final Filter filter = NumericRangeFilter.newLongRange(range.getField(), range.from(), range.to(), true, true);
+		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(StringRangePredicate range) {
+		final Filter filter = TermRangeFilter.newStringRange(range.getField(), range.from(), range.to(), false, false);
 		deque.push(new DequeItem(filter));
 	}
 

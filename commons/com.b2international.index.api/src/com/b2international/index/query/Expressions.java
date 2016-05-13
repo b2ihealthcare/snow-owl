@@ -119,4 +119,8 @@ public class Expressions {
 		return new HasParentPredicate(parentType, expression);
 	}
 
+	public static Expression matchRange(String field, String from, String to) {
+		return new StringRangePredicate(field, from, to);
+	}
+
 }
