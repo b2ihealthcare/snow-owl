@@ -15,17 +15,22 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
+import java.util.UUID;
+
+import org.junit.After;
 import org.junit.Before;
 
-import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.index.Index;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.5
@@ -33,8 +38,7 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 public class InMemorySnomedIdentifierServiceTest extends AbstractIdentifierServiceTest {
 
 	private ISnomedIdentifierService service;
-
-	private final MemStore<SctId> store = new MemStore<>();
+	private Index store;
 
 	@Override
 	protected ISnomedIdentifierService getIdentifierService() {
@@ -44,7 +48,14 @@ public class InMemorySnomedIdentifierServiceTest extends AbstractIdentifierServi
 	@Before
 	public void init() {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		store = Indexes.createIndex(UUID.randomUUID().toString(), new ObjectMapper(), new Mappings(SctId.class));
 		service = new DefaultSnomedIdentifierService(store, ItemIdGenerationStrategy.RANDOM, reservationService, new SnomedIdentifierConfiguration());
+		store.admin().create();
+	}
+	
+	@After
+	public void after() {
+		store.admin().delete();
 	}
 
 }

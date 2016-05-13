@@ -16,18 +16,26 @@
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.VerhoeffCheck;
+import com.b2international.index.Index;
+import com.b2international.index.IndexRead;
+import com.b2international.index.IndexWrite;
+import com.b2international.index.Searcher;
+import com.b2international.index.Writer;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.store.MemStore;
-import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
@@ -38,6 +46,8 @@ import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrat
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -50,17 +60,17 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierService.class);
 
-	private final Store<SctId> store;
+	private final Index store;
 	private final ItemIdGenerationStrategy generationStrategy;
 
 	/*
 	 * Tests only
 	 */
-	DefaultSnomedIdentifierService(final ItemIdGenerationStrategy generationStrategy) {
-		this(new MemStore<SctId>(), generationStrategy, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
+	DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy) {
+		this(store, generationStrategy, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
 	}
 	
-	public DefaultSnomedIdentifierService(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
+	public DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy,
 			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
 		super(reservationService, config);
 		this.store = store;
@@ -69,7 +79,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public SctId getSctId(final String componentId) {
-		final SctId storedSctId = store.get(componentId);
+		final SctId storedSctId = getFromStore(componentId);
 
 		if (null != storedSctId) {
 			return storedSctId;
@@ -80,7 +90,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public Collection<SctId> getSctIds() {
-		return store.values();
+		return store.read(new IndexRead<Collection<SctId>>() {
+			@Override
+			public Collection<SctId> execute(Searcher index) throws IOException {
+				return ImmutableList.copyOf(index.search(Query.builder(SctId.class).selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build()));
+			}
+		});
 	}
 
 	@Override
@@ -92,7 +107,8 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
-		store.put(componentId, sctId);
+		
+		putSctId(componentId, sctId);
 
 		return componentId;
 	}
@@ -106,7 +122,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
 		} else {
 			sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
-			store.put(componentId, sctId);
+			putSctId(componentId, sctId);
 		}
 	}
 
@@ -119,7 +135,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
-		store.put(componentId, sctId);
+		putSctId(componentId, sctId);
 
 		return componentId;
 	}
@@ -131,7 +147,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			LOGGER.debug(String.format("Deprecating component ID %s.", componentId));
 
 			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
-			store.put(componentId, sctId);
+			putSctId(componentId, sctId);
 		} else if (!sctId.isDeprecated()) {
 			throw new BadRequestException(String.format("Cannot deprecate ID in state %s.", sctId.getStatus()));
 		}
@@ -142,7 +158,14 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final SctId sctId = getSctId(componentId);
 		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 			LOGGER.debug(String.format("Releasing component ID %s.", componentId));
-			store.remove(componentId);
+			store.write(new IndexWrite<Void>() {
+				@Override
+				public Void execute(Writer index) throws IOException {
+					index.remove(SctId.class, componentId);
+					index.commit();
+					return null;
+				}
+			});
 		} else if (!sctId.isAvailable()) {
 			throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 		}
@@ -154,7 +177,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		if (sctId.isAssigned()) {
 			LOGGER.debug("Publishing component ID {}.", componentId);
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
-			store.put(componentId, sctId);
+			putSctId(componentId, sctId);
 		} else if (!sctId.isPublished()) {
 			throw new BadRequestException("Cannot publish ID '%s' in state %s.", sctId.getSctid(), sctId.getStatus());
 		}
@@ -175,14 +198,14 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			sctIds.put(componentId, sctId);
 		}
 
-		store.putAll(sctIds);
+		putSctIds(sctIds);
 		return componentIds;
 	}
 
 	@Override
 	public void register(final Collection<String> componentIds) {
 		final Map<String, SctId> sctIds = Maps.newHashMap();
-		final Collection<String> registeredComponentIds = Lists.newArrayList();
+		final Set<String> registeredComponentIds = newHashSet();
 
 		LOGGER.debug(String.format("Registering %d component IDs.", componentIds.size()));
 
@@ -200,10 +223,10 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 				}
 			}
 
-			store.putAll(sctIds);
+			putSctIds(sctIds);
 		} catch (Exception e) {
 			// remove the registered component IDs
-			store.removeAll(registeredComponentIds);
+			removeSctIds(registeredComponentIds);
 			throw e;
 		}
 	}
@@ -223,7 +246,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			sctIds.put(componentId, sctId);
 		}
 
-		store.putAll(sctIds);
+		putSctIds(sctIds);
 		return componentIds;
 	}
 
@@ -244,12 +267,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			}
 		}
 
-		store.putAll(deprecatedSctIds);
+		putSctIds(deprecatedSctIds);
 	}
 
 	@Override
 	public void release(final Collection<String> componentIds) {
-		final Collection<String> releasedComponentIds = Lists.newArrayList();
+		final Set<String> releasedComponentIds = newHashSet();
 
 		LOGGER.debug(String.format("Releasing %d component IDs.", componentIds.size()));
 
@@ -263,7 +286,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			}
 		}
 
-		store.removeAll(releasedComponentIds);
+		removeSctIds(releasedComponentIds);
 	}
 
 	@Override
@@ -283,7 +306,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			}
 		}
 
-		store.putAll(publishedSctIds);
+		putSctIds(publishedSctIds);
 	}
 
 	@Override
@@ -309,7 +332,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			int i = 1;
 			while (isReserved(componentId)) {
 				if (i == getConfig().getMaxIdGenerationAttempts()) {
-					throw new BadRequestException("Couldn't generate identifier in %s number of attempts", getConfig().getMaxIdGenerationAttempts());
+					throw new BadRequestException("Couldn't generate identifier in maximum (%s) number of attempts", getConfig().getMaxIdGenerationAttempts());
 				}
 				componentId = generateComponentId(namespace, category);
 				i++;
@@ -322,7 +345,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private boolean isReserved(String componentId) {
-		return getReservationService().isReserved(componentId) || store.containsKey(componentId);
+		return getReservationService().isReserved(componentId) || getFromStore(componentId) != null;
 	}
 
 	@Override
@@ -365,6 +388,41 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		// TODO set remaining attributes?
 
 		return sctId;
+	}
+	
+	private void putSctId(final String id, final SctId sctId) {
+		putSctIds(ImmutableMap.of(id, sctId));
+	}
+	
+	private void putSctIds(final Map<String, SctId> ids) {
+		store.write(new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.putAll(ids);
+				index.commit();
+				return null;
+			}
+		});
+	}
+	
+	private void removeSctIds(final Set<String> ids) {
+		store.write(new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.removeAll(ImmutableMap.<Class<?>, Set<String>>of(SctId.class, ids));
+				index.commit();
+				return null;
+			}
+		});
+	}
+	
+	private SctId getFromStore(final String componentId) {
+		return store.read(new IndexRead<SctId>() {
+			@Override
+			public SctId execute(Searcher index) throws IOException {
+				return index.get(SctId.class, componentId);
+			}
+		});
 	}
 
 }

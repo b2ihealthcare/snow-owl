@@ -18,14 +18,22 @@ package com.b2international.snowowl.snomed.datastore.id.memory;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
+import java.util.UUID;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.index.Index;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 
 /**
@@ -33,6 +41,19 @@ import com.google.common.collect.Iterables;
  */
 public class DefaultSnomedIdentifierServiceTest {
 
+	private Index store;
+
+	@Before
+	public void init() {
+		store = Indexes.createIndex(UUID.randomUUID().toString(), new ObjectMapper(), new Mappings(SctId.class));
+		store.admin().create();
+	}
+	
+	@After
+	public void after() {
+		store.admin().delete();
+	}
+	
 	@Test
 	public void issue_SO_1945() throws Exception {
 		final Iterator<String> itemIds = Iterables.cycle("1000", "1001").iterator();
@@ -42,7 +63,7 @@ public class DefaultSnomedIdentifierServiceTest {
 				return itemIds.next();
 			}
 		};
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(itemIdGenerationStrategy);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, itemIdGenerationStrategy);
 		final String first = identifiers.generate("", ComponentCategory.CONCEPT);
 		assertThat(first).contains("1000");
 		final String second = identifiers.generate("", ComponentCategory.CONCEPT);
