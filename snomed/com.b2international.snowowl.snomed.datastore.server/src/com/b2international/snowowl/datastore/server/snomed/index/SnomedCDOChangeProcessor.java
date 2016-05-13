@@ -156,14 +156,12 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackag
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemIndexMappingStrategy;
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -517,48 +515,48 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	@Override
 	public String getChangeDescription() {
 		
-		final StringBuilder sb = new StringBuilder("SNOMED CT Changes:");
+		final StringBuilder sb = new StringBuilder("SNOMED CT Changes: ");
 		if (!newConceptLogEntries.isEmpty()) {
 			if (newConceptLogEntries.size() > 100) {
-				sb.append(" number of new concepts: ");
+				sb.append("number of new concepts: ");
 				sb.append(newConceptLogEntries.size());
 			} else {
-				sb.append(" new concepts added: ");
+				sb.append("new concepts added: ");
 				createLogEntry(sb, newConceptLogEntries);
 			}
 		}
 		
 		if (!deletedConceptLogEntries.isEmpty()) {
-			sb.append(" deleted concepts: ");
+			sb.append("deleted concepts: ");
 			createLogEntry(sb, deletedConceptLogEntries);
 		}
 
 		//reasoner can change lots of concepts. Do not log.
 		if (!changedConceptLogEntries.isEmpty() && changedConceptLogEntries.size() <= 100) {
-			sb.append(" changed concepts: ");
+			sb.append("changed concepts: ");
 			createLogEntry(sb, changedConceptLogEntries);
 		} else if (changedConceptLogEntries.size() > 100) {
-			sb.append(" number of changed concepts: ");
+			sb.append("number of changed concepts: ");
 			sb.append(changedConceptLogEntries.size());
 		}
 		
 		if (!newRefsetLogEntries.isEmpty()) {
-			sb.append(" new reference sets: ");
+			sb.append("new reference sets: ");
 			createLogEntry(sb, newRefsetLogEntries);
 		}
 		
 		if (!deletedRefSetLogEntries.isEmpty()) {
-			sb.append(" deleted reference sets: ");
+			sb.append("deleted reference sets: ");
 			createLogEntry(sb, deletedRefSetLogEntries);
 		}
 		
 		if (!changedRefSetLogEntries.isEmpty()) {
-			sb.append(" changed reference sets: ");
+			sb.append("changed reference sets: ");
 			createLogEntry(sb, changedRefSetLogEntries);
 		}
 		
 		if (!deletedConstraintLogEntries.isEmpty()) {
-			sb.append(" deleted constraint: ");
+			sb.append("deleted constraint: ");
 			createLogEntry(sb, deletedConstraintLogEntries);
 		}
 		
@@ -2347,11 +2345,13 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	private void createLogEntry(final StringBuilder sb, final Set<ComponentIdAndLabel> logEntries) {
-		sb.append(Joiner.on(", ").join(FluentIterable.from(logEntries).transform(new Function<ComponentIdAndLabel, String>() {
-			@Override public String apply(ComponentIdAndLabel input) {
-				return String.format("[%s:%s]", input.getId(), input.getLabel());
-			}
-		})));
+		for (final ComponentIdAndLabel logEntry : logEntries) {
+			sb.append("[");
+			sb.append(logEntry.getId());
+			sb.append(":");
+			sb.append(logEntry.getLabel());
+			sb.append("], ");
+		}
 	}
 
 	/*loads the previous state of the object and returns with it. this method caches the view for the loaded object.
