@@ -15,6 +15,7 @@
  */
 package com.b2international.index;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceLoader;
 
@@ -35,8 +36,20 @@ public class Indexes {
 	private Indexes() {
 	}
 	
+	public static IndexClient createIndexClient(String name, ObjectMapper mapper, Mappings mappings) {
+		return FACTORIES.iterator().next().createClient(name, mapper, mappings, Collections.<String, Object>emptyMap());
+	}
+	
 	public static IndexClient createIndexClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
 		return FACTORIES.iterator().next().createClient(name, mapper, mappings, settings);
+	}
+	
+	public static Index createIndex(String name, ObjectMapper mapper, Mappings mappings) {
+		return new DefaultIndex(createIndexClient(name, mapper, mappings));
+	}
+	
+	public static Index createIndex(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
+		return new DefaultIndex(createIndexClient(name, mapper, mappings, settings));
 	}
 	
 }

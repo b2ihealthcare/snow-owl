@@ -32,6 +32,10 @@ public final class Mappings {
 
 	private final Map<Class<?>, DocumentMapping> mappingsByType; 
 	
+	public Mappings(Class<?>...types) {
+		this(ImmutableSet.copyOf(types));
+	}
+	
 	public Mappings(Collection<Class<?>> types) {
 		checkArgument(!types.isEmpty(), "At least one document type should be specified");
 		final Builder<Class<?>, DocumentMapping> builder = ImmutableMap.builder();
