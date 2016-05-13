@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 /**
  * @since 4.5
  */
-public abstract class SearchRequest<B> extends BaseResourceRequest<BranchContext, B> {
+public abstract class RevisionSearchRequest<B> extends BaseResourceRequest<BranchContext, B> {
 
 	enum OptionKey {
 		EXPAND
@@ -50,7 +50,7 @@ public abstract class SearchRequest<B> extends BaseResourceRequest<BranchContext
 	@NotNull
 	private Collection<String> componentIds;
 	
-	protected SearchRequest() {}
+	protected RevisionSearchRequest() {}
 	
 	void setLimit(int limit) {
 		this.limit = limit;
