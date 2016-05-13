@@ -170,13 +170,34 @@ public final class DocumentMapping {
 	}
 	
 	public static String getType(Class<?> type) {
-		checkArgument(type.isAnnotationPresent(Doc.class), "Doc annotation must be present on types need to be indexed as separate documents");
-		final Doc annotation = type.getAnnotation(Doc.class);
+		final Doc annotation = getDocAnnotation(type);
+		checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
 		final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
 		checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
 		return docType;
 	}
 	
+	private static Doc getDocAnnotation(Class<?> type) {
+		if (type.isAnnotationPresent(Doc.class)) {
+			return type.getAnnotation(Doc.class);
+		} else {
+			if (type.getSuperclass() != null) {
+				final Doc doc = getDocAnnotation(type.getSuperclass());
+				if (doc != null) {
+					return doc;
+				}
+			}
+			
+			for (Class<?> iface : type.getInterfaces()) {
+				final Doc doc = getDocAnnotation(iface);
+				if (doc != null) {
+					return doc;
+				}
+			}
+			return null;
+		}
+	}
+
 	public static boolean isNestedDoc(Class<?> fieldType) {
 		return fieldType.isAnnotationPresent(Doc.class) && fieldType.getAnnotation(Doc.class).nested();
 	}
