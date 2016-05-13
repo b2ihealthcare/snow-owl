@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableSet;
  * <p>This class has an overridden {@link #createFilter()} method that convert component IDs given as
  * strings to the corresponding {@link BytesRef}s. Also wraps the {@link TermsFilter} instance into a {@link CachingWrapperFilter}
  * which can ensure better performance as it will cache filter results which is useful if one have a set of filters/terms that are used quite often.
- *
+ * @deprecated - UNSUPPORTED, will be removed in 4.7
  */
 public abstract class SnomedDslIndexQueryAdapter<E extends IIndexEntry> extends QueryDslIndexQueryAdapter<E> implements Serializable {
 

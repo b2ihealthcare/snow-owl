@@ -26,6 +26,9 @@ import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
+/**
+ * @deprecated - UNSUPPORTED, will be removed in 4.7
+ */
 public class SnomedDescriptionContainerQueryAdapter extends SnomedDescriptionIndexQueryAdapter implements Serializable {
 
     private static final long serialVersionUID = 8913979797366560442L;

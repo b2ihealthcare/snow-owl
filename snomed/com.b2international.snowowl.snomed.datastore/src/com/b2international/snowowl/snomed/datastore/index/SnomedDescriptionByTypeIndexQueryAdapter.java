@@ -14,6 +14,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
  * 
  * @author gnagy
  * @since SO 4.4
+ * @deprecated - UNSUPPORTED will be removed in 4.7
  */
 public class SnomedDescriptionByTypeIndexQueryAdapter extends SnomedDescriptionIndexQueryAdapter {
 

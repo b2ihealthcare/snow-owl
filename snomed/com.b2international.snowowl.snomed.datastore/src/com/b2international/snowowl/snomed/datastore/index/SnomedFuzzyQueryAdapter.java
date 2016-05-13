@@ -39,7 +39,7 @@ import com.google.common.base.Strings;
 
 /**
  * A query adapter that looks for fuzzified search terms in synonyms, expecting at least one match. 
- * 
+ * @deprecated - UNSUPPORTED will be removed in 4.7
  */
 public class SnomedFuzzyQueryAdapter extends SnomedConceptIndexQueryAdapter implements Serializable {
 	

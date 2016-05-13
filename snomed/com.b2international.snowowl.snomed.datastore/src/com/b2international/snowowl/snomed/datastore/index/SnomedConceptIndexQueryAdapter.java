@@ -28,6 +28,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 
 /**
  * Common abstract superclass for SNOMED CT concept-related query adapters.
+ * @deprecated - UNSUPPORTED, will be removed in 4.7
  */
 public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQueryAdapter<SnomedConceptIndexEntry> {
 
