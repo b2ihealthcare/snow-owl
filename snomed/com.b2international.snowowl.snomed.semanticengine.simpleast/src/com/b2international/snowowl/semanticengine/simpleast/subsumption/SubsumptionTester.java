@@ -19,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.lucene.search.Query;
-
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
@@ -29,12 +26,9 @@ import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -313,17 +307,18 @@ public class SubsumptionTester {
 			
 			long replacementConceptId = -1L;
 			
-			final SnomedRelationshipReplacedByOrSameAsQueryAdapter adapter = new SnomedRelationshipReplacedByOrSameAsQueryAdapter(candidateId);			
-			
-			final Collection<SnomedRelationshipIndexEntry> entires = ApplicationContext.getInstance().getService(SnomedClientIndexService.class).search(adapter, 1);
-			
-			if (!CompareUtils.isEmpty(entires)) {
-				
-				final SnomedRelationshipIndexEntry entry = entires.iterator().next();
-				replacementConceptId = Long.parseLong(entry.getValueId());
-				candidateIdCopy = replacementConceptId;
-				
-			}
+			// FIXME follow historical association members if the concept is inactive
+//			final SnomedRelationshipReplacedByOrSameAsQueryAdapter adapter = new SnomedRelationshipReplacedByOrSameAsQueryAdapter(candidateId);			
+//			
+//			final Collection<SnomedRelationshipIndexEntry> entires = ApplicationContext.getInstance().getService(SnomedClientIndexService.class).search(adapter, 1);
+//			
+//			if (!CompareUtils.isEmpty(entires)) {
+//				
+//				final SnomedRelationshipIndexEntry entry = entires.iterator().next();
+//				replacementConceptId = Long.parseLong(entry.getValueId());
+//				candidateIdCopy = replacementConceptId;
+//				
+//			}
 			
 			// if no replacement concept found, the candidate is not considered subsumed
 			if (-1L == replacementConceptId) {
@@ -538,31 +533,6 @@ public class SubsumptionTester {
 			return false;
 		
 		return true;
-	}
-	
-	// FIXME: I think there are no relationships with SAME AS or REPLACED BY types any more
-	public static final class SnomedRelationshipReplacedByOrSameAsQueryAdapter extends SnomedRelationshipIndexQueryAdapter {
-		
-		private final long candidateId;
-
-		public SnomedRelationshipReplacedByOrSameAsQueryAdapter(long candidateId) {
-			super("@ignored", -1);
-			this.candidateId = candidateId;
-		}
-
-		private static final long serialVersionUID = 1L;
-
-		@Override public Query createQuery() {
-			// type concept: same as or replaced by
-			final Query types = SnomedMappings.newQuery().relationshipType(CONCEPT_ID_SAME_AS).relationshipType(CONCEPT_ID_REPLACED_BY).matchAny();
-			return SnomedMappings.newQuery()
-					.relationship()
-						.active()
-						.relationshipSource(candidateId)
-						.and(types)
-					.matchAll();
-		};
-		
 	}
 	
 }
