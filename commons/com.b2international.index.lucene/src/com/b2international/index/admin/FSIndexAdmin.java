@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.admin;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -37,6 +37,9 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.IndexException;
+import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.lucene.Directories;
 import com.google.common.collect.Maps;
