@@ -187,7 +187,6 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	@Override
 	public <T> void clear(Class<T> type) {
 		// TODO remove all documents matching the given type, based on mappings
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

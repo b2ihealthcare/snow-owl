@@ -15,12 +15,22 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.b2international.index.Index;
+import com.b2international.index.IndexRead;
+import com.b2international.index.IndexWrite;
+import com.b2international.index.Searcher;
+import com.b2international.index.Writer;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
@@ -29,12 +39,10 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
-import com.b2international.snowowl.datastore.store.Store;
-import com.b2international.snowowl.datastore.store.query.Query;
-import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
@@ -42,9 +50,7 @@ import com.google.common.collect.Iterables;
  */
 public abstract class BranchManagerImpl implements BranchManager {
 
-	private static final String PATH_FIELD = "path";
-
-	private final Store<InternalBranch> branchStore;
+	private final Index branchStore;
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
 			.expireAfterAccess(5L, TimeUnit.MINUTES)
@@ -53,12 +59,10 @@ public abstract class BranchManagerImpl implements BranchManager {
 				public ReentrantLock load(String key) throws Exception {
 					return new ReentrantLock();
 				}
-				
 			});
 	
-	public BranchManagerImpl(final Store<InternalBranch> branchStore) {
+	public BranchManagerImpl(final Index branchStore) {
 		this.branchStore = branchStore;
-		branchStore.configureSearchable(PATH_FIELD);
 	}
 	
 	protected final void initBranchStore(final InternalBranch main) {
@@ -70,15 +74,15 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	protected void doInitBranchStore(InternalBranch main) {
-		branchStore.clear();
+		branchStore.admin().clear(Branch.class);
 		registerBranch(main);
 	}
 
 	void registerBranch(final InternalBranch branch) {
 		branch.setBranchManager(this);
-		branchStore.put(branch.path(), branch);
+		put(branch);
 	}
-	
+
 	final InternalBranch createBranch(final InternalBranch parent, final String name, final Metadata metadata) {
 		if (parent.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parent.path());
@@ -104,7 +108,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 					throw new RequestTimeoutException();
 				}
 			} catch (InterruptedException e) {
-				throw new SnowowlRuntimeException(e); 
+				throw new SnowowlRuntimeException(e);
 			} finally {
 				lock.unlock();
 			}
@@ -127,8 +131,9 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branch;
 	}
 
-	protected final Branch getBranchFromStore(final Query query) {
-		final InternalBranch branch = Iterables.getOnlyElement(branchStore.search(query, 0, 1), null);
+	protected final Branch getBranchFromStore(final AfterWhereBuilder<InternalBranch> query) {
+		query.limit(1);
+		final InternalBranch branch = Iterables.getOnlyElement(search(query.build()), null);
 		if (branch != null) {
 			branch.setBranchManager(this);
 		}
@@ -136,7 +141,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 	
 	private final Branch getBranchFromStore(final String path) {
-		final InternalBranch branch = branchStore.get(path);
+		final InternalBranch branch = get(path);
 		if (branch != null) {
 			branch.setBranchManager(this);
 		}
@@ -145,7 +150,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public Collection<? extends Branch> getBranches() {
-		final Collection<InternalBranch> values = branchStore.values();
+		final Collection<InternalBranch> values = search(Query.builder(InternalBranch.class).selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build());
 		initialize(values);
 		return values;
 	}
@@ -186,7 +191,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	private InternalBranch doDelete(final InternalBranch branchImpl) {
 		final InternalBranch deleted = branchImpl.withDeleted();
-		branchStore.replace(branchImpl.path(), branchImpl, deleted);
+		put(deleted);
 		return sendChangeEvent(deleted); // Explicit notification (delete)
 	}
 	
@@ -207,8 +212,37 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = branchStore.search(QueryBuilder.newQuery().prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR).build());
+		final Collection<InternalBranch> values = search(Query.builder(InternalBranch.class).selectAll().where(Expressions.prefixMatch(DocumentMapping._ID, branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
 		initialize(values);
 		return values;
+	}
+
+	private Collection<InternalBranch> search(final Query<InternalBranch> query) {
+		return ImmutableList.copyOf(branchStore.read(new IndexRead<Iterable<InternalBranch>>() {
+			@Override
+			public Iterable<InternalBranch> execute(Searcher index) throws IOException {
+				return index.search(query);
+			}
+		}));
+	}
+	
+	private InternalBranch get(final String path) {
+		return branchStore.read(new IndexRead<InternalBranch>() {
+			@Override
+			public InternalBranch execute(Searcher index) throws IOException {
+				return index.get(InternalBranch.class, path);
+			}
+		});
+	}
+	
+	private void put(final InternalBranch branch) {
+		branchStore.write(new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.put(branch.path(), branch);
+				index.commit();
+				return null;
+			}
+		});
 	}
 }
