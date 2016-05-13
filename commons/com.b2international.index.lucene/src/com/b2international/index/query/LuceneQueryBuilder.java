@@ -140,6 +140,8 @@ public final class LuceneQueryBuilder {
 			visit((HasParentPredicate) expression);
 		} else if (expression instanceof PrefixPredicate) {
 			visit((PrefixPredicate) expression);
+		} else if (expression instanceof StringSetPredicate) {
+			visit((StringSetPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -209,6 +211,11 @@ public final class LuceneQueryBuilder {
 
 	private void visit(StringPredicate predicate) {
 		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(StringSetPredicate predicate) {
+		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(predicate.values());
 		deque.push(new DequeItem(filter));
 	}
 	

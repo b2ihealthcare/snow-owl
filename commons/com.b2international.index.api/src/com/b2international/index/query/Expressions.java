@@ -15,10 +15,12 @@
  */
 package com.b2international.index.query;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
@@ -121,6 +123,10 @@ public class Expressions {
 
 	public static Expression matchRange(String field, String from, String to) {
 		return new StringRangePredicate(field, from, to);
+	}
+
+	public static Expression matchAny(String field, Collection<String> values) {
+		return new StringSetPredicate(field, ImmutableSet.copyOf(values));
 	}
 
 }
