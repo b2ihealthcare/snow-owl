@@ -82,10 +82,10 @@ public class JsonDocumentWriter implements Writer {
 	}
 	
 	@Override
-	public void putAll(Map<String, Object> objectsByKey) throws IOException {
-		for (Entry<String, Object> entry : objectsByKey.entrySet()) {
+	public <T> void putAll(Map<String, T> objectsByKey) throws IOException {
+		for (Entry<String, T> entry : objectsByKey.entrySet()) {
 			final String key = entry.getKey();
-			final Object doc = entry.getValue();
+			final T doc = entry.getValue();
 			final String uid = DocumentMapping.toUid(doc.getClass(), key);
 			operations.add(new Index(uid, key, doc, mappingStrategy, mappings.getMapping(doc.getClass())));
 		}

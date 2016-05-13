@@ -26,7 +26,7 @@ public interface Writer extends AutoCloseable {
 
 	void put(String key, Object object) throws IOException;
 	
-	void putAll(Map<String, Object> objectsByKey) throws IOException;
+	<T> void putAll(Map<String, T> objectsByKey) throws IOException;
 
 	void remove(Class<?> type, String key) throws IOException;
 	
