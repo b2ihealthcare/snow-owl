@@ -169,6 +169,7 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		final CDOBranchPoint base = mockBase(parent, clock.getTimeStamp());
 		mockBranchID(branch, branchIds.getAndIncrement());
 		when(branch.getBase()).thenReturn(base);
+		when(branch.isMainBranch()).thenReturn(CDOBranch.MAIN_BRANCH_NAME.equals(name));
 		mockBasePath(parent, branch);
 		if (parent == null) {
 			mockBranchPath(branch, "", name);

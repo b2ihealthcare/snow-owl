@@ -29,6 +29,8 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -43,8 +45,6 @@ import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
-import com.b2international.snowowl.datastore.store.Store;
-import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
@@ -58,10 +58,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
 	private final InternalRepository repository;
 	
-    public CDOBranchManagerImpl(final InternalRepository repository, final Store<InternalBranch> branchStore) {
-        super(branchStore);
+    public CDOBranchManagerImpl(final InternalRepository repository) {
+        super(repository.getIndex());
         this.repository = repository;
-       	branchStore.configureSearchable(CDO_BRANCH_ID);
        	
        	CDOBranch cdoMainBranch = repository.getCdoMainBranch();
 		initBranchStore(new CDOMainBranchImpl(repository.getBaseTimestamp(cdoMainBranch), repository.getHeadTimestamp(cdoMainBranch)));
@@ -100,7 +99,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     private Branch getBranch(Integer branchId) {
-    	return getBranchFromStore(QueryBuilder.newQuery().match(CDO_BRANCH_ID, branchId.toString()).build());
+    	return getBranchFromStore(Query.builder(InternalBranch.class).selectAll().where(Expressions.exactMatch(CDO_BRANCH_ID, branchId.toString())));
     }
     
     private CDOBranch loadCDOBranch(Integer branchId) {
@@ -199,7 +198,10 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
         final CDOBranchPath cdoBranchPath = new CDOBranchPath(childCDOBranch);
 
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
-        repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath);
+        // XXX compatibility with 4.6.x terminologies, 4.7.x terminologies should not have index updater
+        if (repository.getIndexUpdater() != null) {
+        	repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath);
+        }
 		return reopen(parent, name, metadata, timeStamp, childCDOBranch.getID());
     }
 

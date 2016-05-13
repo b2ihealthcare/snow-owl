@@ -22,14 +22,20 @@ import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.b2international.index.Index;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -39,7 +45,7 @@ import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLock
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
-import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 
 /**
  * @since 4.1
@@ -56,6 +62,7 @@ public class CDOBranchManagerTest {
 	
 	private InternalRepository repository;
 	private ServiceProvider context;
+	private Index store;
 	
 	@Before
 	public void givenCDOBranchManager() {
@@ -70,8 +77,11 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
+		store = Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(), new Mappings(CDOMainBranchImpl.class, CDOBranchImpl.class, InternalBranch.class));
+		store.admin().create();
+		when(repository.getIndex()).thenReturn(store);
 		
-		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>());
+		manager = new CDOBranchManagerImpl(repository);
 		main = (CDOMainBranchImpl) manager.getMainBranch();
 		
 		context = mock(ServiceProvider.class);
@@ -87,6 +97,11 @@ public class CDOBranchManagerTest {
 		
 		when(repositoryContextProvider.get(context, repository.id())).thenReturn(repositoryContext);
 		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
+	}
+	
+	@After
+	public void after() {
+		store.admin().delete();
 	}
 	
 	@Test
