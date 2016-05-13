@@ -46,7 +46,9 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		SOURCE,
 		TYPE,
 		DESTINATION,
-		CHARACTERISTIC_TYPE;
+		CHARACTERISTIC_TYPE, 
+		// TODO implement group based filtering
+		GROUP
 	}
 	
 	SnomedRelationshipSearchRequest() {}

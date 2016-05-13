@@ -43,6 +43,10 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.TYPE, termFilter);
 	}
 	
+	public SnomedRelationshipSearchRequestBuilder filterByType(Collection<String> termFilter) {
+		return addOption(OptionKey.TYPE, termFilter);
+	}
+	
 	public SnomedRelationshipSearchRequestBuilder filterByDestination(String destinationId) {
 		return addOption(OptionKey.DESTINATION, destinationId);
 	}
@@ -55,8 +59,13 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.CHARACTERISTIC_TYPE, termFilter);
 	}
 	
+	public SnomedRelationshipSearchRequestBuilder filterByGroup(int group) {
+		return addOption(OptionKey.GROUP, group);
+	}
+	
 	@Override
 	protected RevisionSearchRequest<SnomedRelationships> createSearch() {
 		return new SnomedRelationshipSearchRequest();
 	}
+
 }
