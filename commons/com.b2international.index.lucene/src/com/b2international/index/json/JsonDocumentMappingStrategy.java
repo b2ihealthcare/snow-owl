@@ -57,7 +57,7 @@ public class JsonDocumentMappingStrategy {
 			}
 			final Object value = Reflections.getValue(object, field);
 			final IndexField indexField = getIndexField(field);
-			if (Fields.none() != indexField) {
+			if (Fields.none() != indexField && value != null) {
 				if (value instanceof Iterable) {
 					for (Object item : (Iterable<?>) value) {
 						indexField.addTo(doc, item);
