@@ -135,6 +135,16 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 	
 	@Override
+	public Index getIndex() {
+		return (Index) registry.get(Index.class);
+	}
+	
+	@Override
+	public RevisionIndex getRevisionIndex() {
+		return (RevisionIndex) registry.get(RevisionIndex.class);
+	}
+	
+	@Override
 	public ICDORepository getCdoRepository() {
 		return env.service(ICDORepositoryManager.class).getByUuid(repositoryId);
 	}
@@ -194,10 +204,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		initIndex(mapper);
 		
-		registry.put(BranchManager.class, new CDOBranchManagerImpl(this, branchStore));
+		registry.put(BranchManager.class, new CDOBranchManagerImpl(this));
 		
 		final ReviewConfiguration reviewConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
-		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewStore, conceptChangesStore, reviewConfiguration);
+		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
 		registry.put(ReviewManager.class, reviewManager);
 
 		events().registerHandler(address("/branches/changes") , reviewManager.getStaleHandler());
