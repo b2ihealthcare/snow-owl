@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.datastore.request.SearchRequest;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 
 /**
@@ -117,7 +117,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	}
 
 	@Override
-	protected SearchRequest<SnomedConcepts> createSearch() {
+	protected RevisionSearchRequest<SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();
 	}
 
