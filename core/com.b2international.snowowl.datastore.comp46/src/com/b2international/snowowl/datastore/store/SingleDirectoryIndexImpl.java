@@ -45,6 +45,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.index.IndexException;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.lucene.Directories;
 import com.b2international.index.lucene.SearchWarmerFactory;
@@ -101,7 +102,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 
 	protected void initLucene(final File indexDirectory, final boolean clean) {
 		try {
-			this.directory = Directories.open(indexDirectory);
+			this.directory = Directories.openFile(indexDirectory);
 			final Analyzer analyzer = new ComponentTermAnalyzer(true, true);
 			final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 			config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
@@ -110,7 +111,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			this.writer.commit(); // Create index if it didn't exist
 			this.manager = new SearcherManager(directory, new SearchWarmerFactory());
 		} catch (final IOException e) {
-			throw new StoreException(e.getMessage(), e);
+			throw new IndexException(e.getMessage(), e);
 		}
 	}
 	
