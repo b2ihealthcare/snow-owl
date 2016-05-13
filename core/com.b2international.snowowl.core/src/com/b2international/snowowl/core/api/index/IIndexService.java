@@ -25,7 +25,7 @@ import com.google.common.collect.Multimap;
  * Common interface for index searchers on the server.
  * 
  * @param E the {@link IIndexEntry} subtype this index service uses
- * 
+ * @deprecated - As of 4.7 release, nested index services are not supported 
  */
 public interface IIndexService<E extends IIndexEntry> {
 	
