@@ -15,20 +15,16 @@
  */
 package com.b2international.snowowl.snomed.validation.constraints.component;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 
-import org.apache.lucene.search.Query;
-
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * All concepts should have a fully-specified name of appropriate status.
@@ -44,25 +40,20 @@ public class SnomedConceptFsnStatusConstraint extends ComponentValidationConstra
 	@Override
 	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
 		if (concept.isActive()) {
-			final Query query = createQuery(concept.getId());
-			if (getIndexService().getHitCount(branchPath, query, null) < 1) {
+			final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
+				.one()
+				.filterByActive(true)
+				.filterByConceptId(concept.getId())
+				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
+				.build(branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+			if (descriptions.getTotal() < 1) {
 				final String errorMessage = String.format("%s has no active fully specified name.", concept.getLabel());
 				return new ComponentValidationDiagnosticImpl(concept.getId(), errorMessage, ID, CONCEPT_NUMBER, error());
 			}
 		}
 		return createOk(concept.getId(), ID, CONCEPT_NUMBER);
-	}
-
-	private SnomedIndexServerService getIndexService() {
-		return (SnomedIndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-
-	private Query createQuery(final String conceptId) {
-		return SnomedMappings.newQuery()
-				.active()
-				.descriptionConcept(conceptId)
-				.descriptionType(FULLY_SPECIFIED_NAME)
-				.matchAll();
 	}
 
 }
