@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 import java.util.Timer;
@@ -42,6 +43,7 @@ import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.branch.Branch;
@@ -63,7 +65,7 @@ import com.b2international.snowowl.datastore.version.VersionCompareService;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.2
@@ -116,20 +118,17 @@ public class ReviewManagerImpl implements ReviewManager {
 			final BranchChangedEvent changeEvent = message.body(BranchChangedEvent.class);
 			final String path = changeEvent.getBranch().path();
 
-			final Iterable<Review> affectedReviews = store.read(new IndexRead<Iterable<Review>>() {
-				@Override
-				public Iterable<Review> execute(Searcher index) throws IOException {
-					return ImmutableSet.<Review>builder()
-							.addAll(index.search(Query.builder(Review.class).selectAll().where(Expressions.exactMatch(SOURCE_PATH_FIELD, path)).build()))
-							.addAll(index.search(Query.builder(Review.class).selectAll().where(Expressions.exactMatch(TARGET_PATH_FIELD, path)).build()))
-							.build();
-				}
-			});
-			
-
 			store.write(new IndexWrite<Void>() {
 				@Override
 				public Void execute(Writer index) throws IOException {
+					final Iterable<Review> affectedReviews = index.searcher().search(
+							Query.builder(Review.class)
+							.selectAll()
+							.where(Expressions.or(
+									Expressions.exactMatch(SOURCE_PATH_FIELD, path), 
+									Expressions.exactMatch(TARGET_PATH_FIELD, path))
+							).build());
+					
 					for (final Review affectedReview : affectedReviews) {
 						Review newReview = updateStatus((ReviewImpl) affectedReview, ReviewStatus.STALE);
 						if (newReview != null) {
@@ -147,44 +146,44 @@ public class ReviewManagerImpl implements ReviewManager {
 		@Override
 		public void run() {
 			final long now = System.currentTimeMillis();
-
-			final Iterable<Review> affectedReviews;
 			try {
-				
-				affectedReviews = store.read(new IndexRead<Iterable<Review>>() {
+				store.write(new IndexWrite<Void>() {
 					@Override
-					public Iterable<Review> execute(Searcher index) throws IOException {
-						return ImmutableSet.<Review>builder()
-							.addAll(index.search(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis)))
-							.addAll(index.search(buildQuery(ReviewStatus.PENDING, now - keepOtherMillis)))
-							.addAll(index.search(buildQuery(ReviewStatus.STALE, now - keepOtherMillis)))
-							.addAll(index.search(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis)))
-							.build();
+					public Void execute(Writer index) throws IOException {
+						final Iterable<Review> affectedReviews = index.searcher().search(Query.builder(Review.class)
+								.selectAll()
+								.where(Expressions.or(
+										Expressions.or(
+												Expressions.or(
+														buildQuery(ReviewStatus.FAILED, now - keepOtherMillis),
+														buildQuery(ReviewStatus.STALE, now - keepOtherMillis)),
+												buildQuery(ReviewStatus.PENDING, now - keepOtherMillis)),
+										buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis)))
+								.limit(Integer.MAX_VALUE)
+								.build());
+						
+						final Set<String> ids = newHashSet();
+						for (Review r : affectedReviews) {
+							ids.add(r.id());
+						}
+						
+						index.removeAll(ImmutableMap.of(
+								Review.class, ids,
+								ConceptChanges.class, ids
+								));
+						
+						index.commit();
+						return null;
 					}
 				});
 			} catch (final Exception e) {
 				LOG.error("Exception in review cleanup task when searching for outdated reviews.", e);
 				return;
 			}
-
-			for (final Review affectedReview : affectedReviews) {
-				try {
-					deleteReview(affectedReview);
-				} catch (final Exception e) {
-					LOG.error("Exception in review cleanup task when deleting review {}.", affectedReview.id(), e);
-				}
-			}
 		}
 
-		private Query<Review> buildQuery(ReviewStatus status, long beforeTimestamp) {
-			return Query.builder(Review.class)
-					.selectAll()
-					.where(Expressions.and(
-							Expressions.exactMatch(STATUS_FIELD, status.toString()), 
-							Expressions.matchRange(LAST_UPDATED_FIELD, null, ISO8601Utils.format(new Date(beforeTimestamp))))
-							)
-					.limit(Integer.MAX_VALUE)
-					.build();
+		private Expression buildQuery(ReviewStatus status, long beforeTimestamp) {
+			return Expressions.and(Expressions.exactMatch(STATUS_FIELD, status.toString()), Expressions.matchRange(LAST_UPDATED_FIELD, null, ISO8601Utils.format(new Date(beforeTimestamp))));
 		}
 	}
 
@@ -388,9 +387,11 @@ public class ReviewManagerImpl implements ReviewManager {
 		return store.write(new IndexWrite<Review>() {
 			@Override
 			public Review execute(Writer index) throws IOException {
-				index.remove(Review.class, review.id());
-				index.remove(ConceptChanges.class, review.id());
-				return null;
+				index.removeAll(ImmutableMap.of(
+						Review.class, Collections.singleton(review.id()),
+						ConceptChanges.class, Collections.singleton(review.id())));
+				index.commit();
+				return review;
 			}
 		});
 	}
