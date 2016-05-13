@@ -15,9 +15,7 @@
  */
 package com.b2international.index.admin;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.lucene.store.Directory;
@@ -27,18 +25,19 @@ import com.b2international.index.lucene.Directories;
 /**
  * @since 4.7
  */
-public final class FSIndexAdmin extends BaseLuceneIndexAdmin {
+public final class RAMIndexAdmin extends BaseLuceneIndexAdmin {
 
-	private final Path indexPath;
-
-	public FSIndexAdmin(File directory, String name, Map<String, Object> settings) {
+	public RAMIndexAdmin(String name) {
+		super(name);
+	}
+	
+	public RAMIndexAdmin(String name, Map<String, Object> settings) {
 		super(name, settings);
-		this.indexPath = directory.toPath().resolve(name);
 	}
 
 	@Override
 	protected Directory openDirectory() throws IOException {
-		return Directories.openFile(indexPath.toFile());
+		return Directories.openRam();
 	}
 	
 }

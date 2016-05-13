@@ -23,6 +23,7 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
+import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.util.Constants;
 
@@ -30,6 +31,15 @@ import org.apache.lucene.util.Constants;
  * @since 4.7
  */
 public class Directories {
+
+	/**
+	 * Creates a new {@link RAMDirectory} instance.
+	 * 
+	 * @return
+	 */
+	public static RAMDirectory openRam() {
+		return new RAMDirectory();
+	}
 
 	/**
 	 * Creates an FSDirectory instance, trying to pick the best implementation given the current environment. The directory returned uses the
@@ -46,14 +56,14 @@ public class Directories {
 	 * performance you should consider using {@link MMapDirectory} on 64 bit JVMs.
 	 *
 	 */
-	public static FSDirectory open(final File path) throws IOException {
-		return open(path, null);
+	public static FSDirectory openFile(final File path) throws IOException {
+		return openFile(path, null);
 	}
 
 	/**
-	 * Just like {@link #open(File)}, but allows you to also specify a custom {@link LockFactory}.
+	 * Just like {@link #openFile(File)}, but allows you to also specify a custom {@link LockFactory}.
 	 */
-	public static FSDirectory open(final File path, final LockFactory lockFactory) throws IOException {
+	public static FSDirectory openFile(final File path, final LockFactory lockFactory) throws IOException {
 		if ((Constants.WINDOWS || Constants.SUN_OS || Constants.LINUX || Constants.MAC_OS_X) && Constants.JRE_IS_64BIT
 				&& MMapDirectory.UNMAP_SUPPORTED) {
 
@@ -64,5 +74,5 @@ public class Directories {
 			return new NIOFSDirectory(path, lockFactory);
 		}
 	}
-	
+
 }

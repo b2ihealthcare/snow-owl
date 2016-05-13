@@ -15,11 +15,11 @@
  */
 package com.b2international.index;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.File;
 import java.util.Map;
 
+import com.b2international.index.admin.FSIndexAdmin;
+import com.b2international.index.admin.RAMIndexAdmin;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -30,10 +30,13 @@ public class LuceneIndexClientFactory implements IndexClientFactory {
 
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
-		checkArgument(settings.containsKey(IndexClientFactory.DIRECTORY), "Directory parameter required to create Lucene based '%s' index", name);
-		final Object dir = settings.get(IndexClientFactory.DIRECTORY);
-		final File directory = dir instanceof File ? (File) dir : new File((String) dir);
-		return new LuceneIndexClient(new FSIndexAdmin(directory, name), mapper, mappings);
+		if (settings.containsKey(IndexClientFactory.DIRECTORY)) {
+			final Object dir = settings.get(IndexClientFactory.DIRECTORY);
+			final File directory = dir instanceof File ? (File) dir : new File((String) dir);
+			return new LuceneIndexClient(new FSIndexAdmin(directory, name, settings), mapper, mappings);
+		} else {
+			return new LuceneIndexClient(new RAMIndexAdmin(name, settings), mapper, mappings);
+		}
 	}
 	
 }
