@@ -48,6 +48,7 @@ import com.google.common.collect.Lists;
 
 /**
  * Lucene specific query adapter for retrieving lightweight representations of SNOMED CT reference set members.
+ * @deprecated - UNSUPPORTED, will be removed in 4.7
  */
 public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberIndexQueryAdapter implements Serializable {
 

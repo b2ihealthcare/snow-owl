@@ -28,7 +28,7 @@ import com.google.common.base.Optional;
 
 /**
  * Query adapter for SNOMED CT relationships.
- * 
+ * @deprecated UNSUPPORTED, will be removed in 4.7
  */
 public class SnomedRelationshipIndexQueryAdapter extends QueryDslIndexQueryAdapter<SnomedRelationshipIndexEntry> {
 

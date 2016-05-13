@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableSet;
 
 /**
  * Query adapter for SNOMED CT descriptions.
- * 
+ * @deprecated - UNSUPPORTED, will be removed in 4.7
  */
 public abstract class SnomedDescriptionIndexQueryAdapter extends SnomedDslIndexQueryAdapter<SnomedDescriptionIndexEntry> implements Serializable {
 
