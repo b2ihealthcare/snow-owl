@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collections;
 import java.util.Deque;
 
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -29,6 +30,7 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeFilter;
+import org.apache.lucene.search.PrefixFilter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
@@ -133,6 +135,8 @@ public final class LuceneQueryBuilder {
 			visit((NestedPredicate) expression);
 		} else if (expression instanceof HasParentPredicate) {
 			visit((HasParentPredicate) expression);
+		} else if (expression instanceof PrefixPredicate) {
+			visit((PrefixPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -202,6 +206,11 @@ public final class LuceneQueryBuilder {
 
 	private void visit(StringPredicate predicate) {
 		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(PrefixPredicate predicate) {
+		final Filter filter = new PrefixFilter(new Term(predicate.getField(), predicate.getArgument()));
 		deque.push(new DequeItem(filter));
 	}
 	
