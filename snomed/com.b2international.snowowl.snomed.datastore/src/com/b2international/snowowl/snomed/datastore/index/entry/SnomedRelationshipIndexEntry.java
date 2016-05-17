@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Collection;
 
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -30,12 +31,17 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
 /**
  * A transfer object representing a SNOMED CT description.
  */
+@Doc
+@JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
 public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IStatement<String>, IComponent<String>, IIndexEntry, Serializable {
 
 	private static final long serialVersionUID = -7873086925532169024L;
@@ -125,6 +131,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 
 		private boolean destinationNegated;
 		
+		@JsonCreator
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
@@ -195,6 +202,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	}
 
 	private final String sourceId;
+	private final String typeId;
 	private final String destinationId;
 	private final String characteristicTypeId;
 	private final String modifierId;
@@ -233,6 +241,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		checkArgument(unionGroup >= 0, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
 
 		this.sourceId = checkNotNull(sourceId, "Relationship source identifier may not be null.");
+		this.typeId = checkNotNull(typeId, "Relationship type identifier may not be null.");
 		this.destinationId = checkNotNull(destinationId, "Relationship destination identifier may not be null.");
 		this.characteristicTypeId = checkNotNull(characteristicTypeId, "Relationship characteristic type identifier may not be null.");
 		this.modifierId = checkNotNull(modifierId, "Relationship modifier identifier may not be null.");
@@ -242,17 +251,23 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	}
 
 	@Override
-	public String getObjectId() {
+	@JsonIgnore
+	public String getIconId() {
+		return super.getIconId();
+	}
+	
+	@Override
+	public String getSourceId() {
 		return sourceId;
 	}
 
 	@Override
-	public String getAttributeId() {
-		return getIconId(); // XXX: aliased to icon identifier in constructor
+	public String getTypeId() {
+		return typeId;
 	}
 
 	@Override
-	public String getValueId() {
+	public String getDestinationId() {
 		return destinationId;
 	}
 
@@ -266,6 +281,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#DEFINING_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isDefining() {
 		return Concepts.DEFINING_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -273,6 +289,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#INFERRED_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isInferred() {
 		return Concepts.INFERRED_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -280,6 +297,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#STATED_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isStated() {
 		return Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -287,6 +305,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#ADDITIONAL_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isAdditional() {
 		return Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -301,6 +320,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the modifier id is equal to {@link Concepts#UNIVERSAL_RESTRICTION_MODIFIER}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isUniversal() {
 		return Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(modifierId);
 	}
@@ -308,6 +328,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the modifier id is equal to {@link Concepts#EXISTENTIAL_RESTRICTION_MODIFIER}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isExistential() {
 		return Concepts.EXISTENTIAL_RESTRICTION_MODIFIER.equals(modifierId);
 	}
@@ -315,6 +336,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return the {@link CharacteristicType} value for this relationship, based on the stored characteristic type identifier
 	 */
+	@JsonIgnore
 	public CharacteristicType getCharacteristicType() {
 		return CharacteristicType.getByConceptId(characteristicTypeId);
 	}
@@ -344,7 +366,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	public String toString() {
 		return toStringHelper()
 				.add("sourceId", sourceId)
-				.add("typeId", getAttributeId())
+				.add("typeId", getTypeId())
 				.add("destinationId", destinationId)
 				.add("characteristicTypeId", characteristicTypeId)
 				.add("modifierId", modifierId)
