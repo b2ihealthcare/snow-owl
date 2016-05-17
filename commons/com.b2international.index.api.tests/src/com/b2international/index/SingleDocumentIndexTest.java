@@ -72,7 +72,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 			@Override
 			public Void execute(Writer index) throws IOException {
 				index.put(KEY, data);
-				assertNull(getDocument(Data.class, KEY));
+				assertNull(index.searcher().get(Data.class, KEY));
 				index.commit();
 				return null;
 			}

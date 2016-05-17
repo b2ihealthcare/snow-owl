@@ -16,8 +16,10 @@
 package com.b2international.index.revision;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -29,8 +31,10 @@ import org.junit.Before;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.IndexClient;
 import com.b2international.index.Indexes;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
+import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,6 +62,7 @@ public abstract class BaseRevisionIndexTest {
 		
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
 		index = new DefaultRevisionIndex(new DefaultIndex(createIndexClient(mapper, mappings)), branchProvider);
 		index.admin().create();
@@ -66,6 +71,9 @@ public abstract class BaseRevisionIndexTest {
 	@After
 	public void teardown() {
 		index.admin().delete();
+	}
+	
+	protected void configureMapper(ObjectMapper mapper) {
 	}
 	
 	protected final void commitBranch(final String branchPath, final long commitTimestamp) {
@@ -133,6 +141,19 @@ public abstract class BaseRevisionIndexTest {
 				return index.search(query);
 			}
 		});
-	} 
+	}
+	
+	protected void assertDocEquals(Object expected, Object actual) {
+		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
+			if (Revision.COMMIT_TIMESTAMP.equals(f.getName()) 
+					|| Revision.BRANCH_PATH.equals(f.getName()) 
+					|| Revision.STORAGE_KEY.equals(f.getName()) 
+					|| DocumentMapping._ID.equals(f.getName())) {
+				// skip revision fields from equality check
+				continue;
+			}
+			assertEquals(String.format("Field '%s' should be equal", f.getName()), Reflections.getValue(expected, f), Reflections.getValue(actual, f));
+		}
+	}
 	
 }
