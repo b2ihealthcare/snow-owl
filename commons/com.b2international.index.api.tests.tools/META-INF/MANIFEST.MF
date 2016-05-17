@@ -6,4 +6,7 @@ Bundle-Version: 4.7.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.index.api,
- com.google.guava;bundle-version="[15.0.0,16.0.0)"
+ com.google.guava;bundle-version="[15.0.0,16.0.0)",
+ org.junit;bundle-version="4.11.0"
+Export-Package: com.b2international.index,
+ com.b2international.index.revision
