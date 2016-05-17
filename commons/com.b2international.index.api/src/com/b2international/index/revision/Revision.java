@@ -23,6 +23,7 @@ import java.util.Collections;
 import com.b2international.index.WithId;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 
 
@@ -72,18 +73,22 @@ public abstract class Revision implements WithId {
 		this.replacedIns = replacedIns;
 	}
 	
+	@JsonIgnore
 	public long getStorageKey() {
 		return storageKey;
 	}
 	
+	@JsonIgnore
 	public Collection<ReplacedIn> getReplacedIns() {
 		return ImmutableList.copyOf(replacedIns);
 	}
-	
+
+	@JsonIgnore
 	public String getBranchPath() {
 		return branchPath;
 	}
 	
+	@JsonIgnore
 	public long getCommitTimestamp() {
 		return commitTimestamp;
 	}
