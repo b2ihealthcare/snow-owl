@@ -888,7 +888,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		return filter(getOutboundRelationships(branchPath, conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
 			@Override
 			public boolean apply(final SnomedRelationshipIndexEntry relationship) {
-				return nullToEmpty(typeId).equals(relationship.getAttributeId());
+				return nullToEmpty(typeId).equals(relationship.getTypeId());
 			}
 		});
 	}
@@ -905,7 +905,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		return filter(getInboundRelationships(branchPath, conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
 			@Override
 			public boolean apply(final SnomedRelationshipIndexEntry relationship) {
-				return nullToEmpty(typeId).equals(relationship.getAttributeId());
+				return nullToEmpty(typeId).equals(relationship.getTypeId());
 			}
 		});
 	}
@@ -920,28 +920,28 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	private static final Predicate<SnomedRelationshipIndexEntry> NON_ISA_RELATIONSHIP_PREDICATE = new Predicate<SnomedRelationshipIndexEntry>() {
 		@Override
 		public boolean apply(final SnomedRelationshipIndexEntry relationship) {
-			return !Concepts.IS_A.equals(relationship.getAttributeId());
+			return !Concepts.IS_A.equals(relationship.getTypeId());
 		}
 	};
 	
 	private static final Function<SnomedRelationshipIndexEntry, String> GET_TARGET_FUNCTION = new Function<SnomedRelationshipIndexEntry, String>() {
 		@Override
 		public String apply(final SnomedRelationshipIndexEntry relationship) {
-			return relationship.getValueId();
+			return relationship.getDestinationId();
 		}
 	};
 	
 	private static final Function<SnomedRelationshipIndexEntry, String> GET_SOURCE_FUNCTION = new Function<SnomedRelationshipIndexEntry, String>() {
 		@Override
 		public String apply(final SnomedRelationshipIndexEntry relationship) {
-			return relationship.getObjectId();
+			return relationship.getSourceId();
 		}
 	};
 	
 	private static final Function<SnomedRelationshipIndexEntry, String> GET_TYPE_FUNCTION = new Function<SnomedRelationshipIndexEntry, String>() {
 		@Override
 		public String apply(final SnomedRelationshipIndexEntry relationship) {
-			return relationship.getAttributeId();
+			return relationship.getTypeId();
 		}
 	};
 	

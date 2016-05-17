@@ -31,6 +31,6 @@ public enum IsARelationshipPredicate implements Predicate<SnomedRelationshipInde
 	 */
 	@Override
 	public boolean apply(SnomedRelationshipIndexEntry input) {
-		return Concepts.IS_A.equals(input.getAttributeId());
+		return Concepts.IS_A.equals(input.getTypeId());
 	}
 }

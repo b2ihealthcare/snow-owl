@@ -279,8 +279,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				final List<SnomedRelationshipIndexEntry> relationships = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class)
 						.getOutboundStatementsById(member.getReferencedComponentId());
 				for (final SnomedRelationshipIndexEntry relationship : relationships) {
-					if (Concepts.HAS_SDD_CLASS.equals(relationship.getAttributeId())) {
-						return getConceptLabel(relationship.getValueId());
+					if (Concepts.HAS_SDD_CLASS.equals(relationship.getTypeId())) {
+						return getConceptLabel(relationship.getDestinationId());
 					}
 				}
 			case MAP_CATEGORY:

@@ -157,11 +157,11 @@ public class LinkageRefSetGenerator {
 
 			final List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
 			for (SnomedRelationshipIndexEntry outboundStatement : statementBrowser.getOutboundStatementsById(conceptId)) {
-				if (outboundStatement.isActive() && Concepts.IS_A.equals(outboundStatement.getAttributeId())) {
-					if (subsumingConceptId.equals(outboundStatement.getValueId())) {
+				if (outboundStatement.isActive() && Concepts.IS_A.equals(outboundStatement.getTypeId())) {
+					if (subsumingConceptId.equals(outboundStatement.getDestinationId())) {
 						statements.add(outboundStatement);
 					} else {
-						List<SnomedRelationshipIndexEntry> temporaryStatements = collectSuperTypeStatements(outboundStatement.getValueId(), subsumingConceptId);
+						List<SnomedRelationshipIndexEntry> temporaryStatements = collectSuperTypeStatements(outboundStatement.getDestinationId(), subsumingConceptId);
 						if (!temporaryStatements.isEmpty()){
 							statements.addAll(temporaryStatements);
 							statements.add(outboundStatement);
@@ -190,8 +190,8 @@ public class LinkageRefSetGenerator {
 			List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
 
 			for (SnomedRelationshipIndexEntry relationshipMini : commonRelationships) {
-				final String typeId = relationshipMini.getAttributeId();
-				if (relationshipMini.isActive() && !Concepts.IS_A.equals(relationshipMini.getAttributeId()) && relationTester.isRelated(relatedConceptId, conceptId, typeId)) {
+				final String typeId = relationshipMini.getTypeId();
+				if (relationshipMini.isActive() && !Concepts.IS_A.equals(relationshipMini.getTypeId()) && relationTester.isRelated(relatedConceptId, conceptId, typeId)) {
 					List<SnomedRelationshipIndexEntry> list = collectRelationshipTargetStatements(relatedConceptId, conceptId, typeId, new HashSet<String>());
 					statements.addAll(list);
 				}
@@ -206,9 +206,9 @@ public class LinkageRefSetGenerator {
 			
 			final List<SnomedRelationshipIndexEntry> statements = Lists.newArrayList();
 			for (SnomedRelationshipIndexEntry outboundRelationship : statementBrowser.getOutboundStatementsById(conceptId)) {
-				if (outboundRelationship.isActive() && typeId.equals(outboundRelationship.getAttributeId())) {
+				if (outboundRelationship.isActive() && typeId.equals(outboundRelationship.getTypeId())) {
 
-					String relationshipTargetId = outboundRelationship.getValueId();
+					String relationshipTargetId = outboundRelationship.getDestinationId();
 					if (relatedConceptId.equals(relationshipTargetId)) {
 						statements.add(outboundRelationship);
 					} else {

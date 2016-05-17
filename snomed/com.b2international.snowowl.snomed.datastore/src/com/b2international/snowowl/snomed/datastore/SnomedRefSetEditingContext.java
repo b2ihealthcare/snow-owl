@@ -570,7 +570,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			return transactionTextProvider.getText(relationship.getType().getId());
 		}
 			
-		return transactionTextProvider.getText(relationshipMini.getAttributeId());
+		return transactionTextProvider.getText(relationshipMini.getTypeId());
 	}
 	
 	/**

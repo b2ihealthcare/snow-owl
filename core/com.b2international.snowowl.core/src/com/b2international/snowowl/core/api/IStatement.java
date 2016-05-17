@@ -22,9 +22,9 @@ package com.b2international.snowowl.core.api;
  * <p>
  * The following features are supported:
  * <ul>
- *   <li>{@link IStatement#getObjectId() <em>Retrieve the source concept ID.</em>}</li>
- *   <li>{@link IStatement#getAttributeId() <em>Retrieve the type conceptID.</em>}</li>
- *   <li>{@link IStatement#getValueId() <em>Retrieve the destination concept ID.</em>}</li>
+ *   <li>{@link IStatement#getSourceId() <em>Retrieve the source concept ID.</em>}</li>
+ *   <li>{@link IStatement#getTypeId() <em>Retrieve the type conceptID.</em>}</li>
+ *   <li>{@link IStatement#getDestinationId() <em>Retrieve the destination concept ID.</em>}</li>
  * </ul>
  * </p>
  * @param <K> - type parameter of the key (this is the unique identifier).
@@ -36,19 +36,19 @@ public interface IStatement<K> extends IComponent<K> {
 	 * @return the source concept ID of the statement.
 	 * @see IStatement
 	 */
-	K getObjectId();
+	K getSourceId();
 	
 	/**
 	 * Returns with the relationship type concept ID of the relationship. <i>(E.g.: IS_A)<i/>
 	 * @return type concept ID of the statement.
 	 * @see IStatement
 	 */
-	K getAttributeId();
+	K getTypeId();
 	
 	/**
 	 * Returns with the destination concept ID of the relationship.
 	 * @return the destination concept ID of the statement.
 	 * @see IStatement
 	 */
-	K getValueId();
+	K getDestinationId();
 }

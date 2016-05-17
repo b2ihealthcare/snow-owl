@@ -380,7 +380,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			convertedRelationship.setGroupId(relationship.getGroup());
 			convertedRelationship.setModifier(relationship.isUniversal() ? RelationshipModifier.UNIVERSAL : RelationshipModifier.EXISTENTIAL);
 			convertedRelationship.setModuleId(relationship.getModuleId());
-			convertedRelationship.setSourceId(relationship.getObjectId());
+			convertedRelationship.setSourceId(relationship.getSourceId());
 			convertedRelationshipBuilder.put(relationship.getId(), convertedRelationship);
 		}
 		
@@ -394,7 +394,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId) {
 				final Set<String> typeIds = newHashSet();
 				for (final SnomedRelationshipIndexEntry relationship : relationships) {
-					typeIds.add(relationship.getAttributeId());
+					typeIds.add(relationship.getTypeId());
 				}
 				return getTerminologyBrowser().getConcepts(branchPath, typeIds);
 			}
@@ -423,7 +423,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			protected Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId) {
 				final Set<String> destinationConceptIds = newHashSet();
 				for (final SnomedRelationshipIndexEntry relationship : relationships) {
-					destinationConceptIds.add(relationship.getValueId());
+					destinationConceptIds.add(relationship.getDestinationId());
 				}
 				return getTerminologyBrowser().getConcepts(branchPath, destinationConceptIds);
 			}
@@ -450,8 +450,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		
 		for (SnomedRelationshipIndexEntry entry : relationships) {
 			SnomedBrowserRelationship rel = (SnomedBrowserRelationship) convertedRelationships.get(entry.getId());
-			SnomedBrowserRelationshipType type = typesById.get(entry.getAttributeId());
-			SnomedBrowserRelationshipTarget target = targetsById.get(entry.getValueId());
+			SnomedBrowserRelationshipType type = typesById.get(entry.getTypeId());
+			SnomedBrowserRelationshipTarget target = targetsById.get(entry.getDestinationId());
 			rel.setType(type);
 			rel.setTarget(target);
 		}

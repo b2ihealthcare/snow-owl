@@ -46,10 +46,10 @@ public class RelationTester {
 		visited.add(candidateId);
 		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
-			if (!Concepts.IS_A.equals(relationship.getAttributeId())) {
-				if (predicateId.equals(relationship.getValueId())) {
+			if (!Concepts.IS_A.equals(relationship.getTypeId())) {
+				if (predicateId.equals(relationship.getDestinationId())) {
 					return true;
-				} else if (isRelated(predicateId, relationship.getValueId(), relationship.getAttributeId(), visited)) {
+				} else if (isRelated(predicateId, relationship.getDestinationId(), relationship.getTypeId(), visited)) {
 					return true;
 				}
 			}
@@ -60,12 +60,12 @@ public class RelationTester {
 	public boolean isRelated(String predicateId, String candidateId, String relationshipTypeId) {
 		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
-			if (relationshipTypeId.equals(relationship.getAttributeId())) {
+			if (relationshipTypeId.equals(relationship.getTypeId())) {
 				Set<String> visited = Sets.newHashSet();
 				visited.add(candidateId);
-				if (predicateId.equals(relationship.getValueId())) {
+				if (predicateId.equals(relationship.getDestinationId())) {
 					return true;
-				} else if (isRelated(predicateId, relationship.getValueId(), relationshipTypeId, visited)) {
+				} else if (isRelated(predicateId, relationship.getDestinationId(), relationshipTypeId, visited)) {
 					return true;
 				}
 			}
@@ -79,8 +79,8 @@ public class RelationTester {
 		}
 		
 		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
-			if (relationshipTypeId.equals(relationship.getAttributeId())) {
-				String relationshipTargetId = relationship.getValueId();
+			if (relationshipTypeId.equals(relationship.getTypeId())) {
+				String relationshipTargetId = relationship.getDestinationId();
 				if (predicateId.equals(relationshipTargetId)) {
 					return true;
 				} else if (isRelated(predicateId, relationshipTargetId, relationshipTypeId, visitedIds)) {

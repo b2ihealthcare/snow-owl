@@ -178,11 +178,11 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				continue; //inactive statement
 			}
 			
-			if (!relationshipTypeId.equals(relationship.getAttributeId())) {
+			if (!relationshipTypeId.equals(relationship.getTypeId())) {
 				continue; //not the specified type
 			}
 
-			final SnomedConceptIndexEntry sourceConcept = getTerminologyBrowser().getConcept(relationship.getObjectId());
+			final SnomedConceptIndexEntry sourceConcept = getTerminologyBrowser().getConcept(relationship.getSourceId());
 			
 			if (!sourceConcept.isActive()) {
 				continue; //ignore inactive target concepts
@@ -202,7 +202,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		List<SnomedConceptIndexEntry> targetConceptIndexEntries = Lists.newArrayList();
 		List<SnomedRelationshipIndexEntry> activeOutboundRelationships = getActiveOutboundRelationships(sourceConceptId, relationshipTypeId);
 		for (SnomedRelationshipIndexEntry snomedRelationshipIndexEntry : activeOutboundRelationships) {
-			String targetConceptId = snomedRelationshipIndexEntry.getValueId();
+			String targetConceptId = snomedRelationshipIndexEntry.getDestinationId();
 			SnomedConceptIndexEntry targetConceptIndexEntry = getConcept(targetConceptId);
 			targetConceptIndexEntries.add(targetConceptIndexEntry);
 		}
@@ -338,7 +338,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public List<SnomedRelationshipIndexEntry> getOutboundRelationships(final String conceptId, final String relationshipTypeId) {
 		return Lists.newArrayList(Collections2.filter(getOutboundRelationships(conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
 			@Override public boolean apply(final SnomedRelationshipIndexEntry relationship) {
-				return relationshipTypeId.equals(relationship.getAttributeId());
+				return relationshipTypeId.equals(relationship.getTypeId());
 			}
 		}));
 	}
@@ -350,7 +350,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public List<SnomedRelationshipIndexEntry> getActiveOutboundRelationships(final String conceptId, final String relationshipTypeId) {
 		return Lists.newArrayList(Collections2.filter(getActiveOutboundRelationships(conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
 			@Override public boolean apply(final SnomedRelationshipIndexEntry relationship) {
-				return relationshipTypeId.equals(relationship.getAttributeId());
+				return relationshipTypeId.equals(relationship.getTypeId());
 			}
 		}));
 	}
@@ -378,7 +378,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public List<SnomedRelationshipIndexEntry> getInboundRelationships(final String conceptId, final String relationshipTypeId) {
 		return Lists.newArrayList(Collections2.filter(getActiveInboundRelationships(conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
 			@Override public boolean apply(final SnomedRelationshipIndexEntry relationship) {
-				return relationshipTypeId.equals(relationship.getAttributeId());
+				return relationshipTypeId.equals(relationship.getTypeId());
 			}
 		}));
 	}
@@ -390,7 +390,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public List<SnomedRelationshipIndexEntry> getActiveInboundRelationships(final String conceptId, final String relationshipTypeId) {
 		return Lists.newArrayList(Collections2.filter(getActiveInboundRelationships(conceptId), new Predicate<SnomedRelationshipIndexEntry>() {
 			@Override public boolean apply(final SnomedRelationshipIndexEntry relationship) {
-				return relationshipTypeId.equals(relationship.getAttributeId());
+				return relationshipTypeId.equals(relationship.getTypeId());
 			}
 		}));
 	}

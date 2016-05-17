@@ -72,14 +72,14 @@ public class ConceptDefinitionNormalizer {
 			 */
 			Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(focusConcept.getConceptId());
 			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (!relationship.getAttributeId().equals(QueryAstUtils.IS_A)) {
+				if (!relationship.getTypeId().equals(QueryAstUtils.IS_A)) {
 					int relationshipGroup = relationship.getGroup();
 					AttributeClause attribute = ecoreastFactory.eINSTANCE.createAttributeClause();
 					ConceptRef name = ecoreastFactory.eINSTANCE.createConceptRef();
-					name.setConceptId(relationship.getAttributeId());
+					name.setConceptId(relationship.getTypeId());
 					attribute.setLeft(name);
 					ConceptRef value = ecoreastFactory.eINSTANCE.createConceptRef();
-					value.setConceptId(relationship.getValueId());
+					value.setConceptId(relationship.getDestinationId());
 					
 					RValue normalizedValueExpression = normalFormGenerator.getLongNormalForm(value);
 					if (normalizedValueExpression instanceof ConceptRef) {

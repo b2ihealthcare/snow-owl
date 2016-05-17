@@ -80,17 +80,17 @@ public class ConceptDefinitionNormalizer {
 			final Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(focusConcept.getId());
 			//for (int i = 0; i < outgoingRelationships.length; i++) {
 			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (!relationship.getAttributeId().equals(Concepts.IS_A) 
+				if (!relationship.getTypeId().equals(Concepts.IS_A) 
 						&& !relationship.isAdditional()) {
 					
 					int relationshipGroup = relationship.getGroup();
 					Attribute attribute = ScgFactory.eINSTANCE.createAttribute();
 					Concept nameConcept = ScgFactory.eINSTANCE.createConcept();
-					nameConcept.setId(relationship.getAttributeId());
+					nameConcept.setId(relationship.getTypeId());
 					attribute.setName(nameConcept);
 					Expression valueExpression = ScgFactory.eINSTANCE.createExpression();
 					Concept valueConcept = ScgFactory.eINSTANCE.createConcept();
-					valueConcept.setId(relationship.getValueId());
+					valueConcept.setId(relationship.getDestinationId());
 					valueExpression.getConcepts().add(valueConcept);
 					Expression valueNormalFormExpression = normalFormGenerator.getLongNormalForm(valueExpression);
 					// only build subexpression, if necessary

@@ -74,9 +74,9 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		result.setRefinability(RelationshipRefinability.OPTIONAL);
 		result.setReleased(input.isReleased());
 		result.setUnionGroup(input.getUnionGroup());
-		result.setDestination(new SnomedConcept(input.getValueId()));
-		result.setSource(new SnomedConcept(input.getObjectId()));
-		result.setType(new SnomedConcept(input.getAttributeId()));
+		result.setDestination(new SnomedConcept(input.getDestinationId()));
+		result.setSource(new SnomedConcept(input.getSourceId()));
+		result.setType(new SnomedConcept(input.getTypeId()));
 		result.setScore(input.getScore());
 		return result;
 	}

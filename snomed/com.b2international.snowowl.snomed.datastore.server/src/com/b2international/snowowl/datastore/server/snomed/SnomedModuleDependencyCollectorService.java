@@ -273,7 +273,7 @@ public enum SnomedModuleDependencyCollectorService {
 				for (final SnomedRelationshipIndexEntry isARelationship : getInboundIsARelationships(moduleConceptId)) {
 					if (isComponentAffected(isARelationship.getStorageKey())) {
 						
-						final Concept concept = new SnomedConceptLookupService().getComponent(isARelationship.getObjectId(), getView());
+						final Concept concept = new SnomedConceptLookupService().getComponent(isARelationship.getSourceId(), getView());
 						final Concept module = concept.getModule();
 						
 						tryCreateMember(module.getId(), isARelationship.getModuleId());

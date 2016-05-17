@@ -141,11 +141,11 @@ public class FocusConceptNormalizer {
 		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
 		Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(concept.getId());
 		for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-			if (relationship.getAttributeId().equals(QueryAstUtils.IS_A)) {
-				if (terminologyBrowser.getConcept(relationship.getValueId()).isPrimitive()) {
-					proximatePrimitiveSuperTypes.add(terminologyBrowser.getConcept(relationship.getValueId()));
+			if (relationship.getTypeId().equals(QueryAstUtils.IS_A)) {
+				if (terminologyBrowser.getConcept(relationship.getDestinationId()).isPrimitive()) {
+					proximatePrimitiveSuperTypes.add(terminologyBrowser.getConcept(relationship.getDestinationId()));
 				} else {
-					proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(terminologyBrowser.getConcept(relationship.getValueId())));
+					proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(terminologyBrowser.getConcept(relationship.getDestinationId())));
 				}
 			}
 		}

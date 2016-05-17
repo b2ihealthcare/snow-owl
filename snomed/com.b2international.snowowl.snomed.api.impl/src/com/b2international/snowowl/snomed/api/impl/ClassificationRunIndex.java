@@ -250,8 +250,8 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		final Long sourceId = relationshipChange.getSource().getId();
 		final List<SnomedRelationshipIndexEntry> relationshipIndexEntries = getIndexService().search(branchPath, new SnomedRelationshipIndexQueryAdapter(sourceId.toString(), SnomedRelationshipIndexQueryAdapter.SEARCH_SOURCE_ID));
 		for (SnomedRelationshipIndexEntry relationshipIndexEntry : relationshipIndexEntries) {
-			if (relationshipIndexEntry.getValueId().equals(relationshipChange.getDestination().getId().toString())
-				&& relationshipIndexEntry.getAttributeId().equals(relationshipChange.getType().getId().toString())
+			if (relationshipIndexEntry.getDestinationId().equals(relationshipChange.getDestination().getId().toString())
+				&& relationshipIndexEntry.getTypeId().equals(relationshipChange.getType().getId().toString())
 				&& relationshipIndexEntry.getGroup() == relationshipChange.getGroup()) {
 				foundRelationshipIndexEntry = relationshipIndexEntry;
 			}

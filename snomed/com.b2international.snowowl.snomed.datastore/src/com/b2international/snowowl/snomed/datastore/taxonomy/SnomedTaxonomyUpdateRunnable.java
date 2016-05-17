@@ -158,8 +158,8 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 				//ignore everything but IS_As
 				if (Concepts.IS_A.equals(typeId)) {
 					//check source and destination as well
-					if (relationship.getObjectId().equals(newRelationship.getSource().getId())
-							&& relationship.getValueId().equals(newRelationship.getDestination().getId())) {
+					if (relationship.getSourceId().equals(newRelationship.getSource().getId())
+							&& relationship.getDestinationId().equals(newRelationship.getDestination().getId())) {
 						
 						//and if the new relationship has more recent (larger CDO ID), ignore deletion
 						if (CDOIDUtils.asLong(newRelationship.cdoID()) > cdoId) {
@@ -249,13 +249,13 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 				return relationship.getId();
 			}
 			@Override public boolean isValid() {
-				return Concepts.IS_A.equals(relationship.getAttributeId()) && characteristicTypeId.equals(relationship.getCharacteristicTypeId());
+				return Concepts.IS_A.equals(relationship.getTypeId()) && characteristicTypeId.equals(relationship.getCharacteristicTypeId());
 			}
 			@Override public String getSoureId() {
-				return relationship.getObjectId();
+				return relationship.getSourceId();
 			}
 			@Override public String getDestinationId() {
-				return relationship.getValueId();
+				return relationship.getDestinationId();
 			}
 		};
 	}

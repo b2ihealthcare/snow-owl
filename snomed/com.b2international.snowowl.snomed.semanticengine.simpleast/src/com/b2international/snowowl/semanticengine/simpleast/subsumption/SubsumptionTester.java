@@ -238,8 +238,8 @@ public class SubsumptionTester {
 			SnomedConceptIndexEntry conceptMini = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(candidate.getId());
 			Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(conceptMini.getId());
 			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (relationship.getAttributeId().equals(CONCEPT_ID_SAME_AS) || relationship.getAttributeId().equals(CONCEPT_ID_REPLACED_BY)) {
-					replacementConceptId = relationship.getValueId();
+				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
+					replacementConceptId = relationship.getDestinationId();
 					break;
 				}
 			}
