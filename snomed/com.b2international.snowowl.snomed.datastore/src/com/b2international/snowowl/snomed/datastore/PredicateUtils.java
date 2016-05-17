@@ -15,14 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
-
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
@@ -31,9 +26,6 @@ import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
-import com.google.common.base.Function;
-import com.google.common.base.Splitter;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 /**
@@ -194,7 +186,7 @@ public abstract class PredicateUtils {
 		private final String predicateKey;
 		private long storageKey;
 
-		private ConstraintDomain(final long componentId, final String predicateKeySuffix, final long storageKey) {
+		public ConstraintDomain(final long componentId, final String predicateKeySuffix, final long storageKey) {
 			this.componentId = componentId;
 			this.storageKey = storageKey;
 			this.predicateKey = String.format("%s#%s", storageKey, predicateKeySuffix);
@@ -237,20 +229,6 @@ public abstract class PredicateUtils {
 			if (storageKey != other.storageKey) 
 				return false;
 			return true;
-		}
-		
-		public static Collection<ConstraintDomain> of(final Document conceptDoc) {
-			final Long componentId = SnomedMappings.id().getValue(conceptDoc);
-			final List<String> values = SnomedMappings.componentReferringPredicate().getValues(conceptDoc);
-			return FluentIterable.from(values).transform(new Function<String, ConstraintDomain>() {
-				@Override 
-				public ConstraintDomain apply(final String predicateKey) {
-					final List<String> segments = Splitter.on(PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
-					final long storageKey = Long.parseLong(segments.get(0));
-					final String predicateKeySuffix = segments.get(1);
-					return new ConstraintDomain(componentId, predicateKeySuffix, storageKey);
-				}
-			}).toList();
 		}
 		
 	}

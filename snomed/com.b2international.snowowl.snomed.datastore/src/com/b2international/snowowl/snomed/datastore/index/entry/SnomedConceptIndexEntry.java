@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.b2international.collections.PrimitiveSets;
@@ -26,7 +28,10 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.datastore.PredicateUtils;
+import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -115,6 +120,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		private LongCollection ancestors;
 		private LongCollection statedParents;
 		private LongCollection statedAncestors;
+		private List<String> componentReferringPredicates = Collections.emptyList();
 
 		private Builder() {
 			// Disallow instantiation outside static method
@@ -159,6 +165,11 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			this.statedAncestors = statedAncestors;
 			return getSelf();
 		}
+		
+		public Builder predicates(final List<String> componentReferringPredicates) {
+			this.componentReferringPredicates = componentReferringPredicates;
+			return getSelf();
+		}
 
 		public SnomedConceptIndexEntry build() {
 			final SnomedConceptIndexEntry entry = new SnomedConceptIndexEntry(id,
@@ -189,6 +200,10 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				entry.setStatedAncestors(statedAncestors);
 			}
 			
+			if (componentReferringPredicates != null) {
+				entry.setComponentReferringPredicates(componentReferringPredicates);
+			}
+			
 			return entry;
 		}
 	}
@@ -199,6 +214,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	private LongCollection ancestors;
 	private LongCollection statedParents;
 	private LongCollection statedAncestors;
+	private Collection<String> componentReferringPredicates; 
 
 	protected SnomedConceptIndexEntry(final String id,
 			final String label,
@@ -224,6 +240,22 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
+	}
+	
+	public Collection<ConstraintDomain> getPredicates() {
+		return FluentIterable.from(componentReferringPredicates).transform(new Function<String, ConstraintDomain>() {
+			@Override 
+			public ConstraintDomain apply(final String predicateKey) {
+				final List<String> segments = Splitter.on(PredicateUtils.PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
+				final long storageKey = Long.parseLong(segments.get(0));
+				final String predicateKeySuffix = segments.get(1);
+				return new ConstraintDomain(Long.parseLong(getId()), predicateKeySuffix, storageKey);
+			}
+		}).toList();
+	}
+	
+	private void setComponentReferringPredicates(Collection<String> componentReferringPredicates) {
+		this.componentReferringPredicates = componentReferringPredicates;
 	}
 
 	/**
