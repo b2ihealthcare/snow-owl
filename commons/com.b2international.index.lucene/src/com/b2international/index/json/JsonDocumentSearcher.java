@@ -66,7 +66,7 @@ public class JsonDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
-		final org.apache.lucene.search.Query bq = JsonDocumentMapping.matchIdAndType(type, key);
+		final org.apache.lucene.search.Query bq = new LuceneQueryBuilder(mappings.getMapping(type)).build(DocumentMapping.matchId(key));
 		final TopDocs topDocs = searcher.search(bq, 1);
 		if (isEmpty(topDocs)) {
 			return null;

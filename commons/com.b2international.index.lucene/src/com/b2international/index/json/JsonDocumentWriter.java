@@ -86,8 +86,9 @@ public class JsonDocumentWriter implements Writer {
 		for (Entry<String, T> entry : objectsByKey.entrySet()) {
 			final String key = entry.getKey();
 			final T doc = entry.getValue();
-			final String uid = DocumentMapping.toUid(doc.getClass(), key);
-			operations.add(new Index(uid, key, doc, mappingStrategy, mappings.getMapping(doc.getClass())));
+			final DocumentMapping mapping = mappings.getMapping(doc.getClass());
+			final String uid = mapping.toUid(key);
+			operations.add(new Index(uid, key, doc, mappingStrategy, mapping));
 		}
 	}
 	
@@ -103,8 +104,9 @@ public class JsonDocumentWriter implements Writer {
 		for (Entry<Class<?>, Set<String>> entry : keysByType.entrySet()) {
 			final Class<?> type = entry.getKey();
 			final Set<String> keys = entry.getValue();
+			final DocumentMapping mapping = mappings.getMapping(type);
 			for (String key : keys) {
-				deleteQuery.add(JsonDocumentMapping._uid().toQuery(DocumentMapping.toUid(type, key)), Occur.SHOULD);
+				deleteQuery.add(JsonDocumentMapping._uid().toQuery(mapping.toUid(key)), Occur.SHOULD);
 			}
 		}
 		this.operations.add(new DeleteByQuery(deleteQuery));

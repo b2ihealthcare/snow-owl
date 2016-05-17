@@ -43,6 +43,7 @@ public final class DocumentMapping {
 	public static final String _TYPE = "_type";
 	
 	private final Class<?> type;
+	private final String typeName;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
 	private final DocumentMapping parent;
@@ -54,6 +55,7 @@ public final class DocumentMapping {
 	DocumentMapping(DocumentMapping parent, Class<?> type) {
 		this.parent = parent;
 		this.type = type;
+		this.typeName = getType(type);
 		this.fieldMap = FluentIterable.from(Reflections.getFields(type))
 			.filter(new Predicate<Field>() {
 				@Override
@@ -134,11 +136,15 @@ public final class DocumentMapping {
 	}
 	
 	public String typeAsString() {
-		return getType(type);
+		return typeName;
 	}
 	
 	public Expression matchType() {
-		return Expressions.exactMatch(_TYPE, getType(type));
+		return Expressions.exactMatch(_TYPE, typeName);
+	}
+	
+	public String toUid(String key) {
+		return String.format("%s#%s", typeName, key);
 	}
 	
 	@Override
@@ -159,14 +165,6 @@ public final class DocumentMapping {
 	
 	public static Expression matchId(String id) {
 		return Expressions.exactMatch(_ID, id);
-	}
-	
-	public static String toUid(Class<?> type, String key) {
-		return String.format("%s#%s", getType(type), key);
-	}
-
-	public static String getType(Object object) {
-		return getType(object.getClass());
 	}
 	
 	public static String getType(Class<?> type) {

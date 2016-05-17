@@ -148,10 +148,9 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(NestedPredicate predicate) {
-		final Class<?> type = mapping.type();
-		final Filter parentFilter = JsonDocumentMapping.filterByType(type);
+		final Filter parentFilter = JsonDocumentMapping.filterByType(mapping.typeAsString());
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		final Filter childFilter = JsonDocumentMapping.filterByType(nestedMapping.type());
+		final Filter childFilter = JsonDocumentMapping.filterByType(nestedMapping.typeAsString());
 		final Query innerQuery = new LuceneQueryBuilder(nestedMapping).build(predicate.getExpression());
 		final Query childQuery = new FilteredQuery(innerQuery, childFilter);
 		// TODO scoring???
@@ -167,7 +166,7 @@ public final class LuceneQueryBuilder {
 		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
 		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
 		
-		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, JsonDocumentMapping.filterByType(parentMapping.type()), false);
+		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, JsonDocumentMapping.filterByType(parentMapping.typeAsString()), false);
 		deque.push(new DequeItem(toChildQuery));
 	}
 

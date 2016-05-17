@@ -45,7 +45,7 @@ public class JsonDocumentMappingStrategy {
 		final Document doc = new Document();
 		// metadata fields
 		JsonDocumentMapping._id().addTo(doc, key);
-		JsonDocumentMapping._type().addTo(doc, DocumentMapping.getType(object));
+		JsonDocumentMapping._type().addTo(doc, mapping.typeAsString());
 		JsonDocumentMapping._uid().addTo(doc, uid);
 		// TODO create byte fields
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
