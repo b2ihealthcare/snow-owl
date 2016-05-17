@@ -39,12 +39,12 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.SOURCE, Collections3.toImmutableSet(sourceIds));
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByType(String termFilter) {
-		return addOption(OptionKey.TYPE, termFilter);
+	public SnomedRelationshipSearchRequestBuilder filterByType(String typeId) {
+		return addOption(OptionKey.TYPE, typeId);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByType(Collection<String> termFilter) {
-		return addOption(OptionKey.TYPE, termFilter);
+	public SnomedRelationshipSearchRequestBuilder filterByType(Collection<String> typeIds) {
+		return addOption(OptionKey.TYPE, typeIds);
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByDestination(String destinationId) {
@@ -55,8 +55,8 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.DESTINATION, Collections3.toImmutableSet(destinationIds));
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicType(String termFilter) {
-		return addOption(OptionKey.CHARACTERISTIC_TYPE, termFilter);
+	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicType(String characteristicType) {
+		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicType);
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByGroup(int group) {
