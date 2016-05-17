@@ -21,20 +21,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.apache.lucene.document.Document;
-
-import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -49,23 +44,23 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		return new Builder();
 	}
 	
-	public static Builder builder(final Document doc) {
-		return builder()
-				.id(SnomedMappings.id().getValueAsString(doc))
-				.sourceId(SnomedMappings.relationshipSource().getValueAsString(doc))
-				.typeId(SnomedMappings.relationshipType().getValueAsString(doc))
-				.destinationId(SnomedMappings.relationshipDestination().getValueAsString(doc))
-				.characteristicTypeId(SnomedMappings.relationshipCharacteristicType().getValueAsString(doc))
-				.group(SnomedMappings.relationshipGroup().getValue(doc))
-				.unionGroup(SnomedMappings.relationshipUnionGroup().getValue(doc))
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-				.modifierId(BooleanUtils.valueOf(SnomedMappings.relationshipUniversal().getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
-				.destinationNegated(BooleanUtils.valueOf(SnomedMappings.relationshipDestinationNegated().getValue(doc)))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
-	}
+//	public static Builder builder(final Document doc) {
+//		return builder()
+//				.id(SnomedMappings.id().getValueAsString(doc))
+//				.sourceId(SnomedMappings.relationshipSource().getValueAsString(doc))
+//				.typeId(SnomedMappings.relationshipType().getValueAsString(doc))
+//				.destinationId(SnomedMappings.relationshipDestination().getValueAsString(doc))
+//				.characteristicTypeId(SnomedMappings.relationshipCharacteristicType().getValueAsString(doc))
+//				.group(SnomedMappings.relationshipGroup().getValue(doc))
+//				.unionGroup(SnomedMappings.relationshipUnionGroup().getValue(doc))
+//				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
+//				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
+//				.modifierId(BooleanUtils.valueOf(SnomedMappings.relationshipUniversal().getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+//				.destinationNegated(BooleanUtils.valueOf(SnomedMappings.relationshipDestinationNegated().getValue(doc)))
+//				.moduleId(SnomedMappings.module().getValueAsString(doc))
+//				.storageKey(Mappings.storageKey().getValue(doc))
+//				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
+//	}
 	
 	public static Builder builder(final ISnomedRelationship input) {
 		final Builder builder = builder()

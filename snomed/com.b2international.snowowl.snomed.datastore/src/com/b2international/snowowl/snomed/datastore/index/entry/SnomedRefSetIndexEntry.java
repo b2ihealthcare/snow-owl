@@ -22,16 +22,12 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.lucene.document.Document;
-
-import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.IRefSetComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -47,19 +43,19 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 		return new Builder();
 	}
 	
-	public static Builder builder(final Document doc) {
-		return builder()
-				.id(SnomedMappings.id().getValueAsString(doc))
-				.iconId(SnomedMappings.iconId().getValueAsString(doc))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.storageKey(SnomedMappings.refSetStorageKey().getValue(doc)) // XXX: This is different than the concept's storage key
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
-				.type(SnomedRefSetType.get(SnomedMappings.refSetType().getValue(doc)))
-				.referencedComponentType(SnomedMappings.refSetReferencedComponentType().getShortValue(doc))
-				.structural(BooleanUtils.valueOf(SnomedMappings.refSetStructural().getValue(doc).intValue()));
-	}
+//	public static Builder builder(final Document doc) {
+//		return builder()
+//				.id(SnomedMappings.id().getValueAsString(doc))
+//				.iconId(SnomedMappings.iconId().getValueAsString(doc))
+//				.moduleId(SnomedMappings.module().getValueAsString(doc))
+//				.storageKey(SnomedMappings.refSetStorageKey().getValue(doc)) // XXX: This is different than the concept's storage key
+//				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
+//				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
+//				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
+//				.type(SnomedRefSetType.get(SnomedMappings.refSetType().getValue(doc)))
+//				.referencedComponentType(SnomedMappings.refSetReferencedComponentType().getShortValue(doc))
+//				.structural(BooleanUtils.valueOf(SnomedMappings.refSetStructural().getValue(doc).intValue()));
+//	}
 	
 	public static Builder builder(SnomedReferenceSet refSet) {
 		final short terminologyComponentIdAsShort = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(refSet.getReferencedComponentType());

@@ -21,19 +21,14 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.document.Document;
-
-import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.FluentIterable;
@@ -50,32 +45,32 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		return new Builder();
 	}
 	
-	public static Builder builder(final Document doc) {
-		final Builder builder = builder()
-				.id(SnomedMappings.id().getValueAsString(doc)) 
-				.term(SnomedMappings.descriptionTerm().getValue(doc)) 
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.languageCode(SnomedMappings.descriptionLanguageCode().getValue(doc))
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
-				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
-				.caseSignificanceId(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
-		
-		final Iterable<String> preferredRefSetIds = SnomedMappings.descriptionPreferredReferenceSetId().getValuesAsStringList(doc);
-		for (final String preferredRefSetId : preferredRefSetIds) {
-			builder.acceptability(preferredRefSetId, Acceptability.PREFERRED);
-		}
-		
-		final Iterable<String> acceptableRefSetIds = SnomedMappings.descriptionAcceptableReferenceSetId().getValuesAsStringList(doc);
-		for (final String acceptableRefSetId : acceptableRefSetIds) {
-			builder.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
-		}
-		
-		return builder;
-	}
+//	public static Builder builder(final Document doc) {
+//		final Builder builder = builder()
+//				.id(SnomedMappings.id().getValueAsString(doc)) 
+//				.term(SnomedMappings.descriptionTerm().getValue(doc)) 
+//				.moduleId(SnomedMappings.module().getValueAsString(doc))
+//				.languageCode(SnomedMappings.descriptionLanguageCode().getValue(doc))
+//				.storageKey(Mappings.storageKey().getValue(doc))
+//				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
+//				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
+//				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
+//				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
+//				.caseSignificanceId(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc))
+//				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
+//		
+//		final Iterable<String> preferredRefSetIds = SnomedMappings.descriptionPreferredReferenceSetId().getValuesAsStringList(doc);
+//		for (final String preferredRefSetId : preferredRefSetIds) {
+//			builder.acceptability(preferredRefSetId, Acceptability.PREFERRED);
+//		}
+//		
+//		final Iterable<String> acceptableRefSetIds = SnomedMappings.descriptionAcceptableReferenceSetId().getValuesAsStringList(doc);
+//		for (final String acceptableRefSetId : acceptableRefSetIds) {
+//			builder.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
+//		}
+//		
+//		return builder;
+//	}
 	
 	public static Builder builder(final ISnomedDescription input) {
 		final Builder builder = builder()

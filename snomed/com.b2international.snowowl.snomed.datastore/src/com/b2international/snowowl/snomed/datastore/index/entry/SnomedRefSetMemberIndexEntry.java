@@ -115,36 +115,36 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		return new Builder();
 	}
 	
-	public static Builder builder(final Document doc) {
-		final SnomedRefSetType refSetType = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc));
-		final Builder builder = builder() 
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
-				.id(SnomedMappings.memberUuid().getValue(doc))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.referencedComponentId(SnomedMappings.memberReferencedComponentId().getValueAsString(doc))
-				.referencedComponentType(SnomedMappings.memberReferencedComponentType().getShortValue(doc))
-				.referenceSetId(SnomedMappings.memberRefSetId().getValueAsString(doc))
-				.referenceSetType(refSetType)
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-				.storageKey(Mappings.storageKey().getValue(doc));
-		
-		if (SnomedRefSetUtil.isMapping(refSetType)) {
-			builder.mapTargetComponentType(SnomedMappings.memberMapTargetComponentType().getShortValue(doc));
-		}
-		
-		for (IndexableField storedField : doc) {
-			if (SnomedRefSetMemberIndexEntry.isAdditionalField(storedField.name())) {
-				if (storedField.numericValue() != null) {
-					builder.additionalField(storedField.name(), storedField.numericValue());
-				} else {
-					builder.additionalField(storedField.name(), storedField.stringValue());
-				}
-			}
-		}
-		
-		return builder;
-	}
+//	public static Builder builder(final Document doc) {
+//		final SnomedRefSetType refSetType = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc));
+//		final Builder builder = builder() 
+//				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
+//				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
+//				.id(SnomedMappings.memberUuid().getValue(doc))
+//				.moduleId(SnomedMappings.module().getValueAsString(doc))
+//				.referencedComponentId(SnomedMappings.memberReferencedComponentId().getValueAsString(doc))
+//				.referencedComponentType(SnomedMappings.memberReferencedComponentType().getShortValue(doc))
+//				.referenceSetId(SnomedMappings.memberRefSetId().getValueAsString(doc))
+//				.referenceSetType(refSetType)
+//				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
+//				.storageKey(Mappings.storageKey().getValue(doc));
+//		
+//		if (SnomedRefSetUtil.isMapping(refSetType)) {
+//			builder.mapTargetComponentType(SnomedMappings.memberMapTargetComponentType().getShortValue(doc));
+//		}
+//		
+//		for (IndexableField storedField : doc) {
+//			if (SnomedRefSetMemberIndexEntry.isAdditionalField(storedField.name())) {
+//				if (storedField.numericValue() != null) {
+//					builder.additionalField(storedField.name(), storedField.numericValue());
+//				} else {
+//					builder.additionalField(storedField.name(), storedField.stringValue());
+//				}
+//			}
+//		}
+//		
+//		return builder;
+//	}
 	
 	public static Builder builder(final SnomedRefSetMemberIndexEntry source) {
 		return builder()
