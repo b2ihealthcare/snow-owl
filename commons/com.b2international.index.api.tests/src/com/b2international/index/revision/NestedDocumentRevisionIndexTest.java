@@ -45,7 +45,7 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	public void indexNestedDocument() throws Exception {
 		final NestedData data = new NestedData("field1", new Data("field1", "field2"));
 		indexRevision(branchPath, STORAGE_KEY1, data);
-		assertEquals(data, getDocument(branchPath, NestedData.class, STORAGE_KEY1));
+		assertEquals(data, getRevision(branchPath, NestedData.class, STORAGE_KEY1));
 	}
 
 	@Test

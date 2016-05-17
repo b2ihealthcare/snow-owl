@@ -91,7 +91,7 @@ public abstract class BaseRevisionIndexTest {
 		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings);
 	}
 	
-	protected final <T extends Revision> T getDocument(final String branch, final Class<T> type, final long storageKey) {
+	protected final <T extends Revision> T getRevision(final String branch, final Class<T> type, final long storageKey) {
 		return index().read(branch, new RevisionIndexRead<T>() {
 			@Override
 			public T execute(RevisionSearcher index) throws IOException {

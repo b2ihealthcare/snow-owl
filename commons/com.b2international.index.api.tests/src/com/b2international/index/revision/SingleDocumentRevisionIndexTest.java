@@ -41,7 +41,7 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void searchEmptyIndexShouldReturnNullRevision() throws Exception {
-		final Data revision = getDocument(branchPath, Data.class, STORAGE_KEY1);
+		final Data revision = getRevision(branchPath, Data.class, STORAGE_KEY1);
 		assertNull(revision);
 	}
 	
@@ -49,7 +49,7 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	public void indexRevision() throws Exception {
 		final Data data = new Data("field1", "field2");
 		indexRevision(branchPath, STORAGE_KEY1, data);
-		assertEquals(data, getDocument(branchPath, Data.class, STORAGE_KEY1));
+		assertEquals(data, getRevision(branchPath, Data.class, STORAGE_KEY1));
 	}
 
 	@Test
@@ -57,21 +57,21 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		indexRevision();
 		final Data data = new Data("field1Changed", "field2Changed");
 		indexRevision(branchPath, STORAGE_KEY1, data);
-		assertEquals(data, getDocument(branchPath, Data.class, STORAGE_KEY1));
+		assertEquals(data, getRevision(branchPath, Data.class, STORAGE_KEY1));
 	}
 
 	@Test
 	public void deleteRevision() throws Exception {
 		indexRevision();
 		deleteRevision(branchPath, Data.class, STORAGE_KEY1);
-		assertNull(getDocument(branchPath, Data.class, STORAGE_KEY1));
+		assertNull(getRevision(branchPath, Data.class, STORAGE_KEY1));
 	}
 	
 	@Test
 	public void updateThenDeleteRevision() throws Exception {
 		updateRevisions();
 		deleteRevision(branchPath, Data.class, STORAGE_KEY1);
-		assertNull(getDocument(branchPath, Data.class, STORAGE_KEY1));
+		assertNull(getRevision(branchPath, Data.class, STORAGE_KEY1));
 	}
 	
 	@Test
