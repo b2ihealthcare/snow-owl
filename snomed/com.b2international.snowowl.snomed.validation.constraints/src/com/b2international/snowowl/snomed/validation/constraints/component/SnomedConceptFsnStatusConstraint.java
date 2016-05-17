@@ -41,7 +41,7 @@ public class SnomedConceptFsnStatusConstraint extends ComponentValidationConstra
 	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
 		if (concept.isActive()) {
 			final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
-				.one()
+				.setLimit(0)
 				.filterByActive(true)
 				.filterByConceptId(concept.getId())
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
