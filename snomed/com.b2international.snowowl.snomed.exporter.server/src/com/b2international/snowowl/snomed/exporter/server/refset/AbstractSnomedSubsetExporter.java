@@ -16,16 +16,16 @@
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collections;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
@@ -45,21 +45,13 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	 */
 	//XXX language type reference set member cannot be created, modified or deleted on branch. so we can lookup reference sets in index
 	protected static boolean isLanguageType(final String refSetId) {
-		final List<SnomedRefSetIndexEntry> refSets = getRefSetById(refSetId);
-		if (CompareUtils.isEmpty(refSets)) {
-			return false;
-		}
-		final SnomedRefSetIndexEntry refSet = refSets.get(0);
-		
-		//if null it cannot be language type reference set
-		return null == refSet ? false : SnomedRefSetType.LANGUAGE.equals(refSet.getType()); 
-	}
-
-	/*searched a reference set by its identifier concept ID in the index.*/
-	private static List<SnomedRefSetIndexEntry> getRefSetById(final String refSetId) {
-		final SnomedClientIndexService indexService = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		final SnomedRefSetIndexQueryAdapter queryAdapter = new SnomedRefSetIndexQueryAdapter(SnomedRefSetIndexQueryAdapter.SEARCH_BY_ID, refSetId, null);
-		return indexService.search(queryAdapter, 1);
+		return SnomedRequests.prepareSearchRefSet()
+				.setLimit(0)
+				.setComponentIds(Collections.singleton(refSetId))
+				.filterByType(SnomedRefSetType.LANGUAGE)
+				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 	}
 
 	/**
