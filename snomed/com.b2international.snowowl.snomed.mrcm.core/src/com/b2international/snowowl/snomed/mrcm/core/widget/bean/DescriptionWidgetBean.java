@@ -54,7 +54,7 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 			.active(true)
 			.released(true)
 			.primitive(true)
-			.effectiveTimeLong(EffectiveTimes.parse("2013-07-31").getTime())
+			.effectiveTime(EffectiveTimes.parse("2013-07-31").getTime())
 			.build();
 
 	/** The property name of the {@link #getSelectedType() selectedType} property. */

@@ -60,7 +60,7 @@ public class SnomedConceptAdapterFactory extends TypeSafeAdapterFactory {
 						.primitive(concept.isPrimitive())
 						.exhaustive(concept.isExhaustive())
 						.released(concept.isReleased()) 
-						.effectiveTimeLong(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.effectiveTime(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
 						.build();
 			}
 

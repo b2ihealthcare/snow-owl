@@ -61,7 +61,7 @@ public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 						.storageKey(CDOIDUtils.asLongSafe(refSet.cdoID()))
 						.active(identifierConcept.isActive())
 						.released(identifierConcept.isReleased())
-						.effectiveTimeLong(identifierConcept.isSetEffectiveTime() ? identifierConcept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.effectiveTime(identifierConcept.isSetEffectiveTime() ? identifierConcept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
 						.type(refSet.getType()) 
 						.referencedComponentType(refSet.getReferencedComponentType())
 						.structural(refSet instanceof SnomedStructuralRefSet);

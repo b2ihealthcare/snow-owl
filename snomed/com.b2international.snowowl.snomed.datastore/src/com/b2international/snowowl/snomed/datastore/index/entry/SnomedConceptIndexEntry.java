@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ITreeComponent;
@@ -31,6 +31,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
@@ -39,10 +41,21 @@ import com.google.common.collect.FluentIterable;
  * A transfer object representing a SNOMED CT concept.
  */
 @Doc
+@JsonDeserialize(builder=SnomedConceptIndexEntry.Builder.class)
 public class SnomedConceptIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable, ITreeComponent {
 
 	private static final long serialVersionUID = -824286402410205210L;
 
+	public static class Fields {
+		public static final String PRIMITIVE = "primitive";
+		public static final String EXHAUSTIVE = "exhaustive";
+		public static final String ANCESTORS = "ancestors";
+		public static final String STATED_ANCESTORS = "statedAncestors";
+		public static final String PARENTS = "parents";
+		public static final String STATED_PARENTS = "statedParents";
+		public static final String PREDICATES = "predicates";
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -68,7 +81,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
 				.released(input.isReleased())
-				.effectiveTimeLong(input.getEffectiveTimeAsLong())
+				.effectiveTime(input.getEffectiveTime())
 				.iconId(input.getIconId())
 				.primitive(input.isPrimitive())
 				.exhaustive(input.isExhaustive())
@@ -86,7 +99,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
 				.released(input.isReleased())
-				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.iconId(input.getIconId())
 				.primitive(input.getDefinitionStatus().isPrimitive())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
@@ -118,12 +131,13 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		private String iconId;
 		private boolean primitive;
 		private boolean exhaustive;
-		private LongCollection parents;
-		private LongCollection ancestors;
-		private LongCollection statedParents;
-		private LongCollection statedAncestors;
-		private List<String> componentReferringPredicates = Collections.emptyList();
+		private LongSet parents;
+		private LongSet ancestors;
+		private LongSet statedParents;
+		private LongSet statedAncestors;
+		private List<String> predicates = Collections.emptyList();
 
+		@JsonCreator
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
@@ -148,28 +162,28 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			return getSelf();
 		}
 		
-		public Builder parents(final LongCollection parents) {
+		public Builder parents(final LongSet parents) {
 			this.parents = parents;
 			return getSelf();
 		}
 		
-		public Builder statedParents(final LongCollection statedParents) {
+		public Builder statedParents(final LongSet statedParents) {
 			this.statedParents = statedParents;
 			return getSelf();
 		}
 		
-		public Builder ancestors(final LongCollection ancestors) {
+		public Builder ancestors(final LongSet ancestors) {
 			this.ancestors = ancestors;
 			return getSelf();
 		}
 		
-		public Builder statedAncestors(final LongCollection statedAncestors) {
+		public Builder statedAncestors(final LongSet statedAncestors) {
 			this.statedAncestors = statedAncestors;
 			return getSelf();
 		}
 		
 		public Builder predicates(final List<String> componentReferringPredicates) {
-			this.componentReferringPredicates = componentReferringPredicates;
+			this.predicates = componentReferringPredicates;
 			return getSelf();
 		}
 
@@ -178,11 +192,10 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 					label,
 					iconId, 
 					score, 
-					storageKey,
 					moduleId, 
 					released, 
 					active, 
-					effectiveTimeLong, 
+					effectiveTime, 
 					primitive, 
 					exhaustive);
 			
@@ -202,8 +215,8 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				entry.setStatedAncestors(statedAncestors);
 			}
 			
-			if (componentReferringPredicates != null) {
-				entry.setComponentReferringPredicates(componentReferringPredicates);
+			if (predicates != null) {
+				entry.setComponentReferringPredicates(predicates);
 			}
 			
 			return entry;
@@ -212,17 +225,16 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 
 	private final boolean primitive;
 	private final boolean exhaustive;
-	private LongCollection parents;
-	private LongCollection ancestors;
-	private LongCollection statedParents;
-	private LongCollection statedAncestors;
-	private Collection<String> componentReferringPredicates; 
+	private LongSet parents;
+	private LongSet ancestors;
+	private LongSet statedParents;
+	private LongSet statedAncestors;
+	private Collection<String> predicates; 
 
 	protected SnomedConceptIndexEntry(final String id,
 			final String label,
 			final String iconId, 
 			final float score, 
-			final long storageKey, 
 			final String moduleId,
 			final boolean released,
 			final boolean active,
@@ -234,7 +246,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 				label,
 				iconId,
 				score, 
-				storageKey, 
+				-1L, // FIXME remove storageKeys from index entries 
 				moduleId, 
 				released, 
 				active,
@@ -245,7 +257,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	}
 	
 	public Collection<ConstraintDomain> getPredicates() {
-		return FluentIterable.from(componentReferringPredicates).transform(new Function<String, ConstraintDomain>() {
+		return FluentIterable.from(predicates).transform(new Function<String, ConstraintDomain>() {
 			@Override 
 			public ConstraintDomain apply(final String predicateKey) {
 				final List<String> segments = Splitter.on(PredicateUtils.PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
@@ -257,7 +269,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 	}
 	
 	private void setComponentReferringPredicates(Collection<String> componentReferringPredicates) {
-		this.componentReferringPredicates = componentReferringPredicates;
+		this.predicates = componentReferringPredicates;
 	}
 
 	/**
@@ -274,37 +286,37 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		return exhaustive;
 	}
 	
-	private void setParents(LongCollection parents) {
+	private void setParents(LongSet parents) {
 		this.parents = parents;
 	}
 	
-	private void setStatedParents(LongCollection statedParents) {
+	private void setStatedParents(LongSet statedParents) {
 		this.statedParents = statedParents;
 	}
 	
 	@Override
-	public LongCollection getParents() {
+	public LongSet getParents() {
 		return parents;
 	}
 	
-	public LongCollection getStatedParents() {
+	public LongSet getStatedParents() {
 		return statedParents;
 	}
 	
-	private void setAncestors(LongCollection ancestors) {
+	private void setAncestors(LongSet ancestors) {
 		this.ancestors = ancestors;
 	}
 	
-	private void setStatedAncestors(LongCollection statedAncestors) {
+	private void setStatedAncestors(LongSet statedAncestors) {
 		this.statedAncestors = statedAncestors;
 	}
 	
 	@Override
-	public LongCollection getAncestors() {
+	public LongSet getAncestors() {
 		return ancestors;
 	}
 	
-	public LongCollection getStatedAncestors() {
+	public LongSet getStatedAncestors() {
 		return statedAncestors;
 	}
 

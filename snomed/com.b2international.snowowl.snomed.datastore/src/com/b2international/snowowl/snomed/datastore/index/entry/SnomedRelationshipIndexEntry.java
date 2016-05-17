@@ -76,7 +76,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.modifierId(input.getModifier().getConceptId())
 				.destinationNegated(input.isDestinationNegated())
 				.moduleId(input.getModuleId())
-				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
 		if (input.getScore() != null) {
 			builder.score(input.getScore());
@@ -100,7 +100,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.modifierId(relationship.getModifier().getId())
 				.destinationNegated(relationship.isDestinationNegated())
 				.moduleId(relationship.getModule().getId())
-				.effectiveTimeLong(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+				.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	}
 	
 	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<ISnomedRelationship> relationships) {
@@ -182,7 +182,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 					moduleId, 
 					released, 
 					active, 
-					effectiveTimeLong, 
+					effectiveTime, 
 					sourceId, 
 					typeId, 
 					destinationId, 

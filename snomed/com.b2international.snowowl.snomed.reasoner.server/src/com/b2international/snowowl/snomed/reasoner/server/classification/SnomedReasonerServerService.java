@@ -477,7 +477,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 						.iconId(Concepts.ROOT_CONCEPT) 
 						.moduleId(Concepts.MODULE_ROOT)
 						.storageKey(Long.MAX_VALUE) // XXX: set Long.MAX_VALUE storage key to never suggest it as a replacement	
-						.effectiveTimeLong(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 						.build();
 			} else {
 				final ISnomedDescription description = preferredTerms.get(conceptId);

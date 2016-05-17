@@ -65,7 +65,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				.moduleId(refSet.getModuleId())
 				.active(refSet.isActive())
 				.released(refSet.isReleased())
-				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(refSet.getEffectiveTime()))
+				.effectiveTime(EffectiveTimes.getEffectiveTime(refSet.getEffectiveTime()))
 				.type(refSet.getType())
 				.referencedComponentType(terminologyComponentIdAsShort)
 				.structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()));
@@ -78,7 +78,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 				.moduleId(entry.getModuleId())
 				.active(entry.isActive())
 				.released(entry.isReleased())
-				.effectiveTimeLong(entry.getEffectiveTimeAsLong())
+				.effectiveTime(entry.getEffectiveTime())
 				.type(entry.getType())
 				.referencedComponentType(entry.getReferencedComponentType())
 				.structural(entry.isStructural())
@@ -141,7 +141,7 @@ public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetC
 					moduleId, 
 					released, 
 					active, 
-					effectiveTimeLong, 
+					effectiveTime, 
 					type, 
 					referencedComponentType, 
 					structural);

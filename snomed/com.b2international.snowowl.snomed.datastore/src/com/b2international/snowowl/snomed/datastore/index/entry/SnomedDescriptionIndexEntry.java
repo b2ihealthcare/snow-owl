@@ -83,7 +83,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.typeId(input.getTypeId())
 				.conceptId(input.getConceptId())
 				.caseSignificanceId(input.getCaseSignificance().getConceptId())
-				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
 		if (input.getScore() != null) {
 			builder.score(input.getScore());
@@ -112,7 +112,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.caseSignificanceId(description.getCaseSignificance().getId()) 
 				.conceptId(description.getConcept().getId())
 				.languageCode(description.getLanguageCode())
-				.effectiveTimeLong(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<ISnomedDescription> descriptions) {
@@ -192,7 +192,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 					moduleId,
 					released, 
 					active, 
-					effectiveTimeLong, 
+					effectiveTime, 
 					conceptId, 
 					languageCode,
 					term,

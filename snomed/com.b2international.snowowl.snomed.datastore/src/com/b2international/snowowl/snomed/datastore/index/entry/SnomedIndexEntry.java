@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractRevisionIndexEntry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Predicate;
@@ -51,7 +52,7 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 		protected float score;
 		protected boolean active;
 		protected boolean released;
-		protected long effectiveTimeLong;
+		protected long effectiveTime;
 
 		public B id(final String id) {
 			this.id = id;
@@ -88,20 +89,25 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 			return getSelf();
 		}
 
-		public B effectiveTimeLong(final long effectiveTimeLong) {
-			this.effectiveTimeLong = effectiveTimeLong;
+		public B effectiveTime(final long effectiveTimeLong) {
+			this.effectiveTime = effectiveTimeLong;
 			return getSelf();
 		}
 
 		protected abstract B getSelf();
 	}
+	
+	public static class Fields {
+		public static final String MODULE_ID = "moduleId";
+		public static final String RELEASED = "released";
+		public static final String ACTIVE = "active";
+		public static final String EFFECTIVE_TIME = "effectiveTime";
+	}
 
 	protected final String moduleId;
 	protected final boolean released;
 	protected final boolean active;
-	protected final long effectiveTimeLong;
-	
-	private final String effectiveTimeString;
+	protected final long effectiveTime;
 
 	protected SnomedIndexEntry(final String id,
 			final String label,
@@ -124,8 +130,7 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 		this.moduleId = checkNotNull(moduleId, "Component module identifier may not be null.");
 		this.released = released;
 		this.active = active;
-		this.effectiveTimeLong = effectiveTimeLong;
-		this.effectiveTimeString = EffectiveTimes.format(effectiveTimeLong);
+		this.effectiveTime = effectiveTimeLong;
 	}
 
 	/**
@@ -153,16 +158,17 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 	 * @return the effective time of the component, or {@link EffectiveTimes#UNSET_EFFECTIVE_TIME} if the component currently has
 	 *         no effective time set
 	 */
-	public long getEffectiveTimeAsLong() {
-		return effectiveTimeLong;
+	public long getEffectiveTime() {
+		return effectiveTime;
 	}
 
 	/**
 	 * @return the effective time of the component formatted using {@link EffectiveTimes#format(Object)}, or
 	 *         {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL} if the component currently has no effective time set
 	 */
-	public String getEffectiveTime() {
-		return effectiveTimeString;
+	@JsonIgnore
+	public String getEffectiveTimeAsString() {
+		return EffectiveTimes.format(effectiveTime);
 	}
 
 	@Override
@@ -192,6 +198,6 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 				.add("storageKey", getStorageKey())
 				.add("released", released)
 				.add("active", active)
-				.add("effectiveTime", effectiveTimeLong);
+				.add("effectiveTime", effectiveTime);
 	}
 }

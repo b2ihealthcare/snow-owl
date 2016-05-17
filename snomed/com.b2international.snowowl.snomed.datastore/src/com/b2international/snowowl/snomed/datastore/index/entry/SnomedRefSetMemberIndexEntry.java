@@ -149,16 +149,16 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 	public static Builder builder(final SnomedRefSetMemberIndexEntry source) {
 		return builder()
 				.active(source.active)
-				.effectiveTimeLong(source.effectiveTimeLong)
-				.id(source.id)
+				.effectiveTime(source.effectiveTime)
+				.id(source.getId())
 				.moduleId(source.moduleId)
 				.referencedComponentId(source.referencedComponentId)
 				.referencedComponentType(source.referencedComponentType)
 				.referenceSetId(source.getRefSetIdentifierId())
 				.referenceSetType(source.referenceSetType)
 				.released(source.released)
-				.storageKey(source.storageKey)
-				.score(source.score)
+				.storageKey(source.getStorageKey())
+				.score(source.getScore())
 				.mapTargetComponentType(source.mapTargetComponentType)
 				.additionalFields(source.additionalFields);
 	}
@@ -168,7 +168,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		
 		final Builder builder = builder()
 				.active(input.isActive())
-				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.id(input.getId())
 				.moduleId(input.getModuleId())
 				.referencedComponentId(input.getReferencedComponent().getId())
@@ -197,7 +197,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 				.moduleId(refSetMember.getModuleId())
 				.active(refSetMember.isActive())
 				.released(refSetMember.isReleased())
-				.effectiveTimeLong(refSetMember.isSetEffectiveTime() ? refSetMember.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.effectiveTime(refSetMember.isSetEffectiveTime() ? refSetMember.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
 				.referenceSetId(refSetMember.getRefSetIdentifierId())
 				.referenceSetType(refSetMember.getRefSet().getType())
 				.referencedComponentType(refSetMember.getReferencedComponentType())
@@ -434,7 +434,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 					moduleId, 
 					released, 
 					active, 
-					effectiveTimeLong, 
+					effectiveTime, 
 					referencedComponentId, 
 					ImmutableMap.copyOf(additionalFields),
 					referenceSetId,

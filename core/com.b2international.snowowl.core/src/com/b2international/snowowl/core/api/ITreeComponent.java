@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.api;
 
-import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongSet;
 
 /**
  * @since 4.6
@@ -25,11 +25,11 @@ public interface ITreeComponent {
 	/**
 	 * @return the ancestor IDs of this component 
 	 */
-	LongCollection getAncestors();
+	LongSet getAncestors();
 	
 	/**
 	 * @return the direct parent IDs of this component
 	 */
-	LongCollection getParents();
+	LongSet getParents();
 	
 }
