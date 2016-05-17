@@ -26,9 +26,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RevisionFixtures {
 
-	public static final long STORAGE_KEY1 = 1L;
-	public static final long STORAGE_KEY2 = 2L;
-	
 	private RevisionFixtures() {
 	}
 	

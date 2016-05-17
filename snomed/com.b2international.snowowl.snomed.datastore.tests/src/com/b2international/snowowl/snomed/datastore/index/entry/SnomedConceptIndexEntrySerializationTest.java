@@ -33,8 +33,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexTest {
 
-	private static final long STORAGE_KEY1 = 1L;
-	
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
 		mapper.registerModule(new PrimitiveCollectionModule());

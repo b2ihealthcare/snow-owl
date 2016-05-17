@@ -44,6 +44,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class BaseRevisionIndexTest {
 	
+	protected static final long STORAGE_KEY1 = 1L;
+	protected static final long STORAGE_KEY2 = 2L;
+	
 	private Mappings mappings;
 	private RevisionIndex index;
 	private Map<String, RevisionBranch> branches = newHashMap();

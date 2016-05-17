@@ -15,8 +15,6 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.revision.RevisionFixtures.STORAGE_KEY1;
-import static com.b2international.index.revision.RevisionFixtures.STORAGE_KEY2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
