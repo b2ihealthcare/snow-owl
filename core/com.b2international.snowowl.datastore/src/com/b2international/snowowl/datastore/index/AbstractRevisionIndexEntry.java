@@ -23,12 +23,21 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 4.7
  */
 public abstract class AbstractRevisionIndexEntry extends Revision implements IIndexEntry, IconIdProvider<String> {
 
+	/**
+	 * @since 4.7
+	 */
+	public static class Fields {
+		public static final String ID = "id";
+		public static final String ICON_ID = "iconId";
+	}
+	
 	private final String id;
 	private final String label;
 	private final float score;
@@ -41,6 +50,7 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 		this.score = score;
 	}
 	
+	@JsonIgnore
 	@Override
 	public String getLabel() {
 		return label;
@@ -55,7 +65,8 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 	public String getIconId() {
 		return iconId;
 	}
-
+	
+	@JsonIgnore
 	@Override
 	public float getScore() {
 		return score;
