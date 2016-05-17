@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -37,6 +38,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * A transfer object representing a SNOMED CT concept.
  */
+@Doc
 public class SnomedConceptIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable, ITreeComponent {
 
 	private static final long serialVersionUID = -824286402410205210L;

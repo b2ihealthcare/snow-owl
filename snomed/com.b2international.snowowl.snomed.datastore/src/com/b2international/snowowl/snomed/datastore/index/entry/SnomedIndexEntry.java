@@ -23,7 +23,7 @@ import java.io.Serializable;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
+import com.b2international.snowowl.datastore.index.AbstractRevisionIndexEntry;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Predicate;
@@ -31,7 +31,7 @@ import com.google.common.base.Predicate;
 /**
  * Common superclass for SNOMED CT transfer objects.
  */
-public abstract class SnomedIndexEntry extends AbstractIndexEntry implements IComponent<String>, Serializable {
+public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implements IComponent<String>, Serializable {
 
 	private static final long serialVersionUID = 1158021444792053062L;
 	public static final Predicate<SnomedIndexEntry> ACTIVE_PREDICATE = new Predicate<SnomedIndexEntry>() {
@@ -167,7 +167,7 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 
 	@Override
 	public int hashCode() {
-		return 31 + id.hashCode();
+		return 31 + getId().hashCode();
 	}
 
 	@Override
@@ -178,18 +178,18 @@ public abstract class SnomedIndexEntry extends AbstractIndexEntry implements ICo
 
 		final SnomedIndexEntry other = (SnomedIndexEntry) obj;
 
-		if (!Objects.equal(id, other.id)) { return false; }
+		if (!Objects.equal(getId(), other.getId())) { return false; }
 		return true;
 	}
 
 	protected ToStringHelper toStringHelper() {
 		return Objects.toStringHelper(this)
-				.add("id", id)
-				.add("label", label)
-				.add("iconId", iconId)
+				.add("id", getId())
+				.add("label", getLabel())
+				.add("iconId", getIconId())
 				.add("moduleId", moduleId)
-				.add("score", score)
-				.add("storageKey", storageKey)
+				.add("score", getScore())
+				.add("storageKey", getStorageKey())
 				.add("released", released)
 				.add("active", active)
 				.add("effectiveTime", effectiveTimeLong);
