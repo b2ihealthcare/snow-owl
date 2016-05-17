@@ -32,7 +32,6 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 	private final String id;
 	private final String label;
 	private final float score;
-	private final long storageKey;
 	private final String iconId;
 	
 	protected AbstractRevisionIndexEntry(final String id, final String label, String iconId, final float score, final long storageKey) {
@@ -40,7 +39,6 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 		this.label = checkNotNull(label, "label");
 		this.iconId = iconId;
 		this.score = score;
-		this.storageKey = storageKey;
 	}
 	
 	@Override
@@ -64,13 +62,8 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 	}
 
 	@Override
-	public long getStorageKey() {
-		return storageKey;
-	}
-	
-	@Override
 	public String toString() {
-		return String.format("%02.2f %s - %s [%d]", score, id, label, storageKey);
+		return String.format("%02.2f %s - %s [%d]", score, id, label, getStorageKey());
 	}
 
 	/**
@@ -79,7 +72,7 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 	 * @return returns with the storage key of the current component as a CDO ID.
 	 */
 	public CDOID cdoID() {
-		return CDOIDUtil.createLong(storageKey);
+		return CDOIDUtil.createLong(getStorageKey());
 	}
 
 }
