@@ -49,7 +49,7 @@ import com.google.common.io.Closer;
 public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 
 	private static class Holder {
-		private static final Timer PERIODIC_COMMIT_TIMER = new Timer("Review cleanup", true);
+		private static final Timer PERIODIC_COMMIT_TIMER = new Timer("Index commit thread", true);
 	}
 
 	private final String name;
@@ -136,7 +136,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 
 	private void initPeriodicCommit(IndexWriter writer) {
 		final long periodicCommitInterval = (long) settings().get(IndexClientFactory.COMMIT_INTERVAL_KEY);
-		final PeriodicCommit newPc = new PeriodicCommit(writer);
+		final PeriodicCommit newPc = new PeriodicCommit(name, writer);
 		final PeriodicCommit previousPc = periodicCommit.getAndSet(newPc);
 		if (previousPc != null) {
 			previousPc.cancel();
@@ -207,13 +207,16 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private static class PeriodicCommit extends TimerTask {
 		
 		private final IndexWriter writer;
+		private final String name;
 		
-		public PeriodicCommit(IndexWriter writer) {
+		private PeriodicCommit(String name, IndexWriter writer) {
+			this.name = name;
 			this.writer = checkNotNull(writer, "writer");
 		}
 
 		@Override
 		public void run() {
+			Thread.currentThread().setName(String.format("'%s' index commit", name));
 			try {
 				writer.commit();
 			} catch (IOException e) {
