@@ -17,9 +17,15 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Date;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -27,6 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -36,6 +43,8 @@ import com.google.common.collect.Multimap;
  * @since 4.5
  */
 public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpdateRequest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDescriptionUpdateRequest.class);
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
@@ -82,9 +91,40 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 		acceptabilityUpdate.execute(context);
 
 		if (changed) {
-			description.unsetEffectiveTime();
+			if (description.isSetEffectiveTime()) {
+				description.unsetEffectiveTime();
+			} else {
+				if (description.isReleased()) {
+					long start = new Date().getTime();
+					final IBranchPath branchPath = getLatestReleaseBranch(context);
+					final IEventBus bus = context.service(IEventBus.class);
+					final ISnomedDescription releasedDescription = SnomedRequests
+						.prepareGetDescription()
+						.setComponentId(getComponentId())
+						.build(branchPath.getPath())
+						.executeSync(bus);
+	
+					if (!isDifferentToPreviousRelease(description, releasedDescription)) {
+						description.setEffectiveTime(releasedDescription.getEffectiveTime());
+					}
+					LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
+				}
+			}
 		}
+		
 		return null;
+	}
+
+	private boolean isDifferentToPreviousRelease(Description description, ISnomedDescription releasedDescription) {
+		if (releasedDescription.isActive() != description.isActive()) return true;
+		if (!releasedDescription.getModuleId().equals(description.getModule().getId())) return true;
+		if (!releasedDescription.getConceptId().equals(description.getConcept().getId())) return true;
+		if (!releasedDescription.getLanguageCode().equals(description.getLanguageCode())) return true;
+		if (!releasedDescription.getTypeId().equals(description.getType().getId())) return true;
+		if (!releasedDescription.getTerm().equals(description.getTerm())) return true;
+		if (!releasedDescription.getCaseSignificance().getConceptId().equals(description.getCaseSignificance().getId())) return true;
+
+		return false;
 	}
 
 	private void updateInactivationIndicator(TransactionContext context, Description description, Boolean active, DescriptionInactivationIndicator inactivationIndicator) {

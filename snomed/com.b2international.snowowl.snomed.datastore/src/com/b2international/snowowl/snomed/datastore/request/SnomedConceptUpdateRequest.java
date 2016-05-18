@@ -17,8 +17,14 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
+import java.util.Date;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
@@ -34,6 +40,8 @@ import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -44,6 +52,8 @@ import com.google.common.collect.Multimap;
  * @since 4.5
  */
 public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateRequest {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedConceptUpdateRequest.class);
 
 	private DefinitionStatus definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
@@ -81,11 +91,32 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		changed |= processInactivation(context, concept, isActive(), inactivationIndicator);
 
 		updateAssociationTargets(context, concept, associationTargets);
-
+		
 		if (changed) {
-			concept.unsetEffectiveTime();
+			if (concept.isSetEffectiveTime()) {
+				concept.unsetEffectiveTime();
+			} else {
+				if (concept.isReleased()) {
+					long start = new Date().getTime();
+					final IBranchPath branchPath = getLatestReleaseBranch(context);
+					final SnomedTerminologyBrowser terminologyBrowser = context.service(SnomedTerminologyBrowser.class);
+					final SnomedConceptIndexEntry releasedConcept = terminologyBrowser.getConcept(branchPath, getComponentId());	
+					if (!isDifferentToPreviousRelease(concept, releasedConcept)) {
+						concept.setEffectiveTime(EffectiveTimes.parse(releasedConcept.getEffectiveTime()));
+					}
+					LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
+				}
+			}
 		}
+		
 		return null;
+	}
+
+	private boolean isDifferentToPreviousRelease(Concept concept, SnomedConceptIndexEntry releasedConcept) {
+		if (releasedConcept.isActive() != concept.isActive()) return true;
+		if (!releasedConcept.getModuleId().equals(concept.getModule().getId())) return true;
+		if (releasedConcept.isPrimitive() != concept.isPrimitive()) return true;
+		return false;
 	}
 
 	private boolean updateDefinitionStatus(final TransactionContext context, final Concept concept, final DefinitionStatus newDefinitionStatus) {
