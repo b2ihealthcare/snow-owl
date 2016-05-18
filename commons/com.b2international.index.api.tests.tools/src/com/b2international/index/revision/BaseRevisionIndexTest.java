@@ -73,7 +73,9 @@ public abstract class BaseRevisionIndexTest {
 
 	@After
 	public void teardown() {
-		index.admin().delete();
+		if (index != null) {
+			index.admin().delete();
+		}
 	}
 	
 	protected void configureMapper(ObjectMapper mapper) {
