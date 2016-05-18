@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 
 import org.junit.Test;
 
@@ -47,12 +48,18 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 	public void indexRelationship() throws Exception {
 		final SnomedRelationshipIndexEntry relationship = SnomedRelationshipIndexEntry.builder()
 				.id("1")
+				.active(true)
+				.released(true)
+				.effectiveTime(new Date().getTime())
 				.moduleId(Concepts.MODULE_ROOT)
 				.sourceId(Concepts.ROOT_CONCEPT)
 				.destinationId(Concepts.ROOT_CONCEPT)
 				.typeId(Concepts.IS_A)
 				.characteristicTypeId(CharacteristicType.STATED_RELATIONSHIP.getConceptId())
 				.modifierId(RelationshipModifier.EXISTENTIAL.getConceptId())
+				.destinationNegated(true)
+				.group(1)
+				.unionGroup(1)
 				.build();
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, relationship);
 		assertDocEquals(relationship, getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, STORAGE_KEY1));
