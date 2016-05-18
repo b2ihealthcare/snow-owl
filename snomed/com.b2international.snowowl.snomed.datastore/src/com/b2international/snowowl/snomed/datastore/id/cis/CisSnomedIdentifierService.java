@@ -19,6 +19,10 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -289,21 +293,28 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		if (componentIdsToRegister.isEmpty())
 			return;
+		
+		final Map<String, Set<String>> idsByNamespace = toNamespaceMap(componentIdsToRegister);
 
 		HttpPost bulkRequest = null;
 		HttpGet recordsRequest = null;
 
 		final String token = login();
 
+		String currentNamespace = null;
 		try {
-			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIdsToRegister), BULK_LIMIT)) {
-				LOGGER.debug(String.format("Sending bulk registration request with size %d.", ids.size()));
-
-				bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), createBulkRegistrationData(ids));
-				execute(bulkRequest);
+			for (String namespace : idsByNamespace.keySet()) {
+				currentNamespace = namespace;
+				final Set<String> namespaceIds = idsByNamespace.get(namespace);
+				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
+					LOGGER.debug(String.format("Sending bulk registration request for namespace %s with size %d.", namespace, ids.size()));
+	
+					bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), createBulkRegistrationData(ids));
+					execute(bulkRequest);
+				}
 			}
 		} catch (IOException e) {
-			throw new SnowowlRuntimeException("Exception while bulk reserving IDs.", e);
+			throw new SnowowlRuntimeException(String.format("Exception while bulk reserving IDs for namespace %s.", currentNamespace), e);
 		} finally {
 			release(bulkRequest);
 			release(recordsRequest);
@@ -358,19 +369,26 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		if (componentIdsToDeprecate.isEmpty())
 			return;
+	
+		final Map<String, Set<String>> idsByNamespace = toNamespaceMap(componentIdsToDeprecate);
 		
 		HttpPut request = null;
 		final String token = login();
 
+		String currentNamespace = null;
 		try {
-			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
-				LOGGER.debug(String.format("Sending component ID bulk deprecation request with size %d.", ids.size()));
-
-				request = httpPut(String.format("sct/bulk/deprecate?token=%s", token), createBulkDeprecationData(ids));
-				execute(request);
+			for (String namespace : idsByNamespace.keySet()) {
+				currentNamespace = namespace;
+				final Set<String> namespaceIds = idsByNamespace.get(namespace);
+				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
+					LOGGER.debug(String.format("Sending component ID bulk deprecation request for namespace %s with size %d.", namespace, ids.size()));
+	
+					request = httpPut(String.format("sct/bulk/deprecate?token=%s", token), createBulkDeprecationData(namespace, ids));
+					execute(request);
+				}
 			}
 		} catch (IOException e) {
-			throw new SnowowlRuntimeException("Exception while bulk deprecating IDs.", e);
+			throw new SnowowlRuntimeException(String.format("Exception while bulk deprecating IDs for namespace %s.", currentNamespace), e);
 		} finally {
 			release(request);
 			logout(token);
@@ -389,19 +407,26 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 		if (componentIdsToRelease.isEmpty())
 			return;
+		
+		final Map<String, Set<String>> idsByNamespace = toNamespaceMap(componentIdsToRelease);
 
 		HttpPut request = null;
 		final String token = login();
 
+		String currentNamespace = null;
 		try {
-			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIdsToRelease), BULK_LIMIT)) {
-				LOGGER.debug(String.format("Sending component ID bulk release request with size %d.", ids.size()));
-
-				request = httpPut(String.format("sct/bulk/release?token=%s", token), createBulkReleaseData(ids));
-				execute(request);
+			for (String namespace : idsByNamespace.keySet()) {
+				currentNamespace = namespace;
+				final Set<String> namespaceIds = idsByNamespace.get(namespace);
+				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
+					LOGGER.debug(String.format("Sending component ID bulk release request for namespace %s with size %d.", namespace, ids.size()));
+	
+					request = httpPut(String.format("sct/bulk/release?token=%s", token), createBulkReleaseData(namespace, ids));
+					execute(request);
+				}
 			}
 		} catch (IOException e) {
-			throw new SnowowlRuntimeException("Exception while bulk releasing IDs.", e);
+			throw new SnowowlRuntimeException(String.format("Exception while bulk releasing IDs for namespace %s.", currentNamespace), e);
 		} finally {
 			release(request);
 			logout(token);
@@ -414,25 +439,33 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final Collection<SctId> sctIds = getSctIds(componentIds);
 
 		for (final SctId sctId : sctIds) {
-			if (!sctId.isPublished())
+			if (!sctId.isPublished()) 
 				componentIdsToPublish.add(sctId.getSctid());
 		}
-
-		if (componentIdsToPublish.isEmpty())
-			return;
 		
+		if (componentIdsToPublish.isEmpty()) {
+			return;
+		}
+
+		final Map<String, Set<String>> idsByNamespace = toNamespaceMap(componentIdsToPublish);
+
 		HttpPut request = null;
 		final String token = login();
 
+		String currentNamespace = null;
 		try {
-			for (final Collection<String> ids : Lists.partition(Lists.newArrayList(componentIds), BULK_LIMIT)) {
-				LOGGER.debug(String.format("Sending component ID bulk publication request with size %d.", ids.size()));
-
-				request = httpPut(String.format("sct/bulk/publish?token=%s", token), createBulkPublishData(ids));
-				execute(request);
+			for (String namespace : idsByNamespace.keySet()) {
+				currentNamespace = namespace;
+				final Set<String> namespaceIds = idsByNamespace.get(namespace);
+				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
+					LOGGER.debug(String.format("Sending component ID bulk publication request for namespace %s with size %d.", namespace, ids.size()));
+					
+					request = httpPut(String.format("sct/bulk/publish?token=%s", token), createBulkPublishData(namespace, ids));
+					execute(request);
+				}
 			}
 		} catch (IOException e) {
-			throw new SnowowlRuntimeException("Exception while bulk publishing IDs.", e);
+			throw new SnowowlRuntimeException(String.format("Exception while bulk publishing IDs for namespace %s.", currentNamespace), e);
 		} finally {
 			release(request);
 			logout(token);
@@ -568,6 +601,21 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		});
 	}
 
+	private Map<String, Set<String>> toNamespaceMap(final Collection<String> componentIdsToPublish) {
+		final Map<String, Set<String>> idsByNamespace = new HashMap<>();
+		for (String componentId : componentIdsToPublish) {
+			String namespace = getNamespace(componentId);
+			if (namespace == null) {
+				namespace = "0";
+			}
+			if (!idsByNamespace.containsKey(namespace)) {
+				idsByNamespace.put(namespace, new HashSet<String>());
+			}
+			idsByNamespace.get(namespace).add(componentId);
+		}
+		return idsByNamespace;
+	}
+
 	private RequestData createGenerationData(final String namespace, final ComponentCategory category) throws IOException {
 		return new GenerationData(selectNamespace(namespace), clientKey, category);
 	}
@@ -594,8 +642,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		return new DeprecationData(getNamespace(componentId), clientKey, componentId);
 	}
 
-	private RequestData createBulkDeprecationData(final Collection<String> componentIds) throws IOException {
-		return new BulkDeprecationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
+	private RequestData createBulkDeprecationData(final String namespace, final Collection<String> componentIds) throws IOException {
+		return new BulkDeprecationData(namespace, clientKey, componentIds);
 	}
 
 	private RequestData createReservationData(final String namespace, final ComponentCategory category) throws IOException {
@@ -619,16 +667,16 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		return new ReleaseData(getNamespace(componentId), clientKey, componentId);
 	}
 
-	private RequestData createBulkReleaseData(final Collection<String> componentIds) throws IOException {
-		return new BulkReleaseData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
+	private RequestData createBulkReleaseData(final String namespace, final Collection<String> componentIds) throws IOException {
+		return new BulkReleaseData(namespace, clientKey, componentIds);
 	}
 
 	private RequestData createPublishData(final String componentId) throws IOException {
 		return new PublicationData(getNamespace(componentId), clientKey, componentId);
 	}
 
-	private RequestData createBulkPublishData(final Collection<String> componentIds) throws IOException {
-		return new BulkPublicationData(getNamespace(componentIds.iterator().next()), clientKey, componentIds);
+	private RequestData createBulkPublishData(final String namespace, final Collection<String> componentIds) throws IOException {
+		return new BulkPublicationData(namespace, clientKey, componentIds);
 	}
 
 	private String getNamespace(final String componentId) {
