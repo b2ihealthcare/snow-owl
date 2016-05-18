@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Date;
 
@@ -76,8 +76,8 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 		final Relationship relationship = context.lookup(getComponentId(), Relationship.class);
 
 		boolean changed = false;
-		changed |= updateStatus(context, relationship, isActive());
-		changed |= updateModule(context, relationship, getModuleId());
+		changed |= updateStatus(context, relationship);
+		changed |= updateModule(context, relationship);
 		changed |= updateGroup(group, relationship, context);
 		changed |= updateUnionGroup(unionGroup, relationship, context);
 		changed |= updateCharacteristicType(characteristicType, relationship, context);
@@ -108,7 +108,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 		if (releasedRelationship.isActive() != relationship.isActive()) return true;
 		if (!releasedRelationship.getModuleId().equals(relationship.getModule().getId())) return true;
 		if (!releasedRelationship.getValueId().equals(relationship.getDestination().getId())) return true;
-		if (releasedRelationship.getGroup() != relationship.getGroup()) return true;
+		if (new Byte(releasedRelationship.getGroup()).intValue() != relationship.getGroup()) return true;
 		if (!releasedRelationship.getAttributeId().equals(relationship.getType().getId())) return true;
 		if (!releasedRelationship.getCharacteristicType().getConceptId().equals(relationship.getCharacteristicType().getId())) return true;
 		if (!releasedRelationship.getModifierId().equals(relationship.getModifier().getId())) return true;

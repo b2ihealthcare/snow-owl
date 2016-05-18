@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request;
-
-import static com.google.common.collect.Lists.newArrayList;
+package com.b2international.snowowl.snomed.datastore.server.request;
 
 import java.util.Date;
 
@@ -30,22 +28,20 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Inactivatable;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
-import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
+import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
 /**
@@ -85,13 +81,11 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		final Concept concept = context.lookup(getComponentId(), Concept.class);
 
 		boolean changed = false;
-		changed |= updateModule(context, concept, getModuleId());
-		changed |= updateDefinitionStatus(context, concept, definitionStatus);
-		changed |= updateSubclassDefinitionStatus(context, concept, subclassDefinitionStatus);
-		changed |= processInactivation(context, concept, isActive(), inactivationIndicator);
+		changed |= updateModule(context, concept);
+		changed |= updateDefinitionStatus(context, concept);
+		changed |= updateSubclassDefinitionStatus(context, concept);
+		changed |= processInactivation(context, concept);
 
-		updateAssociationTargets(context, concept, associationTargets);
-		
 		if (changed) {
 			if (concept.isSetEffectiveTime()) {
 				concept.unsetEffectiveTime();
@@ -119,13 +113,13 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		return false;
 	}
 
-	private boolean updateDefinitionStatus(final TransactionContext context, final Concept concept, final DefinitionStatus newDefinitionStatus) {
-		if (null == newDefinitionStatus) {
+	private boolean updateDefinitionStatus(final TransactionContext context, final Concept concept) {
+		if (null == definitionStatus) {
 			return false;
 		}
 
 		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
-		final String newDefinitionStatusId = newDefinitionStatus.getConceptId();
+		final String newDefinitionStatusId = definitionStatus.getConceptId();
 		if (!existingDefinitionStatusId.equals(newDefinitionStatusId)) {
 			concept.setDefinitionStatus(context.lookup(newDefinitionStatusId, Concept.class));
 			return true;
@@ -134,15 +128,13 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		}
 	}
 
-	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final Concept concept,
-			final SubclassDefinitionStatus newSubclassDefinitionStatus) {
-
-		if (null == newSubclassDefinitionStatus) {
+	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final Concept concept) {
+		if (null == subclassDefinitionStatus) {
 			return false;
 		}
 
 		final boolean currentExhaustive = concept.isExhaustive();
-		final boolean newExhaustive = newSubclassDefinitionStatus.isExhaustive();
+		final boolean newExhaustive = subclassDefinitionStatus.isExhaustive();
 		if (currentExhaustive != newExhaustive) {
 			concept.setExhaustive(newExhaustive);
 			return true;
@@ -151,59 +143,91 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		}
 	}
 
-	// TODO merge with SnomedDescriptionUpdateRequest.updateInactivationIndicator
-	private boolean processInactivation(final TransactionContext context, final Concept concept, final Boolean inputStatus, final InactivationIndicator inputIndicator) {
-		final boolean status = inputStatus == null ? concept.isActive() : inputStatus;
-		final InactivationIndicator indicator = inputIndicator == null ? InactivationIndicator.RETIRED : inputIndicator; 
-		
-		if (!status && concept.isActive()) {
-			inactivateConcept(context, concept, indicator);
-			return true;
-		} else if (status && !concept.isActive()) {
-			if (inputIndicator != null) {
-				throw new BadRequestException("Cannot reactivate concept and retain or change its inactivation indicators in the same time");
-			}
-			reactivateConcept(context, concept);
-			return true;
-		} else if (!status && !concept.isActive()) {
-			// if the concept is already inactive, then check the current inactivation members
-			boolean found = false;
-			for (SnomedAttributeValueRefSetMember member : concept.getInactivationIndicatorRefSetMembers()) {
-				if (member.isActive() && member.getValueId().equals(indicator.getConceptId())) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				// remove or deactivate all currently active members
-				for (SnomedAttributeValueRefSetMember member : newArrayList(concept.getInactivationIndicatorRefSetMembers())) {
-					if (member.isActive()) {
-						SnomedModelExtensions.removeOrDeactivate(member);
-					}
-				}
-				// add the new member if not retired indicator
-				if (!InactivationIndicator.RETIRED.equals(indicator)) {
-					final SnomedAttributeValueRefSetMember member = SnomedComponents
-							.newAttributeValueMember()
-							.withReferencedComponent(concept.getId())
-							.withRefSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)
-							.withModule(concept.getModule().getId())
-							.withValueId(indicator.getConceptId())
-							.addTo(context);
-					concept.getInactivationIndicatorRefSetMembers().add(member);
-				}
-			}
+	private boolean processInactivation(final TransactionContext context, final Concept concept) {
+		if (null == isActive() && null == inactivationIndicator && null == associationTargets) {
+			return false;
 		}
-		return false;
+		
+		final boolean currentStatus = concept.isActive();
+		final boolean newStatus = isActive() == null ? currentStatus : isActive();
+		final InactivationIndicator newIndicator = inactivationIndicator == null ? InactivationIndicator.RETIRED : inactivationIndicator; 
+		final Multimap<AssociationType, String> newAssociationTargets = associationTargets == null ? ImmutableMultimap.<AssociationType, String>of() : associationTargets;
+		
+		if (currentStatus && !newStatus) {
+			
+			// Active --> Inactive: concept inactivation, update indicator and association targets
+			// (using default values if not given)
+			
+			inactivateConcept(context, concept);
+			updateInactivationIndicator(context, newIndicator);
+			updateAssociationTargets(context, newAssociationTargets);
+			return true;
+			
+		} else if (!currentStatus && newStatus) {
+			
+			// Inactive --> Active: concept reactivation, clear indicator and association targets
+			// (using default values at all times)
+			
+			if (inactivationIndicator != null) {
+				throw new BadRequestException("Cannot reactivate concept and retain or change its inactivation indicator at the same time.");
+			}
+			
+			if (associationTargets != null) {
+				throw new BadRequestException("Cannot reactivate concept and retain or change its historical association targets at the same time.");
+			}
+			
+			reactivateConcept(context, concept);
+			updateInactivationIndicator(context, newIndicator);
+			updateAssociationTargets(context, newAssociationTargets);
+			return true;
+			
+		} else if (!currentStatus && !newStatus) {
+			
+			// Inactive --> Inactive: update indicator and/or association targets if required
+			// (using original values that can be null)
+			
+			updateInactivationIndicator(context, inactivationIndicator);
+			updateAssociationTargets(context, associationTargets);
+			return false;
+
+		} else /* if (currentStatus && newStatus) */ {
+			return false;
+		}
 	}
 
-	private void inactivateConcept(final TransactionContext context, final Concept concept, final InactivationIndicator newInactivationIndicator) {
+	private void updateAssociationTargets(final TransactionContext context, Multimap<AssociationType, String> associationTargets) {
+		if (associationTargets == null) {
+			return;
+		}
+		
+		SnomedAssociationTargetUpdateRequest<Concept> associationUpdateRequest = new SnomedAssociationTargetUpdateRequest<>(getComponentId(), Concept.class);
+		associationUpdateRequest.setNewAssociationTargets(associationTargets);
+		associationUpdateRequest.execute(context);
+	}
+
+	private void updateInactivationIndicator(final TransactionContext context, final InactivationIndicator indicator) {
+		if (indicator == null) {
+			return;
+		}
+		
+		final SnomedInactivationReasonUpdateRequest<Concept> inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest<>(
+				getComponentId(), 
+				Concept.class, 
+				Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR);
+		
+		inactivationUpdateRequest.setInactivationValueId(indicator.getConceptId());
+		inactivationUpdateRequest.execute(context);
+	}
+
+	private void inactivateConcept(final TransactionContext context, final Concept concept) {
 		if (!concept.isActive()) {
 			throw new ComponentStatusConflictException(concept.getId(), concept.isActive());
 		}
+		
+		// Run the basic inactivation plan without settings the inactivation reason or a historical association target; those will be handled separately
 		final SnomedEditingContext editingContext = context.service(SnomedEditingContext.class);
 		final SnomedInactivationPlan inactivationPlan = editingContext.inactivateConcept(new NullProgressMonitor(), concept.getId());
-		inactivationPlan.performInactivation(newInactivationIndicator.toInactivationReason(), null);
+		inactivationPlan.performInactivation(InactivationReason.RETIRED, null);
 	}
 
 	private void reactivateConcept(final TransactionContext context, final Concept concept) {
@@ -213,33 +237,15 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		
 		concept.setActive(true);
 		
-		for (final SnomedAssociationRefSetMember associationMember : ImmutableList.copyOf(concept.getAssociationRefSetMembers())) {
-			SnomedModelExtensions.removeOrDeactivate(associationMember);
-		}
-		
-		removeOrDeactivateInactivationIndicators(concept);
-		
 		for (final Description description : concept.getDescriptions()) {
-			removeOrDeactivateInactivationIndicators(description);
-		}
-		
-		reactivateRelationships(concept.getOutboundRelationships());
-		reactivateRelationships(context.service(SnomedEditingContext.class).getInboundRelationships(concept.getId()));
-	}
-
-	private void reactivateRelationships(Iterable<Relationship> relationships) {
-		for (final Relationship relationship : relationships) {
-			if (!relationship.isActive()) {
-				relationship.setActive(true);
-				relationship.unsetEffectiveTime();
+			// Remove "Concept non-current" reason from active descriptions
+			if (description.isActive()) {
+				for (SnomedAttributeValueRefSetMember attributeValueMember : description.getInactivationIndicatorRefSetMembers()) {
+					if (DescriptionInactivationIndicator.CONCEPT_NON_CURRENT.getConceptId().equals(attributeValueMember.getValueId())) {
+						SnomedModelExtensions.removeOrDeactivate(attributeValueMember);
+					}
+				}
 			}
 		}
 	}
-
-	private void removeOrDeactivateInactivationIndicators(Inactivatable component) {
-		for (final SnomedAttributeValueRefSetMember attributeValueMember : ImmutableList.copyOf(component.getInactivationIndicatorRefSetMembers())) {
-			SnomedModelExtensions.removeOrDeactivate(attributeValueMember);
-		}
-	}
-
 }
