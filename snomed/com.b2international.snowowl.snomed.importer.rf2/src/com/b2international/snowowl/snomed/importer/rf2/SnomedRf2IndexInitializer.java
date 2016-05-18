@@ -960,7 +960,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						.descriptionType(Long.valueOf(description.getTypeId()))
 						.descriptionConcept(Long.valueOf(description.getConceptId()))
 						.module(Long.valueOf(description.getModuleId()))
-						.descriptionCaseSignificance(Long.valueOf(description.getCaseSignificance()))
+						.descriptionCaseSignificance(Long.valueOf(description.getCaseSignificanceId()))
 						.released(description.isReleased())
 						.effectiveTime(description.getEffectiveTimeAsLong());
 				

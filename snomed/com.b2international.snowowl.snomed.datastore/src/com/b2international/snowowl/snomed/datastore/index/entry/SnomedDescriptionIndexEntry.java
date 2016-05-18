@@ -16,11 +16,16 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -29,14 +34,18 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * A transfer object representing a SNOMED CT description.
  */
+@Doc
+@JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable {
 
 	private static final long serialVersionUID = 301681633674309020L;
@@ -132,8 +141,10 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		private String typeId;
 		private String typeLabel;
 		private String caseSignificanceId;
-		private final ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder = ImmutableMap.builder();
+		private Set<String> acceptableIn = newHashSet();
+		private Set<String> preferredIn = newHashSet();
 
+		@JsonCreator
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
@@ -145,7 +156,6 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 
 		public Builder term(final String term) {
 			this.term = term;
-			label(term);
 			return getSelf();
 		}
 
@@ -175,18 +185,33 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		}
 		
 		public Builder acceptability(final String languageRefSetId, final Acceptability acceptability) {
-			this.acceptabilityMapBuilder.put(languageRefSetId, acceptability);
+			switch (acceptability) {
+			case ACCEPTABLE:
+				this.acceptableIn.add(languageRefSetId);
+				break;
+			case PREFERRED:
+				this.preferredIn.add(languageRefSetId);
+				break;
+			default: throw new UnsupportedOperationException("Not implemented: " + acceptability);
+			}
 			return getSelf();
 		}
 		
 		public Builder acceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
-			this.acceptabilityMapBuilder.putAll(acceptabilityMap);
+			for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
+				acceptability(entry.getKey(), entry.getValue());
+			}
 			return getSelf();
+		}
+		
+		@Override
+		public Builder label(String label) {
+			throw new IllegalStateException("Use term() builder method instead to set the label property");
 		}
 
 		public SnomedDescriptionIndexEntry build() {
 			return new SnomedDescriptionIndexEntry(id,
-					label,
+					term,
 					score,
 					storageKey, 
 					moduleId,
@@ -199,7 +224,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 					typeId,
 					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
-					acceptabilityMapBuilder.build());
+					preferredIn, acceptableIn);
 		}
 	}
 
@@ -208,7 +233,8 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	private final String term;
 	private final String typeId;
 	private final String caseSignificanceId;
-	private final ImmutableMap<String, Acceptability> acceptabilityMap;
+	private final Set<String> acceptableIn;
+	private final Set<String> preferredIn;
 	private final String typeLabel;
 
 	private SnomedDescriptionIndexEntry(final String id,
@@ -225,7 +251,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			final String typeId,
 			final String typeLabel,
 			final String caseSignificanceId,
-			final ImmutableMap<String, Acceptability> acceptabilityMap) {
+			final Set<String> preferredIn, final Set<String> acceptableIn) {
 
 		super(id,
 				label,
@@ -243,7 +269,14 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		this.typeId = checkNotNull(typeId, "Description type identifier may not be null.");
 		this.typeLabel = typeLabel;
 		this.caseSignificanceId = checkNotNull(caseSignificanceId, "Description case significance identifier may not be null.");
-		this.acceptabilityMap = checkNotNull(acceptabilityMap, "Description acceptability map may not be null."); 
+		this.preferredIn = preferredIn == null ? Collections.<String>emptySet() : preferredIn;
+		this.acceptableIn = acceptableIn == null ? Collections.<String>emptySet() : acceptableIn;
+	}
+	
+	@Override
+	@JsonIgnore
+	public String getIconId() {
+		return super.getIconId();
 	}
 
 	/**
@@ -277,6 +310,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	/**
 	 * @return the label of the description type concept
 	 */
+	@JsonIgnore
 	public String getTypeLabel() {
 		return typeLabel;
 	}
@@ -284,42 +318,43 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	/**
 	 * @return the case significance concept identifier
 	 */
-	public String getCaseSignificance() {
+	public String getCaseSignificanceId() {
 		return caseSignificanceId;
 	}
 	
 	/**
 	 * @return the map of active acceptability values for the description, keyed by language reference set identifier
 	 */
-	public ImmutableMap<String, Acceptability> getAcceptabilityMap() {
-		return acceptabilityMap;
+	@JsonIgnore
+	public Map<String, Acceptability> getAcceptabilityMap() {
+		final ImmutableMap.Builder<String, Acceptability> builder = ImmutableMap.builder();
+		for (String acceptableIn : this.acceptableIn) {
+			builder.put(acceptableIn, Acceptability.ACCEPTABLE);
+		}
+		for (String preferredIn : this.preferredIn) {
+			builder.put(preferredIn, Acceptability.PREFERRED);
+		}
+		return builder.build();
 	}
 	
 	/**
 	 * @return <code>true</code> if this description is a fully specified name, <code>false</code> otherwise.
 	 */
+	@JsonIgnore
 	public boolean isFsn() {
 		return Concepts.FULLY_SPECIFIED_NAME.equals(getTypeId());
 	}
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
-				.add("id", id)
-				.add("label", label)
-				.add("iconId", iconId)
-				.add("moduleId", moduleId)
-				.add("score", score)
-				.add("storageKey", storageKey)
-				.add("released", released)
-				.add("active", active)
-				.add("effectiveTime", effectiveTimeLong)
+		return toStringHelper()
 				.add("conceptId", conceptId)
 				.add("languageCode", languageCode)
 				.add("term", term)
 				.add("typeId", typeId)
 				.add("caseSignificanceId", caseSignificanceId)
-				.add("acceptabilityMap", acceptabilityMap)
+				.add("preferredIn", preferredIn)
+				.add("acceptableIn", acceptableIn)
 				.toString();
 	}
 

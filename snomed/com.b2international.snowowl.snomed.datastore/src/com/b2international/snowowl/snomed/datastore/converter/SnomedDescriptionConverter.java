@@ -61,7 +61,7 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 		final SnomedDescription result = new SnomedDescription();
 		result.setAcceptabilityMap(input.getAcceptabilityMap());
 		result.setActive(input.isActive());
-		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificance()));
+		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificanceId()));
 		result.setConceptId(input.getConceptId());
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTimeAsLong()));
 		result.setId(input.getId());
