@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
@@ -25,8 +26,11 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Import release command for the OSGi console
@@ -181,8 +185,20 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 			ImportUtil importUtil = new ImportUtil();
 			IBranchPath extensionBranchPath = BranchPathUtils.createPath(parentBranchPath, snomedCodeSystem.getShortName());
 			final SnomedImportResult result = importUtil.doImport(userId, languageRefSetId, contentSubType, extensionBranchPath.getPath(), archiveFile, toCreateVersion, new ConsoleProgressMonitor());
-			if (!CompareUtils.isEmpty(result.getValidationDefects())) {
-				interpreter.println("SNOMED CT import has been canceled due to validation errors in the RF2 release.");
+			Set<SnomedValidationDefect> validationDefects = result.getValidationDefects();
+			
+			boolean criticalFound = FluentIterable.from(validationDefects).anyMatch(new Predicate<SnomedValidationDefect>() {
+
+				@Override
+				public boolean apply(SnomedValidationDefect defect) {
+					return defect.getDefectType().isCritical();
+				}
+			});
+			
+			if (criticalFound) {
+				interpreter.println("SNOMED CT import has been canceled due to critical errors found in the RF2 release.");
+			} else {
+				interpreter.println("SNOMED CT import has successfully finished.");
 			}
 
 		} catch (final ImportException e) {
