@@ -174,7 +174,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> relationshipReq = givenRelationshipRequestBody(sourceConceptId, Concepts.MORPHOLOGY, inactivatableConceptId, Concepts.MODULE_SCT_CORE, "New relationship");
 		final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipReq);
 		
-		// inactivate the one the relationship is pointing to
+		// inactivate the concept with the relationship is pointing to
 		final Map<String, Object> inactivationBody = newHashMap();
 		inactivationBody.put("active", false);
 		inactivationBody.put("inactivationIndicator", InactivationIndicator.DUPLICATE);
@@ -207,8 +207,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.and()
 			.body("associationTargets", nullValue());
 		
-		// verify that the inbound relationship is active again
-		assertComponentExists(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId).and().body("active", equalTo(true));
+		// verify that the inbound relationship is still inactive, manual reactivation is required
+		assertComponentExists(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId).and().body("active", equalTo(false));
 	}
 	
 	@Test

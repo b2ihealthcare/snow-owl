@@ -96,10 +96,6 @@ public class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Com
 			return;
 		}
 
-		if (!(component instanceof Component)) {
-			throw new IllegalArgumentException(String.format("Specified component must be an instance of Component, was %s.", component.getClass().getSimpleName()));
-		}
-
 		final List<SnomedAttributeValueRefSetMember> existingMembers = Lists.newArrayList(component.getInactivationIndicatorRefSetMembers());
 		final Iterator<SnomedAttributeValueRefSetMember> memberIterator = existingMembers.iterator();
 
@@ -124,6 +120,8 @@ public class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Com
 
 				existingMember.setValueId(inactivationValueId);
 				ensureMemberActive(context, existingMember);
+			} else {
+				removeOrDeactivate(context, existingMember);
 			}
 
 			// Any other members can be removed
