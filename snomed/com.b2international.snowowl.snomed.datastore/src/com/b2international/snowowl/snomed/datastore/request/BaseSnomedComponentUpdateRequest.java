@@ -18,13 +18,17 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.google.common.collect.HashMultimap;
@@ -75,6 +79,14 @@ public abstract class BaseSnomedComponentUpdateRequest extends BaseRequest<Trans
 		return Void.class;
 	}
 	
+	protected IBranchPath getLatestReleaseBranch(TransactionContext context) {
+		final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
+		final List<ICodeSystemVersion> allVersions = registryService.getAllVersion(context.id());
+		final ICodeSystemVersion systemVersion = allVersions.get(0);
+		final IBranchPath branchPath = ICodeSystemVersion.TO_BRANCH_PATH_FUNC.apply(systemVersion);
+		return branchPath;
+	}
+		
 	protected boolean updateModule(final TransactionContext context, final Component component, final String newModuleId) {
 		if (null == newModuleId) {
 			return false;
