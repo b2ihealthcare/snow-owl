@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
@@ -240,7 +241,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		for (final Description description : concept.getDescriptions()) {
 			// Remove "Concept non-current" reason from active descriptions
 			if (description.isActive()) {
-				for (SnomedAttributeValueRefSetMember attributeValueMember : description.getInactivationIndicatorRefSetMembers()) {
+				for (SnomedAttributeValueRefSetMember attributeValueMember : ImmutableList.copyOf(description.getInactivationIndicatorRefSetMembers())) {
 					if (DescriptionInactivationIndicator.CONCEPT_NON_CURRENT.getConceptId().equals(attributeValueMember.getValueId())) {
 						SnomedModelExtensions.removeOrDeactivate(attributeValueMember);
 					}
