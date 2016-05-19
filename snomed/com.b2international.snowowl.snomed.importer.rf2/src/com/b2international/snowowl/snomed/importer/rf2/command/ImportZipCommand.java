@@ -90,22 +90,24 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			
 		} 
 		
-		String branchPath = null;
-		if ("-b".equals(interpreter.nextArgument())) {
-			
+		final String branchPath;
+		final String archivePath;
+		final String branchOrArchivePath = interpreter.nextArgument();
+		
+		if ("-b".equals(branchOrArchivePath)) {
 			branchPath = interpreter.nextArgument();
+			archivePath = interpreter.nextArgument();
+			
 			if (!BranchPathUtils.exists(SNOMED_STORE, branchPath)) {
 				interpreter.println("Invalid branch path '" + branchPath + "'.");
 				printDetailedHelp(interpreter);
 				return;
 			}
-			
 		} else {
 			interpreter.println("Branch path is not specified, importing to MAIN.");
 			branchPath = IBranchPath.MAIN_BRANCH;
+			archivePath = branchOrArchivePath;
 		}
-
-		final String archivePath = interpreter.nextArgument();
 
 		if (archivePath == null) {
 			interpreter.println("No archive path specified.");
