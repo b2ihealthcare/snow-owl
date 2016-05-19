@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.Inact
  * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_refset_status_cpt">Component Inactivation Reference Sets
  * (Technical Implementation Guide)</a>
  */
-public enum InactivationIndicator {
+public enum InactivationIndicator implements ConceptEnum {
 
 	/**
 	 * The concept duplicates the definition of another concept.
@@ -79,6 +79,7 @@ public enum InactivationIndicator {
 	 * 
 	 * @return the concept identifier corresponding to the inactivation indicator constant
 	 */
+	@Override
 	public String getConceptId() {
 		return inactivationReason.getInactivationReasonConceptId();
 	}

@@ -76,8 +76,8 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 		final Relationship relationship = context.lookup(getComponentId(), Relationship.class);
 
 		boolean changed = false;
-		changed |= updateStatus(context, relationship, isActive());
-		changed |= updateModule(context, relationship, getModuleId());
+		changed |= updateStatus(context, relationship);
+		changed |= updateModule(context, relationship);
 		changed |= updateGroup(group, relationship, context);
 		changed |= updateUnionGroup(unionGroup, relationship, context);
 		changed |= updateCharacteristicType(characteristicType, relationship, context);
