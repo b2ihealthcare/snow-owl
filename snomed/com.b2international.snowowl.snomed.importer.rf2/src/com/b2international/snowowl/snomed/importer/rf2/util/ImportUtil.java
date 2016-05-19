@@ -133,10 +133,10 @@ public final class ImportUtil {
 	}
 	
 	public SnomedImportResult doImport(final String userId, final String languageRefSetId, final ContentSubType contentSubType, 
-			String branchPathName, final File releaseArchive, final IProgressMonitor monitor) throws ImportException {
+			String branchPathName, final File releaseArchive, final boolean createVersions, final IProgressMonitor monitor) throws ImportException {
 		
 		IBranchPath branchPath = BranchPathUtils.createPath(branchPathName);
-		return doImport(branchPath, languageRefSetId, contentSubType, releaseArchive, true, userId, new ConsoleProgressMonitor());
+		return doImport(branchPath, languageRefSetId, contentSubType, releaseArchive, createVersions, userId, new ConsoleProgressMonitor());
 	}
 
 	private SnomedImportResult doImport(final IBranchPath branchPath, final String languageRefSetId, 

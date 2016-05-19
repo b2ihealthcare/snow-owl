@@ -35,7 +35,7 @@ public class SnomedContentRule extends ExternalResource {
 	protected void before() throws Throwable {
 		
 		
-		new ImportUtil().doImport("info@b2international.com", languageRefSetId, contentType, "MAIN", importArchive, new ConsoleProgressMonitor());
+		new ImportUtil().doImport("info@b2international.com", languageRefSetId, contentType, "MAIN", importArchive, true, new ConsoleProgressMonitor());
 	}
 	
 }
