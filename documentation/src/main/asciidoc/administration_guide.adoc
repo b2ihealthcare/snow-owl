@@ -90,8 +90,8 @@ osgi> sctimport rf2_release -l <languageRefSetId> -t <type> [-b <branch>] <file>
 <languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
 previous step
 <type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use
-<file>:: The absolute path of the release archive file to import
 <branch>:: The existing branch to import the content onto. Optional. When omitted, content will be imported to the MAIN branch
+<file>:: The absolute path of the release archive file to import, +
 `{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
 
 NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
