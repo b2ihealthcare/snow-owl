@@ -1,0 +1,10 @@
+= Data migration guide
+
+== Introduction
+
+This document lists the required data migration steps for each release
+
+== Versions
+
+=== 4.6 -> 4.7
+Run the migration_4.6_to_4.7 sql statements against the database.
