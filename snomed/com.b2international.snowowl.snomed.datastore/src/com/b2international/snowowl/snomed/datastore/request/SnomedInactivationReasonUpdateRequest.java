@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.server.request;
+package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Iterator;
 import java.util.List;
