@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
-import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -42,7 +41,6 @@ import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
@@ -176,38 +174,26 @@ public class SnomedTaxonomyValidator {
 					conceptIdsToInactivate.add(sourceId);
 				}
 				
-				String sourceLabel = getNameProvider().getComponentLabel(branchPath, sourceId);
-				String destinationLabel = getNameProvider().getComponentLabel(branchPath, destinationId);
-				
 				final StringBuilder sb = new StringBuilder();
-				sb.append("IS A relationship with source concept '");
-				sb.append(sourceId);
-				if (!isEmpty(sourceLabel)) {
-					sb.append("|");
-					sb.append(sourceLabel);
-					sb.append("|");
-				}
-				sb.append("' and destination concept '");
-				sb.append(destinationId);
-				if (!isEmpty(destinationLabel)) {
-					sb.append("|");
-					sb.append(destinationLabel);
-					sb.append("|");
-				}
-				sb.append("' has a missing or inactive ");
+				sb.append("IS A relationship");
+				sb.append(" '" + invalidRelationship.getRelationshipId() + "'");
+				sb.append(" has a missing or inactive ");
 				
 				switch (invalidRelationship.getMissingConcept()) {
 					case DESTINATION:
-						sb.append("destination");
+						sb.append("destination concept");
+						sb.append(" '" + destinationId);
 						break;
 					case SOURCE:
-						sb.append("source");
+						sb.append("source concept");
+						sb.append(" '" + sourceId);
 						break;
 					default:
 						throw new IllegalStateException("Unexpected missing concept type '" + invalidRelationship.getMissingConcept() + "'.");					
 				}
 				
-				sb.append(" concept.");
+				sb.append("'.");
+				
 				defects.add(sb.toString());
 			}
 			
@@ -217,10 +203,6 @@ public class SnomedTaxonomyValidator {
 		
 		LOGGER.info("SNOMED CT ontology validation successfully finished. No errors were found.");
 		return emptySet();
-	}
-
-	private ISnomedConceptNameProvider getNameProvider() {
-		return getServiceForClass(ISnomedConceptNameProvider.class);
 	}
 
 	private boolean canInactivate(final String sourceId) {
