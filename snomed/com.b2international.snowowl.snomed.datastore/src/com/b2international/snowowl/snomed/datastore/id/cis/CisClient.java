@@ -157,7 +157,7 @@ class CisClient {
 			final JsonNodeFactory factory = JsonNodeFactory.instance;
 		    final JsonNode node = factory.objectNode().set("token", factory.textNode(token));
 		    
-			request = httpPost("logout", mapper.writeValueAsString(node));
+			request = httpPost("logout", node);
 			client.execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while logging out.", e);
