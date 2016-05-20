@@ -22,7 +22,9 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertEquals;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.junit.Test;
@@ -39,6 +41,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMap.Builder;
 
@@ -280,13 +283,21 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void updateAcceptability() {
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
-
+		final Collection<Map<String, Object>> members = assertDescriptionExists(createMainPath(), descriptionId, "members()").extract().body().path("members.items");
+		final Map<String, Object> member = Iterables.getOnlyElement(members);
+		
 		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
 				.put("acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP)
 				.put("commitComment", "Changed description acceptability")
 				.build();
 
 		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
+		final Collection<Map<String, Object>> updatedMembers = assertDescriptionExists(createMainPath(), descriptionId, "members()").extract().body().path("members.items");
+		final Map<String, Object> updatedMember = Iterables.getOnlyElement(updatedMembers);
+		// changing acceptability should change the acceptabilityId of the same member and not create a new one
+		assertEquals(member.get("id"), updatedMember.get("id"));
+		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, updatedMember.get("acceptabilityId"));
+		
 		assertPreferredTermEquals(createMainPath(), DISEASE, descriptionId);
 	}
 	

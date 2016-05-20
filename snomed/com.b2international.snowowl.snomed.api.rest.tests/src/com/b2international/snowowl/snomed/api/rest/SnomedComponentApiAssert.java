@@ -325,8 +325,8 @@ public abstract class SnomedComponentApiAssert {
 	 * @param branchPath the branch path to check
 	 * @param descriptionId the description identifier to check
 	 */
-	public static void assertDescriptionExists(final IBranchPath branchPath, final String descriptionId) {
-		assertComponentExists(branchPath, SnomedComponentType.DESCRIPTION, descriptionId);
+	public static ValidatableResponse assertDescriptionExists(final IBranchPath branchPath, final String descriptionId, final String... expand) {
+		return assertComponentExists(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, expand);
 	}
 
 	/**
@@ -369,9 +369,9 @@ public abstract class SnomedComponentApiAssert {
 	public static void assertPreferredTermEquals(final IBranchPath branchPath, final String conceptId, final String descriptionId) {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.with().header("Accept-Language", "en-GB")
-		.when().get("/{path}/concepts/{conceptId}/pt", branchPath.getPath(), conceptId)
-		.then().assertThat().statusCode(200)
-		.and().body("id", equalTo(descriptionId));
+		.when().get("/{path}/concepts/{conceptId}?expand=pt(),descriptions()", branchPath.getPath(), conceptId)
+		.then().log().ifValidationFails().assertThat().statusCode(200)
+		.and().body("pt.id", equalTo(descriptionId));
 	}
 
 	private SnomedComponentApiAssert() {
