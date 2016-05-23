@@ -42,7 +42,7 @@ import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 /**
@@ -50,33 +50,35 @@ import com.google.common.collect.Multimap;
  * <p>
  * Existing members are <b>removed</b> when:
  * <ul>
- * <li>The member is unreleased;
- * <li>The candidate association target map does not include the member by reference set ID (so it can not be re-used 
- * with by setting a different target).
+ * <li>The candidate association target map does not contain the member's reference set ID as a key (so it can 
+ * not be re-used by setting a different target component ID on the member);
+ * <li>The member is unreleased.
  * </ul>
  * <p>
  * Existing members are <b>inactivated</b> when:
  * <ul>
- * <li>The member is already part of an RF2 version and has been released;
- * <li>The candidate association target map does not include the member's reference set ID and target component ID.
+ * <li>The candidate association target map does not contain the member's reference set ID as a key;
+ * <li>The member is already part of a release.
  * </ul>
  * <p>
  * Existing members are <b>updated</b> with a new target component identifier when:
  * <ul>
- * <li>The member's reference set ID matches at least one entry in the association target map, but no exactly matching member exists
- * 
+ * <li>The candidate association target map contains the member's reference set as a key, but no value exists in 
+ * the candidate map for this key that would match the member's currently set target component ID.
+ * </ul>
  * <p>
  * New members are <b>created</b> when:
  * <ul>
- * <li>All existing association reference set members have been visited;
+ * <li>All existing association reference set members have been processed;
  * <li>Entries are still present in the candidate association target map.
  * </ul>
  * <p>
  * The candidate map starts as a copy of the input map, and is trimmed gradually, whenever an existing reference set 
  * member is found that matches any entry in the map.
  * <p>
- * Existing released members are compared to their versioned reference representation, and their effective time is 
- * restored to the original value if the final state matches the versioned form. 
+ * Whenever an existing released member is modified, it is compared to its most recently versioned representation, 
+ * and its effective time is restored to the original value if the final state matches the most recently versioned 
+ * state. 
  * 
  * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
@@ -128,14 +130,11 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 			return;
 		}
 
-		final List<SnomedAssociationRefSetMember> existingMembers = Lists.newArrayList(component.getAssociationRefSetMembers());
+		final List<SnomedAssociationRefSetMember> existingMembers = ImmutableList.copyOf(component.getAssociationRefSetMembers());
 		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
 
-		// Check if there are existing exact matches
-		Iterator<SnomedAssociationRefSetMember> memberIterator = existingMembers.iterator();
-		while (memberIterator.hasNext()) {
+		for (SnomedAssociationRefSetMember existingMember : existingMembers) {
 			
-			final SnomedAssociationRefSetMember existingMember = memberIterator.next();
 			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getRefSetIdentifierId());
 			
 			if (null == associationType) {
@@ -144,24 +143,10 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 
 			final String existingTargetId = existingMember.getTargetComponentId();
 			if (newAssociationTargetsToCreate.remove(associationType, existingTargetId)) {
+
 				// Exact match, just make sure that the member is active
 				ensureMemberActive(context, existingMember);
-				memberIterator.remove();
-			}
-		}
-		
-		// Check if any remaining existing members should be re-used and/or restored to active status
-		memberIterator = existingMembers.iterator();
-		while (memberIterator.hasNext()) {
-			
-			final SnomedAssociationRefSetMember existingMember = memberIterator.next();
-			
-			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getRefSetIdentifierId());
-			if (null == associationType) {
-				continue;
-			}
-
-			if (newAssociationTargetsToCreate.containsKey(associationType)) {
+			} else if (newAssociationTargetsToCreate.containsKey(associationType)) {
 
 				// We can re-use the member by changing the target component identifier, and checking that it is active
 				final Iterator<String> targetIterator = newAssociationTargetsToCreate.get(associationType).iterator();
@@ -178,11 +163,10 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 
 				existingMember.setTargetComponentId(newTargetId);
 				ensureMemberActive(context, existingMember);
-				memberIterator.remove();
 
 			} else {
 				
-				// We have no use for this member -- remove or inactivate if released
+				// We have no use for this member -- remove or inactivate if already released
 				removeOrDeactivate(context, existingMember);
 			}
 		}
@@ -233,7 +217,7 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
 			
 		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} already inactive, not updating.", existingMember.getUuid()); }
+			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} is released and already inactive, not updating.", existingMember.getUuid()); }
 		}
 	}
 
@@ -241,6 +225,7 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 		
 		if (existingMember.isReleased()) {
 			
+			// The most recently versioned representation should always exist if the member has already been released once
 			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
 					.setComponentId(existingMember.getUuid())
 					.build(referenceBranch)
@@ -266,6 +251,8 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 			}
 			
 		} else {
+			
+			// If it is unreleased, the effective time should be unset, but it doesn't hurt to double-check
 			unsetEffectiveTime(existingMember);
 		}
 	}

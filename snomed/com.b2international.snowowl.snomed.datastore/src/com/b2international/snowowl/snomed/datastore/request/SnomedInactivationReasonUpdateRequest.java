@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -39,9 +38,44 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSe
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 /**
+ * Updates the inactivation reason on the {@link Inactivatable} component specified by identifier.
+ * <p>
+ * Existing members are <b>removed</b> when:
+ * <ul>
+ * <li>{@link #inactivationValueId} is set to an empty string, signalling that any existing inactivation reasons 
+ * should be removed ("no reason given");
+ * <li>The member is unreleased.
+ * </ul>
+ * <p>
+ * Existing members are <b>inactivated</b> when:
+ * <ul>
+ * <li>{@link #inactivationValueId} is set to an empty string, signalling that any existing inactivation reasons 
+ * should be removed ("no reason given");
+ * <li>The member is already part of a release.
+ * </ul>
+ * <p>
+ * The first existing member is <b>updated</b> with a new value identifier when:
+ * <ul>
+ * <li>{@link #inactivationValueId} is set to a non-empty string, and the value ID presented here does not match 
+ * the member's currently set value ID.
+ * </ul>
+ * <p>
+ * New members are <b>created</b> when:
+ * <ul>
+ * <li>No previous inactivation reason member exists;
+ * <li>{@link #inactivationValueId} is set to a non-empty string.
+ * </ul>
+ * <p>
+ * Multiple inactivation reason reference set members are always reduced to a single item; unused existing members 
+ * will be removed or deactivated, depending on whether they were already released.
+ * <p>
+ * Whenever an existing released member is modified, it is compared to its most recently versioned representation, 
+ * and its effective time is restored to the original value if the final state matches the most recently versioned 
+ * state.
+ * 
  * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
@@ -96,17 +130,23 @@ public class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Com
 			return;
 		}
 
-		final List<SnomedAttributeValueRefSetMember> existingMembers = Lists.newArrayList(component.getInactivationIndicatorRefSetMembers());
-		final Iterator<SnomedAttributeValueRefSetMember> memberIterator = existingMembers.iterator();
-
+		final List<SnomedAttributeValueRefSetMember> existingMembers = ImmutableList.copyOf(component.getInactivationIndicatorRefSetMembers());
+		boolean firstMemberFound = false;
+		
 		// Check if there is at least one existing member
-		if (memberIterator.hasNext()) {
-
-			final SnomedAttributeValueRefSetMember existingMember = memberIterator.next();
+		for (SnomedAttributeValueRefSetMember existingMember : existingMembers) {
+			
+			if (firstMemberFound) {
+				// If we got through the first iteration, all other members can be removed
+				removeOrDeactivate(context, existingMember);
+				continue;
+			}
+			
 			if (existingMember.getValueId().equals(inactivationValueId)) {
 
 				// Exact match, just make sure that the member is active
 				ensureMemberActive(context, existingMember);
+				firstMemberFound = true;
 
 			} else if (!CLEAR.equals(inactivationValueId)) {
 
@@ -120,30 +160,29 @@ public class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Com
 
 				existingMember.setValueId(inactivationValueId);
 				ensureMemberActive(context, existingMember);
-			} else {
+				
+			} else /* if (CLEAR.equals(inactivationValueId) */ {
+				
+				// Inactivation value is "no reason given", remove this member
 				removeOrDeactivate(context, existingMember);
 			}
 
-			// Any other members can be removed
-			while (memberIterator.hasNext()) {
-				removeOrDeactivate(context, memberIterator.next());
-			}
+			// If we get to the end of this loop, the first member has been processed
+			firstMemberFound = true;
+		}
 
-		} else {
+		// Add the new member if the intention was not to remove the existing value (which had already happened if so)
+		if (!firstMemberFound && !CLEAR.equals(inactivationValueId)) {
 
-			// Add the new member if the intention was not to remove the existing value (which had already happened if so)
-			if (!CLEAR.equals(inactivationValueId)) {
+			final SnomedAttributeValueRefSetMember member = SnomedComponents
+					.newAttributeValueMember()
+					.withReferencedComponent(componentId)
+					.withRefSet(inactivationRefSetId)
+					.withModule(((Component) component).getModule().getId())
+					.withValueId(inactivationValueId)
+					.addTo(context);
 
-				final SnomedAttributeValueRefSetMember member = SnomedComponents
-						.newAttributeValueMember()
-						.withReferencedComponent(componentId)
-						.withRefSet(inactivationRefSetId)
-						.withModule(((Component) component).getModule().getId())
-						.withValueId(inactivationValueId)
-						.addTo(context);
-
-				component.getInactivationIndicatorRefSetMembers().add(member);
-			}
+			component.getInactivationIndicatorRefSetMembers().add(member);
 		}
 	}
 
