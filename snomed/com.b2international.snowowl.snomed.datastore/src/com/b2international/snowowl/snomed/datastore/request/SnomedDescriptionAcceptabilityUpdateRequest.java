@@ -71,12 +71,17 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 	
 	@Override
 	public Void execute(TransactionContext context) {
-		final Description description = context.lookup(descriptionId, Description.class);
-		updateAcceptabilityMap(context, description);
-		if (description.isActive()) {
-			updateOtherDescriptionAcceptabilities(context, description);
+		// Null leaves lang. members unchanged, empty map clears all lang. members
+		if (newAcceptabilityMap == null) {
+			return null;
+		} else {
+			final Description description = context.lookup(descriptionId, Description.class);
+			updateAcceptabilityMap(context, description);
+			if (description.isActive()) {
+				updateOtherDescriptionAcceptabilities(context, description);
+			}
+			return null;
 		}
-		return null;
 	}
 
 	@Override
@@ -111,10 +116,6 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 	}
 	
 	private void updateAcceptabilityMap(final TransactionContext context, final Description description) {
-		// Null leaves lang. members unchanged, empty map clears all lang. members
-		if (null == newAcceptabilityMap) {
-			return;
-		}
 		
 		final List<SnomedLanguageRefSetMember> existingMembers = newArrayList(description.getLanguageRefSetMembers());
 		final Map<String, Acceptability> newLanguageMembersToCreate = newHashMap(newAcceptabilityMap);
