@@ -323,14 +323,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		givenBranchWithPath(testBranchPath);
 		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
 		// update effective time of member without force flag
-		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", "20160201", "commitComment", "Update member effective time without force flag: " + memberId);
-		// without force flag API responds with 204, but the content remains the same
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.with().contentType(ContentType.JSON)
-			.and().body(effectiveTimeUpdate)
-			.when().put("/{path}/{componentType}/{id}", testBranchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId)
-			.then().log().ifValidationFails()
-			.statusCode(204);
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", false);
 		
 		// force updating effective time should update both the effective time and released flags, like a single component publish
 		getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId)
@@ -339,20 +332,13 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.and()
 			.body("released", CoreMatchers.equalTo(false));
 	}
-	
+
 	@Test
 	public void updateMemberEffectiveTimeWithForceFlag() throws Exception {
 		givenBranchWithPath(testBranchPath);
 		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
 		// update effective time of member without force flag
-		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", "20160201", "commitComment", "Update member effective time with force flag: " + memberId);
-		// with force flag API responds with 204
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.with().contentType(ContentType.JSON)
-			.and().body(effectiveTimeUpdate)
-			.when().put("/{path}/{componentType}/{id}?force=true", testBranchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId)
-			.then().log().ifValidationFails()
-			.statusCode(204);
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", true);
 		
 		// force updating effective time should update both the effective time and released flags, like a single component publish
 		getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId)
@@ -362,7 +348,29 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.body("released", CoreMatchers.equalTo(true));
 	}
 	
-	private String createSimpleConceptReferenceSetMember(IBranchPath branchPath) {
+	@Test
+	public void deleteReleasedMemberWithoutForceFlag() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
+		// force update published the component, so it cannot be deleted without force flag, should throw 409
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", true);
+		
+		assertComponentCannotBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+	}
+	
+	@Test
+	public void deleteReleasedMemberWithForceFlag() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
+		// force update published the component, so it cannot be deleted without force flag, should throw 409
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", true);
+		
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId, true);
+		assertComponentNotExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+	}
+	
+	private static String createSimpleConceptReferenceSetMember(IBranchPath branchPath) {
 		// create concept ref. component
 		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String createdConceptId = assertComponentCreated(branchPath, SnomedComponentType.CONCEPT, conceptReq);
@@ -375,6 +383,17 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		// create member
 		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
 		return assertComponentCreated(branchPath, SnomedComponentType.MEMBER, memberReq);
+	}
+	
+	private static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
+		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", "20160201", "commitComment", "Update member effective time: " + memberId);
+		// without force flag API responds with 204, but the content remains the same
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.with().contentType(ContentType.JSON)
+			.and().body(effectiveTimeUpdate)
+			.when().put("/{path}/{componentType}/{id}?force="+force, branchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId)
+			.then().log().ifValidationFails()
+			.statusCode(204);
 	}
 	
 }

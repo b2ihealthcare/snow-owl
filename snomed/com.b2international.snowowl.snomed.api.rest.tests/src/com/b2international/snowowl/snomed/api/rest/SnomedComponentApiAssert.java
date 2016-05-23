@@ -290,13 +290,20 @@ public abstract class SnomedComponentApiAssert {
 		.when().post("/{path}/{componentType}/{id}/updates", branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
 	}
 
-	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, 
-			final SnomedComponentType componentType, 
-			final String componentId) {
-
+	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
+		assertComponentCanBeDeleted(branchPath, componentType, componentId, false);
+	}
+	
+	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, boolean force) {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-		.then().log().ifValidationFails().assertThat().statusCode(204);
+			.when().delete("/{path}/{componentType}/{id}?force="+force, branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
+			.then().log().ifValidationFails().assertThat().statusCode(204);
+	}
+	
+	public static void assertComponentCannotBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
+			.then().log().ifValidationFails().assertThat().statusCode(409);
 	}
 
 	/**
