@@ -385,7 +385,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		return assertComponentCreated(branchPath, SnomedComponentType.MEMBER, memberReq);
 	}
 	
-	private static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
+	static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
 		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", "20160201", "commitComment", "Update member effective time: " + memberId);
 		// without force flag API responds with 204, but the content remains the same
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)

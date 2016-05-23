@@ -48,7 +48,7 @@ public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseTransactio
 		return getSelf();
 	}
 	
-	public SnomedRefSetMemberUpdateRequestBuilder force(Boolean force) {
+	public SnomedRefSetMemberUpdateRequestBuilder force(boolean force) {
 		this.force = force;
 		return getSelf();
 	}
