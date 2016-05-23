@@ -20,6 +20,9 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import java.util.UUID;
 
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -33,6 +36,21 @@ public abstract class AbstractSnomedApiTest {
 	protected static final String BLEEDING = "50960005";
 	protected IBranchPath testBranchPath;
 
+	@Rule
+	public TestWatcher watcher = new TestWatcher() {
+		
+		@Override
+		protected void starting(Description description) {
+			System.out.println("=====Start of " + description + "=====");
+		}
+		
+		@Override
+		protected void finished(Description description) {
+			System.out.println("=====End of " + description + "=====");
+		}
+		
+	};
+	
 	@Before
 	public void setup() {
 		testBranchPath = createRandomBranchPath();
