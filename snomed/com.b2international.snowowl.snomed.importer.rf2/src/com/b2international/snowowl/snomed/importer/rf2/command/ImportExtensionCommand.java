@@ -39,7 +39,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 
 	public ImportExtensionCommand() {
 		super("rf2_extension",
-				"-l <languageRefSetId> -t <type> -bv <base international release version> -cv <true|false> <archive_path> <extension_metadata_file_path>",
+				"-l <languageRefSetId> -t <type> -bv <base int. version tag> -cv <true|false> <archive_path> <extension_metadata_file_path>",
 				"Imports extension terminology and reference sets from a release archive onto the top of a base international release.",
 				new String[] { "-l <languageRefSetId>\tThe language reference set identifier to use for component labels.",
 						"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",
@@ -105,7 +105,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 		if ("-bv".equals(branchSwitch)) {
 			baseVersionTag = interpreter.nextArgument();
 
-			if (!BranchPathUtils.exists(SNOMED_STORE, baseVersionTag)) {
+			if (!BranchPathUtils.exists(SNOMED_STORE, IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + baseVersionTag)) {
 				interpreter.println("Invalid international version tag: '" + baseVersionTag + "'.");
 				printDetailedHelp(interpreter);
 				return;
@@ -146,8 +146,8 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 		}
 
 		final File archiveFile = new File(archivePath);
-		//TODO: change this
 		
+		//TODO: change this
 		final CodeSystem snomedCodeSystem;
 
 		final String metadataFilePath = interpreter.nextArgument();
@@ -218,7 +218,6 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 		snomedCodeSystem.setIconPath(properties.getProperty("icon_path"));
 		snomedCodeSystem.setMaintainingOrganizationLink(properties.getProperty("maintaining_org_link"));
 		return snomedCodeSystem;
-
 	}
 
 }
