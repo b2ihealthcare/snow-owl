@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
@@ -112,9 +113,12 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		if (force) {
 			final String effectiveTime = (String) properties.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
 			if (effectiveTime != null) {
-				// if not null set the effective time to the given value and set released to true
-				member.setEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT));
-				member.setReleased(true);
+				final Date effectiveTimeDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
+				if (!effectiveTimeDate.equals(member.getEffectiveTime())) {
+					// if not null set the effective time to the given value and set released to true
+					member.setEffectiveTime(effectiveTimeDate);
+					member.setReleased(true);
+				}
 			} else {
 				// if effective time is null, then unset the effective time but don't change the released flag
 				member.unsetEffectiveTime();
