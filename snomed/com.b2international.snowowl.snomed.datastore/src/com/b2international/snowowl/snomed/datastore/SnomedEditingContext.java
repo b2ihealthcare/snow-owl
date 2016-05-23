@@ -69,6 +69,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -1178,15 +1179,25 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
-	public void delete(EObject object) {
+	public void delete(EObject object, boolean force) {
 		if (object instanceof Concept) {
 			delete((Concept) object);
 		} else if (object instanceof Description) {
 			delete((Description) object);
 		} else if (object instanceof Relationship) {
 			delete((Relationship) object);
+		} else if (object instanceof SnomedRefSetMember) {
+			delete((SnomedRefSetMember) object, force);
 		}
-		super.delete(object);
+		super.delete(object, force);
+	}
+	
+	private void delete(SnomedRefSetMember member, boolean force) {
+		SnomedDeletionPlan deletionPlan = canDelete(member, force);
+		if (deletionPlan.isRejected()) {
+			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
+		}
+		delete(deletionPlan);
 	}
 	
 	private void delete(Concept concept) {
@@ -1197,6 +1208,16 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		delete(deletionPlan);
+	}
+	
+	private SnomedDeletionPlan canDelete(SnomedRefSetMember member, boolean force) {
+		final SnomedDeletionPlan plan = new SnomedDeletionPlan();
+		if (member.isReleased() && !force) {
+			plan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "member", member.getUuid()));
+		} else {
+			plan.markForDeletion(member);
+		}
+		return plan;
 	}
 	
 	public SnomedDeletionPlan canDelete(Concept concept, SnomedDeletionPlan deletionPlan) {

@@ -261,10 +261,15 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@PathVariable(value="id")
 			final String memberId,
 			
+			@ApiParam(value="Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+			
 			final Principal principal) {
 		SnomedRequests
 			.prepareDeleteMember()
 			.setComponentId(memberId)
+			.force(force)
 			.build(principal.getName(), branchPath, String.format("Deleted reference set member '%s' from store.", memberId))
 			.executeSync(bus, 120L * 1000L);
 	}
