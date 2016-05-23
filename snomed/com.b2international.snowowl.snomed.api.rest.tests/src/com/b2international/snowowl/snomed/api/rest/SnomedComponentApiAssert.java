@@ -374,8 +374,20 @@ public abstract class SnomedComponentApiAssert {
 	 * @param descriptionId the expected description identifier
 	 */
 	public static void assertPreferredTermEquals(final IBranchPath branchPath, final String conceptId, final String descriptionId) {
+		assertPreferredTermEquals(branchPath, conceptId, descriptionId, "en-GB");
+	}
+	
+	/**
+	 * Asserts that the concept's preferred term in the given language reference set matches the specified description identifier.
+	 * 
+	 * @param branchPath the branch path to test
+	 * @param conceptId the identifier of the concept where the preferred term should be compared
+	 * @param descriptionId the expected description identifier
+	 * @param language - the language reference set
+	 */
+	public static void assertPreferredTermEquals(final IBranchPath branchPath, final String conceptId, final String descriptionId, final String language) {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.with().header("Accept-Language", "en-GB")
+		.with().header("Accept-Language", language)
 		.when().get("/{path}/concepts/{conceptId}?expand=pt(),descriptions()", branchPath.getPath(), conceptId)
 		.then().log().ifValidationFails().assertThat().statusCode(200)
 		.and().body("pt.id", equalTo(descriptionId));
