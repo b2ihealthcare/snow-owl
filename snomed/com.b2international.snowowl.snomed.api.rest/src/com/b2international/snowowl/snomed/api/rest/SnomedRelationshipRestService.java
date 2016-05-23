@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -161,7 +162,10 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			value="Delete Relationship",
 			notes="Permanently removes the specified unreleased Relationship and related components.<p>If the Relationship "
 					+ "has already been released, it can not be removed and a <code>409</code> "
-					+ "status will be returned.")
+					+ "status will be returned."
+					+ "<p>The force flag enables the deletion of a released Relationship. "
+					+ "Deleting published components is against the RF2 history policy so"
+					+ " this should only be used to remove a new component from a release before the release is published.</p>")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
 		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class),
@@ -177,12 +181,17 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId,
+
+			@ApiParam(value="Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
 			
 			final Principal principal) {
 
 		SnomedRequests
 			.prepareDeleteRelationship()
 			.setComponentId(relationshipId)
+			.force(force)
 			.build(principal.getName(), branchPath, String.format("Deleted Relationship '%s' from store.", relationshipId))
 			.executeSync(bus, 120L * 1000L);
 	}

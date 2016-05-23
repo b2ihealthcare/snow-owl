@@ -355,7 +355,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		// force update published the component, so it cannot be deleted without force flag, should throw 409
 		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", true);
 		
-		assertComponentCannotBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		assertComponentCanNotBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId, false);
 		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
 	}
 	

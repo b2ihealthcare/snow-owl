@@ -287,8 +287,11 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@ApiOperation(
 			value="Delete Concept",
 			notes="Permanently removes the specified unreleased Concept and related components.<p>If any participating "
-					+ "component has already been released, the Concept can not be removed and a <code>409</code> "
-					+ "status will be returned.")
+					+ "component has already been released the Concept can not be removed and a <code>409</code> "
+					+ "status will be returned."
+					+ "<p>The force flag enables the deletion of a released Concept. "
+					+ "Deleting published components is against the RF2 history policy so"
+					+ " this should only be used to remove a new component from a release before the release is published.</p>")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Deletion successful"),
 		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class),
@@ -303,12 +306,17 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The Concept identifier")
 			@PathVariable(value="conceptId")
-			final String conceptId, 
+			final String conceptId,
+
+			@ApiParam(value="Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
 
 			final Principal principal) {
 		SnomedRequests
 			.prepareDeleteConcept()
 			.setComponentId(conceptId)
+			.force(force)
 			.build(principal.getName(), branchPath, String.format("Deleted Concept '%s' from store.", conceptId))
 			.executeSync(bus, 120L * 1000L);
 	}

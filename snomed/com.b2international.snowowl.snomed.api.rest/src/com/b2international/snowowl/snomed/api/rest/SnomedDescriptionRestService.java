@@ -260,7 +260,10 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 
 	@ApiOperation(
 			value="Delete Description",
-			notes="Permanently removes the specified unreleased Description and related components.")
+			notes="Permanently removes the specified unreleased Description and related components."
+					+ "<p>The force flag enables the deletion of a released Description. "
+					+ "Deleting published components is against the RF2 history policy so"
+					+ " this should only be used to remove a new component from a release before the release is published.</p>")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
 		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
@@ -276,11 +279,16 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
+			@ApiParam(value="Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+
 			final Principal principal) {
 		
 		SnomedRequests
 			.prepareDeleteDescription()
 			.setComponentId(descriptionId)
+			.force(force)
 			.build(principal.getName(), branchPath, String.format("Deleted Description '%s' from store.", descriptionId))
 			.executeSync(bus, 120L * 1000L);
 	}

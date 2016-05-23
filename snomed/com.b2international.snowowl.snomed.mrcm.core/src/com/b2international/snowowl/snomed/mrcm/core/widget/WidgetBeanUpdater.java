@@ -539,7 +539,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 		}
 		
 		// Remove or deactivate depending on the deletion plan 
-		final SnomedDeletionPlan plan = context.canDelete(existingDescription, null);
+		final SnomedDeletionPlan plan = context.canDelete(existingDescription, null, false);
 		
 		for (final SnomedLanguageRefSetMember member : Lists.newArrayList(existingDescription.getLanguageRefSetMembers())) {
 			SnomedModelExtensions.removeOrDeactivate(member);

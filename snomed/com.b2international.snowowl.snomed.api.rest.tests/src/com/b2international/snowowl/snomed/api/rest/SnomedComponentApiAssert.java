@@ -290,20 +290,39 @@ public abstract class SnomedComponentApiAssert {
 		.when().post("/{path}/{componentType}/{id}/updates", branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
 	}
 
-	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
-		assertComponentCanBeDeleted(branchPath, componentType, componentId, false);
+	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, 
+			final SnomedComponentType componentType, 
+			final String componentId) {
+
+		assertComponentCanBeDeleted(branchPath, componentType, componentId, false, 204);
 	}
-	
-	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, boolean force) {
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.when().delete("/{path}/{componentType}/{id}?force="+force, branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-			.then().log().ifValidationFails().assertThat().statusCode(204);
+
+	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, 
+			final SnomedComponentType componentType, 
+			final String componentId,
+			final boolean force) {
+
+		assertComponentCanBeDeleted(branchPath, componentType, componentId, force, 204);
 	}
-	
-	public static void assertComponentCannotBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
+
+	public static void assertComponentCanNotBeDeleted(final IBranchPath branchPath, 
+			final SnomedComponentType componentType, 
+			final String componentId,
+			final boolean force) {
+
+		assertComponentCanBeDeleted(branchPath, componentType, componentId, force, 400);
+	}
+
+	private static void assertComponentCanBeDeleted(final IBranchPath branchPath, 
+			final SnomedComponentType componentType, 
+			final String componentId,
+			final boolean force,
+			final int statusCode) {
+
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-			.then().log().ifValidationFails().assertThat().statusCode(409);
+		.given().queryParam("force", force)
+		.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
+		.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
 	/**

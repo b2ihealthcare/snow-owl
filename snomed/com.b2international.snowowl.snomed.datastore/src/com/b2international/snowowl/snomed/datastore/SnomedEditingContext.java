@@ -1177,7 +1177,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		Preconditions.checkState(object instanceof Concept, "CDO object must be a SNOMED CT concept with ID: " + cdoId);
 		return (Concept) object; 
 	}
-	
+
 	@Override
 	public void delete(EObject object, boolean force) {
 		if (object instanceof Concept) {
@@ -1200,11 +1200,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		delete(deletionPlan);
 	}
 	
-	private void delete(Concept concept) {
-		
-		SnomedDeletionPlan deletionPlan = canDelete(concept, null);
-		if (deletionPlan.isRejected()) {
-			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
+	private void delete(Concept concept, boolean force) {
+		SnomedDeletionPlan deletionPlan = canDelete(concept, null, force);
+		if(deletionPlan.isRejected()) {
+			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
 		
 		delete(deletionPlan);
@@ -1219,34 +1218,30 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		return plan;
 	}
-	
-	public SnomedDeletionPlan canDelete(Concept concept, SnomedDeletionPlan deletionPlan) {
+
+	public SnomedDeletionPlan canDelete(Concept concept, SnomedDeletionPlan deletionPlan, boolean force) {
 		
 		if (deletionPlan == null) {
 			deletionPlan = new SnomedDeletionPlan();
 		}
 		
 		// unreleased -> effective time must be in the future
-		if (concept.isReleased()) {
+		if (concept.isReleased() && !force) {
 			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "concept", toString(concept)));
 			return deletionPlan;
 		}
 		
 		for (Relationship relationship : getInboundRelationships(concept.getId())) {
-			if (IS_A.equals(relationship.getType().getId())) {
-				if (relationship != null) {
-					deletionPlan = canDelete(relationship, deletionPlan);
-					if(deletionPlan.isRejected()) {
-						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
-						return deletionPlan;
-					}
-				}
+			deletionPlan = canDelete(relationship, deletionPlan, force);
+			if (deletionPlan.isRejected()) {
+				deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
+				return deletionPlan;
 			}
 		}
 		
 		// check descriptions. If the deletion is not legit, we cannot reach this point, hence a check would be meaningless
 		for (Description description : concept.getDescriptions()) {
-			deletionPlan = canDelete(description, deletionPlan);
+			deletionPlan = canDelete(description, deletionPlan, force);
 		}
 		
 		// ===================== check refsets ========================
@@ -1302,10 +1297,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return new SnomedDescriptionReducedQueryAdapter(conceptId, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_CONCEPT_ID);
 	}
 
-	private void delete(Relationship relationship) {
-		SnomedDeletionPlan deletionPlan = canDelete(relationship, null);
-		if (deletionPlan.isRejected()) {
-			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
+	private void delete(Relationship relationship, boolean force) {
+		SnomedDeletionPlan deletionPlan = canDelete(relationship, null, force);
+		if(deletionPlan.isRejected()) {
+			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
 		delete(deletionPlan);
 	}
@@ -1323,14 +1318,14 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 	}
 	
-	public SnomedDeletionPlan canDelete(Relationship relationship, SnomedDeletionPlan deletionPlan) {
+	public SnomedDeletionPlan canDelete(Relationship relationship, SnomedDeletionPlan deletionPlan, boolean force) {
 		
 		if (deletionPlan == null) {
 			deletionPlan = new SnomedDeletionPlan();
 		}
 		
 		// unreleased -> effective time must be in the future
-		if (relationship.isReleased()) {
+		if (relationship.isReleased() && !force) {
 			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", toString(relationship)));
 			return deletionPlan;
 		}
@@ -1344,22 +1339,22 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return deletionPlan;
 	}
 	
-	private void delete(Description description) {
-		SnomedDeletionPlan deletionPlan = canDelete(description, null);
-		if (deletionPlan.isRejected()) {
-			throw new IllegalArgumentException(deletionPlan.getRejectionReasons().toString());
+	private void delete(Description description, boolean force) {
+		SnomedDeletionPlan deletionPlan = canDelete(description, null, force);
+		if(deletionPlan.isRejected()) {
+			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
 		delete(deletionPlan);
 	}
 	
-	public SnomedDeletionPlan canDelete(Description description, SnomedDeletionPlan deletionPlan) {
+	public SnomedDeletionPlan canDelete(Description description, SnomedDeletionPlan deletionPlan, boolean force) {
 		
 		if (deletionPlan == null) {
 			// this was called from outside. Deletion eligibility must be checked
 			deletionPlan = new SnomedDeletionPlan();
 			
 			// unreleased -> effective time must be in the future
-			if (description.isReleased()) {
+			if (description.isReleased() && !force) {
 				deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "description", toString(description)));
 				return deletionPlan;
 			}

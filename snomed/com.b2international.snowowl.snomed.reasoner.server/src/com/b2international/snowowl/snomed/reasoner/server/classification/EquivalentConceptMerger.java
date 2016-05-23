@@ -137,7 +137,7 @@ public class EquivalentConceptMerger {
 				if (concept.isReleased()) {
 					this.editingContext.inactivateConcepts(plan, new NullProgressMonitor(), concept.cdoID());		
 				} else {
-					this.editingContext.canDelete(concept, deletionPlan);
+					this.editingContext.canDelete(concept, deletionPlan, false);
 				}
 			}
 			plan.performInactivation(InactivationReason.RETIRED, null);
