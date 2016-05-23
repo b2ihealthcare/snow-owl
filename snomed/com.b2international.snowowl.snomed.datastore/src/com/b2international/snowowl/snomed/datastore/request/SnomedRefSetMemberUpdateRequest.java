@@ -112,18 +112,19 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	private boolean updateEffectiveTime(SnomedRefSetMember member) {
 		if (force) {
 			final String effectiveTime = (String) properties.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
-			if (effectiveTime != null) {
+			if (!Strings.isNullOrEmpty(effectiveTime)) {
 				final Date effectiveTimeDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 				if (!effectiveTimeDate.equals(member.getEffectiveTime())) {
 					// if not null set the effective time to the given value and set released to true
 					member.setEffectiveTime(effectiveTimeDate);
 					member.setReleased(true);
+					return true;
 				}
 			} else {
 				// if effective time is null, then unset the effective time but don't change the released flag
 				member.unsetEffectiveTime();
+				return true;
 			}
-			return true;
 		}
 		return false;
 	}
