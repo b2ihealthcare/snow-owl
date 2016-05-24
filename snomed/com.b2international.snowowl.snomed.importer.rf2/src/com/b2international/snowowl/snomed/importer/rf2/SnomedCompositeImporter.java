@@ -377,7 +377,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		try {
 			final Collection<SnomedRelease> availableReleases = editingContext.getSnomedReleases();
 			
-			
 			//INT release import requested
 			if (requestedRelease.getReleaseType() == SnomedReleaseType.INTERNATIONAL) {
 				if (availableReleases.isEmpty()) {

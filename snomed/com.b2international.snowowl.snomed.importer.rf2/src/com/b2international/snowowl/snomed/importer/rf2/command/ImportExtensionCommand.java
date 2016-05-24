@@ -22,14 +22,11 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
@@ -204,21 +201,6 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 		} catch (final ImportException e) {
 			interpreter.printStackTrace(e);
 		}
-	}
-
-	/**
-	 * @param config
-	 */
-	private SnomedRelease createSnomedRelease(Properties properties) {
-		SnomedRelease snomedRelease = new SnomedInternationalCodeSystemFactory().createNewSnomedRelease();
-		snomedRelease.setShortName(properties.getProperty("shortname"));
-		snomedRelease.setCodeSystemOID(properties.getProperty("OID"));
-		snomedRelease.setLanguage(properties.getProperty("language"));
-		snomedRelease.setCitation(properties.getProperty("citation"));
-		snomedRelease.setIconPath(properties.getProperty("icon_path"));
-		snomedRelease.setMaintainingOrganizationLink(properties.getProperty("maintaining_org_link"));
-		snomedRelease.setReleaseType(SnomedReleaseType.EXTENSION);
-		return snomedRelease;
 	}
 
 }

@@ -16,6 +16,14 @@
 package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
@@ -24,13 +32,17 @@ import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 
 /**
  * Import release command for the OSGi console
@@ -40,13 +52,14 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 	private ImportUtil importUtil;
 
 	public ImportZipCommand() {
-		super("rf2_release", "-l <languageRefSetId> -t <type> -b <branch> -cv <true|false> <path>",
+		super("rf2_release", "-l <languageRefSetId> -t <type> -b <branch> -cv <true|false> <path> [release descriptor file path]",
 				"Imports core terminology and reference sets from a release archive",
 				new String[] { "-l <languageRefSetId>\tThe language reference set identifier to use for component labels.",
 						"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",
 						"-b <branch>\t\tThe existing branch to import the content onto. Use 'MAIN' for the MAIN branch.",
 						"-cv <true|false>\t\tCreates versions for each effective time found in the release.",
-						"<path>\t\tSpecifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release)." });
+						"<path>\t\tSpecifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release).",
+						"[release descriptor file path]\tThe path to the optional release descriptor file."});
 
 		importUtil = new ImportUtil();
 	}
@@ -87,7 +100,6 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				printDetailedHelp(interpreter);
 				return;
 			}
-
 		}
 
 		final String branchPath;
@@ -137,6 +149,29 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		}
 
 		final File archiveFile = new File(archivePath);
+		
+		SnomedRelease snomedRelease = null;
+		
+		final String metadataFilePath = interpreter.nextArgument();
+		if (metadataFilePath == null) {
+			String fileName = archiveFile.getName();
+			interpreter.println("SNOMED CT release descriptor is not found.  Falling back to archive file name: " + fileName);
+			
+			//TODO: INT for now, Gabor can grab info from some files...
+			
+			snomedRelease = new SnomedInternationalCodeSystemFactory().createNewSnomedRelease();
+			snomedRelease.setReleaseType(SnomedReleaseType.INTERNATIONAL);
+		} else {
+			Path configLocation = Paths.get(metadataFilePath);
+			try (InputStream stream = Files.newInputStream(configLocation)) {
+				Properties config = new Properties();
+				config.load(stream);
+				snomedRelease = createSnomedRelease(config);
+			} catch (IOException e) {
+				interpreter.printStackTrace(e);
+				return;
+			}
+		}
 
 		try {
 
@@ -147,10 +182,6 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			}
 
 			final String userId = authenticator.getUsername();
-			
-			//TODO: populate snomedrelease from file with fallback to filename
-			//This could be INT or MIXED type
-			SnomedRelease snomedRelease = null;
 			
 			final SnomedImportResult result = importUtil.doImport(snomedRelease, userId, languageRefSetId, contentSubType, branchPath, archiveFile, toCreateVersion,
 					new ConsoleProgressMonitor());
