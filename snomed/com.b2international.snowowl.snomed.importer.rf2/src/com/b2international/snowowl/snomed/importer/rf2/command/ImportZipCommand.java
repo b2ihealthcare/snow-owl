@@ -20,11 +20,11 @@ import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
@@ -147,8 +147,12 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			}
 
 			final String userId = authenticator.getUsername();
-
-			final SnomedImportResult result = importUtil.doImport(userId, languageRefSetId, contentSubType, branchPath, archiveFile, toCreateVersion,
+			
+			//TODO: populate snomedrelease from file with fallback to filename
+			//This could be INT or MIXED type
+			SnomedRelease snomedRelease = null;
+			
+			final SnomedImportResult result = importUtil.doImport(snomedRelease, userId, languageRefSetId, contentSubType, branchPath, archiveFile, toCreateVersion,
 					new ConsoleProgressMonitor());
 			Set<SnomedValidationDefect> validationDefects = result.getValidationDefects();
 			boolean criticalFound = FluentIterable.from(validationDefects).anyMatch(new Predicate<SnomedValidationDefect>() {

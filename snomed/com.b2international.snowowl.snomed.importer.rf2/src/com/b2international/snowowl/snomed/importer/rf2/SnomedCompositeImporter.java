@@ -160,9 +160,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	@Override
 	public void doImport(final SubMonitor subMonitor, final AbstractImportUnit unit) {
 
-		//remove this or pass in somehow
-		SnomedRelease requestedSRelease = null;
-		
+		SnomedRelease requestedRelease = importContext.getSnomedRelease();
+		Preconditions.checkNotNull(requestedRelease);
 		
 		try {
 			
@@ -183,14 +182,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					final String currentUnitEffectiveTimeKey = subUnit.getEffectiveTimeKey();
 					
 					if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
-						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedSRelease);
+						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
 						lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
 					}
 					
 					subUnit.doImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 				}
 				
-				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedSRelease);
+				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
 				
 			} else {
 			
@@ -218,7 +217,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					
 					if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
 						updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
-						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedSRelease);
+						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
 						lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
 					}
 						
@@ -226,7 +225,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 				
 				updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
-				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedSRelease);
+				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
 			}
 			
 		} finally {	
@@ -366,9 +365,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	protected void updateCodeSystemMetadata(final String lastUnitEffectiveTimeKey, final boolean shouldCreateVersionAndTag, final SnomedRelease requestedRelease) {
 		
 		SnomedInternationalCodeSystemFactory snomedInternationalCodeSystemFactory = new SnomedInternationalCodeSystemFactory();
-		CodeSystem internationalSnomedCodeSystem = snomedInternationalCodeSystemFactory.createNewCodeSystem();
-		boolean isMixed = false;
-		
 		
 		if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
 			return;

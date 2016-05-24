@@ -39,12 +39,15 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
+import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
+import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
@@ -153,8 +156,16 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	}
 
 	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
+		SnomedRelease snomedRelease = new SnomedInternationalCodeSystemFactory().createNewSnomedRelease();
+		
+		//TODO: currently only INT, changes depend on the REST endpoint API
+		snomedRelease.setReleaseType(SnomedReleaseType.INTERNATIONAL);
+
 		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
+		
+		
 		return new ImportUtil().doImport(
+				snomedRelease,
 				configuration.getLanguageRefSetId(), 
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
 				branch,

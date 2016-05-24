@@ -28,6 +28,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.snomed.Component;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.ISnomedPostProcessorContext;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -69,6 +70,8 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 
 	private final LongSet visitedConcepts = PrimitiveSets.newLongOpenHashSet();
 	private final LongSet visitedRefSets = PrimitiveSets.newLongOpenHashSet();
+
+	private SnomedRelease snomedRelease;
 
 	@Override
 	public void close() throws Exception {
@@ -430,5 +433,21 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	 */
 	public LongSet getVisitedRefSets() {
 		return visitedRefSets;
+	}
+
+	/**
+	 * Sets the SNOMED CT release for this import configuration
+	 * @param snomedRelease
+	 */
+	public void setSnomedRelease(SnomedRelease snomedRelease) {
+		this.snomedRelease = snomedRelease;
+	}
+	
+	/**
+	 * Returns the SNOMED CT release associated with this import configuration
+	 * @return
+	 */
+	public SnomedRelease getSnomedRelease() {
+		return snomedRelease;
 	}
 }

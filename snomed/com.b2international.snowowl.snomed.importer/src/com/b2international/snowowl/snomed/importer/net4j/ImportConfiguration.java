@@ -28,6 +28,7 @@ import com.b2international.commons.ZipURLHandler;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
@@ -91,6 +92,9 @@ public final class ImportConfiguration {
 
 	/* Not bound */
 	private ReleaseFileSet releaseFileSet;
+	
+	//the terminology registry entry for the release to be imported
+	private SnomedRelease snomedRelease;
 	
 	private final Map<String, String> releaseFileNameMappings = Maps.newHashMap();
 
@@ -281,6 +285,14 @@ public final class ImportConfiguration {
 	
 	public void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
+	}
+
+	public SnomedRelease getSnomedRelease() {
+		return snomedRelease;
+	}
+
+	public void setSnomedRelease(SnomedRelease snomedRelease) {
+		this.snomedRelease = snomedRelease;
 	}
 	
 }

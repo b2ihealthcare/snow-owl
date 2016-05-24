@@ -22,6 +22,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -147,8 +148,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 
 		final File archiveFile = new File(archivePath);
 		
-		//TODO: change this
-		final CodeSystem snomedCodeSystem;
+		final SnomedRelease snomedRelease;
 
 		final String metadataFilePath = interpreter.nextArgument();
 		if (metadataFilePath == null) {
@@ -160,7 +160,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 			try (InputStream stream = Files.newInputStream(configLocation)) {
 				Properties config = new Properties();
 				config.load(stream);
-				snomedCodeSystem = createSnomedRelease(config);
+				snomedRelease = createSnomedRelease(config);
 			} catch (IOException e) {
 				interpreter.printStackTrace(e);
 				return;
@@ -178,13 +178,13 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 			IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 			
 			IBranchPath parentBranchPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), baseVersionTag);
-			SnomedRequests.branching().prepareCreate().setParent(parentBranchPath.getPath()).setName(snomedCodeSystem.getShortName()).build().executeSync(eventBus);
+			SnomedRequests.branching().prepareCreate().setParent(parentBranchPath.getPath()).setName(snomedRelease.getShortName()).build().executeSync(eventBus);
 			
 			final String userId = authenticator.getUsername();
 			
 			ImportUtil importUtil = new ImportUtil();
-			IBranchPath extensionBranchPath = BranchPathUtils.createPath(parentBranchPath, snomedCodeSystem.getShortName());
-			final SnomedImportResult result = importUtil.doImport(userId, languageRefSetId, contentSubType, extensionBranchPath.getPath(), archiveFile, toCreateVersion, new ConsoleProgressMonitor());
+			IBranchPath extensionBranchPath = BranchPathUtils.createPath(parentBranchPath, snomedRelease.getShortName());
+			final SnomedImportResult result = importUtil.doImport(snomedRelease, userId, languageRefSetId, contentSubType, extensionBranchPath.getPath(), archiveFile, toCreateVersion, new ConsoleProgressMonitor());
 			Set<SnomedValidationDefect> validationDefects = result.getValidationDefects();
 			
 			boolean criticalFound = FluentIterable.from(validationDefects).anyMatch(new Predicate<SnomedValidationDefect>() {
@@ -217,6 +217,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 		snomedRelease.setCitation(properties.getProperty("citation"));
 		snomedRelease.setIconPath(properties.getProperty("icon_path"));
 		snomedRelease.setMaintainingOrganizationLink(properties.getProperty("maintaining_org_link"));
+		snomedRelease.setReleaseType(SnomedReleaseType.EXTENSION);
 		return snomedRelease;
 	}
 
