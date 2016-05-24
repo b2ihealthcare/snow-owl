@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.List;
@@ -22,30 +23,65 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.TerminologyRegistryService;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.google.common.collect.ImmutableList;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 
 /**
  * @since 4.5
  */
 public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<TransactionContext, Void> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(SnomedDescriptionAcceptabilityUpdateRequest.class);
+	
 	private String descriptionId;
-	private Map<String, Acceptability> acceptability;
+	private Map<String, Acceptability> newAcceptabilityMap;
 
+	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
+		@Override
+		public String load(TransactionContext context) throws Exception {
+			final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
+			final List<ICodeSystemVersion> allVersions = registryService.getAllVersion(context.id());
+			final ICodeSystemVersion systemVersion = allVersions.get(0);
+			final IBranchPath branchPath = ICodeSystemVersion.TO_BRANCH_PATH_FUNC.apply(systemVersion);
+			return branchPath.getPath();
+		}
+	});
+	
 	@Override
 	public Void execute(TransactionContext context) {
-		final Description description = context.lookup(descriptionId, Description.class);
-		updateAcceptabilityMap(acceptability, description, context);
-		return null;
+		// Null leaves lang. members unchanged, empty map clears all lang. members
+		if (newAcceptabilityMap == null) {
+			return null;
+		} else {
+			final Description description = context.lookup(descriptionId, Description.class);
+			updateAcceptabilityMap(context, description);
+			if (description.isActive()) {
+				updateOtherDescriptionAcceptabilities(context, description);
+			}
+			return null;
+		}
 	}
 
 	@Override
@@ -58,48 +94,133 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 	}
 
 	public void setAcceptability(Map<String, Acceptability> acceptability) {
-		this.acceptability = acceptability;
+		this.newAcceptabilityMap = acceptability;
 	}
 	
-	private void updateAcceptabilityMap(final Map<String, Acceptability> newAcceptabilityMap, final Description description, final TransactionContext context) {
-		if (null == newAcceptabilityMap) {
-			return;
+	private void removeOrDeactivate(final TransactionContext context, final SnomedLanguageRefSetMember existingMember) {
+		
+		if (!existingMember.isReleased()) {
+			
+			if (LOG.isDebugEnabled()) { LOG.debug("Removing association member {}.", existingMember.getUuid()); }
+			SnomedModelExtensions.remove(existingMember);
+
+		} else if (existingMember.isActive()) {
+
+			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating association member {}.", existingMember.getUuid()); }
+			existingMember.setActive(false);
+			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
+			
+		} else {
+			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} already inactive, not updating.", existingMember.getUuid()); }
 		}
-		final Set<String> synonymAndDescendantIds = context.service(ISnomedComponentService.class).getSynonymAndDescendantIds(context.branch().branchPath());
+	}
+	
+	private void updateAcceptabilityMap(final TransactionContext context, final Description description) {
+		
+		final List<SnomedLanguageRefSetMember> existingMembers = newArrayList(description.getLanguageRefSetMembers());
+		final Map<String, Acceptability> newLanguageMembersToCreate = newHashMap(newAcceptabilityMap);
 
-		final Map<String, Acceptability> languageMembersToCreate = newHashMap(newAcceptabilityMap);
-		final List<SnomedLanguageRefSetMember> languageMembers = ImmutableList.copyOf(description.getLanguageRefSetMembers());
-		for (final SnomedLanguageRefSetMember languageMember : languageMembers) {
-			if (!languageMember.isActive()) {
-				continue;
+		// check if there are existing matches
+		for (SnomedLanguageRefSetMember existingMember : existingMembers) {
+			final Acceptability acceptability = Acceptability.getByConceptId(existingMember.getAcceptabilityId());
+			final String languageReferenceSetId = existingMember.getRefSetIdentifierId();
+			
+			if (null == acceptability) {
+				continue;	
 			}
-
-			final String languageRefSetId = languageMember.getRefSetIdentifierId();
-			final Acceptability currentAcceptability = Acceptability.getByConceptId(languageMember.getAcceptabilityId());
-			final Acceptability newAcceptability = newAcceptabilityMap.get(languageRefSetId);
-
-			if (!currentAcceptability.equals(newAcceptability)) {
-				SnomedModelExtensions.removeOrDeactivate(languageMember);
+			
+			if (acceptability.equals(newLanguageMembersToCreate.get(languageReferenceSetId))) {
+				ensureMemberActive(context, existingMember);
+				newLanguageMembersToCreate.remove(languageReferenceSetId);
+			} else if (newLanguageMembersToCreate.containsKey(languageReferenceSetId)) {
+				final Acceptability newAcceptability = newLanguageMembersToCreate.get(languageReferenceSetId);
+				ensureMemberActive(context, existingMember);
+				existingMember.setAcceptabilityId(newAcceptability.getConceptId());
+				newLanguageMembersToCreate.remove(languageReferenceSetId);
 			} else {
-				languageMembersToCreate.remove(languageRefSetId);
+				removeOrDeactivate(context, existingMember);
 			}
+			
 		}
-
-		for (final Entry<String, Acceptability> languageMemberEntry : languageMembersToCreate.entrySet()) {
+		
+		for (final Entry<String, Acceptability> languageMemberEntry : newLanguageMembersToCreate.entrySet()) {
 			SnomedComponents
 				.newLanguageMember()
 				.withAcceptability(languageMemberEntry.getValue())
 				.withRefSet(languageMemberEntry.getKey())
 				.addTo(context, description);
 		}
-
-		for (final Entry<String, Acceptability> languageMemberEntry : languageMembersToCreate.entrySet()) {
-			if (description.isActive() && Acceptability.PREFERRED.equals(languageMemberEntry.getValue())) {
+	}
+	
+	private void updateOtherDescriptionAcceptabilities(TransactionContext context, final Description description) {
+		final Set<String> synonymAndDescendantIds = context.service(ISnomedComponentService.class).getSynonymAndDescendantIds(context.branch().branchPath());
+		for (final Entry<String, Acceptability> languageMemberEntry : newAcceptabilityMap.entrySet()) {
+			if (Acceptability.PREFERRED.equals(languageMemberEntry.getValue())) {
 				if (synonymAndDescendantIds.contains(description.getType().getId())) {
 					updateOtherPreferredDescriptions(description.getConcept().getDescriptions(), description, languageMemberEntry.getKey(), 
 							synonymAndDescendantIds, context);
 				}
 			}
+		}
+	}
+	
+	private String getLatestReleaseBranch(final TransactionContext context) {
+		return referenceBranchFunction.apply(context);
+	}
+	
+	private void ensureMemberActive(final TransactionContext context, final SnomedLanguageRefSetMember existingMember) {
+		
+		if (!existingMember.isActive()) {
+			
+			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating association member {}.", existingMember.getUuid()); }
+			existingMember.setActive(true);
+			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
+			
+		} else {
+			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} already active, not updating.", existingMember.getUuid()); }
+		}
+	}
+	
+	private void updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedLanguageRefSetMember existingMember) {
+		
+		if (existingMember.isReleased()) {
+			
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
+					.setComponentId(existingMember.getUuid())
+					.build(referenceBranch)
+					.executeSync(context.service(IEventBus.class));
+
+			boolean restoreEffectiveTime = true;
+			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
+			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
+			restoreEffectiveTime = restoreEffectiveTime && existingMember.getAcceptabilityId().equals(referenceMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
+
+			if (restoreEffectiveTime) {
+
+				if (LOG.isDebugEnabled()) { 
+					LOG.debug("Restoring effective time on association member {} to reference value {}.", 
+							existingMember.getUuid(), 
+							EffectiveTimes.format(referenceMember.getEffectiveTime(), DateFormats.SHORT));
+				}
+
+				existingMember.setEffectiveTime(referenceMember.getEffectiveTime());
+				
+			} else {
+				unsetEffectiveTime(existingMember);
+			}
+			
+		} else {
+			unsetEffectiveTime(existingMember);
+		}
+	}
+	
+	private void unsetEffectiveTime(SnomedRefSetMember existingMember) {
+		
+		if (existingMember.isSetEffectiveTime()) {
+			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on association member {}.", existingMember.getUuid()); }
+			existingMember.unsetEffectiveTime();
+		} else {
+			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on association member {} already unset, not updating.", existingMember.getUuid()); }
 		}
 	}
 	

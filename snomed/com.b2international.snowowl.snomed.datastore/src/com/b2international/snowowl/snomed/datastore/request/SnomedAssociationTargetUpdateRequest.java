@@ -130,10 +130,6 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 			return;
 		}
 
-		if (!(component instanceof Component)) {
-			throw new IllegalArgumentException(String.format("Specified component must be an instance of Component, was %s.", component.getClass().getSimpleName()));
-		}
-
 		final List<SnomedAssociationRefSetMember> existingMembers = ImmutableList.copyOf(component.getAssociationRefSetMembers());
 		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
 
@@ -150,7 +146,6 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 
 				// Exact match, just make sure that the member is active
 				ensureMemberActive(context, existingMember);
-
 			} else if (newAssociationTargetsToCreate.containsKey(associationType)) {
 
 				// We can re-use the member by changing the target component identifier, and checking that it is active

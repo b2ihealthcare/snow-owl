@@ -106,10 +106,6 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 	}
 
 	private void updateAcceptability(TransactionContext context, final Description description) {
-		if (null == acceptability) {
-			return;
-		}
-		
 		final SnomedDescriptionAcceptabilityUpdateRequest acceptabilityUpdate = new SnomedDescriptionAcceptabilityUpdateRequest();
 		acceptabilityUpdate.setAcceptability(acceptability);
 		acceptabilityUpdate.setDescriptionId(description.getId());
@@ -117,11 +113,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 	}
 
 	private void updateAssociationTargets(TransactionContext context, final Multimap<AssociationType, String> associationTargets) {
-		if (null == associationTargets) {
-			return;
-		}
-		
-		SnomedAssociationTargetUpdateRequest<Description> associationUpdateRequest = new SnomedAssociationTargetUpdateRequest<>(getComponentId(), Description.class);
+		final SnomedAssociationTargetUpdateRequest<Description> associationUpdateRequest = new SnomedAssociationTargetUpdateRequest<>(getComponentId(), Description.class);
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}

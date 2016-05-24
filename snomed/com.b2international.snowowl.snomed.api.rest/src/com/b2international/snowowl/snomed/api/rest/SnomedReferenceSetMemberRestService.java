@@ -261,10 +261,15 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@PathVariable(value="id")
 			final String memberId,
 			
+			@ApiParam(value="Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+			
 			final Principal principal) {
 		SnomedRequests
 			.prepareDeleteMember()
 			.setComponentId(memberId)
+			.force(force)
 			.build(principal.getName(), branchPath, String.format("Deleted reference set member '%s' from store.", memberId))
 			.executeSync(bus, 120L * 1000L);
 	}
@@ -295,6 +300,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestBody 
 			final ChangeRequest<SnomedMemberRestUpdate> body,
 			
+			@ApiParam(value="Force update flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+			
 			final Principal principal) {
 		
 		final String userId = principal.getName();
@@ -303,6 +312,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.prepareUpdateMember()
 			.setMemberId(memberId)
 			.setSource(update.getSource())
+			.force(force)
 			.build(userId, branchPath, body.getCommitComment())
 			.executeSync(bus, 120L * 1000L);
 	}

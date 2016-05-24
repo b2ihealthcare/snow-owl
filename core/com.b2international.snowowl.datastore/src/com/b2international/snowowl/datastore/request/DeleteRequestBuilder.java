@@ -27,24 +27,37 @@ public final class DeleteRequestBuilder extends BaseTransactionalRequestBuilder<
 
 	private String componentId;
 	private Class<? extends EObject> type;
-	
+	private Boolean force = Boolean.FALSE;
+
 	DeleteRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
-	
+
 	public DeleteRequestBuilder setComponentId(String componentId) {
 		this.componentId = componentId;
 		return getSelf();
 	}
-	
+
 	public DeleteRequestBuilder setType(Class<? extends EObject> type) {
 		this.type = type;
 		return getSelf();
 	}
-	
+
+	/**
+	 * Forces the deletion of the component if the value is <code>true</code>.
+	 * 
+	 * @param whether
+	 *            to force or not the deletion
+	 * @return
+	 */
+	public DeleteRequestBuilder force(boolean force) {
+		this.force = force;
+		return getSelf();
+	}
+
 	@Override
 	protected Request<TransactionContext, Void> doBuild() {
-		return new DeleteRequest(componentId, type);
+		return new DeleteRequest(componentId, type, force);
 	}
 
 }

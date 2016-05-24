@@ -15,16 +15,23 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -37,9 +44,13 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	@NotEmpty
 	private final Map<String, Object> properties;
 
-	SnomedRefSetMemberUpdateRequest(String memberId, Map<String, Object> properties) {
+	@NotNull
+	private final Boolean force;
+
+	SnomedRefSetMemberUpdateRequest(String memberId, Map<String, Object> properties, Boolean force) {
 		this.memberId = memberId;
 		this.properties = properties;
+		this.force = force;
 	}
 
 	@Override
@@ -52,6 +63,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		
 		changed |= updateActivityStatus(member);
 		changed |= updateModule(member);
+		changed |= updateEffectiveTime(member);
 		
 		switch (type) {
 		case SIMPLE:
@@ -63,10 +75,14 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		default: throw new UnsupportedOperationException("Not implemented update of " + type + " member"); 
 		}
 		
-		if (changed) {
+		if (changed && !isEffectiveTimeUpdate()) {
 			member.unsetEffectiveTime();
 		}
 		return null;
+	}
+
+	private boolean isEffectiveTimeUpdate() {
+		return force && !Strings.isNullOrEmpty((String) properties.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME));
 	}
 
 	private boolean updateActivityStatus(SnomedRefSetMember member) {
@@ -87,6 +103,26 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 			final String newModuleId = (String) value;
 			if (!Objects.equals(member.getModuleId(), newModuleId)) {
 				member.setModuleId(newModuleId);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean updateEffectiveTime(SnomedRefSetMember member) {
+		if (force) {
+			final String effectiveTime = (String) properties.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
+			if (!Strings.isNullOrEmpty(effectiveTime)) {
+				final Date effectiveTimeDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
+				if (!effectiveTimeDate.equals(member.getEffectiveTime())) {
+					// if not null set the effective time to the given value and set released to true
+					member.setEffectiveTime(effectiveTimeDate);
+					member.setReleased(true);
+					return true;
+				}
+			} else {
+				// if effective time is null, then unset the effective time but don't change the released flag
+				member.unsetEffectiveTime();
 				return true;
 			}
 		}
