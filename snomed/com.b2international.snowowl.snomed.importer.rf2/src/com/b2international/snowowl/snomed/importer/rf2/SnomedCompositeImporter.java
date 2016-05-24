@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -61,7 +60,6 @@ import com.b2international.snowowl.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
@@ -77,8 +75,9 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.EffectiveTimeUnitOrdering;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -365,17 +364,20 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		final CDOTransaction transaction = editingContext.getTransaction();
 		
 		try {
+			final List<CodeSystem> codeSystems = editingContext.getCodeSystems();
 			
-			final CodeSystemVersionGroup group = check(editingContext.getCodeSystemVersionGroup());
-			
-			if (group.getCodeSystems().isEmpty()) {
-				group.getCodeSystems().add(new SnomedCodeSystemFactory().createNewCodeSystem());
+			// TODO check if needed code system is present (e.g. extension cs)
+			if (codeSystems.isEmpty()) {
+				editingContext.addCodeSystem(new SnomedCodeSystemFactory().createNewCodeSystem());
 			}
 			
 			boolean existingVersionFound = false;
 			
 			if (shouldCreateVersionAndTag) {
-				for (final CodeSystemVersion codeSystemVersion : group.getCodeSystemVersions()) {
+				// TODO get proper code system (e.g. extension cs)
+				final CodeSystem codeSystem = Iterables.getFirst(codeSystems, null);
+				
+				for (final CodeSystemVersion codeSystemVersion : codeSystem.getCodeSystemVersions()) {
 					String existingEffectiveTimeKey = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
 					
 					if (lastUnitEffectiveTimeKey.equals(existingEffectiveTimeKey)) {
@@ -385,7 +387,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 				
 				if (!existingVersionFound) {
-					group.getCodeSystemVersions().add(createVersion(lastUnitEffectiveTimeKey));
+					codeSystem.getCodeSystemVersions().add(createVersion(lastUnitEffectiveTimeKey));
 				} else {
 					getLogger().warn("Not adding code system version entry for {}, a previous entry with the same effective time exists.", lastUnitEffectiveTimeKey);
 				}
@@ -440,7 +442,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		Date effectiveDate = EffectiveTimes.parse(version, DateFormats.SHORT);
 		String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 		
-		final CodeSystemVersion codeSystemVersion = SnomedFactory.eINSTANCE.createCodeSystemVersion();
+		final CodeSystemVersion codeSystemVersion = TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
 		codeSystemVersion.setImportDate(new Date());
 		codeSystemVersion.setVersionId(formattedEffectiveDate); 
 		codeSystemVersion.setDescription("RF2 import of SNOMED Clinical Terms");
