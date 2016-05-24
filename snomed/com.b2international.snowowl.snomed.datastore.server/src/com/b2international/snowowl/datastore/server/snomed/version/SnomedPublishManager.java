@@ -19,20 +19,27 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -41,8 +48,12 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -154,7 +165,55 @@ public class SnomedPublishManager extends PublishManager {
 		
 		return filteredPairs;
 	}
+	
+	@Override
+	protected CodeSystemVersion createCodeSystemVersion() {
+		final SnomedVersion snomedVersion = SnomedFactory.eINSTANCE.createSnomedVersion();
+		snomedVersion.setEffectiveDate(getEffectiveTime());
+		snomedVersion.setImportDate(new Date());
+		snomedVersion.setVersionId(getVersionName());
+		snomedVersion.setParentBranchPath(getParentBranchPath());
+		snomedVersion.setDescription(getCodeSystemVersionDescription());
 
+		// TODO add snomed version specific settings
+		// snomedVersion.getModules().add(null);
+
+		return snomedVersion;
+	}
+
+	@Override
+	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {
+		final String shortName = getReleaseShortName();
+		final List<CodeSystem> codeSystems = getEditingContext().getCodeSystems();
+		final Optional<SnomedRelease> optional = FluentIterable.from(codeSystems)
+				.transform(new UncheckedCastFunction<>(SnomedRelease.class))
+				.firstMatch(new Predicate<SnomedRelease>() {
+					@Override
+					public boolean apply(final SnomedRelease input) {
+						return input.getShortName().equalsIgnoreCase(shortName);
+					}
+				});
+
+		if (!optional.isPresent()) {
+			throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", shortName));
+		} else {
+			final CodeSystem codeSystem = optional.get();
+			codeSystem.getCodeSystemVersions().add(codeSystemVersion);
+		}
+	}
+
+	private String getReleaseShortName() {
+		final String parentBranchPath = getParentBranchPath();
+		final String[] paths = parentBranchPath.split("/");
+		if (paths.length == 1 && paths[0].equalsIgnoreCase("MAIN")) {
+			return SnomedInternationalCodeSystemFactory.SHORT_NAME;
+		} else if (paths.length > 1) {
+			return paths[paths.length - 1];
+		} else {
+			throw new IllegalStateException(String.format("Couldn't extract short name from %s.", parentBranchPath));
+		}
+	}
+	
 	@Override
 	protected void postProcess() {
 		LOGGER.info("Adjusting effective time changes on module dependency...");
