@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -32,7 +30,6 @@ import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -42,7 +39,6 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Lists;
 
 /**
  * Import release command for the OSGi console
