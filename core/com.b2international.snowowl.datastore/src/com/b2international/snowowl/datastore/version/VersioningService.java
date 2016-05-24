@@ -159,10 +159,7 @@ public class VersioningService implements IVersioningService {
 		return okStatus();
 	}
 	
-	/**
-	 * @param parentBranchPath
-	 * @return 
-	 */
+	@Override
 	public IStatus configureParentBranchPath(String parentBranchPath) {
 		configuration.setParentBranchPath(parentBranchPath);
 		return okStatus();

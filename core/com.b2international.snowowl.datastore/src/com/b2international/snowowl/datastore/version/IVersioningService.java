@@ -42,6 +42,11 @@ public interface IVersioningService {
 	/**Configures and applies the given effective time on the service.*/
 	IStatus configureEffectiveTime(final Date effectiveTime);
 	
+	/**
+	 * Configures the parent branch path for the versioning.
+	 */
+	IStatus configureParentBranchPath(String parentBranchPath);
+	
 	/**Applies the given description on the stateful service.*/
 	IStatus configureDescription(@Nullable final String description);
 	
