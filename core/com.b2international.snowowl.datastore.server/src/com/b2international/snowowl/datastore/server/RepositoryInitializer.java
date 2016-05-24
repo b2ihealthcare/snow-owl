@@ -92,11 +92,11 @@ import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessio
 import com.google.common.base.Predicate;
 
 /**
- * Abstract repository initializer implementation responsible for creating the
+ * Repository initializer implementation responsible for creating the
  * domain specific root resources.
  * @see CDOEditingContext
  */
-public abstract class RepositoryInitializer implements IRepositoryInitializer {
+public class RepositoryInitializer implements IRepositoryInitializer {
 
 	private static final Logger LOGGER = getLogger(RepositoryInitializer.class);
 	
