@@ -21,7 +21,6 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +40,12 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.5
@@ -76,7 +75,7 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 			return null;
 		} else {
 			final Description description = context.lookup(descriptionId, Description.class);
-			updateAcceptabilityMap(context, description);
+			updateAcceptabilityMap(context, description, newAcceptabilityMap);
 			if (description.isActive()) {
 				updateOtherDescriptionAcceptabilities(context, description);
 			}
@@ -115,10 +114,10 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 		}
 	}
 	
-	private void updateAcceptabilityMap(final TransactionContext context, final Description description) {
+	private void updateAcceptabilityMap(final TransactionContext context, final Description description, Map<String, Acceptability> acceptabilityMap) {
 		
 		final List<SnomedLanguageRefSetMember> existingMembers = newArrayList(description.getLanguageRefSetMembers());
-		final Map<String, Acceptability> newLanguageMembersToCreate = newHashMap(newAcceptabilityMap);
+		final Map<String, Acceptability> newLanguageMembersToCreate = newHashMap(acceptabilityMap);
 
 		// check if there are existing matches
 		for (SnomedLanguageRefSetMember existingMember : existingMembers) {
@@ -153,13 +152,9 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 	}
 	
 	private void updateOtherDescriptionAcceptabilities(TransactionContext context, final Description description) {
-		final Set<String> synonymAndDescendantIds = context.service(ISnomedComponentService.class).getSynonymAndDescendantIds(context.branch().branchPath());
 		for (final Entry<String, Acceptability> languageMemberEntry : newAcceptabilityMap.entrySet()) {
 			if (Acceptability.PREFERRED.equals(languageMemberEntry.getValue())) {
-				if (synonymAndDescendantIds.contains(description.getType().getId())) {
-					updateOtherPreferredDescriptions(description.getConcept().getDescriptions(), description, languageMemberEntry.getKey(), 
-							synonymAndDescendantIds, context);
-				}
+				updateOtherPreferredDescriptions(context, description, languageMemberEntry.getKey());
 			}
 		}
 	}
@@ -224,36 +219,32 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 		}
 	}
 	
-	private void updateOtherPreferredDescriptions(final List<Description> descriptions, final Description preferredDescription, final String languageRefSetId, 
-			final Set<String> synonymAndDescendantIds, final TransactionContext context) {
+	private void updateOtherPreferredDescriptions(final TransactionContext context, final Description preferredDescription, final String languageRefSetId) {
 
-		for (final Description description : descriptions) {
+		for (final Description description : preferredDescription.getConcept().getDescriptions()) {
+			
 			if (!description.isActive() || description.equals(preferredDescription)) {
 				continue;
 			}
 
-			if (!synonymAndDescendantIds.contains(description.getType().getId())) {
+			if (!preferredDescription.getType().getId().equals(description.getType().getId())) {
 				continue;
 			}
 
+			final Map<String, Acceptability> acceptabilityMap = Maps.newHashMap();
 			for (final SnomedLanguageRefSetMember languageMember : description.getLanguageRefSetMembers()) {
 				if (!languageMember.isActive()) {
 					continue;
 				}
 
 				if (!languageMember.getRefSetIdentifierId().equals(languageRefSetId)) {
-					continue;
-				}
-
-				if (languageMember.getAcceptabilityId().equals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)) {
-					SnomedModelExtensions.removeOrDeactivate(languageMember);
-					SnomedComponents
-						.newLanguageMember()
-						.withRefSet(languageRefSetId)
-						.addTo(context, description);
-					break;
+					acceptabilityMap.put(languageMember.getRefSetIdentifierId(), Acceptability.getByConceptId(languageMember.getAcceptabilityId()));
+				} else if (languageMember.getAcceptabilityId().equals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)) {
+					acceptabilityMap.put(languageMember.getRefSetIdentifierId(), Acceptability.ACCEPTABLE);
 				}
 			}
+			
+			updateAcceptabilityMap(context, description, acceptabilityMap);
 		}
 	}
 
