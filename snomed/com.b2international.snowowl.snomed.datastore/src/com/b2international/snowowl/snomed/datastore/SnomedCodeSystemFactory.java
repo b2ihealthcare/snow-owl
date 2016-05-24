@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.CodeSystemFactory;
 
 /**
@@ -44,11 +43,6 @@ public class SnomedCodeSystemFactory extends CodeSystemFactory {
 		return SnomedTerminologyComponentConstants.CONCEPT;
 	}
 	
-	@Override
-	protected CodeSystem createCodeSystem() {
-		return SnomedFactory.eINSTANCE.createCodeSystem();
-	}
-
 	@Override
 	protected String getShortName() {
 		return SHORT_NAME;
@@ -82,6 +76,11 @@ public class SnomedCodeSystemFactory extends CodeSystemFactory {
 	@Override
 	protected String getCitation() {
 		return CITATION;
+	}
+	
+	@Override
+	protected String getRepositoryUuid() {
+		return CodeSystemUtils.getRepositoryUuid(SnomedTerminologyComponentConstants.TERMINOLOGY_ID);
 	}
 
 }

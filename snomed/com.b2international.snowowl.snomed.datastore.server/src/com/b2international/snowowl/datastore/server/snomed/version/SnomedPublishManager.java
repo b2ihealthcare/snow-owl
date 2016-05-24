@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -42,7 +41,6 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -86,11 +84,6 @@ public class SnomedPublishManager extends PublishManager {
 		throw new IllegalArgumentException("Unsupported or unexpected component type: " + eClass);
 	}
 
-	@Override
-	protected CodeSystemVersion createCodeSystemVersion() {
-		return SnomedFactory.eINSTANCE.createCodeSystemVersion();
-	}
-	
 	@Override
 	protected CDOEditingContext createEditingContext(IBranchPath branchPath) {
 		return new SnomedEditingContext(branchPath);
