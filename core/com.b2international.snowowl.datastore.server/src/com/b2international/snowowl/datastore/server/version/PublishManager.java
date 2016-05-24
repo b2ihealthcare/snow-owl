@@ -365,7 +365,7 @@ public abstract class PublishManager implements IPublishManager {
 		if (codeSystems.isEmpty()) {
 			final CodeSystem codeSystem = createCodeSystem();
 			if (codeSystem != null) {
-				codeSystems.add(codeSystem);
+				getEditingContext().addCodeSystem(codeSystem);
 			}
 		}
 		
