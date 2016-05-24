@@ -20,7 +20,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider.ROOT_RESOURCE_NAMEPROVIDER_EXTENSION_POINT_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.any;
-import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableCollection;
 
@@ -41,6 +40,7 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
 
+import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -52,11 +52,13 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
@@ -135,28 +137,28 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 								if (!CDOUtils.isTransient(resource)) {
 
 									final CDOResource cdoResource = (CDOResource) resource;
-									final EObject object = find(cdoResource.getContents(), new Predicate<EObject>() {
+									
+									final ImmutableList<CodeSystem> codeSystems = FluentIterable.from(cdoResource.getContents()).filter(new Predicate<EObject>() {
 										@Override
-										public boolean apply(final EObject eObject) {
-											return TerminologymetadataPackage.eINSTANCE.getCodeSystemVersionGroup().isSuperTypeOf(eObject.eClass());
+										public boolean apply(EObject eObject) {
+											return TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(eObject.eClass());
 										}
-									}, null);
-
+									}).transform(new UncheckedCastFunction<>(CodeSystem.class)).toList();
+									
 									boolean shouldTag = false;
-									if (object instanceof CodeSystemVersionGroup) {
-										final CodeSystemVersionGroup group = (CodeSystemVersionGroup) object;
-										for (final CodeSystemVersion version : group.getCodeSystemVersions()) {
+									
+									for (final CodeSystem codeSystem : codeSystems) {
+										for (final CodeSystemVersion version : codeSystem.getCodeSystemVersions()) {
 											shouldTag = true;
 											final CodeSystemVersionIndexMappingStrategy mappingStrategy = new CodeSystemVersionIndexMappingStrategy(version);
 											final Document doc = mappingStrategy.createDocument();
 											try {
-												final long storageKey = CDOIDUtils.asLong(group.cdoID());
+												final long storageKey = CDOIDUtils.asLong(codeSystem.cdoID());
 												service.updateDocument(storageKey, doc);
 											} catch (final IOException e) {
 												throw new IndexException("Failed to initialize index branch service for " + repositoryUuid);
 											}
 										}
-
 									}
 
 

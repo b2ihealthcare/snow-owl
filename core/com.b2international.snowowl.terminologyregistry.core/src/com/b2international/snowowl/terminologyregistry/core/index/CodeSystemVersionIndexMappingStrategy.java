@@ -60,7 +60,7 @@ public class CodeSystemVersionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(VERSION_LATEST_UPDATE_DATE, EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()), Store.YES));
 		doc.add(new LongField(VERSION_STORAGE_KEY, getStorageKey(), Store.YES));
 		Mappings.storageKey().addTo(doc, getStorageKey());
-		addStringFieldIfExists(doc, VERSION_REPOSITORY_UUID, version.getCodeSystemVersionGroup().getRepositoryUuid());
+		addStringFieldIfExists(doc, VERSION_REPOSITORY_UUID, version.getCodeSystem().getRepositoryUuid());
 		return doc;
 	}
 

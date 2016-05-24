@@ -48,7 +48,7 @@ public abstract class CodeSystemFactory {
 		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME, Strings.nullToEmpty(codeSystem.getShortName()), Store.YES));
 		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_OID, Strings.nullToEmpty(codeSystem.getCodeSystemOID()), Store.YES));
 		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_STORAGE_KEY, Long.toString(CDOIDUtils.asLong(codeSystem.cdoID())), Store.YES));
-		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_REPOSITORY_UUID, codeSystem.getCodeSystemVersionGroup().getRepositoryUuid(), Store.YES));
+		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_REPOSITORY_UUID, codeSystem.getRepositoryUuid(), Store.YES));
 		
 		return doc;
 	}
@@ -79,7 +79,7 @@ public abstract class CodeSystemFactory {
 				system.getIconPath(), 
 				system.getTerminologyComponentId(), 
 				CDOUtils.isTransient(system) ? CDOUtils.NO_STORAGE_KEY + "" : Long.toString(CDOIDUtils.asLong(system.cdoID())),
-				system.getCodeSystemVersionGroup().getRepositoryUuid());
+				system.getRepositoryUuid());
 	}
 	
 	private CodeSystemFactory() {

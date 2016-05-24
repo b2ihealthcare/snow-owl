@@ -18,6 +18,7 @@ package com.b2international.snowowl.terminologyregistry.core;
 import org.eclipse.emf.cdo.CDOState;
 
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 
 /**
  * Abstract factory for creating {@link CodeSystem code system} instances.
@@ -38,6 +39,7 @@ public abstract class CodeSystemFactory implements ICodeSystemFactory {
 		codeSystem.setName(getName());
 		codeSystem.setShortName(getShortName());
 		codeSystem.setTerminologyComponentId(getTerminologyComponentId());
+		codeSystem.setRepositoryUuid(getRepositoryUuid());
 		
 		return codeSystem;
 		
@@ -51,7 +53,9 @@ public abstract class CodeSystemFactory implements ICodeSystemFactory {
 	/**
 	 * Creates and returns with a new code system instance.
 	 */
-	protected abstract CodeSystem createCodeSystem();
+	protected CodeSystem createCodeSystem() {
+		return TerminologymetadataFactory.eINSTANCE.createCodeSystem();
+	}
 
 	/**
 	 * Returns with the short name of the code system. Code system short name is globally unique.
@@ -87,5 +91,10 @@ public abstract class CodeSystemFactory implements ICodeSystemFactory {
 	 * Returns with the citation for the code system.
 	 */
 	protected abstract String getCitation();
+	
+	/**
+	 * Returns with the repository uuid for the code system.
+	 */
+	protected abstract String getRepositoryUuid();
 	
 }

@@ -20,13 +20,11 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPa
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.FAKE_LAST_UPDATE_TIME_DATE;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.getRevisions;
 import static com.b2international.snowowl.datastore.server.version.GlobalPublishManagerImpl.ConfigurationThreadLocal.getConfiguration;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Sets.newHashSet;
@@ -38,6 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -66,10 +65,11 @@ import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Iterables;
 
 
 /**
@@ -147,7 +147,9 @@ public abstract class PublishManager implements IPublishManager {
 	}
 
 	/** Creates and returns with the new code systems version. */
-	protected abstract CodeSystemVersion createCodeSystemVersion();
+	protected CodeSystemVersion createCodeSystemVersion() {
+		return TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
+	}
 
 	/**
 	 * Creates a new code system for the underlying terminology/content. By default returns with {@code null}. If this method returns with
@@ -214,11 +216,6 @@ public abstract class PublishManager implements IPublishManager {
 	 * Does nothing by default. Clients may extend this method.
 	 */
 	protected void postProcess() {
-	}
-
-	/** Returns with the {@link CodeSystemVersionGroup code system version group} instance for the underlying repository. */
-	protected CodeSystemVersionGroup getCodeSystemVersionGroup() {
-		return check(getEditingContext().getCodeSystemVersionGroup());
 	}
 
 	/** Adjusts all un.versioned components given as a set of component storage keys. */
@@ -362,23 +359,27 @@ public abstract class PublishManager implements IPublishManager {
 	/** Applies the code system changes for the publication process. */
 	private void processTerminologyMetadataChanges() {
 		LOGGER.info("Processing terminology metadata changes...");
-		addCodeSystemVersion(getCodeSystemVersionGroup());
-		if (!hasCodeSystem()) {
+
+		// TODO
+		final List<CodeSystem> codeSystems = getEditingContext().getCodeSystems();
+		if (codeSystems.isEmpty()) {
 			final CodeSystem codeSystem = createCodeSystem();
-			if (null != codeSystem) {
-				getCodeSystemVersionGroup().getCodeSystems().add(codeSystem);
+			if (codeSystem != null) {
+				codeSystems.add(codeSystem);
 			}
 		}
+		
+		final CodeSystem codeSystem = Iterables.getFirst(codeSystems, null);
+		if (codeSystem != null) {
+			addCodeSystemVersion(codeSystem);
+		}
+		
 		LOGGER.info("Terminology metadata change processing successfully finished.");
 	}
 
-	private boolean hasCodeSystem() {
-		return !isEmpty(getCodeSystemVersionGroup().getCodeSystems());
-	}
-
 	/** Adds a brand new code system version to the given code system argument. */
-	private boolean addCodeSystemVersion(final CodeSystemVersionGroup group) {
-		return group.getCodeSystemVersions().add(createAndInitializeCodeSystemVersion());
+	private boolean addCodeSystemVersion(final CodeSystem codeSystem) {
+		return codeSystem.getCodeSystemVersions().add(createAndInitializeCodeSystemVersion());
 	}
 
 	/** Creates a new code system version instance based on the publish configuration. */

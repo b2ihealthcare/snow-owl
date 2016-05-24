@@ -62,7 +62,7 @@ public class CodeSystemIndexMappingStrategy extends AbstractIndexMappingStrategy
 		addStringFieldIfExists(doc, SYSTEM_TERMINOLOGY_COMPONENT_ID, codeSystem.getTerminologyComponentId());
 		doc.add(new LongField(SYSTEM_STORAGE_KEY, getStorageKey(), Store.YES));
 		Mappings.storageKey().addTo(doc, getStorageKey());
-		addStringFieldIfExists(doc, SYSTEM_REPOSITORY_UUID, codeSystem.getCodeSystemVersionGroup().getRepositoryUuid());
+		addStringFieldIfExists(doc, SYSTEM_REPOSITORY_UUID, codeSystem.getRepositoryUuid());
 		return doc;
 	}
 

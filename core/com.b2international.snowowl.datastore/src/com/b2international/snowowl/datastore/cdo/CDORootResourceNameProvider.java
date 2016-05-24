@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.cdo;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
-
 /**
  * Representation of a CDO root resource name provider.
  *
