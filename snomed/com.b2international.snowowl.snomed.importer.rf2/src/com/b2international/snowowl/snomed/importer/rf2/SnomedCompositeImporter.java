@@ -44,7 +44,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -64,10 +63,10 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
@@ -82,7 +81,6 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -159,12 +157,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	@Override
 	public void doImport(final SubMonitor subMonitor, final AbstractImportUnit unit) {
-
-		SnomedRelease requestedRelease = importContext.getSnomedRelease();
-		Preconditions.checkNotNull(requestedRelease);
-		
 		try {
-			
 			final IBranchPath branchPath = getImportBranchPath();
 			
 			final SnomedCompositeImportUnit compositeUnit = (SnomedCompositeImportUnit) unit;
@@ -182,14 +175,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					final String currentUnitEffectiveTimeKey = subUnit.getEffectiveTimeKey();
 					
 					if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
-						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
+						updateSnomedReleasesAndVersions(lastUnitEffectiveTimeKey);
 						lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
 					}
 					
 					subUnit.doImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 				}
 				
-				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
+				updateSnomedReleasesAndVersions(lastUnitEffectiveTimeKey);
 				
 			} else {
 			
@@ -217,7 +210,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					
 					if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
 						updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
-						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
+						updateSnomedReleasesAndVersions(lastUnitEffectiveTimeKey);
 						lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
 					}
 						
@@ -225,7 +218,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 				
 				updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
-				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled(), requestedRelease);
+				updateSnomedReleasesAndVersions(lastUnitEffectiveTimeKey);
 			}
 			
 		} finally {	
@@ -362,82 +355,28 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 
-	protected void updateCodeSystemMetadata(final String lastUnitEffectiveTimeKey, final boolean shouldCreateVersionAndTag, final SnomedRelease requestedRelease) {
-		
-		SnomedInternationalCodeSystemFactory snomedInternationalCodeSystemFactory = new SnomedInternationalCodeSystemFactory();
+	protected void updateSnomedReleasesAndVersions(final String lastUnitEffectiveTimeKey) {
 		
 		if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
 			return;
 		}
 		
-		final ICDOTransactionAggregator aggregator = importContext.getAggregator(lastUnitEffectiveTimeKey);
 		final SnomedEditingContext editingContext = importContext.getEditingContext();
-		final CDOTransaction transaction = editingContext.getTransaction();
 		
 		try {
 			final Collection<SnomedRelease> availableReleases = editingContext.getSnomedReleases();
 			
-			//INT release import requested
-			if (requestedRelease.getReleaseType() == SnomedReleaseType.INTERNATIONAL) {
-				if (availableReleases.isEmpty()) {
-					editingContext.addCodeSystem(snomedInternationalCodeSystemFactory.createNewCodeSystem());
-				} 
-				
-			//mixed extension import requested
-			} else if (requestedRelease.getReleaseType() == SnomedReleaseType.MIXED)  {
-				if (availableReleases.isEmpty()) {
-					//INT
-					editingContext.addCodeSystem(snomedInternationalCodeSystemFactory.createNewCodeSystem());
-					//EXT
-					editingContext.addCodeSystem(requestedRelease);
-				} else {
-					Optional<SnomedRelease> optionalOtherExtensionRelease = FluentIterable.from(availableReleases).firstMatch(new Predicate<SnomedRelease>() {
-						@Override
-						public boolean apply(SnomedRelease snomedRelease) {
-							return !snomedRelease.getShortName().equals(requestedRelease.getShortName()) && requestedRelease.getReleaseType() != SnomedReleaseType.EXTENSION;
-						}
-					});
-					if (optionalOtherExtensionRelease.isPresent()) {
-						throw new IllegalArgumentException("Cannot import requested extension: " + requestedRelease.getName() + " while there is a different mixed extension present already.");
-					} 
-					int numberOfIntReleases = FluentIterable.from(availableReleases).filter(new Predicate<SnomedRelease>() {
-						@Override
-						public boolean apply(SnomedRelease snomedRelease) {
-							return requestedRelease.getReleaseType() != SnomedReleaseType.EXTENSION;
-						}
-					}).size();
-					
-					//only INT is present
-					if (availableReleases.size() == numberOfIntReleases) {
-						editingContext.addCodeSystem(requestedRelease);
-					}
-				}
-			//Extension
-			} else {
-				if (availableReleases.isEmpty()) {
-					getLogger().warn("Cannot create only extension without International release already present.");
-				} else {
-					Optional<SnomedRelease> optionaRequestedExtensionRelease = FluentIterable.from(availableReleases).firstMatch(new Predicate<SnomedRelease>() {
-						@Override
-						public boolean apply(SnomedRelease snomedRelease) {
-							return snomedRelease.getShortName().equals(requestedRelease.getShortName());
-						}
-					});
-					
-					if (!optionaRequestedExtensionRelease.isPresent()) {
-						editingContext.addCodeSystem(requestedRelease);
-					}
-				}
-			}
+			checkAndCreateSnomedReleases();
 			
 			boolean existingVersionFound = false;
+			final boolean shouldCreateVersionAndTag = importContext.isVersionCreationEnabled();
 			
 			if (shouldCreateVersionAndTag) {
 				// TODO get proper code system (e.g. extension cs)
 				final CodeSystem codeSystem = Iterables.getFirst(availableReleases, null);
 				
 				for (final CodeSystemVersion codeSystemVersion : codeSystem.getCodeSystemVersions()) {
-					String existingEffectiveTimeKey = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
+					final String existingEffectiveTimeKey = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
 					
 					if (lastUnitEffectiveTimeKey.equals(existingEffectiveTimeKey)) {
 						existingVersionFound = true;
@@ -452,8 +391,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 			}
 			
+			final CDOTransaction transaction = editingContext.getTransaction();
+			
 			if (transaction.isDirty()) {
-				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), aggregator)
+				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), importContext.getAggregator(lastUnitEffectiveTimeKey))
 				.sendCommitNotification(false)
 				.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 				.commit();
@@ -484,6 +425,67 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		}
 	}
 
+	private void checkAndCreateSnomedReleases() {
+		final SnomedRelease requestedRelease = checkNotNull(importContext.getSnomedRelease());
+		final SnomedEditingContext editingContext = importContext.getEditingContext();
+		final Collection<SnomedRelease> persistedSnomedReleases = editingContext.getSnomedReleases();
+		
+		if (persistedSnomedReleases.isEmpty()) {
+			switch (requestedRelease.getReleaseType()) {
+				case INTERNATIONAL:
+					editingContext.addCodeSystem(SnomedReleases.newSnomedInternationalRelease().build());
+					break;
+				case EXTENSION:
+					throw new ImportException("Extensions are not allowed to be imported without the SNOMED CT international release being present.");
+				case MIXED:
+					editingContext.addCodeSystem(SnomedReleases.newSnomedInternationalRelease().build());
+					editingContext.addCodeSystem(requestedRelease);
+			}
+		} else {
+			switch (requestedRelease.getReleaseType()) {
+				case INTERNATIONAL: // nothing to do
+					break;
+				case EXTENSION: // fall through due to same logic
+				case MIXED: // INT must exist, check existing extensions
+					if (isOnlyInternationalReleasePresent(persistedSnomedReleases)) {
+						editingContext.addCodeSystem(requestedRelease);
+					} else if (!isSnomedReleaseExists(requestedRelease, persistedSnomedReleases)) {
+						throw new ImportException("Cannot import requested extension: " + requestedRelease.getShortName() + " while a different SNOMED CT extension is present.");
+					}
+			}
+		}
+	}
+	
+	private boolean isOnlyInternationalReleasePresent(Collection<SnomedRelease> persistedSnomedReleases) {
+		return FluentIterable.from(persistedSnomedReleases).filter(new Predicate<SnomedRelease>() {
+			@Override public boolean apply(SnomedRelease input) {
+				return input.getReleaseType() == SnomedReleaseType.INTERNATIONAL;
+			}
+		}).size() == 1 && persistedSnomedReleases.size() == 1;
+	}
+
+	private boolean isSnomedReleaseExists(final SnomedRelease release, final Collection<SnomedRelease> releases) {
+		// try to check equality by using the Code System OID
+		if (FluentIterable.from(releases).allMatch(new Predicate<SnomedRelease>() {
+			@Override public boolean apply(SnomedRelease input) {
+				return !Strings.isNullOrEmpty(input.getCodeSystemOID());
+			}
+		}) && !Strings.isNullOrEmpty(release.getCodeSystemOID())) {
+			return FluentIterable.from(releases).firstMatch(new Predicate<SnomedRelease>() {
+				@Override public boolean apply(SnomedRelease input) {
+					return input.getCodeSystemOID().equalsIgnoreCase(release.getCodeSystemOID());
+				}
+			}).isPresent();
+		}
+
+		// if Code System OID is not present match short names
+		return FluentIterable.from(releases).firstMatch(new Predicate<SnomedRelease>() {
+			@Override public boolean apply(SnomedRelease input) {
+				return input.getShortName().equalsIgnoreCase(release.getShortName());
+			}
+		}).isPresent();
+	}
+
 	private CDOCommitInfo createCommitInfo(final long timestamp, final long previousTimestamp) {
 		
 		final CDOTransaction transaction = importContext.getEditingContext().getTransaction();
@@ -498,8 +500,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	
 	private CodeSystemVersion createVersion(final String version) {
 
-		Date effectiveDate = EffectiveTimes.parse(version, DateFormats.SHORT);
-		String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
+		final Date effectiveDate = EffectiveTimes.parse(version, DateFormats.SHORT);
+		final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 		
 		final CodeSystemVersion codeSystemVersion = TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
 		codeSystemVersion.setImportDate(new Date());

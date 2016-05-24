@@ -31,9 +31,8 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
+import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
@@ -155,8 +154,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			
 			//TODO: INT for now, Gabor can grab info from some files...
 			
-			snomedRelease = new SnomedInternationalCodeSystemFactory().createNewSnomedRelease();
-			snomedRelease.setReleaseType(SnomedReleaseType.INTERNATIONAL);
+			snomedRelease = SnomedReleases.newSnomedInternationalRelease().build();
 		} else {
 			Path configLocation = Paths.get(metadataFilePath);
 			try (InputStream stream = Files.newInputStream(configLocation)) {

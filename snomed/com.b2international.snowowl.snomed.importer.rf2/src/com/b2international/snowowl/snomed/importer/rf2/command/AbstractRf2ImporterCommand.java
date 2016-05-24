@@ -23,7 +23,6 @@ import org.eclipse.osgi.framework.console.CommandInterpreter;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
-import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 
 /**
  * Represents an abstract OSGi command for importing SNOMED CT components from various sources. 

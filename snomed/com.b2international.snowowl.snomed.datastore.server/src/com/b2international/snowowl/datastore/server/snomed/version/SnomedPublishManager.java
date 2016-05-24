@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -206,7 +205,7 @@ public class SnomedPublishManager extends PublishManager {
 		final String parentBranchPath = getParentBranchPath();
 		final String[] paths = parentBranchPath.split("/");
 		if (paths.length == 1 && paths[0].equalsIgnoreCase(IBranchPath.MAIN_BRANCH)) {
-			return SnomedInternationalCodeSystemFactory.SHORT_NAME;
+			return SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
 		} else if (paths.length > 1) {
 			return paths[paths.length - 1];
 		} else {
