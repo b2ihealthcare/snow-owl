@@ -22,6 +22,9 @@ import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.version.INoopPublishManager;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.google.common.collect.Iterables;
 
 /**
  * NOOP publish manager implementation. Does not modify any components but creates corresponding 
@@ -43,6 +46,12 @@ public abstract class NoopPublishManager extends PublishManager implements INoop
 	@Override
 	protected EStructuralFeature getReleasedFeature(EClass eClass) {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {
+		final CodeSystem codeSystem = Iterables.getOnlyElement(getEditingContext().getCodeSystems());
+		codeSystem.getCodeSystemVersions().add(codeSystemVersion);
 	}
 	
 	@Override

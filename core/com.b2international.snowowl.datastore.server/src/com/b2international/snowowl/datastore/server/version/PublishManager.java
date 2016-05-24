@@ -36,7 +36,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -63,13 +62,11 @@ import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Iterables;
 
 
 /**
@@ -144,19 +141,6 @@ public abstract class PublishManager implements IPublishManager {
 	/** Returns with the CDO editing context for the update process. */
 	protected final CDOEditingContext getEditingContext() {
 		return editingContextSupplier.get();
-	}
-
-	/** Creates and returns with the new code systems version. */
-	protected CodeSystemVersion createCodeSystemVersion() {
-		return TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
-	}
-
-	/**
-	 * Creates a new code system for the underlying terminology/content. By default returns with {@code null}. If this method returns with
-	 * {@code null} the new code system will not get persisted even if its absence.
-	 */
-	protected CodeSystem createCodeSystem() {
-		return null;
 	}
 
 	/** Returns with the desired effective time date. */
@@ -359,43 +343,33 @@ public abstract class PublishManager implements IPublishManager {
 	/** Applies the code system changes for the publication process. */
 	private void processTerminologyMetadataChanges() {
 		LOGGER.info("Processing terminology metadata changes...");
-
-		// TODO
-		final List<CodeSystem> codeSystems = getEditingContext().getCodeSystems();
-		if (codeSystems.isEmpty()) {
-			final CodeSystem codeSystem = createCodeSystem();
-			if (codeSystem != null) {
-				getEditingContext().addCodeSystem(codeSystem);
-			}
-		}
 		
-		final CodeSystem codeSystem = Iterables.getFirst(codeSystems, null);
-		if (codeSystem != null) {
-			addCodeSystemVersion(codeSystem);
-		}
+		final CodeSystemVersion codeSystemVersion = createCodeSystemVersion();
+		addCodeSystemVersion(codeSystemVersion);
 		
 		LOGGER.info("Terminology metadata change processing successfully finished.");
 	}
-
-	/** Adds a brand new code system version to the given code system argument. */
-	private boolean addCodeSystemVersion(final CodeSystem codeSystem) {
-		return codeSystem.getCodeSystemVersions().add(createAndInitializeCodeSystemVersion());
+	
+	protected CodeSystemVersion createCodeSystemVersion() {
+		final CodeSystemVersion codeSystemVersion = TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
+		codeSystemVersion.setEffectiveDate(getEffectiveTime());
+		codeSystemVersion.setImportDate(new Date());
+		codeSystemVersion.setVersionId(getVersionName());
+		codeSystemVersion.setParentBranchPath(getParentBranchPath());
+		codeSystemVersion.setDescription(getCodeSystemVersionDescription());
+		
+		return codeSystemVersion;
 	}
-
-	/** Creates a new code system version instance based on the publish configuration. */
-	private CodeSystemVersion createAndInitializeCodeSystemVersion() {
-		final CodeSystemVersion version = createCodeSystemVersion();
-		version.setEffectiveDate(getEffectiveTime());
-		version.setImportDate(new Date());
-		version.setVersionId(getVersionName());
-		version.setParentBranchPath(getConfiguration().getParentBranchPath());
-		version.setDescription(getCodeSystemVersionDescription());
-		return version;
-	}
+	
+	protected abstract void addCodeSystemVersion(CodeSystemVersion codeSystemVersion);
 
 	/** Returns with the code system description. */
-	private String getCodeSystemVersionDescription() {
+	protected String getCodeSystemVersionDescription() {
 		return nullToEmpty(getConfiguration().getDescription());
+	}
+	
+	protected String getParentBranchPath() {
+		return getConfiguration().getParentBranchPath();
 	}
 
 	private void handleError(final SnowowlServiceException e) throws SnowowlServiceException {
