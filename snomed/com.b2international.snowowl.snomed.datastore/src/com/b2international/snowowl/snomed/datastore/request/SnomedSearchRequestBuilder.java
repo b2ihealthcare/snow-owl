@@ -47,6 +47,10 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 		return addOption(OptionKey.LANGUAGE_REFSET, languageRefSetIds);
 	}
 	
+	public final B filterByEffectiveTime(String effectiveTime) {
+		return addOption(OptionKey.EFFECTIVE_TIME, effectiveTime);
+	}
+	
 	public final B filterByExtendedLocales(List<ExtendedLocale> locales) {
 		final List<Long> languageRefSetIds = newArrayList();
 		final List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
