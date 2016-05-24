@@ -36,14 +36,42 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCitation <em>Citation</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getIconPath <em>Icon Path</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getTerminologyComponentId <em>Terminology Component Id</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getRepositoryUuid <em>Repository Uuid</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemVersions <em>Code System Versions</em>}</li>
  * </ul>
  *
  * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem()
- * @model abstract="true"
+ * @model
  * @extends CDOObject
  * @generated
  */
 public interface CodeSystem extends CDOObject {
+	/**
+	 * Returns the value of the '<em><b>Short Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Short Name</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Short Name</em>' attribute.
+	 * @see #setShortName(String)
+	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_ShortName()
+	 * @model required="true"
+	 * @generated
+	 */
+	String getShortName();
+
+	/**
+	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName <em>Short Name</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Short Name</em>' attribute.
+	 * @see #getShortName()
+	 * @generated
+	 */
+	void setShortName(String value);
+
 	/**
 	 * Returns the value of the '<em><b>Code System OID</b></em>' attribute.
 	 * The default value is <code>""</code>.
@@ -96,32 +124,6 @@ public interface CodeSystem extends CDOObject {
 	 * @generated
 	 */
 	void setName(String value);
-
-	/**
-	 * Returns the value of the '<em><b>Short Name</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <p>
-	 * If the meaning of the '<em>Short Name</em>' attribute isn't clear,
-	 * there really should be more of a description here...
-	 * </p>
-	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Short Name</em>' attribute.
-	 * @see #setShortName(String)
-	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_ShortName()
-	 * @model required="true"
-	 * @generated
-	 */
-	String getShortName();
-
-	/**
-	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName <em>Short Name</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Short Name</em>' attribute.
-	 * @see #getShortName()
-	 * @generated
-	 */
-	void setShortName(String value);
 
 	/**
 	 * Returns the value of the '<em><b>Maintaining Organization Link</b></em>' attribute.
@@ -255,15 +257,45 @@ public interface CodeSystem extends CDOObject {
 	void setTerminologyComponentId(String value);
 
 	/**
+	 * Returns the value of the '<em><b>Repository Uuid</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Code System Version Group</em>' reference isn't clear,
+	 * If the meaning of the '<em>Repository Uuid</em>' attribute isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @model kind="operation"
+	 * @return the value of the '<em>Repository Uuid</em>' attribute.
+	 * @see #setRepositoryUuid(String)
+	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_RepositoryUuid()
+	 * @model required="true"
 	 * @generated
 	 */
-	CodeSystemVersionGroup getCodeSystemVersionGroup();
+	String getRepositoryUuid();
+
+	/**
+	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getRepositoryUuid <em>Repository Uuid</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Repository Uuid</em>' attribute.
+	 * @see #getRepositoryUuid()
+	 * @generated
+	 */
+	void setRepositoryUuid(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Code System Versions</b></em>' containment reference list.
+	 * The list contents are of type {@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion}.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Code System Versions</em>' containment reference list isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Code System Versions</em>' containment reference list.
+	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_CodeSystemVersions()
+	 * @model containment="true"
+	 * @generated
+	 */
+	EList<CodeSystemVersion> getCodeSystemVersions();
 
 } // CodeSystem

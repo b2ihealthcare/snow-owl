@@ -69,9 +69,31 @@ public class TerminologymetadataFactoryImpl extends EFactoryImpl implements Term
 	@Override
 	public EObject create(EClass eClass) {
 		switch (eClass.getClassifierID()) {
+			case TerminologymetadataPackage.CODE_SYSTEM_VERSION: return (EObject)createCodeSystemVersion();
+			case TerminologymetadataPackage.CODE_SYSTEM: return (EObject)createCodeSystem();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public CodeSystemVersion createCodeSystemVersion() {
+		CodeSystemVersionImpl codeSystemVersion = new CodeSystemVersionImpl();
+		return codeSystemVersion;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public CodeSystem createCodeSystem() {
+		CodeSystemImpl codeSystem = new CodeSystemImpl();
+		return codeSystem;
 	}
 
 	/**

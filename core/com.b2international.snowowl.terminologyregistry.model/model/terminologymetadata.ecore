@@ -2,16 +2,8 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="terminologymetadata" nsURI="urn:com:b2international:snowowl:terminologymetadata:model"
     nsPrefix="terminologymetadata">
-  <eClassifiers xsi:type="ecore:EClass" name="CodeSystemVersionGroup" abstract="true">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="repositoryUuid" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="codeSystems" upperBound="-1"
-        eType="#//CodeSystem" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="codeSystemVersions" upperBound="-1"
-        eType="#//CodeSystemVersion" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CodeSystemVersion" abstract="true">
-    <eOperations name="getCodeSystemVersionGroup" eType="#//CodeSystemVersionGroup"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CodeSystemVersion">
+    <eOperations name="getCodeSystem" eType="#//CodeSystem"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="versionId" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="description" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -20,8 +12,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="importDate" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lastUpdateDate" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CodeSystem" abstract="true">
-    <eOperations name="getCodeSystemVersionGroup" eType="#//CodeSystemVersionGroup"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CodeSystem">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="shortName" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="codeSystemOID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
@@ -35,5 +26,9 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="iconPath" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="terminologyComponentId"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="repositoryUuid" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="codeSystemVersions" upperBound="-1"
+        eType="#//CodeSystemVersion" containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -37,7 +37,7 @@ import org.eclipse.emf.cdo.CDOObject;
  * </ul>
  *
  * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystemVersion()
- * @model abstract="true"
+ * @model
  * @extends CDOObject
  * @generated
  */
@@ -200,14 +200,10 @@ public interface CodeSystemVersion extends CDOObject {
 
 	/**
 	 * <!-- begin-user-doc -->
-	 * <p>
-	 * If the meaning of the '<em>Code System Version Group</em>' reference isn't clear,
-	 * there really should be more of a description here...
-	 * </p>
 	 * <!-- end-user-doc -->
 	 * @model kind="operation"
 	 * @generated
 	 */
-	CodeSystemVersionGroup getCodeSystemVersionGroup();
+	CodeSystem getCodeSystem();
 
 } // CodeSystemVersion

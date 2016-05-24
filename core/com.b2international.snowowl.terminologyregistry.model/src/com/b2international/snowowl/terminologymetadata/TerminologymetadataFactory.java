@@ -35,6 +35,24 @@ public interface TerminologymetadataFactory extends EFactory {
 	TerminologymetadataFactory eINSTANCE = com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataFactoryImpl.init();
 
 	/**
+	 * Returns a new object of class '<em>Code System Version</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Code System Version</em>'.
+	 * @generated
+	 */
+	CodeSystemVersion createCodeSystemVersion();
+
+	/**
+	 * Returns a new object of class '<em>Code System</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Code System</em>'.
+	 * @generated
+	 */
+	CodeSystem createCodeSystem();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

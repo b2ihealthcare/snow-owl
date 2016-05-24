@@ -81,10 +81,6 @@ public class TerminologymetadataAdapterFactory extends AdapterFactoryImpl {
 	protected TerminologymetadataSwitch<Adapter> modelSwitch =
 		new TerminologymetadataSwitch<Adapter>() {
 			@Override
-			public Adapter caseCodeSystemVersionGroup(CodeSystemVersionGroup object) {
-				return createCodeSystemVersionGroupAdapter();
-			}
-			@Override
 			public Adapter caseCodeSystemVersion(CodeSystemVersion object) {
 				return createCodeSystemVersionAdapter();
 			}
@@ -113,16 +109,16 @@ public class TerminologymetadataAdapterFactory extends AdapterFactoryImpl {
 
 
 	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup <em>Code System Version Group</em>}'.
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion <em>Code System Version</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
 	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
 	 * <!-- end-user-doc -->
 	 * @return the new adapter.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion
 	 * @generated
 	 */
-	public Adapter createCodeSystemVersionGroupAdapter() {
+	public Adapter createCodeSystemVersionAdapter() {
 		return null;
 	}
 
@@ -137,20 +133,6 @@ public class TerminologymetadataAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createCodeSystemAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion <em>Code System Version</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion
-	 * @generated
-	 */
-	public Adapter createCodeSystemVersionAdapter() {
 		return null;
 	}
 

@@ -15,14 +15,15 @@
  */
 package com.b2international.snowowl.terminologymetadata.impl;
 
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
+
 import java.util.Date;
 
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.internal.cdo.CDOObjectImpl;
 
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
+import org.eclipse.emf.internal.cdo.CDOObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -42,7 +43,7 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackag
  *
  * @generated
  */
-public abstract class CodeSystemVersionImpl extends CDOObjectImpl implements CodeSystemVersion {
+public class CodeSystemVersionImpl extends CDOObjectImpl implements CodeSystemVersion {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -185,8 +186,8 @@ public abstract class CodeSystemVersionImpl extends CDOObjectImpl implements Cod
 	 * <!-- end-user-doc -->
 	 * @generated NOT
 	 */
-	public CodeSystemVersionGroup getCodeSystemVersionGroup() {
-		return (CodeSystemVersionGroup) this.eContainer();
+	public CodeSystem getCodeSystem() {
+		return (CodeSystem) this.eContainer();
 	}
 
 } //CodeSystemVersionImpl

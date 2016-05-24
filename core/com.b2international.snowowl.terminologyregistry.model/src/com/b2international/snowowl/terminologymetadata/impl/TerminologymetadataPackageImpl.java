@@ -17,7 +17,6 @@ package com.b2international.snowowl.terminologymetadata.impl;
 
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 
@@ -40,7 +39,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	private EClass codeSystemVersionGroupEClass = null;
+	private EClass codeSystemVersionEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -48,13 +47,6 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 	 * @generated
 	 */
 	private EClass codeSystemEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass codeSystemVersionEClass = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -115,123 +107,6 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		// Update the registry and return the package
 		EPackage.Registry.INSTANCE.put(TerminologymetadataPackage.eNS_URI, theTerminologymetadataPackage);
 		return theTerminologymetadataPackage;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getCodeSystemVersionGroup() {
-		return codeSystemVersionGroupEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystemVersionGroup_RepositoryUuid() {
-		return (EAttribute)codeSystemVersionGroupEClass.getEStructuralFeatures().get(0);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getCodeSystemVersionGroup_CodeSystems() {
-		return (EReference)codeSystemVersionGroupEClass.getEStructuralFeatures().get(1);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getCodeSystemVersionGroup_CodeSystemVersions() {
-		return (EReference)codeSystemVersionGroupEClass.getEStructuralFeatures().get(2);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getCodeSystem() {
-		return codeSystemEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_CodeSystemOID() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(1);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_Name() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(2);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_ShortName() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(0);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_MaintainingOrganizationLink() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(3);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_Language() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(4);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_Citation() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(5);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_IconPath() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(6);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EAttribute getCodeSystem_TerminologyComponentId() {
-		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(7);
 	}
 
 	/**
@@ -302,6 +177,105 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getCodeSystem() {
+		return codeSystemEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_ShortName() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_CodeSystemOID() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_Name() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_MaintainingOrganizationLink() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_Language() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(4);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_Citation() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(5);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_IconPath() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(6);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_TerminologyComponentId() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(7);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getCodeSystem_RepositoryUuid() {
+		return (EAttribute)codeSystemEClass.getEStructuralFeatures().get(8);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getCodeSystem_CodeSystemVersions() {
+		return (EReference)codeSystemEClass.getEStructuralFeatures().get(9);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public TerminologymetadataFactory getTerminologymetadataFactory() {
 		return (TerminologymetadataFactory)getEFactoryInstance();
 	}
@@ -325,11 +299,6 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		isCreated = true;
 
 		// Create classes and their features
-		codeSystemVersionGroupEClass = createEClass(CODE_SYSTEM_VERSION_GROUP);
-		createEAttribute(codeSystemVersionGroupEClass, CODE_SYSTEM_VERSION_GROUP__REPOSITORY_UUID);
-		createEReference(codeSystemVersionGroupEClass, CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEMS);
-		createEReference(codeSystemVersionGroupEClass, CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEM_VERSIONS);
-
 		codeSystemVersionEClass = createEClass(CODE_SYSTEM_VERSION);
 		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__VERSION_ID);
 		createEAttribute(codeSystemVersionEClass, CODE_SYSTEM_VERSION__DESCRIPTION);
@@ -347,6 +316,8 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		createEAttribute(codeSystemEClass, CODE_SYSTEM__CITATION);
 		createEAttribute(codeSystemEClass, CODE_SYSTEM__ICON_PATH);
 		createEAttribute(codeSystemEClass, CODE_SYSTEM__TERMINOLOGY_COMPONENT_ID);
+		createEAttribute(codeSystemEClass, CODE_SYSTEM__REPOSITORY_UUID);
+		createEReference(codeSystemEClass, CODE_SYSTEM__CODE_SYSTEM_VERSIONS);
 	}
 
 	/**
@@ -379,12 +350,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		// Add supertypes to classes
 
 		// Initialize classes and features; add operations and parameters
-		initEClass(codeSystemVersionGroupEClass, CodeSystemVersionGroup.class, "CodeSystemVersionGroup", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEAttribute(getCodeSystemVersionGroup_RepositoryUuid(), ecorePackage.getEString(), "repositoryUuid", null, 1, 1, CodeSystemVersionGroup.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getCodeSystemVersionGroup_CodeSystems(), this.getCodeSystem(), null, "codeSystems", null, 0, -1, CodeSystemVersionGroup.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getCodeSystemVersionGroup_CodeSystemVersions(), this.getCodeSystemVersion(), null, "codeSystemVersions", null, 0, -1, CodeSystemVersionGroup.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-		initEClass(codeSystemVersionEClass, CodeSystemVersion.class, "CodeSystemVersion", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEClass(codeSystemVersionEClass, CodeSystemVersion.class, "CodeSystemVersion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getCodeSystemVersion_VersionId(), ecorePackage.getEString(), "versionId", null, 1, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystemVersion_Description(), ecorePackage.getEString(), "description", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystemVersion_ParentBranchPath(), ecorePackage.getEString(), "parentBranchPath", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -392,9 +358,9 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		initEAttribute(getCodeSystemVersion_ImportDate(), ecorePackage.getEDate(), "importDate", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystemVersion_LastUpdateDate(), ecorePackage.getEDate(), "lastUpdateDate", null, 0, 1, CodeSystemVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-		addEOperation(codeSystemVersionEClass, this.getCodeSystemVersionGroup(), "getCodeSystemVersionGroup", 0, 1, IS_UNIQUE, IS_ORDERED);
+		addEOperation(codeSystemVersionEClass, this.getCodeSystem(), "getCodeSystem", 0, 1, IS_UNIQUE, IS_ORDERED);
 
-		initEClass(codeSystemEClass, CodeSystem.class, "CodeSystem", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEClass(codeSystemEClass, CodeSystem.class, "CodeSystem", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getCodeSystem_ShortName(), ecorePackage.getEString(), "shortName", null, 1, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystem_CodeSystemOID(), ecorePackage.getEString(), "codeSystemOID", "", 0, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystem_Name(), ecorePackage.getEString(), "name", null, 0, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -403,8 +369,8 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		initEAttribute(getCodeSystem_Citation(), ecorePackage.getEString(), "citation", null, 0, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystem_IconPath(), ecorePackage.getEString(), "iconPath", null, 0, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystem_TerminologyComponentId(), ecorePackage.getEString(), "terminologyComponentId", null, 0, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-		addEOperation(codeSystemEClass, this.getCodeSystemVersionGroup(), "getCodeSystemVersionGroup", 0, 1, IS_UNIQUE, IS_ORDERED);
+		initEAttribute(getCodeSystem_RepositoryUuid(), ecorePackage.getEString(), "repositoryUuid", null, 1, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getCodeSystem_CodeSystemVersions(), this.getCodeSystemVersion(), null, "codeSystemVersions", null, 0, -1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);
