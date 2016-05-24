@@ -92,6 +92,7 @@
         upperBound="-1" eType="#//Concept" containment="true" resolveProxies="false"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SnomedRelease" eSuperTypes="../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.ecore#//CodeSystem">
+    <eOperations name="isExtension" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="baseCodeSystemOID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SnomedVersion" eSuperTypes="../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.ecore#//CodeSystemVersion">

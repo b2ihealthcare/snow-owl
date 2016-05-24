@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import org.eclipse.emf.cdo.CDOState;
+
 import com.b2international.snowowl.datastore.CodeSystemUtils;
+import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.terminologyregistry.core.CodeSystemFactory;
 
@@ -23,7 +27,7 @@ import com.b2international.snowowl.terminologyregistry.core.CodeSystemFactory;
  * Code system factory for SNOMED&nbsp;CT ontology.
  *
  */
-public class SnomedCodeSystemFactory extends CodeSystemFactory {
+public class SnomedInternationalCodeSystemFactory extends CodeSystemFactory {
 
 	public static final String SHORT_NAME = "SNOMEDCT";
 
@@ -31,13 +35,32 @@ public class SnomedCodeSystemFactory extends CodeSystemFactory {
 	private static final String LINK = "http://www.ihtsdo.org";
 	private static final String ICON_PATH = "icons/snomed.png";
 	private static final String NAME = "Systematized Nomenclature of Medicine Clinical Terms International Version";
-	private static final String OID = "2.16.840.1.113883.6.96";
+	public static final String OID = "2.16.840.1.113883.6.96";
 	private static final String CITATION = "SNOMED CT contributes to the improvement of patient care by underpinning the " +
 			"development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. " +
 			"This provides effective access to information required for decision support and consistent reporting and analysis. " +
 			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
 			"leading to improvements in the quality of care.";
 
+	/**Creates and returns with a new {@link SnomedRelease code system} instance.
+	 *<p>The new code system instance is in {@link CDOState#TRANSIENT transient} by default.*/
+	public SnomedRelease createNewSnomedRelease() {
+		
+		SnomedRelease snomedRelease = SnomedFactory.eINSTANCE.createSnomedRelease();
+		
+		snomedRelease.setCitation(getCitation());
+		snomedRelease.setCodeSystemOID(getCodeSystemOid());
+		snomedRelease.setIconPath(getIconPath());
+		snomedRelease.setLanguage(getLanguage());
+		snomedRelease.setMaintainingOrganizationLink(getMaintainingOrganizationLink());
+		snomedRelease.setName(getName());
+		snomedRelease.setShortName(getShortName());
+		snomedRelease.setTerminologyComponentId(getTerminologyComponentId());
+		snomedRelease.setRepositoryUuid(getRepositoryUuid());
+		snomedRelease.setBaseCodeSystemOID(getCodeSystemOid());
+		return snomedRelease;
+	}
+	
 	@Override
 	protected String getTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.CONCEPT;

@@ -83,6 +83,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
@@ -190,6 +191,14 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
+	}
+	
+	/**
+	 * Returns the SNOMED CT releases available within the repository
+	 * @return
+	 */
+	public Collection<SnomedRelease> getSnomedReleases() {
+		return FluentIterable.from(getCodeSystems()).filter(SnomedRelease.class).toSet();
 	}
 
 	private static SnomedClientIndexService getIndexService() {

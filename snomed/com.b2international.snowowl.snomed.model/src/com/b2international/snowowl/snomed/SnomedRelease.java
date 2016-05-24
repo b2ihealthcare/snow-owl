@@ -59,4 +59,12 @@ public interface SnomedRelease extends CodeSystem {
 	 */
 	void setBaseCodeSystemOID(String value);
 
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation"
+	 * @generated
+	 */
+	boolean isExtension();
+
 } // SnomedRelease

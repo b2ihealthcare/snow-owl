@@ -23,7 +23,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
+import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
@@ -210,7 +210,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 	 * @param config
 	 */
 	private CodeSystem createCodeSystem(Properties properties) {
-		CodeSystem snomedCodeSystem = new SnomedCodeSystemFactory().createNewCodeSystem();
+		CodeSystem snomedCodeSystem = new SnomedInternationalCodeSystemFactory().createNewCodeSystem();
 		snomedCodeSystem.setShortName(properties.getProperty("shortname"));
 		snomedCodeSystem.setCodeSystemOID(properties.getProperty("OID"));
 		snomedCodeSystem.setLanguage(properties.getProperty("language"));

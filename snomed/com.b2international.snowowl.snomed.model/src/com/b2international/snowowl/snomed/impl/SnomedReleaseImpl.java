@@ -14,12 +14,11 @@
  */
 package com.b2international.snowowl.snomed.impl;
 
+import org.eclipse.emf.ecore.EClass;
+
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
-
 import com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl;
-
-import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
@@ -70,6 +69,19 @@ public class SnomedReleaseImpl extends CodeSystemImpl implements SnomedRelease {
 	 */
 	public void setBaseCodeSystemOID(String newBaseCodeSystemOID) {
 		eSet(SnomedPackage.Literals.SNOMED_RELEASE__BASE_CODE_SYSTEM_OID, newBaseCodeSystemOID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated NOT
+	 */
+	public boolean isExtension() {
+		if (getCodeSystemOID() == null || getCodeSystemOID().equals("")) {
+			return true;
+		} else {
+			return !this.getCodeSystemOID().equals("2.16.840.1.113883.6.96"); //SNOMED CT INT RELEASE OID
+		}
 	}
 
 } //SnomedReleaseImpl

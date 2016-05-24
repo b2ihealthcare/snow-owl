@@ -708,6 +708,8 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		initEClass(snomedReleaseEClass, SnomedRelease.class, "SnomedRelease", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getSnomedRelease_BaseCodeSystemOID(), ecorePackage.getEString(), "baseCodeSystemOID", null, 0, 1, SnomedRelease.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+		addEOperation(snomedReleaseEClass, ecorePackage.getEBoolean(), "isExtension", 0, 1, IS_UNIQUE, IS_ORDERED);
+
 		initEClass(snomedVersionEClass, SnomedVersion.class, "SnomedVersion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getSnomedVersion_Modules(), ecorePackage.getEString(), "modules", null, 0, -1, SnomedVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
