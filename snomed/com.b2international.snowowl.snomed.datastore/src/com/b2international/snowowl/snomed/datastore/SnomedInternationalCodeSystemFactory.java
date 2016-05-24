@@ -31,12 +31,12 @@ public class SnomedInternationalCodeSystemFactory extends CodeSystemFactory {
 
 	public static final String SHORT_NAME = "SNOMEDCT";
 
-	private static final String LANGUAGE = "ENG";
-	private static final String LINK = "http://www.ihtsdo.org";
-	private static final String ICON_PATH = "icons/snomed.png";
-	private static final String NAME = "Systematized Nomenclature of Medicine Clinical Terms International Version";
+	public static final String LANGUAGE = "ENG";
+	public static final String LINK = "http://www.ihtsdo.org";
+	public static final String ICON_PATH = "icons/snomed.png";
+	public static final String NAME = "Systematized Nomenclature of Medicine Clinical Terms International Version";
 	public static final String OID = "2.16.840.1.113883.6.96";
-	private static final String CITATION = "SNOMED CT contributes to the improvement of patient care by underpinning the " +
+	public static final String CITATION = "SNOMED CT contributes to the improvement of patient care by underpinning the " +
 			"development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. " +
 			"This provides effective access to information required for decision support and consistent reporting and analysis. " +
 			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
