@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableMap;
 public class SnomedReleasedConceptApiTest extends AbstractSnomedApiTest {
 
 	private static final String CONCEPT_ID = "63961392103";
-	private static final String DESCRIPTION_ID = "11320138110";
+	private static final String DESCRIPTION_ID = "2989111016";
 	private final IBranchPath mainPath = createMainPath();
 
 	@Test
