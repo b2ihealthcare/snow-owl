@@ -56,6 +56,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
@@ -229,7 +230,8 @@ public abstract class PublishManager implements IPublishManager {
 
 	/** Returns with the branch path for the given transaction to perform the publication. This is version dependent. */
 	protected final IBranchPath getBranchPathForPublication() {
-		return null == getConfiguration() ? getMainPath() : couldCreateVersion(getConfiguration()) ? getMainPath() : createPath(getMainPath(),
+		final IBranchPath parentBranchPath = BranchPathUtils.createPath(getConfiguration().getParentBranchPath());
+		return null == getConfiguration() ? getMainPath() : couldCreateVersion(getConfiguration()) ? getMainPath() : createPath(parentBranchPath,
 				getConfiguration().getVersionId());
 	}
 
