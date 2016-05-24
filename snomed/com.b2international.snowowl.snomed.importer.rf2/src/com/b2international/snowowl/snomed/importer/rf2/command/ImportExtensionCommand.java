@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -22,6 +21,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedInternationalCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -160,7 +160,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 			try (InputStream stream = Files.newInputStream(configLocation)) {
 				Properties config = new Properties();
 				config.load(stream);
-				snomedCodeSystem = createCodeSystem(config);
+				snomedCodeSystem = createSnomedRelease(config);
 			} catch (IOException e) {
 				interpreter.printStackTrace(e);
 				return;
@@ -209,15 +209,15 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 	/**
 	 * @param config
 	 */
-	private CodeSystem createCodeSystem(Properties properties) {
-		CodeSystem snomedCodeSystem = new SnomedInternationalCodeSystemFactory().createNewCodeSystem();
-		snomedCodeSystem.setShortName(properties.getProperty("shortname"));
-		snomedCodeSystem.setCodeSystemOID(properties.getProperty("OID"));
-		snomedCodeSystem.setLanguage(properties.getProperty("language"));
-		snomedCodeSystem.setCitation(properties.getProperty("citation"));
-		snomedCodeSystem.setIconPath(properties.getProperty("icon_path"));
-		snomedCodeSystem.setMaintainingOrganizationLink(properties.getProperty("maintaining_org_link"));
-		return snomedCodeSystem;
+	private SnomedRelease createSnomedRelease(Properties properties) {
+		SnomedRelease snomedRelease = new SnomedInternationalCodeSystemFactory().createNewSnomedRelease();
+		snomedRelease.setShortName(properties.getProperty("shortname"));
+		snomedRelease.setCodeSystemOID(properties.getProperty("OID"));
+		snomedRelease.setLanguage(properties.getProperty("language"));
+		snomedRelease.setCitation(properties.getProperty("citation"));
+		snomedRelease.setIconPath(properties.getProperty("icon_path"));
+		snomedRelease.setMaintainingOrganizationLink(properties.getProperty("maintaining_org_link"));
+		return snomedRelease;
 	}
 
 }

@@ -26,6 +26,7 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
  * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.SnomedRelease#getBaseCodeSystemOID <em>Base Code System OID</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.SnomedRelease#getReleaseType <em>Release Type</em>}</li>
  * </ul>
  *
  * @see com.b2international.snowowl.snomed.SnomedPackage#getSnomedRelease()
@@ -60,11 +61,32 @@ public interface SnomedRelease extends CodeSystem {
 	void setBaseCodeSystemOID(String value);
 
 	/**
+	 * Returns the value of the '<em><b>Release Type</b></em>' attribute.
+	 * The literals are from the enumeration {@link com.b2international.snowowl.snomed.SnomedReleaseType}.
 	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Release Type</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
 	 * <!-- end-user-doc -->
-	 * @model kind="operation"
+	 * @return the value of the '<em>Release Type</em>' attribute.
+	 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+	 * @see #setReleaseType(SnomedReleaseType)
+	 * @see com.b2international.snowowl.snomed.SnomedPackage#getSnomedRelease_ReleaseType()
+	 * @model
 	 * @generated
 	 */
-	boolean isExtension();
+	SnomedReleaseType getReleaseType();
+
+	/**
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.SnomedRelease#getReleaseType <em>Release Type</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Release Type</em>' attribute.
+	 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+	 * @see #getReleaseType()
+	 * @generated
+	 */
+	void setReleaseType(SnomedReleaseType value);
 
 } // SnomedRelease

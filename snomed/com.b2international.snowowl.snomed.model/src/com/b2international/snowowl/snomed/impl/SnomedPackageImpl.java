@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.impl;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
@@ -31,6 +32,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
@@ -104,6 +106,13 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * @generated
 	 */
 	private EClass snomedVersionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EEnum snomedReleaseTypeEEnum = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -526,6 +535,15 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getSnomedRelease_ReleaseType() {
+		return (EAttribute)snomedReleaseEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getSnomedVersion() {
 		return snomedVersionEClass;
 	}
@@ -537,6 +555,15 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 */
 	public EAttribute getSnomedVersion_Modules() {
 		return (EAttribute)snomedVersionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EEnum getSnomedReleaseType() {
+		return snomedReleaseTypeEEnum;
 	}
 
 	/**
@@ -613,9 +640,13 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 
 		snomedReleaseEClass = createEClass(SNOMED_RELEASE);
 		createEAttribute(snomedReleaseEClass, SNOMED_RELEASE__BASE_CODE_SYSTEM_OID);
+		createEAttribute(snomedReleaseEClass, SNOMED_RELEASE__RELEASE_TYPE);
 
 		snomedVersionEClass = createEClass(SNOMED_VERSION);
 		createEAttribute(snomedVersionEClass, SNOMED_VERSION__MODULES);
+
+		// Create enums
+		snomedReleaseTypeEEnum = createEEnum(SNOMED_RELEASE_TYPE);
 	}
 
 	/**
@@ -707,11 +738,16 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 
 		initEClass(snomedReleaseEClass, SnomedRelease.class, "SnomedRelease", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getSnomedRelease_BaseCodeSystemOID(), ecorePackage.getEString(), "baseCodeSystemOID", null, 0, 1, SnomedRelease.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-		addEOperation(snomedReleaseEClass, ecorePackage.getEBoolean(), "isExtension", 0, 1, IS_UNIQUE, IS_ORDERED);
+		initEAttribute(getSnomedRelease_ReleaseType(), this.getSnomedReleaseType(), "releaseType", null, 0, 1, SnomedRelease.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(snomedVersionEClass, SnomedVersion.class, "SnomedVersion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getSnomedVersion_Modules(), ecorePackage.getEString(), "modules", null, 0, -1, SnomedVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		// Initialize enums and add enum literals
+		initEEnum(snomedReleaseTypeEEnum, SnomedReleaseType.class, "SnomedReleaseType");
+		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.INTERNATIONAL);
+		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.EXTENSION);
+		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.MIXED);
 
 		// Create resource
 		createResource(eNS_URI);

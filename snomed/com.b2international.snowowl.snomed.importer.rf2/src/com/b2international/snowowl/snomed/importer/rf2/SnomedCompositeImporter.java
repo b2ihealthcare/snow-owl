@@ -62,6 +62,7 @@ import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -382,13 +383,13 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			
 			
 			//INT release import requested
-			if (!requestedRelease.isExtension()) {
+			if (requestedRelease.getReleaseType() == SnomedReleaseType.INTERNATIONAL) {
 				if (availableReleases.isEmpty()) {
 					editingContext.addCodeSystem(snomedInternationalCodeSystemFactory.createNewCodeSystem());
 				} 
 				
 			//mixed extension import requested
-			} else if (isMixed)  {
+			} else if (requestedRelease.getReleaseType() == SnomedReleaseType.MIXED)  {
 				if (availableReleases.isEmpty()) {
 					//INT
 					editingContext.addCodeSystem(snomedInternationalCodeSystemFactory.createNewCodeSystem());
@@ -398,7 +399,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					Optional<SnomedRelease> optionalOtherExtensionRelease = FluentIterable.from(availableReleases).firstMatch(new Predicate<SnomedRelease>() {
 						@Override
 						public boolean apply(SnomedRelease snomedRelease) {
-							return !snomedRelease.getShortName().equals(requestedRelease.getShortName()) && !snomedRelease.isExtension();
+							return !snomedRelease.getShortName().equals(requestedRelease.getShortName()) && requestedRelease.getReleaseType() != SnomedReleaseType.EXTENSION;
 						}
 					});
 					if (optionalOtherExtensionRelease.isPresent()) {
@@ -407,7 +408,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					int numberOfIntReleases = FluentIterable.from(availableReleases).filter(new Predicate<SnomedRelease>() {
 						@Override
 						public boolean apply(SnomedRelease snomedRelease) {
-							return !snomedRelease.isExtension();
+							return requestedRelease.getReleaseType() != SnomedReleaseType.EXTENSION;
 						}
 					}).size();
 					

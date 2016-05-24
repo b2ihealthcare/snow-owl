@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.impl;
 
 import com.b2international.snowowl.snomed.*;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
@@ -88,6 +89,36 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
+	public Object createFromString(EDataType eDataType, String initialValue) {
+		switch (eDataType.getClassifierID()) {
+			case SnomedPackage.SNOMED_RELEASE_TYPE:
+				return createSnomedReleaseTypeFromString(eDataType, initialValue);
+			default:
+				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
+		}
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public String convertToString(EDataType eDataType, Object instanceValue) {
+		switch (eDataType.getClassifierID()) {
+			case SnomedPackage.SNOMED_RELEASE_TYPE:
+				return convertSnomedReleaseTypeToString(eDataType, instanceValue);
+			default:
+				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
+		}
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public Description createDescription() {
 		DescriptionImpl description = new DescriptionImpl();
 		return description;
@@ -141,6 +172,26 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 	public SnomedVersion createSnomedVersion() {
 		SnomedVersionImpl snomedVersion = new SnomedVersionImpl();
 		return snomedVersion;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedReleaseType createSnomedReleaseTypeFromString(EDataType eDataType, String initialValue) {
+		SnomedReleaseType result = SnomedReleaseType.get(initialValue);
+		if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
+		return result;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String convertSnomedReleaseTypeToString(EDataType eDataType, Object instanceValue) {
+		return instanceValue == null ? null : instanceValue.toString();
 	}
 
 	/**

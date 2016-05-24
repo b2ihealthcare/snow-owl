@@ -18,6 +18,7 @@ import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl;
 
 /**
@@ -29,6 +30,7 @@ import com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl;
  * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.SnomedReleaseImpl#getBaseCodeSystemOID <em>Base Code System OID</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.impl.SnomedReleaseImpl#getReleaseType <em>Release Type</em>}</li>
  * </ul>
  *
  * @generated
@@ -69,6 +71,24 @@ public class SnomedReleaseImpl extends CodeSystemImpl implements SnomedRelease {
 	 */
 	public void setBaseCodeSystemOID(String newBaseCodeSystemOID) {
 		eSet(SnomedPackage.Literals.SNOMED_RELEASE__BASE_CODE_SYSTEM_OID, newBaseCodeSystemOID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedReleaseType getReleaseType() {
+		return (SnomedReleaseType)eGet(SnomedPackage.Literals.SNOMED_RELEASE__RELEASE_TYPE, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setReleaseType(SnomedReleaseType newReleaseType) {
+		eSet(SnomedPackage.Literals.SNOMED_RELEASE__RELEASE_TYPE, newReleaseType);
 	}
 
 	/**

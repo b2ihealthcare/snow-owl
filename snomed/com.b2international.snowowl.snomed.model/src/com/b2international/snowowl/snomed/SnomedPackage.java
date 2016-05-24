@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 
@@ -773,13 +774,22 @@ public interface SnomedPackage extends EPackage {
 	int SNOMED_RELEASE__BASE_CODE_SYSTEM_OID = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 0;
 
 	/**
+	 * The feature id for the '<em><b>Release Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__RELEASE_TYPE = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 1;
+
+	/**
 	 * The number of structural features of the '<em>Release</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int SNOMED_RELEASE_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 1;
+	int SNOMED_RELEASE_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 2;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.SnomedVersionImpl <em>Version</em>}' class.
@@ -862,6 +872,17 @@ public interface SnomedPackage extends EPackage {
 	 * @ordered
 	 */
 	int SNOMED_VERSION_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_VERSION_FEATURE_COUNT + 1;
+
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.SnomedReleaseType <em>Release Type</em>}' enum.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedReleaseType()
+	 * @generated
+	 */
+	int SNOMED_RELEASE_TYPE = 9;
 
 
 	/**
@@ -1286,6 +1307,17 @@ public interface SnomedPackage extends EPackage {
 	EAttribute getSnomedRelease_BaseCodeSystemOID();
 
 	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.SnomedRelease#getReleaseType <em>Release Type</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Release Type</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedRelease#getReleaseType()
+	 * @see #getSnomedRelease()
+	 * @generated
+	 */
+	EAttribute getSnomedRelease_ReleaseType();
+
+	/**
 	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.SnomedVersion <em>Version</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1305,6 +1337,16 @@ public interface SnomedPackage extends EPackage {
 	 * @generated
 	 */
 	EAttribute getSnomedVersion_Modules();
+
+	/**
+	 * Returns the meta object for enum '{@link com.b2international.snowowl.snomed.SnomedReleaseType <em>Release Type</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for enum '<em>Release Type</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+	 * @generated
+	 */
+	EEnum getSnomedReleaseType();
 
 	/**
 	 * Returns the factory that creates the instances of the model.
@@ -1657,6 +1699,14 @@ public interface SnomedPackage extends EPackage {
 		EAttribute SNOMED_RELEASE__BASE_CODE_SYSTEM_OID = eINSTANCE.getSnomedRelease_BaseCodeSystemOID();
 
 		/**
+		 * The meta object literal for the '<em><b>Release Type</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_RELEASE__RELEASE_TYPE = eINSTANCE.getSnomedRelease_ReleaseType();
+
+		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.impl.SnomedVersionImpl <em>Version</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -1673,6 +1723,16 @@ public interface SnomedPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute SNOMED_VERSION__MODULES = eINSTANCE.getSnomedVersion_Modules();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.SnomedReleaseType <em>Release Type</em>}' enum.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+		 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedReleaseType()
+		 * @generated
+		 */
+		EEnum SNOMED_RELEASE_TYPE = eINSTANCE.getSnomedReleaseType();
 
 	}
 
