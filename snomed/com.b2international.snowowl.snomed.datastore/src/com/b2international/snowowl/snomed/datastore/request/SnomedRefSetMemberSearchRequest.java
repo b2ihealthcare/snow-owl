@@ -94,6 +94,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (!referenceSetIds.isEmpty()) {
 			// if only one refset ID is defined, check if it's an ESCG expression and expand it, otherwise use as is
@@ -131,7 +132,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			.offset(offset())
 			.limit(limit())
 			.build();
-		
+
 		final Hits<SnomedRefSetMemberIndexEntry> hits = searcher.search(query);
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedReferenceSetMembers(offset(), limit(), hits.getTotal());

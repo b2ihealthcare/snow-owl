@@ -109,6 +109,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@RequestParam(value="module", required=false) 
 			final String moduleFilter,
 			
+			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
+			@RequestParam(value="effectiveTimeFilter", required=false) 
+			final String effectiveTimeFilter,
+			
 			@ApiParam(value="The target component identifier(s) to match in case of association refset members")
 			@RequestParam(value="targetComponent", required=false)
 			// TODO figure out how to dynamically include query params with swagger, or just replace swagger with a better alternative???
@@ -147,6 +151,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.filterByReferencedComponent(referencedComponentId)
 				.filterByActive(activeFilter)
 				.filterByModule(moduleFilter)
+				.filterByEffectiveTime(effectiveTimeFilter)
 				.setExpand(expand)
 				.setLocales(extendedLocales);
 		

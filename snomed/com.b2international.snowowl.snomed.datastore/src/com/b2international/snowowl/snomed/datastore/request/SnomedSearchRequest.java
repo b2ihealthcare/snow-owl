@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Date;
 import java.util.List;
 
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
@@ -34,14 +37,19 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 		LANGUAGE_REFSET,
 		
 		/**
-		 * Concept status to match
+		 * Component status to match
 		 */
 		ACTIVE,
 		
 		/**
-		 * Concept module ID to match
+		 * Component module ID to match
 		 */
-		MODULE
+		MODULE,
+		
+		/**
+		 * Component effective time to match
+		 */
+		EFFECTIVE_TIME
 	}
 	
 	protected SnomedSearchRequest() {}
@@ -64,6 +72,13 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 	protected final void addActiveClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
 			queryBuilder.must(SnomedDocument.Expressions.active(getBoolean(OptionKey.ACTIVE)));
+		}
+	}
+	
+	protected final void addEffectiveTimeClause(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.EFFECTIVE_TIME)) {
+			final Date parsedEffectiveTime = EffectiveTimes.parse(get(OptionKey.EFFECTIVE_TIME, String.class), DateFormats.SHORT);
+			queryBuilder.must(SnomedDocument.Expressions.effectiveTime(parsedEffectiveTime.getTime()));
 		}
 	}
 }
