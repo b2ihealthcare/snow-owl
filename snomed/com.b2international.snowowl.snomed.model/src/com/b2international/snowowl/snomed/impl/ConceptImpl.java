@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getInactivationIndicatorRefSetMembers <em>Inactivation Indicator Ref Set Members</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getAssociationRefSetMembers <em>Association Ref Set Members</em>}</li>
@@ -46,7 +47,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getFullySpecifiedName <em>Fully Specified Name</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#isPrimitive <em>Primitive</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -30,6 +30,8 @@ import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 
@@ -88,6 +90,20 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * @generated
 	 */
 	private EClass conceptsEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedReleaseEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedVersionEClass = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -492,6 +508,42 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getSnomedRelease() {
+		return snomedReleaseEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedRelease_BaseCodeSystemOID() {
+		return (EAttribute)snomedReleaseEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedVersion() {
+		return snomedVersionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedVersion_Modules() {
+		return (EAttribute)snomedVersionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public SnomedFactory getSnomedFactory() {
 		return (SnomedFactory)getEFactoryInstance();
 	}
@@ -558,6 +610,12 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 
 		conceptsEClass = createEClass(CONCEPTS);
 		createEReference(conceptsEClass, CONCEPTS__CONCEPTS);
+
+		snomedReleaseEClass = createEClass(SNOMED_RELEASE);
+		createEAttribute(snomedReleaseEClass, SNOMED_RELEASE__BASE_CODE_SYSTEM_OID);
+
+		snomedVersionEClass = createEClass(SNOMED_VERSION);
+		createEAttribute(snomedVersionEClass, SNOMED_VERSION__MODULES);
 	}
 
 	/**
@@ -585,6 +643,7 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 
 		// Obtain other dependent packages
 		SnomedRefSetPackage theSnomedRefSetPackage = (SnomedRefSetPackage)EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI);
+		TerminologymetadataPackage theTerminologymetadataPackage = (TerminologymetadataPackage)EPackage.Registry.INSTANCE.getEPackage(TerminologymetadataPackage.eNS_URI);
 
 		// Create type parameters
 
@@ -598,6 +657,8 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		conceptEClass.getESuperTypes().add(this.getAnnotatable());
 		relationshipEClass.getESuperTypes().add(this.getComponent());
 		relationshipEClass.getESuperTypes().add(this.getAnnotatable());
+		snomedReleaseEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystem());
+		snomedVersionEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystemVersion());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(componentEClass, Component.class, "Component", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -643,6 +704,12 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 
 		initEClass(conceptsEClass, Concepts.class, "Concepts", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getConcepts_Concepts(), this.getConcept(), null, "concepts", null, 0, -1, Concepts.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
+
+		initEClass(snomedReleaseEClass, SnomedRelease.class, "SnomedRelease", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedRelease_BaseCodeSystemOID(), ecorePackage.getEString(), "baseCodeSystemOID", null, 0, 1, SnomedRelease.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(snomedVersionEClass, SnomedVersion.class, "SnomedVersion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedVersion_Modules(), ecorePackage.getEString(), "modules", null, 0, -1, SnomedVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);

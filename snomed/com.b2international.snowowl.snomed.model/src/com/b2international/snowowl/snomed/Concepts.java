@@ -26,10 +26,10 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.Concepts#getConcepts <em>Concepts</em>}</li>
  * </ul>
- * </p>
  *
  * @see com.b2international.snowowl.snomed.SnomedPackage#getConcepts()
  * @model

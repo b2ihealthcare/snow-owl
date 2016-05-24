@@ -76,6 +76,8 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 			case SnomedPackage.CONCEPT: return (EObject)createConcept();
 			case SnomedPackage.RELATIONSHIP: return (EObject)createRelationship();
 			case SnomedPackage.CONCEPTS: return (EObject)createConcepts();
+			case SnomedPackage.SNOMED_RELEASE: return (EObject)createSnomedRelease();
+			case SnomedPackage.SNOMED_VERSION: return (EObject)createSnomedVersion();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -119,6 +121,26 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 	public Concepts createConcepts() {
 		ConceptsImpl concepts = new ConceptsImpl();
 		return concepts;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedRelease createSnomedRelease() {
+		SnomedReleaseImpl snomedRelease = new SnomedReleaseImpl();
+		return snomedRelease;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedVersion createSnomedVersion() {
+		SnomedVersionImpl snomedVersion = new SnomedVersionImpl();
+		return snomedVersion;
 	}
 
 	/**

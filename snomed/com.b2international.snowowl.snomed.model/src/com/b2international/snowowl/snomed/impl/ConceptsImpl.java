@@ -31,10 +31,10 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptsImpl#getConcepts <em>Concepts</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
