@@ -66,7 +66,7 @@ public class SnomedSwitch<T> extends Switch<T> {
 	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @parameter ePackage the package in question.
+	 * @param ePackage the package in question.
 	 * @return whether this is a switch for the given package.
 	 * @generated
 	 */
@@ -125,27 +125,6 @@ public class SnomedSwitch<T> extends Switch<T> {
 				T result = caseRelationship(relationship);
 				if (result == null) result = caseComponent(relationship);
 				if (result == null) result = caseAnnotatable(relationship);
-				if (result == null) result = defaultCase(theEObject);
-				return result;
-			}
-			case SnomedPackage.CODE_SYSTEM_VERSION_GROUP: {
-				CodeSystemVersionGroup codeSystemVersionGroup = (CodeSystemVersionGroup)theEObject;
-				T result = caseCodeSystemVersionGroup(codeSystemVersionGroup);
-				if (result == null) result = caseTerminologymetadata_CodeSystemVersionGroup(codeSystemVersionGroup);
-				if (result == null) result = defaultCase(theEObject);
-				return result;
-			}
-			case SnomedPackage.CODE_SYSTEM_VERSION: {
-				CodeSystemVersion codeSystemVersion = (CodeSystemVersion)theEObject;
-				T result = caseCodeSystemVersion(codeSystemVersion);
-				if (result == null) result = caseTerminologymetadata_CodeSystemVersion(codeSystemVersion);
-				if (result == null) result = defaultCase(theEObject);
-				return result;
-			}
-			case SnomedPackage.CODE_SYSTEM: {
-				CodeSystem codeSystem = (CodeSystem)theEObject;
-				T result = caseCodeSystem(codeSystem);
-				if (result == null) result = caseTerminologymetadata_CodeSystem(codeSystem);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -250,51 +229,6 @@ public class SnomedSwitch<T> extends Switch<T> {
 	}
 
 	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System Version Group</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System Version Group</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseCodeSystemVersionGroup(CodeSystemVersionGroup object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System Version</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System Version</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseCodeSystemVersion(CodeSystemVersion object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseCodeSystem(CodeSystem object) {
-		return null;
-	}
-
-	/**
 	 * Returns the result of interpreting the object as an instance of '<em>Concepts</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
@@ -306,51 +240,6 @@ public class SnomedSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseConcepts(Concepts object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System Version Group</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System Version Group</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseTerminologymetadata_CodeSystemVersionGroup(com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System Version</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System Version</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseTerminologymetadata_CodeSystemVersion(com.b2international.snowowl.terminologymetadata.CodeSystemVersion object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseTerminologymetadata_CodeSystem(com.b2international.snowowl.terminologymetadata.CodeSystem object) {
 		return null;
 	}
 

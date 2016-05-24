@@ -110,32 +110,8 @@ public class SnomedAdapterFactory extends AdapterFactoryImpl {
 				return createRelationshipAdapter();
 			}
 			@Override
-			public Adapter caseCodeSystemVersionGroup(CodeSystemVersionGroup object) {
-				return createCodeSystemVersionGroupAdapter();
-			}
-			@Override
-			public Adapter caseCodeSystemVersion(CodeSystemVersion object) {
-				return createCodeSystemVersionAdapter();
-			}
-			@Override
-			public Adapter caseCodeSystem(CodeSystem object) {
-				return createCodeSystemAdapter();
-			}
-			@Override
 			public Adapter caseConcepts(Concepts object) {
 				return createConceptsAdapter();
-			}
-			@Override
-			public Adapter caseTerminologymetadata_CodeSystemVersionGroup(com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup object) {
-				return createTerminologymetadata_CodeSystemVersionGroupAdapter();
-			}
-			@Override
-			public Adapter caseTerminologymetadata_CodeSystemVersion(com.b2international.snowowl.terminologymetadata.CodeSystemVersion object) {
-				return createTerminologymetadata_CodeSystemVersionAdapter();
-			}
-			@Override
-			public Adapter caseTerminologymetadata_CodeSystem(com.b2international.snowowl.terminologymetadata.CodeSystem object) {
-				return createTerminologymetadata_CodeSystemAdapter();
 			}
 			@Override
 			public Adapter defaultCase(EObject object) {
@@ -242,48 +218,6 @@ public class SnomedAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.CodeSystemVersionGroup <em>Code System Version Group</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.snomed.CodeSystemVersionGroup
-	 * @generated
-	 */
-	public Adapter createCodeSystemVersionGroupAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.CodeSystemVersion <em>Code System Version</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.snomed.CodeSystemVersion
-	 * @generated
-	 */
-	public Adapter createCodeSystemVersionAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.CodeSystem <em>Code System</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.snomed.CodeSystem
-	 * @generated
-	 */
-	public Adapter createCodeSystemAdapter() {
-		return null;
-	}
-
-	/**
 	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.Concepts <em>Concepts</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
@@ -294,48 +228,6 @@ public class SnomedAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createConceptsAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup <em>Code System Version Group</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup
-	 * @generated
-	 */
-	public Adapter createTerminologymetadata_CodeSystemVersionGroupAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion <em>Code System Version</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion
-	 * @generated
-	 */
-	public Adapter createTerminologymetadata_CodeSystemVersionAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystem <em>Code System</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem
-	 * @generated
-	 */
-	public Adapter createTerminologymetadata_CodeSystemAdapter() {
 		return null;
 	}
 

@@ -22,9 +22,6 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 import com.b2international.snowowl.snomed.Annotatable;
-import com.b2international.snowowl.snomed.CodeSystem;
-import com.b2international.snowowl.snomed.CodeSystemVersion;
-import com.b2international.snowowl.snomed.CodeSystemVersionGroup;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Concepts;
@@ -84,27 +81,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * @generated
 	 */
 	private EClass relationshipEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass codeSystemVersionGroupEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass codeSystemVersionEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass codeSystemEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -498,33 +474,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EClass getCodeSystemVersionGroup() {
-		return codeSystemVersionGroupEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getCodeSystemVersion() {
-		return codeSystemVersionEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getCodeSystem() {
-		return codeSystemEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EClass getConcepts() {
 		return conceptsEClass;
 	}
@@ -607,12 +556,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		createEReference(relationshipEClass, RELATIONSHIP__MODIFIER);
 		createEReference(relationshipEClass, RELATIONSHIP__REFINABILITY_REF_SET_MEMBERS);
 
-		codeSystemVersionGroupEClass = createEClass(CODE_SYSTEM_VERSION_GROUP);
-
-		codeSystemVersionEClass = createEClass(CODE_SYSTEM_VERSION);
-
-		codeSystemEClass = createEClass(CODE_SYSTEM);
-
 		conceptsEClass = createEClass(CONCEPTS);
 		createEReference(conceptsEClass, CONCEPTS__CONCEPTS);
 	}
@@ -642,7 +585,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 
 		// Obtain other dependent packages
 		SnomedRefSetPackage theSnomedRefSetPackage = (SnomedRefSetPackage)EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI);
-		TerminologymetadataPackage theTerminologymetadataPackage = (TerminologymetadataPackage)EPackage.Registry.INSTANCE.getEPackage(TerminologymetadataPackage.eNS_URI);
 
 		// Create type parameters
 
@@ -656,9 +598,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		conceptEClass.getESuperTypes().add(this.getAnnotatable());
 		relationshipEClass.getESuperTypes().add(this.getComponent());
 		relationshipEClass.getESuperTypes().add(this.getAnnotatable());
-		codeSystemVersionGroupEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystemVersionGroup());
-		codeSystemVersionEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystemVersion());
-		codeSystemEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystem());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(componentEClass, Component.class, "Component", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -701,12 +640,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		initEReference(getRelationship_CharacteristicType(), this.getConcept(), null, "characteristicType", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationship_Modifier(), this.getConcept(), null, "modifier", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationship_RefinabilityRefSetMembers(), theSnomedRefSetPackage.getSnomedAttributeValueRefSetMember(), null, "refinabilityRefSetMembers", null, 0, -1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-		initEClass(codeSystemVersionGroupEClass, CodeSystemVersionGroup.class, "CodeSystemVersionGroup", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-		initEClass(codeSystemVersionEClass, CodeSystemVersion.class, "CodeSystemVersion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-		initEClass(codeSystemEClass, CodeSystem.class, "CodeSystem", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
 		initEClass(conceptsEClass, Concepts.class, "Concepts", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getConcepts_Concepts(), this.getConcept(), null, "concepts", null, 0, -1, Concepts.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);

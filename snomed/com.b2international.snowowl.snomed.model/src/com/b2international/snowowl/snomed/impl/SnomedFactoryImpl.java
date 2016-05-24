@@ -75,9 +75,6 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 			case SnomedPackage.DESCRIPTION: return (EObject)createDescription();
 			case SnomedPackage.CONCEPT: return (EObject)createConcept();
 			case SnomedPackage.RELATIONSHIP: return (EObject)createRelationship();
-			case SnomedPackage.CODE_SYSTEM_VERSION_GROUP: return (EObject)createCodeSystemVersionGroup();
-			case SnomedPackage.CODE_SYSTEM_VERSION: return (EObject)createCodeSystemVersion();
-			case SnomedPackage.CODE_SYSTEM: return (EObject)createCodeSystem();
 			case SnomedPackage.CONCEPTS: return (EObject)createConcepts();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
@@ -112,36 +109,6 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 	public Relationship createRelationship() {
 		RelationshipImpl relationship = new RelationshipImpl();
 		return relationship;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public CodeSystemVersionGroup createCodeSystemVersionGroup() {
-		CodeSystemVersionGroupImpl codeSystemVersionGroup = new CodeSystemVersionGroupImpl();
-		return codeSystemVersionGroup;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public CodeSystemVersion createCodeSystemVersion() {
-		CodeSystemVersionImpl codeSystemVersion = new CodeSystemVersionImpl();
-		return codeSystemVersion;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public CodeSystem createCodeSystem() {
-		CodeSystemImpl codeSystem = new CodeSystemImpl();
-		return codeSystem;
 	}
 
 	/**

@@ -87,9 +87,6 @@
         upperBound="-1" eType="ecore:EClass ../../com.b2international.snowowl.snomed.refset.model/model/snomedrefset.ecore#//SnomedAttributeValueRefSetMember"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CodeSystemVersionGroup" eSuperTypes="../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.ecore#//CodeSystemVersionGroup"/>
-  <eClassifiers xsi:type="ecore:EClass" name="CodeSystemVersion" eSuperTypes="../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.ecore#//CodeSystemVersion"/>
-  <eClassifiers xsi:type="ecore:EClass" name="CodeSystem" eSuperTypes="../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.ecore#//CodeSystem"/>
   <eClassifiers xsi:type="ecore:EClass" name="Concepts">
     <eStructuralFeatures xsi:type="ecore:EReference" name="concepts" ordered="false"
         upperBound="-1" eType="#//Concept" containment="true" resolveProxies="false"/>
