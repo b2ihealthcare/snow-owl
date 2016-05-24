@@ -37,14 +37,14 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 
 	public ImportExtensionCommand() {
 		super("rf2_extension",
-				"-l <languageRefSetId> -t <type> -bv <base int. version tag> -cv <true|false> <archive_path> <extension_metadata_file_path>",
+				"-l <languageRefSetId> -t <type> -bv <base int. version tag> -cv <true|false> <archive_path> <release descriptor file path>",
 				"Imports extension terminology and reference sets from a release archive onto the top of a base international release.",
 				new String[] { "-l <languageRefSetId>\tThe language reference set identifier to use for component labels.",
 						"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",
 						"-bv <international release version tag>\t\tThe existing international version to import the extension onto. For example: '2016-01-01'.",
 						"-cv <true|false>\t\tCreates versions for each effective time found in the extension release.",
 						"<archive_path>\t\tSpecifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release).",
-						"<extension_metadata_file_path>\t\tPath to the metadata file describing the extension." });
+						"<release descriptor file path>\tThe path to the release descriptor file."});
 
 	}
 
