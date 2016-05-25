@@ -23,6 +23,7 @@ import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
@@ -103,7 +104,7 @@ public class ImportExtensionCommand extends AbstractRf2ImporterCommand {
 		if ("-bv".equals(branchSwitch)) {
 			baseVersionTag = interpreter.nextArgument();
 
-			if (!BranchPathUtils.exists(SNOMED_STORE, IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + baseVersionTag)) {
+			if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + baseVersionTag)) {
 				interpreter.println("Invalid international version tag: '" + baseVersionTag + "'.");
 				printDetailedHelp(interpreter);
 				return;

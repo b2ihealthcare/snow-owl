@@ -32,8 +32,6 @@ public abstract class AbstractRf2ImporterCommand {
 
 	private static final String MAIN_COMMAND_NAME = "sctimport";
 	
-	protected static final String SNOMED_STORE = "snomedStore";
-
 	public static final String HEADER = "---Snow Owl SNOMED CT importer commands---";
 
 	private final String name;

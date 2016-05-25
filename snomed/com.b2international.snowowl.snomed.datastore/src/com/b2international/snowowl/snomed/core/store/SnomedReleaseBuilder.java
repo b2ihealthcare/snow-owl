@@ -15,27 +15,72 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
+import java.util.Map;
+
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.7
  */
 public class SnomedReleaseBuilder extends SnomedSimpleComponentBuilder<SnomedReleaseBuilder, SnomedRelease> {
 
-	private String shortName;
+	private static final String KEY_NAME = "name";
+	private static final String KEY_SHORT_NAME = "shortName";
+	private static final String KEY_LANGUAGE = "language";
+	private static final String KEY_CODE_SYSTEM_OID = "codeSystemOID";
+	private static final String KEY_BASE_CODE_SYSTEM_OID = "baseCodeSystemOID";
+	private static final String KEY_MAINTAINING_ORGANIZATION_LINK = "maintainingOrganizationLink";
+	private static final String KEY_CITATION = "citation";
+	private static final String KEY_RELEASE_TYPE = "releaseType";
+	private static final String KEY_ICON_PATH = "iconPath";
+	private static final String KEY_TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
+	private static final String KEY_REPOSITORY_UUID = "repositoryUuid";
+	
 	private String name;
+	private String shortName;
 	private String language;
-	private String maintainingOrganizationLink;
-	private String iconPath;
 	private String codeSystemOid;
 	private String baseCodeSystemOid;
+	private String maintainingOrganizationLink;
 	private String citation;
-	private String terminologyComponentId;
-	private String repositoryUUID;
 	private SnomedReleaseType type;
 	private String branchPath;
+
+	private String iconPath = SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
+	private String terminologyComponentId = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	private String repositoryUUID = SnomedDatastoreActivator.REPOSITORY_UUID;
+	
+	public SnomedReleaseBuilder() {}
+	
+	public SnomedReleaseBuilder(Map<String, String> valueMap) {
+		this.name = valueMap.get(KEY_NAME);
+		this.shortName = valueMap.get(KEY_SHORT_NAME);
+		this.language = valueMap.get(KEY_LANGUAGE);
+		this.codeSystemOid = valueMap.get(KEY_CODE_SYSTEM_OID);
+		this.baseCodeSystemOid = valueMap.get(KEY_BASE_CODE_SYSTEM_OID);
+		this.maintainingOrganizationLink = valueMap.get(KEY_MAINTAINING_ORGANIZATION_LINK);
+		this.citation = valueMap.get(KEY_CITATION);
+		
+		if (valueMap.containsKey(KEY_RELEASE_TYPE)) {
+			SnomedReleaseType typeFromMap = SnomedReleaseType.getByName(valueMap.get(KEY_RELEASE_TYPE));
+			if (typeFromMap != null) {
+				this.type = typeFromMap;
+			}
+		}
+		if (valueMap.containsKey(KEY_ICON_PATH)) {
+			this.iconPath = valueMap.get(KEY_ICON_PATH);
+		}
+		if (valueMap.containsKey(KEY_TERMINOLOGY_COMPONENT_ID)) {
+			this.terminologyComponentId = valueMap.get(KEY_TERMINOLOGY_COMPONENT_ID);
+		}
+		if (valueMap.containsKey(KEY_REPOSITORY_UUID)) {
+			this.repositoryUUID = valueMap.get(KEY_REPOSITORY_UUID);
+		}
+	}
 	
 	public final SnomedReleaseBuilder withName(final String name) {
 		this.name = name;

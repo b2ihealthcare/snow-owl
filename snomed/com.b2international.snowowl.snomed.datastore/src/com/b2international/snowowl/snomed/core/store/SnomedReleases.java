@@ -15,18 +15,17 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_CITATION;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LINK;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_OID;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.7
@@ -37,6 +36,10 @@ public class SnomedReleases {
 		return new SnomedReleaseBuilder();
 	}
 	
+	public static SnomedReleaseBuilder newSnomedRelease(Map<String, String> valueMap) {
+		return new SnomedReleaseBuilder(valueMap);
+	}
+	
 	public static SnomedReleaseBuilder newSnomedInternationalRelease() {
 		return new SnomedReleaseBuilder()
 				.withName(SNOMED_INT_NAME)
@@ -44,12 +47,9 @@ public class SnomedReleases {
 				.withCodeSystemOid(SNOMED_INT_OID)
 				.withBaseCodeSystemOid(SNOMED_INT_OID) // XXX the same intentionally
 				.withLanguage(SNOMED_INT_LANGUAGE)
-				.withIconPath(SNOMED_INT_ICON_PATH)
 				.withMaintainingOrganizationLink(SNOMED_INT_LINK)
 				.withCitation(SNOMED_INT_CITATION)
 				.withType(SnomedReleaseType.INTERNATIONAL)
-				.withTerminologyComponentId(CONCEPT)
-				.withRepositoryUUID(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.withBranchPath(IBranchPath.MAIN_BRANCH);
 	}
 	

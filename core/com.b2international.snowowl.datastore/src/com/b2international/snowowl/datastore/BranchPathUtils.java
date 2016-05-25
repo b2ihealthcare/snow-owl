@@ -18,12 +18,14 @@ package com.b2international.snowowl.datastore;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
@@ -51,7 +53,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 /**
  * Utility class for creating {@link IBranchPath branch paths}.
@@ -294,25 +295,37 @@ public abstract class BranchPathUtils {
 	
 	/**
 	 * Returns true if the branch with the path specified exists within the specified repository.
-	 * @param repositoryName
+	 * @param repositoryUUID
 	 * @param branchName
 	 * @return true if the branch exists in the repository
 	 */
-	public static boolean exists(String repositoryName, String branchName) {
+	public static boolean exists(String repositoryUUID, String branchName) {
+		return getAllDescendantBranchPathsFor(getMainBranchForRepository(repositoryUUID)).contains(branchName);
+	}
 
-		List<String> branchPaths = Lists.newArrayList();
-		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
-		
-		Branch mainBranch = RepositoryRequests.branching(repositoryName).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(eventBus, 1000);
-		branchPaths.add(mainBranch.path());
-		collectBranches(mainBranch, branchPaths);
-		
-		return branchPaths.contains(branchName);
+	/**
+	 * Returns all descendant branch paths (including the branch itself) for a specified {@link Branch}. 
+	 * @param branch
+	 * @return
+	 */
+	public static Collection<String> getAllDescendantBranchPathsFor(Branch branch) {
+		Set<String> branchPaths = newHashSet();
+		branchPaths.add(branch.path());
+		collectBranches(branch, branchPaths);
+		return branchPaths;
+	}
+	
+	/**
+	 * Returns the MAIN branch for the repository specified by it's repository UUID.
+	 * @param repositoryUUID
+	 * @return
+	 */
+	public static Branch getMainBranchForRepository(String repositoryUUID) {
+		return RepositoryRequests.branching(repositoryUUID).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(ApplicationContext.getInstance().getService(IEventBus.class), 1000);
 	}
 	
 	// Depth-first traversal
-	private static void collectBranches(Branch parentBranch, List<String> branches) {
-		
+	private static void collectBranches(Branch parentBranch, Set<String> branches) {
 		branches.add(parentBranch.path());
 		Collection<? extends Branch> children = parentBranch.children();
 		for (Branch branch : children) {
