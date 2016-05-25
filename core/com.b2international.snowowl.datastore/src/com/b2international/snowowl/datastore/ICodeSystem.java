@@ -85,5 +85,7 @@ public interface ICodeSystem extends Serializable {
 	 * @return
 	 */
 	long getStorageKey();
+	
+	String getBranchPath();
 
 }
