@@ -14,12 +14,13 @@
  */
 package com.b2international.snowowl.snomed.impl;
 
-import org.eclipse.emf.ecore.EClass;
-
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
+
 import com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl;
+
+import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
@@ -27,11 +28,11 @@ import com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
- * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.SnomedReleaseImpl#getBaseCodeSystemOID <em>Base Code System OID</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.SnomedReleaseImpl#getReleaseType <em>Release Type</em>}</li>
  * </ul>
+ * </p>
  *
  * @generated
  */
@@ -89,19 +90,6 @@ public class SnomedReleaseImpl extends CodeSystemImpl implements SnomedRelease {
 	 */
 	public void setReleaseType(SnomedReleaseType newReleaseType) {
 		eSet(SnomedPackage.Literals.SNOMED_RELEASE__RELEASE_TYPE, newReleaseType);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated NOT
-	 */
-	public boolean isExtension() {
-		if (getCodeSystemOID() == null || getCodeSystemOID().equals("")) {
-			return true;
-		} else {
-			return !this.getCodeSystemOID().equals("2.16.840.1.113883.6.96"); //SNOMED CT INT RELEASE OID
-		}
 	}
 
 } //SnomedReleaseImpl
