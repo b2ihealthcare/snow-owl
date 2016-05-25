@@ -82,19 +82,15 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 400, message = "Code System already exists in the system", response = RestApiError.class)
 	})
-	@RequestMapping(value="{repositoryId}", method=RequestMethod.POST)
+	@RequestMapping(method=RequestMethod.POST)
 	public String createCodeSystem(
-			@ApiParam(value="The repository ID")
-			@PathVariable(value="repositoryId")
-			final String repositoryId,
-			
 			@RequestBody
 			final CodeSystem codeSystem,
 			
 			final Principal principal
 			) {
 		final String userId = principal.getName();
-		return delegate.createCodeSystem(repositoryId, userId, codeSystem);
+		return delegate.createCodeSystem(userId, codeSystem);
 	}
 
 }

@@ -100,12 +100,12 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 	}
 	
 	@Override
-	public String createCodeSystem(final String repositoryId, final String userId, final ICodeSystem codeSystem) {
-		final CodeSystemCreateRequest req = buildCreateRequest(repositoryId, codeSystem);
+	public String createCodeSystem(final String userId, final ICodeSystem codeSystem) {
+		final CodeSystemCreateRequest req = buildCreateRequest(codeSystem);
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
 		return CodeSystemRequests
-				.prepareCommit(repositoryId)
+				.prepareCommit(codeSystem.getRepositoryUuid())
 				.setCommitComment(commitComment)
 				.setBody(req)
 				.setUserId(userId)
@@ -115,8 +115,8 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 				.getResultAs(String.class);
 	}
 
-	private CodeSystemCreateRequest buildCreateRequest(final String repositoryId, final ICodeSystem codeSystem) {
-		return (CodeSystemCreateRequest) CodeSystemRequests.createNewCodeSystem(repositoryId)
+	private CodeSystemCreateRequest buildCreateRequest(final ICodeSystem codeSystem) {
+		return (CodeSystemCreateRequest) CodeSystemRequests.createNewCodeSystem(codeSystem.getRepositoryUuid())
 				.setBranchPath(codeSystem.getBranchPath())
 				.setCitation(codeSystem.getCitation())
 				.setIconPath(codeSystem.getIconPath())

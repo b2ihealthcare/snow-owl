@@ -44,11 +44,8 @@ public interface ICodeSystemService {
 	ICodeSystem getCodeSystemByShortNameOrOid(String shortNameOrOid);
 	
 	/**
-	 * Creates a new code system in the given repository based on the given code
-	 * system.
+	 * Creates a new code system based on the given code system.
 	 * 
-	 * @param repositoryId
-	 *            the id of the repository.
 	 * @param userId
 	 *            the id of the user.
 	 * @param codeSystem
@@ -56,5 +53,5 @@ public interface ICodeSystemService {
 	 * 
 	 * @return the short name of the created code system.
 	 */
-	String createCodeSystem(String repositoryId, String userId, ICodeSystem codeSystem);
+	String createCodeSystem(String userId, ICodeSystem codeSystem);
 }
