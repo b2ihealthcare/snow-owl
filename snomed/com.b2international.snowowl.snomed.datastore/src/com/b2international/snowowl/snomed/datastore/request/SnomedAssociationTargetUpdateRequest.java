@@ -83,7 +83,7 @@ import com.google.common.collect.Multimap;
  * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
-public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Component> extends BaseRequest<TransactionContext, Void> {
+final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Component> extends BaseRequest<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedAssociationTargetUpdateRequest.class);
 
@@ -119,17 +119,17 @@ public class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Comp
 
 	@Override
 	public Void execute(final TransactionContext context) {
-		final Inactivatable inactivatable = context.lookup(componentId, componentType);
-		updateAssociationTargets(context, inactivatable);
-		return null;
+		// Null leaves targets unchanged, empty map clears all targets
+		if (null == newAssociationTargets) {
+			return null;
+		} else {
+			final Inactivatable inactivatable = context.lookup(componentId, componentType);
+			updateAssociationTargets(context, inactivatable);
+			return null;
+		}
 	}
 
 	private void updateAssociationTargets(final TransactionContext context, final Inactivatable component) {
-		// Null leaves targets unchanged, empty map clears all targets
-		if (null == newAssociationTargets) {
-			return;
-		}
-
 		final List<SnomedAssociationRefSetMember> existingMembers = ImmutableList.copyOf(component.getAssociationRefSetMembers());
 		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
 

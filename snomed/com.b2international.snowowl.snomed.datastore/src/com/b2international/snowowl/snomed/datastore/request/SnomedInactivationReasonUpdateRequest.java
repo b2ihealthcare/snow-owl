@@ -79,7 +79,7 @@ import com.google.common.collect.ImmutableList;
  * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
-public class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Component> extends BaseRequest<TransactionContext, Void> {
+final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Component> extends BaseRequest<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedInactivationReasonUpdateRequest.class);
 

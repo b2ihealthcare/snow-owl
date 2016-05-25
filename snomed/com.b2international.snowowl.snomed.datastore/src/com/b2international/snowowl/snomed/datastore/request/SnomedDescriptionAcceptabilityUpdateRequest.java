@@ -50,7 +50,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<TransactionContext, Void> {
+final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedDescriptionAcceptabilityUpdateRequest.class);
 	
