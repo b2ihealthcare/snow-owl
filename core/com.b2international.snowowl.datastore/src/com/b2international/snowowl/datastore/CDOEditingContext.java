@@ -356,6 +356,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * 
 	 * @return <code>true</code> if the code system collection changed as a
 	 *         result of the call.
+	 * @deprecated use {@link #add(EObject)} instead
 	 */
 	public boolean addCodeSystem(final CodeSystem codeSystem) {
 		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
@@ -366,6 +367,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * Removes the given code system from the available code systems.
 	 * 
 	 * @return true if the code system was removed as a result of this call.
+	 * @deprecated use {@link #delete(EObject)} instead
 	 */
 	public boolean removeCodeSystem(final CodeSystem codeSystem) {
 		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
@@ -401,7 +403,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * @param object the object to be added to the contents of the editing context.
 	 */
 	public void add(final EObject object) {
-		getContents().add(checkNotNull(object, "object"));
+		if (object instanceof CodeSystem) {
+			transaction.getOrCreateResource(getMetaRootResourceName()).getContents().add(object);
+		} else {
+			getContents().add(checkNotNull(object, "object"));
+		}
 	}
 	
 	/**
@@ -418,7 +424,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * @param object
 	 */
 	public void delete(EObject object) {
-		EcoreUtil.remove(object);
+		if (object instanceof CodeSystem) {
+			transaction.getOrCreateResource(getMetaRootResourceName()).getContents().remove(object);
+		} else {
+			EcoreUtil.remove(object);
+		}
 	}
 
 	/**
