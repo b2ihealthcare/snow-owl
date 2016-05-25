@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
@@ -42,7 +43,7 @@ import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
@@ -130,11 +131,13 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 	}
 
 	private void updateAssociationTargets(final TransactionContext context, final Inactivatable component) {
-		final List<SnomedAssociationRefSetMember> existingMembers = ImmutableList.copyOf(component.getAssociationRefSetMembers());
+		final List<SnomedAssociationRefSetMember> existingMembers = Lists.newArrayList(component.getAssociationRefSetMembers());
 		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
 
-		for (SnomedAssociationRefSetMember existingMember : existingMembers) {
+		final Iterator<SnomedAssociationRefSetMember> memberIterator = existingMembers.iterator();
+		while (memberIterator.hasNext()) {
 			
+			final SnomedAssociationRefSetMember existingMember = memberIterator.next();
 			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getRefSetIdentifierId());
 			
 			if (null == associationType) {
@@ -142,11 +145,23 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 			}
 
 			final String existingTargetId = existingMember.getTargetComponentId();
+			
 			if (newAssociationTargetsToCreate.remove(associationType, existingTargetId)) {
 
-				// Exact match, just make sure that the member is active
+				// Exact match, just make sure that the member is active and remove it from the working list
 				ensureMemberActive(context, existingMember);
-			} else if (newAssociationTargetsToCreate.containsKey(associationType)) {
+				memberIterator.remove();
+			}
+		}
+
+		for (final SnomedAssociationRefSetMember existingMember : existingMembers) {
+			
+			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getRefSetIdentifierId());
+			if (null == associationType) {
+				continue;
+			}
+			
+			if (newAssociationTargetsToCreate.containsKey(associationType)) {
 
 				// We can re-use the member by changing the target component identifier, and checking that it is active
 				final Iterator<String> targetIterator = newAssociationTargetsToCreate.get(associationType).iterator();
@@ -231,10 +246,12 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 					.build(referenceBranch)
 					.executeSync(context.service(IEventBus.class));
 
+			final SnomedConcept targetComponent = (SnomedConcept) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+			
 			boolean restoreEffectiveTime = true;
 			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
 			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getTargetComponentId().equals(referenceMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID));
+			restoreEffectiveTime = restoreEffectiveTime && existingMember.getTargetComponentId().equals(targetComponent.getId());
 
 			if (restoreEffectiveTime) {
 
