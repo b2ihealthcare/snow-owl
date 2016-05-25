@@ -22,7 +22,6 @@ import static com.b2international.snowowl.datastore.ICodeSystemVersion.FAKE_LAST
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.getRevisions;
-import static com.b2international.snowowl.datastore.server.version.GlobalPublishManagerImpl.ConfigurationThreadLocal.getConfiguration;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Iterables.transform;
@@ -230,9 +229,9 @@ public abstract class PublishManager implements IPublishManager {
 
 	/** Returns with the branch path for the given transaction to perform the publication. This is version dependent. */
 	protected final IBranchPath getBranchPathForPublication() {
-		final IBranchPath parentBranchPath = BranchPathUtils.createPath(getConfiguration().getParentBranchPath());
-		return null == getConfiguration() ? getMainPath() : couldCreateVersion(getConfiguration()) ? getMainPath() : createPath(parentBranchPath,
-				getConfiguration().getVersionId());
+		return null == getConfiguration() ? getMainPath()
+				: couldCreateVersion(getConfiguration()) ? getMainPath()
+						: createPath(getParentBranchPath(), getConfiguration().getVersionId());
 	}
 
 	/** Returns with the underlying transaction for the publication process. */
@@ -253,12 +252,16 @@ public abstract class PublishManager implements IPublishManager {
 	protected abstract LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath);
 
 	private boolean couldCreateVersion(final IPublishOperationConfiguration configuration) {
-		return !newHashSet(transform(getAllVersions(createMainPath()), new Function<ICodeSystemVersion, String>() {
+		return !newHashSet(transform(getAllVersions(getParentBranchPath()), new Function<ICodeSystemVersion, String>() {
 			@Override
 			public String apply(final ICodeSystemVersion version) {
 				return checkNotNull(version).getVersionId();
 			}
 		})).contains(configuration.getVersionId());
+	}
+	
+	private IBranchPath getParentBranchPath() {
+		return null == getConfiguration() ? getMainPath() : BranchPathUtils.createPath(getConfiguration().getParentBranchPath());
 	}
 
 	private Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
@@ -357,7 +360,7 @@ public abstract class PublishManager implements IPublishManager {
 		codeSystemVersion.setEffectiveDate(getEffectiveTime());
 		codeSystemVersion.setImportDate(new Date());
 		codeSystemVersion.setVersionId(getVersionName());
-		codeSystemVersion.setParentBranchPath(getParentBranchPath());
+		codeSystemVersion.setParentBranchPath(getConfiguration().getParentBranchPath());
 		codeSystemVersion.setDescription(getCodeSystemVersionDescription());
 		
 		return codeSystemVersion;
@@ -370,8 +373,8 @@ public abstract class PublishManager implements IPublishManager {
 		return nullToEmpty(getConfiguration().getDescription());
 	}
 	
-	protected String getParentBranchPath() {
-		return getConfiguration().getParentBranchPath();
+	protected IPublishOperationConfiguration getConfiguration() {
+		return GlobalPublishManagerImpl.ConfigurationThreadLocal.getConfiguration(); 
 	}
 
 	private void handleError(final SnowowlServiceException e) throws SnowowlServiceException {

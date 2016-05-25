@@ -171,7 +171,7 @@ public class SnomedPublishManager extends PublishManager {
 		snomedVersion.setEffectiveDate(getEffectiveTime());
 		snomedVersion.setImportDate(new Date());
 		snomedVersion.setVersionId(getVersionName());
-		snomedVersion.setParentBranchPath(getParentBranchPath());
+		snomedVersion.setParentBranchPath(getConfiguration().getParentBranchPath());
 		snomedVersion.setDescription(getCodeSystemVersionDescription());
 
 		// TODO add snomed version specific settings
@@ -202,7 +202,7 @@ public class SnomedPublishManager extends PublishManager {
 	}
 
 	private String getReleaseShortName() {
-		final String parentBranchPath = getParentBranchPath();
+		final String parentBranchPath = getConfiguration().getParentBranchPath();
 		final String[] paths = parentBranchPath.split("/");
 		if (paths.length == 1 && paths[0].equalsIgnoreCase(IBranchPath.MAIN_BRANCH)) {
 			return SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
