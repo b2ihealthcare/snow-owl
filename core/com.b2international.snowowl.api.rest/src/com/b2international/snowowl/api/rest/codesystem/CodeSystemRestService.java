@@ -15,15 +15,19 @@
  */
 package com.b2international.snowowl.api.rest.codesystem;
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -69,6 +73,28 @@ public class CodeSystemRestService extends AbstractRestService {
 			@ApiParam(value="The code system identifier (short name or OID)")
 			@PathVariable(value="shortNameOrOid") final String shortNameOrOId) {
 		return delegate.getCodeSystemByShortNameOrOid(shortNameOrOId);
+	}
+	
+	@ApiOperation(
+			value="Create a code system",
+			notes="Create a new Code System with the given parameters")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = Void.class),
+		@ApiResponse(code = 400, message = "Code System already exists in the system", response = RestApiError.class)
+	})
+	@RequestMapping(value="{repositoryId}", method=RequestMethod.POST)
+	public String createCodeSystem(
+			@ApiParam(value="The repository ID")
+			@PathVariable(value="repositoryId")
+			final String repositoryId,
+			
+			@RequestBody
+			final CodeSystem codeSystem,
+			
+			final Principal principal
+			) {
+		final String userId = principal.getName();
+		return delegate.createCodeSystem(repositoryId, userId, codeSystem);
 	}
 
 }
