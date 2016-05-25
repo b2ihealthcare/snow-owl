@@ -40,6 +40,7 @@ public abstract class TerminologyRegistryIndexConstants {
 	public static final String SYSTEM_TERMINOLOGY_COMPONENT_ID = "systemTerminologyComponentId";
 	public static final String SYSTEM_STORAGE_KEY = "systemStorageKey";
 	public static final String SYSTEM_REPOSITORY_UUID = "systemRepositoryUuid";
+	public static final String SYSTEM_BRANCH_PATH = "systemBranchPath";
 	
 	private TerminologyRegistryIndexConstants() { /*not here*/ }
 	

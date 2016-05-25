@@ -26,6 +26,7 @@ import static com.b2international.snowowl.terminologyregistry.core.index.Termino
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_STORAGE_KEY;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_TERMINOLOGY_COMPONENT_ID;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_BRANCH_PATH;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -63,6 +64,7 @@ public class CodeSystemIndexMappingStrategy extends AbstractIndexMappingStrategy
 		doc.add(new LongField(SYSTEM_STORAGE_KEY, getStorageKey(), Store.YES));
 		Mappings.storageKey().addTo(doc, getStorageKey());
 		addStringFieldIfExists(doc, SYSTEM_REPOSITORY_UUID, codeSystem.getRepositoryUuid());
+		addStringFieldIfExists(doc, SYSTEM_BRANCH_PATH, codeSystem.getBranchPath());
 		return doc;
 	}
 
