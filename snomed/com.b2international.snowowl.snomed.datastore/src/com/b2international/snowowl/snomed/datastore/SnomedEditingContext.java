@@ -60,6 +60,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
+import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -84,6 +85,7 @@ import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
@@ -199,6 +201,23 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public Collection<SnomedRelease> getSnomedReleases() {
 		return FluentIterable.from(getCodeSystems()).filter(SnomedRelease.class).toSet();
+	}
+	
+	/**
+	 * Returns all (including INT and EXT) SNOMED CT versions for the branch this editing context was created.
+	 *  
+	 * @return
+	 */
+	public Collection<SnomedVersion> getSnomedVersionsForBranch() {
+		return FluentIterable.from(getSnomedReleases()).transformAndConcat(new Function<SnomedRelease, List<SnomedVersion>>() {
+			@Override public List<SnomedVersion> apply(SnomedRelease input) {
+				return FluentIterable.from(input.getCodeSystemVersions()).transform(new UncheckedCastFunction<>(SnomedVersion.class)).toList();
+			}
+		}).filter(new Predicate<SnomedVersion>() {
+			@Override public boolean apply(SnomedVersion input) {
+				return input.getParentBranchPath().equals(getBranch());
+			}
+		}).toList();
 	}
 
 	private static SnomedClientIndexService getIndexService() {

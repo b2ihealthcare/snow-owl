@@ -62,6 +62,7 @@ import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
+import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
@@ -77,9 +78,6 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.EffectiveTimeUnitOrdering;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -364,20 +362,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		final SnomedEditingContext editingContext = importContext.getEditingContext();
 		
 		try {
-			final Collection<SnomedRelease> availableReleases = editingContext.getSnomedReleases();
-			
+
 			checkAndCreateSnomedReleases();
 			
 			boolean existingVersionFound = false;
-			final boolean shouldCreateVersionAndTag = importContext.isVersionCreationEnabled();
-			
-			if (shouldCreateVersionAndTag) {
-				// TODO get proper code system (e.g. extension cs)
-				final CodeSystem codeSystem = Iterables.getFirst(availableReleases, null);
-				
-				for (final CodeSystemVersion codeSystemVersion : codeSystem.getCodeSystemVersions()) {
-					final String existingEffectiveTimeKey = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
-					
+
+			if (importContext.isVersionCreationEnabled()) {
+				for (SnomedVersion snomedVersion : editingContext.getSnomedVersionsForBranch()) {
+					final String existingEffectiveTimeKey = EffectiveTimes.format(snomedVersion.getEffectiveDate(), DateFormats.SHORT);
 					if (lastUnitEffectiveTimeKey.equals(existingEffectiveTimeKey)) {
 						existingVersionFound = true;
 						break;
@@ -385,23 +377,21 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 				
 				if (!existingVersionFound) {
-					codeSystem.getCodeSystemVersions().add(createVersion(lastUnitEffectiveTimeKey));
+					getCurrentSnomedRelease(editingContext).getCodeSystemVersions().add(createVersion(lastUnitEffectiveTimeKey));
 				} else {
-					getLogger().warn("Not adding code system version entry for {}, a previous entry with the same effective time exists.", lastUnitEffectiveTimeKey);
+					getLogger().warn("Existing SNOMED CT version found for effective time {}.", lastUnitEffectiveTimeKey);
 				}
 			}
 			
-			final CDOTransaction transaction = editingContext.getTransaction();
-			
-			if (transaction.isDirty()) {
+			if (editingContext.isDirty()) {
 				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), importContext.getAggregator(lastUnitEffectiveTimeKey))
-				.sendCommitNotification(false)
-				.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-				.commit();
+					.sendCommitNotification(false)
+					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+					.commit();
 			}
 			
-			if (!existingVersionFound && shouldCreateVersionAndTag) {
-				final IBranchPath snomedBranchPath = BranchPathUtils.createPath(transaction);
+			if (!existingVersionFound && importContext.isVersionCreationEnabled()) {
+				final IBranchPath snomedBranchPath = getImportBranchPath();
 				final Date effectiveDate = EffectiveTimes.parse(lastUnitEffectiveTimeKey, DateFormats.SHORT);
 				final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 				
@@ -422,6 +412,26 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
 			final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
 			CDOServerUtils.sendCommitNotification(commitInfo);
+		}
+	}
+
+	private SnomedRelease getCurrentSnomedRelease(SnomedEditingContext editingContext) {
+		switch (importContext.getSnomedRelease().getReleaseType()) {
+			case INTERNATIONAL : 
+				return Iterables.getOnlyElement(FluentIterable.from(editingContext.getSnomedReleases()).filter(new Predicate<SnomedRelease>() {
+					@Override public boolean apply(SnomedRelease input) {
+						return input.getReleaseType() == SnomedReleaseType.INTERNATIONAL;
+					}
+				}));
+			case EXTENSION: // fall through
+			case MIXED: // XXX should differentiate between INT and EXT effective times
+				return Iterables.getOnlyElement(FluentIterable.from(editingContext.getSnomedReleases()).filter(new Predicate<SnomedRelease>() {
+					@Override public boolean apply(SnomedRelease input) {
+						return input.getReleaseType() == SnomedReleaseType.EXTENSION;
+					}
+				}));
+			default:
+				throw new IllegalStateException("Unable to find current SNOMED CT release among the registered code systems.");
 		}
 	}
 
@@ -498,17 +508,18 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 	}
 	
-	private CodeSystemVersion createVersion(final String version) {
+	private SnomedVersion createVersion(final String version) {
 
 		final Date effectiveDate = EffectiveTimes.parse(version, DateFormats.SHORT);
 		final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 		
-		final CodeSystemVersion codeSystemVersion = TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
-		codeSystemVersion.setImportDate(new Date());
-		codeSystemVersion.setVersionId(formattedEffectiveDate); 
-		codeSystemVersion.setDescription("RF2 import of SNOMED Clinical Terms");
-		codeSystemVersion.setParentBranchPath(getImportBranchPath().getPath());
-		codeSystemVersion.setEffectiveDate(effectiveDate);
-		return codeSystemVersion;
+		return SnomedReleases.newSnomedVersion()
+			.withVersionId(formattedEffectiveDate)
+			.withDescription("SNOMED CT version created by an RF2 import process")
+			.withImportDate(new Date())
+			.withEffectiveDate(effectiveDate)
+			.withParentBranchPath(getImportBranchPath().getPath())
+			// TODO modules?
+			.build();
 	}
 }
