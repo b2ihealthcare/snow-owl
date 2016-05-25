@@ -27,6 +27,10 @@ public class CodeSystem implements ICodeSystem {
 	private String organizationLink;
 	private String primaryLanguage;
 	private String citation;
+	private String branchPath;
+	private String iconPath;
+	private String terminologyId;
+	private String repositoryUuid;
 
 	@Override
 	public String getOid() {
@@ -58,6 +62,26 @@ public class CodeSystem implements ICodeSystem {
 		return citation;
 	}
 
+	@Override
+	public String getBranchPath() {
+		return branchPath;
+	}
+	
+	@Override
+	public String getIconPath() {
+		return iconPath;
+	}
+	
+	@Override
+	public String getTerminologyId() {
+		return terminologyId;
+	}
+	
+	@Override
+	public String getRepositoryUuid() {
+		return repositoryUuid;
+	}
+
 	public void setOid(final String oid) {
 		this.oid = oid;
 	}
@@ -81,6 +105,22 @@ public class CodeSystem implements ICodeSystem {
 	public void setCitation(final String citation) {
 		this.citation = citation;
 	}
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
+	}
+	
+	public void setIconPath(String iconPath) {
+		this.iconPath = iconPath;
+	}
+	
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
+	}
+	
+	public void setRepositoryUuid(String repositoryUuid) {
+		this.repositoryUuid = repositoryUuid;
+	}
 
 	@Override
 	public String toString() {
@@ -97,6 +137,15 @@ public class CodeSystem implements ICodeSystem {
 		builder.append(primaryLanguage);
 		builder.append(", citation=");
 		builder.append(citation);
+		builder.append("]");
+		builder.append(", branchPath=");
+		builder.append(branchPath);
+		builder.append("]");
+		builder.append(", iconPath=");
+		builder.append(iconPath);
+		builder.append("]");
+		builder.append(", repositoryUuid=");
+		builder.append(repositoryUuid);
 		builder.append("]");
 		return builder.toString();
 	}

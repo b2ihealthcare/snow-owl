@@ -62,4 +62,34 @@ public interface ICodeSystem {
 	 * @return the citation for this code system (can be {@code null})
 	 */
 	String getCitation();
+	
+	/**
+	 * Returns the branch path of the code system.
+	 * 
+	 * @return the path for the code system.
+	 */
+	String getBranchPath();
+
+	/**
+	 * Returns with the application specific icon path of the code system.
+	 * 
+	 * @return the application specific icon path.
+	 */
+	String getIconPath();
+
+	/**
+	 * Returns with the application specific ID to associate the code system
+	 * with any application specific feature or container repository.
+	 * 
+	 * @return the application specific ID.
+	 */
+	String getTerminologyId();
+
+	/**
+	 * Returns with the unique ID of the repository where the current code
+	 * system belongs to.
+	 * 
+	 * @return the repository UUID for the code system.
+	 */
+	String getRepositoryUuid();
 }
