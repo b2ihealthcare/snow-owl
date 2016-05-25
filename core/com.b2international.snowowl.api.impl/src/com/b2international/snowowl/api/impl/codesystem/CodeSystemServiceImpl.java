@@ -25,9 +25,13 @@ import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
+import com.b2international.snowowl.datastore.request.CodeSystemCreateRequest;
+import com.b2international.snowowl.datastore.request.CodeSystemRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Ordering;
@@ -48,6 +52,9 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 			result.setOrganizationLink(input.getOrgLink());
 			result.setPrimaryLanguage(input.getLanguage());
 			result.setShortName(input.getShortName());
+			result.setIconPath(input.getIconPath());
+			result.setTerminologyId(input.getSnowOwlId());
+			result.setRepositoryUuid(input.getRepositoryUuid());
 			return result;
 		}
 	};
@@ -64,7 +71,7 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 	protected static TerminologyRegistryService getRegistryService() {
 		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
 	}
-
+	
 	@Override
 	public List<ICodeSystem> getCodeSystems() {
 		return toSortedCodeSystemList(getRegistryService().getCodeSystems(MAIN_BRANCH_PATH_MAP));
@@ -90,5 +97,40 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 
 	private List<ICodeSystem> toSortedCodeSystemList(final Collection<com.b2international.snowowl.datastore.ICodeSystem> sourceCodeSystems) {
 		return SHORT_NAME_ORDERING.immutableSortedCopy(transform(sourceCodeSystems, CODE_SYSTEM_CONVERTER));
+	}
+	
+	@Override
+	public String createCodeSystem(final String repositoryId, final String userId, final ICodeSystem codeSystem) {
+		final CodeSystemCreateRequest req = buildCreateRequest(repositoryId, codeSystem);
+		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
+		
+		return CodeSystemRequests
+				.prepareCommit(repositoryId)
+				.setCommitComment(commitComment)
+				.setBody(req)
+				.setUserId(userId)
+				.setBranch(IBranchPath.MAIN_BRANCH)
+				.build()
+				.executeSync(getEventBus())
+				.getResultAs(String.class);
+	}
+
+	private CodeSystemCreateRequest buildCreateRequest(final String repositoryId, final ICodeSystem codeSystem) {
+		return (CodeSystemCreateRequest) CodeSystemRequests.createNewCodeSystem(repositoryId)
+				.setBranchPath(codeSystem.getBranchPath())
+				.setCitation(codeSystem.getCitation())
+				.setIconPath(codeSystem.getIconPath())
+				.setLanguage(codeSystem.getPrimaryLanguage())
+				.setLink(codeSystem.getOrganizationLink())
+				.setName(codeSystem.getName())
+				.setOid(codeSystem.getOid())
+				.setRepositoryUuid(codeSystem.getRepositoryUuid())
+				.setShortName(codeSystem.getShortName())
+				.setTerminologyId(codeSystem.getTerminologyId())
+				.build();
+	}
+	
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 }
