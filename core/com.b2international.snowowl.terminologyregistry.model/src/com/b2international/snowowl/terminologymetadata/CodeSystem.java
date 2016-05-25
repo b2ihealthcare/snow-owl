@@ -38,6 +38,7 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getTerminologyComponentId <em>Terminology Component Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getRepositoryUuid <em>Repository Uuid</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemVersions <em>Code System Versions</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath <em>Branch Path</em>}</li>
  * </ul>
  *
  * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem()
@@ -297,5 +298,31 @@ public interface CodeSystem extends CDOObject {
 	 * @generated
 	 */
 	EList<CodeSystemVersion> getCodeSystemVersions();
+
+	/**
+	 * Returns the value of the '<em><b>Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Branch Path</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Branch Path</em>' attribute.
+	 * @see #setBranchPath(String)
+	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_BranchPath()
+	 * @model required="true"
+	 * @generated
+	 */
+	String getBranchPath();
+
+	/**
+	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath <em>Branch Path</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Branch Path</em>' attribute.
+	 * @see #getBranchPath()
+	 * @generated
+	 */
+	void setBranchPath(String value);
 
 } // CodeSystem

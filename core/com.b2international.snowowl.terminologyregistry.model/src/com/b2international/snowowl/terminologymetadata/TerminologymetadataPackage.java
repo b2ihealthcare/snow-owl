@@ -242,13 +242,22 @@ public interface TerminologymetadataPackage extends EPackage {
 	int CODE_SYSTEM__CODE_SYSTEM_VERSIONS = 9;
 
 	/**
+	 * The feature id for the '<em><b>Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CODE_SYSTEM__BRANCH_PATH = 10;
+
+	/**
 	 * The number of structural features of the '<em>Code System</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_FEATURE_COUNT = 10;
+	int CODE_SYSTEM_FEATURE_COUNT = 11;
 
 
 	/**
@@ -448,6 +457,17 @@ public interface TerminologymetadataPackage extends EPackage {
 	EReference getCodeSystem_CodeSystemVersions();
 
 	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath <em>Branch Path</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Branch Path</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath()
+	 * @see #getCodeSystem()
+	 * @generated
+	 */
+	EAttribute getCodeSystem_BranchPath();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -616,6 +636,14 @@ public interface TerminologymetadataPackage extends EPackage {
 		 * @generated
 		 */
 		EReference CODE_SYSTEM__CODE_SYSTEM_VERSIONS = eINSTANCE.getCodeSystem_CodeSystemVersions();
+
+		/**
+		 * The meta object literal for the '<em><b>Branch Path</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CODE_SYSTEM__BRANCH_PATH = eINSTANCE.getCodeSystem_BranchPath();
 
 	}
 

@@ -43,6 +43,7 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getTerminologyComponentId <em>Terminology Component Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getRepositoryUuid <em>Repository Uuid</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getCodeSystemVersions <em>Code System Versions</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getBranchPath <em>Branch Path</em>}</li>
  * </ul>
  *
  * @generated
@@ -247,6 +248,24 @@ public class CodeSystemImpl extends CDOObjectImpl implements CodeSystem {
 	@SuppressWarnings("unchecked")
 	public EList<CodeSystemVersion> getCodeSystemVersions() {
 		return (EList<CodeSystemVersion>)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__CODE_SYSTEM_VERSIONS, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getBranchPath() {
+		return (String)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__BRANCH_PATH, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setBranchPath(String newBranchPath) {
+		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__BRANCH_PATH, newBranchPath);
 	}
 
 } //CodeSystemImpl
