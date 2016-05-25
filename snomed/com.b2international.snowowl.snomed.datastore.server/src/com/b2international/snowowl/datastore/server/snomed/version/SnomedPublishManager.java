@@ -32,11 +32,10 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
@@ -167,17 +166,14 @@ public class SnomedPublishManager extends PublishManager {
 	
 	@Override
 	protected CodeSystemVersion createCodeSystemVersion() {
-		final SnomedVersion snomedVersion = SnomedFactory.eINSTANCE.createSnomedVersion();
-		snomedVersion.setEffectiveDate(getEffectiveTime());
-		snomedVersion.setImportDate(new Date());
-		snomedVersion.setVersionId(getVersionName());
-		snomedVersion.setParentBranchPath(getConfiguration().getParentBranchPath());
-		snomedVersion.setDescription(getCodeSystemVersionDescription());
-
-		// TODO add snomed version specific settings
-		// snomedVersion.getModules().add(null);
-
-		return snomedVersion;
+		return SnomedReleases.newSnomedVersion()
+				.withVersionId(getVersionName())
+				.withDescription(getCodeSystemVersionDescription())
+				.withImportDate(new Date())
+				.withEffectiveDate(getEffectiveTime())
+				.withParentBranchPath(getConfiguration().getParentBranchPath())
+				// TODO modules?
+				.build();
 	}
 
 	@Override
