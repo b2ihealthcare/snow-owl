@@ -119,17 +119,17 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 	@Override
 	public Void execute(final TransactionContext context) {
-		final Inactivatable inactivatable = context.lookup(componentId, componentType);
-		updateInactivationReason(context, inactivatable);
-		return null;
+		// Null leaves inactivation reason unchanged, empty string clears existing inactivation reason
+		if (null == inactivationValueId) {
+			return null;
+		} else {
+			final Inactivatable inactivatable = context.lookup(componentId, componentType);
+			updateInactivationReason(context, inactivatable);
+			return null;
+		}
 	}
 
 	private void updateInactivationReason(final TransactionContext context, final Inactivatable component) {
-		// Null leaves inactivation reason unchanged, empty string clears existing inactivation reason
-		if (null == inactivationValueId) {
-			return;
-		}
-
 		final List<SnomedAttributeValueRefSetMember> existingMembers = ImmutableList.copyOf(component.getInactivationIndicatorRefSetMembers());
 		boolean firstMemberFound = false;
 		
