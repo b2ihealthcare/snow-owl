@@ -24,6 +24,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_OID;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
@@ -48,7 +49,8 @@ public class SnomedReleases {
 				.withCitation(SNOMED_INT_CITATION)
 				.withType(SnomedReleaseType.INTERNATIONAL)
 				.withTerminologyComponentId(CONCEPT)
-				.withRepositoryUUID(SnomedDatastoreActivator.REPOSITORY_UUID);
+				.withRepositoryUUID(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.withBranchPath(IBranchPath.MAIN_BRANCH);
 	}
 	
 	public static SnomedVersionBuilder newSnomedVersion() {

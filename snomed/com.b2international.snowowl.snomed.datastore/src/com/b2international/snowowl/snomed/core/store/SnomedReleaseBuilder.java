@@ -35,6 +35,7 @@ public class SnomedReleaseBuilder extends SnomedSimpleComponentBuilder<SnomedRel
 	private String terminologyComponentId;
 	private String repositoryUUID;
 	private SnomedReleaseType type;
+	private String branchPath;
 	
 	public final SnomedReleaseBuilder withName(final String name) {
 		this.name = name;
@@ -91,6 +92,11 @@ public class SnomedReleaseBuilder extends SnomedSimpleComponentBuilder<SnomedRel
 		return getSelf();
 	}
 	
+	public final SnomedReleaseBuilder withBranchPath(final String branchPath) {
+		this.branchPath = branchPath;
+		return getSelf();
+	}
+	
 	@Override
 	protected void init(final SnomedRelease snomedRelease) {
 		snomedRelease.setName(name);
@@ -104,6 +110,7 @@ public class SnomedReleaseBuilder extends SnomedSimpleComponentBuilder<SnomedRel
 		snomedRelease.setReleaseType(type);
 		snomedRelease.setTerminologyComponentId(terminologyComponentId);
 		snomedRelease.setRepositoryUuid(repositoryUUID);
+		snomedRelease.setBranchPath(branchPath);
 	}
 
 	@Override
