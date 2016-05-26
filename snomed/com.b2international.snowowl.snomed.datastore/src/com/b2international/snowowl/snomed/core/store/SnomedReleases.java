@@ -37,7 +37,7 @@ public class SnomedReleases {
 	}
 	
 	public static SnomedReleaseBuilder newSnomedRelease(Map<String, String> valueMap) {
-		return new SnomedReleaseBuilder(valueMap);
+		return new SnomedReleaseBuilder().init(valueMap);
 	}
 	
 	public static SnomedReleaseBuilder newSnomedInternationalRelease() {

@@ -15,89 +15,31 @@
  */
 package com.b2international.snowowl.terminologyregistry.core;
 
+import java.util.Map;
+
+import com.b2international.snowowl.datastore.codesystem.BaseCodeSystemBuilder;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 
 /**
  * @since 4.7
  */
-public class CodeSystemBuilder {
-
-	private String citation;
-	private String codeSystemOid;
-	private String iconPath;
-	private String language;
-	private String maintainingOrganizationLink;
-	private String name;
-	private String shortName;
-	private String terminologyComponentId;
-	private String repositoryUuid;
-	private String branchPath;
-
-	public CodeSystemBuilder withCitation(final String citation) {
-		this.citation = citation;
-		return this;
+public class CodeSystemBuilder extends BaseCodeSystemBuilder<CodeSystemBuilder, CodeSystem> {
+	
+	@Override
+	public CodeSystemBuilder withExtension(final Map<String, String> valueMap) {
+		// no additional values
+		return getSelf();
 	}
 
-	public CodeSystemBuilder withCodeSystemOid(final String codeSystemOid) {
-		this.codeSystemOid = codeSystemOid;
-		return this;
+	@Override
+	public String getRepositoryUuid() {
+		throw new UnsupportedOperationException("Not supported.");
 	}
 
-	public CodeSystemBuilder withIconPath(final String iconPath) {
-		this.iconPath = iconPath;
-		return this;
-	}
-
-	public CodeSystemBuilder withLanguage(final String language) {
-		this.language = language;
-		return this;
-	}
-
-	public CodeSystemBuilder withMaintainingOrganizationLink(final String maintainingOrganiationLink) {
-		this.maintainingOrganizationLink = maintainingOrganiationLink;
-		return this;
-	}
-
-	public CodeSystemBuilder withName(final String name) {
-		this.name = name;
-		return this;
-	}
-
-	public CodeSystemBuilder withShortName(final String shortName) {
-		this.shortName = shortName;
-		return this;
-	}
-
-	public CodeSystemBuilder withTerminologyComponentId(final String terminologyComponentId) {
-		this.terminologyComponentId = terminologyComponentId;
-		return this;
-	}
-
-	public CodeSystemBuilder withRepositoryUuid(final String repositoryUuid) {
-		this.repositoryUuid = repositoryUuid;
-		return this;
-	}
-
-	public CodeSystemBuilder withBranchPath(final String branchPath) {
-		this.branchPath = branchPath;
-		return this;
-	}
-
-	public CodeSystem build() {
-		final CodeSystem codeSystem = TerminologymetadataFactory.eINSTANCE.createCodeSystem();
-		codeSystem.setCitation(citation);
-		codeSystem.setCodeSystemOID(codeSystemOid);
-		codeSystem.setIconPath(iconPath);
-		codeSystem.setLanguage(language);
-		codeSystem.setMaintainingOrganizationLink(maintainingOrganizationLink);
-		codeSystem.setName(name);
-		codeSystem.setShortName(shortName);
-		codeSystem.setTerminologyComponentId(terminologyComponentId);
-		codeSystem.setRepositoryUuid(repositoryUuid);
-		codeSystem.setBranchPath(branchPath);
-
-		return codeSystem;
+	@Override
+	public CodeSystem create() {
+		return TerminologymetadataFactory.eINSTANCE.createCodeSystem();
 	}
 
 }
