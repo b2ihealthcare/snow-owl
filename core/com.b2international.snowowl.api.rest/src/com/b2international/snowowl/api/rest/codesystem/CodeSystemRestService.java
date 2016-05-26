@@ -134,6 +134,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setRepositoryUuid(codeSystem.getRepositoryUuid())
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
+				.setExtension(codeSystem.getExtension())
 				.build();
 	}
 	

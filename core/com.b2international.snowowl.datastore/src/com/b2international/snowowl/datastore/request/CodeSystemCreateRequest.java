@@ -15,14 +15,16 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
+import com.b2international.snowowl.datastore.codesystem.CodeSystemBuilder;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 
 /**
  * @since 4.7
@@ -41,60 +43,66 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
+	private Map<String, String> extensionMap;
 
 	CodeSystemCreateRequest() {
 	}
 
-	void setBranchPath(String branchPath) {
+	void setBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
 	}
 
-	void setCitation(String citation) {
+	void setCitation(final String citation) {
 		this.citation = citation;
 	}
 
-	void setOid(String oid) {
+	void setOid(final String oid) {
 		this.oid = oid;
 	}
 
-	void setIconPath(String iconPath) {
+	void setIconPath(final String iconPath) {
 		this.iconPath = iconPath;
 	}
 
-	void setLanguage(String language) {
+	void setLanguage(final String language) {
 		this.language = language;
 	}
 
-	void setLink(String link) {
+	void setLink(final String link) {
 		this.link = link;
 	}
 
-	void setName(String name) {
+	void setName(final String name) {
 		this.name = name;
 	}
 
-	void setRepositoryUuid(String repositoryUuid) {
+	void setRepositoryUuid(final String repositoryUuid) {
 		this.repositoryUuid = repositoryUuid;
 	}
 
-	void setShortName(String shortName) {
+	void setShortName(final String shortName) {
 		this.shortName = shortName;
 	}
 
-	void setTerminologyId(String terminologyId) {
+	void setTerminologyId(final String terminologyId) {
 		this.terminologyId = terminologyId;
 	}
-
+	
+	void setExtension(final Map<String, String> extensionMap) {
+		this.extensionMap = extensionMap;
+	}
+	
 	@Override
 	public String execute(final TransactionContext context) {
-		ensureOidAndShortNameUnique(context);
-		final CodeSystem codeSystem = createCodeSystem();
+		validateCodeSystem(context);
+
+		final CodeSystem codeSystem = createCodeSystem(context);
 		context.add(codeSystem);
 
 		return codeSystem.getShortName();
 	}
 
-	private void ensureOidAndShortNameUnique(final TransactionContext context) {
+	private void validateCodeSystem(final TransactionContext context) {
 		final UserBranchPathMap branchPathMap = new UserBranchPathMap();
 		branchPathMap.putBranchPath(repositoryUuid, BranchPathUtils.createMainPath());
 
@@ -109,20 +117,21 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 		}
 	}
 
-	private CodeSystem createCodeSystem() {
-		final CodeSystem codeSystem = TerminologymetadataFactory.eINSTANCE.createCodeSystem();
-		codeSystem.setBranchPath(branchPath);
-		codeSystem.setCitation(citation);
-		codeSystem.setCodeSystemOID(oid);
-		codeSystem.setIconPath(iconPath);
-		codeSystem.setLanguage(language);
-		codeSystem.setMaintainingOrganizationLink(link);
-		codeSystem.setName(name);
-		codeSystem.setRepositoryUuid(repositoryUuid);
-		codeSystem.setShortName(shortName);
-		codeSystem.setTerminologyComponentId(terminologyId);
-
-		return codeSystem;
+	private CodeSystem createCodeSystem(final TransactionContext context) {
+		final CodeSystemBuilder<?, ?> builder = context.service(CodeSystemBuilder.class);
+		return builder
+				.withBranchPath(branchPath)
+				.withCitation(citation)
+				.withCodeSystemOid(oid)
+				.withIconPath(iconPath)
+				.withLanguage(language)
+				.withMaintainingOrganizationLink(link)
+				.withName(name)
+				.withRepositoryUuid(repositoryUuid)
+				.withShortName(shortName)
+				.withTerminologyComponentId(terminologyId)
+				.withExtension(extensionMap)
+				.build();
 	}
 
 	@Override

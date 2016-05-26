@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 
@@ -22,7 +24,6 @@ import com.b2international.snowowl.core.events.Request;
  * @since 4.7
  */
 public final class CodeSystemCreateRequestBuilder extends BaseTransactionalRequestBuilder<CodeSystemCreateRequestBuilder, String> {
-
 
 	private String branchPath;
 	private String citation;
@@ -34,58 +35,64 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
-	
+	private Map<String, String> extensionMap;
+
 	CodeSystemCreateRequestBuilder(final String repositoryId) {
 		super(repositoryId);
 	}
 
-	public CodeSystemCreateRequestBuilder setBranchPath(String branchPath) {
+	public CodeSystemCreateRequestBuilder setBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setCitation(String citation) {
+	public CodeSystemCreateRequestBuilder setCitation(final String citation) {
 		this.citation = citation;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setOid(String oid) {
+	public CodeSystemCreateRequestBuilder setOid(final String oid) {
 		this.oid = oid;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setIconPath(String iconPath) {
+	public CodeSystemCreateRequestBuilder setIconPath(final String iconPath) {
 		this.iconPath = iconPath;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setLanguage(String language) {
+	public CodeSystemCreateRequestBuilder setLanguage(final String language) {
 		this.language = language;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setLink(String link) {
+	public CodeSystemCreateRequestBuilder setLink(final String link) {
 		this.link = link;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setName(String name) {
+	public CodeSystemCreateRequestBuilder setName(final String name) {
 		this.name = name;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setRepositoryUuid(String repositoryUuid) {
+	public CodeSystemCreateRequestBuilder setRepositoryUuid(final String repositoryUuid) {
 		this.repositoryUuid = repositoryUuid;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setShortName(String shortName) {
+	public CodeSystemCreateRequestBuilder setShortName(final String shortName) {
 		this.shortName = shortName;
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setTerminologyId(String terminologyId) {
+	public CodeSystemCreateRequestBuilder setTerminologyId(final String terminologyId) {
 		this.terminologyId = terminologyId;
+		return getSelf();
+	}
+	
+	public CodeSystemCreateRequestBuilder setExtension(final Map<String, String> extensionMap) {
+		this.extensionMap = extensionMap;
 		return getSelf();
 	}
 
@@ -102,6 +109,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 		req.setRepositoryUuid(repositoryUuid);
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
+		req.setExtension(extensionMap);
 
 		return req;
 	}
