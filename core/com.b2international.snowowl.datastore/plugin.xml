@@ -11,6 +11,7 @@
    <extension-point id="nodeTransformer" name="nodeTransformer" schema="schema/nodeTransformer.exsd"/>
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
    <extension-point id="cdoRootResourceNameProvider" name="CDO root resource" schema="schema/cdoRootResourceNameProvider.exsd"/>
+   <extension-point id="codesystembuilder" name="codeSystemBuilder" schema="schema/codesystembuilder.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
