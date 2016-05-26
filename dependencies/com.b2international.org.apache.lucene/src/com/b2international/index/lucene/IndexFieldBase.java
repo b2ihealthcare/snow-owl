@@ -138,12 +138,6 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 		doc.removeFields(fieldName());
 	}
 	
-	@Override
-	public <D extends DocumentBuilderBase<D>> void removeAll(D doc) {
-		// FIXME referencing internal field via build method
-		removeAll(doc.build());
-	}
-	
 	public final IndexableField getField(Document doc) {
 		return doc.getField(fieldName());
 	}

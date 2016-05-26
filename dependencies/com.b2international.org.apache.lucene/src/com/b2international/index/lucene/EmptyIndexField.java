@@ -37,10 +37,6 @@ public enum EmptyIndexField implements IndexField<Object> {
 	}
 	
 	@Override
-	public <D extends DocumentBuilderBase<D>> void removeAll(D doc) {
-	}
-	
-	@Override
 	public void removeAll(Document doc) {
 	}
 	

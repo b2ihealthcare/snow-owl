@@ -15,7 +15,6 @@
  */
 package com.b2international.index.lucene;
 
-import com.b2international.index.lucene.DocumentBuilderBase.DocumentBuilder;
 import com.b2international.index.lucene.FieldsToLoadBuilderBase.FieldsToLoadBuilder;
 import com.b2international.index.lucene.QueryBuilderBase.QueryBuilder;
 import com.google.common.base.Predicate;
@@ -197,10 +196,6 @@ public class Fields {
 		return new DocValuesStringIndexField(fieldName);
 	}
 	
-	public static DocumentBuilder doc() {
-		return new DocumentBuilder();
-	}
-
 	public static IndexField<Object> none() {
 		return EmptyIndexField.INSTANCE;
 	}

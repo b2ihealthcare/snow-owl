@@ -106,11 +106,6 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final <D extends DocumentBuilderBase<D>> void removeAll(D doc) {
-		delegate.removeAll(doc);
-	}
-
-	@Override
 	public final Sort createSort() {
 		return delegate.createSort();
 	}

@@ -58,8 +58,6 @@ public interface IndexField<T> {
 
 	void removeAll(Document doc);
 
-	<D extends DocumentBuilderBase<D>> void removeAll(D doc);
-
 	Sort createSort();
 
 	/**
