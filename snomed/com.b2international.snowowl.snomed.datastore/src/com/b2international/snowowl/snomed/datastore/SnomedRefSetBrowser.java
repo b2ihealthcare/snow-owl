@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  * Service for browsing SNOMED&nbsp;CT concept and reference set hierarchy.
  * @see ITerminologyBrowser
  * @see IClientRefSetBrowser
+ * @deprecated - UNSUPPORTED, will be removed in 4.7
  */
 public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptDocument, String> {
 
