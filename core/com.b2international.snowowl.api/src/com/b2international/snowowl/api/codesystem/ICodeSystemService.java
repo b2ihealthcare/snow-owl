@@ -43,15 +43,4 @@ public interface ICodeSystemService {
 	 */
 	ICodeSystem getCodeSystemByShortNameOrOid(String shortNameOrOid);
 	
-	/**
-	 * Creates a new code system based on the given code system.
-	 * 
-	 * @param userId
-	 *            the id of the user.
-	 * @param codeSystem
-	 *            the code system for the creation.
-	 * 
-	 * @return the short name of the created code system.
-	 */
-	String createCodeSystem(String userId, ICodeSystem codeSystem);
 }

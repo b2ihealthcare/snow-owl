@@ -30,7 +30,12 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.datastore.request.CodeSystemCreateRequest;
+import com.b2international.snowowl.datastore.request.CodeSystemRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -90,7 +95,37 @@ public class CodeSystemRestService extends AbstractRestService {
 			final Principal principal
 			) {
 		final String userId = principal.getName();
-		return delegate.createCodeSystem(userId, codeSystem);
+		final CodeSystemCreateRequest req = buildCreateRequest(codeSystem);
+		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
+		
+		return CodeSystemRequests
+				.prepareCommit(codeSystem.getRepositoryUuid())
+				.setCommitComment(commitComment)
+				.setBody(req)
+				.setUserId(userId)
+				.setBranch(IBranchPath.MAIN_BRANCH)
+				.build()
+				.executeSync(getEventBus())
+				.getResultAs(String.class);
+	}
+	
+	private CodeSystemCreateRequest buildCreateRequest(final ICodeSystem codeSystem) {
+		return (CodeSystemCreateRequest) CodeSystemRequests.createNewCodeSystem(codeSystem.getRepositoryUuid())
+				.setBranchPath(codeSystem.getBranchPath())
+				.setCitation(codeSystem.getCitation())
+				.setIconPath(codeSystem.getIconPath())
+				.setLanguage(codeSystem.getPrimaryLanguage())
+				.setLink(codeSystem.getOrganizationLink())
+				.setName(codeSystem.getName())
+				.setOid(codeSystem.getOid())
+				.setRepositoryUuid(codeSystem.getRepositoryUuid())
+				.setShortName(codeSystem.getShortName())
+				.setTerminologyId(codeSystem.getTerminologyId())
+				.build();
+	}
+	
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 }
