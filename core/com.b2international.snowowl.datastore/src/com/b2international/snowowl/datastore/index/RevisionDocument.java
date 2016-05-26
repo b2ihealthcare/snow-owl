@@ -21,14 +21,14 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 4.7
  */
-public abstract class AbstractRevisionIndexEntry extends Revision implements IIndexEntry, IconIdProvider<String> {
+public abstract class RevisionDocument extends Revision implements IComponent<String>, IconIdProvider<String> {
 
 	/**
 	 * @since 4.7
@@ -38,16 +38,41 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 		public static final String ICON_ID = "iconId";
 	}
 	
+	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B>> {
+		
+		protected String id;
+		protected String label;
+		
+		public B id(final String id) {
+			this.id = id;
+			return getSelf();
+		}
+		
+		/**
+		 * @deprecated - UNSUPPORTED, will be removed in 4.7
+		 */
+		public B label(final String label) {
+			this.label = label;
+			return getSelf();
+		}
+		
+		public B iconId(final String label) {
+			this.label = label;
+			return getSelf();
+		}
+		
+		protected abstract B getSelf();
+		
+	}
+	
 	private final String id;
 	private final String label;
-	private final float score;
 	private final String iconId;
 	
-	protected AbstractRevisionIndexEntry(final String id, final String label, String iconId, final float score, final long storageKey) {
+	protected RevisionDocument(final String id, final String label, String iconId) {
 		this.id = checkNotNull(id, "id");
 		this.label = checkNotNull(label, "label");
 		this.iconId = iconId;
-		this.score = score;
 	}
 	
 	@JsonIgnore
@@ -66,15 +91,9 @@ public abstract class AbstractRevisionIndexEntry extends Revision implements IIn
 		return iconId;
 	}
 	
-	@JsonIgnore
-	@Override
-	public float getScore() {
-		return score;
-	}
-
 	@Override
 	public String toString() {
-		return String.format("%02.2f %s - %s [%d]", score, id, label, getStorageKey());
+		return String.format("%02.2f - %s [%d]", id, label);
 	}
 
 	/**

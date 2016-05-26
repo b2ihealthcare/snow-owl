@@ -27,6 +27,7 @@ import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.snowowl.datastore.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.index.RevisionDocument.RevisionDocumentBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -36,7 +37,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.3
  */
-public abstract class ChangeSetProcessorBase<D> implements ChangeSetProcessor<D> {
+public abstract class ChangeSetProcessorBase<D extends RevisionDocumentBuilder<D>> implements ChangeSetProcessor<D> {
 
 	private final Multimap<String, DocumentUpdater<D>> updates = LinkedHashMultimap.create();
 	private final Set<Long> deletedStorageKeys = newHashSet();

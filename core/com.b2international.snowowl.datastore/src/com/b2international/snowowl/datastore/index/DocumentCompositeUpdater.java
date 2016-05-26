@@ -17,10 +17,12 @@ package com.b2international.snowowl.datastore.index;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.datastore.index.RevisionDocument.RevisionDocumentBuilder;
+
 /**
  * @since 4.3 
  */
-public final class DocumentCompositeUpdater<D> implements DocumentUpdater<D> {
+public final class DocumentCompositeUpdater<D extends RevisionDocumentBuilder<D>> implements DocumentUpdater<D> {
 
 	private Collection<? extends DocumentUpdater<D>> updaters;
 

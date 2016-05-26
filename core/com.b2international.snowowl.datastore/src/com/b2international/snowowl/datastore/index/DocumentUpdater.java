@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.datastore.index;
 
+import com.b2international.snowowl.datastore.index.RevisionDocument.RevisionDocumentBuilder;
+
 /**
  * @since 4.3
  */
-public interface DocumentUpdater<D> {
+public interface DocumentUpdater<D extends RevisionDocumentBuilder<D>> {
 
 	void update(D doc);
 	

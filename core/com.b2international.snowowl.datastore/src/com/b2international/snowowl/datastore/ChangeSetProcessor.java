@@ -19,12 +19,13 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
+import com.b2international.snowowl.datastore.index.RevisionDocument.RevisionDocumentBuilder;
 import com.google.common.collect.Multimap;
 
 /**
  * @since 4.3
  */
-public interface ChangeSetProcessor<D> {
+public interface ChangeSetProcessor<D extends RevisionDocumentBuilder<D>> {
 
 	/**
 	 * Processes the changes.
