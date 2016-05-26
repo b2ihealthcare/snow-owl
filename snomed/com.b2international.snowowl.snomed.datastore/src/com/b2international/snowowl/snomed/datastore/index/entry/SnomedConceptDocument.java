@@ -40,8 +40,8 @@ import com.google.common.collect.FluentIterable;
  * A transfer object representing a SNOMED CT concept.
  */
 @Doc
-@JsonDeserialize(builder=SnomedConceptIndexEntry.Builder.class)
-public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComponent {
+@JsonDeserialize(builder=SnomedConceptDocument.Builder.class)
+public class SnomedConceptDocument extends SnomedDocument implements ITreeComponent {
 
 	private static final long serialVersionUID = -824286402410205210L;
 
@@ -62,7 +62,7 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 		return new Builder();
 	}
 	
-	public static Builder builder(final SnomedConceptIndexEntry input) {
+	public static Builder builder(final SnomedConceptDocument input) {
 		final Builder builder = builder()
 				.id(input.getId())
 //				.score(input.getScore())
@@ -104,13 +104,13 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 		return builder;
 	}
 	
-	public static List<SnomedConceptIndexEntry> fromConcepts(Iterable<ISnomedConcept> concepts) {
-		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptIndexEntry>() {
+	public static List<SnomedConceptDocument> fromConcepts(Iterable<ISnomedConcept> concepts) {
+		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptDocument>() {
 			@Override
-			public SnomedConceptIndexEntry apply(ISnomedConcept input) {
+			public SnomedConceptDocument apply(ISnomedConcept input) {
 				final ISnomedDescription pt = input.getPt();
 				final String preferredTerm = pt == null ? input.getId() : pt.getTerm();
-				return SnomedConceptIndexEntry.builder(input).label(preferredTerm).build();
+				return SnomedConceptDocument.builder(input).label(preferredTerm).build();
 			}
 		}).toList();
 	}
@@ -184,8 +184,8 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 			return getSelf();
 		}
 
-		public SnomedConceptIndexEntry build() {
-			final SnomedConceptIndexEntry entry = new SnomedConceptIndexEntry(id,
+		public SnomedConceptDocument build() {
+			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,
 					iconId, 
 					moduleId, 
@@ -232,7 +232,7 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 	private LongSet statedAncestors;
 	private Collection<String> predicates;
 
-	protected SnomedConceptIndexEntry(final String id,
+	protected SnomedConceptDocument(final String id,
 			final String label,
 			final String iconId, 
 			final String moduleId,
