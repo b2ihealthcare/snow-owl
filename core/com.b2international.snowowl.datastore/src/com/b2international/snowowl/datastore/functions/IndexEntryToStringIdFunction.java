@@ -15,16 +15,16 @@
  */
 package com.b2international.snowowl.datastore.functions;
 
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.google.common.base.Function;
 
 /**
  * @since 3.0
  */
-public class IndexEntryToStringIdFunction implements Function<AbstractIndexEntry, String> {
+public class IndexEntryToStringIdFunction implements Function<RevisionDocument, String> {
 
 	@Override
-	public String apply(AbstractIndexEntry input) {
+	public String apply(RevisionDocument input) {
 		return input.getId();
 	}
 

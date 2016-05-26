@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.index;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -43,7 +42,6 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherManager;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
@@ -51,12 +49,10 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
-import com.b2international.index.lucene.DocumentBuilderBase;
-import com.b2international.index.lucene.DocumentBuilderFactory;
-import com.b2international.index.lucene.DocumentUpdater;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.lucene.NullSearcherManager;
 import com.b2international.index.lucene.SearchWarmerFactory;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
@@ -240,38 +236,38 @@ public class IndexBranchService implements Closeable {
 		}
 	}
 
-	public <D extends DocumentBuilderBase<D>> void upsert(Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) throws IOException {
-		ensureOpen();
-		ensureWritable();
-		if (indexWriter != null) {
-			IndexSearcher searcher = null;
-			try {
-				searcher = manager.acquire();
-				final TopDocs docs = searcher.search(query, 2);
-				checkState(docs.totalHits <= 1, "Multiple documents with same query ('%s') on a single branch path", query);
-				final D builder;
-				if (docs.totalHits == 0) {
-					// create new
-					builder = builderFactory.createBuilder();
-				} else {
-					final Document doc = searcher.doc(docs.scoreDocs[0].doc);
-					builder = builderFactory.createBuilder(doc);
-				}
-				documentUpdater.update(builder);
-				final Document updatedDoc = builder.build();
-				checkState(updatedDoc.getFields().size() > 0, "At least one field must be specified");
-				updateDocument(updatedDoc);
-			} finally {
-				if (searcher != null) {
-					try {
-						manager.release(searcher);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
+//	public <D extends DocumentBuilderBase<D>> void upsert(Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) throws IOException {
+//		ensureOpen();
+//		ensureWritable();
+//		if (indexWriter != null) {
+//			IndexSearcher searcher = null;
+//			try {
+//				searcher = manager.acquire();
+//				final TopDocs docs = searcher.search(query, 2);
+//				checkState(docs.totalHits <= 1, "Multiple documents with same query ('%s') on a single branch path", query);
+//				final D builder;
+//				if (docs.totalHits == 0) {
+//					// create new
+//					builder = builderFactory.createBuilder();
+//				} else {
+//					final Document doc = searcher.doc(docs.scoreDocs[0].doc);
+//					builder = builderFactory.createBuilder(doc);
+//				}
+//				documentUpdater.update(builder);
+//				final Document updatedDoc = builder.build();
+//				checkState(updatedDoc.getFields().size() > 0, "At least one field must be specified");
+//				updateDocument(updatedDoc);
+//			} finally {
+//				if (searcher != null) {
+//					try {
+//						manager.release(searcher);
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * Indexes a document using the {@link Mappings#storageKey()} field as index key. 

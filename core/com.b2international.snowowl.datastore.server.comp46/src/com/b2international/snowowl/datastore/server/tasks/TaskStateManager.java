@@ -545,23 +545,22 @@ public class TaskStateManager extends SingleDirectoryIndexImpl implements ITaskS
 	private void insertOrUpdate(final String taskId, final boolean promoted, final IBranchPathMap taskBranchPathMap, final String contextId, final String repositoryUrl, 
 			final String description, final TaskScenario scenario) {
 
-		final Document document = Fields.doc()
-				.field(FIELD_TASK_ID, taskId)
-				.field(FIELD_IS_CLOSED, promoted ? "1" : "0")
-				.field(FIELD_CONTEXT_ID, contextId)
-				.field(FIELD_REPOSITORY_URL, repositoryUrl)
-				.field(FIELD_DESCRIPTION, description)
-				.field(FIELD_SCENARIO_ORDINAL, scenario.ordinal())
-				.build();
+		final Document doc = new Document();
+		Fields.stringField(FIELD_TASK_ID).addTo(doc, taskId);
+		Fields.stringField(FIELD_IS_CLOSED).addTo(doc, promoted ? "1" : "0");
+		Fields.stringField(FIELD_CONTEXT_ID).addTo(doc, contextId);
+		Fields.stringField(FIELD_REPOSITORY_URL).addTo(doc, repositoryUrl);
+		Fields.stringField(FIELD_DESCRIPTION).addTo(doc, description);
+		Fields.intField(FIELD_SCENARIO_ORDINAL).addTo(doc, scenario.ordinal());
 
 		if (null != taskBranchPathMap) {
-			updateBranchPathMapFields(taskBranchPathMap, document);
+			updateBranchPathMapFields(taskBranchPathMap, doc);
 		}
 
 		final Term updateTerm = new Term(FIELD_TASK_ID, taskId);
 
 		try {
-			writer.updateDocument(updateTerm, document);
+			writer.updateDocument(updateTerm, doc);
 			commit();
 		} catch (final IOException e) {
 			throw new IndexException(e);

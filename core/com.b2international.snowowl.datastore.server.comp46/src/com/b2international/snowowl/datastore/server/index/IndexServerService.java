@@ -53,9 +53,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.lucene.DocIdCollector;
 import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
-import com.b2international.index.lucene.DocumentBuilderBase;
-import com.b2international.index.lucene.DocumentBuilderFactory;
-import com.b2international.index.lucene.DocumentUpdater;
 import com.b2international.index.lucene.DocumentWithScore;
 import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -307,21 +304,21 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		index(branchPath, document, toTerm(storageKey));
 	}
 	
-	@Override
-	public <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, long storageKey, DocumentUpdater<D> documentUpdater,
-			DocumentBuilderFactory<D> builderFactory) {
-		upsert(branchPath, toQuery(storageKey), documentUpdater, builderFactory);		
-	}
+//	@Override
+//	public <D extends DocumentBuilderBase<D>> void update(IBranchPath branchPath, long storageKey, DocumentUpdater<D> documentUpdater,
+//			DocumentBuilderFactory<D> builderFactory) {
+//		upsert(branchPath, toQuery(storageKey), documentUpdater, builderFactory);		
+//	}
 	
-	@Override
-	public <D extends DocumentBuilderBase<D>> void upsert(IBranchPath branchPath, Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) {
-		checkNotDisposed();
-		try {
-			getBranchService(branchPath).upsert(query, documentUpdater, builderFactory);
-		} catch (IOException e) {
-			throw new IndexException(e);
-		}
-	}
+//	@Override
+//	public <D extends DocumentBuilderBase<D>> void upsert(IBranchPath branchPath, Query query, DocumentUpdater<D> documentUpdater, DocumentBuilderFactory<D> builderFactory) {
+//		checkNotDisposed();
+//		try {
+//			getBranchService(branchPath).upsert(query, documentUpdater, builderFactory);
+//		} catch (IOException e) {
+//			throw new IndexException(e);
+//		}
+//	}
 
 	@Override
 	public List<DocumentWithScore> search(final IBranchPath branchPath, final Query query, final @Nullable Filter filter, final @Nullable Sort sort, 

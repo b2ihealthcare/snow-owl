@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.datastore.index;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.util.BytesRef;
 
-import com.b2international.index.lucene.DocumentBuilderBase;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.index.CommonIndexConstants;
 
 /**
@@ -38,10 +39,10 @@ public enum SortKeyMode {
 	 * @param doc the document to add the sort key field(s) to
 	 * @param label the source label to use 
 	 */
-	public void update(final DocumentBuilderBase<?> doc, final String label) {
+	public void update(final Document doc, final String label) {
 		final String value = IndexUtils.getSortKey(label);
-		doc.update(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, value);
-		doc.build().add(new SortedDocValuesField(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, new BytesRef(value)));
+		Fields.stringField(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY).addTo(doc, value);
+		doc.add(new SortedDocValuesField(CommonIndexConstants.COMPONENT_LABEL_SORT_KEY, new BytesRef(value)));
 	}
 
 }
