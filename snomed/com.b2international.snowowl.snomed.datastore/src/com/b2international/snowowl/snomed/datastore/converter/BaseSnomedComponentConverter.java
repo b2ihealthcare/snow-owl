@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -39,7 +39,7 @@ import com.google.common.collect.FluentIterable;
  * @param <R>
  * @param <CR>
  */
-abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extends SnomedComponent, CR extends CollectionResource<R>>
+abstract class BaseSnomedComponentConverter<T extends SnomedDocument, R extends SnomedComponent, CR extends CollectionResource<R>>
 		implements ResourceConverter<T, R, CR> {
 
 	private final BranchContext context;

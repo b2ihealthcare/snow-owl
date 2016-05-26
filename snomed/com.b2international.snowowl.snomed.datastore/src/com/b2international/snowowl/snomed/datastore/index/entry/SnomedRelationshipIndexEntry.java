@@ -42,7 +42,7 @@ import com.google.common.collect.FluentIterable;
  */
 @Doc
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
-public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IStatement<String>, IComponent<String>, IIndexEntry, Serializable {
+public class SnomedRelationshipIndexEntry extends SnomedDocument implements IStatement<String>, IComponent<String>, IIndexEntry, Serializable {
 
 	private static final long serialVersionUID = -7873086925532169024L;
 

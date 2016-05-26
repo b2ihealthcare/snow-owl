@@ -74,7 +74,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
-public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IComponent<String>, Serializable {
+public class SnomedRefSetMemberIndexEntry extends SnomedDocument implements IComponent<String>, Serializable {
 
 	private static final Set<String> ADDITIONAL_FIELDS = SnomedMappings.fieldsToLoad()
 			.memberAcceptabilityId()

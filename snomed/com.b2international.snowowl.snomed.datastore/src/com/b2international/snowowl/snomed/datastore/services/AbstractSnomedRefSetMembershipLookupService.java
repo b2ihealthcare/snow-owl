@@ -54,7 +54,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
@@ -73,7 +73,7 @@ import com.google.common.collect.Sets;
  */
 public abstract class AbstractSnomedRefSetMembershipLookupService implements IRefSetMembershipLookupService<String> {
 
-	protected abstract AbstractClientIndexService<SnomedIndexEntry> getIndexService();
+	protected abstract AbstractClientIndexService<SnomedDocument> getIndexService();
 
 	protected abstract AbstractClientTerminologyBrowser<SnomedConceptIndexEntry, String> getTerminologyBrowser();
 

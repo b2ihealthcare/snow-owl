@@ -46,7 +46,7 @@ import com.google.common.collect.ImmutableMap;
  */
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
-public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable {
+public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComponent<String>, IIndexEntry, Serializable {
 
 	private static final long serialVersionUID = 301681633674309020L;
 

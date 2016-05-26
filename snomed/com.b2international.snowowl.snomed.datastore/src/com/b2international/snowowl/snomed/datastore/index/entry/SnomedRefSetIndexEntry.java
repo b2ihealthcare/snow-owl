@@ -35,7 +35,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * A transfer object representing a SNOMED CT reference set.
  */
-public class SnomedRefSetIndexEntry extends SnomedIndexEntry implements IRefSetComponent, IComponent<String>, Serializable {
+public class SnomedRefSetIndexEntry extends SnomedDocument implements IRefSetComponent, IComponent<String>, Serializable {
 
 	private static final long serialVersionUID = 2943070736359287904L;
 

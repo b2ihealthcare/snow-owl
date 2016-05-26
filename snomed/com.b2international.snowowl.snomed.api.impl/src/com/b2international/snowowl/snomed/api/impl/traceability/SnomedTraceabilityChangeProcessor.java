@@ -86,7 +86,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -104,7 +104,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Change processor implementation that produces a log entry for committed transactions.
  */
-public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcessor<SnomedIndexEntry, CDOObject> {
+public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcessor<SnomedDocument, CDOObject> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("traceability");
 
@@ -155,7 +155,7 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 
 	private final boolean collectSystemChanges;
 
-	public SnomedTraceabilityChangeProcessor(final IIndexUpdater<SnomedIndexEntry> indexUpdater, final IBranchPath branchPath, final boolean collectSystemChanges) {
+	public SnomedTraceabilityChangeProcessor(final IIndexUpdater<SnomedDocument> indexUpdater, final IBranchPath branchPath, final boolean collectSystemChanges) {
 		super(indexUpdater, branchPath, TRACKED_ECLASSES);
 		this.collectSystemChanges = collectSystemChanges;
 	}

@@ -22,8 +22,7 @@ import java.io.Serializable;
 
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.AbstractRevisionIndexEntry;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -32,50 +31,25 @@ import com.google.common.base.Predicate;
 /**
  * Common superclass for SNOMED CT transfer objects.
  */
-public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implements IComponent<String>, Serializable {
+public abstract class SnomedDocument extends RevisionDocument implements IComponent<String>, Serializable {
 
-	private static final long serialVersionUID = 1158021444792053062L;
-	public static final Predicate<SnomedIndexEntry> ACTIVE_PREDICATE = new Predicate<SnomedIndexEntry>() {
+	public static final Predicate<SnomedDocument> ACTIVE_PREDICATE = new Predicate<SnomedDocument>() {
 		@Override
-		public boolean apply(SnomedIndexEntry input) {
+		public boolean apply(SnomedDocument input) {
 			return input.isActive();
 		}
 	};
 
 	// XXX: Type parameter reveals subclass to AbstractBuilder for fluent API
-	protected static abstract class AbstractBuilder<B extends AbstractBuilder<B>> {
+	protected static abstract class SnomedDocumentBuilder<B extends SnomedDocumentBuilder<B>> extends RevisionDocumentBuilder<B> {
 
-		protected String id;
-		protected String label;
 		protected String moduleId;
-		protected long storageKey = CDOUtils.NO_STORAGE_KEY;
-		protected float score;
 		protected boolean active;
 		protected boolean released;
 		protected long effectiveTime;
 
-		public B id(final String id) {
-			this.id = id;
-			return getSelf();
-		}
-		
-		public B label(final String label) {
-			this.label = label;
-			return getSelf();
-		}
-
 		public B moduleId(final String moduleId) {
 			this.moduleId = moduleId;
-			return getSelf();
-		}
-
-		public B storageKey(final long storageKey) {
-			this.storageKey = storageKey;
-			return getSelf();
-		}
-
-		public B score(final float score) {
-			this.score = score;
 			return getSelf();
 		}
 
@@ -94,7 +68,6 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 			return getSelf();
 		}
 
-		protected abstract B getSelf();
 	}
 	
 	public static class Fields {
@@ -109,28 +82,22 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 	protected final boolean active;
 	protected final long effectiveTime;
 
-	protected SnomedIndexEntry(final String id,
+	protected SnomedDocument(final String id,
 			final String label,
 			final String iconId, 
-			final float score, 
-			final long storageKey, 
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
-			final long effectiveTimeLong) {
-
+			final long effectiveTime) {
 		super(id, 
 				label == null ? String.format("!!!%s!!!", id) : label, // XXX use ID with markers to indicate problems when fetching entries without label on the client side
-				iconId, 
-				score, 
-				storageKey);
+				iconId);
 
-		checkArgument(effectiveTimeLong >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTimeLong);
-
+		checkArgument(effectiveTime >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTime);
 		this.moduleId = checkNotNull(moduleId, "Component module identifier may not be null.");
 		this.released = released;
 		this.active = active;
-		this.effectiveTime = effectiveTimeLong;
+		this.effectiveTime = effectiveTime;
 	}
 
 	/**
@@ -173,7 +140,7 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 
 	@Override
 	public int hashCode() {
-		return 31 + getId().hashCode();
+		return Objects.hashCode(getId());
 	}
 
 	@Override
@@ -181,11 +148,8 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 		if (this == obj) { return true; }
 		if (obj == null) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
-
-		final SnomedIndexEntry other = (SnomedIndexEntry) obj;
-
-		if (!Objects.equal(getId(), other.getId())) { return false; }
-		return true;
+		final SnomedDocument other = (SnomedDocument) obj;
+		return Objects.equal(getId(), other.getId());
 	}
 
 	protected ToStringHelper toStringHelper() {
@@ -194,8 +158,6 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 				.add("label", getLabel())
 				.add("iconId", getIconId())
 				.add("moduleId", moduleId)
-				.add("score", getScore())
-				.add("storageKey", getStorageKey())
 				.add("released", released)
 				.add("active", active)
 				.add("effectiveTime", effectiveTime);
