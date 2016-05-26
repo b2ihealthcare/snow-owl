@@ -135,7 +135,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 		private LongSet ancestors;
 		private LongSet statedParents;
 		private LongSet statedAncestors;
-		private List<String> predicates = Collections.emptyList();
+		private Collection<String> predicates = Collections.emptyList();
 
 		@JsonCreator
 		private Builder() {
@@ -182,7 +182,7 @@ public class SnomedConceptIndexEntry extends SnomedIndexEntry implements ICompon
 			return getSelf();
 		}
 		
-		public Builder predicates(final List<String> componentReferringPredicates) {
+		public Builder predicates(final Collection<String> componentReferringPredicates) {
 			this.predicates = componentReferringPredicates;
 			return getSelf();
 		}
