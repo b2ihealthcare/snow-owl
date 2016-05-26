@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.3
  */
-public class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
+class SnomedQueryBuilder extends QueryBuilderBase<SnomedQueryBuilder> {
 
 	protected SnomedQueryBuilder() {
 		super();

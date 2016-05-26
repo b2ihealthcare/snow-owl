@@ -31,7 +31,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.3
  */
-public class SnomedMappings {
+class SnomedMappings {
 
 	public static final Long ROOT_ID = -1L;
 

@@ -21,7 +21,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 /**
  * @since 4.3
  */
-public class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFieldsToLoadBuilder> {
+class SnomedFieldsToLoadBuilder extends FieldsToLoadBuilderBase<SnomedFieldsToLoadBuilder> {
 
 	protected SnomedFieldsToLoadBuilder() {
 		super();

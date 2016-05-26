@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableSet.Builder;
 /**
  * @since 4.3
  */
-public final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBuilder> {
+final class SnomedDocumentBuilder extends DocumentBuilderBase<SnomedDocumentBuilder> {
 
 	public static class Factory implements DocumentBuilderFactory<SnomedDocumentBuilder> {
 
