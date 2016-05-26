@@ -17,29 +17,22 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Objects;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollections;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.snowowl.datastore.index.mapping.IndexField;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
-import com.google.common.base.Strings;
 
 /**
  * @since 4.3
  */
-public class ParentageUpdater extends SnomedDocumentUpdaterBase {
+public class ParentageUpdater extends SnomedConceptDocumentUpdaterBase {
 
 	private String fieldSuffix;
 
-	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId) {
-		this(taxonomyBuilder, conceptId, null);
-	}
-	
-	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, String fieldSuffix) {
+	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, boolean stated) {
 		super(taxonomyBuilder, conceptId);
-		this.fieldSuffix = Strings.nullToEmpty(fieldSuffix);
 	}
 	
 	@Override
@@ -57,31 +50,19 @@ public class ParentageUpdater extends SnomedDocumentUpdaterBase {
 	}
 
 	@Override
-	public final void doUpdate(SnomedDocumentBuilder doc) {
-		// throw out any parent or ancestor fields
-		final IndexField<Long> parentField = SnomedMappings.parent(fieldSuffix);
-		final IndexField<Long> ancestorField = SnomedMappings.ancestor(fieldSuffix);
+	public final void doUpdate(SnomedConceptDocument.Builder doc) {
+		LongSet parents = PrimitiveSets.newLongOpenHashSet(getParentIds(getComponentId()));
+		LongSet ancestors = PrimitiveSets.newLongOpenHashSet(getAncestorIds(getComponentId()));
 		
-		parentField.removeAll(doc);
-		ancestorField.removeAll(doc);
-		
-		final LongCollection parentIds = getParentIds(getComponentId());
-		final LongCollection ancestorIds = getAncestorIds(getComponentId());
-		final LongIterator parentIdIterator = parentIds.iterator();
-		final LongIterator ancestorIdIterator = ancestorIds.iterator();
-		// index ROOT_ID
-		if (!parentIdIterator.hasNext()) {
-			doc.addToDoc(parentField, SnomedMappings.ROOT_ID);
+		// index/add ROOT_ID if parentIds are empty
+		if (parents.isEmpty()) {
+			parents.add(SnomedMappings.ROOT_ID);
 		} else {
-			doc.addToDoc(ancestorField, SnomedMappings.ROOT_ID);
+			ancestors.add(SnomedMappings.ROOT_ID);
 		}
-		// index parentage info
-		while (parentIdIterator.hasNext()) {
-			doc.addToDoc(parentField, parentIdIterator.next());
-		}
-		while (ancestorIdIterator.hasNext()) {
-			doc.addToDoc(ancestorField, ancestorIdIterator.next());
-		}
+
+		doc.parents(parents);
+		doc.ancestors(ancestors);
 	}
 
 	protected LongCollection getParentIds(final String conceptId) {

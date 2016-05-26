@@ -18,17 +18,17 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
 /**
  * @since 4.3
  */
-public abstract class SnomedDocumentUpdaterBase extends DocumentUpdaterBase<SnomedDocumentBuilder> {
+public abstract class SnomedConceptDocumentUpdaterBase extends DocumentUpdaterBase<SnomedConceptDocument.Builder> {
 
 	private ISnomedTaxonomyBuilder taxonomyBuilder;
 
-	public SnomedDocumentUpdaterBase(ISnomedTaxonomyBuilder taxonomyBuilder, final String componentId) {
+	public SnomedConceptDocumentUpdaterBase(ISnomedTaxonomyBuilder taxonomyBuilder, final String componentId) {
 		super(componentId);
 		this.taxonomyBuilder = checkNotNull(taxonomyBuilder, "taxonomyBuilder");
 	}

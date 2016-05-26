@@ -20,13 +20,13 @@ import java.util.Collection;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
 /**
  * @since 4.3
  */
-public class IconIdUpdater extends SnomedDocumentUpdaterBase {
+public class IconIdUpdater extends SnomedConceptDocumentUpdaterBase {
 	
 	private final ISnomedTaxonomyBuilder statedTaxonomy;
 	private final Collection<String> availableImages;
@@ -44,9 +44,8 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	}
 	
 	@Override
-	public final void doUpdate(SnomedDocumentBuilder doc) {
-		final Long iconIdLong = Long.valueOf(getIconId(getComponentId(), active));
-		doc.iconId(iconIdLong);
+	public final void doUpdate(SnomedConceptDocument.Builder doc) {
+		doc.iconId(getIconId(getComponentId(), active));
 	}
 
 	protected String getIconId(String conceptId, boolean active) {
