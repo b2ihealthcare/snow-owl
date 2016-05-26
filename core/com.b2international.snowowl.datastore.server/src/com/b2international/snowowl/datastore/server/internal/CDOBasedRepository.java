@@ -40,6 +40,8 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.codesystem.CodeSystemBuilder;
+import com.b2international.snowowl.datastore.codesystem.CodeSystemBuilderBroker;
 import com.b2international.snowowl.datastore.index.IndexTransactionProvider;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -138,6 +140,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId);
 	}
 	
+	private CodeSystemBuilder<?, ?> getCodeSystemBuilder() {
+		return CodeSystemBuilderBroker.INSTANCE.getCodeSystemBuilder(repositoryId);
+	}
+	
 	@Override
     public long getBaseTimestamp(CDOBranch branch) {
         return branch.getBase().getTimeStamp();
@@ -167,9 +173,14 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return new ServiceProvider() {
 			@Override
 			public <T> T service(Class<T> type) {
+				if (type.isAssignableFrom(CodeSystemBuilder.class)) {
+					return (T) getCodeSystemBuilder();
+				}
+				
 				if (registry.containsKey(type)) {
 					return (T) registry.get(type);
 				}
+				
 				return env.service(type);
 			}
 			
