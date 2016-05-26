@@ -90,6 +90,20 @@ public class CodeSystemApiTest {
 		assertEquals(shortName, lastPathSegment(path));
 		assertCodeSystemExists(shortName);
 	}
+	
+	@Test
+	public void createCodeSystemWithNonUniqueShortName() {
+		final String shortName = "cs";
+		final String oid = "1";
+		final Map<?, ?> requestBody = newCodeSystem(shortName, oid);
+		
+		givenAuthenticatedRequest("/admin")
+				.with().contentType(ContentType.JSON)
+				.and().body(requestBody)
+				.when().post("/codesystems")
+				.then().assertThat().statusCode(400);
+			
+	}
 
 	private Map<String, String> newCodeSystem(final String shortName, final String oid) {
 		return ImmutableMap.<String, String>builder()
