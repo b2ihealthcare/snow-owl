@@ -89,8 +89,8 @@ public abstract class SnomedIndexEntry extends AbstractRevisionIndexEntry implem
 			return getSelf();
 		}
 
-		public B effectiveTime(final long effectiveTimeLong) {
-			this.effectiveTime = effectiveTimeLong;
+		public B effectiveTime(final long effectiveTime) {
+			this.effectiveTime = effectiveTime;
 			return getSelf();
 		}
 
