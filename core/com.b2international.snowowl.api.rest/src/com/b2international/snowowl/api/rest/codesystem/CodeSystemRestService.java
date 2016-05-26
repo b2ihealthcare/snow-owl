@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.api.rest.codesystem;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
@@ -30,6 +35,7 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
+import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -84,11 +90,12 @@ public class CodeSystemRestService extends AbstractRestService {
 			value="Create a code system",
 			notes="Create a new Code System with the given parameters")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Void.class),
+		@ApiResponse(code = 201, message = "Created", response = Void.class),
 		@ApiResponse(code = 400, message = "Code System already exists in the system", response = RestApiError.class)
 	})
-	@RequestMapping(method=RequestMethod.POST)
-	public String createCodeSystem(
+	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@ResponseStatus(HttpStatus.CREATED)
+	public ResponseEntity<Void> createCodeSystem(
 			@RequestBody
 			final CodeSystem codeSystem,
 			
@@ -98,7 +105,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final CodeSystemCreateRequest req = buildCreateRequest(codeSystem);
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
-		return CodeSystemRequests
+		final String shortName = CodeSystemRequests
 				.prepareCommit(codeSystem.getRepositoryUuid())
 				.setCommitComment(commitComment)
 				.setBody(req)
@@ -107,6 +114,12 @@ public class CodeSystemRestService extends AbstractRestService {
 				.build()
 				.executeSync(getEventBus())
 				.getResultAs(String.class);
+		
+		return Responses
+				.created(linkTo(CodeSystemRestService.class)
+				.slash(shortName)
+				.toUri())
+				.build();
 	}
 	
 	private CodeSystemCreateRequest buildCreateRequest(final ICodeSystem codeSystem) {
