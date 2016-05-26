@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 
 /**
  * Adds a boolean to {@link SnomedConceptDocument} to indicate whether the concept has children.
@@ -36,9 +37,10 @@ public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptDocument 
 				conceptIndexEntry.isReleased(),
 				conceptIndexEntry.isActive(),
 				conceptIndexEntry.getEffectiveTime(),
+				conceptIndexEntry.getNamespace(),
 				conceptIndexEntry.isPrimitive(),
 				conceptIndexEntry.isExhaustive(),
-				null, CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
+				null, CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, CDOUtils.NO_STORAGE_KEY);
 
 		this.hasChildren = hasChildren;
 	}

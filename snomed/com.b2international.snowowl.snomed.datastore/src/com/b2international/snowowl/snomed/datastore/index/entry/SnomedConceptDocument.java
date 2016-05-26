@@ -19,16 +19,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -41,7 +45,7 @@ import com.google.common.collect.FluentIterable;
  */
 @Doc
 @JsonDeserialize(builder=SnomedConceptDocument.Builder.class)
-public class SnomedConceptDocument extends SnomedDocument implements ITreeComponent {
+public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
 	private static final long serialVersionUID = -824286402410205210L;
 
@@ -115,7 +119,7 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 		}).toList();
 	}
 
-	public static class Builder extends SnomedDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
 
 		private String iconId;
 		private boolean primitive;
@@ -127,6 +131,10 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 		private Collection<String> predicates = Collections.emptyList();
 		private SnomedRefSetType refSetType;
 		private short referencedComponentType;
+		private float doi;
+		private Collection<String> referringRefSets;
+		private Collection<String> referringMappingRefSets;
+		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 
 		@JsonCreator
 		private Builder() {
@@ -178,9 +186,25 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 			return getSelf();
 		}
 		
-		public Builder refSet(final SnomedRefSetType refSetType, final short referencedComponentType) {
-			this.refSetType = refSetType;
-			this.referencedComponentType = referencedComponentType;
+		public Builder refSet(final SnomedRefSet refSet) {
+			this.refSetType = refSet.getType();
+			this.referencedComponentType = refSet.getReferencedComponentType();
+			this.refSetStorageKey = CDOIDUtil.getLong(refSet.cdoID());
+			return getSelf();
+		}
+		
+		public Builder doi(float doi) {
+			this.doi = doi;
+			return getSelf();
+		}
+		
+		public Builder referringRefSets(Collection<String> referringRefSets) {
+			this.referringRefSets = referringRefSets;
+			return getSelf();
+		}
+		
+		public Builder referringMappingRefSets(Collection<String> referringMappingRefSets) {
+			this.referringMappingRefSets = referringMappingRefSets;
 			return getSelf();
 		}
 
@@ -192,9 +216,12 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 					released, 
 					active, 
 					effectiveTime, 
+					namespace,
 					primitive, 
 					exhaustive,
-					refSetType, referencedComponentType);
+					refSetType, referencedComponentType, refSetStorageKey);
+			
+			entry.setDoi(doi);
 			
 			if (parents != null) {
 				entry.setParents(parents);
@@ -216,8 +243,18 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 				entry.setComponentReferringPredicates(predicates);
 			}
 			
+			if (referringRefSets != null) {
+				entry.setReferringRefSets(referringRefSets);
+			}
+			
+			if (referringMappingRefSets != null) {
+				entry.setReferringMappingRefSets(referringMappingRefSets);
+			}
+			
 			return entry;
 		}
+
+
 	}
 
 	private final boolean primitive;
@@ -225,12 +262,16 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 	private final SnomedRefSetType refSetType;
 	private final short referencedComponentType;
 	private final boolean structural;
+	private final long refSetStorageKey;
 	
 	private LongSet parents;
 	private LongSet ancestors;
 	private LongSet statedParents;
 	private LongSet statedAncestors;
 	private Collection<String> predicates;
+	private float doi;
+	private Collection<String> referringRefSets;
+	private Collection<String> referringMappingRefSets;
 
 	protected SnomedConceptDocument(final String id,
 			final String label,
@@ -239,16 +280,19 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 			final boolean released,
 			final boolean active,
 			final long effectiveTime,
+			final String namespace,
 			final boolean primitive,
 			final boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
-			final short referencedComponentType) {
+			final short referencedComponentType,
+			final long refSetStorageKey) {
 
-		super(id, label, iconId, moduleId, released, active, effectiveTime);
+		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
+		this.refSetStorageKey = refSetStorageKey;
 		this.structural = SnomedRefSetUtil.isStructural(id, refSetType);
 	}
 	
@@ -266,6 +310,34 @@ public class SnomedConceptDocument extends SnomedDocument implements ITreeCompon
 	
 	private void setComponentReferringPredicates(Collection<String> componentReferringPredicates) {
 		this.predicates = componentReferringPredicates;
+	}
+	
+	public long getRefSetStorageKey() {
+		return refSetStorageKey;
+	}
+	
+	public float getDoi() {
+		return doi;
+	}
+	
+	void setDoi(float doi) {
+		this.doi = doi;
+	}
+	
+	public Collection<String> getReferringRefSets() {
+		return referringRefSets;
+	}
+	
+	void setReferringRefSets(Collection<String> referringRefSets) {
+		this.referringRefSets = referringRefSets;
+	}
+	
+	public Collection<String> getReferringMappingRefSets() {
+		return referringMappingRefSets;
+	}
+	
+	void setReferringMappingRefSets(Collection<String> referringMappingRefSets) {
+		this.referringMappingRefSets = referringMappingRefSets;
 	}
 
 	/**

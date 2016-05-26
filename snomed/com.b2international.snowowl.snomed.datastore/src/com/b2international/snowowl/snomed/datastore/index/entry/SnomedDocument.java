@@ -77,14 +77,14 @@ public abstract class SnomedDocument extends RevisionDocument implements ICompon
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 	}
 
-	protected final String moduleId;
-	protected final boolean released;
-	protected final boolean active;
-	protected final long effectiveTime;
+	private final String moduleId;
+	private final boolean released;
+	private final boolean active;
+	private final long effectiveTime;
 
 	protected SnomedDocument(final String id,
 			final String label,
-			final String iconId, 
+			final String iconId,
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
