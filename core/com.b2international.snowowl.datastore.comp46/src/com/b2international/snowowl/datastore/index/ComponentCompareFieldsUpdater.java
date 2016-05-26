@@ -15,15 +15,13 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import com.b2international.index.lucene.DocumentBuilderBase;
-import com.b2international.index.lucene.DocumentUpdaterBase;
 import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 
 /**
  * @since 4.3
  */
-public class ComponentCompareFieldsUpdater<D extends DocumentBuilderBase<D>> extends DocumentUpdaterBase<D> {
+public class ComponentCompareFieldsUpdater<D> extends DocumentUpdaterBase<D> {
 
 	private boolean relevant;
 	private long storageKey;

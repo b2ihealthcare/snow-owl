@@ -17,15 +17,14 @@ package com.b2international.snowowl.datastore;
 
 import java.util.Set;
 
-import com.b2international.index.lucene.DocumentBuilderBase;
-import com.b2international.index.lucene.DocumentUpdater;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.google.common.collect.Multimap;
 
 /**
  * @since 4.3
  */
-public interface ChangeSetProcessor<D extends DocumentBuilderBase<D>> {
+public interface ChangeSetProcessor<D> {
 
 	/**
 	 * Processes the changes.

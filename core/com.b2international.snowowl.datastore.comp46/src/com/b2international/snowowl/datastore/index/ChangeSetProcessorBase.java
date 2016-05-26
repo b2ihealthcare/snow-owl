@@ -25,8 +25,6 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EClass;
 
-import com.b2international.index.lucene.DocumentBuilderBase;
-import com.b2international.index.lucene.DocumentUpdater;
 import com.b2international.snowowl.datastore.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.google.common.base.Function;
@@ -38,7 +36,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.3
  */
-public abstract class ChangeSetProcessorBase<D extends DocumentBuilderBase<D>> implements ChangeSetProcessor<D> {
+public abstract class ChangeSetProcessorBase<D> implements ChangeSetProcessor<D> {
 
 	private final Multimap<String, DocumentUpdater<D>> updates = LinkedHashMultimap.create();
 	private final Set<Long> deletedStorageKeys = newHashSet();
