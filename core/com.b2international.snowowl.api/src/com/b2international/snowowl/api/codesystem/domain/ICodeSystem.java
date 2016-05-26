@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.api.codesystem.domain;
 
+import java.util.Map;
+
 /**
  * Captures metadata about a code system, which holds a set of real-world concepts of medical significance (optionally
  * along with different components forming a description of said concepts) and their corresponding unique code.
@@ -92,4 +94,9 @@ public interface ICodeSystem {
 	 * @return the repository UUID for the code system.
 	 */
 	String getRepositoryUuid();
+	
+	/**
+	 * Returns a map with extension specific settings.
+	 */
+	Map<String, String> getExtension();
 }

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.api.impl.codesystem.domain;
 
+import java.util.Map;
+
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 
 /**
@@ -31,6 +33,7 @@ public class CodeSystem implements ICodeSystem {
 	private String iconPath;
 	private String terminologyId;
 	private String repositoryUuid;
+	private Map<String, String> extensionMap;
 
 	@Override
 	public String getOid() {
@@ -81,6 +84,11 @@ public class CodeSystem implements ICodeSystem {
 	public String getRepositoryUuid() {
 		return repositoryUuid;
 	}
+	
+	@Override
+	public Map<String, String> getExtension() {
+		return extensionMap;
+	}
 
 	public void setOid(final String oid) {
 		this.oid = oid;
@@ -120,6 +128,10 @@ public class CodeSystem implements ICodeSystem {
 	
 	public void setRepositoryUuid(String repositoryUuid) {
 		this.repositoryUuid = repositoryUuid;
+	}
+	
+	public void setExtension(Map<String, String> extensionMap) {
+		this.extensionMap = extensionMap;
 	}
 
 	@Override
