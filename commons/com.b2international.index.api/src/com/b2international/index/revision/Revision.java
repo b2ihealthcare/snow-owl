@@ -53,7 +53,7 @@ public abstract class Revision implements WithId {
 	}
 	
 	@Override
-	public String _id() {
+	public final String _id() {
 		return checkNotNull(_id);
 	}
 	
@@ -74,22 +74,22 @@ public abstract class Revision implements WithId {
 	}
 	
 	@JsonIgnore
-	public long getStorageKey() {
+	public final long getStorageKey() {
 		return storageKey;
 	}
 	
 	@JsonIgnore
-	public Collection<ReplacedIn> getReplacedIns() {
+	public final Collection<ReplacedIn> getReplacedIns() {
 		return ImmutableList.copyOf(replacedIns);
 	}
 
 	@JsonIgnore
-	public String getBranchPath() {
+	public final String getBranchPath() {
 		return branchPath;
 	}
 	
 	@JsonIgnore
-	public long getCommitTimestamp() {
+	public final long getCommitTimestamp() {
 		return commitTimestamp;
 	}
 
