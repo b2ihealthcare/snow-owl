@@ -61,7 +61,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -401,7 +401,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		if (null == concept) {
 			return null;
 		} else {
-			return AdapterUtil.adapt(concept, SnomedConceptIndexEntry.class);
+			return AdapterUtil.adapt(concept, SnomedConceptDocument.class);
 		}
 	}
 
@@ -423,8 +423,8 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	
 	@Override
 	protected AbstractIndexEntry getIndexEntryFromTerminologyBrowser(final String id) {
-		final SnomedConceptIndexEntry concept = (SnomedConceptIndexEntry) super.getIndexEntryFromTerminologyBrowser(id);
-		return SnomedConceptIndexEntry.builder(concept).label(getConceptLabel(id, getCurrentView())).build();
+		final SnomedConceptDocument concept = (SnomedConceptDocument) super.getIndexEntryFromTerminologyBrowser(id);
+		return SnomedConceptDocument.builder(concept).label(getConceptLabel(id, getCurrentView())).build();
 	}
 	
 	/**

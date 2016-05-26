@@ -21,14 +21,14 @@ import java.util.Map;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.IStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * Browser service for the SNOMED&nbsp;CT relationships.
  * @see IStatementBrowser
  */
-public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptIndexEntry, SnomedRelationshipIndexEntry, String> {
+public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptDocument, SnomedRelationshipIndexEntry, String> {
 
 	/**
 	 * Returns with all active relationships for a particular branch.

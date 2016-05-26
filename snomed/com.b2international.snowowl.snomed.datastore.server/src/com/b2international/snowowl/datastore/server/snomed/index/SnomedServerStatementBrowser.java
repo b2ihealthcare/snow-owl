@@ -51,7 +51,7 @@ import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -100,21 +100,21 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 	}
 
 	@Override
-	public List<SnomedRelationshipIndexEntry> getInboundStatements(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public List<SnomedRelationshipIndexEntry> getInboundStatements(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(concept, "Concept must not be null.");
 		return getInboundStatementsById(branchPath, concept.getId());
 	}
 
 	@Override
-	public List<SnomedRelationshipIndexEntry> getOutboundStatements(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public List<SnomedRelationshipIndexEntry> getOutboundStatements(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(concept, "Concept must not be null.");
 		return getOutboundStatementsById(branchPath, concept.getId());
 	}
 
 	@Override
-	public List<SnomedRelationshipIndexEntry> getStatements(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public List<SnomedRelationshipIndexEntry> getStatements(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(concept, "Concept must not be null.");
 		return getStatementsById(branchPath, concept.getId());

@@ -27,7 +27,7 @@ import com.b2international.snowowl.datastore.request.GetRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * @since 4.5
@@ -45,7 +45,7 @@ final class SnomedConceptGetRequest extends GetRequest<ISnomedConcept> {
 	
 	@Override
 	protected ISnomedConcept process(BranchContext context, IComponent<String> component, Options expand) {
-		return SnomedConverters.newConceptConverter(context, expand, locales()).convert((SnomedConceptIndexEntry) component);
+		return SnomedConverters.newConceptConverter(context, expand, locales()).convert((SnomedConceptDocument) component);
 	}
 	
 	@Override

@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.google.common.collect.Sets;
@@ -41,12 +41,12 @@ public class ReferenceSetConceptSetProcessor extends ConceptSetProcessor<Referen
 	}
 	
 	@Override
-	public Iterator<SnomedConceptIndexEntry> getConcepts() {
-		final Set<SnomedConceptIndexEntry> memberConcepts = getReferenceSetMemberReferencedConceptSet();
+	public Iterator<SnomedConceptDocument> getConcepts() {
+		final Set<SnomedConceptDocument> memberConcepts = getReferenceSetMemberReferencedConceptSet();
 		return memberConcepts.iterator();
 	}
 
-	private Set<SnomedConceptIndexEntry> getReferenceSetMemberReferencedConceptSet() {
+	private Set<SnomedConceptDocument> getReferenceSetMemberReferencedConceptSet() {
 		final String refSetIdentifierConceptId = conceptSetDefinition.getRefSetIdentifierConceptId();
 		final SnomedRefSetIndexEntry refSet = refSetBrowser.getRefSet(refSetIdentifierConceptId);
 		
@@ -59,12 +59,12 @@ public class ReferenceSetConceptSetProcessor extends ConceptSetProcessor<Referen
 					refSetIdentifierConceptId));
 		}
 		
-		final Collection<SnomedConceptIndexEntry> memberConcepts = refSetBrowser.getMemberConcepts(refSetIdentifierConceptId);
+		final Collection<SnomedConceptDocument> memberConcepts = refSetBrowser.getMemberConcepts(refSetIdentifierConceptId);
 		return Sets.newHashSet(memberConcepts);
 	}
 	
 	@Override
-	public boolean contains(final SnomedConceptIndexEntry concept) {
+	public boolean contains(final SnomedConceptDocument concept) {
 		return refSetBrowser.isReferenced(conceptSetDefinition.getRefSetIdentifierConceptId(), concept.getId());
 	}
 }

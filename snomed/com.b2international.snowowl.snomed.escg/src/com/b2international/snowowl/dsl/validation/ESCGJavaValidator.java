@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -227,7 +227,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final SnomedConceptIndexEntry entry = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(concept.getId());
+		final SnomedConceptDocument entry = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(concept.getId());
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", EscgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}

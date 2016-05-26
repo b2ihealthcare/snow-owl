@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.refset.derivation.AbstractSnomedRefSetDerivator;
@@ -94,10 +94,10 @@ public abstract class AbstractSnomedSimpleMappingRefSetDerivator {
 			}
 		}));
 		
-		final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> browser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
+		final IClientTerminologyBrowser<SnomedConceptDocument, String> browser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 		return Sets.newHashSet(Iterables.filter(conceptIds, new Predicate<String>() {
 			@Override public boolean apply(String conceptId) {
-				final SnomedConceptIndexEntry concept = browser.getConcept(conceptId);
+				final SnomedConceptDocument concept = browser.getConcept(conceptId);
 				return null != concept && concept.isActive();
 			}
 		}));

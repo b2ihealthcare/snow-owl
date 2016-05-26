@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
@@ -59,7 +59,7 @@ public class QueryRefSetUpdater {
 			String query = queryMember.getQuery();
 
 			IEscgQueryEvaluatorClientService queryEvaluatorService = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorClientService.class);
-			final Collection<SnomedConceptIndexEntry> queryConceptMinis = queryEvaluatorService.evaluate(query);
+			final Collection<SnomedConceptDocument> queryConceptMinis = queryEvaluatorService.evaluate(query);
 			
 			Map<String, String> conceptsToAdd = Maps.newHashMap();
 			Map<String, String> conceptsToRemove = Maps.newHashMap();
@@ -69,7 +69,7 @@ public class QueryRefSetUpdater {
 			final SnomedRefSetMemberIndexQueryAdapter adapter = new SnomedRefSetMemberIndexQueryAdapter(queryMember.getReferencedComponentId(), null, false);
 			final List<SnomedRefSetMemberIndexEntry> results = indexSearcher.search(adapter);
 			
-			for(SnomedConceptIndexEntry queryResultConcept : queryConceptMinis){
+			for(SnomedConceptDocument queryResultConcept : queryConceptMinis){
 				if (queryResultConcept.isActive()) {				
 					conceptsToAdd.put(queryResultConcept.getId(), queryResultConcept.getLabel());
 				}

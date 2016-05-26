@@ -17,7 +17,7 @@ package com.b2international.snowowl.semanticengine.simpleast.normalform;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 
 
@@ -26,10 +26,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
  * 
  */
 public final class FocusConceptNormalizationResult {
-	public Collection<SnomedConceptIndexEntry> filteredPrimitiveSuperTypes;
+	public Collection<SnomedConceptDocument> filteredPrimitiveSuperTypes;
 	public ConceptDefinition mergedConceptDefinition;
 	
-	FocusConceptNormalizationResult(Collection<SnomedConceptIndexEntry> filteredPrimitiveSuperTypes2, ConceptDefinition mergedConceptDefinition) {
+	FocusConceptNormalizationResult(Collection<SnomedConceptDocument> filteredPrimitiveSuperTypes2, ConceptDefinition mergedConceptDefinition) {
 		this.filteredPrimitiveSuperTypes = filteredPrimitiveSuperTypes2;
 		this.mergedConceptDefinition = mergedConceptDefinition;
 	}

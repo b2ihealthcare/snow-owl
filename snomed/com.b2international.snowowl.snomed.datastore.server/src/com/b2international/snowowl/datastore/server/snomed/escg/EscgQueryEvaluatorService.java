@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Serializable {
@@ -42,7 +42,7 @@ public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Se
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> evaluate(final IBranchPath branchPath, final String queryExpression) {
+	public Collection<SnomedConceptDocument> evaluate(final IBranchPath branchPath, final String queryExpression) {
 		final QueryEvaluator delegate = new QueryEvaluator(branchPath);
 		return delegate.evaluate(rewriter.parseRewrite(queryExpression));
 	}

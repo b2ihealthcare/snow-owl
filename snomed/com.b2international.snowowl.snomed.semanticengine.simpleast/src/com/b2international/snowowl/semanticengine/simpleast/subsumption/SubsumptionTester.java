@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
@@ -51,9 +51,9 @@ public class SubsumptionTester {
 	private static final String CONCEPT_ID_SUBJECT_RELATIONSHIP_CONTEXT = "408732007";
 	private static final String CONCEPT_ID_SAME_AS = "168666000";
 	private static final String CONCEPT_ID_REPLACED_BY = "370124000";
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 	
-	public SubsumptionTester(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser) {
+	public SubsumptionTester(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
 	}
 
@@ -195,8 +195,8 @@ public class SubsumptionTester {
 	 * @return
 	 */
 	public boolean isSubsumed(ConceptRef predicate, ConceptRef candidate) {
-		SnomedConceptIndexEntry candidateConceptMini = terminologyBrowser.getConcept(candidate.getConceptId());
-		SnomedConceptIndexEntry predicateConceptMini = terminologyBrowser.getConcept(predicate.getConceptId());
+		SnomedConceptDocument candidateConceptMini = terminologyBrowser.getConcept(candidate.getConceptId());
+		SnomedConceptDocument predicateConceptMini = terminologyBrowser.getConcept(predicate.getConceptId());
 		return isSubsumed(predicateConceptMini, candidateConceptMini);
 	}
 	
@@ -227,15 +227,15 @@ public class SubsumptionTester {
 	 * 		</ul>
 	 * </ol>
 	 * 
-	 * @param predicate	the predicate {@link SnomedConceptIndexEntry}
-	 * @param candidate	the candidate {@link SnomedConceptIndexEntry}
+	 * @param predicate	the predicate {@link SnomedConceptDocument}
+	 * @param candidate	the candidate {@link SnomedConceptDocument}
 	 * @return
 	 */
-	public boolean isSubsumed(SnomedConceptIndexEntry predicate, SnomedConceptIndexEntry candidate) {
+	public boolean isSubsumed(SnomedConceptDocument predicate, SnomedConceptDocument candidate) {
 		if (!candidate.isActive()) {
 			String replacementConceptId = null;
 			SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-			SnomedConceptIndexEntry conceptMini = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(candidate.getId());
+			SnomedConceptDocument conceptMini = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(candidate.getId());
 			Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(conceptMini.getId());
 			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
 				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
@@ -249,7 +249,7 @@ public class SubsumptionTester {
 				return false;
 			}
 			
-			SnomedConceptIndexEntry replacementCandidateConcept = terminologyBrowser.getConcept(replacementConceptId);
+			SnomedConceptDocument replacementCandidateConcept = terminologyBrowser.getConcept(replacementConceptId);
 			candidate = replacementCandidateConcept;
 		}
 		
@@ -257,8 +257,8 @@ public class SubsumptionTester {
 			return true;
 		}
 		
-		Collection<SnomedConceptIndexEntry> allSuperTypes = terminologyBrowser.getAllSuperTypes(terminologyBrowser.getConcept(candidate.getId()));
-		for (SnomedConceptIndexEntry conceptMini : allSuperTypes) {
+		Collection<SnomedConceptDocument> allSuperTypes = terminologyBrowser.getAllSuperTypes(terminologyBrowser.getConcept(candidate.getId()));
+		for (SnomedConceptDocument conceptMini : allSuperTypes) {
 			if (conceptMini.getId().equals(predicate.getId())) {
 				return true;
 			}
@@ -294,8 +294,8 @@ public class SubsumptionTester {
 	 * 		</ul>
 	 * </ol>
 	 * 
-	 * @param predicateId	the predicate {@link SnomedConceptIndexEntry}
-	 * @param candidateId	the candidate {@link SnomedConceptIndexEntry}
+	 * @param predicateId	the predicate {@link SnomedConceptDocument}
+	 * @param candidateId	the candidate {@link SnomedConceptDocument}
 	 * @param hierarchy represents the hierarchy between the active concepts
 	 * @return
 	 */

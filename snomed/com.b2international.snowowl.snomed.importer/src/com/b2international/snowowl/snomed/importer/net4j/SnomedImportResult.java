@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.importer.net4j;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -28,11 +28,11 @@ import com.google.common.collect.Sets;
  */
 public class SnomedImportResult {
 
-	private final List<SnomedConceptIndexEntry> visitedConcepts = Lists.newArrayList();
+	private final List<SnomedConceptDocument> visitedConcepts = Lists.newArrayList();
 	private final List<SnomedRefSetIndexEntry> visitedRefSets = Lists.newArrayList();
 	private final Set<SnomedValidationDefect> validationDefects = Sets.newHashSet();
 	
-	public List<SnomedConceptIndexEntry> getVisitedConcepts() {
+	public List<SnomedConceptDocument> getVisitedConcepts() {
 		return visitedConcepts;
 	}
 	

@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedClientPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedTerminologyBrowserProvider;
@@ -133,7 +133,7 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 
 		// Use extended terminology browser for creating an index entry
 		final SnomedClientTerminologyBrowser terminologyBrowser = SnomedTerminologyBrowserProvider.getTerminologyBrowser(concept);
-		final SnomedConceptIndexEntry conceptIndexEntry = terminologyBrowser.getConcept(conceptIdString);
+		final SnomedConceptDocument conceptIndexEntry = terminologyBrowser.getConcept(conceptIdString);
 		
 		final SnomedConceptDetailsBean conceptDetailsBean = new SnomedConceptDetailsBean(conceptIndexEntry.getLabel(), 
 				Long.parseLong(conceptIndexEntry.getIconId()), 

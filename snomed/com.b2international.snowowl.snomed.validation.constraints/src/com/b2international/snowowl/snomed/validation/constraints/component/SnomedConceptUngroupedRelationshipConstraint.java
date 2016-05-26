@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.collect.ImmutableSet;
@@ -48,14 +48,14 @@ import com.google.common.collect.ImmutableSet;
  * <li>Has dose form (411116001)</li>
  * </ul>
  */
-public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValidationConstraint<SnomedConceptIndexEntry> {
+public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValidationConstraint<SnomedConceptDocument> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptUngroupedRelationshipConstraint";
 	
 	private static final Set<String> UNGROUPED_RELATIONSHIP_TYPES = ImmutableSet.of(IS_A, PART_OF, LATERALITY, HAS_ACTIVE_INGREDIENT, HAS_DOSE_FORM);
 	
 	@Override
-	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
+	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptDocument component) {
 		
 		final List<ComponentValidationDiagnostic> diagnostics = newArrayList();
 		final SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
@@ -81,7 +81,7 @@ public class SnomedConceptUngroupedRelationshipConstraint extends ComponentValid
 		}
 	}
 
-	private String createErrorMessage(final String relationshipTypeId, final SnomedConceptIndexEntry component, final IBranchPath branchPath) {
+	private String createErrorMessage(final String relationshipTypeId, final SnomedConceptDocument component, final IBranchPath branchPath) {
 		final String relationshipTypeLabel = getConceptLabel(relationshipTypeId, branchPath);
 		return String.format("'%s' has a grouped relationship of the type '%s' that must always be ungrouped.", component.getLabel(), relationshipTypeLabel);
 	}

@@ -33,7 +33,7 @@ import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
@@ -117,7 +117,7 @@ public final class SnomedSimpleTypeRefSetAttributeConfiguration extends Abstract
 		return null;
 	}
 
-	private static IClientRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptIndexEntry, String> getRefSetBrowserService() {
+	private static IClientRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptDocument, String> getRefSetBrowserService() {
 		return ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
 	}
 

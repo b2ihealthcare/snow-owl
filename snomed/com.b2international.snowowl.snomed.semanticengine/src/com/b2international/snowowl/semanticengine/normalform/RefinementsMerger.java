@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * <b>5.3.5	Merge refinement</b><br/>
@@ -47,9 +47,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
  */
 public class RefinementsMerger {
 	
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> snor;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> snor;
 
-	public RefinementsMerger(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> snor) {
+	public RefinementsMerger(IClientTerminologyBrowser<SnomedConceptDocument, String> snor) {
 		this.snor = snor;
 	}
 

@@ -75,7 +75,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -125,12 +125,12 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 			.conceptReferringMappingRefSetId()
 			.build();
 
-	protected final class RefSetTypeToConceptFunction implements Function<SnomedRefSetType, SnomedConceptIndexEntry> {
+	protected final class RefSetTypeToConceptFunction implements Function<SnomedRefSetType, SnomedConceptDocument> {
 		private final IBranchPath branchPath;
 		RefSetTypeToConceptFunction(final IBranchPath branchPath) {
 			this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		}
-		@Override public SnomedConceptIndexEntry apply(final SnomedRefSetType type) {
+		@Override public SnomedConceptDocument apply(final SnomedRefSetType type) {
 			return getTerminologyBrowser().getConcept(branchPath, SnomedRefSetUtil.getConceptId(type));
 		}
 	}
@@ -160,13 +160,13 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final IBranchPath branchPath, final String refSetId) {
+	public Collection<SnomedConceptDocument> getMemberConcepts(final IBranchPath branchPath, final String refSetId) {
 		final Query query = SnomedMappings.newQuery().active().memberRefSetId(refSetId).matchAll();
 		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
 		service.search(branchPath, query, collector);
 		try {
 			final DocIdsIterator scoredDocIdsIterator = collector.getDocIDs().iterator();
-			final Set<SnomedConceptIndexEntry> concepts = Sets.newHashSet();
+			final Set<SnomedConceptDocument> concepts = Sets.newHashSet();
 			while (scoredDocIdsIterator.next()) {
 				final int docId = scoredDocIdsIterator.getDocID();
 				final Document doc = service.document(branchPath, docId, SnomedMappings.fieldsToLoad().memberReferencedComponentId().build());
@@ -317,52 +317,52 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	 * @deprecated - don't use it anymore, will be removed in 4.6
 	 */
 	@Override
-	public Collection<SnomedConceptIndexEntry> getRootConcepts(final IBranchPath branchPath) {
+	public Collection<SnomedConceptDocument> getRootConcepts(final IBranchPath branchPath) {
 		final int size = SnomedRefSetType.values().length;
-		final Collection<SnomedConceptIndexEntry> roots = Lists.newArrayListWithExpectedSize(size);
+		final Collection<SnomedConceptDocument> roots = Lists.newArrayListWithExpectedSize(size);
 		final RefSetTypeToConceptFunction typeToConceptFunction = new RefSetTypeToConceptFunction(branchPath);
 		roots.addAll(FluentIterable.from(SnomedRefSetUtil.getTypesForUI()).transform(typeToConceptFunction).filter(Predicates.notNull()).toList());
 		return roots;
 	}
 
 	@Override
-	public SnomedConceptIndexEntry getConcept(final IBranchPath branchPath, final String id) {
+	public SnomedConceptDocument getConcept(final IBranchPath branchPath, final String id) {
 		return getTerminologyBrowser().getConcept(branchPath, id);
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSuperTypes(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getSuperTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		return getSuperTypesById(branchPath, concept.getId());
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypes(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getSubTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		return getSubTypesById(branchPath, concept.getId());
 	}
 
 	@Override
-	public List<SnomedConceptIndexEntry> getSubTypesAsList(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public List<SnomedConceptDocument> getSubTypesAsList(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSuperTypesById(final IBranchPath branchPath, final String id) {
+	public Collection<SnomedConceptDocument> getSuperTypesById(final IBranchPath branchPath, final String id) {
 		return getTerminologyBrowser().getSuperTypesById(branchPath, id);
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypesById(final IBranchPath branchPath, final String id) {
+	public Collection<SnomedConceptDocument> getSubTypesById(final IBranchPath branchPath, final String id) {
 		// refset identifier concept subtypes
-		final Collection<SnomedConceptIndexEntry> identifierConceptSubTypes = getTerminologyBrowser().getSubTypesById(branchPath, id);
+		final Collection<SnomedConceptDocument> identifierConceptSubTypes = getTerminologyBrowser().getSubTypesById(branchPath, id);
 		final Iterable<SnomedRefSetIndexEntry> refSets = getRefsSets(branchPath);
 		final HashSet<String> refSetIdSet = Sets.newHashSet(Iterables.transform(refSets, new Function<SnomedRefSetIndexEntry, String>() {
 			@Override public String apply(final SnomedRefSetIndexEntry input) {
 				return input.getId();
 			}
 		}));
-		final List<SnomedConceptIndexEntry> subRefSets = new ArrayList<SnomedConceptIndexEntry>();
+		final List<SnomedConceptDocument> subRefSets = new ArrayList<SnomedConceptDocument>();
 		// look for known identifier concepts in the subtypes
-		for(final SnomedConceptIndexEntry conceptMini : identifierConceptSubTypes){
+		for(final SnomedConceptDocument conceptMini : identifierConceptSubTypes){
 			if(refSetIdSet.contains(conceptMini.getId())){
 				subRefSets.add(conceptMini);
 			}
@@ -483,32 +483,32 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSuperTypes(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getAllSuperTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSuperTypesById(final IBranchPath branchPath, final String id) {
+	public Collection<SnomedConceptDocument> getAllSuperTypesById(final IBranchPath branchPath, final String id) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypes(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getAllSubTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypesById(final IBranchPath branchPath, final String id) {
+	public Collection<SnomedConceptDocument> getAllSubTypesById(final IBranchPath branchPath, final String id) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public int getAllSubTypeCount(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public int getAllSubTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public int getSubTypeCount(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public int getSubTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
@@ -518,12 +518,12 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 
 	@Override
-	public int getAllSuperTypeCount(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public int getAllSuperTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public int getSuperTypeCount(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public int getSuperTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
@@ -579,7 +579,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 
 	@Override
-	public SnomedConceptIndexEntry getTopLevelConcept(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public SnomedConceptDocument getTopLevelConcept(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
@@ -589,7 +589,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 
 	@Override
-	public boolean isSuperTypeOf(final IBranchPath branchPath, final SnomedConceptIndexEntry superType, final SnomedConceptIndexEntry subType) {
+	public boolean isSuperTypeOf(final IBranchPath branchPath, final SnomedConceptDocument superType, final SnomedConceptDocument subType) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
@@ -713,7 +713,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 	}
 	
 	@Override
-	public IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filterTerminologyBrowser(final IBranchPath branchPath, final String expression, final IProgressMonitor monitor) {
+	public IFilterClientTerminologyBrowser<SnomedConceptDocument, String> filterTerminologyBrowser(final IBranchPath branchPath, final String expression, final IProgressMonitor monitor) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
@@ -724,7 +724,7 @@ public class SnomedServerRefSetBrowser extends AbstractSnomedIndexBrowser<Snomed
 
 	@Override
 	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(final IBranchPath branchPath,
-			final SnomedConceptIndexEntry concept) {
+			final SnomedConceptDocument concept) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 

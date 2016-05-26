@@ -18,7 +18,7 @@ package com.b2international.snowowl.scripting.services.api;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
@@ -31,27 +31,27 @@ public interface IHierarchicalService {
 	 * Returns the topmost root node of the SNOMED&nbsp;CT terminology.
 	 * @return the SNOMED&nbsp;CT root node. Should never be null.
 	 */
-	SnomedConceptIndexEntry getSnomedRoot();
+	SnomedConceptDocument getSnomedRoot();
 	
 	/**
 	 * Returns the root concepts of the SNOMED&nbsp;CT terminology.
 	 * @return a list of the root concept in the terminology.
 	 */
-	List<SnomedConceptIndexEntry> getRootConcepts();
+	List<SnomedConceptDocument> getRootConcepts();
 	
 	/**
 	 * Returns the concept specified by its unique ID.
 	 * @param conceptId the concept ID.
 	 * @return the SNOMED&nbsp;CT concept.
 	 */
-	SnomedConceptIndexEntry getConcept(final long conceptId);
+	SnomedConceptDocument getConcept(final long conceptId);
 
 	/**
 	 * Returns the concept specified by its unique ID.
 	 * @param conceptId the concept ID.
 	 * @return the SNOMED&nbsp;CT concept.
 	 */
-	SnomedConceptIndexEntry getConcept(final String conceptId);
+	SnomedConceptDocument getConcept(final String conceptId);
 
 	/**
 	 * Returns with the direct descendants of a concept. A descendant is 
@@ -62,7 +62,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return direct descendants of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getSubtypes(final long conceptId);
+	Collection<SnomedConceptDocument> getSubtypes(final long conceptId);
 
 	/**
 	 * Returns with the direct descendants of a concept. A descendant is 
@@ -73,7 +73,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return direct descendants of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getSubtypes(final String conceptId);
+	Collection<SnomedConceptDocument> getSubtypes(final String conceptId);
 	
 	/**
 	 * Returns with the direct descendant count of a concept. A descendant is 
@@ -122,7 +122,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return all descendants of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getAllSubtypes(final long conceptId);
+	Collection<SnomedConceptDocument> getAllSubtypes(final long conceptId);
 
 	/**
 	 * Returns with all (direct and transitive) descendants of a concept.
@@ -131,7 +131,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return all descendants of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getAllSupertypes(final long conceptId);
+	Collection<SnomedConceptDocument> getAllSupertypes(final long conceptId);
 	
 	/**
 	 * Returns with all (direct and transitive) descendants of a concept.
@@ -140,7 +140,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return all descendants of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getAllSubtypes(final String conceptId);
+	Collection<SnomedConceptDocument> getAllSubtypes(final String conceptId);
 
 	/**
 	 * Returns with the direct ancestors of a concept. An ancestor is 
@@ -151,7 +151,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return direct ancestors of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getSupertypes(final long conceptId);
+	Collection<SnomedConceptDocument> getSupertypes(final long conceptId);
 
 	/**
 	 * Returns with the direct ancestors of a concept. An ancestor is 
@@ -162,7 +162,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return direct ancestors of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getSupertypes(final String conceptId);
+	Collection<SnomedConceptDocument> getSupertypes(final String conceptId);
 	
 
 	/**
@@ -172,7 +172,7 @@ public interface IHierarchicalService {
 	 * @param conceptId the concept ID.
 	 * @return all ancestors of the concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getAllSupertypes(final String conceptId);
+	Collection<SnomedConceptDocument> getAllSupertypes(final String conceptId);
 	
 	/**
 	 * Returns with the direct ancestor count of a concept. An ancestor is 
@@ -261,7 +261,7 @@ public interface IHierarchicalService {
 	 * @param relationshipTypeId the unique SNOMED&nbsp;CT concept ID of the relationship type concept.
 	 * @return a collection of active target concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getTargetConcepts(final String sourceConceptId, final String relationshipTypeId);
+	Collection<SnomedConceptDocument> getTargetConcepts(final String sourceConceptId, final String relationshipTypeId);
 	
 	/**
 	 * Returns with a collection of SNOMED&nbsp;CT active target concepts for a source concept given by its unique SNOMED&nbsp;CT concept ID
@@ -272,7 +272,7 @@ public interface IHierarchicalService {
 	 * @param relationshipTypeId the unique SNOMED&nbsp;CT concept ID of the relationship type concept.
 	 * @return a collection of active target concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getTargetConcepts(final long sourceConceptId, final long relationshipTypeId);
+	Collection<SnomedConceptDocument> getTargetConcepts(final long sourceConceptId, final long relationshipTypeId);
 	
 	/**
 	 * Returns with a collection of SNOMED&nbsp;CT active target concepts for a source concept given by its unique SNOMED&nbsp;CT concept ID
@@ -283,7 +283,7 @@ public interface IHierarchicalService {
 	 * @param relationshipTypeId the unique SNOMED&nbsp;CT concept ID of the relationship type concept.
 	 * @return a collection of active source concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getSourceConcepts(final String targetConceptId, final String relationshipTypeId);
+	Collection<SnomedConceptDocument> getSourceConcepts(final String targetConceptId, final String relationshipTypeId);
 	
 	/**
 	 * Returns with a collection of active SNOMED&nbsp;CT source concepts for a source concept given by its unique SNOMED&nbsp;CT concept ID
@@ -294,7 +294,7 @@ public interface IHierarchicalService {
 	 * @param relationshipTypeId the unique SNOMED&nbsp;CT concept ID of the relationship type concept.
 	 * @return a collection of active source concept.
 	 */
-	Collection<SnomedConceptIndexEntry> getSourceConcepts(final long targetConceptId, final long relationshipTypeId);
+	Collection<SnomedConceptDocument> getSourceConcepts(final long targetConceptId, final long relationshipTypeId);
 
 	/**
 	 * Returns a list of ordered concepts representing the shortest path using IS_A relationships
@@ -306,7 +306,7 @@ public interface IHierarchicalService {
 	 * @param endConcept the unique ID of the end SNOMED&nbsp;CT concept. 
 	 * @return a list of the shortest path between two given SNOMED&nbsp;CT concept. 
 	 */
-	List<SnomedConceptIndexEntry> getShortestPath(final long startingConcept, final long endConcept);
+	List<SnomedConceptDocument> getShortestPath(final long startingConcept, final long endConcept);
 	
 	/**
 	 * Returns a list of ordered concepts representing the shortest path using IS_A relationships
@@ -318,7 +318,7 @@ public interface IHierarchicalService {
 	 * @param endConcept the unique ID of the end SNOMED&nbsp;CT concept. 
 	 * @return a list of the shortest path between two given SNOMED&nbsp;CT concept. 
 	 */
-	List<SnomedConceptIndexEntry> getShortestPath(final String startingConcept, final String endConcept);
+	List<SnomedConceptDocument> getShortestPath(final String startingConcept, final String endConcept);
 	
 	/**
 	 * Returns with all outbound/source relationships of a concept.

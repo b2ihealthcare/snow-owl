@@ -20,7 +20,7 @@ import java.util.Iterator;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 
@@ -60,12 +60,12 @@ public class RelationshipConceptSetProcessor extends ConceptSetProcessor<Relatio
 	}
 	
 	@Override
-	public Iterator<SnomedConceptIndexEntry> getConcepts() {
+	public Iterator<SnomedConceptDocument> getConcepts() {
 		throw new UnsupportedOperationException("Relationship-based concept sets are not allowed in predicates, only domains.");
 	}
 	
 	@Override
-	public boolean contains(final SnomedConceptIndexEntry concept) {
+	public boolean contains(final SnomedConceptDocument concept) {
 		
 		final SnomedRelationshipIndexQueryAdapterExtension adapter = new SnomedRelationshipIndexQueryAdapterExtension(concept.getId(),
 				conceptSetDefinition.getTypeConceptId(),

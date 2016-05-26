@@ -31,7 +31,7 @@ import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DescriptionWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -64,7 +64,7 @@ public abstract class WidgetBeanProviderStrategy {
 	 * Map for caching concepts based on their unique SNOMED CT concept ID.
 	 * <br>This cache could be cleared with {@link #clear()} after populating the widget bean.
 	 */
-	protected Map<String, SnomedConceptIndexEntry> componentCache;
+	protected Map<String, SnomedConceptDocument> componentCache;
 	protected final boolean includeUnsanctioned;
 	
 	public WidgetBeanProviderStrategy(final ConceptWidgetModel conceptWidgetModel, final boolean includeUnsanctioned) {
@@ -316,7 +316,7 @@ public abstract class WidgetBeanProviderStrategy {
 	}
 	
 	/*returns with the lightweight representation of the SNOMED CT concept identifier by the specified ID*/
-	abstract protected SnomedConceptIndexEntry getConcept(final String conceptId);
+	abstract protected SnomedConceptDocument getConcept(final String conceptId);
 	
 	abstract protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap();
 	

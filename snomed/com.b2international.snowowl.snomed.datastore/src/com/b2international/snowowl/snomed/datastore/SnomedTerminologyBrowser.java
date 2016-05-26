@@ -28,20 +28,20 @@ import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Concept hierarchy browser service for the SNOMED&nbsp;CT ontology. 
  * @see ITerminologyBrowser
  */
-public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConceptIndexEntry, String> {
+public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConceptDocument, String> {
 
 	/**
 	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the specified branch. 
 	 * @param branchPath the branch path.
 	 * @return an iterable of all SNOMED&nbsp;CT concepts.
 	 */
-	Iterable<SnomedConceptIndexEntry> getConcepts(final IBranchPath branchPath);
+	Iterable<SnomedConceptDocument> getConcepts(final IBranchPath branchPath);
 	
 	/**
 	 * Returns with a collection of concepts given with the concept unique IDs.
@@ -51,7 +51,7 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 * @param ids the unique IDs for the collection.
 	 * @return a collection of concepts.
 	 */
-	Collection<SnomedConceptIndexEntry> getConcepts(final IBranchPath branchPath, final Iterable<String> ids);
+	Collection<SnomedConceptDocument> getConcepts(final IBranchPath branchPath, final Iterable<String> ids);
 	
 	/**
 	 * Returns with the number of all SNOMED&nbsp;CT concepts for the specified branch. 
@@ -194,7 +194,7 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 * @return the sub types with additional child flag
 	 * @deprecated - unused, will be removed in 4.6
 	 */
-	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(final IBranchPath branchPath, final SnomedConceptIndexEntry concept);
+	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(final IBranchPath branchPath, final SnomedConceptDocument concept);
 	
 	/**
 	 * Returns with the depth of the current concept from the taxonomy.

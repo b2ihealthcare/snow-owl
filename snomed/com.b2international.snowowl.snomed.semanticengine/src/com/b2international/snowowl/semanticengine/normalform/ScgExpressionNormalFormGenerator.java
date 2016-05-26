@@ -35,7 +35,7 @@ import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.semanticengine.utils.AttributeCollectionComparator;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Ordering;
 
 /**
@@ -44,10 +44,10 @@ import com.google.common.collect.Ordering;
  */
 public class ScgExpressionNormalFormGenerator implements ExpressionNormalFormGenerator {
 	
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 	private final SnomedClientStatementBrowser statementBrowser;
 
-	public ScgExpressionNormalFormGenerator(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
+	public ScgExpressionNormalFormGenerator(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
 		this.statementBrowser = statementBrowser;
 	}
@@ -217,9 +217,9 @@ public class ScgExpressionNormalFormGenerator implements ExpressionNormalFormGen
 		return attributes;
 	}
 	
-	private Collection<Concept> wrapConceptMinis(Collection<SnomedConceptIndexEntry> filteredPrimitiveSuperTypes) {
+	private Collection<Concept> wrapConceptMinis(Collection<SnomedConceptDocument> filteredPrimitiveSuperTypes) {
 		List<Concept> concepts = new ArrayList<Concept>();
-		for (SnomedConceptIndexEntry conceptMini : filteredPrimitiveSuperTypes) {
+		for (SnomedConceptDocument conceptMini : filteredPrimitiveSuperTypes) {
 			Concept concept = ScgFactory.eINSTANCE.createConcept();
 			concept.setId(conceptMini.getId());
 			concepts.add(concept);

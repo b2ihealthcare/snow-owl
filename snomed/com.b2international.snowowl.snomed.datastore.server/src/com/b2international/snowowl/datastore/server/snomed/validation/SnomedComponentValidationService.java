@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.datastore.server.validation.ComponentValidationService;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.ISnomedComponentValidationService;
 
@@ -32,15 +32,15 @@ import com.b2international.snowowl.snomed.datastore.validation.ISnomedComponentV
  * Server side SNOMED&nbsp;CT component validation service interface.
  * 
  */
-public class SnomedComponentValidationService extends ComponentValidationService<SnomedConceptIndexEntry> implements ISnomedComponentValidationService {
+public class SnomedComponentValidationService extends ComponentValidationService<SnomedConceptDocument> implements ISnomedComponentValidationService {
 
 	@Override
 	protected Collection<ComponentValidationDiagnostic> doValidateAll(final IBranchPath branchPath, final IProgressMonitor monitor) {
 		return validate(branchPath, getAllActiveConcepts(branchPath), monitor);
 	}
 
-	private Collection<SnomedConceptIndexEntry> getAllActiveConcepts(final IBranchPath branchPath) {
-		return SnomedConceptIndexEntry.fromConcepts(SnomedRequests.prepareSearchConcept()
+	private Collection<SnomedConceptDocument> getAllActiveConcepts(final IBranchPath branchPath) {
+		return SnomedConceptDocument.fromConcepts(SnomedRequests.prepareSearchConcept()
 			.filterByActive(true)
 			.all()
 			.build(branchPath.getPath())

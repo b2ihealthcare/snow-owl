@@ -52,7 +52,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -75,9 +75,9 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 
 	protected abstract AbstractClientIndexService<SnomedDocument> getIndexService();
 
-	protected abstract AbstractClientTerminologyBrowser<SnomedConceptIndexEntry, String> getTerminologyBrowser();
+	protected abstract AbstractClientTerminologyBrowser<SnomedConceptDocument, String> getTerminologyBrowser();
 
-	protected abstract AbstractClientStatementBrowser<SnomedConceptIndexEntry, SnomedRelationshipIndexEntry, String> getStatementBrowser();
+	protected abstract AbstractClientStatementBrowser<SnomedConceptDocument, SnomedRelationshipIndexEntry, String> getStatementBrowser();
 
 	@Override
 	public Collection<IIndexEntry> getMembers(final String terminologyComponentId, final String componentId) {
@@ -464,7 +464,7 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 	}
 
 	private Iterable<String> getRelationshipIds(final String conceptId) {
-		final SnomedConceptIndexEntry concept = getTerminologyBrowser().getConcept(conceptId);
+		final SnomedConceptDocument concept = getTerminologyBrowser().getConcept(conceptId);
 		if (null == concept)
 			return Lists.newArrayList();
 		return ComponentUtils.getIds(getStatementBrowser().getOutboundStatements(concept));

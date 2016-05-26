@@ -19,15 +19,15 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 
 /**
- * Adds a boolean to {@link SnomedConceptIndexEntry} to indicate whether the concept has children.
+ * Adds a boolean to {@link SnomedConceptDocument} to indicate whether the concept has children.
  */
-public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptIndexEntry implements IComponentWithChildFlag<String> {
+public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptDocument implements IComponentWithChildFlag<String> {
 
 	private static final long serialVersionUID = -3327828639334867594L;
 
 	private final boolean hasChildren;
 
-	public SnomedConceptIndexEntryWithChildFlag(final SnomedConceptIndexEntry conceptIndexEntry, final boolean hasChildren) {
+	public SnomedConceptIndexEntryWithChildFlag(final SnomedConceptDocument conceptIndexEntry, final boolean hasChildren) {
 
 		super(conceptIndexEntry.getId(), 
 				conceptIndexEntry.getLabel(),

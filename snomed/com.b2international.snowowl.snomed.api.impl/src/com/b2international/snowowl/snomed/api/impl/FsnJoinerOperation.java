@@ -23,13 +23,13 @@ import java.util.Set;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Given a set of {@link SnomedConceptIndexEntry concept index entries}, collects the corresponding "preferred" fully
+ * Given a set of {@link SnomedConceptDocument concept index entries}, collects the corresponding "preferred" fully
  * specified names of each entry, and makes them available for converting to a response object.
  */
 public abstract class FsnJoinerOperation<T> {
@@ -46,7 +46,7 @@ public abstract class FsnJoinerOperation<T> {
 	}
 
 	public final List<T> run() {
-		Collection<SnomedConceptIndexEntry> conceptEntries = getConceptEntries(conceptId);
+		Collection<SnomedConceptDocument> conceptEntries = getConceptEntries(conceptId);
 		if (conceptEntries.isEmpty()) {
 			return ImmutableList.of();
 		}
@@ -55,15 +55,15 @@ public abstract class FsnJoinerOperation<T> {
 		return convertConceptEntries(conceptEntries, descriptionsByConcept);
 	}
 
-	private Map<String, ISnomedDescription> initDescriptionsByConcept(Collection<SnomedConceptIndexEntry> conceptEntries) {
+	private Map<String, ISnomedDescription> initDescriptionsByConcept(Collection<SnomedConceptDocument> conceptEntries) {
 		final Set<String> conceptIds = ComponentUtils.getIdSet(conceptEntries);
 		return descriptionService.getFullySpecifiedNames(conceptIds, locales);
 	}
 
-	private List<T> convertConceptEntries(Collection<SnomedConceptIndexEntry> conceptEntries, Map<String, ISnomedDescription> descriptionsByConcept) {
+	private List<T> convertConceptEntries(Collection<SnomedConceptDocument> conceptEntries, Map<String, ISnomedDescription> descriptionsByConcept) {
 		final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 
-		for (final SnomedConceptIndexEntry conceptEntry : conceptEntries) {
+		for (final SnomedConceptDocument conceptEntry : conceptEntries) {
 			resultBuilder.add(convertConceptEntry(conceptEntry, getTerm(descriptionsByConcept, conceptEntry.getId())));
 		}
 
@@ -80,7 +80,7 @@ public abstract class FsnJoinerOperation<T> {
 				});
 	}
 
-	protected abstract Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId);
+	protected abstract Collection<SnomedConceptDocument> getConceptEntries(String conceptId);
 
-	protected abstract T convertConceptEntry(SnomedConceptIndexEntry conceptEntry, Optional<String> optionalFsn);
+	protected abstract T convertConceptEntry(SnomedConceptDocument conceptEntry, Optional<String> optionalFsn);
 }

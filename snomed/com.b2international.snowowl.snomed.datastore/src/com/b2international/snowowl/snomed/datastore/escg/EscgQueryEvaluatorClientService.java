@@ -24,7 +24,7 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * {@link IEscgQueryEvaluatorClientService ESCG query evaluator client service} implementation, which delegates calls 
@@ -40,7 +40,7 @@ public class EscgQueryEvaluatorClientService extends ActiveBranchPathAwareServic
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> evaluate(final String queryExpression) {
+	public Collection<SnomedConceptDocument> evaluate(final String queryExpression) {
 		return wrappedService.evaluate(getBranchPath(), queryExpression);
 	}
 

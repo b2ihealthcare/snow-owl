@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptCommitInfoProcessingJob;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
@@ -109,7 +109,7 @@ public class SnomedExtendedRefSetEditorCommitInfoProcessingJob extends SnomedRef
 		
 		final String conceptId = member.getReferencedComponentId();
 		
-		final SnomedConceptIndexEntry concept = getTerminologyBrowser().getConcept(conceptId);
+		final SnomedConceptDocument concept = getTerminologyBrowser().getConcept(conceptId);
 		
 		if (null == concept) { //our concept is not a persisted one, we have to check it in the transaction
 

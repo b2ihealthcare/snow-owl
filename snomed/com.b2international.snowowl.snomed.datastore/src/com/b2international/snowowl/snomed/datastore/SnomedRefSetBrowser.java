@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.IClientRefSetBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyAndRefSetBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  * @see ITerminologyBrowser
  * @see IClientRefSetBrowser
  */
-public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptIndexEntry, String> {
+public interface SnomedRefSetBrowser extends ITerminologyAndRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptDocument, String> {
 
 	/**
 	 * Returns with the reference set identifier concept IDs of all {@link SnomedRefSetType#SIMPLE simple} and 

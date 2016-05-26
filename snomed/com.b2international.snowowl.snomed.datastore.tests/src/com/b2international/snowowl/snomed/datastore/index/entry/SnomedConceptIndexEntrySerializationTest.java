@@ -40,12 +40,12 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return Collections.<Class<?>>singleton(SnomedConceptIndexEntry.class);
+		return Collections.<Class<?>>singleton(SnomedConceptDocument.class);
 	}
 	
 	@Test
 	public void indexConcept() throws Exception {
-		final SnomedConceptIndexEntry concept = SnomedConceptIndexEntry.builder()
+		final SnomedConceptDocument concept = SnomedConceptDocument.builder()
 				.id(Concepts.ROOT_CONCEPT)
 				.iconId(Concepts.ROOT_CONCEPT)
 				.active(true)
@@ -61,7 +61,7 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, concept);
-		final SnomedConceptIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptIndexEntry.class, STORAGE_KEY1);
+		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, STORAGE_KEY1);
 		assertDocEquals(concept, actual);
 	}
 

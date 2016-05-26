@@ -31,13 +31,13 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public class QueryEvaluator implements Serializable, IQueryEvaluator<Collection<SnomedConceptIndexEntry>, RValue> {
+public class QueryEvaluator implements Serializable, IQueryEvaluator<Collection<SnomedConceptDocument>, RValue> {
 	
 	private static final long serialVersionUID = -8592143402592449211L;
 	private final IBranchPath branchPath;
@@ -56,7 +56,7 @@ public class QueryEvaluator implements Serializable, IQueryEvaluator<Collection<
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> evaluate(final RValue expression) {
+	public Collection<SnomedConceptDocument> evaluate(final RValue expression) {
 		
 		final LongSet conceptIds = delegate.evaluate(expression);
 		
@@ -71,7 +71,7 @@ public class QueryEvaluator implements Serializable, IQueryEvaluator<Collection<
 		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().setComponentIds(LongSets.toStringSet(conceptIds)).
 		setLimit(conceptIds.size()).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
 		
-		return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
+		return SnomedConceptDocument.fromConcepts(snomedConcepts);
 		
 	}
 }

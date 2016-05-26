@@ -42,7 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.TreeBuilder;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -51,12 +51,12 @@ import com.google.inject.Provider;
 /**
  * @since 4.6
  */
-public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptIndexEntry, String> implements TreeContentProvider<SnomedConceptIndexEntry> {
+public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptDocument, String> implements TreeContentProvider<SnomedConceptDocument> {
 
 	private final IEventBus bus;
 	private final Provider<LanguageSetting> languageSetting;
 
-	protected BaseSnomedClientTerminologyBrowser(ITerminologyBrowser<SnomedConceptIndexEntry, String> wrappedBrowser, IEventBus bus, Provider<LanguageSetting> languageSetting) {
+	protected BaseSnomedClientTerminologyBrowser(ITerminologyBrowser<SnomedConceptDocument, String> wrappedBrowser, IEventBus bus, Provider<LanguageSetting> languageSetting) {
 		super(wrappedBrowser);
 		this.bus = bus;
 		this.languageSetting = languageSetting;
@@ -78,12 +78,12 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSuperTypes(SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getSuperTypes(SnomedConceptDocument concept) {
 		return getSuperTypesById(concept.getId());
 	}
 	
 	@Override
-	public final IFilterClientTerminologyBrowser<SnomedConceptIndexEntry, String> filterTerminologyBrowser(String expression, IProgressMonitor monitor) {
+	public final IFilterClientTerminologyBrowser<SnomedConceptDocument, String> filterTerminologyBrowser(String expression, IProgressMonitor monitor) {
 		final String branch = getBranchPath().getPath();
 		final SnomedConcepts matches = SnomedRequests
 			.prepareSearchConcept()
@@ -100,14 +100,14 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 			return EmptyTerminologyBrowser.getInstance();
 		}
 		
-		final FluentIterable<SnomedConceptIndexEntry> matchingConcepts = FluentIterable.from(SnomedConceptIndexEntry.fromConcepts(matches));
+		final FluentIterable<SnomedConceptDocument> matchingConcepts = FluentIterable.from(SnomedConceptDocument.fromConcepts(matches));
 		final Set<String> matchingConceptIds = matchingConcepts.transform(ComponentUtils.<String>getIdFunction()).toSet();
 		final TerminologyTree tree = newTree(branch, matchingConcepts);
-		return new FilteredTerminologyBrowser<SnomedConceptIndexEntry, String>(tree.getItems(), tree.getSubTypes(), tree.getSuperTypes(), FilterTerminologyBrowserType.HIERARCHICAL, matchingConceptIds);
+		return new FilteredTerminologyBrowser<SnomedConceptDocument, String>(tree.getItems(), tree.getSubTypes(), tree.getSuperTypes(), FilterTerminologyBrowserType.HIERARCHICAL, matchingConceptIds);
 	}
 	
 	@Override
-	public SnomedConceptIndexEntry getConcept(String id) {
+	public SnomedConceptDocument getConcept(String id) {
 		try {
 			final ISnomedConcept concept = SnomedRequests
 					.prepareGetConcept()
@@ -118,14 +118,14 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 					.executeSync(getBus());
 			final ISnomedDescription pt = concept.getPt();
 			final String label = pt != null ? pt.getTerm() : id;
-			return SnomedConceptIndexEntry.builder(concept).label(label).build();
+			return SnomedConceptDocument.builder(concept).label(label).build();
 		} catch (NotFoundException e) {
 			return null;
 		}
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypes(final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getAllSubTypes(final SnomedConceptDocument concept) {
 		final SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.setLocales(getLocales())
@@ -134,7 +134,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
 				
-		return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
+		return SnomedConceptDocument.fromConcepts(snomedConcepts);
 	}
 	
 	/**
@@ -144,7 +144,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 	 * @param locales
 	 * @return
 	 */
-	protected abstract TerminologyTree newTree(String branch, Iterable<SnomedConceptIndexEntry> matchingConcepts);
+	protected abstract TerminologyTree newTree(String branch, Iterable<SnomedConceptDocument> matchingConcepts);
 	
 	/**
 	 * Returns with a collection of concepts given with the concept unique IDs.
@@ -154,7 +154,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 	 * @return a collection of concepts.
 	 */
 	@Override
-	public final Collection<SnomedConceptIndexEntry> getComponents(final Iterable<String> ids) {
+	public final Collection<SnomedConceptDocument> getComponents(final Iterable<String> ids) {
 		if (CompareUtils.isEmpty(ids)) {
 			return Collections.emptySet();
 		}
@@ -165,7 +165,7 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 				.setExpand("pt(),parentIds(),ancestorIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
-		return SnomedConceptIndexEntry.fromConcepts(concepts);
+		return SnomedConceptDocument.fromConcepts(concepts);
 	}
 	
 }

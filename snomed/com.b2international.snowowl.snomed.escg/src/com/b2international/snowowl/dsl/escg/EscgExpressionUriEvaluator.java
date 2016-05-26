@@ -25,24 +25,24 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.uri.IExpressionUriEvaluator;
 import com.b2international.snowowl.core.uri.UriUtils;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.ImmutableList;
 
 /**
  * ESCG expression URI evaluator.
  * 
  */
-public class EscgExpressionUriEvaluator implements IExpressionUriEvaluator<SnomedConceptIndexEntry> {
+public class EscgExpressionUriEvaluator implements IExpressionUriEvaluator<SnomedConceptDocument> {
 
 	@Override
-	public List<SnomedConceptIndexEntry> evaluate(final String uri) {
+	public List<SnomedConceptDocument> evaluate(final String uri) {
 		checkNotNull(uri, "URI must not be null.");
 		checkArgument(UriUtils.isExpressionUri(uri), "Unexpected URI: " + uri);
 		checkArgument(UriUtils.ESCG_LANGUAGE.equals(UriUtils.getExpressionLanguage(uri)), "Unexpected expression language in URI: " + uri);
 		
 		final String expression = UriUtils.getExpression(uri);
 		IEscgQueryEvaluatorClientService queryEvaluatorService = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorClientService.class);
-		final Collection<SnomedConceptIndexEntry> concepts = queryEvaluatorService.evaluate(expression);
+		final Collection<SnomedConceptDocument> concepts = queryEvaluatorService.evaluate(expression);
 		return ImmutableList.copyOf(concepts);
 	}
 

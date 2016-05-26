@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -100,7 +100,7 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 	 * @see com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanProviderStrategy#getConcept(java.lang.String)
 	 */
 	@Override
-	protected SnomedConceptIndexEntry getConcept(String conceptId) {
+	protected SnomedConceptDocument getConcept(String conceptId) {
 		return ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(conceptId);
 	}
 

@@ -28,19 +28,19 @@ import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * A concept cannot be related to itself via an active relationship.
  * 
  */
-public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidationConstraint<SnomedConceptIndexEntry> {
+public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidationConstraint<SnomedConceptDocument> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptNotRelatedToItselfConstraint";
 	
 	@Override
-	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
+	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptDocument component) {
 		final String conceptId = component.getId();
 
 		SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
@@ -62,7 +62,7 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 		return createOk(conceptId, ID, CONCEPT_NUMBER);
 	}
 
-	private String createErrorMessage(final SnomedConceptIndexEntry component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
+	private String createErrorMessage(final SnomedConceptDocument component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
 		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(), relationship.getTypeConcept().getPt().getTerm());
 	}
 

@@ -96,7 +96,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndex
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -536,8 +536,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return SnomedConstants.QUALIFYING_RELATIONSHIP if destination toplevel is 'Qualifying value', {@code null} otherwise.
 	 */
 	private Concept getQualifyingCharacteristicType(final String destinationConceptid) {
-		final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		final SnomedConceptIndexEntry topLevelConcept = terminologyBrowser.getTopLevelConcept(
+		final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
+		final SnomedConceptDocument topLevelConcept = terminologyBrowser.getTopLevelConcept(
 				terminologyBrowser.getConcept(destinationConceptid));
 		if (topLevelConcept.getId().equals(QUALIFIER_VALUE_TOPLEVEL_CONCEPT)) {
 			return findConceptById(QUALIFYING_RELATIONSHIP);

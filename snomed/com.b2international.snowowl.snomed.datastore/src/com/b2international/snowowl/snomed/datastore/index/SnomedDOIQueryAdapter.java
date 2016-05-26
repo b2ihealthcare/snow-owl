@@ -37,7 +37,7 @@ import com.b2international.snowowl.core.api.index.IIndexService;
 import com.b2international.snowowl.datastore.index.AbstractIndexService;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
@@ -144,21 +144,21 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 	}
 	
 	@Override
-	protected List<DocumentWithScore> doSearch(final IIndexService<? super SnomedConceptIndexEntry> indexService, final IBranchPath branchPath, final int limit) {
+	protected List<DocumentWithScore> doSearch(final IIndexService<? super SnomedConceptDocument> indexService, final IBranchPath branchPath, final int limit) {
 		final AbstractIndexService<?> abstractIndexService = checkAndCast(indexService, AbstractIndexService.class); 
 		final List<DocumentWithScore> documents = abstractIndexService.search(branchPath, createScoreQuery(branchPath), createFilter(), createSort(), limit);
 		return documents;
 	}
 	
 	@Override
-	protected List<DocumentWithScore> doSearch(final IIndexService<? super SnomedConceptIndexEntry> indexService, final IBranchPath branchPath, final int offset, final int limit) {
+	protected List<DocumentWithScore> doSearch(final IIndexService<? super SnomedConceptDocument> indexService, final IBranchPath branchPath, final int offset, final int limit) {
 		final AbstractIndexService<?> abstractIndexService = checkAndCast(indexService, AbstractIndexService.class); 
 		final List<DocumentWithScore> documents = abstractIndexService.search(branchPath, createScoreQuery(branchPath), createFilter(), createSort(), offset, limit);
 		return documents;
 	}
 	
 	@Override
-	public int getHitCount(final IIndexService<? super SnomedConceptIndexEntry> indexService, final IBranchPath branchPath) {
+	public int getHitCount(final IIndexService<? super SnomedConceptDocument> indexService, final IBranchPath branchPath) {
 		final AbstractIndexService<?> abstractIndexService = checkAndCast(indexService, AbstractIndexService.class); 
 		return abstractIndexService.getHitCount(branchPath, createScoreQuery(branchPath), createFilter());
 	}
@@ -167,7 +167,7 @@ public class SnomedDOIQueryAdapter extends SnomedConceptIndexQueryAdapter implem
 	 * @see com.b2international.snowowl.datastore.index.AbstractIndexQueryAdapter#searchIds(com.b2international.snowowl.core.api.index.IIndexService, com.b2international.snowowl.core.api.IBranchPath, int)
 	 */
 	@Override
-	public List<String> searchIds(final IIndexService<? super SnomedConceptIndexEntry> indexService, final IBranchPath branchPath, final int limit) {
+	public List<String> searchIds(final IIndexService<? super SnomedConceptDocument> indexService, final IBranchPath branchPath, final int limit) {
 		final AbstractIndexService<?> abstractIndexService = checkAndCast(indexService, AbstractIndexService.class);
 		return abstractIndexService.searchIds(branchPath, createScoreQuery(branchPath), createFilter(), createSort(), limit);
 	}

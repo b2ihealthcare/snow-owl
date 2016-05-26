@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.util.Iterator;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.google.common.collect.Iterators;
 
@@ -29,9 +29,9 @@ public abstract class ConceptSetProcessor<T extends ConceptSetDefinition> {
 		this.conceptSetDefinition = conceptSetDefinition;
 	}
 	
-	abstract public Iterator<SnomedConceptIndexEntry> getConcepts();
+	abstract public Iterator<SnomedConceptDocument> getConcepts();
 	
-	public boolean contains(SnomedConceptIndexEntry concept) {
+	public boolean contains(SnomedConceptDocument concept) {
 		return Iterators.contains(getConcepts(), concept);
 	}
 }

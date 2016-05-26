@@ -31,7 +31,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Iterables;
 
 /**
@@ -78,7 +78,7 @@ public class SnomedConceptLookupService extends AbstractLookupService<String, Co
 	}
 
 	@Override
-	public SnomedConceptIndexEntry getComponent(final IBranchPath branchPath, final String conceptId) {
+	public SnomedConceptDocument getComponent(final IBranchPath branchPath, final String conceptId) {
 		final SnomedTerminologyBrowser terminologyBrowser = getTerminologyBrowser();
 		return (null == terminologyBrowser) ? null : terminologyBrowser.getConcept(branchPath, conceptId);
 	}

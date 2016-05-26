@@ -55,7 +55,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -201,7 +201,7 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 		addPredicatesForFocus(conceptId, HierarchyInclusionType.SELF, predicates, newPredicates);
 		addPredicatesForFocus(conceptId, HierarchyInclusionType.SELF_OR_DESCENDANT, predicates, newPredicates);
 		
-		final SnomedConceptIndexEntry concept = getServiceForClass(SnomedTerminologyBrowser.class).getConcept(branchPath, conceptId);
+		final SnomedConceptDocument concept = getServiceForClass(SnomedTerminologyBrowser.class).getConcept(branchPath, conceptId);
 
 		// XXX use both the stated and inferred parent/ancestor IDs to get all possible/applicable MRCM rules
 		final Builder<String> ancestorIds = ImmutableSet.builder();

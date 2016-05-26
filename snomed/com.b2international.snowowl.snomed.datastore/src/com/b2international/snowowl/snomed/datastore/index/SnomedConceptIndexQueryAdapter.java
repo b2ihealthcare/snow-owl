@@ -23,14 +23,14 @@ import org.apache.lucene.search.Sort;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
  * Common abstract superclass for SNOMED CT concept-related query adapters.
  * @deprecated - UNSUPPORTED, will be removed in 4.7
  */
-public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQueryAdapter<SnomedConceptIndexEntry> {
+public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQueryAdapter<SnomedConceptDocument> {
 
 	private static final long serialVersionUID = -3940497152360882631L;
 
@@ -59,8 +59,8 @@ public abstract class SnomedConceptIndexQueryAdapter extends SnomedDslIndexQuery
 	}
 	
 	@Override
-	public SnomedConceptIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
-		return SnomedConceptIndexEntry.builder(doc)
+	public SnomedConceptDocument buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
+		return SnomedConceptDocument.builder(doc)
 				.score(score)
 				.build();
 	}

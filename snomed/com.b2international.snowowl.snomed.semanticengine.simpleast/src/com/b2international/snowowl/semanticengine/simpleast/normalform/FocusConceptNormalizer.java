@@ -27,7 +27,7 @@ import com.b2international.snowowl.semanticengine.simpleast.subsumption.Subsumpt
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
 
@@ -76,8 +76,8 @@ public class FocusConceptNormalizer {
 	 * @return the normalized focus concepts
 	 */
 	public FocusConceptNormalizationResult normalizeFocusConcepts(Collection<ConceptRef> focusConcepts) {
-		Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes = collectProximalPrimitiveSupertypes(focusConcepts);
-		Collection<SnomedConceptIndexEntry> filteredPrimitiveSuperTypes = filterRedundantSuperTypes(proximalPrimitiveSuperTypes);
+		Collection<SnomedConceptDocument> proximalPrimitiveSuperTypes = collectProximalPrimitiveSupertypes(focusConcepts);
+		Collection<SnomedConceptDocument> filteredPrimitiveSuperTypes = filterRedundantSuperTypes(proximalPrimitiveSuperTypes);
 		ConceptDefinitionNormalizer conceptDefinitionNormalizer = new ConceptDefinitionNormalizer(terminologyBrowser, statementBrowser);
 		Map<ConceptRef, ConceptDefinition> conceptDefinitions = conceptDefinitionNormalizer.getNormalizedConceptDefinitions(focusConcepts);
 		ConceptDefinitionMerger conceptDefinitionMerger = new ConceptDefinitionMerger(subsumptionTester);
@@ -85,8 +85,8 @@ public class FocusConceptNormalizer {
 		return new FocusConceptNormalizationResult(filteredPrimitiveSuperTypes, mergedFocusConceptDefinitions);
 	}
 
-	private Collection<SnomedConceptIndexEntry> collectProximalPrimitiveSupertypes(Collection<ConceptRef> focusConcepts) {
-		Set<SnomedConceptIndexEntry> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptIndexEntry>();
+	private Collection<SnomedConceptDocument> collectProximalPrimitiveSupertypes(Collection<ConceptRef> focusConcepts) {
+		Set<SnomedConceptDocument> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptDocument>();
 		
 		for (ConceptRef concept : focusConcepts) {
 			proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(terminologyBrowser.getConcept(concept.getConceptId())));
@@ -106,10 +106,10 @@ public class FocusConceptNormalizer {
 	 * @param proximalPrimitiveSuperTypes
 	 * @return
 	 */
-	private Collection<SnomedConceptIndexEntry> filterRedundantSuperTypes(Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes) {
-		List<SnomedConceptIndexEntry> filteredSuperTypes = new ArrayList<SnomedConceptIndexEntry>();
+	private Collection<SnomedConceptDocument> filterRedundantSuperTypes(Collection<SnomedConceptDocument> proximalPrimitiveSuperTypes) {
+		List<SnomedConceptDocument> filteredSuperTypes = new ArrayList<SnomedConceptDocument>();
 		
-		for(SnomedConceptIndexEntry superType: proximalPrimitiveSuperTypes) {
+		for(SnomedConceptDocument superType: proximalPrimitiveSuperTypes) {
 			if  (!filteredSuperTypes.contains(superType) && !containsSubType(proximalPrimitiveSuperTypes, superType)) {
 				filteredSuperTypes.add(superType);
 			}
@@ -118,9 +118,9 @@ public class FocusConceptNormalizer {
 		return filteredSuperTypes;
 	}
 
-	private boolean containsSubType(Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes, SnomedConceptIndexEntry conceptToTest) {
-		Collection<SnomedConceptIndexEntry> conceptSubTypes = terminologyBrowser.getAllSubTypes(conceptToTest);
-		for (SnomedConceptIndexEntry conceptMini : proximalPrimitiveSuperTypes) {
+	private boolean containsSubType(Collection<SnomedConceptDocument> proximalPrimitiveSuperTypes, SnomedConceptDocument conceptToTest) {
+		Collection<SnomedConceptDocument> conceptSubTypes = terminologyBrowser.getAllSubTypes(conceptToTest);
+		for (SnomedConceptDocument conceptMini : proximalPrimitiveSuperTypes) {
 			if (conceptSubTypes.contains(conceptMini)) {
 				return true;
 			}
@@ -130,8 +130,8 @@ public class FocusConceptNormalizer {
 	}
 
 
-	private Set<SnomedConceptIndexEntry> getProximatePrimitiveSuperTypes(SnomedConceptIndexEntry concept) {
-		Set<SnomedConceptIndexEntry> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptIndexEntry>();
+	private Set<SnomedConceptDocument> getProximatePrimitiveSuperTypes(SnomedConceptDocument concept) {
+		Set<SnomedConceptDocument> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptDocument>();
 		
 		if (concept.isPrimitive()) {
 			proximatePrimitiveSuperTypes.add(concept);
@@ -166,10 +166,10 @@ public class FocusConceptNormalizer {
 		return filterSuperTypesToProximate(proximatePrimitiveSuperTypes);
 	}
 
-	private Set<SnomedConceptIndexEntry> filterSuperTypesToProximate(Set<SnomedConceptIndexEntry> superTypes) {
-			Set<SnomedConceptIndexEntry> filteredProximateSuperTypes = new HashSet<SnomedConceptIndexEntry>();
+	private Set<SnomedConceptDocument> filterSuperTypesToProximate(Set<SnomedConceptDocument> superTypes) {
+			Set<SnomedConceptDocument> filteredProximateSuperTypes = new HashSet<SnomedConceptDocument>();
 			
-			for (SnomedConceptIndexEntry superType : superTypes) {
+			for (SnomedConceptDocument superType : superTypes) {
 	//			System.out.println("****** Processing super type: " + terminologyBrowser.getConceptMini(superType) + " ******");
 				if (filteredProximateSuperTypes.isEmpty()) {
 	//				System.out.println("Added: " + terminologyBrowser.getConceptMini(superType));
@@ -177,8 +177,8 @@ public class FocusConceptNormalizer {
 				} else {
 					// remove types from proximateSuperTypes, if there is a more specific type among the superTypes
 					boolean toBeAdded = false;
-					Set<SnomedConceptIndexEntry> removedProximateSuperTypes = new HashSet<SnomedConceptIndexEntry>();
-					for (SnomedConceptIndexEntry proximateSuperType : filteredProximateSuperTypes) {
+					Set<SnomedConceptDocument> removedProximateSuperTypes = new HashSet<SnomedConceptDocument>();
+					for (SnomedConceptDocument proximateSuperType : filteredProximateSuperTypes) {
 						/*
 						 * If the super type is a super type of a type already in the proximate super type set, then 
 						 * it shouldn't be added, no further checks necessary.
@@ -212,8 +212,8 @@ public class FocusConceptNormalizer {
 			return filteredProximateSuperTypes;
 		}
 
-	private boolean isSuperTypeOf(SnomedConceptIndexEntry superType, SnomedConceptIndexEntry subType) {
-		Collection<SnomedConceptIndexEntry> superTypes = terminologyBrowser.getSuperTypes(subType);
+	private boolean isSuperTypeOf(SnomedConceptDocument superType, SnomedConceptDocument subType) {
+		Collection<SnomedConceptDocument> superTypes = terminologyBrowser.getSuperTypes(subType);
 		return superTypes.contains(subType);
 		
 	}

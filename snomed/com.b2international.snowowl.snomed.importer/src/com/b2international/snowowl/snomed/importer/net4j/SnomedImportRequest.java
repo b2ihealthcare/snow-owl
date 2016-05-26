@@ -27,7 +27,7 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.google.common.io.Closeables;
 
@@ -197,11 +197,11 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 		try {
 
 			final SnomedImportResult result = new SnomedImportResult();
-			final ClassLoader indexEntryLoader = SnomedConceptIndexEntry.class.getClassLoader();
+			final ClassLoader indexEntryLoader = SnomedConceptDocument.class.getClassLoader();
 			final ClassLoader validationDefectLoader = SnomedValidationDefect.class.getClassLoader();
 			
 			for (int i = 0; i < visitedConceptCount; i++) {
-				result.getVisitedConcepts().add((SnomedConceptIndexEntry) in.readObject(indexEntryLoader));
+				result.getVisitedConcepts().add((SnomedConceptDocument) in.readObject(indexEntryLoader));
 			}
 			
 			for (int i = 0; i < visitedRefSetCount; i++) {

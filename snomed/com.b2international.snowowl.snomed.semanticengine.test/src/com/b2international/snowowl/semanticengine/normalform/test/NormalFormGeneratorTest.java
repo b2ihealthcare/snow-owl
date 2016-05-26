@@ -28,7 +28,7 @@ import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Lists;
 
 /**
@@ -316,7 +316,7 @@ public class NormalFormGeneratorTest {
 	private void testNormalFormGenerator(Expression originalExpression, Expression expectedLongNormalFormExpression, 
 			Expression expectedShortNormalFormExpression) {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptIndexEntry,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
+		RecursiveTerminologyBrowser<SnomedConceptDocument,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
 		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
 		
 		Expression longNormalFormTestOriginalExpression = originalExpression;

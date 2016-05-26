@@ -32,7 +32,7 @@ import com.b2international.snowowl.scripting.services.api.IQueryEvaluatorService
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -41,7 +41,7 @@ import com.google.common.collect.Sets;
  * Service for evaluating index queries.
  * @see IQueryEvaluatorService
  */
-public class IndexQueryEvaluatorService implements IQueryEvaluatorService<SnomedConceptIndexEntry> {
+public class IndexQueryEvaluatorService implements IQueryEvaluatorService<SnomedConceptDocument> {
 
 	private final String[] ids;
 
@@ -62,7 +62,7 @@ public class IndexQueryEvaluatorService implements IQueryEvaluatorService<Snomed
 	}
 
 	@Override
-	public List<SnomedConceptIndexEntry> evaluate(final String queryExpression) {
+	public List<SnomedConceptDocument> evaluate(final String queryExpression) {
 		
 		ApplicationContext applicationContext = ApplicationContext.getInstance();
 		List<ExtendedLocale> languagePreference = applicationContext.getService(LanguageSetting.class).getLanguagePreference();
@@ -72,11 +72,11 @@ public class IndexQueryEvaluatorService implements IQueryEvaluatorService<Snomed
 		if (ids.length == 0) {
 			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).
 					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
-			return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
+			return SnomedConceptDocument.fromConcepts(snomedConcepts);
 		} else {
 			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).setComponentIds(Sets.newHashSet(ids)).
 					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
-			return SnomedConceptIndexEntry.fromConcepts(snomedConcepts);
+			return SnomedConceptDocument.fromConcepts(snomedConcepts);
 		}
 		
 	}

@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -52,7 +52,7 @@ import com.google.inject.Provider;
  * @see AbstractClientRefSetBrowser
  */
 @Client
-public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptIndexEntry, String> {
+public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptDocument, String> {
 
 	private final Provider<SnomedClientTerminologyBrowser> browser;
 	private final IEventBus bus;
@@ -79,7 +79,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+	public Collection<SnomedConceptDocument> getRootConcepts() {
 		final Iterable<String> refSetTypeConceptIds = FluentIterable.from(SnomedRefSetUtil.getTypesForUI()).transform(new Function<SnomedRefSetType, String>() {
 			@Override
 			public String apply(SnomedRefSetType input) {
@@ -99,7 +99,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 					.build(getBranchPath().getPath())
 					.executeSync(bus);
 			
-			final SnomedConceptIndexEntry concept = browser.get().getConcept(refSetId);
+			final SnomedConceptDocument concept = browser.get().getConcept(refSetId);
 			return SnomedRefSetIndexEntry.builder(refset).label(concept.getLabel()).build();
 		} catch (NotFoundException e) {
 			return null;
@@ -116,11 +116,11 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 				.getItems();
 
 		final Set<String> matchingRefSetIds = FluentIterable.from(refSets).transform(IComponent.ID_FUNCTION).toSet();
-		final Iterable<SnomedConceptIndexEntry> identifierConcepts = getComponents(matchingRefSetIds);
-		final ImmutableMap<String, SnomedConceptIndexEntry> identifierConceptMap = FluentIterable.from(identifierConcepts)
-				.uniqueIndex(new Function<SnomedConceptIndexEntry, String>() {
+		final Iterable<SnomedConceptDocument> identifierConcepts = getComponents(matchingRefSetIds);
+		final ImmutableMap<String, SnomedConceptDocument> identifierConceptMap = FluentIterable.from(identifierConcepts)
+				.uniqueIndex(new Function<SnomedConceptDocument, String>() {
 					@Override
-					public String apply(SnomedConceptIndexEntry input) {
+					public String apply(SnomedConceptDocument input) {
 						return input.getId();
 					}
 				});
@@ -136,7 +136,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	}
 
 	@Override
-	public Iterable<SnomedConceptIndexEntry> getComponents(final Iterable<String> ids) {
+	public Iterable<SnomedConceptDocument> getComponents(final Iterable<String> ids) {
 		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.setComponentIds(Lists.newArrayList(ids))
@@ -146,11 +146,11 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 				.executeSync(bus)
 				.getItems();
 
-		return SnomedConceptIndexEntry.fromConcepts(concepts);
+		return SnomedConceptDocument.fromConcepts(concepts);
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final String refsetId) {
+	public Collection<SnomedConceptDocument> getMemberConcepts(final String refsetId) {
 		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByEscg("^" + refsetId)
@@ -160,7 +160,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 				.executeSync(bus)
 				.getItems();
 		
-		return SnomedConceptIndexEntry.fromConcepts(concepts);
+		return SnomedConceptDocument.fromConcepts(concepts);
 	}
 	
 	/**

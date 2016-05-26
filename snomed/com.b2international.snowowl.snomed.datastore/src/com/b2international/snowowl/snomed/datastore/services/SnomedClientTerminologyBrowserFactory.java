@@ -17,13 +17,13 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import com.b2international.snowowl.datastore.browser.AbstractClientTerminologyBrowserFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Factory for the terminology browser.
  *
  */
-public class SnomedClientTerminologyBrowserFactory extends AbstractClientTerminologyBrowserFactory<String, SnomedConceptIndexEntry, SnomedClientTerminologyBrowser> {
+public class SnomedClientTerminologyBrowserFactory extends AbstractClientTerminologyBrowserFactory<String, SnomedConceptDocument, SnomedClientTerminologyBrowser> {
 
 	public SnomedClientTerminologyBrowserFactory() {
 		super(SnomedClientTerminologyBrowser.class);

@@ -32,7 +32,7 @@ import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.*;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
@@ -198,7 +198,7 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			out.writeInt(importResult.getVisitedRefSets().size());
 			out.writeInt(importResult.getValidationDefects().size());
 			
-			for (final SnomedConceptIndexEntry visitedConcept : importResult.getVisitedConcepts()) {
+			for (final SnomedConceptDocument visitedConcept : importResult.getVisitedConcepts()) {
 				out.writeObject(visitedConcept);
 			}
 			

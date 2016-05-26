@@ -54,7 +54,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
@@ -822,7 +822,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * Get the preferred term of a concept.
 	 * 
 	 * @param conceptCDOId
-	 * @return A {@link SnomedConceptIndexEntry} object containing the label and storage key of the preferred term.
+	 * @return A {@link SnomedConceptDocument} object containing the label and storage key of the preferred term.
 	 * @throws SQLException
 	 */
 

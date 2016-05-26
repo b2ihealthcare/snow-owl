@@ -39,7 +39,7 @@ import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
 import com.b2international.snowowl.semanticengine.utils.ScgBuilderUtils;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 public class GroupMergerTest {
 	
@@ -48,7 +48,7 @@ public class GroupMergerTest {
 	@Before
 	public void beforeTest() {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptIndexEntry, String> recursiveTerminologyBrowser = new RecursiveTerminologyBrowser<SnomedConceptIndexEntry, String>(terminologyBrowser);
+		RecursiveTerminologyBrowser<SnomedConceptDocument, String> recursiveTerminologyBrowser = new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(terminologyBrowser);
 		attributeGroupMerger = new GroupMerger(new SubsumptionTester(recursiveTerminologyBrowser));
 	}
 	

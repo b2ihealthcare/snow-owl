@@ -76,7 +76,7 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
 import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponse;
@@ -400,7 +400,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 					inferred.setType(new SnomedBrowserRelationshipType(relationshipChange.getTypeId()));
 					inferred.setSourceId(relationshipChange.getSourceId());
 
-					final SnomedConceptIndexEntry targetConcept = getTerminologyBrowser().getConcept(BranchPathUtils.createPath(branchPath), relationshipChange.getDestinationId());
+					final SnomedConceptDocument targetConcept = getTerminologyBrowser().getConcept(BranchPathUtils.createPath(branchPath), relationshipChange.getDestinationId());
 					final SnomedBrowserRelationshipTarget relationshipTarget = browserService.getSnomedBrowserRelationshipTarget(targetConcept, branchPath, locales);
 					inferred.setTarget(relationshipTarget);
 

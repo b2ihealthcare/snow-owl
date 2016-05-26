@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -34,11 +34,11 @@ import com.google.common.collect.Multimap;
  */
 public final class TerminologyTree {
 
-	private final Map<String, SnomedConceptIndexEntry> items;
+	private final Map<String, SnomedConceptDocument> items;
 	private final Multimap<String, String> subTypes;
 	private final Multimap<String, String> superTypes;
 
-	public TerminologyTree(Map<String, SnomedConceptIndexEntry> items, Multimap<String, String> subTypes, Multimap<String, String> superTypes) {
+	public TerminologyTree(Map<String, SnomedConceptDocument> items, Multimap<String, String> subTypes, Multimap<String, String> superTypes) {
 		this.items = items;
 		this.subTypes = subTypes;
 		this.superTypes = superTypes;
@@ -48,7 +48,7 @@ public final class TerminologyTree {
 	 * @return
 	 * @deprecated - will be removed in 4.7
 	 */
-	public Map<String, SnomedConceptIndexEntry> getItems() {
+	public Map<String, SnomedConceptDocument> getItems() {
 		return items;
 	}
 
@@ -76,7 +76,7 @@ public final class TerminologyTree {
 	 * @throws IllegalArgumentException
 	 *             if the given nodeId does not exist in the tree
 	 */
-	public SnomedConceptIndexEntry getNode(String nodeId) {
+	public SnomedConceptDocument getNode(String nodeId) {
 		checkArgument(items.containsKey(nodeId), "Unknown node: '%s'", nodeId);
 		return items.get(nodeId);
 	}
@@ -87,10 +87,10 @@ public final class TerminologyTree {
 	 * @param nodeIds
 	 * @return
 	 */
-	public Collection<SnomedConceptIndexEntry> getNodes(Collection<String> nodeIds) {
-		return FluentIterable.from(nodeIds).transform(new Function<String, SnomedConceptIndexEntry>() {
+	public Collection<SnomedConceptDocument> getNodes(Collection<String> nodeIds) {
+		return FluentIterable.from(nodeIds).transform(new Function<String, SnomedConceptDocument>() {
 			@Override
-			public SnomedConceptIndexEntry apply(String input) {
+			public SnomedConceptDocument apply(String input) {
 				return getNode(input);
 			}
 		}).toSet();
@@ -103,7 +103,7 @@ public final class TerminologyTree {
 	 * @param nodeId
 	 * @return an immutable collection, never <code>null</code>
 	 */
-	public Collection<SnomedConceptIndexEntry> getAncestors(String nodeId) {
+	public Collection<SnomedConceptDocument> getAncestors(String nodeId) {
 		return getNodes(getAncestorIds(nodeId));
 	}
 
@@ -114,8 +114,8 @@ public final class TerminologyTree {
 	 * @param nodeId
 	 * @return an immutable collection, never <code>null</code>
 	 */
-	public Collection<SnomedConceptIndexEntry> getParents(String nodeId) {
-		final Builder<SnomedConceptIndexEntry> parents = ImmutableSet.builder();
+	public Collection<SnomedConceptDocument> getParents(String nodeId) {
+		final Builder<SnomedConceptDocument> parents = ImmutableSet.builder();
 		for (final String superType : superTypes.get(nodeId)) {
 			parents.add(getNode(superType));
 		}
@@ -180,7 +180,7 @@ public final class TerminologyTree {
 	 * @param nodeId
 	 * @return an immutable collection, never <code>null</code>
 	 */
-	public Collection<SnomedConceptIndexEntry> getProximalPrimitiveParents(String nodeId) {
+	public Collection<SnomedConceptDocument> getProximalPrimitiveParents(String nodeId) {
 		return getNodes(getProximalPrimitiveParentIds(nodeId));
 	}
 
@@ -204,9 +204,9 @@ public final class TerminologyTree {
 	 * @param ancestors
 	 * @return
 	 */
-	/* package */ Set<String> getProximalPrimitiveParentIds(final Iterable<SnomedConceptIndexEntry> ancestors) {
+	/* package */ Set<String> getProximalPrimitiveParentIds(final Iterable<SnomedConceptDocument> ancestors) {
 		final Set<String> proximalPrimitiveParentIds = newHashSet();
-		for (SnomedConceptIndexEntry ancestor : ancestors) {
+		for (SnomedConceptDocument ancestor : ancestors) {
 			if (ancestor.isPrimitive()) {
 				final String primitiveAncestorId = ancestor.getId();
 				if (proximalPrimitiveParentIds.isEmpty()) {

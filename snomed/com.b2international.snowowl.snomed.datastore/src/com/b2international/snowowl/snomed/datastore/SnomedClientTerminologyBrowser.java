@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
 import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -61,24 +61,24 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	}
 	
 	@Override
-	public boolean hasChildren(SnomedConceptIndexEntry element) {
+	public boolean hasChildren(SnomedConceptDocument element) {
 		return getSubTypeCount(element) > 0;
 	}
 	
 	@Override
-	public boolean hasParents(SnomedConceptIndexEntry element) {
+	public boolean hasParents(SnomedConceptDocument element) {
 		return !element.getParents().isEmpty();
 	}
 
 	@Override
-	protected TerminologyTree newTree(String branch, Iterable<SnomedConceptIndexEntry> concepts) {
+	protected TerminologyTree newTree(String branch, Iterable<SnomedConceptDocument> concepts) {
 		return Trees
 				.newInferredTree()
 				.build(branch, concepts);
 	}
 	
 	@Override
-	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(SnomedConceptIndexEntry concept) {
+	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(SnomedConceptDocument concept) {
 		final SnomedConcepts concepts = SnomedRequests
 			.prepareSearchConcept()
 			.all()
@@ -90,7 +90,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, IComponentWithChildFlag<String>>() {
 			@Override
 			public IComponentWithChildFlag<String> apply(ISnomedConcept input) {
-				final SnomedConceptIndexEntry entry = SnomedConceptIndexEntry
+				final SnomedConceptDocument entry = SnomedConceptDocument
 					.builder(input)
 					.label(input.getPt() == null ? input.getId() : input.getPt().getTerm())
 					.build();
@@ -100,7 +100,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+	public Collection<SnomedConceptDocument> getRootConcepts() {
 		final SnomedConcepts roots = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByActive(true)
@@ -109,11 +109,11 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
-		return SnomedConceptIndexEntry.fromConcepts(roots);
+		return SnomedConceptDocument.fromConcepts(roots);
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypesById(String id) {
+	public Collection<SnomedConceptDocument> getSubTypesById(String id) {
 		final SnomedConcepts concepts = SnomedRequests
 				.prepareSearchConcept()
 				.all()
@@ -122,11 +122,11 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 				.setLocales(getLocales())
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
-		return SnomedConceptIndexEntry.fromConcepts(concepts);
+		return SnomedConceptDocument.fromConcepts(concepts);
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSuperTypesById(String id) {
+	public Collection<SnomedConceptDocument> getSuperTypesById(String id) {
 		try {
 			final ISnomedConcept concept = SnomedRequests
 					.prepareGetConcept()
@@ -135,14 +135,14 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 					.setLocales(getLocales())
 					.build(getBranchPath().getPath())
 					.executeSync(getBus());
-			return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
+			return SnomedConceptDocument.fromConcepts(concept.getAncestors());
 		} catch (NotFoundException e) {
 			return emptyList();
 		}
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypesById(final String id) {
+	public Collection<SnomedConceptDocument> getAllSubTypesById(final String id) {
 		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.setLocales(getLocales())
@@ -151,14 +151,14 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
 
-		return SnomedConceptIndexEntry.fromConcepts(concepts);
+		return SnomedConceptDocument.fromConcepts(concepts);
 	}
 	
 	/**
 	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the currently active branch. 
 	 * @return an iterable of all SNOMED&nbsp;CT concepts.
 	 */
-	public Iterable<SnomedConceptIndexEntry> getConcepts() {
+	public Iterable<SnomedConceptDocument> getConcepts() {
 		return getWrappedService().getConcepts(getBranchPath());
 	}
 
@@ -291,7 +291,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @param concept the concept
 	 * @return the sub types with additional child flag
 	 */
-	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildInformation(final SnomedConceptIndexEntry concept) {
+	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildInformation(final SnomedConceptDocument concept) {
 		return getWrappedService().getSubTypesWithChildFlag(getBranchPath(), concept);
 	}
 
@@ -321,9 +321,9 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 		return (SnomedTerminologyBrowser) getWrappedBrowser();
 	}
 	
-		private boolean containsSubType(Collection<SnomedConceptIndexEntry> proximalPrimitiveSuperTypes, SnomedConceptIndexEntry conceptToTest) {
-		Collection<SnomedConceptIndexEntry> conceptSubTypes = getSubTypes(conceptToTest);
-		for (SnomedConceptIndexEntry conceptMini : proximalPrimitiveSuperTypes) {
+		private boolean containsSubType(Collection<SnomedConceptDocument> proximalPrimitiveSuperTypes, SnomedConceptDocument conceptToTest) {
+		Collection<SnomedConceptDocument> conceptSubTypes = getSubTypes(conceptToTest);
+		for (SnomedConceptDocument conceptMini : proximalPrimitiveSuperTypes) {
 			if (conceptSubTypes.contains(conceptMini)) {
 				return true;
 			}

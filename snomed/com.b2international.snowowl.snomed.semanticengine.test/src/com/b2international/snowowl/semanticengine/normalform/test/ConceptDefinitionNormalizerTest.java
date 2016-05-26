@@ -34,7 +34,7 @@ import com.b2international.snowowl.semanticengine.utils.ScgBuilderUtils;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 public class ConceptDefinitionNormalizerTest {
 
@@ -43,8 +43,8 @@ public class ConceptDefinitionNormalizerTest {
 	@Before
 	public void beforeTest() {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptIndexEntry, String> recursiveTerminologyBrowser = 
-				new RecursiveTerminologyBrowser<SnomedConceptIndexEntry, String>(terminologyBrowser);
+		RecursiveTerminologyBrowser<SnomedConceptDocument, String> recursiveTerminologyBrowser = 
+				new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(terminologyBrowser);
 		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
 		conceptDefinitionNormalizer = new ConceptDefinitionNormalizer(recursiveTerminologyBrowser, statementBrowser);
 	}

@@ -22,7 +22,7 @@ import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
@@ -48,7 +48,7 @@ public enum ConceptModelProvider implements IConceptModelProvider {
 	
 	@Override
 	public Set<ConstraintBase> getAllConstraints(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser, final SnomedClientRefSetBrowser refSetBrowser) {
-		final SnomedConceptIndexEntry concept = terminologyBrowser.getConcept(conceptId);
+		final SnomedConceptDocument concept = terminologyBrowser.getConcept(conceptId);
 		final IEscgQueryEvaluatorClientService evaluatorService = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorClientService.class);
 		final SnomedClientIndexService indexService = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
 		return getMatchingConstraints(concept, conceptModel.getConstraints(), evaluatorService, terminologyBrowser, refSetBrowser, indexService);
@@ -56,7 +56,7 @@ public enum ConceptModelProvider implements IConceptModelProvider {
 
 	@Override
 	public Set<ConstraintBase> getConstraintsForValidation(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser, final SnomedClientRefSetBrowser refSetBrowser) {
-		final SnomedConceptIndexEntry concept = terminologyBrowser.getConcept(conceptId);
+		final SnomedConceptDocument concept = terminologyBrowser.getConcept(conceptId);
 		final Predicate<ConstraintBase> filterPredicate = Predicates.and(
 				new ActiveConceptModelComponentPredicate(), 
 				new ConstraintFormIsApplicableForValidationPredicate());
@@ -66,7 +66,7 @@ public enum ConceptModelProvider implements IConceptModelProvider {
 		return getMatchingConstraints(concept, filteredConstraints, evaluatorService, terminologyBrowser, refSetBrowser, indexService);
 	}
 
-	private Set<ConstraintBase> getMatchingConstraints(final SnomedConceptIndexEntry concept, final Iterable<ConstraintBase> constraints, IEscgQueryEvaluatorClientService evaluatorService, 
+	private Set<ConstraintBase> getMatchingConstraints(final SnomedConceptDocument concept, final Iterable<ConstraintBase> constraints, IEscgQueryEvaluatorClientService evaluatorService, 
 			final SnomedClientTerminologyBrowser terminologyBrowser, 
 			final SnomedClientRefSetBrowser refSetBrowser, 
 			final SnomedClientIndexService indexService) {

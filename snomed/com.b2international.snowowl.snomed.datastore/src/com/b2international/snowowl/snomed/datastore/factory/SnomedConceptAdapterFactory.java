@@ -25,7 +25,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Adapter factory implementation for SNOMED CT concepts.
@@ -33,25 +33,25 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
 public class SnomedConceptAdapterFactory extends TypeSafeAdapterFactory {
 
 	public SnomedConceptAdapterFactory() {
-		super(IComponent.class, SnomedConceptIndexEntry.class);
+		super(IComponent.class, SnomedConceptDocument.class);
 	}
 
 	@Override
 	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
 
-		if (adaptableObject instanceof SnomedConceptIndexEntry) {
+		if (adaptableObject instanceof SnomedConceptDocument) {
 			return adapterType.cast(adaptableObject);
 		} 
 
 		if (adaptableObject instanceof Concept) {
 
 			final Concept concept = (Concept) adaptableObject;
-			final SnomedConceptIndexEntry adaptedEntry;
+			final SnomedConceptDocument adaptedEntry;
 			
 			if (FSMUtil.isClean(concept) && !concept.cdoRevision().isHistorical()) {
 				adaptedEntry = new SnomedConceptLookupService().getComponent(BranchPathUtils.createPath(concept), concept.getId());
 			} else {
-				adaptedEntry = SnomedConceptIndexEntry.builder()
+				adaptedEntry = SnomedConceptDocument.builder()
 						.id(concept.getId())
 						.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
 						.moduleId(concept.getModule().getId()) 

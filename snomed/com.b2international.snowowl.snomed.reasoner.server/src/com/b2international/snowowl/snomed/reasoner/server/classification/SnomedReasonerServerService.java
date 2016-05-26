@@ -76,7 +76,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
@@ -112,7 +112,7 @@ import com.google.common.collect.Ordering;
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationRequest> implements SnomedReasonerService, IDisposableService {
 
-	private static final Ordering<SnomedConceptIndexEntry> STORAGE_KEY_ORDERING = Ordering.from(StorageKeyComparator.INSTANCE).nullsLast();
+	private static final Ordering<SnomedConceptDocument> STORAGE_KEY_ORDERING = Ordering.from(StorageKeyComparator.INSTANCE).nullsLast();
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
@@ -442,21 +442,21 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		
 		final LongSet unsatisfiableConceptIds = taxonomy.getUnsatisfiableConceptIds();
 		if (!unsatisfiableConceptIds.isEmpty()) {
-			final List<SnomedConceptIndexEntry> unsatisfiableEntries = convertIdsToIndexEntries(branchPath, terminologyBrowser, unsatisfiableConceptIds);
+			final List<SnomedConceptDocument> unsatisfiableEntries = convertIdsToIndexEntries(branchPath, terminologyBrowser, unsatisfiableConceptIds);
 			results.add(new UnsatisfiableSet(unsatisfiableEntries));
 		}
 		
 		final List<LongSet> equivalentConceptSets = taxonomy.getEquivalentConceptIds();
 		for (final LongSet equivalentConceptSet : equivalentConceptSets) {
-			final List<SnomedConceptIndexEntry> equivalentEntries = convertIdsToIndexEntries(branchPath, terminologyBrowser, equivalentConceptSet);
-			final SnomedConceptIndexEntry suggestedConcept = equivalentEntries.remove(0);
+			final List<SnomedConceptDocument> equivalentEntries = convertIdsToIndexEntries(branchPath, terminologyBrowser, equivalentConceptSet);
+			final SnomedConceptDocument suggestedConcept = equivalentEntries.remove(0);
 			results.add(new EquivalenceSet(suggestedConcept, equivalentEntries));
 		}
 		
 		return results;
 	}
 
-	private List<SnomedConceptIndexEntry> convertIdsToIndexEntries(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final LongSet conceptIds) {
+	private List<SnomedConceptDocument> convertIdsToIndexEntries(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final LongSet conceptIds) {
 		final Set<String> conceptIdFilter = LongSets.toStringSet(conceptIds);
 		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
 			@Override
@@ -466,12 +466,12 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		};
 		final Map<String, ISnomedDescription> preferredTerms = helper.getPreferredTerms(conceptIdFilter, ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference());
 		
-		final List<SnomedConceptIndexEntry> convertedSet = newArrayList();
+		final List<SnomedConceptDocument> convertedSet = newArrayList();
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /* empty */) {
 			final String conceptId = String.valueOf(itr.next());
-			SnomedConceptIndexEntry conceptIndexEntry = terminologyBrowser.getConcept(branchPath, conceptId);
+			SnomedConceptDocument conceptIndexEntry = terminologyBrowser.getConcept(branchPath, conceptId);
 			if (null == conceptIndexEntry) {
-				conceptIndexEntry = SnomedConceptIndexEntry.builder()
+				conceptIndexEntry = SnomedConceptDocument.builder()
 						.id(conceptId)
 						.label(conceptId + " (unresolved)")
 						.iconId(Concepts.ROOT_CONCEPT) 
@@ -482,7 +482,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			} else {
 				final ISnomedDescription description = preferredTerms.get(conceptId);
 				final String label = description == null ? conceptId : description.getTerm();
-				conceptIndexEntry = SnomedConceptIndexEntry.builder(conceptIndexEntry).label(label).build();
+				conceptIndexEntry = SnomedConceptDocument.builder(conceptIndexEntry).label(label).build();
 			}
 			
 			convertedSet.add(conceptIndexEntry);

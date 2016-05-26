@@ -45,7 +45,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.IClientSnomedComponentValidationService;
 import com.google.common.base.Function;
@@ -115,7 +115,7 @@ public class GlobalValidationJob extends ValuedJob<Integer> {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
 		final MarkerManager markerManager = ApplicationContext.getInstance().getService(MarkerManager.class);
 		
-		final Map<String, SnomedConceptIndexEntry> idToIndexEntryMap = getIdToIndexEntryMap(validationResults, subMonitor.newChild(1));
+		final Map<String, SnomedConceptDocument> idToIndexEntryMap = getIdToIndexEntryMap(validationResults, subMonitor.newChild(1));
 		
 		final SubMonitor markerMonitor = subMonitor.newChild(1);
 		markerMonitor.setWorkRemaining(validationResults.size());
@@ -140,7 +140,7 @@ public class GlobalValidationJob extends ValuedJob<Integer> {
 		return violatingComponentIds;
 	}
 
-	private Map<String, SnomedConceptIndexEntry> getIdToIndexEntryMap(final Collection<ComponentValidationDiagnostic> validationResults, final IProgressMonitor monitor) {
+	private Map<String, SnomedConceptDocument> getIdToIndexEntryMap(final Collection<ComponentValidationDiagnostic> validationResults, final IProgressMonitor monitor) {
 		
 		final Set<String> componentIds = FluentIterable.from(validationResults).transform(new Function<ComponentValidationDiagnostic, String>() {
 			@Override public String apply(final ComponentValidationDiagnostic input) {
@@ -158,9 +158,9 @@ public class GlobalValidationJob extends ValuedJob<Integer> {
 			.build(branchPath)
 			.executeSync(getEventbus());
 		
-		final Map<String, SnomedConceptIndexEntry> idToEntryMap = Maps.uniqueIndex(SnomedConceptIndexEntry.fromConcepts(concepts), new Function<SnomedConceptIndexEntry, String>() {
+		final Map<String, SnomedConceptDocument> idToEntryMap = Maps.uniqueIndex(SnomedConceptDocument.fromConcepts(concepts), new Function<SnomedConceptDocument, String>() {
 			@Override
-			public String apply(final SnomedConceptIndexEntry input) {
+			public String apply(final SnomedConceptDocument input) {
 				return input.getId();
 			}
 		});

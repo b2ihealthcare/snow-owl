@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -33,12 +33,12 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  * FSN if the concept is active. The multiple active FSN validation is an other constraint's business.
  * 
  */
-public class SnomedConceptFsnStatusConstraint extends ComponentValidationConstraint<SnomedConceptIndexEntry> {
+public class SnomedConceptFsnStatusConstraint extends ComponentValidationConstraint<SnomedConceptDocument> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptFsnStatusConstraint";
 	
 	@Override
-	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		if (concept.isActive()) {
 			final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 				.setLimit(0)

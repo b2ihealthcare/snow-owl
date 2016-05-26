@@ -50,7 +50,7 @@ import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.validator.MrcmConceptWidgetBeanValidator;
 import com.b2international.snowowl.snomed.mrcm.core.validator.WidgetBeanValidationDiagnostic;
@@ -144,8 +144,8 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 					ModeledWidgetBean widgetBean = widgetBeanDiagnostic.getWidgetBean();
 					if (widgetBean instanceof RelationshipWidgetBean) {
 						RelationshipWidgetBean relationshipWidgetBean = (RelationshipWidgetBean) widgetBean;
-						ScgAttributeFinderVisitor<SnomedConceptIndexEntry> attributeExtractingVisitor =	
-								new ScgAttributeFinderVisitor<SnomedConceptIndexEntry>(relationshipWidgetBean.getSelectedType().getId(), 
+						ScgAttributeFinderVisitor<SnomedConceptDocument> attributeExtractingVisitor =	
+								new ScgAttributeFinderVisitor<SnomedConceptDocument>(relationshipWidgetBean.getSelectedType().getId(), 
 										relationshipWidgetBean.getSelectedValue().getId(), Integer.MAX_VALUE, markedAttributes);
 						EObjectWalker extractorWalker = EObjectWalker.createContainmentWalker(attributeExtractingVisitor);
 						extractorWalker.walk(expression);
@@ -236,7 +236,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 			return;
 		}
 		
-		final SnomedConceptIndexEntry entry = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(concept.getId());
+		final SnomedConceptDocument entry = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(concept.getId());
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", ScgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}

@@ -16,12 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.validation;
 
 import com.b2international.snowowl.core.validation.IClientComponentValidationService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Client side SNOMED&nbsp;CT component validation service interface.
  * 
  */
-public interface IClientSnomedComponentValidationService extends IClientComponentValidationService<SnomedConceptIndexEntry> {
+public interface IClientSnomedComponentValidationService extends IClientComponentValidationService<SnomedConceptDocument> {
 	// Empty interface body
 }

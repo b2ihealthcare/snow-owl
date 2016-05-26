@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
@@ -330,7 +330,7 @@ public abstract class AbstractSnomedRefSetDerivator {
 			}
 		}));
 		
-		final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> browser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
+		final IClientTerminologyBrowser<SnomedConceptDocument, String> browser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 		
 		isCanceled(monitor);
 		if (isCanceled) {
@@ -340,7 +340,7 @@ public abstract class AbstractSnomedRefSetDerivator {
 		conceptIds =  Sets.newHashSet(Iterables.filter(ids, new Predicate<String>() {
 			@Override
 			public boolean apply(final String conceptId) {
-				final SnomedConceptIndexEntry concept = browser.getConcept(conceptId);
+				final SnomedConceptDocument concept = browser.getConcept(conceptId);
 
 				if (null != concept && concept.isActive()) {
 					return true;

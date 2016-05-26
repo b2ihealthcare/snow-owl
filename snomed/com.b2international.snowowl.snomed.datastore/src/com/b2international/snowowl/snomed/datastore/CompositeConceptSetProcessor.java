@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
@@ -41,7 +41,7 @@ public class CompositeConceptSetProcessor extends ConceptSetProcessor<CompositeC
 	}
 
 	@Override
-	public boolean contains(final SnomedConceptIndexEntry concept) {
+	public boolean contains(final SnomedConceptDocument concept) {
 		for (final ConceptSetDefinition child : conceptSetDefinition.getChildren()) {
 			if (ConceptSetProcessorFactory.createProcessor(child, terminologyBrowser, refSetBrowser, indexService).contains(concept))
 				return true;
@@ -50,11 +50,11 @@ public class CompositeConceptSetProcessor extends ConceptSetProcessor<CompositeC
 	}
 	
 	@Override
-	public Iterator<SnomedConceptIndexEntry> getConcepts() {
+	public Iterator<SnomedConceptDocument> getConcepts() {
 		if (conceptSetDefinition.getChildren().isEmpty()) {
 			return Iterators.emptyIterator();
 		}
-		final List<Iterator<SnomedConceptIndexEntry>> iterators = Lists.newArrayList();
+		final List<Iterator<SnomedConceptDocument>> iterators = Lists.newArrayList();
 		for (final ConceptSetDefinition childConceptSetDefinition : conceptSetDefinition.getChildren()) {
 			final ConceptSetProcessor<ConceptSetDefinition> conceptSetProcessor = ConceptSetProcessorFactory.createProcessor(
 					childConceptSetDefinition, terminologyBrowser, refSetBrowser, indexService);

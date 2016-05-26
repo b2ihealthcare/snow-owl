@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Lists;
 
 /**
@@ -37,10 +37,10 @@ import com.google.common.collect.Lists;
   * 
  * @see IQueryEvaluatorService
  */
-public final class EscgEvaluatorService implements IQueryEvaluatorService<SnomedConceptIndexEntry> {
+public final class EscgEvaluatorService implements IQueryEvaluatorService<SnomedConceptDocument> {
 	
 	@Override
-	public List<SnomedConceptIndexEntry> evaluate(final String queryExpression) {
+	public List<SnomedConceptDocument> evaluate(final String queryExpression) {
 		final IEscgQueryEvaluatorClientService delegate = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorClientService.class);
 		return Lists.newArrayList(delegate.evaluate(queryExpression));
 	}

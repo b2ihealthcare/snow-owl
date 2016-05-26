@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Represents a regular equivalence set with one suggested concept as a replacement for the others.
@@ -28,14 +28,14 @@ public class EquivalenceSet extends AbstractEquivalenceSet implements Serializab
 
 	private static final long serialVersionUID = 1L;
 
-	private final SnomedConceptIndexEntry suggestedConcept;
+	private final SnomedConceptDocument suggestedConcept;
 
 	/**
 	 * Creates a new regular equivalence set with the specified arguments.
 	 * @param suggestedConcept the concept to suggest as a replacement
 	 * @param concepts the list containing the rest of the equivalent concepts (the suggested concept should not be repeated in this list)
 	 */
-	public EquivalenceSet(final SnomedConceptIndexEntry suggestedConcept, final List<SnomedConceptIndexEntry> concepts) {
+	public EquivalenceSet(final SnomedConceptDocument suggestedConcept, final List<SnomedConceptDocument> concepts) {
 		super(concepts);
 		this.suggestedConcept = suggestedConcept;
 	}
@@ -43,7 +43,7 @@ public class EquivalenceSet extends AbstractEquivalenceSet implements Serializab
 	/**
 	 * @return the concept to suggest as a replacement
 	 */
-	public SnomedConceptIndexEntry getSuggestedConcept() {
+	public SnomedConceptDocument getSuggestedConcept() {
 		return suggestedConcept;
 	}
 

@@ -54,7 +54,7 @@ import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedUnimportedRefSets;
@@ -373,7 +373,7 @@ public class SnomedSubsetImporter {
 		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
 	}
 	
-	private ITerminologyBrowser<SnomedConceptIndexEntry, String> getTerminologyBrowser() {
+	private ITerminologyBrowser<SnomedConceptDocument, String> getTerminologyBrowser() {
 		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
 	}
 	
@@ -462,7 +462,7 @@ public class SnomedSubsetImporter {
 		
 		public void handleNonTxtFileRecord(List<List<String>> content) {
 			for (List<String> rowsList : content) {
-				SnomedConceptIndexEntry concept = getConcept(rowsList.get(idColumnNumber));
+				SnomedConceptDocument concept = getConcept(rowsList.get(idColumnNumber));
 				if (concept != null && importedConceptIds.add(concept.getId())) {
 					createMember(concept);
 				} else {
@@ -472,7 +472,7 @@ public class SnomedSubsetImporter {
 		}
 		
 		private void createMember(List<String> record) {
-			SnomedConceptIndexEntry concept = getConcept(record.get(idColumnNumber));
+			SnomedConceptDocument concept = getConcept(record.get(idColumnNumber));
 			if (concept != null && importedConceptIds.add(concept.getId())) {
 				createMember(concept);
 			} else {
@@ -480,7 +480,7 @@ public class SnomedSubsetImporter {
 			}
 		}
 		
-		private void createUnimportedRefsetMember(List<String> rowsList, SnomedConceptIndexEntry concept) {
+		private void createUnimportedRefsetMember(List<String> rowsList, SnomedConceptDocument concept) {
 			String identifier;
 			if (null != getFullySpecifiedName(rowsList)) {
 				identifier = getFullySpecifiedName(rowsList);
@@ -506,7 +506,7 @@ public class SnomedSubsetImporter {
 			return null;
 		}
 
-		private void createMember(SnomedConceptIndexEntry concept) {
+		private void createMember(SnomedConceptDocument concept) {
 			SnomedComponents.newSimpleMember()
 				.withActive(concept.isActive())
 				.withReferencedComponent(concept.getId())
@@ -515,7 +515,7 @@ public class SnomedSubsetImporter {
 				.addTo(context);
 		}
 
-		private SnomedConceptIndexEntry getConcept(final String conceptId) {
+		private SnomedConceptDocument getConcept(final String conceptId) {
 			if (conceptId.matches("\\d+")) {
 				return getTerminologyBrowser().getConcept(branchPath, conceptId);
 			} else {

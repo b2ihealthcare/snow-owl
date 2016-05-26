@@ -145,7 +145,7 @@
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry"
+            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
       </representation>
       <representation
@@ -229,7 +229,7 @@
          </adapter>
       </factory>
       <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry"
+            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument"
             class="com.b2international.snowowl.snomed.datastore.factory.SnomedConceptAdapterFactory">
          <adapter
                type="com.b2international.snowowl.core.api.IComponent">

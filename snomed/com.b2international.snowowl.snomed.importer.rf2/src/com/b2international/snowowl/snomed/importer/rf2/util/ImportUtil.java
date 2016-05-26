@@ -84,7 +84,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -394,7 +394,7 @@ public final class ImportUtil {
 		}
 	}
 
-	private Collection<SnomedConceptIndexEntry> getVisitedConcepts(final LongSet visitedConceptIds, final IBranchPath branchPath) {
+	private Collection<SnomedConceptDocument> getVisitedConcepts(final LongSet visitedConceptIds, final IBranchPath branchPath) {
 		if (visitedConceptIds.size() == 0) {
 			return Collections.emptyList();
 		}
@@ -408,12 +408,12 @@ public final class ImportUtil {
 				.executeSync(getEventBus());
 		
 		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
-		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptIndexEntry>() {
+		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptDocument>() {
 			@Override
-			public SnomedConceptIndexEntry apply(ISnomedConcept concept) {
+			public SnomedConceptDocument apply(ISnomedConcept concept) {
 				final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 				final long storageKey = lookupService.getStorageKey(branchPath, concept.getId());
-				return SnomedConceptIndexEntry.builder(concept)
+				return SnomedConceptDocument.builder(concept)
 						.label(label)
 						.storageKey(storageKey)
 						.build();
@@ -426,7 +426,7 @@ public final class ImportUtil {
 			return Collections.emptyList();
 		}
 
-		final Collection<SnomedConceptIndexEntry> identifierConcepts = getVisitedConcepts(visitedRefSetIds, branchPath);
+		final Collection<SnomedConceptDocument> identifierConcepts = getVisitedConcepts(visitedRefSetIds, branchPath);
 		
 		final SnomedReferenceSets refSets = SnomedRequests.prepareSearchRefSet()
 				.all()
@@ -439,7 +439,7 @@ public final class ImportUtil {
 		return FluentIterable.from(refSets.getItems()).transform(new Function<SnomedReferenceSet, SnomedRefSetIndexEntry>() {
 			@Override
 			public SnomedRefSetIndexEntry apply(final SnomedReferenceSet refSet) {
-				final Optional<SnomedConceptIndexEntry> identifierConcept = getIdentifierConcept(identifierConcepts, refSet);
+				final Optional<SnomedConceptDocument> identifierConcept = getIdentifierConcept(identifierConcepts, refSet);
 				final String preferredTerm = identifierConcept.isPresent() ? identifierConcept.get().getLabel() : refSet.getId();
 				final long storageKey = lookupService.getStorageKey(branchPath, refSet.getId());
 				return SnomedRefSetIndexEntry.builder(refSet)
@@ -470,11 +470,11 @@ public final class ImportUtil {
 		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
-	private Optional<SnomedConceptIndexEntry> getIdentifierConcept(final Collection<SnomedConceptIndexEntry> identifierConcepts,
+	private Optional<SnomedConceptDocument> getIdentifierConcept(final Collection<SnomedConceptDocument> identifierConcepts,
 			final SnomedReferenceSet refSet) {
-		return FluentIterable.from(identifierConcepts).firstMatch(new Predicate<SnomedConceptIndexEntry>() {
+		return FluentIterable.from(identifierConcepts).firstMatch(new Predicate<SnomedConceptDocument>() {
 			@Override
-			public boolean apply(SnomedConceptIndexEntry concept) {
+			public boolean apply(SnomedConceptDocument concept) {
 				return concept.getId().equals(refSet.getId());
 			}
 		});

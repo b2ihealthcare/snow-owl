@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Joiner;
@@ -47,12 +47,12 @@ import com.google.common.collect.Multimap;
  * However, only one fully specified name should be marked as preferred for use in a given language or dialect in the relevant Language reference set
  * 
  */
-public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentValidationConstraint<SnomedConceptIndexEntry> {
+public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentValidationConstraint<SnomedConceptDocument> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptOneActiveFsnPerLanguageConstraint";
 	
 	@Override
-	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry concept) {
+	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 
 		final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 			.filterByActive(true)
@@ -87,7 +87,7 @@ public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentVal
 		return createOk(concept.getId(), ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
 	}
 	
-	private String createErrorMessage(final SnomedConceptIndexEntry concept, final Entry<String, Collection<String>> entry, final IBranchPath branchPath) {
+	private String createErrorMessage(final SnomedConceptDocument concept, final Entry<String, Collection<String>> entry, final IBranchPath branchPath) {
 		return String.format(
 				"%s has multiple active fully specified name marked as preferred in language reference set %s | %s (description ids: %s).",
 				concept.getId(), entry.getKey(), getConceptLabel(entry.getKey(), branchPath), Joiner.on(", ").join(entry.getValue()));

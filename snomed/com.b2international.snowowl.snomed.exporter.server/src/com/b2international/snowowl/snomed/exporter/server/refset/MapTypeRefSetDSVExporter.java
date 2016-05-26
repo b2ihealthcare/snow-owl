@@ -48,7 +48,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
@@ -138,7 +138,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				}
 			}
 			
-			Collection<SnomedConceptIndexEntry> modelComponents = SnomedRequests
+			Collection<SnomedConceptDocument> modelComponents = SnomedRequests
 					.prepareSearchConcept()
 					.setComponentIds(ImmutableSet.of(
 							Concepts.MODULE_ROOT,
@@ -158,14 +158,14 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									return additionalConcepts;
 								}
 							})
-							.then(new Function<Collection<ISnomedConcept>, Collection<SnomedConceptIndexEntry>>() {
+							.then(new Function<Collection<ISnomedConcept>, Collection<SnomedConceptDocument>>() {
 								@Override
-								public Collection<SnomedConceptIndexEntry> apply(Collection<ISnomedConcept> input) {
-									return SnomedConceptIndexEntry.fromConcepts(input);
+								public Collection<SnomedConceptDocument> apply(Collection<ISnomedConcept> input) {
+									return SnomedConceptDocument.fromConcepts(input);
 								}
 							}).getSync();
 				
-			for (SnomedConceptIndexEntry modelComponentIndexEntry : modelComponents) {
+			for (SnomedConceptDocument modelComponentIndexEntry : modelComponents) {
 				labelMap.put(modelComponentIndexEntry.getId(), modelComponentIndexEntry.getLabel());
 			}
 			

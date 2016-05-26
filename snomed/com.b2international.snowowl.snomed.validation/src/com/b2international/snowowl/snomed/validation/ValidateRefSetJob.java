@@ -43,7 +43,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.IClientSnomedComponentValidationService;
@@ -169,8 +169,8 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 			// Run concept validation for members here
 			final IClientSnomedComponentValidationService validationService = ApplicationContext
 					.getServiceForClass(IClientSnomedComponentValidationService.class);
-			final ValidateConceptsJob<SnomedConceptIndexEntry, String> validateConceptsJob = new ValidateConceptsJob<SnomedConceptIndexEntry, String>(
-					"", family, SnomedConceptIndexEntry.fromConcepts(uniqueConcepts), validationService);
+			final ValidateConceptsJob<SnomedConceptDocument, String> validateConceptsJob = new ValidateConceptsJob<SnomedConceptDocument, String>(
+					"", family, SnomedConceptDocument.fromConcepts(uniqueConcepts), validationService);
 
 			subMonitor.setWorkRemaining(uniqueConcepts.size());
 			validateConceptsJob.run(subMonitor.newChild(uniqueConcepts.size()));

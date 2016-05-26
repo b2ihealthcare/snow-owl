@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.core.concepteditor.ISnomedConceptEditorService;
@@ -85,7 +85,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 
 		// Create regular index entry
 		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
-		final SnomedConceptIndexEntry conceptIndexEntry = terminologyBrowser.getConcept(branchPath, conceptIdString);
+		final SnomedConceptDocument conceptIndexEntry = terminologyBrowser.getConcept(branchPath, conceptIdString);
 		
 		checkArgument(conceptIndexEntry != null, "Can't find concept '" + conceptId + "'.");
 

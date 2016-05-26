@@ -32,7 +32,7 @@ import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
@@ -52,11 +52,11 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  */
 public class ConceptDefinitionNormalizer {
 
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 	private final ScgExpressionNormalFormGenerator normalFormGenerator;
 	private final SnomedClientStatementBrowser statementBrowser;
 	
-	public ConceptDefinitionNormalizer(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
+	public ConceptDefinitionNormalizer(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
 		this.statementBrowser = statementBrowser;
 		this.normalFormGenerator = new ScgExpressionNormalFormGenerator(terminologyBrowser, statementBrowser);

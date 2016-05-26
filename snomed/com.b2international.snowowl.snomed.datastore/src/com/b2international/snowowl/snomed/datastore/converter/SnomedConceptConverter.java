@@ -56,7 +56,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.tree.Trees;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedFieldsToLoadBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
@@ -74,7 +74,7 @@ import com.google.common.collect.TreeMultimap;
 /**
  * @since 4.5
  */
-final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> {
+final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptDocument, ISnomedConcept, SnomedConcepts> {
 
 	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -86,7 +86,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	}
 
 	@Override
-	protected SnomedConcept toResource(final SnomedConceptIndexEntry input) {
+	protected SnomedConcept toResource(final SnomedConceptDocument input) {
 		final SnomedConcept result = new SnomedConcept();
 		result.setActive(input.isActive());
 		result.setDefinitionStatus(toDefinitionStatus(input.isPrimitive()));

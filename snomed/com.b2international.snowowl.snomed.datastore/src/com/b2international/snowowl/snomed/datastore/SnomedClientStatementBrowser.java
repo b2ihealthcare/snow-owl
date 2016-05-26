@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.browser.AbstractClientStatementBrowser;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientStatementBrowser;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  * @see AbstractClientStatementBrowser
  */
 @Client
-public class SnomedClientStatementBrowser extends ActiveBranchClientStatementBrowser<SnomedConceptIndexEntry, SnomedRelationshipIndexEntry, String> {
+public class SnomedClientStatementBrowser extends ActiveBranchClientStatementBrowser<SnomedConceptDocument, SnomedRelationshipIndexEntry, String> {
 
 	/**
 	 * Creates a new service instance for the client side

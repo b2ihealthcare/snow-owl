@@ -28,7 +28,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.Trees;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -51,25 +51,25 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 	}
 	
 	@Override
-	public boolean hasChildren(SnomedConceptIndexEntry element) {
+	public boolean hasChildren(SnomedConceptDocument element) {
 		// TODO fix implementation, if required (this uses inferred tree instead of stated)
 		return getSubTypeCount(element) > 0;
 	}
 	
 	@Override
-	public boolean hasParents(SnomedConceptIndexEntry element) {
+	public boolean hasParents(SnomedConceptDocument element) {
 		return !element.getStatedParents().isEmpty();
 	}
 	
 	@Override
-	protected TerminologyTree newTree(String branch, Iterable<SnomedConceptIndexEntry> concepts) {
+	protected TerminologyTree newTree(String branch, Iterable<SnomedConceptDocument> concepts) {
 		return Trees
 				.newStatedTree()
 				.build(branch, concepts);
 	}
 	
 	@Override
-	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(SnomedConceptIndexEntry concept) {
+	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(SnomedConceptDocument concept) {
 		final SnomedConcepts concepts = SnomedRequests
 			.prepareSearchConcept()
 			.all()
@@ -83,7 +83,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 			public IComponentWithChildFlag<String> apply(ISnomedConcept input) {
 				final ISnomedDescription pt = input.getPt();
 				final String label = pt != null ? pt.getTerm() : input.getId();
-				final SnomedConceptIndexEntry entry = SnomedConceptIndexEntry
+				final SnomedConceptDocument entry = SnomedConceptDocument
 					.builder(input)
 					.label(label)
 					.build();
@@ -93,7 +93,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+	public Collection<SnomedConceptDocument> getRootConcepts() {
 		final SnomedConcepts roots = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByActive(true)
@@ -102,11 +102,11 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
-		return SnomedConceptIndexEntry.fromConcepts(roots);
+		return SnomedConceptDocument.fromConcepts(roots);
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypesById(String id) {
+	public Collection<SnomedConceptDocument> getSubTypesById(String id) {
 		final SnomedConcepts concepts = SnomedRequests
 				.prepareSearchConcept()
 				.all()
@@ -115,11 +115,11 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 				.setLocales(getLocales())
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
-		return SnomedConceptIndexEntry.fromConcepts(concepts);
+		return SnomedConceptDocument.fromConcepts(concepts);
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSuperTypesById(String id) {
+	public Collection<SnomedConceptDocument> getSuperTypesById(String id) {
 		try {
 			final ISnomedConcept concept = SnomedRequests
 					.prepareGetConcept()
@@ -128,7 +128,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 					.setLocales(getLocales())
 					.build(getBranchPath().getPath())
 					.executeSync(getBus());
-			return SnomedConceptIndexEntry.fromConcepts(concept.getAncestors());
+			return SnomedConceptDocument.fromConcepts(concept.getAncestors());
 		} catch (NotFoundException e) {
 			return emptyList();
 		}

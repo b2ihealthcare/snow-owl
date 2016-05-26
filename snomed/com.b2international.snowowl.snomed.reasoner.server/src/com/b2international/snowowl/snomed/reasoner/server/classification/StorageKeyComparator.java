@@ -17,13 +17,13 @@ package com.b2international.snowowl.snomed.reasoner.server.classification;
 
 import java.util.Comparator;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.primitives.Longs;
 
 /**
  * 
  */
-public enum StorageKeyComparator implements Comparator<SnomedConceptIndexEntry> {
+public enum StorageKeyComparator implements Comparator<SnomedConceptDocument> {
 	INSTANCE;
 	
 	/*
@@ -31,7 +31,7 @@ public enum StorageKeyComparator implements Comparator<SnomedConceptIndexEntry> 
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public int compare(final SnomedConceptIndexEntry o1, final SnomedConceptIndexEntry o2) {
+	public int compare(final SnomedConceptDocument o1, final SnomedConceptDocument o2) {
 		return Longs.compare(o1.getStorageKey(), o2.getStorageKey());
 	}
 }

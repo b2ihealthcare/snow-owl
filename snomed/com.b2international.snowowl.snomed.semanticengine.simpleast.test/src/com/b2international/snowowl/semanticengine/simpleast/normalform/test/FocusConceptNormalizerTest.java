@@ -37,7 +37,7 @@ import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
 
@@ -59,7 +59,7 @@ public class FocusConceptNormalizerTest {
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(QueryAstUtils.getFocusConcepts(expression));
 		
 		// fracture of bone
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.FRACTURE_OF_BONE);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.FRACTURE_OF_BONE);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 
 		AttributeClause associatedMorphologyAttribute = buildAttribute(SnomedConcepts.ASSOCIATED_MORPHOLOGY, SnomedConcepts.FRACTURE);
@@ -74,7 +74,7 @@ public class FocusConceptNormalizerTest {
 		RValue expression = buildExpression(buildUnconstrainedConceptGroup(SnomedConcepts.FOOT_PAIN));
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(QueryAstUtils.getFocusConcepts(expression));
 		
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.PAIN);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.PAIN);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 		
 		AttributeClause findingSiteFootStructure = buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.FOOT_STRUCTURE);
@@ -87,7 +87,7 @@ public class FocusConceptNormalizerTest {
 		RValue expression = buildExpression(buildUnconstrainedConceptGroup(SnomedConcepts.SALPINGO_OOPHORECTOMY));
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(QueryAstUtils.getFocusConcepts(expression));
 		
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.EXCISION_OF_PELVIS);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.EXCISION_OF_PELVIS);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 		
 		AttributeClause methodExcisionAction1 = buildAttribute(SnomedConcepts.METHOD, SnomedConcepts.EXCISION_ACTION);
@@ -107,7 +107,7 @@ public class FocusConceptNormalizerTest {
 		RValue expression = buildExpression(buildUnconstrainedConceptGroup(SnomedConcepts.AUSCULTATION));
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(QueryAstUtils.getFocusConcepts(expression));
 		
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.AUSCULTATION);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.AUSCULTATION);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 		
 		AttributeClause methodAuscultationAction = buildAttribute(SnomedConcepts.METHOD, SnomedConcepts.AUSCULTATION_ACTION);
