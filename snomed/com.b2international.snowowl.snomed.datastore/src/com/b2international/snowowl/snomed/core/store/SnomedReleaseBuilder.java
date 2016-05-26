@@ -137,6 +137,17 @@ public class SnomedReleaseBuilder extends SnomedSimpleComponentBuilder<SnomedRel
 		return getSelf();
 	}
 	
+	/**
+	 * Returns a release builder with {@link SnomedReleaseType} set based on a case-sensitive name.
+	 * If enum not found by name, returns null for the {@link SnomedReleaseType}
+	 * @param typeName case-sensitive name of the enum
+	 * @return
+	 */
+	public final SnomedReleaseBuilder withType(final String typeName) {
+		this.type = SnomedReleaseType.getByName(typeName);
+		return getSelf();
+	}
+	
 	public final SnomedReleaseBuilder withBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
 		return getSelf();

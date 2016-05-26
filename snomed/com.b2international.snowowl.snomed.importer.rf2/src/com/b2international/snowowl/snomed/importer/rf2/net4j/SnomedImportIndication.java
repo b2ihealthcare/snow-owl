@@ -31,11 +31,16 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.importer.net4j.*;
+import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolConstants;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -97,6 +102,20 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			for (int i = 0; i < exludedRefSetIdCount; i++) {
 				importConfiguration.excludeRefSet(in.readString());
 			}
+			
+			//Ecore object cannot be serialized directly
+			SnomedRelease snomedRelease = SnomedReleases.newSnomedRelease()
+				.withBaseCodeSystemOid(in.readString())
+				.withBranchPath(in.readString())
+				.withCitation(in.readUTF())
+				.withCodeSystemOid(in.readString())
+				.withLanguage(in.readString())
+				.withMaintainingOrganizationLink(in.readString())
+				.withName(in.readUTF())
+				.withShortName(in.readString())
+				.withType(in.readString()).build();
+			
+			importConfiguration.setSnomedRelease(snomedRelease);
 			
 			monitor.worked();
 			

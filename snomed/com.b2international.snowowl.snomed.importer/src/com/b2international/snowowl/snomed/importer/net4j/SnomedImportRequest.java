@@ -27,6 +27,7 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.google.common.io.Closeables;
@@ -82,6 +83,18 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			for (final String excludedId : importConfiguration.getExcludedRefSetIds()) {
 				out.writeString(excludedId);
 			}
+			
+			//Ecore object cannot be serialized directly
+			SnomedRelease snomedRelease = importConfiguration.getSnomedRelease();
+			out.writeString(snomedRelease.getBaseCodeSystemOID());
+			out.writeString(snomedRelease.getBranchPath());
+			out.writeUTF(snomedRelease.getCitation());
+			out.writeString(snomedRelease.getCodeSystemOID());
+			out.writeString(snomedRelease.getLanguage());
+			out.writeString(snomedRelease.getMaintainingOrganizationLink());
+			out.writeUTF(snomedRelease.getName());
+			out.writeString(snomedRelease.getShortName());
+			out.writeString(snomedRelease.getReleaseType().getLiteral());
 			
 			monitor.worked();
 			
