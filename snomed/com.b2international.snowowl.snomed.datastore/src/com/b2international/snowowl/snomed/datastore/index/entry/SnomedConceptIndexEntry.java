@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -23,9 +22,7 @@ import java.util.List;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Doc;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ITreeComponent;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
@@ -42,7 +39,7 @@ import com.google.common.collect.FluentIterable;
  */
 @Doc
 @JsonDeserialize(builder=SnomedConceptIndexEntry.Builder.class)
-public class SnomedConceptIndexEntry extends SnomedDocument implements IComponent<String>, IIndexEntry, Serializable, ITreeComponent {
+public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComponent {
 
 	private static final long serialVersionUID = -824286402410205210L;
 
@@ -76,8 +73,7 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements IComponen
 	public static Builder builder(final SnomedConceptIndexEntry input) {
 		final Builder builder = builder()
 				.id(input.getId())
-				.storageKey(input.getStorageKey())
-				.score(input.getScore())
+//				.score(input.getScore())
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
 				.released(input.isReleased())
@@ -108,9 +104,10 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements IComponen
 				.statedParents(PrimitiveSets.newLongOpenHashSet(input.getStatedParentIds()))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()));
 		
-		if (input.getScore() != null) {
-			builder.score(input.getScore());
-		}
+		// TODO add back scoring
+//		if (input.getScore() != null) {
+//			builder.score(input.getScore());
+//		}
 		
 		return builder;
 	}
@@ -126,7 +123,7 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements IComponen
 		}).toList();
 	}
 
-	public static class Builder extends AbstractBuilder<Builder> {
+	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String iconId;
 		private boolean primitive;
@@ -191,7 +188,6 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements IComponen
 			final SnomedConceptIndexEntry entry = new SnomedConceptIndexEntry(id,
 					label,
 					iconId, 
-					score, 
 					moduleId, 
 					released, 
 					active, 
@@ -234,24 +230,14 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements IComponen
 	protected SnomedConceptIndexEntry(final String id,
 			final String label,
 			final String iconId, 
-			final float score, 
 			final String moduleId,
 			final boolean released,
 			final boolean active,
-			final long effectiveTimeLong,
+			final long effectiveTime,
 			final boolean primitive,
 			final boolean exhaustive) {
 
-		super(id, 
-				label,
-				iconId,
-				score, 
-				-1L, // FIXME remove storageKeys from index entries 
-				moduleId, 
-				released, 
-				active,
-				effectiveTimeLong);
-
+		super(id, label, iconId, moduleId, released, active, effectiveTime);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 	}

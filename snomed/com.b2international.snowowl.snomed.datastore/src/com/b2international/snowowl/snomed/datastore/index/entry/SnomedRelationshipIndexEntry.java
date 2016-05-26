@@ -18,15 +18,11 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.index.Doc;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IStatement;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -42,7 +38,7 @@ import com.google.common.collect.FluentIterable;
  */
 @Doc
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
-public class SnomedRelationshipIndexEntry extends SnomedDocument implements IStatement<String>, IComponent<String>, IIndexEntry, Serializable {
+public class SnomedRelationshipIndexEntry extends SnomedDocument implements IStatement<String> {
 
 	private static final long serialVersionUID = -7873086925532169024L;
 
@@ -84,9 +80,9 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 				.moduleId(input.getModuleId())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
-		if (input.getScore() != null) {
-			builder.score(input.getScore());
-		}
+//		if (input.getScore() != null) {
+//			builder.score(input.getScore());
+//		}
 		
 		return builder;
 	}
@@ -94,7 +90,6 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 	public static Builder builder(Relationship relationship) {
 		return builder()
 				.id(relationship.getId())
-				.storageKey(CDOUtils.getStorageKey(relationship))
 				.active(relationship.isActive())
 				.sourceId(relationship.getSource().getId())
 				.typeId(relationship.getType().getId())
@@ -118,7 +113,7 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 		}).toSet();
 	}
 
-	public static class Builder extends AbstractBuilder<Builder> {
+	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String sourceId;
 		private String typeId;
@@ -184,8 +179,6 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 		public SnomedRelationshipIndexEntry build() {
 			return new SnomedRelationshipIndexEntry(id,
 					label,
-					score, 
-					storageKey, 
 					moduleId, 
 					released, 
 					active, 
@@ -212,8 +205,6 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 
 	private SnomedRelationshipIndexEntry(final String id, 
 			final String label,
-			final float score, 
-			final long storageKey, 
 			final String moduleId, 
 			final boolean released,
 			final boolean active, 
@@ -230,8 +221,6 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 		super(id, 
 				label,
 				typeId, // XXX: iconId is the same as typeId 
-				score, 
-				storageKey, 
 				moduleId, 
 				released, 
 				active, 

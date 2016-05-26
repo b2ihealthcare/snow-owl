@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +25,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.b2international.index.Doc;
-import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -46,7 +42,7 @@ import com.google.common.collect.ImmutableMap;
  */
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
-public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComponent<String>, IIndexEntry, Serializable {
+public class SnomedDescriptionIndexEntry extends SnomedDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
 
@@ -94,9 +90,10 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComp
 				.caseSignificanceId(input.getCaseSignificance().getConceptId())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
-		if (input.getScore() != null) {
-			builder.score(input.getScore());
-		}
+		// TODO add back scoring
+//		if (input.getScore() != null) {
+//			builder.score(input.getScore());
+//		}
 		
 		if (input.getType() != null && input.getType().getPt() != null) {
 			builder.typeLabel(input.getType().getPt().getTerm());
@@ -114,7 +111,6 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComp
 				.id(description.getId()) 
 				.term(description.getTerm())
 				.moduleId(description.getModule().getId())
-				.storageKey(CDOUtils.getStorageKey(description))
 				.released(description.isReleased()) 
 				.active(description.isActive()) 
 				.typeId(description.getType().getId()) 
@@ -133,7 +129,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComp
 		}).toList();
 	}
 
-	public static class Builder extends AbstractBuilder<Builder> {
+	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String term;
 		private String conceptId;
@@ -212,8 +208,6 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComp
 		public SnomedDescriptionIndexEntry build() {
 			return new SnomedDescriptionIndexEntry(id,
 					term,
-					score,
-					storageKey, 
 					moduleId,
 					released, 
 					active, 
@@ -239,12 +233,10 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComp
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
-			final float score, 
-			final long storageKey, 
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
-			final long effectiveTimeLong, 
+			final long effectiveTime, 
 			final String conceptId,
 			final String languageCode,
 			final String term,
@@ -253,16 +245,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument implements IComp
 			final String caseSignificanceId,
 			final Set<String> preferredIn, final Set<String> acceptableIn) {
 
-		super(id,
-				label,
-				typeId, // XXX: iconId is the same as typeId 
-				score, 
-				storageKey, 
-				moduleId, 
-				released, 
-				active, 
-				effectiveTimeLong);
-
+		super(id, label, typeId /* XXX: iconId is the same as typeId*/, moduleId, released, active, effectiveTime);
 		this.conceptId = checkNotNull(conceptId, "Description concept identifier may not be null.");
 		this.languageCode = checkNotNull(languageCode, "Description language code may not be null.");
 		this.term = checkNotNull(term, "Description term may not be null.");

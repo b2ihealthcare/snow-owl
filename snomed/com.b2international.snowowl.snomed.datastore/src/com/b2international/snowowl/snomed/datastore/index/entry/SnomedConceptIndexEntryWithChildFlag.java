@@ -31,12 +31,10 @@ public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptIndexEntr
 		super(conceptIndexEntry.getId(), 
 				conceptIndexEntry.getLabel(),
 				conceptIndexEntry.getIconId(), 
-				conceptIndexEntry.getScore(), 
-				conceptIndexEntry.getStorageKey(),
 				conceptIndexEntry.getModuleId(),
 				conceptIndexEntry.isReleased(),
 				conceptIndexEntry.isActive(),
-				conceptIndexEntry.getEffectiveTimeAsLong(),
+				conceptIndexEntry.getEffectiveTime(),
 				conceptIndexEntry.isPrimitive(),
 				conceptIndexEntry.isExhaustive());
 

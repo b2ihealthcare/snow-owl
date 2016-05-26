@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
@@ -30,18 +29,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
@@ -74,7 +68,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
-public class SnomedRefSetMemberIndexEntry extends SnomedDocument implements IComponent<String>, Serializable {
+public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	private static final Set<String> ADDITIONAL_FIELDS = SnomedMappings.fieldsToLoad()
 			.memberAcceptabilityId()
@@ -358,7 +352,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument implements ICom
 		}).toList();
 	}
 
-	public static class Builder extends AbstractBuilder<Builder> {
+	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String referencedComponentId;
 		private final Map<String, Object> additionalFields = newHashMap();
@@ -429,8 +423,6 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument implements ICom
 		public SnomedRefSetMemberIndexEntry build() {
 			return new SnomedRefSetMemberIndexEntry(id,
 					label,
-					score, 
-					storageKey, 
 					moduleId, 
 					released, 
 					active, 
@@ -454,8 +446,6 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument implements ICom
 
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,
-			final float score, 
-			final long storageKey, 
 			final String moduleId, 
 			final boolean released,
 			final boolean active, 
@@ -470,8 +460,6 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument implements ICom
 		super(id, 
 				label,
 				referencedComponentId, // XXX: iconId is the referenced component identifier
-				score, 
-				storageKey, 
 				moduleId, 
 				released, 
 				active, 
