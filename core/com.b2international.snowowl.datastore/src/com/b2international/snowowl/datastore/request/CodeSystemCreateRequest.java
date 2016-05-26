@@ -23,7 +23,7 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactor
 /**
  * @since 4.7
  */
-public class CodeSystemCreateRequest extends BaseRequest<TransactionContext, String> {
+public final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, String> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,44 +37,47 @@ public class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Str
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
+	
+	CodeSystemCreateRequest() {
+	}
 
-	public void setBranchPath(String branchPath) {
+	void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
 	}
 
-	public void setCitation(String citation) {
+	void setCitation(String citation) {
 		this.citation = citation;
 	}
 
-	public void setOid(String oid) {
+	void setOid(String oid) {
 		this.oid = oid;
 	}
 
-	public void setIconPath(String iconPath) {
+	void setIconPath(String iconPath) {
 		this.iconPath = iconPath;
 	}
 
-	public void setLanguage(String language) {
+	void setLanguage(String language) {
 		this.language = language;
 	}
 
-	public void setLink(String link) {
+	void setLink(String link) {
 		this.link = link;
 	}
 
-	public void setName(String name) {
+	void setName(String name) {
 		this.name = name;
 	}
 
-	public void setRepositoryUuid(String repositoryUuid) {
+	void setRepositoryUuid(String repositoryUuid) {
 		this.repositoryUuid = repositoryUuid;
 	}
 
-	public void setShortName(String shortName) {
+	void setShortName(String shortName) {
 		this.shortName = shortName;
 	}
 
-	public void setTerminologyId(String terminologyId) {
+	void setTerminologyId(String terminologyId) {
 		this.terminologyId = terminologyId;
 	}
 

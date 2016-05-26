@@ -21,11 +21,8 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.7
  */
-public class CodeSystemCreateRequestBuilder extends BaseTransactionalRequestBuilder<CodeSystemCreateRequestBuilder, String> {
+public final class CodeSystemCreateRequestBuilder extends BaseTransactionalRequestBuilder<CodeSystemCreateRequestBuilder, String> {
 
-	protected CodeSystemCreateRequestBuilder(final String repositoryId) {
-		super(repositoryId);
-	}
 
 	private String branchPath;
 	private String citation;
@@ -37,6 +34,10 @@ public class CodeSystemCreateRequestBuilder extends BaseTransactionalRequestBuil
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
+	
+	CodeSystemCreateRequestBuilder(final String repositoryId) {
+		super(repositoryId);
+	}
 
 	public CodeSystemCreateRequestBuilder setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
