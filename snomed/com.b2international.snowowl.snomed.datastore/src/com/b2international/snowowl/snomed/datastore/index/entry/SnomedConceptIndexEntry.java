@@ -28,6 +28,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
@@ -51,24 +53,14 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 		public static final String PARENTS = "parents";
 		public static final String STATED_PARENTS = "statedParents";
 		public static final String PREDICATES = "predicates";
+		public static final String REFSET_TYPE = "refSetType";
+		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
+		public static final String STRUCTURAL = "structural";
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
-	
-//	public static Builder builder(final Document doc) {
-//		return builder()
-//				.id(SnomedMappings.id().getValueAsString(doc))
-//				.moduleId(SnomedMappings.module().getValueAsString(doc))
-//				.storageKey(Mappings.storageKey().getValue(doc))
-//				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc).intValue())) 
-//				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc).intValue()))
-//				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc))
-//				.iconId(Mappings.iconId().getValue(doc))
-//				.primitive(BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc).intValue()))
-//				.exhaustive(BooleanUtils.valueOf(SnomedMappings.exhaustive().getValue(doc).intValue()));
-//	}
 	
 	public static Builder builder(final SnomedConceptIndexEntry input) {
 		final Builder builder = builder()
@@ -133,6 +125,8 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 		private LongSet statedParents;
 		private LongSet statedAncestors;
 		private Collection<String> predicates = Collections.emptyList();
+		private SnomedRefSetType refSetType;
+		private short referencedComponentType;
 
 		@JsonCreator
 		private Builder() {
@@ -143,7 +137,7 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 		protected Builder getSelf() {
 			return this;
 		}
-
+		
 		public Builder iconId(final String iconId) {
 			this.iconId = iconId;
 			return getSelf();
@@ -183,6 +177,12 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 			this.predicates = componentReferringPredicates;
 			return getSelf();
 		}
+		
+		public Builder refSet(final SnomedRefSetType refSetType, final short referencedComponentType) {
+			this.refSetType = refSetType;
+			this.referencedComponentType = referencedComponentType;
+			return getSelf();
+		}
 
 		public SnomedConceptIndexEntry build() {
 			final SnomedConceptIndexEntry entry = new SnomedConceptIndexEntry(id,
@@ -193,7 +193,8 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 					active, 
 					effectiveTime, 
 					primitive, 
-					exhaustive);
+					exhaustive,
+					refSetType, referencedComponentType);
 			
 			if (parents != null) {
 				entry.setParents(parents);
@@ -221,11 +222,15 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 
 	private final boolean primitive;
 	private final boolean exhaustive;
+	private final SnomedRefSetType refSetType;
+	private final short referencedComponentType;
+	private final boolean structural;
+	
 	private LongSet parents;
 	private LongSet ancestors;
 	private LongSet statedParents;
 	private LongSet statedAncestors;
-	private Collection<String> predicates; 
+	private Collection<String> predicates;
 
 	protected SnomedConceptIndexEntry(final String id,
 			final String label,
@@ -235,11 +240,16 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 			final boolean active,
 			final long effectiveTime,
 			final boolean primitive,
-			final boolean exhaustive) {
+			final boolean exhaustive, 
+			final SnomedRefSetType refSetType, 
+			final short referencedComponentType) {
 
 		super(id, label, iconId, moduleId, released, active, effectiveTime);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
+		this.refSetType = refSetType;
+		this.referencedComponentType = referencedComponentType;
+		this.structural = SnomedRefSetUtil.isStructural(id, refSetType);
 	}
 	
 	public Collection<ConstraintDomain> getPredicates() {
@@ -305,12 +315,26 @@ public class SnomedConceptIndexEntry extends SnomedDocument implements ITreeComp
 	public LongSet getStatedAncestors() {
 		return statedAncestors;
 	}
-
+	
+	public SnomedRefSetType getRefSetType() {
+		return refSetType;
+	}
+	
+	public short getReferencedComponentType() {
+		return referencedComponentType;
+	}
+	
+	public boolean isStructural() {
+		return structural;
+	}
+	
 	@Override
 	public String toString() {
 		return toStringHelper()
-				.add("primitive", primitive)
-				.add("exhaustive", exhaustive)
+				.add(Fields.PRIMITIVE, primitive)
+				.add(Fields.EXHAUSTIVE, exhaustive)
+				.add(Fields.REFSET_TYPE, refSetType)
+				.add(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentType)
 				.toString();
 	}
 

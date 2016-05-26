@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 
 /**
@@ -36,7 +37,8 @@ public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptIndexEntr
 				conceptIndexEntry.isActive(),
 				conceptIndexEntry.getEffectiveTime(),
 				conceptIndexEntry.isPrimitive(),
-				conceptIndexEntry.isExhaustive());
+				conceptIndexEntry.isExhaustive(),
+				null, CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
 
 		this.hasChildren = hasChildren;
 	}
