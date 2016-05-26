@@ -37,5 +37,7 @@ public interface RevisionWriter {
 	void commit() throws IOException;
 
 	String branch();
+	
+	RevisionSearcher searcher();
 
 }

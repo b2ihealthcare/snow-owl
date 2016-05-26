@@ -118,6 +118,11 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		return branchPath;
 	}
 	
+	@Override
+	public RevisionSearcher searcher() {
+		return searcher;
+	}
+	
 	private String generateRevisionId() {
 		return UUID.randomUUID().toString();
 	}
