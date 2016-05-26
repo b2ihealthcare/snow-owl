@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.lucene;
+package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @since 4.3
  */
-public abstract class DocumentUpdaterBase<D extends DocumentBuilderBase<D>> implements DocumentUpdater<D> {
+public abstract class DocumentUpdaterBase<D> implements DocumentUpdater<D> {
 
 	private static final Logger LOG = LoggerFactory.getLogger("repository");
 	
@@ -43,10 +43,10 @@ public abstract class DocumentUpdaterBase<D extends DocumentBuilderBase<D>> impl
 	@Override
 	public final void update(D doc) {
 		try {
-			LOG.trace("Executing updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc.build());
+			LOG.trace("Executing updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc);
 			doUpdate(doc);
 		} finally {
-			LOG.trace("Executed updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc.build());
+			LOG.trace("Executed updater {} on {} doc:[{}]", getClass().getSimpleName(), getComponentId(), doc);
 		}
 	}
 	

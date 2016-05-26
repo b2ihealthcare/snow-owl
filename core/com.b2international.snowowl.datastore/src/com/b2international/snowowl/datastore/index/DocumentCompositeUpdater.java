@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.lucene;
+package com.b2international.snowowl.datastore.index;
 
 import java.util.Collection;
 
 /**
  * @since 4.3 
  */
-public class DocumentCompositeUpdater<D extends DocumentBuilderBase<D>> implements DocumentUpdater<D> {
+public final class DocumentCompositeUpdater<D> implements DocumentUpdater<D> {
 
 	private Collection<? extends DocumentUpdater<D>> updaters;
 

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.lucene;
+package com.b2international.snowowl.datastore.index;
 
 /**
  * @since 4.3
  */
-public interface DocumentUpdater<D extends DocumentBuilderBase<D>> {
+public interface DocumentUpdater<D> {
 
 	void update(D doc);
 	
