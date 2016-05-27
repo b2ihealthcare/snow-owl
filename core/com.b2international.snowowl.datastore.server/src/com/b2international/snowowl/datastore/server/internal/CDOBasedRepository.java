@@ -62,6 +62,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilderBroker;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemEntryBuilder;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemEntryBuilderBroker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Provider;
 
@@ -144,6 +146,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return CodeSystemBuilderBroker.INSTANCE.getCodeSystemBuilder(repositoryId);
 	}
 	
+	private CodeSystemEntryBuilder getCodeSystemEntryBuilder() {
+		return CodeSystemEntryBuilderBroker.INSTANCE.getCodeSystemEntryBuilder(repositoryId);
+	}
+	
 	@Override
     public long getBaseTimestamp(CDOBranch branch) {
         return branch.getBase().getTimeStamp();
@@ -175,6 +181,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 			public <T> T service(Class<T> type) {
 				if (type.isAssignableFrom(CodeSystemBuilder.class)) {
 					return (T) getCodeSystemBuilder();
+				}
+				
+				if (type.isAssignableFrom(CodeSystemEntryBuilder.class)) {
+					return (T) getCodeSystemEntryBuilder();
 				}
 				
 				if (registry.containsKey(type)) {
