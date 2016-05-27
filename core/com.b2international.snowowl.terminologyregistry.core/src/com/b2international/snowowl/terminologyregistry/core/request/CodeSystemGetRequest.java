@@ -19,6 +19,7 @@ import static com.b2international.snowowl.terminologyregistry.core.index.Termino
 
 import java.io.IOException;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -33,7 +34,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.BaseResourceRequest;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemFactory;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemEntryBuilder;
 
 /**
  * @since 4.7
@@ -74,7 +75,8 @@ final class CodeSystemGetRequest extends BaseResourceRequest<BranchContext, Code
 			throw new SnowowlRuntimeException(String.format("More than one code system was found with unique ID %s.", uniqueId));
 		} else {
 			final TopDocs topDocs = searcher.search(boolQuery, 1);
-			return (CodeSystemEntry) CodeSystemFactory.createCodeSystemEntry(searcher.doc(topDocs.scoreDocs[0].doc));
+			final Document doc = searcher.doc(topDocs.scoreDocs[0].doc);
+			return context.service(CodeSystemEntryBuilder.class).build(doc);
 		}
 	}
 
