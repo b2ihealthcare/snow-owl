@@ -32,16 +32,17 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.api.codesystem.ICodeSystemService;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
@@ -51,10 +52,13 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.store.SnomedReleaseBuilder;
 import com.b2international.snowowl.snomed.core.store.SnomedReleases;
+import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntry;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -145,22 +149,23 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		}
 		
 		final String snomedReleaseShortName = configuration.getSnomedReleaseShortName();
-		final ICodeSystem codeSystem = getCodeSystemService().getCodeSystemByShortNameOrOid(snomedReleaseShortName);
-		if (codeSystem == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(snomedReleaseShortName)) {
+		final SnomedReleaseEntry snomedReleaseEntry = (SnomedReleaseEntry) getCodeSystem(snomedReleaseShortName);
+		if (snomedReleaseEntry == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(snomedReleaseShortName)) {
 			throw new SnomedImportException("Importing a release of SNOMED CT from an archive "
 					+ "is prohibited when the given Snomed Release is not available. "
 					+ "Please perform either a new Snomed Release creation before "
 					+ "import or use INT Snomed Release.");
 		}
 		
+		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
+		
 		final SnomedRelease snomedRelease;
-		if (codeSystem == null) {
+		if (snomedReleaseEntry == null) {
 			snomedRelease = SnomedReleases.newSnomedInternationalRelease().build();
 		} else {
-			snomedRelease = (SnomedRelease) codeSystem;
+			snomedRelease = new SnomedReleaseBuilder().init(snomedReleaseEntry).build();
 		}
 		
-		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -206,9 +211,21 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			}
 		});
 	}
-
-	private ICodeSystemService getCodeSystemService() {
-		return ApplicationContext.getInstance().getService(ICodeSystemService.class);
+	
+	private CodeSystemEntry getCodeSystem(final String shortName) {
+		try {
+			return new CodeSystemRequests(REPOSITORY_UUID)
+					.prepareGetCodeSystem()
+					.setUniqueId(shortName)
+					.build(IBranchPath.MAIN_BRANCH)
+					.executeSync(getEventBus());
+		} catch (CodeSystemNotFoundException e) {
+			return null;
+		}
+	}
+	
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 	
 	@Override
