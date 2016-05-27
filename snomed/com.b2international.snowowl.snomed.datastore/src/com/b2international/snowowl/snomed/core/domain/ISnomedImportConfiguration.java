@@ -61,6 +61,13 @@ public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 	 * @return the import's completion date
 	 */
 	Date getCompletionDate();
+	
+	/**
+	 * Returns the short name of the SnomedRelease to use for the import.
+	 * 
+	 * @return the short name of the Snomed Release to use.
+	 */
+	String getSnomedReleaseShortName();
 
 	/**
 	 * Enumerates possible values for the state of an RF2 import process. 
