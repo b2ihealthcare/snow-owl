@@ -15,14 +15,16 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.server;
 
-import java.util.Collection;
-
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryClientService;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 
 /**
  * OSGI command contribution with Snow Owl terminology registry commands.
@@ -73,7 +75,7 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 	 */
 	private synchronized void versions(CommandInterpreter interpreter) {
 		String codeSystemId = interpreter.nextArgument();
-		if (isNullOrEmpty(codeSystemId)) {
+		if (Strings.isNullOrEmpty(codeSystemId)) {
 			interpreter.print("Command usage: terminologyregistry versions [codesystemid]\n");
 			return;
 		}
@@ -85,7 +87,7 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 	 */
 	private synchronized void details(CommandInterpreter interpreter) {
 		String codeSystemId = interpreter.nextArgument();
-		if (isNullOrEmpty(codeSystemId)) {
+		if (Strings.isNullOrEmpty(codeSystemId)) {
 			interpreter.print("Command usage: terminologyregistry details [codesystemid]\n");
 			return;
 		}
@@ -96,22 +98,25 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 	 * List all registered terminologies
 	 */
 	private synchronized void listall(CommandInterpreter interpreter) {
-		TerminologyRegistryClientService service = ApplicationContext.getInstance().getService(TerminologyRegistryClientService.class);
-		Collection<ICodeSystem> listRegisteredCodeSystems = service.getCodeSystems();
-		for (ICodeSystem codeSystem : listRegisteredCodeSystems) {
-			String lastVersion = service.getVersionId(codeSystem);
-			lastVersion = null == lastVersion ? "N/A" : lastVersion;
-			interpreter.print("Name: " + codeSystem.getName() + 
-					" short name: " + codeSystem.getShortName()+
-					" OID: " + codeSystem.getOid() + 
-					" organization: " + codeSystem.getOrgLink() +
-					" language: " + codeSystem.getLanguage() +
-					" last version: " + lastVersion + "\n");
-		}
+		final TerminologyRegistryClientService service = ApplicationContext.getInstance().getService(TerminologyRegistryClientService.class);
+		interpreter.print(Joiner.on("\n").join(FluentIterable.from(service.getCodeSystems()).transform(new Function<ICodeSystem, String>() {
+			@Override public String apply(ICodeSystem input) {
+				return getCodeSystemInformation(input, service);
+			}
+		})));
 	}
-
-	private boolean isNullOrEmpty(String string) {
-		return string == null || string.isEmpty();
+	
+	private String getCodeSystemInformation(ICodeSystem codeSystem, TerminologyRegistryClientService service) {
+		StringBuilder builder = new StringBuilder();
+		builder
+			.append("Name: ").append(codeSystem.getName()).append("\n")
+			.append("Short name: ").append(codeSystem.getShortName()).append("\n")
+			.append("Code System OID: ").append(codeSystem.getOid()).append("\n")
+			.append("Maintaining organization link: ").append(codeSystem.getOrgLink()).append("\n")
+			.append("Language: ").append(codeSystem.getLanguage()).append("\n")
+			.append("Last version: ").append(null == service.getVersionId(codeSystem) ? "N/A" : service.getVersionId(codeSystem)).append("\n")
+			.append("Current branch path: ").append(codeSystem.getBranchPath()).append("\n");
+		return builder.toString();
 	}
 	
 }
