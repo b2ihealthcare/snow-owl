@@ -40,7 +40,7 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	@NotEmpty
 	private final String languageRefSetId;
 	
-	@NotEmpty
+	@NotNull
 	private final boolean createVersion;
 	
 	private ImportStatus importStatus = ImportStatus.WAITING_FOR_FILE;
