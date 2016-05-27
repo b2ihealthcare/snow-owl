@@ -36,4 +36,8 @@ public class CodeSystemRequests {
 		return new RepositoryCommitRequestBuilder(repositoryId);
 	}
 
+	public CodeSystemGetRequestBuilder prepareGetCodeSystem() {
+		return new CodeSystemGetRequestBuilder(repositoryId);
+	}
+
 }
