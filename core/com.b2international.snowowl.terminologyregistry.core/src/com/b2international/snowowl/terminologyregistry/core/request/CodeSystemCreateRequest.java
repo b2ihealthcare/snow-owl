@@ -118,7 +118,7 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 	}
 
 	private CodeSystem createCodeSystem(final TransactionContext context) {
-		final CodeSystemBuilder<?, ?> builder = context.service(CodeSystemBuilder.class);
+		final CodeSystemBuilder<?, ?, ?> builder = context.service(CodeSystemBuilder.class);
 		return builder.withBranchPath(branchPath)
 				.withCitation(citation)
 				.withCodeSystemOid(oid)

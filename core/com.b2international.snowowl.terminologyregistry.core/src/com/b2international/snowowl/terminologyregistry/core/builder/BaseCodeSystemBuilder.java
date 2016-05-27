@@ -17,12 +17,13 @@ package com.b2international.snowowl.terminologyregistry.core.builder;
 
 import java.util.Map;
 
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
  * @since 4.7
  */
-public abstract class BaseCodeSystemBuilder<B extends CodeSystemBuilder<B, C>, C extends CodeSystem> implements CodeSystemBuilder<B, C> {
+public abstract class BaseCodeSystemBuilder<B extends CodeSystemBuilder<B, C, E>, C extends CodeSystem, E extends CodeSystemEntry> implements CodeSystemBuilder<B, C, E> {
 
 	private static final String KEY_NAME = "name";
 	private static final String KEY_SHORT_NAME = "shortName";
@@ -56,6 +57,20 @@ public abstract class BaseCodeSystemBuilder<B extends CodeSystemBuilder<B, C>, C
 		this.iconPath = valueMap.get(KEY_ICON_PATH);
 		this.terminologyComponentId = valueMap.get(KEY_TERMINOLOGY_COMPONENT_ID);
 		this.repositoryUuid = valueMap.get(KEY_REPOSITORY_UUID);
+		return getSelf();
+	}
+	
+	@Override
+	public B init(E entry) {
+		this.name = entry.getName();
+		this.shortName = entry.getShortName();
+		this.language = entry.getLanguage();
+		this.codeSystemOid = entry.getOid();
+		this.maintainingOrganizationLink = entry.getOrgLink();
+		this.citation = entry.getCitation();
+		this.iconPath = entry.getIconPath();
+		this.terminologyComponentId = entry.getSnowOwlId();
+		this.repositoryUuid = entry.getRepositoryUuid();
 		return getSelf();
 	}
 

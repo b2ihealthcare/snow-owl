@@ -17,18 +17,21 @@ package com.b2international.snowowl.terminologyregistry.core.builder;
 
 import java.util.Map;
 
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
  * @since 4.7
  */
-public interface CodeSystemBuilder<B extends CodeSystemBuilder<B, C>, C extends CodeSystem> {
+public interface CodeSystemBuilder<B extends CodeSystemBuilder<B, C, E>, C extends CodeSystem, E extends CodeSystemEntry> {
 	
 	String EXTENSION_ID = "com.b2international.snowowl.terminologyregistry.core.codeSystemBuilder";
 
 	String getRepositoryUuid();
 	
 	B init(Map<String, String> valueMap);
+	
+	B init(E entry);
 	
 	B withCitation(String citation);
 

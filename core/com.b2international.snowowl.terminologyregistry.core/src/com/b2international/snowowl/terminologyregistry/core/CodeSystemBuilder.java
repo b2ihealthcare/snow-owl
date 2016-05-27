@@ -17,6 +17,7 @@ package com.b2international.snowowl.terminologyregistry.core;
 
 import java.util.Map;
 
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSystemBuilder;
@@ -24,7 +25,7 @@ import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSyst
 /**
  * @since 4.7
  */
-public class CodeSystemBuilder extends BaseCodeSystemBuilder<CodeSystemBuilder, CodeSystem> {
+public class CodeSystemBuilder extends BaseCodeSystemBuilder<CodeSystemBuilder, CodeSystem, CodeSystemEntry> {
 	
 	@Override
 	public CodeSystemBuilder withExtension(final Map<String, String> valueMap) {

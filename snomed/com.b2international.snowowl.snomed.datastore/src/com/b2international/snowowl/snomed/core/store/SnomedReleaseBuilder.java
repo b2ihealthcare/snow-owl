@@ -22,12 +22,13 @@ import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntry;
 import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSystemBuilder;
 
 /**
  * @since 4.7
  */
-public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBuilder, SnomedRelease> {
+public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBuilder, SnomedRelease, SnomedReleaseEntry> {
 
 	private static final String KEY_BASE_CODE_SYSTEM_OID = "baseCodeSystemOID";
 	private static final String KEY_RELEASE_TYPE = "releaseType";
@@ -54,6 +55,14 @@ public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBui
 			withIconPath(SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH);
 		}
 		return withExtension(valueMap);
+	}
+	
+	@Override
+	public SnomedReleaseBuilder init(final SnomedReleaseEntry entry) {
+		super.init(entry);
+		this.baseCodeSystemOid = entry.getBaseCodeSystemOid();
+		this.type = entry.getSnomedReleaseType();
+		return getSelf();
 	}
 
 	public final SnomedReleaseBuilder withBaseCodeSystemOid(final String baseCodeSystemOid) {
