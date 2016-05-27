@@ -23,8 +23,8 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
-import com.b2international.snowowl.datastore.codesystem.CodeSystemBuilder;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 
 /**
  * @since 4.7

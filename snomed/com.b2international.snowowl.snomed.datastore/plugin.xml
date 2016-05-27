@@ -500,9 +500,9 @@
       </bootstrapFragment>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.codesystembuilder">
-      <provider
+         point="com.b2international.snowowl.terminologyregistry.core.codeSystemBuilder">
+      <codeSystemBuilder
             class="com.b2international.snowowl.snomed.core.store.SnomedReleaseBuilder">
-      </provider>
+      </codeSystemBuilder>
    </extension>
 </plugin>

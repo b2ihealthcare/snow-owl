@@ -17,9 +17,9 @@ package com.b2international.snowowl.terminologyregistry.core;
 
 import java.util.Map;
 
-import com.b2international.snowowl.datastore.codesystem.BaseCodeSystemBuilder;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
+import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSystemBuilder;
 
 /**
  * @since 4.7

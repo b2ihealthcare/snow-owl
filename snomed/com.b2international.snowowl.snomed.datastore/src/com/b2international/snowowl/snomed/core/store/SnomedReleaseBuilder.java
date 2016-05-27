@@ -17,12 +17,12 @@ package com.b2international.snowowl.snomed.core.store;
 
 import java.util.Map;
 
-import com.b2international.snowowl.datastore.codesystem.BaseCodeSystemBuilder;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSystemBuilder;
 
 /**
  * @since 4.7

@@ -40,8 +40,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
-import com.b2international.snowowl.datastore.codesystem.CodeSystemBuilder;
-import com.b2international.snowowl.datastore.codesystem.CodeSystemBuilderBroker;
 import com.b2international.snowowl.datastore.index.IndexTransactionProvider;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -62,6 +60,8 @@ import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilderBroker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Provider;
 
