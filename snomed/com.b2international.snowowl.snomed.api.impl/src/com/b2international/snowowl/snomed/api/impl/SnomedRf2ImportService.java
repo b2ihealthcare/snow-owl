@@ -29,9 +29,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.api.codesystem.ICodeSystemService;
+import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
@@ -39,10 +43,12 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -61,6 +67,9 @@ import com.google.common.collect.Maps;
 public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedRf2ImportService.class);
+	
+	@Resource
+	private ICodeSystemService codeSystemService;
 	
 	/**
 	 * A mapping between the registered import identifiers and the associated import configurations.
@@ -128,13 +137,29 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					+ "from an archive is prohibited when a non-MAIN branch path is specified.");
 		}
 		
+		final String snomedReleaseShortName = configuration.getSnomedReleaseShortName();
+		final ICodeSystem codeSystem = codeSystemService.getCodeSystemByShortNameOrOid(snomedReleaseShortName);
+		if (codeSystem == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(snomedReleaseShortName)) {
+			throw new SnomedImportException("Importing a release of SNOMED CT from an archive "
+					+ "is prohibited when the given Snomed Release is not available. "
+					+ "Please perform either a new Snomed Release creation before "
+					+ "import or use INT Snomed Release.");
+		}
+		
+		final SnomedRelease snomedRelease;
+		if (codeSystem == null) {
+			snomedRelease = SnomedReleases.newSnomedInternationalRelease().build();
+		} else {
+			snomedRelease = (SnomedRelease) codeSystem;
+		}
+		
 		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
-					final SnomedImportResult result = doImport(configuration, archiveFile);
+					final SnomedImportResult result = doImport(configuration, archiveFile, snomedRelease);
 					((SnomedImportConfiguration) configuration).setStatus(convertStatus(result.getValidationDefects())); 
 				} catch (final Exception e) {
 					LOG.error("Error during the import of " + archiveFile, e);
@@ -154,11 +179,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		return ImportStatus.COMPLETED;
 	}
 
-	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
+	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile,
+			final SnomedRelease snomedRelease) throws Exception {
 		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
 		return new ImportUtil().doImport(
-				//TODO: currently only INT, changes depend on the REST endpoint API
-				SnomedReleases.newSnomedInternationalRelease().build(),
+				snomedRelease,
 				configuration.getLanguageRefSetId(), 
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
 				branch,
