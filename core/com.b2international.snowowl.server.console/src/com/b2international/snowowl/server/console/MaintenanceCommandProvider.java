@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.server.console;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
@@ -30,6 +33,8 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 
 /**
  * OSGI command contribution with Snow Owl maintenance type commands.
@@ -37,45 +42,23 @@ import com.b2international.snowowl.eventbus.IEventBus;
  */
 public class MaintenanceCommandProvider implements CommandProvider {
 
-	class Artefact {
-		public long storageKey;
-		public long snomedId;
-		public String branchPath;
-
-		public Artefact(String branchPath, long snomedId, long storageKey) {
-			this.branchPath = branchPath;
-			this.snomedId = snomedId;
-			this.storageKey = storageKey;
-		}
-
-		@Override
-		public String toString() {
-			return "Artefact [branchPath=" + branchPath + ", storageKey=" + storageKey + ", snomedId=" + snomedId + "]";
-		}
-	}
-
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
-		// buffer.append("\tsnowowl test - Execute Snow Owl server smoke
-		// test\n");
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
-		buffer.append(
-				"\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI.\n");
+		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system.\n");
 		buffer.append("\tsnowowl listbranches [repository] - prints all the branches in the system for a repository.\n");
 		return buffer.toString();
 	}
 
 	/**
-	 * Reflective template method declaratively registered. Needs to start with
-	 * "_".
+	 * Reflective template method declaratively registered. Needs to start with "_".
 	 * 
 	 * @param interpreter
 	 */
 	public void _snowowl(CommandInterpreter interpreter) {
-		try {
 			String cmd = interpreter.nextArgument();
 
 			if ("checkservices".equals(cmd)) {
@@ -99,9 +82,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			}
 
 			interpreter.println(getHelp());
-		} catch (Exception ex) {
-			interpreter.println(ex.getMessage());
-		}
 	}
 
 	public synchronized void executeCreateDbIndex(CommandInterpreter interpreter) {
@@ -125,36 +105,44 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 	}
 
-	public synchronized void listBranches(CommandInterpreter interpreter)
-			throws InterruptedException, ExecutionException {
-
+	public synchronized void listBranches(CommandInterpreter interpreter) {
 		String repositoryName = interpreter.nextArgument();
 		if (isValidRepositoryName(repositoryName, interpreter)) {
-			IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
-			interpreter.println("Repository " + repositoryName + " branches:");
-			Branch branch = RepositoryRequests.branching(repositoryName).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(eventBus, 1000);
-			processBranch(branch, 0, interpreter);
+			interpreter.println(String.format("Branches for repository %s:", repositoryName));
+			Branch mainBranch = RepositoryRequests.branching(repositoryName).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(getEventBus(), 1000);
+			
+			ArrayList<Branch> allBranches = newArrayList(mainBranch.children());
+			allBranches.add(mainBranch);
+						
+			printBranchHierarchy(allBranches, Sets.<Branch>newHashSet(), mainBranch, interpreter);
+		}
+	}
+	
+	private void printBranchHierarchy(List<Branch> branches, Set<Branch> visitedBranches, Branch currentBranch, CommandInterpreter interpreter) {
+		interpreter.println(getDepthOfBranch(currentBranch) + "|---" +  currentBranch.name());
+		visitedBranches.add(currentBranch);
+		for (Branch branch : branches) {
+			if (!visitedBranches.contains(branch)) {
+				if (branch.parentPath().equals(currentBranch.path())) {
+					printBranchHierarchy(branches, visitedBranches, branch, interpreter);
+				}
+			}
 		}
 	}
 
-	// Depth-first traversal
-	private void processBranch(Branch childBranch, int indent, CommandInterpreter interpreter) {
-
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < indent; i++) {
-			sb.append(' ');
-
+	private String getDepthOfBranch(Branch currentBranch) {
+		int depth = Splitter.on(Branch.SEPARATOR).splitToList(currentBranch.path()).size();
+		String indent = "";
+		for (int i = 1; i < depth; i++) {
+			indent = indent + "    ";
 		}
-		sb.append(childBranch.name());
-		interpreter.println(sb.toString());
-		indent++;
-		Collection<? extends Branch> children = childBranch.children();
-		for (Branch branch : children) {
-			processBranch(branch, indent, interpreter);
-		}
-		indent--;
+		return indent;
 	}
 
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+	
 	public synchronized void checkServices(CommandInterpreter ci) {
 
 		ci.println("Checking core services...");
