@@ -107,30 +107,41 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			throw new SnomedImportException(sb.toString());
 		}
 		
-		final Rf2ReleaseType releaseType = configuration.getRf2ReleaseType();
-		final boolean contentAvailable = isContentAvailable();
-		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType)) {
-			throw new SnomedImportException("Importing a full release of SNOMED CT "
-					+ "from an archive is prohibited when SNOMED CT ontology is "
-					+ "already available on the terminology server. "
-					+ "Please perform either a delta or a snapshot import instead.");
-		}
-		
-		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType)) {
-			throw new SnomedImportException("Importing a delta release of SNOMED CT "
-					+ "from an archive is prohibited when SNOMED CT ontology is "
-					+ "not available on the terminology server. "
-					+ "Please perform either a full or a snapshot import instead.");
-		}
-		
 		if (isImportAlreadyRunning()) {
 			throw new SnomedImportException("Cannot perform SNOMED CT import from RF2 archive. "
 					+ "An import is already in progress. Please try again later.");
 		}
 		
-		if (!Branch.MAIN_PATH.equals(configuration.getBranchPath()) && !Rf2ReleaseType.DELTA.equals(releaseType)) {
-			throw new SnomedImportException("Importing a non-delta release of SNOMED CT "
-					+ "from an archive is prohibited when a non-MAIN branch path is specified.");
+		final Rf2ReleaseType releaseType = configuration.getRf2ReleaseType();
+		final boolean contentAvailable = ContentAvailabilityInfoManager.INSTANCE.isAvailable(REPOSITORY_UUID);
+		final boolean isMain = Branch.MAIN_PATH.equals(configuration.getBranchPath());
+		
+		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType) && isMain) {
+			throw new SnomedImportException("Importing a full release of SNOMED CT "
+					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is already available on the terminology server. "
+					+ "Please perform either a delta or a snapshot import instead.");
+		}
+		
+		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType) && isMain) {
+			throw new SnomedImportException("Importing a delta release of SNOMED CT "
+					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is not available on the terminology server. "
+					+ "Please perform either a full or a snapshot import instead.");
+		}
+		
+		if (!contentAvailable && !isMain) {
+			throw new SnomedImportException("Importing a release of SNOMED CT from an "
+					+ "archive to other than MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is not available on the terminology server. "
+					+ "Please perform a full import to MAIN branch first.");
+		}
+		
+		final String branchPath = configuration.getBranchPath();
+		if (!isMain && !BranchPathUtils.exists(REPOSITORY_UUID, branchPath)) {
+			throw new SnomedImportException("Importing a release of SNOMED CT from an "
+					+ "archive to other than MAIN branch is prohibited when the given "
+					+ "branch does not exist. Please perform a branch creation first.");
 		}
 		
 		final String snomedReleaseShortName = configuration.getSnomedReleaseShortName();
@@ -196,10 +207,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		});
 	}
 
-	private boolean isContentAvailable() {
-		return ContentAvailabilityInfoManager.INSTANCE.isAvailable(REPOSITORY_UUID);
-	}
-	
 	private ICodeSystemService getCodeSystemService() {
 		return ApplicationContext.getInstance().getService(ICodeSystemService.class);
 	}
