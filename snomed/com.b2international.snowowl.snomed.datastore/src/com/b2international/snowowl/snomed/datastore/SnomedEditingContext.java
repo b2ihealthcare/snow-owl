@@ -121,6 +121,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
@@ -201,6 +202,56 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public Collection<SnomedRelease> getSnomedReleases() {
 		return FluentIterable.from(getCodeSystems()).filter(SnomedRelease.class).toSet();
+	}
+	
+	/**
+	 * Tries to find a given {@link SnomedRelease} specified by either it's short name or it's code system OID on the given branch this editing
+	 * context was opened (!!!). However code systems are stored on MAIN.
+	 * 
+	 * @param shortName
+	 * @param codeSystemOID
+	 * @return
+	 */
+	public SnomedRelease getSnomedRelease(final String shortName, @Nullable final String codeSystemOID) {
+		Collection<SnomedRelease> existingReleases = getSnomedReleases();
+		
+		// try to find the SNOMED release based on the code system OID
+		if (!Strings.isNullOrEmpty(codeSystemOID)) {
+			if (FluentIterable.from(existingReleases).allMatch(new Predicate<SnomedRelease>() {
+				@Override public boolean apply(SnomedRelease input) {
+					return !Strings.isNullOrEmpty(input.getCodeSystemOID());
+				}
+			})) {
+				return FluentIterable.from(existingReleases).firstMatch(new Predicate<SnomedRelease>() {
+					@Override public boolean apply(SnomedRelease input) {
+						return input.getCodeSystemOID().equals(codeSystemOID);
+					}
+				}).orNull();
+			}
+		}
+		
+		// if OID is missing then use code system short name
+		if (!Strings.isNullOrEmpty(shortName)) {
+			return FluentIterable.from(existingReleases).firstMatch(new Predicate<SnomedRelease>() {
+				@Override public boolean apply(SnomedRelease input) {
+					return input.getShortName().equalsIgnoreCase(shortName);
+				}
+			}).orNull();
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Checks if a given {@link SnomedRelease} specified by either it's short name or it's code system OID exists on the given branch this editing
+	 * context was opened (!!!). However code systems are stored on MAIN.
+	 * 
+	 * @param shortName
+	 * @param codeSystemOID
+	 * @return
+	 */
+	public boolean isSnomedReleaseExists(String shortName, String codeSystemOID) {
+		return getSnomedRelease(shortName, codeSystemOID) != null;
 	}
 	
 	/**

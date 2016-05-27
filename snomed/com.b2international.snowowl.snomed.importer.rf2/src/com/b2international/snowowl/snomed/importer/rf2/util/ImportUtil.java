@@ -48,6 +48,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ConsoleProgressMonitor;
@@ -66,6 +67,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
@@ -253,7 +255,7 @@ public final class ImportUtil {
 			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file(s).");
 			return result;
 		}
-
+		
 		final Set<URL> patchedRefSetURLs = Sets.newHashSet(configuration.getRefSetUrls());
 		final Set<String> patchedExcludedRefSetIDs = Sets.newHashSet(configuration.getExcludedRefSetIds());
 		final List<Importer> importers = Lists.newArrayList();
@@ -262,12 +264,12 @@ public final class ImportUtil {
 
 		context.setLanguageRefSetId(configuration.getLanguageRefSetId());
 		context.setVersionCreationEnabled(configuration.isCreateVersions());
-		context.setSnomedRelease(configuration.getSnomedRelease());
 		context.setLogger(IMPORT_LOGGER);
 		context.setStagingDirectory(stagingDirectoryRoot);
 		context.setContentSubType(configuration.getVersion());
 		context.setIgnoredRefSetIds(patchedExcludedRefSetIDs);
-		
+		context.setSnomedReleaseShortName(configuration.getSnomedRelease().getShortName());
+		context.setSnomedReleaseOID(configuration.getSnomedRelease().getCodeSystemOID());
 
 		try {
 
@@ -350,9 +352,13 @@ public final class ImportUtil {
 		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IDatastoreOperationLockManager.class);
 		
 		try {
-			OperationLockRunner.with(lockManager).run(new Runnable() { @Override public void run() {
-				resultHolder[0] = doImportLocked(requestingUserId, configuration, result, branchPath, context, subMonitor, importers, editingContext, branch);
-			}}, lockContext, IOperationLockManager.NO_TIMEOUT, lockTarget);
+			OperationLockRunner.with(lockManager).run(new Runnable() { 
+				@Override 
+				public void run() {
+					createSnomedRelease(configuration.getSnomedRelease(), context, configuration.getBranchPath());
+					resultHolder[0] = doImportLocked(requestingUserId, configuration, result, branchPath, context, subMonitor, importers, editingContext, branch);
+				}
+			}, lockContext, IOperationLockManager.NO_TIMEOUT, lockTarget);
 		} catch (final OperationLockException | InterruptedException e) {
 			throw new ImportException(e);
 		} catch (final InvocationTargetException e) {
@@ -360,6 +366,41 @@ public final class ImportUtil {
 		}
 		
 		return resultHolder[0];
+	}
+	
+	/*
+	 * Code systems must be committed to MAIN, therefore the proper editing context must be used accordingly 
+	 */
+	private void createSnomedRelease(final SnomedRelease snomedRelease, final SnomedImportContext context, final String branchPath) {
+		try {
+			// import works on MAIN -> get editingContext from import context
+			if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
+				if (!context.getEditingContext().isSnomedReleaseExists(snomedRelease.getShortName(), snomedRelease.getCodeSystemOID())) {
+					context.getEditingContext().add(snomedRelease);
+				}
+				
+				if (context.getEditingContext().isDirty()) {
+					new CDOServerCommitBuilder(context.getUserId(), String.format("Created SNOMED CT code system '%s' (OID: %s)", snomedRelease.getShortName(), snomedRelease.getCodeSystemOID()), context.getEditingContext().getTransaction())
+						.sendCommitNotification(false)
+						.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+						.commit();
+				}
+			// import works on a branch -> open a separate editingContext for MAIN
+			} else {
+				try (SnomedEditingContext snomedEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
+					
+					if (!snomedEditingContext.isSnomedReleaseExists(snomedRelease.getShortName(), snomedRelease.getCodeSystemOID())) {
+						snomedEditingContext.add(snomedRelease);
+					}
+					
+					if (snomedEditingContext.isDirty()) {
+							CDOServerUtils.commit(snomedEditingContext, context.getUserId(), String.format("Created SNOMED CT code system '%s' (OID: %s)", snomedRelease.getShortName(), snomedRelease.getCodeSystemOID()), null);
+					}
+				}
+			}
+		} catch (CommitException e) {
+			throw new ImportException("Unable to commit SNOMED CT code system", e);
+		}
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,

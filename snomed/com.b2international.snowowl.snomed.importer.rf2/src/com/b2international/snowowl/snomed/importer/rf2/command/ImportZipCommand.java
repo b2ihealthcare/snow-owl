@@ -26,14 +26,18 @@ import java.util.Set;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
 import com.b2international.commons.ConsoleProgressMonitor;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
@@ -117,17 +121,6 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			}
 		}
 
-		// branchPath
-		
-		if (parameters.contains("-b") && parameters.size() > 5) {
-			branchPath = parameters.get(5);
-			if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)) {
-				interpreter.println("Invalid branch path '" + branchPath + "'.");
-				printDetailedHelp(interpreter);
-				return;
-			}
-		}
-
 		// create version flag
 		
 		if (parameters.contains("-v")) {
@@ -184,12 +177,6 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			}
 		}
 		
-		// metadata file path
-		
-		if (!Strings.isNullOrEmpty(archiveFilePath) && !archiveFilePath.equals(parameters.get(parameters.size() - 1))) {
-			metadataFilePath = parameters.get(parameters.size() - 1);
-		}
-		
 		final File archiveFile = new File(archiveFilePath);
 		
 		if (!archiveFile.isFile()) {
@@ -198,33 +185,67 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 		
-		SnomedRelease snomedRelease = null;
+		// metadata file path
 		
-		if (!Strings.isNullOrEmpty(metadataFilePath)) {
-			
-			File metadataFile = new File(metadataFilePath);
-			
-			if (!metadataFile.isFile()) {
-				interpreter.println("Invalid metadata file path.");
+		if (!archiveFilePath.equals(parameters.get(parameters.size() - 1))) {
+			metadataFilePath = parameters.get(parameters.size() - 1);
+			if (Strings.isNullOrEmpty(metadataFilePath)) {
+				interpreter.println("SNOMED CT RF2 release descriptor file must be specified");
 				printDetailedHelp(interpreter);
 				return;
-			} else {
-				try {
-					ObjectMapper mapper = new ObjectMapper();
-					@SuppressWarnings("unchecked")
-					Map<String, String> metadataMap = mapper.readValue(metadataFile, Map.class);
-					snomedRelease = SnomedReleases.newSnomedRelease(metadataMap).withBranchPath(branchPath).build();
-				} catch (IOException e) {
-					interpreter.println("Unable to parse metadata file: " + e.getMessage());
+			}
+		}
+		
+		SnomedRelease snomedRelease = null;
+			
+		File metadataFile = new File(metadataFilePath);
+		
+		if (!metadataFile.isFile()) {
+			interpreter.println("Invalid metadata file path.");
+			printDetailedHelp(interpreter);
+			return;
+		} else {
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				@SuppressWarnings("unchecked")
+				Map<String, String> metadataMap = mapper.readValue(metadataFile, Map.class);
+				snomedRelease = SnomedReleases.newSnomedRelease(metadataMap).withBranchPath(branchPath).build();
+			} catch (IOException e) {
+				interpreter.println("Unable to parse metadata file: " + e.getMessage());
+				printDetailedHelp(interpreter);
+				return;
+			}
+		}
+		
+		// branchPath
+		
+		if (parameters.contains("-b") && parameters.size() > 5) {
+			branchPath = parameters.get(5);
+			if (snomedRelease.getReleaseType() == SnomedReleaseType.INTERNATIONAL) {
+				if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)) {
+					interpreter.println("Invalid branch path '" + branchPath + "'.");
 					printDetailedHelp(interpreter);
 					return;
 				}
+			} else if (snomedRelease.getReleaseType() == SnomedReleaseType.EXTENSION) {
+				if (!branchPath.equalsIgnoreCase(IBranchPath.MAIN_BRANCH)) {
+
+					IBranchPath parentBranchPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), branchPath);
+					IBranchPath extensionBranchPath = BranchPathUtils.createPath(parentBranchPath, snomedRelease.getShortName());
+
+					if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, extensionBranchPath.getPath())) {
+						IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+						SnomedRequests.branching().prepareCreate()
+							.setParent(parentBranchPath.getPath())
+							.setName(snomedRelease.getShortName())
+							.build()
+							.executeSync(eventBus);
+					}
+					
+					branchPath = extensionBranchPath.getPath();
+					snomedRelease.setBranchPath(branchPath);
+				}
 			}
-			
-		} else {
-			
-			// TODO create SnomedRelease from archive
-			
 		}
 		
 		try {
