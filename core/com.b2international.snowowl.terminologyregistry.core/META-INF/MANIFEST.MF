@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
  com.b2international.snowowl.terminologyregistry.model;visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Export-Package: com.b2international.snowowl.terminologyregistry.core,c
- om.b2international.snowowl.terminologyregistry.core.bean,com.b2intern
- ational.snowowl.terminologyregistry.core.index,com.b2international.sn
- owowl.terminologyregistry.core.util
+Export-Package: com.b2international.snowowl.terminologyregistry.core,
+ com.b2international.snowowl.terminologyregistry.core.bean,
+ com.b2international.snowowl.terminologyregistry.core.index,
+ com.b2international.snowowl.terminologyregistry.core.request,
+ com.b2international.snowowl.terminologyregistry.core.util

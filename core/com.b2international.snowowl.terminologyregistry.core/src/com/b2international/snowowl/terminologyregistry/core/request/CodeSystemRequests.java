@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.terminologyregistry.core.request;
+
+import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 4.7
