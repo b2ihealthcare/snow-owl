@@ -37,6 +37,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +58,10 @@ import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
@@ -74,6 +79,7 @@ import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -111,6 +117,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -391,16 +398,40 @@ public final class ImportUtil {
 					
 					if (!snomedEditingContext.isSnomedReleaseExists(snomedRelease.getShortName(), snomedRelease.getCodeSystemOID())) {
 						snomedEditingContext.add(snomedRelease);
+					} else if (snomedRelease.getReleaseType() == SnomedReleaseType.EXTENSION) {
+						SnomedRelease existingSnomedRelease = snomedEditingContext.getSnomedRelease(snomedRelease.getShortName(), snomedRelease.getCodeSystemOID());
+						Date effectiveTimeOfExistingRelease = getBaseEffectiveTimeOf(existingSnomedRelease);
+						Date effectiveTimeOfRequestedSnomedRelease = getBaseEffectiveTimeOf(snomedRelease);
+						if (effectiveTimeOfExistingRelease != null && effectiveTimeOfRequestedSnomedRelease != null) {
+							if (effectiveTimeOfRequestedSnomedRelease.after(effectiveTimeOfExistingRelease)) {
+								// XXX index change processing does not follow this change!
+								existingSnomedRelease.setBranchPath(snomedRelease.getBranchPath());
+							}
+						}
 					}
 					
 					if (snomedEditingContext.isDirty()) {
-							CDOServerUtils.commit(snomedEditingContext, context.getUserId(), String.format("Created SNOMED CT code system '%s' (OID: %s)", snomedRelease.getShortName(), snomedRelease.getCodeSystemOID()), null);
+						CDOServerUtils.commit(snomedEditingContext, context.getUserId(), String.format("Created SNOMED CT code system '%s' (OID: %s)", snomedRelease.getShortName(), snomedRelease.getCodeSystemOID()), null);
 					}
 				}
 			}
 		} catch (CommitException e) {
 			throw new ImportException("Unable to commit SNOMED CT code system", e);
 		}
+	}
+
+	private Date getBaseEffectiveTimeOf(SnomedRelease snomedRelease) {
+		List<String> pathSegments = Splitter.on(Branch.SEPARATOR).splitToList(snomedRelease.getBranchPath());
+		int indexOfExtensionIdentifier = pathSegments.lastIndexOf(snomedRelease.getShortName());
+		if (indexOfExtensionIdentifier > 0) {
+			String baseEffectiveTime = pathSegments.get(indexOfExtensionIdentifier -1);
+			try {
+				return EffectiveTimes.parse(baseEffectiveTime, DateFormats.DEFAULT);
+			} catch (SnowowlRuntimeException | NullPointerException e) {
+				throw new ImportException(String.format("Unable to parse base effective time of SNOMED CT code system (%s)", snomedRelease.getBranchPath()), e);
+			}
+		}
+		return null;
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,
