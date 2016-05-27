@@ -505,4 +505,10 @@
             class="com.b2international.snowowl.snomed.core.store.SnomedReleaseBuilder">
       </codeSystemBuilder>
    </extension>
+   <extension
+         point="com.b2international.snowowl.terminologyregistry.core.codeSystemEntryBuilder">
+      <codeSystemEntryBuilder
+            class="com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntryBuilder">
+      </codeSystemEntryBuilder>
+   </extension>
 </plugin>
