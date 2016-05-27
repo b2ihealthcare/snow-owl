@@ -25,7 +25,6 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EClass;
 
-import com.b2international.snowowl.datastore.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.RevisionDocument.RevisionDocumentBuilder;
 import com.google.common.base.Function;

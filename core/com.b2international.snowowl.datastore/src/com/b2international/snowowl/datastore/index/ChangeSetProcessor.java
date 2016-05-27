@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore;
+package com.b2international.snowowl.datastore.index;
 
 import java.util.Set;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.RevisionDocument.RevisionDocumentBuilder;
 import com.google.common.collect.Multimap;
