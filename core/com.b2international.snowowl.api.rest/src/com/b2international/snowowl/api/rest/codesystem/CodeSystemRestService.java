@@ -106,11 +106,13 @@ public class CodeSystemRestService extends AbstractRestService {
 		ApiValidation.checkInput(codeSystem);
 		
 		final String userId = principal.getName();
-		final CodeSystemCreateRequest req = buildCreateRequest(codeSystem);
+		final CodeSystemRequests requests = new CodeSystemRequests(codeSystem.getRepositoryUuid());
+		
+		final CodeSystemCreateRequest req = buildCreateRequest(codeSystem, requests);
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
-		final String shortName = CodeSystemRequests
-				.prepareCommit(codeSystem.getRepositoryUuid())
+		final String shortName = requests
+				.prepareCommit()
 				.setCommitComment(commitComment)
 				.setBody(req)
 				.setUserId(userId)
@@ -126,8 +128,9 @@ public class CodeSystemRestService extends AbstractRestService {
 				.build();
 	}
 	
-	private CodeSystemCreateRequest buildCreateRequest(final ICodeSystem codeSystem) {
-		return (CodeSystemCreateRequest) CodeSystemRequests.createNewCodeSystem(codeSystem.getRepositoryUuid())
+	private CodeSystemCreateRequest buildCreateRequest(final ICodeSystem codeSystem, final CodeSystemRequests requests) {
+		return (CodeSystemCreateRequest) requests
+				.prepareNewCodeSystem()
 				.setBranchPath(codeSystem.getBranchPath())
 				.setCitation(codeSystem.getCitation())
 				.setIconPath(codeSystem.getIconPath())

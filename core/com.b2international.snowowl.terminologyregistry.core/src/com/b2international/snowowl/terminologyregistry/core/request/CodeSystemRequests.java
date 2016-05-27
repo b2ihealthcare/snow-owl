@@ -22,11 +22,17 @@ import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuil
  */
 public class CodeSystemRequests {
 
-	public static CodeSystemCreateRequestBuilder createNewCodeSystem(final String repositoryId) {
+	private final String repositoryId;
+
+	public CodeSystemRequests(final String repositoryId) {
+		this.repositoryId = repositoryId;
+	}
+
+	public CodeSystemCreateRequestBuilder prepareNewCodeSystem() {
 		return new CodeSystemCreateRequestBuilder(repositoryId);
 	}
 
-	public static RepositoryCommitRequestBuilder prepareCommit(final String repositoryId) {
+	public RepositoryCommitRequestBuilder prepareCommit() {
 		return new RepositoryCommitRequestBuilder(repositoryId);
 	}
 
