@@ -73,10 +73,14 @@ public class CodeSystemIndexMappingStrategy extends AbstractIndexMappingStrategy
 		return CDOIDUtils.asLong(codeSystem.cdoID());
 	}
 
-	private void addStringFieldIfExists(final Document doc, final String fieldName, final String value) {
+	protected void addStringFieldIfExists(final Document doc, final String fieldName, final String value) {
 		if (null != value) {
 			doc.add(new StringField(fieldName, value, Store.YES));
 		}
+	}
+	
+	public CodeSystem getCodeSystem() {
+		return codeSystem;
 	}
 	
 }
