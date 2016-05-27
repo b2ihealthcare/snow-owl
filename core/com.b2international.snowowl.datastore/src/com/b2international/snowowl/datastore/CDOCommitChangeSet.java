@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -26,13 +27,16 @@ import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * An implementation of the {@link ICDOCommitChangeSet} interface.
  */
-public class CDOCommitChangeSet implements ICDOCommitChangeSet {
+public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 
 	private final CDOView view;
 	private final String userId;
@@ -113,4 +117,30 @@ public class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	public long getTimestamp() {
 		return timestamp;
 	}
+	
+	@Override
+	public <T extends CDOObject> Iterable<T> getNewComponents(final Class<T> type) {
+		return FluentIterable.from(getNewComponents()).filter(type).toSet();
+	}
+	
+	@Override
+	public <T extends CDOObject> Iterable<T> getDirtyComponents(final Class<T> type) {
+		return FluentIterable.from(getDirtyComponents()).filter(type).toSet();
+	}
+	
+	@Override
+	public Collection<CDOID> getDetachedComponents(final EClass eClass) {
+		return FluentIterable.from(getDetachedComponents().entrySet()).filter(new Predicate<Entry<CDOID, EClass>>() {
+			@Override
+			public boolean apply(Entry<CDOID, EClass> input) {
+				return eClass.isSuperTypeOf(input.getValue());
+			}
+		}).transform(new Function<Entry<CDOID, EClass>, CDOID>() {
+			@Override
+			public CDOID apply(Entry<CDOID, EClass> input) {
+				return input.getKey();
+			}
+		}).toSet();
+	}
+	
 }

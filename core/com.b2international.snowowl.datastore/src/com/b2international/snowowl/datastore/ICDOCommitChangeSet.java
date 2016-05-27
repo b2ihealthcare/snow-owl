@@ -76,6 +76,11 @@ public interface ICDOCommitChangeSet {
 	long getTimestamp();
 
 	boolean isEmpty();
+
+	<T extends CDOObject> Iterable<T> getNewComponents(Class<T> type);
 	
+	<T extends CDOObject> Iterable<T> getDirtyComponents(Class<T> type);
+
+	Collection<CDOID> getDetachedComponents(EClass eClass);
 
 }
