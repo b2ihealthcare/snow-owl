@@ -30,9 +30,9 @@ public abstract class BaseCodeSystemBuilder<B extends CodeSystemBuilder<B, C>, C
 	private static final String KEY_CODE_SYSTEM_OID = "codeSystemOID";
 	private static final String KEY_MAINTAINING_ORGANIZATION_LINK = "maintainingOrganizationLink";
 	private static final String KEY_CITATION = "citation";
-	private static final String KEY_ICON_PATH = "iconPath";
-	private static final String KEY_TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
-	private static final String KEY_REPOSITORY_UUID = "repositoryUuid";
+	protected static final String KEY_ICON_PATH = "iconPath";
+	protected static final String KEY_TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
+	protected static final String KEY_REPOSITORY_UUID = "repositoryUuid";
 
 	private String citation;
 	private String codeSystemOid;

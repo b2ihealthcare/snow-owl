@@ -21,6 +21,7 @@ import com.b2international.snowowl.datastore.codesystem.BaseCodeSystemBuilder;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
@@ -34,9 +35,24 @@ public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBui
 	private String baseCodeSystemOid;
 	private SnomedReleaseType type;
 
+	public SnomedReleaseBuilder() {
+		withRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
+		withTerminologyComponentId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID);
+		withIconPath(SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH);
+	}
+	
 	@Override
 	public SnomedReleaseBuilder init(Map<String, String> valueMap) {
 		super.init(valueMap);
+		if (!valueMap.containsKey(KEY_TERMINOLOGY_COMPONENT_ID)) {
+			withTerminologyComponentId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID);
+		}
+		if (!valueMap.containsKey(KEY_REPOSITORY_UUID)) {
+			withRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
+		}
+		if (!valueMap.containsKey(KEY_ICON_PATH)) {
+			withIconPath(SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH);
+		}
 		return withExtension(valueMap);
 	}
 
