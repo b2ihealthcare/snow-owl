@@ -70,8 +70,8 @@ public class AcceptabilityMembershipUpdater extends DocumentUpdaterBase<SnomedDo
 	private void registerChanges(Collection<RefSetMemberChange> changes, LongSet refSetIds) {
 		for (final RefSetMemberChange change : changes) {
 			switch (change.getChangeKind()) {
-				case ADDED:
-					refSetIds.add(change.getRefSetId());
+				case REMOVED:
+					refSetIds.remove(change.getRefSetId());
 					break;
 				default:
 					break;
@@ -80,8 +80,8 @@ public class AcceptabilityMembershipUpdater extends DocumentUpdaterBase<SnomedDo
 		
 		for (final RefSetMemberChange change : changes) {
 			switch (change.getChangeKind()) {
-				case REMOVED:
-					refSetIds.remove(change.getRefSetId());
+				case ADDED:
+					refSetIds.add(change.getRefSetId());
 					break;
 				default:
 					break;

@@ -18,7 +18,17 @@ package com.b2international.snowowl.snomed.api.rest.components;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentActive;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertDescriptionExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertDescriptionNotExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertPreferredTermEquals;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -29,26 +39,34 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.ValidatableResponse;
 
 /**
@@ -445,4 +463,68 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertThat(acceptabilityIds, CoreMatchers.hasItems(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE));
 	}
 	
+	@Test
+	public void issue_fixingDuplicateLanguageMemberInRefSetClearsAcceptabilityMapOnDescription() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		// create description
+		final Map<?, ?> createRequestBody = createRequestBuilder(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP).build();
+		final String descriptionId = assertComponentCreated(testBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);
+		// inject duplicate inactive language member with different acceptability (API won't allow it) 
+		final String memberToUpdate = UUID.randomUUID().toString();
+		try (final SnomedEditingContext context = new SnomedEditingContext(testBranchPath)) {
+			final SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
+			member.setUuid(memberToUpdate);
+			member.setActive(false);
+			member.setModuleId(Concepts.MODULE_SCT_CORE);
+			member.setRefSet(context.lookup(Concepts.REFSET_LANGUAGE_TYPE_UK, SnomedRefSet.class));
+			member.setReferencedComponentId(descriptionId);
+			member.setAcceptabilityId(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
+			final Description description = context.lookup(descriptionId, Description.class);
+			description.getLanguageRefSetMembers().add(member);
+			context.commit("Add fake member to " + descriptionId);
+		}
+		// check the acceptability map after the member injection, it should be preferred in UK lang refset
+		final Map<String, Object> acceptabilityMap = assertDescriptionExists(testBranchPath, descriptionId).extract().body().path("acceptabilityMap");
+		assertEquals(ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED.name()), acceptabilityMap);
+		final Collection<Map<String, Object>> members = getDescriptionMembers(testBranchPath, descriptionId);
+		// but there should be two members, one is inactive ACCEPTABLE and one is active PREFERRED
+		assertEquals(2, members.size());
+		String memberToDelete = null;
+		for (Map<String, Object> member : members) {
+			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(member.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID))) {
+				memberToDelete = (String) member.get(SnomedRf2Headers.FIELD_ID);
+				break;
+			}
+		}
+		
+		// using bulk update, remove the currently active member and reactive the inactive one with new acceptability
+		final Collection<Map<String, Object>> bulkRequests = newArrayList();
+		bulkRequests.add(ImmutableMap.<String, Object>of("action", "update", "memberId", memberToUpdate, "active", true, "acceptabilityId", Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED));
+		bulkRequests.add(ImmutableMap.<String, Object>of("action", "delete", "memberId", memberToDelete));
+		final Map<String, Object> bulk = ImmutableMap.<String, Object>of("requests", bulkRequests, "commitComment", "Delete and update members");
+		
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.accept(ContentType.JSON)
+			.contentType(ContentType.JSON)
+			.body(bulk)
+			.put("/{path}/refsets/{id}/members", testBranchPath.getPath(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+			.then()
+			.log().ifValidationFails()
+			.statusCode(204);
+		
+		// assert that description acceptability is still preferred, but there is only one member available
+		final Map<String, Object> newAcceptabilityMap = assertDescriptionExists(testBranchPath, descriptionId).extract().body().path("acceptabilityMap");
+		assertEquals(ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED.name()), newAcceptabilityMap);
+		final Collection<Map<String, Object>> updatedMembers = getDescriptionMembers(testBranchPath, descriptionId);
+		assertEquals(1, updatedMembers.size());
+		final Map<String, Object> updatedMember = Iterables.getOnlyElement(updatedMembers);
+		assertEquals(true, updatedMember.get(SnomedRf2Headers.FIELD_ACTIVE));
+		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, updatedMember.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
+	}
+	
+	private Collection<Map<String, Object>> getDescriptionMembers(IBranchPath branchPath, String descriptionId) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.when().get("/{path}/{componentType}?referencedComponentId={componentId}", branchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), descriptionId)
+			.then().log().ifValidationFails().extract().body().path("items");
+	}
 }

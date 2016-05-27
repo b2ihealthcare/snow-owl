@@ -40,6 +40,7 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
+			.put(SnomedRefSetType.LANGUAGE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET).build();
 
 	public static boolean isSupported(SnomedRefSetType type) {

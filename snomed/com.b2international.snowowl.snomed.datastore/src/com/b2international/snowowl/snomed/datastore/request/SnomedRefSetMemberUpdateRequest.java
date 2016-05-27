@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -72,6 +73,9 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		case QUERY:
 			changed |= updateQuery((SnomedQueryRefSetMember) member);
 			break;
+		case LANGUAGE:
+			changed |= updateAcceptability((SnomedLanguageRefSetMember) member);
+			break;
 		default: throw new UnsupportedOperationException("Not implemented update of " + type + " member"); 
 		}
 		
@@ -80,6 +84,19 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		}
 		return null;
 	}
+	
+	private boolean updateAcceptability(SnomedLanguageRefSetMember member) {
+		final Object value = properties.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+		if (value instanceof String) {
+			final String newAcceptability = (String) value;
+			if (!Objects.equals(newAcceptability, member.getAcceptabilityId())) {
+				member.setAcceptabilityId(newAcceptability);
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	private boolean isEffectiveTimeUpdate() {
 		return force && !Strings.isNullOrEmpty((String) properties.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME));
