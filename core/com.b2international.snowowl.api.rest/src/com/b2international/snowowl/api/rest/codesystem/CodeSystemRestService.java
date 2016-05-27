@@ -39,9 +39,11 @@ import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.request.CodeSystemCreateRequest;
 import com.b2international.snowowl.datastore.request.CodeSystemRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -101,6 +103,8 @@ public class CodeSystemRestService extends AbstractRestService {
 			
 			final Principal principal
 			) {
+		ApiValidation.checkInput(codeSystem);
+		
 		final String userId = principal.getName();
 		final CodeSystemCreateRequest req = buildCreateRequest(codeSystem);
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
@@ -134,7 +138,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setRepositoryUuid(codeSystem.getRepositoryUuid())
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
-				.setExtension(codeSystem.getExtension())
+				.setExtension(codeSystem.getExtension() == null ? Maps.<String, String> newHashMap() : codeSystem.getExtension())
 				.build();
 	}
 	

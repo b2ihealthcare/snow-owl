@@ -17,6 +17,8 @@ package com.b2international.snowowl.api.impl.codesystem.domain;
 
 import java.util.Map;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 
 /**
@@ -24,15 +26,27 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 public class CodeSystem implements ICodeSystem {
 
 	private String oid;
+	
+	@NotEmpty
 	private String name;
+	@NotEmpty
 	private String shortName;
+	
 	private String organizationLink;
+	
+	@NotEmpty
 	private String primaryLanguage;
+	@NotEmpty
 	private String citation;
+	@NotEmpty
 	private String branchPath;
+	@NotEmpty
 	private String iconPath;
+	@NotEmpty
 	private String terminologyId;
+	@NotEmpty
 	private String repositoryUuid;
+	
 	private Map<String, String> extensionMap;
 
 	@Override

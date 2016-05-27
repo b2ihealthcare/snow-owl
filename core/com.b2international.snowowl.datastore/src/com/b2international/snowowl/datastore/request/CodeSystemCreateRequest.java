@@ -118,8 +118,8 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 	}
 
 	private CodeSystem createCodeSystem(final TransactionContext context) {
-		final CodeSystemBuilder<?, ?> builder = context.service(CodeSystemBuilder.class)
-				.withBranchPath(branchPath)
+		final CodeSystemBuilder<?, ?> builder = context.service(CodeSystemBuilder.class);
+		return builder.withBranchPath(branchPath)
 				.withCitation(citation)
 				.withCodeSystemOid(oid)
 				.withIconPath(iconPath)
@@ -128,13 +128,9 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 				.withName(name)
 				.withRepositoryUuid(repositoryUuid)
 				.withShortName(shortName)
-				.withTerminologyComponentId(terminologyId);
-		
-		if (extensionMap != null) {
-			builder.withExtension(extensionMap);
-		}
-				
-		return builder.build();
+				.withTerminologyComponentId(terminologyId)
+				.withExtension(extensionMap)
+				.build();
 	}
 
 	@Override
