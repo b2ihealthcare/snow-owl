@@ -29,13 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
@@ -67,9 +66,6 @@ import com.google.common.collect.Maps;
 public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedRf2ImportService.class);
-	
-	@Resource
-	private ICodeSystemService codeSystemService;
 	
 	/**
 	 * A mapping between the registered import identifiers and the associated import configurations.
@@ -138,7 +134,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		}
 		
 		final String snomedReleaseShortName = configuration.getSnomedReleaseShortName();
-		final ICodeSystem codeSystem = codeSystemService.getCodeSystemByShortNameOrOid(snomedReleaseShortName);
+		final ICodeSystem codeSystem = getCodeSystemService().getCodeSystemByShortNameOrOid(snomedReleaseShortName);
 		if (codeSystem == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(snomedReleaseShortName)) {
 			throw new SnomedImportException("Importing a release of SNOMED CT from an archive "
 					+ "is prohibited when the given Snomed Release is not available. "
@@ -168,7 +164,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			}
 		}).start();
 	}
-
+	
 	private ImportStatus convertStatus(Set<SnomedValidationDefect> validationDefects) {
 		for (SnomedValidationDefect validationDefect : validationDefects) {
 			if (validationDefect.getDefectType().isCritical()) {
@@ -202,6 +198,10 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 
 	private boolean isContentAvailable() {
 		return ContentAvailabilityInfoManager.INSTANCE.isAvailable(REPOSITORY_UUID);
+	}
+	
+	private ICodeSystemService getCodeSystemService() {
+		return ApplicationContext.getInstance().getService(ICodeSystemService.class);
 	}
 	
 	@Override
