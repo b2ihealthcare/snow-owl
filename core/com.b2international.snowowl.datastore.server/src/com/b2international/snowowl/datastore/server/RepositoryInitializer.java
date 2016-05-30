@@ -109,6 +109,7 @@ public class RepositoryInitializer implements IRepositoryInitializer {
 		
 		
 		final ICDORepository repository = find(CDORepositoryManager.getInstance()._iterator(), new Predicate<ICDORepository>() {
+			@Override
 			public boolean apply(final ICDORepository repository) {
 				return repositoryUuid.equals(repository.getUuid());
 			}
@@ -229,10 +230,10 @@ public class RepositoryInitializer implements IRepositoryInitializer {
 	}
 	
 	/**Returns with an array of desired root resource unique names.*/
-	private Collection<String> getRootResourceNames(final String repsotiryUuid) {
-		checkNotNull(repsotiryUuid, "repsotiryUuid");
+	private Collection<String> getRootResourceNames(final String repositoryUuid) {
+		checkNotNull(repositoryUuid, "repositoryUuid");
 		final Collection<String> rootResourceNames = newHashSet();
-		for (final CDORootResourceNameProvider provider : getRootResourceNameProvidersForRepository(repsotiryUuid)) {
+		for (final CDORootResourceNameProvider provider : getRootResourceNameProvidersForRepository(repositoryUuid)) {
 			rootResourceNames.addAll(provider.getRootResourceNames());
 		}
 		return unmodifiableCollection(rootResourceNames);
@@ -314,6 +315,7 @@ public class RepositoryInitializer implements IRepositoryInitializer {
 			rootRevisionDelta.addFeatureDelta(createAddRevisionDelta(newResourceRevision.getID(), rootCdoResourceContentsCdoList.size()));
 			
 			final boolean metaRoot = any(rootResourceNameProviders, new Predicate<CDORootResourceNameProvider>() {
+				@Override
 				public boolean apply(final CDORootResourceNameProvider provider) {
 					return provider.isMetaRootResource(resourceName);
 				}
