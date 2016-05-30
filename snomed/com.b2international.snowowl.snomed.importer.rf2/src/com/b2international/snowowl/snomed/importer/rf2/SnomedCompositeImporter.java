@@ -145,7 +145,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		if (snomedRelease != null) {
 			existingVersions = FluentIterable.from(snomedRelease.getCodeSystemVersions()).filter(new Predicate<CodeSystemVersion>() {
 				@Override public boolean apply(CodeSystemVersion input) {
-					return input.getParentBranchPath().equals(getImportBranchPath());
+					return input.getParentBranchPath().equals(getImportBranchPath().getPath());
 				}
 			}).transform(new Function<CodeSystemVersion, String>() {
 				@Override public String apply(CodeSystemVersion input) {
