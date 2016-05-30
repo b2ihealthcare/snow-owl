@@ -309,7 +309,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				public void handleRecord(final int recordCount, final List<String> record) {
 
 					final String uuid = record.get(0);
-					final long refSetId = Long.parseLong(record.get(4));
+					final String refSetId = record.get(4);
 					final String conceptId = record.get(5);
 					
 					if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(conceptId)) {
@@ -342,7 +342,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				public void handleRecord(final int recordCount, final List<String> record) {
 
 					final String uuid = record.get(0);
-					final long refSetId = Long.parseLong(record.get(4));
+					final String refSetId = record.get(4);
 					final String descriptionId = record.get(5);
 					final String acceptabilityId = record.get(6);
 					
@@ -780,7 +780,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	protected void updateIconId(String conceptId, boolean active, SnomedConceptDocument.Builder doc, boolean withDocValues) {
 		final Collection<String> availableImages = SnomedIconProvider.getInstance().getAvailableIconIds();
-		new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, conceptId, active, availableImages, identifierConceptIdsForNewRefSets).update(doc);		
+		new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, availableImages, identifierConceptIdsForNewRefSets).update(conceptId, active, doc);		
 	}
 
 	private void indexDescriptions(final String absolutePath) {
@@ -968,7 +968,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				.moduleId(moduleId)
 				.primitive(Concepts.PRIMITIVE.equals(definitionStatusId))
 				.exhaustive(exhaustive)
-				.doi(doiData.containsKey(conceptIdLong) ? doiData.get(conceptIdLong) : 0.0f)
+				.doi(doiData.containsKey(conceptIdLong) ? doiData.get(conceptIdLong) : SnomedConceptDocument.DEFAULT_DOI)
 				.referringRefSets(currentRefSetMemberships)
 				.referringMappingRefSets(currentMappingMemberships)
 				.predicates(conceptIdToPredicateMap.get(Long.valueOf(conceptId)));
@@ -976,24 +976,24 @@ public class SnomedRf2IndexInitializer extends Job {
 		updateIconId(conceptId, active, builder, true);
 
 		// update parents and ancestors
-		new RefSetParentageUpdater(inferredTaxonomyBuilder, conceptId, identifierConceptIdsForNewRefSets, false).update(builder);
-		new RefSetParentageUpdater(statedTaxonomyBuilder, conceptId, identifierConceptIdsForNewRefSets, true).update(builder);
+		new RefSetParentageUpdater(inferredTaxonomyBuilder, identifierConceptIdsForNewRefSets, false).update(conceptId, builder);
+		new RefSetParentageUpdater(statedTaxonomyBuilder, identifierConceptIdsForNewRefSets, true).update(conceptId, builder);
 			
 		return builder;
 	}
 	
 	private Collection<String> getCurrentRefSetMemberships(final Collection<String> refSetIds, final Collection<RefSetMemberChange> changes) {
 		final Collection<String> refSetMemberships = Sets.newHashSet(refSetIds);
-		
+
 		for (RefSetMemberChange change : changes) {
-			if (change.getChangeKind().equals(MemberChangeKind.ADDED)) {
-				refSetMemberships.add(Long.toString(change.getRefSetId()));
+			if (change.getChangeKind().equals(MemberChangeKind.REMOVED)) {
+				refSetMemberships.remove(change.getRefSetId());
 			}
 		}
 		
 		for (RefSetMemberChange change : changes) {
-			if (change.getChangeKind().equals(MemberChangeKind.REMOVED)) {
-				refSetMemberships.remove(Long.toString(change.getRefSetId()));
+			if (change.getChangeKind().equals(MemberChangeKind.ADDED)) {
+				refSetMemberships.add(change.getRefSetId());
 			}
 		}
 		
