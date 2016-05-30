@@ -46,6 +46,7 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 	private String versionId;
 	private String parentBranchPath; 
 	private String description;
+	private String codeSystemShortName;
 
 	/**Creates a publication operation configuration for the given tooling features with a random remote job identifier.*/
 	public PublishOperationConfiguration(final String toolingId, final String... otherToolingIds) {
@@ -131,6 +132,15 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 
 	public void setParentBranchPath(String parentBranchPath) {
 		this.parentBranchPath = parentBranchPath;
+	}
+
+	@Override
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	public void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
 	}
 	
 	@Override

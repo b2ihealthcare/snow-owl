@@ -177,6 +177,12 @@ public class VersioningService implements IVersioningService {
 	}
 	
 	@Override
+	public IStatus configureCodeSystemShortName(String codeSystemShortName) {
+		configuration.setCodeSystemShortName(codeSystemShortName);
+		return okStatus();
+	}
+	
+	@Override
 	public IStatus configureEffectiveTime(final Date effectiveTime) {
 		for (final String toolingId : getToolingIds()) {
 			final IStatus status = validateEffectiveTimeForVersion(toolingId, effectiveTime, getVersionId());

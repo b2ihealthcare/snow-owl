@@ -62,4 +62,10 @@ public interface IPublishOperationConfiguration extends Serializable, ToolingIdI
 	 * Returns with the description. 
 	 */
 	String getDescription();
+	
+	/**
+	 * The short name of the code system for the version.
+	 */
+	String getCodeSystemShortName();
+	
 }

@@ -163,6 +163,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			final VersioningService versioningService) {
 		versioningService.configureDescription(properties.getDescription());
 		versioningService.configureParentBranchPath(codeSystem.getBranchPath());
+		versioningService.configureCodeSystemShortName(codeSystem.getShortName());
 		
 		final IStatus dateResult = versioningService.configureEffectiveTime(properties.getEffectiveDate());
 		if (!dateResult.isOK()) {
