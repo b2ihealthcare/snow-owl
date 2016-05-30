@@ -128,6 +128,17 @@ public class VersioningService implements IVersioningService {
 		lockTargets = newHashMap();
 		locked = new AtomicBoolean();
 	}
+	
+	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
+		configuration = new PublishOperationConfiguration(
+				checkNotNull(toolingId, "toolingId"), 
+				checkNotNull(otherToolingIds, "otherToolingIds"));
+		this.existingVersions = existingVersions;
+		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
+		lockContexts = newHashMap();
+		lockTargets = newHashMap();
+		locked = new AtomicBoolean();
+	}
 
 	@Override
 	public Collection<ICodeSystemVersion> getExistingVersions(final String toolingId) {
@@ -164,7 +175,7 @@ public class VersioningService implements IVersioningService {
 		configuration.setParentBranchPath(parentBranchPath);
 		return okStatus();
 	}
-
+	
 	@Override
 	public IStatus configureEffectiveTime(final Date effectiveTime) {
 		for (final String toolingId : getToolingIds()) {

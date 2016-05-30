@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
 
@@ -28,6 +29,7 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
@@ -37,15 +39,18 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.VersioningService;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
@@ -129,7 +134,12 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			throw new CodeSystemNotFoundException(shortName);
 		}
 		
-		final VersioningService versioningService = new VersioningService("com.b2international.snowowl.terminology.snomed");
+		final String terminologyId = "com.b2international.snowowl.terminology.snomed";
+		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid());
+		final ImmutableMap<String, Collection<com.b2international.snowowl.datastore.ICodeSystemVersion>> versionsMap = ImmutableMap
+				.<String, Collection<com.b2international.snowowl.datastore.ICodeSystemVersion>> builder().put(terminologyId, versions).build();
+		final VersioningService versioningService = new VersioningService(terminologyId, versionsMap);
+		
 		try {
 			versioningService.acquireLock();
 			configureVersion(codeSystem, properties, versioningService);
@@ -191,6 +201,19 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 				getRegistryService().getCodeSystemVersions(MAIN_BRANCH_PATH_MAP, shortName);
 
 		return sourceCodeSystemVersions;
+	}
+	
+	private Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> getCodeSystemVersions(final String shortName, final String repositoryId) {
+		return new CodeSystemRequests(repositoryId)
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(shortName)
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getVersions();
+	}
+	
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 	private List<ICodeSystemVersion> toSortedCodeSystemVersionList(
