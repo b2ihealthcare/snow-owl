@@ -89,7 +89,7 @@ public abstract class AbstractSnomedApiTest {
 				.put("iconPath", "icons/snomed.png")
 				.put("repositoryUuid", "snomedStore")
 				.put("terminologyId", "concept")
-				.put("oid", "1")
+				.put("oid", shortName)
 				.put("primaryLanguage", "ENG")
 				.put("organizationLink", "link")
 				.put("extension", extension)
