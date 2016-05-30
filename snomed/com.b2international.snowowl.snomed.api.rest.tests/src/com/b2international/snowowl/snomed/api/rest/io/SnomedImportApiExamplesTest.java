@@ -43,11 +43,9 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.jayway.restassured.http.ContentType;
 
 /**
  * @since 2.0
@@ -178,7 +176,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 	@Test
 	public void import08NewExtensionConceptOnNestedBranch() {
 		final IBranchPath nestedBranch = createNestedBranch(testBranchPath, "dk");
-		createCodeSystem(nestedBranch.getPath());
+		createCodeSystem(nestedBranch.getPath(), "dk");
 		assertConceptNotExists(nestedBranch, "63961392103");
 		
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
@@ -197,33 +195,6 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 		givenAuthenticatedRequest("/admin")
 				.when().get("/codesystems/{shortName}/versions/{version}", "dk", "2015-01-31")
 				.then().statusCode(200);
-	}
-	
-	private void createCodeSystem(final String branchPath) {
-		final ImmutableMap<String, String> extension = ImmutableMap.<String, String>builder()
-				.put("baseCodeSystemOID", SnomedTerminologyComponentConstants.SNOMED_INT_OID)
-				.put("releaseType", "DELTA")
-				.build();
-		
-		final ImmutableMap<Object, Object> requestBody = ImmutableMap.builder()
-				.put("name", "CodeSystem")
-				.put("branchPath", branchPath)
-				.put("shortName", "dk")
-				.put("citation", "citation")
-				.put("iconPath", "icons/snomed.png")
-				.put("repositoryUuid", "snomedStore")
-				.put("terminologyId", "concept")
-				.put("oid", "1")
-				.put("primaryLanguage", "ENG")
-				.put("organizationLink", "link")
-				.put("extension", extension)
-				.build();
-		
-		givenAuthenticatedRequest("/admin")
-			.with().contentType(ContentType.JSON)
-			.and().body(requestBody)
-			.when().post("/codesystems")
-			.then().assertThat().statusCode(201);
 	}
 	
 }

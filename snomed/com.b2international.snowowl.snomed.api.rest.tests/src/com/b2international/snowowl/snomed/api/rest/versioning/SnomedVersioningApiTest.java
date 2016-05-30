@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
@@ -65,8 +66,12 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertVersionGetStatus(final String version, final int status) {
+		assertVersionGetStatus(version, status, "SNOMEDCT");
+	}
+	
+	private void assertVersionGetStatus(final String version, final int status, final String shortName) {
 		givenAuthenticatedRequest(ADMIN_API)
-		.when().get("/codesystems/SNOMEDCT/versions/{id}", version)
+		.when().get("/codesystems/{shortNameOrOid}/versions/{id}", shortName, version)
 		.then().assertThat().statusCode(status);
 	}
 
@@ -76,6 +81,10 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	}
 
 	private Response whenCreatingVersion(final String version, final String effectiveDate) {
+		return whenCreatingVersion(version, effectiveDate, "SNOMEDCT");
+	}
+	
+	private Response whenCreatingVersion(final String version, final String effectiveDate, final String shortName) {
 		final Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("version", version)
 				.put("description", version)
@@ -85,6 +94,19 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		return givenAuthenticatedRequest(ADMIN_API)
 				.and().contentType(ContentType.JSON)
 				.and().body(requestBody)
-				.when().post("/codesystems/SNOMEDCT/versions");
+				.when().post("/codesystems/{shortNameOrOid}/versions", shortName);
 	}
+	
+	@Test
+	public void createExtensionVersion() {
+		final IBranchPath branchPath = createRandomBranchPath();
+		givenBranchWithPath(branchPath);
+		createCodeSystem(branchPath.getPath(), "versionTest");
+		
+		whenCreatingVersion("v1", "20150130", "versionTest")
+			.then().assertThat().statusCode(201);
+		
+		assertVersionGetStatus("v1", 200);
+	}
+	
 }

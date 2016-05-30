@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.UUID;
 
@@ -23,6 +24,9 @@ import org.junit.Before;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.google.common.collect.ImmutableMap;
+import com.jayway.restassured.http.ContentType;
 
 /**
  * @since 2.0
@@ -51,5 +55,32 @@ public abstract class AbstractSnomedApiTest {
 		}
 
 		return currentBranchPath;
+	}
+	
+	protected void createCodeSystem(final String branchPath, final String shortName) {
+		final ImmutableMap<String, String> extension = ImmutableMap.<String, String>builder()
+				.put("baseCodeSystemOID", SnomedTerminologyComponentConstants.SNOMED_INT_OID)
+				.put("releaseType", "DELTA")
+				.build();
+		
+		final ImmutableMap<Object, Object> requestBody = ImmutableMap.builder()
+				.put("name", "CodeSystem")
+				.put("branchPath", branchPath)
+				.put("shortName", shortName)
+				.put("citation", "citation")
+				.put("iconPath", "icons/snomed.png")
+				.put("repositoryUuid", "snomedStore")
+				.put("terminologyId", "concept")
+				.put("oid", "1")
+				.put("primaryLanguage", "ENG")
+				.put("organizationLink", "link")
+				.put("extension", extension)
+				.build();
+		
+		givenAuthenticatedRequest("/admin")
+			.with().contentType(ContentType.JSON)
+			.and().body(requestBody)
+			.when().post("/codesystems")
+			.then().assertThat().statusCode(201);
 	}
 }
