@@ -20,13 +20,12 @@ When new international release is available, the corresponding delta is imported
 
 == Data provisioning example for a single extension
 
-----------
+-------------------------------
 International release full import:
 sctimport rf2_release -l 900000000000509007 -t full -v C:/data/SnomedCT_RF2Release_INT_20160131.zip C:/data/snomed_ct_international.json
 
 B2i extension command line for importing the extension on the 2016-01-31 International release:
 sctimport rf2_release -l 900000000000509007 -t full -b 2016-01-31 -v C:/data/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip C:/data/snomed_ct_b2i_extension.json
-
 -------------------------------
 
 Where the _snomed_ct_international.json_ release descriptor file is:
