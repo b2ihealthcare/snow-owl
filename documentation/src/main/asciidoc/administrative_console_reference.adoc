@@ -261,7 +261,7 @@ Impersonate operation as: info@b2international.com
 
 === List all imported terminologies
 
-`terminologyregistry listall` displays information about terminologies imported into the running server instance, 
+`terminologyregistry listall` displays information about terminologies and terminology extensions imported into the running server instance, 
 including individual local code systems.
 
 --------------------------
