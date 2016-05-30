@@ -20,9 +20,10 @@ import static com.b2international.snowowl.terminologyregistry.core.index.Termino
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_EFFECTIVE_DATE;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_IMPORT_DATE;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_LATEST_UPDATE_DATE;
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_STORAGE_KEY;
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_REPOSITORY_UUID;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_STORAGE_KEY;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
 
 import org.apache.lucene.document.Document;
 
@@ -47,7 +48,8 @@ public abstract class CodeSystemVersionFactory {
 			doc.get(TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH) != null 
 			? doc.get(TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH): "MAIN",
 			getLongValue(doc.getField(VERSION_STORAGE_KEY)),
-			doc.get(VERSION_REPOSITORY_UUID));
+			doc.get(VERSION_REPOSITORY_UUID),
+			doc.get(VERSION_SYSTEM_SHORT_NAME));
 	}
 	
 	private CodeSystemVersionFactory() {

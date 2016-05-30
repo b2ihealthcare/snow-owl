@@ -24,6 +24,7 @@ import static com.b2international.snowowl.terminologyregistry.core.index.Termino
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_REPOSITORY_UUID;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_STORAGE_KEY;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -61,6 +62,7 @@ public class CodeSystemVersionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(VERSION_STORAGE_KEY, getStorageKey(), Store.YES));
 		Mappings.storageKey().addTo(doc, getStorageKey());
 		addStringFieldIfExists(doc, VERSION_REPOSITORY_UUID, version.getCodeSystem().getRepositoryUuid());
+		addStringFieldIfExists(doc, VERSION_SYSTEM_SHORT_NAME, version.getCodeSystem().getShortName());
 		return doc;
 	}
 

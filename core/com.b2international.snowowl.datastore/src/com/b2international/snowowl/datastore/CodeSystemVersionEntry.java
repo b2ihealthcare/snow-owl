@@ -39,14 +39,23 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 	private boolean patched;
 	private final long storageKey;
 	private final String repositoryUuid;
+	private final String codeSystemShortName;
 
-	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, 
-			final String description, final String versionId, final String parentBranchPath, final long storageKey, final String repositoryUuid) {
-		this(importDate, effectiveDate, latestUpdateDate, nullToEmpty(description), checkNotNull(versionId, "versionId"), checkNotNull(parentBranchPath), false, storageKey, checkNotNull(repositoryUuid, "repositoryUuid"));
+	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, final String description,
+			final String versionId, final String parentBranchPath, final long storageKey, final String repositoryUuid) {
+		this(importDate, effectiveDate, latestUpdateDate, nullToEmpty(description), checkNotNull(versionId, "versionId"),
+				checkNotNull(parentBranchPath), false, storageKey, checkNotNull(repositoryUuid, "repositoryUuid"), null);
 	}
 	
-	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
-			final String description, final String versionId, final String parentBranchPath, final boolean patched, final long storageKey, final String repositoryUuid) {
+	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, final String description,
+			final String versionId, final String parentBranchPath, final long storageKey, final String repositoryUuid, final String codeSystemShortName) {
+		this(importDate, effectiveDate, latestUpdateDate, nullToEmpty(description), checkNotNull(versionId, "versionId"),
+				checkNotNull(parentBranchPath), false, storageKey, checkNotNull(repositoryUuid, "repositoryUuid"), codeSystemShortName);
+	}
+
+	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, final String description,
+			final String versionId, final String parentBranchPath, final boolean patched, final long storageKey,
+			final String repositoryUuid, final String codeSystemShortName) {
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;
@@ -56,6 +65,7 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 		this.parentBranchPath = parentBranchPath;
 		this.patched = patched;
 		this.storageKey = storageKey;
+		this.codeSystemShortName = codeSystemShortName;
 	}
 
 	@Override
@@ -101,6 +111,11 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 	@Override
 	public String getRepositoryUuid() {
 		return repositoryUuid;
+	}
+	
+	@Override
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
 	}
 	
 	/**
