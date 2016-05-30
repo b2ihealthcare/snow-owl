@@ -84,20 +84,32 @@ Available language reference sets will be displayed as above, after parsing the 
 Use the following OSGi command to start the import process:
 
 --------------------------
-osgi> sctimport rf2_release -l <languageRefSetId> -t <type> -b <branch> -cv true <file>
+osgi> sctimport rf2_release -l <languageRefSetId> -t <type> -b <branch> -v <path to archive file> <path to release descriptor file>
 --------------------------
 
--l <languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
-previous step
--t <type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use
--b <branch>:: The existing branch to import the content onto. Use 'MAIN' for the MAIN branch.
--cv <true|false>\t\tShould versions be created for each effective time found in the release.
-<file>:: The absolute path of the release archive file to import, +
-`{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
+<extension_metadata_file_path>\t\tPath to the metadata file describing the extension.
 
-NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
-can be observed throughout the import session in the file `serviceability/logs/log.log`. The import may take several
-hours depending on your hardware and JVM configuration.
+-l <languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
+previous step.
+-t <type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use.
+-b <branch>:: The existing branch to import the content onto. In case of extension import, an effective time from the base SNOMED CT release (e.g. 2016-01-31). If omitted 'MAIN' will be used.
+-v\t\tCreates versions for each effective time found in the release archive. If omitted no versions will be created.
+<path to archive file>:: Specifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release)., +
+`{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
+<path to release descriptor file>:: The path to the release descriptor json file.
+
+Where the release descriptor json file contains the key/values as:
+
+ {
+	"name": "Systematized Nomenclature of Medicine Clinical Terms International Version",
+	"shortName": "SNOMEDCT",
+	"language": "ENG",
+	"codeSystemOID": "2.16.840.1.113883.6.96",
+	"baseCodeSystemOID": "2.16.840.1.113883.6.96",
+	"maintainingOrganizationLink": "http://www.ihtsdo.org",
+	"releaseType": "INTERNATIONAL",
+	"citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care."
+}
 
 Example `FULL` import with US language reference set:
 
@@ -105,42 +117,15 @@ Example `FULL` import with US language reference set:
 osgi> sctimport rf2_release -l 900000000000509007 -t FULL /opt/SnomedCT_Release_INT_20130131.zip
 --------------------------
 
-=== Importing a national extension
-National extension can be imported onto any existing base version of the international release.
-
-Use the following OSGi command to start the extension import process:
-
---------------------------
-osgi> sctimport rf2_release -l <languageRefSetId> -t <type> -bv <base int. version tag> -cv <true|false> <international_release_archive_file> <extension_metadata_file_path>
---------------------------
-
-<extension_metadata_file_path>\t\tPath to the metadata file describing the extension.
-
--l <languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
-previous step.
--t <type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use
--bv <base int. version tag>:: The existing international version to import the extension onto. For example: '2016-01-01'.
--cv <true|false>\t\tShould versions be created for each effective time found in the release. False is recommended for extension imports.
-<international_release_archive_file>:: The absolute path of the release archive file to import, +
-`{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
-<extension_metadata_file_path>:: The extension terminology meta-data file
-
-Where the meta data file contains properties in key-value format:
-
-
- name = XYZ National Extension
- shortname = XYZ
- OID = 123
- language = la
- maintaining_org_link = 
- icon_path = 
- citation = This is short description of the extension
-
 An example for the Danish extension:
 
 --------------------------
 osgi> sctimport rf2_extension -l 554461000005103 -t FULL -bv MAIN/2016-01-31 -cv false /SnomedCT_Release_DK1000005_20160215.zip /dk_extension.properties
 --------------------------
+
+NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
+can be observed throughout the import session in the file `serviceability/logs/log.log`. The import may take several
+hours depending on your hardware and JVM configuration.
 
 == Single administrator operations
 
@@ -201,11 +186,6 @@ performing any import/export operations.
 |SNOMED CT reference set import from delimiter-separated file (includes RF1 subset files)
 |`sctimport dsv_refset`
 |✔
-|✔
-
-|SNOMED CT extension import from RF2 files
-|`sctimport rf2_extension`
-|
 |✔
 
 |Value domain import from Excel spreadsheet
