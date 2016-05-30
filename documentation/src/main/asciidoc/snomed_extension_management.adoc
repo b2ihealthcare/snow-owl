@@ -1,1 +1,61 @@
-This is a placeholder for extension management.
+= SNOMED CT Extension management
+
+== Introduction
+Snow Owl is capable of managing multiple SNOMED CT extensions on a single server. This document highlights how each extension is managed in a dedicated area and lists the main authoring scenarios.  Similarly to generic SNOMED CT authoring, content is developed via the help of a workflow where the work performed on a task is promoted to the repository after review.  Promoting (donating) content from an extension to the international content or between extensions is not supported.  Extension authors can follow their own release schedule and extension content can be versioned at any time during the authoring process. Extensions are based on a single international release version. The base international release can be upgraded ‘underneath’ the extension content. Extensions do not have an additional isolated area for long running development projects (project branch). The import and export of standard RF2 serialized content is supported.  
+The international content is not edited on the server, only updated via delta releases as consecutive releases are available from IHTSDO’s own authoring process. Search will be performed for both the native language and English as is currently supported. There will be no special search features to accommodate specific language requirements, such as word decompoundization.
+
+== Branching arrangement
+The proposed branching arrangement closely follows the current branching preferences where the international release is imported onto the MAIN branch and each Member country will have a dedicated branch for the extension content.  The only commits on the MAIN branch are the contents of the delta release for a particular version. These commit points are versioned during the import process.
+The dedicated branch will be forked off the MAIN branch at the point representing the base international release as shown in Figure 1.
+
+== Versioning
+The extension content is marked with a version tag for future reference with a new empty branch. All new components will receive an effective time.
+
+== Upgrading/Downgrading
+Upgrading means to increase the version of the base international release. During the upgrade process, the current extension branch is forward-rebased via creating a new branch and copying over the entire content as a single commit. As shown in Figure 3, the V1 and V2 versioned content is based on the 2016.01.01, whereas the V3 version is based on the 2016.06.01 version of the international release. The main advantage is that the old branch still maintains the earlier versions of the extension, this way the version dependencies between the extension and international release can be implicitly represented via the branches. If the user decides to switch back to the read-only older V1 version, content is properly displayed with international content from 2016.01.01. To avoid content with incorrect dependencies, only versioned extensions should be allowed to be upgraded. Downgrading means to decrease the version of the base international release. The same process described above for upgrade applies.
+
+== International version update
+When new international release is available, the corresponding delta is imported onto the MAIN branch.
+
+
+== Data provisioning example for a single extension
+
+----------
+International release full import:
+sctimport rf2_release -l 900000000000509007 -t full -v C:/data/SnomedCT_RF2Release_INT_20160131.zip C:/data/snomed_ct_international.json
+
+B2i extension command line for importing the extension on the 2016-01-31 International release:
+sctimport rf2_release -l 900000000000509007 -t full -b 2016-01-31 -v C:/data/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip C:/data/snomed_ct_b2i_extension.json
+
+-------------------------------
+
+Where the _snomed_ct_international.json_ release descriptor file is:
+
+------------------------
+{
+	"name": "Systematized Nomenclature of Medicine Clinical Terms International Version",
+	"shortName": "SNOMEDCT",
+	"language": "ENG",
+	"codeSystemOID": "2.16.840.1.113883.6.96",
+	"baseCodeSystemOID": "2.16.840.1.113883.6.96",
+	"maintainingOrganizationLink": "http://www.ihtsdo.org",
+	"releaseType": "INTERNATIONAL",
+	"citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care."
+}
+--------------------------
+
+and the _snomed_ct_b2i_extension.json_ release descriptor file is:
+
+--------------------------
+{
+	"name": "B2i Healthcare SNOMED CT extension",
+	"shortName": "SNOMEDCT_B2i",
+	"language": "ENG",
+	"codeSystemOID": "2.16.840.1.113883.6.961",
+	"baseCodeSystemOID": "2.16.840.1.113883.6.96",
+	"maintainingOrganizationLink": "http://www.b2i.sg",
+	"releaseType": "EXTENSION",
+	"citation": "This is an example SNOMED CT extension by B2i Healthcare."
+}
+
+--------------------------
