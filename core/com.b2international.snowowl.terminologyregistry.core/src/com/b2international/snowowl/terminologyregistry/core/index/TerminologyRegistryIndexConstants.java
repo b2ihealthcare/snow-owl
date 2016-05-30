@@ -29,6 +29,7 @@ public abstract class TerminologyRegistryIndexConstants {
 	public static final String VERSION_LATEST_UPDATE_DATE = "versionLatestUpdateDate";
 	public static final String VERSION_STORAGE_KEY = "versionStorageKey";
 	public static final String VERSION_REPOSITORY_UUID = "versionRepositoryUuid";
+	public static final String VERSION_SYSTEM_SHORT_NAME = "versionSystemShortName";
 	
 	public static final String SYSTEM_OID = "systemOid";
 	public static final String SYSTEM_NAME = "systemName"; 
