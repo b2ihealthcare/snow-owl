@@ -61,6 +61,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -422,15 +423,26 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	/**
 	 * Deletes the object from this editing context and from his parent.
 	 * @param object
+	 * @throws ConflictException - if the component cannot be deleted
 	 */
-	public void delete(EObject object) {
+	public final void delete(EObject object) {
+		delete(object, false);
+	}
+	
+	/**
+	 * Deletes the object from this editing context and from his parent.
+	 * @param object - the object to be deleted
+	 * @param force - whether forcefully delete the object even if regular delete would not be possible
+	 * @throws ConflictException - if the component cannot be deleted
+	 */
+	public void delete(EObject object, boolean force) throws ConflictException {
 		if (object instanceof CodeSystem) {
 			transaction.getOrCreateResource(getMetaRootResourceName()).getContents().remove(object);
 		} else {
 			EcoreUtil.remove(object);
 		}
 	}
-
+	
 	/**
 	 * @return the repository-unique root resource name where the editing context contents are stored (may not be {@code null} or empty)
 	 */

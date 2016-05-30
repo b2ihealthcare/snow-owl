@@ -133,5 +133,48 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 			.and()
 			.body("members.items.active", CoreMatchers.hasItems(true, false));
 	}
+	
+	@Test
+	public void bulkForceUpdateAndForceDeleteMembers() throws Exception {
+		bulkCreateSimpleMembers();
+		
+		// get current members
+		final Collection<String> memberIds = getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members()")
+			.body().path("members.items.id");
+		
+		final String firstMemberId = Iterables.get(memberIds, 0);
+		final String secondMemberId = Iterables.get(memberIds, 1);
+		
+		// manually release secondMemberId before force deleting it
+		SnomedRefSetMemberApiTest.updateMemberEffectiveTime(testBranchPath, secondMemberId, "20160201", true);
+		
+		// create bulk update with one force deletion and one force update
+		final Collection<Map<String, Object>> bulkRequests = newArrayList();
+		bulkRequests.add(ImmutableMap.<String, Object>of("action", "update", "memberId", firstMemberId, "effectiveTime", "20160201", "force", true));
+		bulkRequests.add(ImmutableMap.<String, Object>of("action", "delete", "memberId", secondMemberId, "force", true));
+		final Map<String, Object> bulk = ImmutableMap.<String, Object>of("requests", bulkRequests, "commitComment", "Forcefully deleted/updated members");
+		
+		// execute bulk update with force deletion and force update
+		RestExtensions
+			.givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.accept(ContentType.JSON)
+			.contentType(ContentType.JSON)
+			.body(bulk)
+			.put("/{path}/refsets/{id}/members", testBranchPath.getPath(), refSetId)
+			.then()
+			.log().ifValidationFails()
+			.statusCode(204);
+		
+		// we've deleted the secondMemberId, remove it from the memberIds collection before assertions
+		memberIds.remove(secondMemberId);
+		// verify that new refset has only two members, and one is released
+		getComponent(testBranchPath, SnomedComponentType.REFSET, refSetId, "members()")
+			.then()
+			.body("members.items.id", CoreMatchers.hasItems(memberIds.toArray()))
+			.and()
+			.body("members.items.active", CoreMatchers.hasItems(true, true))
+			.and()
+			.body("members.items.effectiveTime", CoreMatchers.hasItems("20160201", null));
+	}
 
 }

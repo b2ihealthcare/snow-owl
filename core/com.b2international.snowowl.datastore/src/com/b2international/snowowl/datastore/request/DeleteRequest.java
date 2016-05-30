@@ -32,15 +32,19 @@ final class DeleteRequest extends BaseRequest<TransactionContext, Void> {
 	
 	@NotNull
 	private Class<? extends EObject> type;
+	
+	@NotNull
+	private Boolean force;
 
-	public DeleteRequest(String componentId, Class<? extends EObject> type) {
+	DeleteRequest(String componentId, Class<? extends EObject> type, Boolean force) {
 		this.componentId = componentId;
 		this.type = type;
+		this.force = force;
 	}
 	
 	@Override
 	public Void execute(TransactionContext context) {
-		context.delete(context.lookup(componentId, type));
+		context.delete(context.lookup(componentId, type), force);
 		return null;
 	}
 	

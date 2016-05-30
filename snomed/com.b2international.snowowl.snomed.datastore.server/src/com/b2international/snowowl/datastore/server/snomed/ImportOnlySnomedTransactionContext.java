@@ -102,6 +102,11 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	public void delete(final EObject o) {
 		editingContext.delete(o);
 	}
+	
+	@Override
+	public void delete(EObject o, boolean force) {
+		editingContext.delete(o, force);
+	}
 
 	@Override
 	public void preCommit() {

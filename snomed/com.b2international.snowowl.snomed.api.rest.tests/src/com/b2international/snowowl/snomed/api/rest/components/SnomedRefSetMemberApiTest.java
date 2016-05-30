@@ -28,6 +28,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -106,18 +107,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	public void createSimpleReferenceSetMemberForConcept() throws Exception {
 		// create branch
 		givenBranchWithPath(testBranchPath);
-		// create concept
-		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String createdConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptReq);
-		
-		// create refset
-		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
-		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
-		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
-		
-		// create member
-		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
-		final String memberId = assertComponentCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
 		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
 	}
 	
@@ -300,19 +290,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	public void deleteSimpleReferenceSetMember() throws Exception {
 		// create branch
 		givenBranchWithPath(testBranchPath);
-		// create concept
-		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String createdConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptReq);
-		
-		// create refset
-		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
-		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
-		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
-		
-		// create member
-		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
-		final String memberId = assertComponentCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
-		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
 		
 		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId);
 		assertComponentNotExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
@@ -323,18 +301,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		// create branch
 		givenBranchWithPath(testBranchPath);
 		// create concept
-		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String createdConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptReq);
-		
-		// create refset
-		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
-		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
-		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
-		
-		// create member
-		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
-		final String memberId = assertComponentCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
-		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
 		
 		// inactivate member by sending update with active flag set to false
 		final Map<?, ?> inactivationReq = ImmutableMap.of("active", false, "moduleId", Concepts.MODULE_ROOT, "commitComment", "Inactivate member and move to root module: " + memberId);
@@ -349,6 +316,84 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.body("active", CoreMatchers.equalTo(false))
 			.and()
 			.body("moduleId", CoreMatchers.equalTo(Concepts.MODULE_ROOT));
+	}
+	
+	@Test
+	public void updateMemberEffectiveTimeWithoutForceFlag() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
+		// update effective time of member without force flag
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", false);
+		
+		// force updating effective time should update both the effective time and released flags, like a single component publish
+		getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId)
+			.then()
+			.body("effectiveTime", CoreMatchers.nullValue())
+			.and()
+			.body("released", CoreMatchers.equalTo(false));
+	}
+
+	@Test
+	public void updateMemberEffectiveTimeWithForceFlag() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
+		// update effective time of member without force flag
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", true);
+		
+		// force updating effective time should update both the effective time and released flags, like a single component publish
+		getComponent(testBranchPath, SnomedComponentType.MEMBER, memberId)
+			.then()
+			.body("effectiveTime", CoreMatchers.equalTo("20160201"))
+			.and()
+			.body("released", CoreMatchers.equalTo(true));
+	}
+	
+	@Test
+	public void deleteReleasedMemberWithoutForceFlag() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
+		// force update published the component, so it cannot be deleted without force flag, should throw 409
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", true);
+		
+		assertComponentCannotBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId);
+		assertComponentExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+	}
+	
+	@Test
+	public void deleteReleasedMemberWithForceFlag() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		final String memberId = createSimpleConceptReferenceSetMember(testBranchPath);
+		// force update published the component, so it cannot be deleted without force flag, should throw 409
+		updateMemberEffectiveTime(testBranchPath, memberId, "20160201", true);
+		
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId, true);
+		assertComponentNotExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
+	}
+	
+	private static String createSimpleConceptReferenceSetMember(IBranchPath branchPath) {
+		// create concept ref. component
+		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String createdConceptId = assertComponentCreated(branchPath, SnomedComponentType.CONCEPT, conceptReq);
+		
+		// create refset
+		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
+		final String createdRefSetId = assertComponentCreated(branchPath, SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(branchPath, SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create member
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
+		return assertComponentCreated(branchPath, SnomedComponentType.MEMBER, memberReq);
+	}
+	
+	static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
+		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", "20160201", "commitComment", "Update member effective time: " + memberId);
+		// without force flag API responds with 204, but the content remains the same
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.with().contentType(ContentType.JSON)
+			.and().body(effectiveTimeUpdate)
+			.when().put("/{path}/{componentType}/{id}?force="+force, branchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId)
+			.then().log().ifValidationFails()
+			.statusCode(204);
 	}
 	
 }

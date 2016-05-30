@@ -290,13 +290,20 @@ public abstract class SnomedComponentApiAssert {
 		.when().post("/{path}/{componentType}/{id}/updates", branchPath.getPath(), componentType.toLowerCasePlural(), componentId);
 	}
 
-	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, 
-			final SnomedComponentType componentType, 
-			final String componentId) {
-
+	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
+		assertComponentCanBeDeleted(branchPath, componentType, componentId, false);
+	}
+	
+	public static void assertComponentCanBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, boolean force) {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
-		.then().log().ifValidationFails().assertThat().statusCode(204);
+			.when().delete("/{path}/{componentType}/{id}?force="+force, branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
+			.then().log().ifValidationFails().assertThat().statusCode(204);
+	}
+	
+	public static void assertComponentCannotBeDeleted(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.when().delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), componentId)
+			.then().log().ifValidationFails().assertThat().statusCode(409);
 	}
 
 	/**
@@ -325,8 +332,8 @@ public abstract class SnomedComponentApiAssert {
 	 * @param branchPath the branch path to check
 	 * @param descriptionId the description identifier to check
 	 */
-	public static void assertDescriptionExists(final IBranchPath branchPath, final String descriptionId) {
-		assertComponentExists(branchPath, SnomedComponentType.DESCRIPTION, descriptionId);
+	public static ValidatableResponse assertDescriptionExists(final IBranchPath branchPath, final String descriptionId, final String... expand) {
+		return assertComponentExists(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, expand);
 	}
 
 	/**
@@ -367,11 +374,23 @@ public abstract class SnomedComponentApiAssert {
 	 * @param descriptionId the expected description identifier
 	 */
 	public static void assertPreferredTermEquals(final IBranchPath branchPath, final String conceptId, final String descriptionId) {
+		assertPreferredTermEquals(branchPath, conceptId, descriptionId, "en-GB");
+	}
+	
+	/**
+	 * Asserts that the concept's preferred term in the given language reference set matches the specified description identifier.
+	 * 
+	 * @param branchPath the branch path to test
+	 * @param conceptId the identifier of the concept where the preferred term should be compared
+	 * @param descriptionId the expected description identifier
+	 * @param language - the language reference set
+	 */
+	public static void assertPreferredTermEquals(final IBranchPath branchPath, final String conceptId, final String descriptionId, final String language) {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.with().header("Accept-Language", "en-GB")
-		.when().get("/{path}/concepts/{conceptId}/pt", branchPath.getPath(), conceptId)
-		.then().assertThat().statusCode(200)
-		.and().body("id", equalTo(descriptionId));
+		.with().header("Accept-Language", language)
+		.when().get("/{path}/concepts/{conceptId}?expand=pt(),descriptions()", branchPath.getPath(), conceptId)
+		.then().log().ifValidationFails().assertThat().statusCode(200)
+		.and().body("pt.id", equalTo(descriptionId));
 	}
 
 	private SnomedComponentApiAssert() {

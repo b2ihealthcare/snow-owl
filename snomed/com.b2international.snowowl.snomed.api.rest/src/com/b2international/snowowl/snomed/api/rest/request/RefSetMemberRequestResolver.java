@@ -20,6 +20,8 @@ import java.util.Map;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -31,8 +33,22 @@ public class RefSetMemberRequestResolver implements RequestResolver<TransactionC
 	public Request<TransactionContext, ?> resolve(String action, Map<String, Object> source) {
 		switch (Action.get(action)) {
 		case CREATE: return SnomedRequests.prepareNewMember().setSource(source).build();
-		case UPDATE: return SnomedRequests.prepareUpdateMember().setSource(source).build();
-		case DELETE: return SnomedRequests.prepareDeleteMember().setComponentId((String) source.get("memberId")).build();
+		case UPDATE: {
+			final SnomedRefSetMemberUpdateRequestBuilder req = SnomedRequests.prepareUpdateMember().setSource(source);
+			final Object forceValue = source.get("force");
+			if (forceValue instanceof Boolean) {
+				req.force((Boolean) forceValue);
+			}
+			return req.build();
+		}
+		case DELETE: {
+			final DeleteRequestBuilder req = SnomedRequests.prepareDeleteMember().setComponentId((String) source.get("memberId"));
+			final Object forceValue = source.get("force");
+			if (forceValue instanceof Boolean) {
+				req.force((Boolean) forceValue);
+			}
+			return req.build();
+		}
 		case SYNC: return SnomedRequests.prepareUpdateQueryRefSetMember().setSource(source).build();
 		default: throw new BadRequestException("Unsupported member action '%s'", action); 
 		}

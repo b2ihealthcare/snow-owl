@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetApiTes
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetBulkApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiTest;
+import com.b2international.snowowl.snomed.api.rest.components.SnomedReleasedConceptApiTest;
 import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiExamplesTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
@@ -60,6 +61,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedImportApiExamplesTest.class,
 	SnomedIdentifierApiTest.class,
 	SnomedConceptApiTest.class,
+	SnomedReleasedConceptApiTest.class,
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,
 	SnomedRefSetApiTest.class,

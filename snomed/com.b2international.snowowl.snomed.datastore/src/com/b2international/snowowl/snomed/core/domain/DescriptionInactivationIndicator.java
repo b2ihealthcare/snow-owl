@@ -23,7 +23,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
  * @see <a href="http://www.snomed.org/tig?t=tsg2_metadata_refset_status_cpt">Component Inactivation Reference Sets
  * (Technical Implementation Guide)</a>
  */
-public enum DescriptionInactivationIndicator {
+public enum DescriptionInactivationIndicator implements ConceptEnum {
 
 	/**
 	 * The description duplicates another description.
@@ -63,34 +63,40 @@ public enum DescriptionInactivationIndicator {
 	/**
 	 * The description is still active, but it refers to an inactive concept.
 	 */
-	CONCEPT_NON_CURRENT(Concepts.CONCEPT_NON_CURRENT);
+	CONCEPT_NON_CURRENT(Concepts.CONCEPT_NON_CURRENT),
+	
+	/**
+	 * The description has been retired without any particular indication. 
+	 */
+	RETIRED("");
 
-	private String valueId;
+	private String conceptId;
 
-	private DescriptionInactivationIndicator(final String valueId) {
-		this.valueId = valueId;
+	private DescriptionInactivationIndicator(final String conceptId) {
+		this.conceptId = conceptId;
 	}
 
 	/**
 	 * Returns the identifier of the concept that represents the inactivation reason.
 	 * 
-	 * @return the valueId the concept identifier of the inactivation reason
+	 * @return the concept identifier of the inactivation reason
 	 */
-	public String getValueId() {
-		return valueId;
+	@Override
+	public String getConceptId() {
+		return conceptId;
 	}
 
 	/**
 	 * Returns with the description inactivation indication for the specified concept identifier.
 	 * 
-	 * @param valueId the concept identifier to look up
+	 * @param conceptId the concept identifier to look up
 	 * 
 	 * @return the resolved description inactivation indicator, or {@code null} if one cannot be found for the
 	 * specified identifier
 	 */
-	public static DescriptionInactivationIndicator getInactivationIndicatorByValueId(final String valueId) {
+	public static DescriptionInactivationIndicator getInactivationIndicatorByValueId(final String conceptId) {
 		for (final DescriptionInactivationIndicator candidate : values()) {
-			if (candidate.getValueId().equals(valueId)) {
+			if (candidate.getConceptId().equals(conceptId)) {
 				return candidate;
 			}
 		}

@@ -68,6 +68,11 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
+	public void delete(EObject o, boolean force) {
+		editingContext.delete(o, force);
+	}
+	
+	@Override
 	public void close() throws Exception {
 		editingContext.close();
 	}

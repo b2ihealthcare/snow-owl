@@ -15,18 +15,21 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -38,6 +41,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Utility class for the history framework.
@@ -59,29 +65,46 @@ public abstract class SnomedHistoryUtils {
 	private SnomedHistoryUtils() {
 	}
 	
-	/**
-	 * Returns with a human readable value of the passed in new value object.
-	 * @param newValue the new value represented as an {@link Object}.
-	 * @return the human readable name of the new value <tt>Object</tt> instance.
-	 */
-	public static String getNewFeatureValue(final Object newValue) {
-		final ApplicationContext applicationContext = ApplicationContext.getInstance();
-		if (newValue instanceof CDOID) {
-			CDOView view = applicationContext.getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE).createView();
-			try {
-				final CDOObject object = view.getObject((CDOID) newValue);
-				if (object instanceof Concept) {
-					final Concept concept = (Concept) object;
-					final String label = getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(createPath(concept), concept.getId()); 
-					return label != null ? label : ((Concept) object).getFullySpecifiedName(); 
-				}
-			} finally {
-				view.close();
+	public static String getLabelForConcept(final Concept concept) {
+		
+		checkArgument(CDOUtils.checkObject(concept));
+		
+		final ISnomedComponentService componentService = ApplicationContext.getServiceForClass(ISnomedComponentService.class);
+		Optional<Description> preferredTerm = FluentIterable.from(concept.getDescriptions()).firstMatch(new Predicate<Description>() {
+			@Override public boolean apply(Description input) {
+				return componentService.isPreferred(createPath(concept), input);
 			}
-		}
-		throw new IllegalArgumentException("Illegal input: " + newValue + " ["+newValue.getClass()+"].");
+		});
+		
+		return preferredTerm.isPresent() ? preferredTerm.get().getTerm() : concept.getFullySpecifiedName();
 	}
-
+	
+	public static String getLabelForDescription(final Description description) {
+		checkArgument(CDOUtils.checkObject(description));
+		return description.getTerm();
+	}
+	
+	public static String getLabelForRelationship(final Relationship relationship) {
+		checkArgument(CDOUtils.checkObject(relationship));
+		return String.format("%s %s%s%s", 
+				getLabelForConcept(relationship.getSource()), 
+				getLabelForConcept(relationship.getType()), 
+				relationship.isDestinationNegated() ? " NOT " : " ", 
+				getLabelForConcept(relationship.getDestination()));
+	}
+	
+	public static Concept getConcept(final String id, final CDOView view) {
+		return new SnomedConceptLookupService().getComponent(id, view);
+	}
+	
+	public static Relationship getRelationship(final String id, final CDOView view) {
+		return new SnomedRelationshipLookupService().getComponent(id, view);
+	}
+	
+	public static Description getDescription(final String id, final CDOView view) {
+		return new SnomedDescriptionLookupService().getComponent(id, view);
+	}
+	
 	/**
 	 * Returns the reference set member class for the specified
 	 * {@link CDOObject}, if it represents a reference set.

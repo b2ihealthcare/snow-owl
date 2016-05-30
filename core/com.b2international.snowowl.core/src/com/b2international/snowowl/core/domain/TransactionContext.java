@@ -37,6 +37,13 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @param o
 	 */
 	void delete(EObject o);
+	
+	/**
+	 * Forcefully removes the given EObject from the transaction context and from the store as well.
+	 * 
+	 * @param o
+	 */
+	void delete(EObject o, boolean force);
 
 	/**
 	 * Prepares the commit.

@@ -27,11 +27,11 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -44,14 +44,21 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0
  */
 public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
+	// Values below were picked from the minified dataset, representing an inactive concept
+	private static final String INACTIVE_CONCEPT_ID = "118225008";
+	private static final InactivationIndicator INACTIVE_CONCEPT_REASON = InactivationIndicator.AMBIGUOUS;
+	private static final List<String> INACTIVE_CONCEPT_EQUIVALENTS = ImmutableList.of("118222006", "250171008", "413350009");
+	
 	@Test
 	public void createConceptNonExistentBranch() {
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
@@ -165,7 +172,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void reactiveConcept() throws Exception {
+	public void reactivateConcept() throws Exception {
 		// create two concepts, add an additional relationship pointing from one to the other
 		givenBranchWithPath(testBranchPath);
 		final Map<?, ?> body = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
@@ -174,7 +181,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> relationshipReq = givenRelationshipRequestBody(sourceConceptId, Concepts.MORPHOLOGY, inactivatableConceptId, Concepts.MODULE_SCT_CORE, "New relationship");
 		final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipReq);
 		
-		// inactivate the one the relationship is pointing to
+		// inactivate the concept with the relationship is pointing to
 		final Map<String, Object> inactivationBody = newHashMap();
 		inactivationBody.put("active", false);
 		inactivationBody.put("inactivationIndicator", InactivationIndicator.DUPLICATE);
@@ -207,12 +214,42 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.and()
 			.body("associationTargets", nullValue());
 		
-		// verify that the inbound relationship is active again
-		assertComponentExists(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId).and().body("active", equalTo(true));
+		// verify that the inbound relationship is still inactive, manual reactivation is required
+		assertComponentExists(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId).and().body("active", equalTo(false));
 	}
 	
 	@Test
-	public void updateAssociationTargetOnConcepts() throws Exception {
+	public void restoreEffectiveTimeOnReleasedConcept() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		
+		final Map<?, ?> reactivationBody = ImmutableMap.builder()
+				.put("active", true)
+				.put("commitComment", "Reactivated " + INACTIVE_CONCEPT_ID)
+				.build();
+		
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, INACTIVE_CONCEPT_ID, reactivationBody);
+		
+		final Map<?, ?> inactivationBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("associationTargets", ImmutableMap.of(AssociationType.POSSIBLY_EQUIVALENT_TO, INACTIVE_CONCEPT_EQUIVALENTS))
+				.put("inactivationIndicator", INACTIVE_CONCEPT_REASON.toString())
+				.put("commitComment", "Reactivated " + INACTIVE_CONCEPT_ID)
+				.build();
+		
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, INACTIVE_CONCEPT_ID, inactivationBody);
+		
+		final ValidatableResponse conceptResponse = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, INACTIVE_CONCEPT_ID, "members()");
+		final Collection<String> memberIds = conceptResponse.and().extract().body().path("members.items.id");
+		assertEquals(4, memberIds.size());
+
+		final Collection<Boolean> statuses = conceptResponse.and().extract().body().path("members.items.active");
+		assertThat(statuses, everyItem(is(true)));
+		final Collection<String> effectiveTimes = conceptResponse.and().extract().body().path("members.items.effectiveTime");
+		assertThat(effectiveTimes, everyItem(either(is("20050131")).or(is("20050731"))));
+	}
+	
+	@Test
+	public void updateAssociationTarget() throws Exception {
 		// create concept and a duplicate
 		givenBranchWithPath(testBranchPath);
 		final Map<?, ?> body = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
@@ -252,6 +289,59 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.body("inactivationIndicator", equalTo(InactivationIndicator.AMBIGUOUS.toString()))
 			.and()
 			.body("associationTargets." + AssociationType.REPLACED_BY.name(), hasItem(componentId));
+	}
+	
+	@Test
+	public void updateAssociationTargetsWithReuse() throws Exception {
+		// create concept and a duplicate
+		givenBranchWithPath(testBranchPath);
+		final Map<?, ?> body = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String componentId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, body);
+		final String duplicateComponentId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, body);
+		
+		// inactivate the duplicate concept and point to the original one
+		final Map<String, Object> inactivationBody = newHashMap();
+		inactivationBody.put("active", false);
+		inactivationBody.put("inactivationIndicator", InactivationIndicator.DUPLICATE);
+		inactivationBody.put("associationTargets", ImmutableMap.builder().put(AssociationType.POSSIBLY_EQUIVALENT_TO, newArrayList(componentId)).build());
+		inactivationBody.put("commitComment", "Inactivated " + duplicateComponentId);
+		
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, inactivationBody);
+		// check if inactivation went through properly
+		final Collection<String> memberIds = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, "members()")
+				.body("active", equalTo(false))
+				.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
+				.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(componentId))
+				.extract()
+				.body().path("members.items.id");
+
+		// retrieve association member and store its UUID
+		assertEquals(2, memberIds.size());
+		
+		// try to update the association target, switching the order of targets around
+		final Map<String, Object> associationTargetUpdateBody = newHashMap();
+		associationTargetUpdateBody.put("active", false);
+		associationTargetUpdateBody.put("inactivationIndicator", InactivationIndicator.AMBIGUOUS);
+		associationTargetUpdateBody.put("associationTargets", ImmutableMap.builder()
+				.put(AssociationType.POSSIBLY_EQUIVALENT_TO, newArrayList(DISEASE, componentId))
+				.put(AssociationType.REPLACED_BY, newArrayList(componentId))
+				.build());
+		associationTargetUpdateBody.put("commitComment", "Changed association targets on " + duplicateComponentId);
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, associationTargetUpdateBody);
+		
+		// verify association target and inactivation indicator update
+		final Collection<String> updatedMemberIds = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, "members()")
+				.body("active", equalTo(false))
+				.body("inactivationIndicator", equalTo(InactivationIndicator.AMBIGUOUS.toString()))
+				.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(componentId))
+				.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(DISEASE))
+				.body("associationTargets." + AssociationType.REPLACED_BY.name(), hasItem(componentId))
+				.extract()
+				.body().path("members.items.id");
+		
+		// check that the member UUIDs have not been cycled
+		assertEquals(4, updatedMemberIds.size());
+		assertTrue(updatedMemberIds.containsAll(memberIds));
 	}
 	
 	@Test

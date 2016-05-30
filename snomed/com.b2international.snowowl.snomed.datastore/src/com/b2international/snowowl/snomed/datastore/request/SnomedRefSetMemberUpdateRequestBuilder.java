@@ -28,6 +28,7 @@ public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseTransactio
 
 	private String memberId;
 	private Map<String, Object> source;
+	private Boolean force = Boolean.FALSE;
 	
 	SnomedRefSetMemberUpdateRequestBuilder(String repositoryId) {
 		super(repositoryId);
@@ -47,9 +48,14 @@ public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseTransactio
 		return getSelf();
 	}
 	
+	public SnomedRefSetMemberUpdateRequestBuilder force(boolean force) {
+		this.force = force;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<TransactionContext, Void> doBuild() {
-		return new SnomedRefSetMemberUpdateRequest(memberId, source);
+		return new SnomedRefSetMemberUpdateRequest(memberId, source, force);
 	}
 
 }
