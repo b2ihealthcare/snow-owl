@@ -34,12 +34,6 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 
-	private void assertImportConfigurationCreationFails(final Map<?, ?> importConfiguration) {
-		whenCreatingImportConfiguration(importConfiguration)
-		.then().assertThat().statusCode(400)
-		.and().body("status", equalTo(400));
-	}
-
 	private ValidatableResponse assertImportConfigurationStatus(final String importId, final int expectedStatus) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.when().get("/imports/{id}", importId)
@@ -76,7 +70,7 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 	}
 
 	@Test
-	public void noVersionsAllowedOnBranch() {
+	public void versionsAllowedOnBranch() {
 		givenBranchWithPath(testBranchPath);
 
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
@@ -85,7 +79,7 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", true)
 				.build();
-
-		assertImportConfigurationCreationFails(importConfiguration);
+		
+		assertImportConfigurationCanBeCreated(importConfiguration);
 	}
 }
