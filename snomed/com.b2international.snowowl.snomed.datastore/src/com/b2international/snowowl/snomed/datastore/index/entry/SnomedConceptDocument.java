@@ -47,6 +47,7 @@ import com.google.common.collect.FluentIterable;
 @JsonDeserialize(builder=SnomedConceptDocument.Builder.class)
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
+	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
 
 	public static class Fields {
@@ -121,7 +122,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 
 	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
 
-		private String iconId;
 		private boolean primitive;
 		private boolean exhaustive;
 		private LongSet parents;
@@ -131,7 +131,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private Collection<String> predicates = Collections.emptyList();
 		private SnomedRefSetType refSetType;
 		private short referencedComponentType;
-		private float doi;
+		private float doi = DEFAULT_DOI;
 		private Collection<String> referringRefSets;
 		private Collection<String> referringMappingRefSets;
 		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
@@ -146,11 +146,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return this;
 		}
 		
-		public Builder iconId(final String iconId) {
-			this.iconId = iconId;
-			return getSelf();
-		}
-
 		public Builder primitive(final boolean primitive) {
 			this.primitive = primitive;
 			return getSelf();

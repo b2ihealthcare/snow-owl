@@ -38,10 +38,15 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		public static final String ICON_ID = "iconId";
 	}
 	
+	/**
+	 * @param <B> - the builder type
+	 * @since 4.7
+	 */
 	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B>> {
 		
 		protected String id;
 		protected String label;
+		protected String iconId;
 		
 		public B id(final String id) {
 			this.id = id;
@@ -56,10 +61,11 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 			return getSelf();
 		}
 		
-		public B iconId(final String label) {
-			this.label = label;
+		public B iconId(final String iconId) {
+			this.iconId = iconId;
 			return getSelf();
 		}
+
 		
 		protected abstract B getSelf();
 		

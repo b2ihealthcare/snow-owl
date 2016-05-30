@@ -41,7 +41,7 @@ public abstract class SnomedDocument extends RevisionDocument implements ICompon
 	};
 
 	// XXX: Type parameter reveals subclass to AbstractBuilder for fluent API
-	protected static abstract class SnomedDocumentBuilder<B extends SnomedDocumentBuilder<B>> extends RevisionDocumentBuilder<B> {
+	public static abstract class SnomedDocumentBuilder<B extends SnomedDocumentBuilder<B>> extends RevisionDocumentBuilder<B> {
 
 		protected String moduleId;
 		protected boolean active;
