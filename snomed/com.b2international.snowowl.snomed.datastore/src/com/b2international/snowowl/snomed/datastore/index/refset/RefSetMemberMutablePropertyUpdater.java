@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.refset;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -33,7 +33,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.3
  */
-public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
+public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<SnomedRefSetMemberIndexEntry.Builder> {
 
 	private SnomedRefSetMember member;
 
@@ -43,17 +43,17 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 	}
 
 	@Override
-	public void doUpdate(SnomedDocumentBuilder doc) {
+	public void doUpdate(SnomedRefSetMemberIndexEntry.Builder doc) {
 		doc
 			.active(member.isActive())
-			.module(Long.valueOf(member.getModuleId()))
+			.moduleId(member.getModuleId())
 			.effectiveTime(member.isSetEffectiveTime() ? member.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
 			.released(member.isReleased());
 
 		updateSpecialFields(doc);
 	}
 
-	private void updateSpecialFields(SnomedDocumentBuilder doc) {
+	private void updateSpecialFields(SnomedRefSetMemberIndexEntry.Builder doc) {
 		switch (member.getRefSet().getType()) {
 		case SIMPLE: 
 			//nothing else to do

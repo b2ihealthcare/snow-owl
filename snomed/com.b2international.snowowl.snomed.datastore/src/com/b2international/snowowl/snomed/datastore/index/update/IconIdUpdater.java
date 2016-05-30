@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
@@ -26,34 +25,27 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuil
 /**
  * @since 4.3
  */
-public class IconIdUpdater extends SnomedConceptDocumentUpdaterBase {
+public class IconIdUpdater {
 	
+	private final ISnomedTaxonomyBuilder inferredTaxonomy;
 	private final ISnomedTaxonomyBuilder statedTaxonomy;
 	private final Collection<String> availableImages;
-	private final boolean active;
 	
-	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, Component component, Collection<String> availableImages) {
-		this(inferredTaxonomy, statedTaxonomy, component.getId(), component.isActive(), availableImages);
-	}
-	
-	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, String conceptId, boolean active, Collection<String> availableImages) {
-		super(inferredTaxonomy, conceptId);
+	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, Collection<String> availableImages) {
+		this.inferredTaxonomy = inferredTaxonomy;
 		this.statedTaxonomy = statedTaxonomy;
-		this.active = active;
 		this.availableImages = availableImages;
 	}
 	
-	@Override
-	public final void doUpdate(SnomedConceptDocument.Builder doc) {
-		doc.iconId(getIconId(getComponentId(), active));
+	public void update(String id, boolean active, SnomedConceptDocument.Builder doc) {
+		doc.iconId(getIconId(id, active));
 	}
-
+	
 	protected String getIconId(String conceptId, boolean active) {
 		String iconId = null;
 		if (active) {
 			// TODO do not set the iconId to the one in the taxonomyBuilder if the concept is inactive
 			// we may have to need a ref to the concept itself or at least know the active flag
-			final ISnomedTaxonomyBuilder inferredTaxonomy = getTaxonomyBuilder();
 			if (inferredTaxonomy.containsNode(conceptId)) {
 				iconId = getParentIcon(conceptId, inferredTaxonomy);
 			}

@@ -15,23 +15,20 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.change;
 
-import java.util.Collection;
+import java.io.IOException;
 
-import org.apache.lucene.document.Document;
 import org.eclipse.emf.cdo.common.id.CDOID;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
-import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
@@ -41,7 +38,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.3
  */
-public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
+public final class ConceptReferringMemberChangeProcessor {
 
 	private static final Predicate<SnomedRefSetMember> REFERRING_CONCEPT_MEMBER = new Predicate<SnomedRefSetMember>() {
 		@Override
@@ -54,15 +51,7 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 		return SnomedRefSetType.SIMPLE.equals(type) || SnomedRefSetType.ATTRIBUTE_VALUE.equals(type) || SnomedRefSetType.SIMPLE_MAP.equals(type);
 	}
 	
-	private Function<CDOID, Document> documentProvider;
-	
-	public ConceptReferringMemberChangeProcessor(Function<CDOID, Document> documentProvider) {
-		super("referring member changes");
-		this.documentProvider = documentProvider;
-	}
-	
-	@Override
-	public void process(ICDOCommitChangeSet commitChangeSet) {
+	public Multimap<String, RefSetMemberChange> process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		final Multimap<String, RefSetMemberChange> memberChanges = HashMultimap.create();
 		
 		// process active new and dirty
@@ -79,7 +68,7 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 		
 		// process dirty inactive members
 		final Iterable<SnomedRefSetMember> dirtyReferringMembers = FluentIterable
-				.from(getDirtyComponents(commitChangeSet, SnomedRefSetMember.class))
+				.from(commitChangeSet.getDirtyComponents(SnomedRefSetMember.class))
 				.filter(REFERRING_CONCEPT_MEMBER).toSet();
 		
 		for (SnomedRefSetMember member : dirtyReferringMembers) {
@@ -89,27 +78,25 @@ public class ConceptReferringMemberChangeProcessor extends ChangeSetProcessorBas
 		}
 		
 		// process detached
-		final Collection<CDOID> detachedComponents = getDetachedComponents(commitChangeSet, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
-		for (CDOID cdoid : detachedComponents) {
-			final Document doc = documentProvider.apply(cdoid);
-			final boolean active = SnomedMappings.active().getValue(doc) == 1;
-			final SnomedRefSetType type = SnomedRefSetType.get(SnomedMappings.memberRefSetType().getValue(doc)); 
-			if (active && isValidType(type)) {
-				final String uuid = SnomedMappings.memberUuid().getValue(doc);
-				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
-				final long refSetId = SnomedMappings.memberRefSetId().getValue(doc);
+		final Iterable<CDOID> detachedComponents = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		final Iterable<Long> detachedMemberStorageKeys = CDOIDUtils.createCdoIdToLong(detachedComponents);
+		final Iterable<SnomedRefSetMemberIndexEntry> detachedMembers = searcher.get(SnomedRefSetMemberIndexEntry.class, detachedMemberStorageKeys);
+		for (SnomedRefSetMemberIndexEntry doc : detachedMembers) {
+			final SnomedRefSetType type = doc.getRefSetType(); 
+			if (doc.isActive() && isValidType(type)) {
+				final String uuid = doc.getId();
+				final String referencedComponentId = doc.getReferencedComponentId();
+				final String refSetId = doc.getRefSetIdentifierId();
 				memberChanges.put(referencedComponentId, new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, type));
 			}
 		}
 		
-		for (String conceptId : memberChanges.keySet()) {
-			registerUpdate(conceptId, new ReferenceSetMembershipUpdater(conceptId, memberChanges.get(conceptId)));
-		}
+		return memberChanges;
 	}
-
+	
 	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMember member, MemberChangeKind changeKind) {
 		final String uuid = member.getUuid();
-		final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
+		final String refSetId = member.getRefSetIdentifierId();
 		final SnomedRefSetType refSetType = member.getRefSet().getType();
 		memberChanges.put(member.getReferencedComponentId(), new RefSetMemberChange(uuid, refSetId, changeKind, refSetType));
 	}

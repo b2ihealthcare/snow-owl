@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import java.util.Objects;
-
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollections;
@@ -27,56 +25,52 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuil
 /**
  * @since 4.3
  */
-public class ParentageUpdater extends SnomedConceptDocumentUpdaterBase {
+public class ParentageUpdater {
 
-	private String fieldSuffix;
+	private final ISnomedTaxonomyBuilder taxonomyBuilder;
+	private final boolean stated;
 
-	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, boolean stated) {
-		super(taxonomyBuilder, conceptId);
+	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, boolean stated) {
+		this.taxonomyBuilder = taxonomyBuilder;
+		this.stated = stated;
 	}
 	
-	@Override
-	public int hashCode() {
-		return Objects.hash(getComponentId(), getClass(), this.fieldSuffix);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (super.equals(obj)) {
-			ParentageUpdater other = (ParentageUpdater) obj;
-			return Objects.equals(fieldSuffix, other.fieldSuffix);
-		}
-		return false;
-	}
-
-	@Override
-	public final void doUpdate(SnomedConceptDocument.Builder doc) {
-		LongSet parents = PrimitiveSets.newLongOpenHashSet(getParentIds(getComponentId()));
-		LongSet ancestors = PrimitiveSets.newLongOpenHashSet(getAncestorIds(getComponentId()));
+	public void update(final String id, SnomedConceptDocument.Builder doc) {
+		LongSet parents = PrimitiveSets.newLongOpenHashSet(getParentIds(id));
+		LongSet ancestors = PrimitiveSets.newLongOpenHashSet(getAncestorIds(id));
 		
 		// index/add ROOT_ID if parentIds are empty
 		if (parents.isEmpty()) {
-			parents.add(SnomedMappings.ROOT_ID);
+			parents.add(SnomedConceptDocument.ROOT_ID);
 		} else {
-			ancestors.add(SnomedMappings.ROOT_ID);
+			ancestors.add(SnomedConceptDocument.ROOT_ID);
 		}
 
-		doc.parents(parents);
-		doc.ancestors(ancestors);
+		if (stated) {
+			doc.statedParents(parents);
+			doc.statedAncestors(ancestors);
+		} else {
+			doc.parents(parents);
+			doc.ancestors(ancestors);
+		}
 	}
 
 	protected LongCollection getParentIds(final String conceptId) {
-		if (getTaxonomyBuilder().containsNode(conceptId)) {
-			return getTaxonomyBuilder().getAncestorNodeIds(conceptId);
+		if (taxonomyBuilder.containsNode(conceptId)) {
+			return taxonomyBuilder.getAncestorNodeIds(conceptId);
 		}
 		return LongCollections.emptySet();
 	}
 
 	protected LongCollection getAncestorIds(final String conceptId) {
-		if (getTaxonomyBuilder().containsNode(conceptId)) {
-			return getTaxonomyBuilder().getAllIndirectAncestorNodeIds(conceptId);
+		if (taxonomyBuilder.containsNode(conceptId)) {
+			return taxonomyBuilder.getAllIndirectAncestorNodeIds(conceptId);
 		}
 		return LongCollections.emptySet();
+	}
+	
+	protected ISnomedTaxonomyBuilder getTaxonomyBuilder() {
+		return taxonomyBuilder;
 	}
 
 }

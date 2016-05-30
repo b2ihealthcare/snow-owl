@@ -15,63 +15,36 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.change;
 
-import java.util.Collection;
+import java.io.IOException;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberImmutablePropertyUpdater;
-import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberMutablePropertyUpdater;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.3
  */
-public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
+public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 
 	public RefSetMemberChangeProcessor() {
 		super("reference set member changes");
 	}
 
 	@Override
-	protected void indexDocuments(ICDOCommitChangeSet commitChangeSet) {
-		final Iterable<SnomedRefSetMember> newRefSetMembers = getNewComponents(commitChangeSet, SnomedRefSetMember.class);
-		for (SnomedRefSetMember newMember : newRefSetMembers) {
-			registerImmutablePropertyUpdates(newMember);
-			registerMutablePropertyUpdates(newMember);
+	protected void doProcess(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+		deleteRevisions(SnomedRefSetMemberIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER));
+		
+		final Iterable<SnomedRefSetMember> membersToIndex = Iterables.concat(commitChangeSet.getNewComponents(SnomedRefSetMember.class), commitChangeSet.getDirtyComponents(SnomedRefSetMember.class));
+		
+		for (SnomedRefSetMember member : membersToIndex) {
+			final Builder doc = SnomedRefSetMemberIndexEntry.builder(member);
+			indexRevision(member.cdoID(), doc.build());
 		}
-	}
-	
-	@Override
-	protected void updateDocuments(ICDOCommitChangeSet commitChangeSet) {
-		final Iterable<SnomedRefSetMember> dirtyRefSetMembers = getDirtyComponents(commitChangeSet, SnomedRefSetMember.class);
-		final Collection<CDOID> deletedRefSetMembers = getDeletedMembers(commitChangeSet); 
-		for (SnomedRefSetMember dirtyMember : dirtyRefSetMembers) {
-			// skip any deleted member from dirty ones, fixes problem with revert
-			if (!deletedRefSetMembers.contains(dirtyMember.cdoID())) {
-				registerMutablePropertyUpdates(dirtyMember);
-			}
-		}
-	}
-	
-	@Override
-	protected void deleteDocuments(ICDOCommitChangeSet commitChangeSet) {
-		registerDeletions(getDeletedMembers(commitChangeSet));
-	}
-
-	private Collection<CDOID> getDeletedMembers(ICDOCommitChangeSet commitChangeSet) {
-		return getDetachedComponents(commitChangeSet, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
-	}
-
-	private void registerMutablePropertyUpdates(SnomedRefSetMember member) {
-		registerUpdate(member.getUuid(), new RefSetMemberMutablePropertyUpdater(member));
-	}
-	
-	private void registerImmutablePropertyUpdates(SnomedRefSetMember member) {
-		registerUpdate(member.getUuid(), new RefSetMemberImmutablePropertyUpdater(member));
 	}
 	
 }

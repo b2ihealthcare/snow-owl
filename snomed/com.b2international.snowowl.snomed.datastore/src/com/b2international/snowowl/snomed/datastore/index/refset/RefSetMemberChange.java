@@ -37,11 +37,11 @@ public class RefSetMemberChange implements Comparable<RefSetMemberChange> {
 	}
 	
 	private final String uuid;
-	private final long refSetId;
+	private final String refSetId;
 	private final MemberChangeKind changeKind;
 	private final SnomedRefSetType type;
 	
-	public RefSetMemberChange(String uuid, final long refSetId, final MemberChangeKind changeKind, final SnomedRefSetType type) {
+	public RefSetMemberChange(String uuid, final String refSetId, final MemberChangeKind changeKind, final SnomedRefSetType type) {
 		this.uuid = checkNotNull(uuid, "Reference set member UUID may not be null.");
 		this.type = checkNotNull(type, "Reference set type may not be null.");
 		this.refSetId = checkNotNull(refSetId, "Reference set identifier may not be null.");
@@ -56,7 +56,7 @@ public class RefSetMemberChange implements Comparable<RefSetMemberChange> {
 		return changeKind;
 	}
 	
-	public long getRefSetId() {
+	public String getRefSetId() {
 		return refSetId;
 	}
 	

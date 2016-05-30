@@ -15,57 +15,97 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.change;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
-import com.b2international.snowowl.datastore.index.ComponentBaseUpdater;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.update.ComponentModuleUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.DescriptionImmutablePropertyUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.DescriptionMutablePropertyUpdater;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Builder;
+import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 4.3
  */
-public class DescriptionChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
+public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 
 	public DescriptionChangeProcessor() {
 		super("description changes");
 	}
 
 	@Override
-	protected void indexDocuments(ICDOCommitChangeSet commitChangeSet) {
-		final Iterable<Description> newDescriptions = getNewComponents(commitChangeSet, Description.class);
-		for (final Description description : newDescriptions) {
-			registerImmutablePropertyUpdates(description);
-			registerMutablePropertyUpdates(description);
+	protected void doProcess(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+		final Map<String, Multimap<Acceptability, RefSetMemberChange>> acceptabilityChangesByDescription = new DescriptionAcceptabilityChangeProcessor().process(commitChangeSet, searcher);
+		// delete detached descriptions
+		deleteRevisions(SnomedDescriptionIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION));
+		// (re)index new and dirty descriptions
+		final Iterable<Description> descriptionsToIndex = Iterables.concat(commitChangeSet.getNewComponents(Description.class), commitChangeSet.getDirtyComponents(Description.class));
+		final Iterable<Long> storageKeys = CDOIDUtils.createCdoIdToLong(CDOIDUtils.getIds(descriptionsToIndex));
+		final Map<String, SnomedDescriptionIndexEntry> currentRevisionsById = Maps.uniqueIndex(searcher.get(SnomedDescriptionIndexEntry.class, storageKeys), ComponentUtils.<String>getIdFunction());
+		
+		for (final Description description : descriptionsToIndex) {
+			final String descriptionId = description.getId();
+			final SnomedDescriptionIndexEntry currentDoc = currentRevisionsById.get(descriptionId);
+			final Builder doc = SnomedDescriptionIndexEntry.builder(description);
+			
+			final Multimap<Acceptability, String> acceptabilityMap = currentDoc == null ? ImmutableMultimap.<Acceptability, String>of() : ImmutableMap.copyOf(currentDoc.getAcceptabilityMap()).asMultimap().inverse();
+			
+			final Collection<String> preferredLanguageRefSets = newHashSet(acceptabilityMap.get(Acceptability.PREFERRED));
+			final Collection<String> acceptableLanguageRefSets = newHashSet(acceptabilityMap.get(Acceptability.ACCEPTABLE));
+			
+			final Multimap<Acceptability, RefSetMemberChange> multimap = acceptabilityChangesByDescription.get(descriptionId);
+			
+			if (multimap != null) {
+				collectChanges(multimap.get(Acceptability.PREFERRED), preferredLanguageRefSets);
+				collectChanges(multimap.get(Acceptability.ACCEPTABLE), acceptableLanguageRefSets);
+			}
+			
+			for (String preferredLanguageRefSet : preferredLanguageRefSets) {
+				doc.acceptability(preferredLanguageRefSet, Acceptability.PREFERRED);
+			}
+			
+			for (String acceptableLanguageRefSet : acceptableLanguageRefSets) {
+				doc.acceptability(acceptableLanguageRefSet, Acceptability.ACCEPTABLE);
+			}
+			
+			indexRevision(description.cdoID(), doc.build());
 		}
 	}
 	
-	@Override
-	protected void updateDocuments(ICDOCommitChangeSet commitChangeSet) {
-		final Iterable<Description> dirtyDescriptions = getDirtyComponents(commitChangeSet, Description.class);
-		for (final Description description : dirtyDescriptions) {
-			registerMutablePropertyUpdates(description);
+	private void collectChanges(Collection<RefSetMemberChange> changes, Collection<String> refSetIds) {
+		for (final RefSetMemberChange change : changes) {
+			switch (change.getChangeKind()) {
+				case ADDED:
+					refSetIds.add(change.getRefSetId());
+					break;
+				default:
+					break;
+			}
+		}
+		
+		for (final RefSetMemberChange change : changes) {
+			switch (change.getChangeKind()) {
+				case REMOVED:
+					refSetIds.remove(change.getRefSetId());
+					break;
+				default:
+					break;
+			}
 		}
 	}
-
-	@Override
-	protected void deleteDocuments(ICDOCommitChangeSet commitChangeSet) {
-		registerDeletions(getDetachedComponents(commitChangeSet, SnomedPackage.Literals.DESCRIPTION));
-	}
-
-	private void registerImmutablePropertyUpdates(final Description description) {
-		final String id = description.getId();
-		registerUpdate(id, new ComponentBaseUpdater<SnomedDocumentBuilder>(id, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.cdoID()));
-		registerUpdate(id, new DescriptionImmutablePropertyUpdater(description));
-	}
-
-	private void registerMutablePropertyUpdates(Description description) {
-		final String id = description.getId();
-		registerUpdate(id, new DescriptionMutablePropertyUpdater(description));
-		registerUpdate(id, new ComponentModuleUpdater(description));
-	}
+	
 }

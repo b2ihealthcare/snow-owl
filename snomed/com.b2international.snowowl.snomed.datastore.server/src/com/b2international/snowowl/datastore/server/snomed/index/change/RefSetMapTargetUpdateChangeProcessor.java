@@ -19,24 +19,16 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.ImmutableList;
@@ -48,15 +40,15 @@ import com.google.common.collect.Iterables;
  * 
  * @since 4.6
  */
-public class RefSetMapTargetUpdateChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
+public class RefSetMapTargetUpdateChangeProcessor extends ChangeSetProcessorBase<SnomedRefSetMemberIndexEntry.Builder> {
 
-	private final SnomedIndexServerService index;
 	private final IBranchPath branchPath;
+	private final RevisionSearcher searcher;
 
-	public RefSetMapTargetUpdateChangeProcessor(IBranchPath branchPath, SnomedIndexServerService index) {
+	public RefSetMapTargetUpdateChangeProcessor(IBranchPath branchPath, RevisionSearcher searcher) {
 		super("mapping refset map target changes");
 		this.branchPath = branchPath;
-		this.index = index;
+		this.searcher = searcher;
 	}
 	
 	@Override
@@ -99,7 +91,7 @@ public class RefSetMapTargetUpdateChangeProcessor extends ChangeSetProcessorBase
 		return delta != null && delta.getFeatureDelta(feature) != null;
 	}
 	
-	private static class RefSetMemberMapTargetUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
+	private static class RefSetMemberMapTargetUpdater extends DocumentUpdaterBase<SnomedRefSetMemberIndexEntry.Builder> {
 
 		private final short mapTargetComponentType;
 
@@ -109,7 +101,7 @@ public class RefSetMapTargetUpdateChangeProcessor extends ChangeSetProcessorBase
 		}
 
 		@Override
-		protected void doUpdate(SnomedDocumentBuilder doc) {
+		protected void doUpdate(SnomedRefSetMemberIndexEntry.Builder doc) {
 			doc.removeAll(SnomedMappings.memberMapTargetComponentType());
 			doc.memberMapTargetComponentType(Integer.valueOf(mapTargetComponentType));
 		}

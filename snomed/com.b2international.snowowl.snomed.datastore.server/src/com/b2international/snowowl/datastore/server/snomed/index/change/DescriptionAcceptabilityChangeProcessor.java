@@ -15,24 +15,25 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index.change;
 
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
-import org.apache.lucene.document.Document;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import com.b2international.commons.BooleanUtils;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
-import com.b2international.snowowl.snomed.datastore.index.update.AcceptabilityMembershipUpdater;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -41,46 +42,38 @@ import com.google.common.collect.Multimap;
  * @since 4.3
  */
 // TODO: The process is very similar to ConceptReferringMemberChangeProcessor, maybe the two can be merged by generalizing
-public class DescriptionAcceptabilityChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
+public class DescriptionAcceptabilityChangeProcessor {
 
-	private Function<CDOID, Document> documentProvider;
-	
-	public DescriptionAcceptabilityChangeProcessor(Function<CDOID, Document> documentProvider) {
-		super("description acceptability changes");
-		this.documentProvider = documentProvider;
-	}
-	
-	@Override
-	public void process(ICDOCommitChangeSet commitChangeSet) {
+	public Map<String, Multimap<Acceptability, RefSetMemberChange>> process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		final Multimap<String, RefSetMemberChange> preferredMemberChanges = HashMultimap.create();
 		final Multimap<String, RefSetMemberChange> acceptableMemberChanges = HashMultimap.create();
 		
 		// add active new and active dirty members
 		final Iterable<SnomedLanguageRefSetMember> newAndDirtyMembers = Iterables.concat(
-				getNewComponents(commitChangeSet, SnomedLanguageRefSetMember.class),
-				getDirtyComponents(commitChangeSet, SnomedLanguageRefSetMember.class));
+				commitChangeSet.getNewComponents(SnomedLanguageRefSetMember.class),
+				commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class));
 
 		for (SnomedLanguageRefSetMember member : newAndDirtyMembers) {
 			if (member.isActive()) {
 				final String uuid = member.getUuid();
-				final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
+				final String refSetId = member.getRefSetIdentifierId();
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, member.getRefSet().getType());
 				registerChange(preferredMemberChanges, acceptableMemberChanges, member.getAcceptabilityId(), member.getReferencedComponentId(), change);
 			}
 		}
 		
 		// remove dirty inactive (and/or changed in acceptability) members
-		final Iterable<SnomedLanguageRefSetMember> dirtyMembers = getDirtyComponents(commitChangeSet, SnomedLanguageRefSetMember.class);
+		final Iterable<SnomedLanguageRefSetMember> dirtyMembers = commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class);
 		
 		for (SnomedLanguageRefSetMember member : dirtyMembers) {
-			final Document beforeDocument = documentProvider.apply(member.cdoID());
 			final String uuid = member.getUuid();
-			final long refSetId = Long.parseLong(member.getRefSetIdentifierId());
+			final String refSetId = member.getRefSetIdentifierId();
 			final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, member.getRefSet().getType());
 			
-			if (beforeDocument != null) {
-				final String beforeAcceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(beforeDocument);
-				final boolean beforeActive = BooleanUtils.valueOf(SnomedMappings.active().getValue(beforeDocument));
+			final SnomedRefSetMemberIndexEntry before = searcher.get(SnomedRefSetMemberIndexEntry.class, CDOIDUtil.getLong(member.cdoID()));
+			if (before != null) {
+				final String beforeAcceptabilityId = before.getAcceptabilityId();
+				final boolean beforeActive = before.isActive();
 				final boolean acceptabilityChanged = !member.getAcceptabilityId().equals(beforeAcceptabilityId);
 				
 				if (beforeActive && acceptabilityChanged) {
@@ -94,25 +87,33 @@ public class DescriptionAcceptabilityChangeProcessor extends ChangeSetProcessorB
 		}
 		
 		// remove earlier active detached members
-		final Collection<CDOID> detachedComponents = getDetachedComponents(commitChangeSet, SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
+		final Collection<CDOID> detachedComponents = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
 		for (CDOID cdoid : detachedComponents) {
-			final Document beforeDocument = documentProvider.apply(cdoid);
-			final boolean beforeActive = BooleanUtils.valueOf(SnomedMappings.active().getValue(beforeDocument));
+			final SnomedRefSetMemberIndexEntry before = searcher.get(SnomedRefSetMemberIndexEntry.class, CDOIDUtil.getLong(cdoid));
 			
-			if (beforeActive) {
-				final String uuid = SnomedMappings.memberUuid().getValue(beforeDocument);
-				final long refSetId = SnomedMappings.memberRefSetId().getValue(beforeDocument);
-				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(beforeDocument);
-				final String beforeAcceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(beforeDocument);
+			if (before.isActive()) {
+				final String uuid = before.getId();
+				final String refSetId = before.getRefSetIdentifierId();
+				final String referencedComponentId = before.getReferencedComponentId();
+				final String beforeAcceptabilityId = before.getAcceptabilityId();
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
 				
 				registerChange(preferredMemberChanges, acceptableMemberChanges, beforeAcceptabilityId, referencedComponentId, change);
 			}
 		}
 		
+		final Map<String, Multimap<Acceptability, RefSetMemberChange>> changes = newHashMap();
+		
 		for (String descriptionId : Iterables.concat(preferredMemberChanges.keySet(), acceptableMemberChanges.keySet())) {
-			registerUpdate(descriptionId, new AcceptabilityMembershipUpdater(descriptionId, preferredMemberChanges.get(descriptionId), acceptableMemberChanges.get(descriptionId)));
+			if (!changes.containsKey(descriptionId)) {
+				changes.put(descriptionId, HashMultimap.<Acceptability, RefSetMemberChange>create());
+			}
+			final Multimap<Acceptability, RefSetMemberChange> memberChanges = changes.get(descriptionId);
+			
+			memberChanges.putAll(Acceptability.PREFERRED, preferredMemberChanges.get(descriptionId));
+			memberChanges.putAll(Acceptability.ACCEPTABLE, acceptableMemberChanges.get(descriptionId));
 		}
+		return changes;
 	}
 
 	private void registerChange(final Multimap<String, RefSetMemberChange> preferredMemberChanges,

@@ -15,30 +15,31 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import java.util.Set;
+import java.io.IOException;
 
-import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.index.DocumentUpdater;
-import com.b2international.snowowl.datastore.index.RevisionDocument.RevisionDocumentBuilder;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.3
  */
-public interface ChangeSetProcessor<D extends RevisionDocumentBuilder<D>> {
+public interface ChangeSetProcessor {
 
 	/**
-	 * Processes the changes.
-	 * @param commitChangeSet the set of changes.
-	 * @throws SnowowlServiceException
+	 * Processes the changes and writer index changes using the given {@link RevisionWriter}.
+	 * 
+	 * @param commitChangeSet
+	 *            - the set of changes
+	 * @param writer
+	 *            - the revision index writer to make the updates
 	 */
-	void process(ICDOCommitChangeSet commitChangeSet);
-	
+	void process(ICDOCommitChangeSet commitChangeSet, RevisionWriter writer) throws IOException;
+
+	/**
+	 * Returns the description of the change set processor.
+	 * 
+	 * @return
+	 */
 	String description();
-
-	Set<Long> getDeletedStorageKeys();
-
-	Multimap<String, DocumentUpdater<D>> getUpdates();
 	
 }

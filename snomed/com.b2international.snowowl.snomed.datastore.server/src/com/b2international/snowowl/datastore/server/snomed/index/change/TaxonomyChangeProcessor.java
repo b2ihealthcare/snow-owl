@@ -21,7 +21,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
@@ -40,7 +39,7 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
  * 
  * @since 4.3
  */
-public class TaxonomyChangeProcessor extends ChangeSetProcessorBase<SnomedDocumentBuilder> {
+public class TaxonomyChangeProcessor extends ChangeSetProcessorBase {
 
 	private final Taxonomy taxonomy;
 	private final String fieldSuffix;
