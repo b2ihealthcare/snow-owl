@@ -143,7 +143,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		final String branchPath = configuration.getBranchPath();
 		if (!isMain && !BranchPathUtils.exists(REPOSITORY_UUID, branchPath)) {
-			throw new SnomedImportException("Importing a release of SNOMED CT from an "
+			throw new BadRequestException("Importing a release of SNOMED CT from an "
 					+ "archive to other than MAIN branch is prohibited when the given "
 					+ "branch does not exist. Please perform a branch creation first.");
 		}
@@ -239,10 +239,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		// FULL AND SNAPSHOT can be import into empty databases
 		if (Rf2ReleaseType.DELTA == configuration.getRf2ReleaseType()) {
 			importStorageRef.checkStorageExists();
-		}
-		
-		if (!Branch.MAIN_PATH.equals(configuration.getBranchPath()) && configuration.shouldCreateVersion()) {
-			throw new BadRequestException("Import time versioning supported on MAIN branch only");
 		}
 		
 		final UUID importId = randomUUID();
