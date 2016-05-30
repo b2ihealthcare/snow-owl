@@ -57,3 +57,4 @@ and the _snomed_ct_b2i_extension.json_ release descriptor file is:
 	"citation": "This is an example SNOMED CT extension by B2i Healthcare."
 }
 --------------------------
+
