@@ -23,24 +23,14 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TopDocs;
-
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
-import com.b2international.index.lucene.DocIdCollector;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedStatedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
