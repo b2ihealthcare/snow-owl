@@ -59,10 +59,15 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				new String[] { 
 					"-l <languageRefSetId>\tThe language reference set identifier to use for component labels.",
 					"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",
-					"-b <branch>\t\tThe existing branch to import the content onto. If omitted 'MAIN' will be used.",
+					"-b <branch>\t\tThe existing branch to import the content onto. In case of extension import, an effective time from the base SNOMED CT release (e.g. 2016-01-31). If omitted 'MAIN' will be used.",
 					"-v\t\t\tCreates versions for each effective time found in the release archive. If omitted no versions will be created.",
 					"<path>\t\tSpecifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release).",
-					"<path to release descriptor file>\tThe path to the optional release descriptor file."
+					"<path to release descriptor file>\tThe path to the release descriptor file.",
+					"E.g:",
+					"\tImporting the international release on MAIN (using US language reference set):",
+					"\tsctimport rf2_release -l 900000000000509007 -t full -v C:/SnomedCT_RF2Release_INT_20160131.zip C:/snomed_ct_international.json",
+					"\tImport and extension on a branch (using US language reference set):",
+					"\tsctimport rf2_release -l 900000000000509007 -t full -b 2016-01-31 -v C:/SnomedCT_Release_B2i_20160201.zip C:/snomed_ct_b2i.json"
 				});
 	}
 
