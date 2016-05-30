@@ -17,15 +17,13 @@ package com.b2international.snowowl.snomed.datastore.snor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.Serializable;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -39,7 +37,7 @@ import com.google.common.base.Preconditions;
  */
 @Immutable
 @ThreadSafe
-public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminologyComponentIdProvider {
+public class PredicateIndexEntry extends RevisionDocument implements ITerminologyComponentIdProvider {
 
 	private static final long serialVersionUID = -3084452506109842527L;
 
@@ -166,7 +164,6 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	@Nonnull private final String queryExpression;
 	/**Flags for representing the {@link #isMultiple()} and {@link #isRequired()} properties.*/
 	private final byte flags;
-	private long storageKey;
 	
 	/**
 	 * Private constructor.
@@ -175,37 +172,14 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	 * @param flags the flags for describing the {@code isMultiple} and {@code isRequired} boolean properties.
 	 */
 	private PredicateIndexEntry(final long storageKey, final String queryExpression, final PredicateType type, final byte flags) {
-		this.storageKey = storageKey;
+		super(Long.toString(storageKey), createLabel(storageKey, type), null);
 		this.queryExpression = checkNotNull(queryExpression, "Query expression argument cannot be null.");
 		this.type = checkNotNull(type, "Predicate type argument cannot be null.");
 		this.flags = flags;
 	}
 	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (storageKey ^ (storageKey >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final PredicateIndexEntry other = (PredicateIndexEntry) obj;
-		if (storageKey != other.storageKey)
-			return false;
-		return true;
-	}
-	
-	@Override
-	public String toString() {
-		return Objects.toStringHelper(this).add("StorageKey", storageKey).add("Type", getType()).toString();
+	private static String createLabel(long storageKey, PredicateType type) {
+		return Objects.toStringHelper(PredicateIndexEntry.class).add("id", storageKey).add("type", type).toString();
 	}
 
 	/**
@@ -327,26 +301,6 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 		return (flags & flag) != 0;
 	}
 
-	@Override
-	public String getId() {
-		return Long.toString(storageKey);
-	}
-
-	@Override
-	public String getLabel() {
-		return toString();
-	}
-
-	@Override
-	public float getScore() {
-		return 0.0f;
-	}
-
-	@Override
-	public long getStorageKey() {
-		return storageKey;
-	}
-	
 	@Override
 	public String getTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.PREDICATE_TYPE;

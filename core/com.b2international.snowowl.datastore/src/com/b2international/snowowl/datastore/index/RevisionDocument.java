@@ -24,6 +24,7 @@ import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Objects;
 
 /**
  * @since 4.7
@@ -100,6 +101,20 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	@Override
 	public String toString() {
 		return String.format("%02.2f - %s [%d]", id, label);
+	}
+	
+	@Override
+	public final int hashCode() {
+		return Objects.hashCode(getId());
+	}
+
+	@Override
+	public final boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+		final RevisionDocument other = (RevisionDocument) obj;
+		return Objects.equal(getId(), other.getId());
 	}
 
 	/**

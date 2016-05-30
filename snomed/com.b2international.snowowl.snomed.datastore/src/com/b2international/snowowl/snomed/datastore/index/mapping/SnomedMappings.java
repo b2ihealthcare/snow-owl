@@ -33,8 +33,6 @@ import com.google.common.base.Strings;
  */
 class SnomedMappings {
 
-	public static final Long ROOT_ID = -1L;
-
 	// Overridden SNOMED CT specific common field instances
 	private static final NumericDocValuesIndexField<Long> COMPONENT_ID = Mappings.longDocValuesField(Mappings.id().fieldName());
 	private static final NumericDocValuesIndexField<Long> COMPONENT_ICON_ID = Mappings.longDocValuesField(Mappings.iconId().fieldName());

@@ -138,20 +138,6 @@ public abstract class SnomedDocument extends RevisionDocument implements ICompon
 		return EffectiveTimes.format(effectiveTime);
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(getId());
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) { return true; }
-		if (obj == null) { return false; }
-		if (getClass() != obj.getClass()) { return false; }
-		final SnomedDocument other = (SnomedDocument) obj;
-		return Objects.equal(getId(), other.getId());
-	}
-
 	protected ToStringHelper toStringHelper() {
 		return Objects.toStringHelper(this)
 				.add("id", getId())
