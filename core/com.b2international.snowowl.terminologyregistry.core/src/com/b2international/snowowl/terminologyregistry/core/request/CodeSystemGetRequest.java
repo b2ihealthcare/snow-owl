@@ -16,6 +16,7 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_OID;
 
 import java.io.IOException;
 
@@ -60,7 +61,7 @@ final class CodeSystemGetRequest extends BaseResourceRequest<BranchContext, Code
 
 	private CodeSystemEntry doExecute(final BranchContext context) throws IOException {
 		final TermQuery shortNameQuery = new TermQuery(new Term(SYSTEM_SHORT_NAME, uniqueId));
-		final TermQuery oidQuery = new TermQuery(new Term(SYSTEM_SHORT_NAME, uniqueId));
+		final TermQuery oidQuery = new TermQuery(new Term(SYSTEM_OID, uniqueId));
 
 		final BooleanQuery boolQuery = new BooleanQuery();
 		boolQuery.add(shortNameQuery, Occur.SHOULD);
