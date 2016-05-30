@@ -175,9 +175,9 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 	
 	@Test
 	public void import08NewExtensionConceptOnNestedBranch() {
-		final IBranchPath nestedBranch = createNestedBranch(testBranchPath, "dk");
-		createCodeSystem(nestedBranch.getPath(), "dk");
-		assertConceptNotExists(nestedBranch, "63961392103");
+		final IBranchPath nestedBranch = createNestedBranch(testBranchPath, "extensionImport");
+		createCodeSystem(nestedBranch.getPath(), "extensionImport");
+		assertConceptNotExists(nestedBranch, "555231000005107");
 		
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
@@ -187,13 +187,12 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 				.build();
 
 		final String importId = assertImportConfigurationCanBeCreated(importConfiguration);
-		assertImportFileCanBeUploaded(importId, "SnomedCT_Release_INT_20150131_new_concept.zip");
+		assertImportFileCanBeUploaded(importId, "SnomedCT_Release_INT_20150205_new_extension_concept.zip");
 		assertImportCompletes(importId);
 		
-		assertConceptExists(nestedBranch, "63961392103");
-		assertPreferredTermEquals(nestedBranch, "63961392103", "13809498114");
+		assertConceptExists(nestedBranch, "555231000005107");
 		givenAuthenticatedRequest("/admin")
-				.when().get("/codesystems/{shortName}/versions/{version}", "dk", "2015-01-31")
+				.when().get("/codesystems/{shortName}/versions/{version}", "extensionImport", "2015-02-05")
 				.then().statusCode(200);
 	}
 	
