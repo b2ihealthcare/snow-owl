@@ -178,7 +178,7 @@ public class SnomedPublishManager extends PublishManager {
 
 	@Override
 	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {
-		final String shortName = getReleaseShortName();
+		final String shortName = getConfiguration().getCodeSystemShortName();
 		final List<CodeSystem> codeSystems = getEditingContext().getCodeSystems();
 		final Optional<SnomedRelease> optional = FluentIterable.from(codeSystems)
 				.transform(new UncheckedCastFunction<>(SnomedRelease.class))
@@ -194,18 +194,6 @@ public class SnomedPublishManager extends PublishManager {
 		} else {
 			final CodeSystem codeSystem = optional.get();
 			codeSystem.getCodeSystemVersions().add(codeSystemVersion);
-		}
-	}
-
-	private String getReleaseShortName() {
-		final String parentBranchPath = getConfiguration().getParentBranchPath();
-		final String[] paths = parentBranchPath.split("/");
-		if (paths.length == 1 && paths[0].equalsIgnoreCase(IBranchPath.MAIN_BRANCH)) {
-			return SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
-		} else if (paths.length > 1) {
-			return paths[paths.length - 1];
-		} else {
-			throw new IllegalStateException(String.format("Couldn't extract short name from %s.", parentBranchPath));
 		}
 	}
 	
