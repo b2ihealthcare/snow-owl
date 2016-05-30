@@ -4,9 +4,12 @@
 Snow Owl is capable of managing multiple SNOMED CT extensions on a single server. This document highlights how each extension is managed in a dedicated area and lists the main authoring scenarios.  Similarly to generic SNOMED CT authoring, content is developed via the help of a workflow where the work performed on a task is promoted to the repository after review.  Promoting (donating) content from an extension to the international content or between extensions is not supported.  Extension authors can follow their own release schedule and extension content can be versioned at any time during the authoring process. Extensions are based on a single international release version. The base international release can be upgraded ‘underneath’ the extension content. Extensions do not have an additional isolated area for long running development projects (project branch). The import and export of standard RF2 serialized content is supported.  
 The international content is not edited on the server, only updated via delta releases as consecutive releases are available from IHTSDO’s own authoring process. Search will be performed for both the native language and English as is currently supported. There will be no special search features to accommodate specific language requirements, such as word decompoundization.
 
+image::snomed_extensions.png[role="text-center"]
+
 == Branching arrangement
-The proposed branching arrangement closely follows the current branching preferences where the international release is imported onto the MAIN branch and each Member country will have a dedicated branch for the extension content.  The only commits on the MAIN branch are the contents of the delta release for a particular version. These commit points are versioned during the import process.
-The dedicated branch will be forked off the MAIN branch at the point representing the base international release as shown in Figure 1.
+The implemented branching arrangement closely follows the current branching preferences where the international release is imported onto the MAIN branch and each Member country will have a dedicated branch for the extension content.  The only commits on the MAIN branch are the contents of the delta release for a particular version. These commit points are versioned during the import process. The dedicated branch will be forked off the MAIN branch at the point representing the base international release as shown in Figure 1.
+
+image::extension_authoring.png[role="text-center"]
 
 == Versioning
 The extension content is marked with a version tag for future reference with a new empty branch. All new components will receive an effective time.
@@ -16,7 +19,6 @@ Upgrading means to increase the version of the base international release. Durin
 
 == International version update
 When new international release is available, the corresponding delta is imported onto the MAIN branch.
-
 
 == Data provisioning example for a single extension
 
