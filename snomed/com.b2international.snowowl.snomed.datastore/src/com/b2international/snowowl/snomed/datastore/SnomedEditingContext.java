@@ -22,7 +22,6 @@ import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_T
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
@@ -67,7 +66,6 @@ import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -83,6 +81,10 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
@@ -91,15 +93,11 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -192,10 +190,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
 	}
 
-	private static SnomedClientIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-	}
-	
 	public Concept buildDraftConceptFromNormalForm(final NormalFormWrapper normalForm) {
 		return buildDraftConceptFromNormalForm(normalForm, null);
 	}
@@ -1093,17 +1087,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 			
 			//reference set members
-			final Collection<IIndexEntry> indexEntries 
-				= new SnomedRefSetMembershipLookupService().getMembers(CONCEPT , concept.getId());
-			indexEntries.addAll(new SnomedRefSetMembershipLookupService().getReferringMembers(concept.getId()));
+			final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByActive(true)
+				.filterByReferencedComponent(concept.getId())
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 			
-			for (final IIndexEntry indexEntry : indexEntries) {
-				
+			for (final SnomedReferenceSetMember member : members) {
 				if (monitor.isCanceled()) {
 					return SnomedInactivationPlan.NULL_IMPL;
 				}
-				
-				plan.markForInactivation(CDOUtils.getObjectIfExists(transaction, indexEntry.getStorageKey()));
+				plan.markForInactivation(lookup(member.getId(), SnomedRefSetMember.class));
 			}
 			
 			monitor.worked(1);
@@ -1244,7 +1240,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		List<SnomedRefSetMember> descriptionTypeRefSetMembers = refSetEditingContext.getReferringMembers(concept, SnomedRefSetType.DESCRIPTION_TYPE);
 		for (SnomedRefSetMember member : descriptionTypeRefSetMembers) {
 			for (SnomedDescriptionIndexEntry entry : getRelatedDescriptions(member.getReferencedComponentId())) {
-				final Description description = new SnomedDescriptionLookupService().getComponent(entry.getId(), transaction);
+				final Description description = lookup(entry.getId(), Description.class);
 				if (null == description) {
 					throw new SnowowlRuntimeException("Description does not exist in store with ID: " + entry.getId());
 				}
@@ -1263,22 +1259,37 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
 			@Override
 			public Relationship apply(SnomedRelationshipIndexEntry input) {
-				return (Relationship) lookup(input.getStorageKey());
+				return lookup(input.getId(), Relationship.class);
 			}
 		}).toList();
 	}
 
-	private List<SnomedRelationshipIndexEntry> getInboundRelationshipsFromIndex(String conceptId) {
-		final SnomedIndexService index = ApplicationContext.getInstance().getService(SnomedIndexService.class);
-		return index.search(BranchPathUtils.createPath(getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(conceptId));
+	private Iterable<SnomedRelationshipIndexEntry> getInboundRelationshipsFromIndex(String conceptId) {
+		return SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByDestination(conceptId)
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedRelationships, Iterable<SnomedRelationshipIndexEntry>>() {
+					@Override
+					public Iterable<SnomedRelationshipIndexEntry> apply(SnomedRelationships input) {
+						return SnomedRelationshipIndexEntry.fromRelationships(input);
+					}
+				}).getSync();
 	}
 
-	private Collection<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
-		return getIndexService().searchUnsorted(createQuery(conceptId));
-	}
-
-	private SnomedDescriptionIndexQueryAdapter createQuery(String conceptId) {
-		return new SnomedDescriptionReducedQueryAdapter(conceptId, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_CONCEPT_ID);
+	private Iterable<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
+		return SnomedRequests.prepareSearchDescription()
+				.all()
+				.filterByConceptId(conceptId)
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedDescriptions, Iterable<SnomedDescriptionIndexEntry>>() {
+					@Override
+					public Iterable<SnomedDescriptionIndexEntry> apply(SnomedDescriptions input) {
+						return SnomedDescriptionIndexEntry.fromDescriptions(input);
+					}
+				}).getSync();
 	}
 
 	private void delete(Relationship relationship) {

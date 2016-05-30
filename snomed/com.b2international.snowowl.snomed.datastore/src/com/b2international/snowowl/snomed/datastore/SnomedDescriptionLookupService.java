@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.List;
-
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -24,18 +22,19 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
@@ -81,9 +80,16 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 
 	@Override
 	public SnomedDescriptionIndexEntry getComponent(final IBranchPath branchPath, final String id) {
-		final IIndexQueryAdapter<SnomedDescriptionIndexEntry> adapter = new SnomedDescriptionReducedQueryAdapter(id, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_ID);
-		final List<SnomedDescriptionIndexEntry> search = getIndexService().search(branchPath, adapter, 1);
-		return Iterables.getOnlyElement(search, null);
+		return SnomedRequests.prepareGetDescription()
+				.setComponentId(id)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<ISnomedDescription, SnomedDescriptionIndexEntry>() {
+					@Override
+					public SnomedDescriptionIndexEntry apply(ISnomedDescription input) {
+						return SnomedDescriptionIndexEntry.builder(input).build();
+					}
+				}).getSync();
 	}
 
 	@Override
@@ -95,10 +101,6 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 		return ApplicationContext.getInstance().getService(ISnomedComponentService.class);
 	}
 
-	private SnomedIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-	
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;
