@@ -42,6 +42,12 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 		final Query<T> query = Query.builder(type).selectAll().where(Revision.matchRevisionOnBranch(branch, storageKey)).build();
 		return Iterables.getOnlyElement(search(query), null);
 	}
+	
+	@Override
+	public <T extends Revision> Iterable<T> get(Class<T> type, Iterable<Long> storageKeys) throws IOException {
+		final Query<T> query = Query.builder(type).selectAll().where(Revision.matchRevisionsOnBranch(branch, storageKeys)).build();
+		return search(query);
+	}
 
 	@Override
 	public <T> Iterable<T> search(Query<T> query) throws IOException {

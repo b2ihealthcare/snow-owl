@@ -93,6 +93,10 @@ public abstract class Revision implements WithId {
 		return commitTimestamp;
 	}
 
+	public static Expression matchRevisionsOnBranch(RevisionBranch branch, Iterable<Long> storageKeys) {
+		return Expressions.and(Expressions.matchAnyLong(STORAGE_KEY, storageKeys), branchFilter(branch));
+	}
+	
 	public static Expression matchRevisionOnBranch(RevisionBranch branch, long storageKey) {
 		return Expressions.and(Expressions.exactMatch(STORAGE_KEY, storageKey), branchFilter(branch));
 	}
@@ -179,5 +183,5 @@ public abstract class Revision implements WithId {
 		}
 		
 	}
-	
+
 }

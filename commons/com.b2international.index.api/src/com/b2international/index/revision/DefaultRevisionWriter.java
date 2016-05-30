@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -29,6 +30,7 @@ import com.b2international.index.Writer;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -40,7 +42,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	private final Writer index;
 	private final RevisionSearcher searcher;
 	
-	private final Map<Class<? extends Revision>, Set<Long>> revisionUpdates = newHashMap();
+	private final Map<Class<? extends Revision>, Collection<Long>> revisionUpdates = newHashMap();
 
 	public DefaultRevisionWriter(String branchPath, long commitTimestamp, Writer index, RevisionSearcher searcher) {
 		this.branchPath = branchPath;
@@ -64,17 +66,21 @@ public class DefaultRevisionWriter implements RevisionWriter {
 
 	@Override
 	public void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException {
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 
 	@Override
 	public void remove(Class<? extends Revision> type, long storageKey) throws IOException {
-		final Map<Class<? extends Revision>, Set<Long>> storageKeysByType = newHashMap();
-		storageKeysByType.put(type, newHashSet(storageKey));
-		removeAll(storageKeysByType);
+		remove(type, Collections.singleton(storageKey));
+	}
+	
+	@Override
+	public void remove(Class<? extends Revision> type, Collection<Long> storageKeys) throws IOException {
+		removeAll(ImmutableMap.<Class<? extends Revision>, Collection<Long>>of(type, storageKeys));
 	}
 
 	@Override
-	public void removeAll(Map<Class<? extends Revision>, Set<Long>> storageKeysByType) throws IOException {
+	public void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) throws IOException {
 		final Map<Class<? extends Revision>, Query<? extends Revision>> queriesByType = newHashMap();
 		for (Class<? extends Revision> type : storageKeysByType.keySet()) {
 			final Collection<Long> storageKeysToUpdate = storageKeysByType.get(type);

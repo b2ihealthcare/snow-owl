@@ -15,7 +15,6 @@
  */
 package com.b2international.index.query;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.google.common.base.Optional;
@@ -125,8 +124,12 @@ public class Expressions {
 		return new StringRangePredicate(field, from, to);
 	}
 
-	public static Expression matchAny(String field, Collection<String> values) {
+	public static Expression matchAny(String field, Iterable<String> values) {
 		return new StringSetPredicate(field, ImmutableSet.copyOf(values));
+	}
+	
+	public static Expression matchAnyLong(String field, Iterable<Long> storageKeys) {
+		return new LongSetPredicate(field, storageKeys);
 	}
 
 }

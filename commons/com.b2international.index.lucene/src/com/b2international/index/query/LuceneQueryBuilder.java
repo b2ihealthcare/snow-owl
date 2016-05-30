@@ -142,6 +142,8 @@ public final class LuceneQueryBuilder {
 			visit((PrefixPredicate) expression);
 		} else if (expression instanceof StringSetPredicate) {
 			visit((StringSetPredicate) expression);
+		} else if (expression instanceof LongSetPredicate) {
+			visit((LongSetPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -218,6 +220,11 @@ public final class LuceneQueryBuilder {
 		deque.push(new DequeItem(filter));
 	}
 	
+	private void visit(LongSetPredicate predicate) {
+		final Filter filter = Fields.longField(predicate.getField()).createTermsFilter(predicate.values());
+		deque.push(new DequeItem(filter));
+	}
+	
 	private void visit(PrefixPredicate predicate) {
 		final Filter filter = new PrefixFilter(new Term(predicate.getField(), predicate.getArgument()));
 		deque.push(new DequeItem(filter));
@@ -249,7 +256,7 @@ public final class LuceneQueryBuilder {
 		final Filter filter = TermRangeFilter.newStringRange(range.getField(), range.from(), range.to(), false, false);
 		deque.push(new DequeItem(filter));
 	}
-
+	
 	private void visit(And and) {
 		if (and.getRight().isPresent() && deque.size() >= 2) {
 			DequeItem right = deque.pop();
