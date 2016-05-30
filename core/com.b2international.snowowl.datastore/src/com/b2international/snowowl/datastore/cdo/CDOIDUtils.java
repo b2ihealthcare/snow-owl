@@ -70,7 +70,7 @@ public abstract class CDOIDUtils {
 		};
 	};
 	
-	private static final Function<CDOID, Long> CDO_ID_TO_LONG_FUNCTION = new Function<CDOID, Long>() {
+	public static final Function<CDOID, Long> CDO_ID_TO_LONG_FUNCTION = new Function<CDOID, Long>() {
 		public Long apply(final CDOID id) {
 			return CDOIDUtils.asLong(id);
 		};
