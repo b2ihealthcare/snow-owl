@@ -31,14 +31,15 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.google.common.collect.Lists;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 /**
@@ -115,8 +116,8 @@ public class SnomedDeletionPlan {
 				final SnomedRefSet refSet = (SnomedRefSet) object;
 				//reference set member is containment in a reference set, we do not have to remove them but the associated markers have to be removed
 				//we run a query, get members and generated component identifier pairs to identify the reference set members
-				for (final SnomedRefSetMemberIndexEntry member : getMembers(refSet)) {
-					deletedComponents.add(ComponentIdentifierPair.<String>create(REFSET_MEMBER, member.getId()));
+				for (final String memberId : getMemberIds(refSet)) {
+					deletedComponents.add(ComponentIdentifierPair.<String>create(REFSET_MEMBER, memberId));
 				}
 			}
 			deletedComponents.add(pair);
@@ -124,29 +125,18 @@ public class SnomedDeletionPlan {
 		deletedItems.addAll(items);
 	}
 	
-	private List<SnomedRefSetMemberIndexEntry> getMembers(final SnomedRefSet refSet) {
-		int memberCount = getMemberCount(refSet);
-		return memberCount > 0
-			? getIndexService().search(createMembersQuery(refSet), memberCount)
-			: Lists.<SnomedRefSetMemberIndexEntry>newArrayList();
-	}
-	
-	private int getMemberCount(final SnomedRefSet refSet) {
-		
-		if (refSet instanceof SnomedRegularRefSet) {
-			return ((SnomedRegularRefSet) refSet).getMembers().size();
-		} else {
-			// Don't have any better guess for the expected number of results in structural reference sets
-			return Integer.MAX_VALUE; 
-		}
-	}
-	
-	private SnomedRefSetMemberIndexQueryAdapter createMembersQuery(final SnomedRefSet refSet) {
-		return new SnomedRefSetMemberIndexQueryAdapter(refSet.getIdentifierId(), null);
-	}
-	
-	private SnomedClientIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
+	private Iterable<String> getMemberIds(final SnomedRefSet refSet) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.build(BranchPathUtils.createPath(refSet.cdoView()).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedReferenceSetMembers, Iterable<String>>() {
+					@Override
+					public Iterable<String> apply(SnomedReferenceSetMembers input) {
+						return FluentIterable.from(input).transform(com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 	}
 	
 	private ComponentIdentifierPair<String> createIdentifierPair(final Object object) {
