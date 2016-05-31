@@ -84,15 +84,6 @@ public interface SnomedStatementBrowser extends IStatementBrowser<SnomedConceptD
 	LongKeyMap getAllActiveStatements(final IBranchPath branchPath);
 
 	/**
-	 * Returns the SNOMED CT relationship's source concept identifier for the specified statement storage key.
-	 *
-	 * @param branchPath the branch path
-	 * @param statementStorageKey the storage key of the statement for which the source concept identifier should be returned
-	 * @return the source concept ID of the specified relationship
-	 */
-	long getSourceIdForStatementStorageKey(final IBranchPath branchPath, final long statementStorageKey);
-
-	/**
 	 * Returns with the unique storage key (CDO ID) of the SNOMED&nbsp;CT relationship specified with it's unique ID.
 	 * This method will return with {@code -1} if no relationship can be found on the specified branch with the given
 	 * relationship ID.

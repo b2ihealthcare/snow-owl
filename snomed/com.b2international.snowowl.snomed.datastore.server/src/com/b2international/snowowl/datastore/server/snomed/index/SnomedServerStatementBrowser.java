@@ -366,15 +366,6 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 	}
 
 	@Override
-	public long getSourceIdForStatementStorageKey(final IBranchPath branchPath, final long statementStorageKey) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		final Query query = SnomedMappings.newQuery().relationship().active().storageKey(statementStorageKey).matchAll();
-		final StatementSourceIdCollector collector = new StatementSourceIdCollector(statementStorageKey);
-		service.search(branchPath, query, collector);
-		return collector.getSourceId();
-	}
-
-	@Override
 	public Collection<SnomedRelationshipIndexEntry> getActiveInboundStatementsById(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
