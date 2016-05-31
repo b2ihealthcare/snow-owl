@@ -20,17 +20,19 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -48,13 +50,10 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -182,21 +181,34 @@ public class SnomedPublishManager extends PublishManager {
 	@Override
 	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {
 		final String shortName = getConfiguration().getCodeSystemShortName();
-		final List<CodeSystem> codeSystems = getEditingContext().getCodeSystems();
-		final Optional<SnomedRelease> optional = FluentIterable.from(codeSystems)
-				.transform(new UncheckedCastFunction<>(SnomedRelease.class))
-				.firstMatch(new Predicate<SnomedRelease>() {
-					@Override
-					public boolean apply(final SnomedRelease input) {
-						return input.getShortName().equalsIgnoreCase(shortName);
-					}
-				});
-
-		if (!optional.isPresent()) {
-			throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", shortName));
+		if (getEditingContext().getBranch().equals(IBranchPath.MAIN_BRANCH)) {
+			final SnomedRelease snomedRelease = ((SnomedEditingContext) getEditingContext()).getSnomedRelease(shortName, null);
+			
+			if (snomedRelease == null) {
+				throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", shortName));
+			} else {
+				snomedRelease.getCodeSystemVersions().add(codeSystemVersion);
+			}
 		} else {
-			final CodeSystem codeSystem = optional.get();
-			codeSystem.getCodeSystemVersions().add(codeSystemVersion);
+			try (final SnomedEditingContext ec = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
+				final SnomedRelease snomedRelease = ec.getSnomedRelease(shortName, null);
+				if (snomedRelease == null) {
+					throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", shortName));
+				} else {
+					snomedRelease.getCodeSystemVersions().add(codeSystemVersion);
+					
+					final String commitComment = String.format("New Snomed Version %s was added to Snomed Release %s.",
+							codeSystemVersion.getVersionId(), snomedRelease.getShortName());
+					
+					new CDOServerCommitBuilder(getConfiguration().getUserId(), commitComment, ec.getTransaction())
+						.sendCommitNotification(false)
+						.parentContextDescription(DatastoreLockContextDescriptions.CREATE_VERSION)
+						.commit();
+				}
+			} catch (Exception e) {
+				throw new SnowowlRuntimeException(String.format("An error occurred while adding Snomed Version %s to Snomed Release %s.",
+						codeSystemVersion.getVersionId(), shortName), e);
+			}
 		}
 	}
 	
