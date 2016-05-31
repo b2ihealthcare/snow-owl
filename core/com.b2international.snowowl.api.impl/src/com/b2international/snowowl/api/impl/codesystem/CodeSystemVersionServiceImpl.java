@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
 
@@ -39,7 +38,6 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
@@ -48,29 +46,12 @@ import com.b2international.snowowl.datastore.version.VersioningService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
 public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
-
-	private static final UserBranchPathMap MAIN_BRANCH_PATH_MAP = new UserBranchPathMap();
-
-	private static class VersionIdPredicate implements Predicate<com.b2international.snowowl.datastore.ICodeSystemVersion> {
-
-		private final String version;
-
-		private VersionIdPredicate(final String version) {
-			this.version = version;
-		}
-
-		@Override
-		public boolean apply(final com.b2international.snowowl.datastore.ICodeSystemVersion input) {
-			return version.equals(input.getVersionId());
-		}
-	}
 
 	private static final Function<? super com.b2international.snowowl.datastore.ICodeSystemVersion, ICodeSystemVersion> CODE_SYSTEM_VERSION_CONVERTER = 
 			new Function<com.b2international.snowowl.datastore.ICodeSystemVersion, ICodeSystemVersion>() {
@@ -107,29 +88,55 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 	@Override
 	public List<ICodeSystemVersion> getCodeSystemVersions(final String shortName) {
 		checkNotNull(shortName, "Short name may not be null.");
-
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> sourceCodeSystemVersions = getSourceCodeSystemVersions(shortName);
-		return toSortedCodeSystemVersionList(sourceCodeSystemVersions);
+		
+		final ICodeSystem codeSystem = getCodeSystem(shortName);
+		if (codeSystem == null) {
+			throw new CodeSystemNotFoundException(shortName);
+		}
+		
+		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = new CodeSystemRequests(codeSystem.getRepositoryUuid())
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(shortName)
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getVersions();
+		
+		return toSortedCodeSystemVersionList(versions);
+	}
+	
+	private ICodeSystem getCodeSystem(final String shortName) {
+		return getRegistryService().getCodeSystemByShortName(new UserBranchPathMap(), shortName);
 	}
 
 	@Override
-	public ICodeSystemVersion getCodeSystemVersionById(final String shortName, final String version) {
+	public ICodeSystemVersion getCodeSystemVersionById(final String shortName, final String versionId) {
 		checkNotNull(shortName, "Short name may not be null.");
-		checkNotNull(version, "Version identifier may not be null.");
-
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> sourceCodeSystemVersions = getSourceCodeSystemVersions(shortName);
-		final com.b2international.snowowl.datastore.ICodeSystemVersion matchingVersion = Iterables.find(sourceCodeSystemVersions, new VersionIdPredicate(version), null);
+		checkNotNull(versionId, "Version identifier may not be null.");
 		
-		if (null == matchingVersion) {
-			throw new CodeSystemVersionNotFoundException(version);
+		final ICodeSystem codeSystem = getCodeSystem(shortName);
+		if (codeSystem == null) {
+			throw new CodeSystemNotFoundException(shortName);
 		}
 		
-		return toCodeSystemVersion(matchingVersion, version);
+		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = new CodeSystemRequests(codeSystem.getRepositoryUuid())
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(shortName)
+				.setVersionId(versionId)
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getVersions();
+		
+		final com.b2international.snowowl.datastore.ICodeSystemVersion version = Iterables.getOnlyElement(versions, null);
+		if (version == null) {
+			throw new CodeSystemVersionNotFoundException(versionId);
+		} else {
+			return CODE_SYSTEM_VERSION_CONVERTER.apply(version);
+		}
 	}
 	
 	@Override
 	public ICodeSystemVersion createVersion(String shortName, ICodeSystemVersionProperties properties) {
-		ICodeSystem codeSystem = getRegistryService().getCodeSystemByShortName(MAIN_BRANCH_PATH_MAP, shortName);
+		final ICodeSystem codeSystem = getCodeSystem(shortName);
 		if (codeSystem == null) {
 			throw new CodeSystemNotFoundException(shortName);
 		}
@@ -144,10 +151,12 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			versioningService.acquireLock();
 			configureVersion(codeSystem, properties, versioningService);
 			final IStatus result = versioningService.tag();
+			
 			if (result.isOK()) {
 				return getCodeSystemVersionById(shortName, properties.getVersion());
+			} else {
+				throw new SnowowlRuntimeException("Version creation failed due to " + result.getMessage());
 			}
-			throw new SnowowlRuntimeException("Version creation failed due to " + result.getMessage());
 		} catch (SnowowlServiceException e) {
 			throw new LockedException(String.format("Cannot create version. %s is locked. Details: %s", shortName, e.getMessage()));
 		} finally {
@@ -191,19 +200,6 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		}
 	}
 
-	private Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> getSourceCodeSystemVersions(final String shortName) {
-		final ICodeSystem codeSystem = getRegistryService().getCodeSystemByShortName(MAIN_BRANCH_PATH_MAP, shortName);
-
-		if (codeSystem == null) {
-			throw new CodeSystemNotFoundException(shortName);
-		}
-
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> sourceCodeSystemVersions = 
-				getRegistryService().getCodeSystemVersions(MAIN_BRANCH_PATH_MAP, shortName);
-
-		return sourceCodeSystemVersions;
-	}
-	
 	private Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> getCodeSystemVersions(final String shortName, final String repositoryId) {
 		return new CodeSystemRequests(repositoryId)
 				.prepareSearchCodeSystemVersion()
@@ -219,15 +215,8 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 
 	private List<ICodeSystemVersion> toSortedCodeSystemVersionList(
 			final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> sourceCodeSystemVersions) {
-
 		final Collection<ICodeSystemVersion> targetCodeSystemVersions = Collections2.transform(sourceCodeSystemVersions, CODE_SYSTEM_VERSION_CONVERTER);
 		return VERSION_ID_ORDERING.immutableSortedCopy(targetCodeSystemVersions);
 	}
 
-	private ICodeSystemVersion toCodeSystemVersion(
-			final com.b2international.snowowl.datastore.ICodeSystemVersion sourceCodeSystemVersion, 
-			final String version) {
-
-		return CODE_SYSTEM_VERSION_CONVERTER.apply(sourceCodeSystemVersion);
-	}
 }
