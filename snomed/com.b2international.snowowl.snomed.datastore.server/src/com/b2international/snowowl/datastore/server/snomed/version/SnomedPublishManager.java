@@ -31,8 +31,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
+import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -198,11 +197,7 @@ public class SnomedPublishManager extends PublishManager {
 					
 					final String commitComment = String.format("New Snomed Version %s was added to Snomed Release %s.",
 							codeSystemVersion.getVersionId(), snomedRelease.getShortName());
-					
-					new CDOServerCommitBuilder(getConfiguration().getUserId(), commitComment, ec.getTransaction())
-						.sendCommitNotification(false)
-						.parentContextDescription(DatastoreLockContextDescriptions.CREATE_VERSION)
-						.commit();
+					CDOServerUtils.commit(ec, getConfiguration().getUserId(), commitComment, null);
 				}
 			} catch (Exception e) {
 				throw new SnowowlRuntimeException(String.format("An error occurred while adding Snomed Version %s to Snomed Release %s.",
