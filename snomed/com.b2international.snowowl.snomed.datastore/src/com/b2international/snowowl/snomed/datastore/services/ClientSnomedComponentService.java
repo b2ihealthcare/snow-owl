@@ -28,7 +28,6 @@ import org.eclipse.emf.ecore.EPackage;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
@@ -79,11 +78,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	@Override
 	public Set<String> getSynonymAndDescendantIds() {
 		return wrappedService.getSynonymAndDescendantIds(getBranchPath());
-	}
-
-	@Override
-	public boolean isPreferred(final Description description) {
-		return wrappedService.isPreferred(getBranchPath(), description);
 	}
 
 	@Override

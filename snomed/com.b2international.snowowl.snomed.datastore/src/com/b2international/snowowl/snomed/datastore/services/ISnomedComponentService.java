@@ -105,14 +105,6 @@ public interface ISnomedComponentService {
 	Set<String> getSynonymAndDescendantIds(IBranchPath branchPath);
 	
 	/**
-	 * Returns {@code true} if the specified active description is configured as the preferred one for the currently used language.
-	 * @param branchPath
-	 * @param description the SNOMED&nbsp;CT description to check. 
-	 * @return {@code true} if the active description is the preferred term, otherwise returns {@code false}.
-	 */
-	boolean isPreferred(final IBranchPath branchPath, final Description description);
-	
-	/**
 	 * Returns with the namespace extension concept ID for a specified namespace extracted from the given SNOMED&nbsp;CT core component ID.
 	 * @param branchPath the branch path.
 	 * @param componentId the unique ID of the SNOMED&nbsp;CT core component.

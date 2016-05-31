@@ -88,13 +88,6 @@ public interface IClientSnomedComponentService {
 	Set<String> getSynonymAndDescendantIds();
 	
 	/**
-	 * Returns {@code true} if the specified active description is configured as the preferred one for the currently used language.
-	 * @param description the SNOMED&nbsp;CT description to check. 
-	 * @return {@code true} if the active description is the preferred term, otherwise returns {@code false}.
-	 */
-	boolean isPreferred(final Description description);
-	
-	/**
 	 * Returns with the namespace extension concept ID for a specified namespace extracted from the given SNOMED&nbsp;CT core component ID.
 	 * @param componentId the unique ID of the SNOMED&nbsp;CT core component.
 	 * @return the extension namespace concept ID, or {@code -1L} if the ID was not found.

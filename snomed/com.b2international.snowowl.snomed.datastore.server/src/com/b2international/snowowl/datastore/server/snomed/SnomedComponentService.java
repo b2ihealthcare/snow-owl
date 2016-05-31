@@ -535,53 +535,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 	}
 	
-	/**
-	 * Returns {@code true} if the specified active description is configured as the preferred one for the currently used language.
-	 * @param description the SNOMED&nbsp;CT description to check. 
-	 * @return {@code true} if the active description is the preferred term, otherwise returns {@code false}.
-	 */
-	@Override
-	public boolean isPreferred(final IBranchPath branchPath, final Description description) {
-		
-		if (null == description) {
-			LOGGER.warn("SNOMED CT description cannot be referenced. Description was null.");
-			return false;
-		}
-		
-		if (!CDOUtils.checkObject(description)) {
-			LOGGER.warn("Description cannot be referenced. Description ID: " + CDOUtils.getAttribute(description, SnomedPackage.eINSTANCE.getComponent_Id(), String.class));
-			return false;
-		}
-
-		if (!description.isActive()) { //inactive description cannot be preferred
-			return false;
-		}
-		
-		final String languageRefSetId = getLanguageRefSetId();
-		
-		if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getType().getId())) { //FSN cannot be preferred term
-			return false;
-		}
-		
-		for (final SnomedLanguageRefSetMember languageMember : description.getLanguageRefSetMembers()) {
-			if (languageMember.isActive()) { //active language reference set member
-				
-				if (languageRefSetId.equals(languageMember.getRefSet().getIdentifierId())) { //language is relevant for the configured one
-					
-					if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(languageMember.getAcceptabilityId())) { //language member is preferred
-						return true; //got the preferred term
-					}
-				}
-				
-			}
-		}
-
-		return false;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#getLabels(com.b2international.snowowl.core.api.IBranchPath, java.lang.String, java.lang.String[])
-	 */
 	@Override
 	public String[] getLabels(final IBranchPath branchPath, final String... componentIds) {
 		

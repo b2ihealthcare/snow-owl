@@ -117,7 +117,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -231,6 +230,44 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return newConcept;
 	}
 	
+	public boolean isPreferred(Description description, String languageReferenceSet) {
+		if (null == description) {
+			LOGGER.warn("SNOMED CT description cannot be referenced. Description was null.");
+			return false;
+		}
+		
+		if (!CDOUtils.checkObject(description)) {
+			LOGGER.warn("Description cannot be referenced. Description ID: " + CDOUtils.getAttribute(description, SnomedPackage.eINSTANCE.getComponent_Id(), String.class));
+			return false;
+		}
+
+		if (!description.isActive()) { //inactive description cannot be preferred
+			return false;
+		}
+		
+		final String languageRefSetId = getLanguageRefSetId();
+		
+		if (SnomedConstants.Concepts.FULLY_SPECIFIED_NAME.equals(description.getType().getId())) { //FSN cannot be preferred term
+			return false;
+		}
+		
+		for (final SnomedLanguageRefSetMember languageMember : description.getLanguageRefSetMembers()) {
+			if (languageMember.isActive()) { //active language reference set member
+				
+				if (languageRefSetId.equals(languageMember.getRefSet().getIdentifierId())) { //language is relevant for the configured one
+					
+					if (SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(languageMember.getAcceptabilityId())
+							&& languageMember.getRefSetIdentifierId().equals(languageRefSetId)) { //language member is preferred
+						return true;
+					}
+				}
+				
+			}
+		}
+
+		return false;
+	}
+	
 	/**
 	 * Build a new child concept. All description will be replicated from the parent concept.
 	 * No NON IS_A relationship will be copied from the parent concept. One and only IS_A relationship will be created with parent concept destination.
@@ -257,7 +294,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		concept.setModule(getDefaultModuleConcept());
 		
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-		final Collection<String> preferredTermIds = getPreferredTermFromStoreIds(focusConcept, languageRefSet.getIdentifierId());
 	
 		for (final Description description : focusConcept.getDescriptions()) {
 			
@@ -270,7 +306,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final ComponentIdentifierPair<String> acceptabilityPair;
 			
 			//preferred acceptability if FSN or PT
-			if (preferredTermIds.contains(description.getId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
+			if (isPreferred(description, languageRefSet.getIdentifierId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 			} else {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
@@ -322,7 +358,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		concept.setModule(getDefaultModuleConcept());
 		
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-		final Collection<String> preferredTermIds = getPreferredTermFromStoreIds(selectedConcept, languageRefSet.getIdentifierId());
 	
 		for (final Description description : selectedConcept.getDescriptions()) {
 			
@@ -335,7 +370,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final ComponentIdentifierPair<String> acceptabilityPair;
 			
 			//preferred acceptability if FSN or PT
-			if (preferredTermIds.contains(description.getId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
+			if (isPreferred(description, languageRefSet.getIdentifierId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 			} else {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
@@ -784,15 +819,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 
 	public String getLanguageRefSetId() {
 		return ApplicationContext.getInstance().getServiceChecked(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(transaction));
-	}
-	
-	/*returns with the description IDs of the concept where the descriptions are preferred terms as well. preferred terms are synonyms with preferred acceptability*/
-	private Collection<String> getPreferredTermFromStoreIds(final Concept concept, final String languageRefSetId) {
-		return Collections2.transform(new SnomedRefSetMembershipLookupService().getPreferredTermMembers(concept, languageRefSetId), new Function<SnomedRefSetMemberIndexEntry, String>() {
-			@Override public String apply(SnomedRefSetMemberIndexEntry member) {
-				return member.getReferencedComponentId();
-			}
-		});
 	}
 	
 	/**
