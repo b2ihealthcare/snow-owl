@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -87,7 +88,8 @@ public class SnomedImportRestConfiguration {
 				getBranchPath(),
 				getLanguageRefSetId(), 
 				getCreateVersions(),
-				getSnomedReleaseShortName());
+				StringUtils.isEmpty(getSnomedReleaseShortName()) 
+					? SNOMED_INT_SHORT_NAME : getSnomedReleaseShortName());
 	}
 
 	@Override
