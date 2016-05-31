@@ -765,6 +765,15 @@ public interface SnomedPackage extends EPackage {
 	int SNOMED_RELEASE__CODE_SYSTEM_VERSIONS = TerminologymetadataPackage.CODE_SYSTEM__CODE_SYSTEM_VERSIONS;
 
 	/**
+	 * The feature id for the '<em><b>Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__BRANCH_PATH = TerminologymetadataPackage.CODE_SYSTEM__BRANCH_PATH;
+
+	/**
 	 * The feature id for the '<em><b>Base Code System OID</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

@@ -26,7 +26,6 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
- * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName <em>Short Name</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemOID <em>Code System OID</em>}</li>
@@ -40,6 +39,7 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemVersions <em>Code System Versions</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath <em>Branch Path</em>}</li>
  * </ul>
+ * </p>
  *
  * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem()
  * @model
@@ -86,6 +86,7 @@ public interface CodeSystem extends CDOObject {
 	 * @see #setCodeSystemOID(String)
 	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_CodeSystemOID()
 	 * @model default=""
+	 *        annotation="http://www.eclipse.org/CDO/DBStore columnLength='255'"
 	 * @generated
 	 */
 	String getCodeSystemOID();
@@ -165,6 +166,7 @@ public interface CodeSystem extends CDOObject {
 	 * @see #setLanguage(String)
 	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_Language()
 	 * @model default="ENG"
+	 *        annotation="http://www.eclipse.org/CDO/DBStore columnLength='255'"
 	 * @generated
 	 */
 	String getLanguage();
@@ -269,6 +271,7 @@ public interface CodeSystem extends CDOObject {
 	 * @see #setRepositoryUuid(String)
 	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_RepositoryUuid()
 	 * @model required="true"
+	 *        annotation="http://www.eclipse.org/CDO/DBStore columnLength='255'"
 	 * @generated
 	 */
 	String getRepositoryUuid();

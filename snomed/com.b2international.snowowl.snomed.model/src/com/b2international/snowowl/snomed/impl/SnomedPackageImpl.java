@@ -783,6 +783,12 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		   new String[] {
 			 "columnType", "LONG VARCHAR",
 			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedRelease_BaseCodeSystemOID(), 
+		   source, 
+		   new String[] {
+			 "columnLength", "255"
 		   });
 	}
 

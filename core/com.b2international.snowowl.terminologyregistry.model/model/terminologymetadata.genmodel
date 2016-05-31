@@ -10,18 +10,14 @@
   <modelPluginVariables>CDO=org.eclipse.emf.cdo</modelPluginVariables>
   <genPackages prefix="Terminologymetadata" basePackage="com.b2international.snowowl"
       disposableProviderFactory="true" ecorePackage="terminologymetadata.ecore#/">
-    <genClasses image="false" ecoreClass="terminologymetadata.ecore#//CodeSystemVersionGroup">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystemVersionGroup/repositoryUuid"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference terminologymetadata.ecore#//CodeSystemVersionGroup/codeSystems"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference terminologymetadata.ecore#//CodeSystemVersionGroup/codeSystemVersions"/>
-    </genClasses>
     <genClasses ecoreClass="terminologymetadata.ecore#//CodeSystemVersion">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystemVersion/versionId"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystemVersion/description"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystemVersion/parentBranchPath"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystemVersion/effectiveDate"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystemVersion/importDate"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystemVersion/lastUpdateDate"/>
-      <genOperations ecoreOperation="terminologymetadata.ecore#//CodeSystemVersion/getCodeSystemVersionGroup"/>
+      <genOperations ecoreOperation="terminologymetadata.ecore#//CodeSystemVersion/getCodeSystem"/>
     </genClasses>
     <genClasses ecoreClass="terminologymetadata.ecore#//CodeSystem">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystem/shortName"/>
@@ -32,7 +28,9 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystem/citation"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystem/iconPath"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystem/terminologyComponentId"/>
-      <genOperations ecoreOperation="terminologymetadata.ecore#//CodeSystem/getCodeSystemVersionGroup"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystem/repositoryUuid"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference terminologymetadata.ecore#//CodeSystem/codeSystemVersions"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute terminologymetadata.ecore#//CodeSystem/branchPath"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

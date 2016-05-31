@@ -9,6 +9,11 @@
   <modelPluginVariables>CDO=org.eclipse.emf.cdo</modelPluginVariables>
   <genPackages prefix="Snomed" basePackage="com.b2international.snowowl" disposableProviderFactory="true"
       ecorePackage="snomed.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="snomed.ecore#//SnomedReleaseType">
+      <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/INTERNATIONAL"/>
+      <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/EXTENSION"/>
+      <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/MIXED"/>
+    </genEnums>
     <genClasses ecoreClass="snomed.ecore#//Component">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//Component/id"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//Component/active"/>
@@ -55,6 +60,7 @@
     </genClasses>
     <genClasses ecoreClass="snomed.ecore#//SnomedRelease">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//SnomedRelease/baseCodeSystemOID"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//SnomedRelease/releaseType"/>
     </genClasses>
     <genClasses ecoreClass="snomed.ecore#//SnomedVersion">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//SnomedVersion/modules"/>

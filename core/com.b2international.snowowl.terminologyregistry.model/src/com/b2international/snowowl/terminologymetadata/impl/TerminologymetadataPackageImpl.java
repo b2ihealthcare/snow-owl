@@ -385,6 +385,38 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 
 		// Create resource
 		createResource(eNS_URI);
+
+		// Create annotations
+		// http://www.eclipse.org/CDO/DBStore
+		createDBStoreAnnotations();
+	}
+
+	/**
+	 * Initializes the annotations for <b>http://www.eclipse.org/CDO/DBStore</b>.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected void createDBStoreAnnotations() {
+		String source = "http://www.eclipse.org/CDO/DBStore";	
+		addAnnotation
+		  (getCodeSystem_CodeSystemOID(), 
+		   source, 
+		   new String[] {
+			 "columnLength", "255"
+		   });	
+		addAnnotation
+		  (getCodeSystem_Language(), 
+		   source, 
+		   new String[] {
+			 "columnLength", "255"
+		   });	
+		addAnnotation
+		  (getCodeSystem_RepositoryUuid(), 
+		   source, 
+		   new String[] {
+			 "columnLength", "255"
+		   });
 	}
 
 } //TerminologymetadataPackageImpl

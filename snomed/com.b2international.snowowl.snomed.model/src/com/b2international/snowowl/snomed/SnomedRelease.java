@@ -23,11 +23,11 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
  *
  * <p>
  * The following features are supported:
- * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.SnomedRelease#getBaseCodeSystemOID <em>Base Code System OID</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.SnomedRelease#getReleaseType <em>Release Type</em>}</li>
  * </ul>
+ * </p>
  *
  * @see com.b2international.snowowl.snomed.SnomedPackage#getSnomedRelease()
  * @model
@@ -45,7 +45,7 @@ public interface SnomedRelease extends CodeSystem {
 	 * @return the value of the '<em>Base Code System OID</em>' attribute.
 	 * @see #setBaseCodeSystemOID(String)
 	 * @see com.b2international.snowowl.snomed.SnomedPackage#getSnomedRelease_BaseCodeSystemOID()
-	 * @model
+	 * @model annotation="http://www.eclipse.org/CDO/DBStore columnLength='255'"
 	 * @generated
 	 */
 	String getBaseCodeSystemOID();
