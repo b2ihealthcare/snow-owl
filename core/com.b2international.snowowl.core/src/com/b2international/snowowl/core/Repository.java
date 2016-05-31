@@ -21,7 +21,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 /**
  * @since 4.5
  */
-public interface Repository {
+public interface Repository extends ServiceProvider {
 
 	/**
 	 * Returns the ID of the repository.

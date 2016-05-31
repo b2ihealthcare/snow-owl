@@ -72,7 +72,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository implements InternalRepository, RepositoryContextProvider {
+public final class CDOBasedRepository implements InternalRepository, RepositoryContextProvider, ServiceProvider {
 
 	private final String repositoryId;
 	private final Environment env;
@@ -167,7 +167,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	private void initializeRequestSupport(int numberOfWorkers) {
 		final ClassLoaderProvider classLoaderProvider = env.service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId);
 		for (int i = 0; i < numberOfWorkers; i++) {
-			handlers().registerHandler(address(), new ApiRequestHandler(services(), classLoaderProvider));
+			handlers().registerHandler(address(), new ApiRequestHandler(this, classLoaderProvider));
 		}
 		
 		// register number of cores event bridge/pipe between events and handlers
@@ -178,21 +178,17 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		registry.put(RepositoryContextProvider.class, this);
 	}
 	
-	private ServiceProvider services() {
-		return new ServiceProvider() {
-			@Override
-			public <T> T service(Class<T> type) {
-				if (registry.containsKey(type)) {
-					return (T) registry.get(type);
-				}
-				return env.service(type);
-			}
-			
-			@Override
-			public <T> Provider<T> provider(Class<T> type) {
-				return env.provider(type);
-			}
-		};
+	@Override
+	public <T> T service(Class<T> type) {
+		if (registry.containsKey(type)) {
+			return (T) registry.get(type);
+		}
+		return env.service(type);
+	}
+
+	@Override
+	public <T> Provider<T> provider(Class<T> type) {
+		return env.provider(type);
 	}
 	
 	@Override
@@ -237,7 +233,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	
 	// TODO call repository dispose from manager
 	public void dispose() {
-		services().service(Index.class).admin().close();
+		getIndex().admin().close();
 	}
 
 }
