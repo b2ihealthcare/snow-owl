@@ -19,10 +19,7 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -57,25 +54,19 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -516,97 +507,6 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	public Concept getConceptById(final String conceptId) {
 		final SnomedConceptLookupService snomedConceptLookupService = new SnomedConceptLookupService();
 		return snomedConceptLookupService.getComponent(conceptId, cdoView);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getDescriptionsWithPreferredTerm(java.lang.String, java.lang.String, boolean)
-	 */
-	@Override
-	public List<IComponent<String>> getDescriptionsWithPreferredTerm(final String conceptId, final String descriptionTypeId, final boolean duplicatePreferredTerm) {
-	
-		if (StringUtils.isEmpty(conceptId)) { //return with empty list if argument is invalid
-			return Collections.emptyList();
-		}
-		
-		if (StringUtils.isEmpty(descriptionTypeId)) { //return with empty list if argument is invalid
-			return Collections.emptyList();
-		}
-		
-		if (Concepts.FULLY_SPECIFIED_NAME.equals(descriptionTypeId)) { //FSN is not supported
-			return Collections.emptyList();	
-		}
-		
-		final SnomedClientTerminologyBrowser browser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		if (null == browser.getConcept(conceptId)) { //concept does not exist in store
-			return Collections.emptyList();
-		}
-		
-		//index service for core SNOMED CT component
-		final SnomedClientIndexService indexService = 
-				ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		
-		//query adapter for getting back all the active descriptions of the concept
-		final SnomedDescriptionIndexQueryAdapter descriptionAdapter = 
-				SnomedDescriptionIndexQueryAdapter.createFindByConceptIds(conceptId);
-		
-		//get all descriptions for the concept
-		final Collection<SnomedDescriptionIndexEntry> allDescriptions = 
-				indexService.searchUnsorted(descriptionAdapter); 
-	
-		//create a description ID - description map
-		final Map<String, SnomedDescriptionIndexEntry> descriptionMap = 
-				Maps.newHashMap(Maps.uniqueIndex(allDescriptions, COMPONENT_TO_ID_FUNCTION)); //has to wrap to be mutable
-		
-		//we have to filter out FSN descriptions as it also associated with language reference set member with preferred acceptability
-		for (final Iterator<SnomedDescriptionIndexEntry> itr = descriptionMap.values().iterator(); itr.hasNext(); /* */) {
-			final SnomedDescriptionIndexEntry entry = itr.next();
-			if (Concepts.FULLY_SPECIFIED_NAME.equals(entry.getTypeId())) { //remove FSNs from the map
-				itr.remove();
-			}
-		}
-		
-		//index service for SNOMED CT reference set and reference set members
-		final SnomedClientIndexService refSetIndexService = 
-				ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		
-		//index query adapter for getting back all the preferred term members
-		final SnomedRefSetMembershipIndexQueryAdapter preferredMemberAdapter = 
-				SnomedRefSetMembershipIndexQueryAdapter.createFindPreferredTermMembersQuery(Lists.newArrayList(descriptionMap.keySet()));
-		
-		//initialize list to the return
-		final List<IComponent<String>> descriptions = Lists.newArrayListWithCapacity(descriptionMap.size());
-		
-		//get back preferred language reference set members
-		final Collection<SnomedRefSetMemberIndexEntry> preferredMembers = 
-				refSetIndexService.searchUnsorted(preferredMemberAdapter); //better estimation
-		
-		//get the first PT
-		//add the PT (consider only one description as the preferred term) first
-		for (final SnomedRefSetMemberIndexEntry preferredMember : preferredMembers) {
-			
-			if (!preferredMember.isActive()) { //ignore inactive members
-				continue;
-			}
-			
-			//get description from map
-			final SnomedDescriptionIndexEntry descriptionEntry = descriptionMap.get(preferredMember.getReferencedComponentId());
-			if (null != descriptionEntry) { //if we found the proper PT
-				descriptions.add(descriptionEntry); //add it to the result list 
-				if (!duplicatePreferredTerm) { //if duplicate term is allowed do not remove it
-					descriptionMap.remove(descriptionEntry.getId()); //and remove it from the map to avoid duplicate
-				}
-				break;
-			}
-		}
-		
-		//add all the rest if description type ID equals with the specified one
-		for (final SnomedDescriptionIndexEntry otherDescription : descriptionMap.values()) {
-			if (descriptionTypeId.equals(otherDescription.getTypeId())) {
-				descriptions.add(otherDescription);
-			}
-		}
-		
-		return descriptions;
 	}
 
 	/* (non-Javadoc)

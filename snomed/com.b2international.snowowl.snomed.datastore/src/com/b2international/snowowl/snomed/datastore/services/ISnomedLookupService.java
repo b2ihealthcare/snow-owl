@@ -16,11 +16,9 @@
 package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
@@ -275,33 +273,6 @@ public interface ISnomedLookupService {
 	 * @return {@code true} if the two specified descriptions match, otherwise {@code false}.
 	 */
 	boolean descriptionTermMatches(final String descriptionTerm, final String termToMatch, final CaseSignificance caseSensitivity);
-
-	/**
-	 * This method returns with an ordered list of SNOMED&nbsp;CT descriptions associated with the 
-	 * specified SNOMED&nbsp;CT concept identified by its unique ID.
-	 * <p>
-	 * The returning list will contain the elements as described below:
-	 * <ul>
-	 * <li>The list will not contain descriptions with <b>inactive</b> state.</li>
-	 * <li>The first element of the list will represent the preferred term of the SNOMED&nbsp;CT concept.</li>
-	 * <li>The additional descriptions' (if any) having the description type concept as specified with the <i>descriptionTypeId</i> argument.</li>
-	 * </ul>
-	 * </p>
-	 * <p>
-	 * This method returns with an empty list if one of the following conditions are true:
-	 * <ul>
-	 * <li>The SNOMED&nbsp;CT concept does not exist in the ontology.</li>
-	 * <li>The specified <b>conceptId</b> is {@code null}.</li>
-	 * <li>The specified <b>descriptionTypeId</b> is {@code null}.</li>
-	 * <li>The specified description type concept ID is the {@code |900000000000003001|Fully specified name|} concept. 
-	 * </ul>
-	 * </p>
-	 * @param conceptId the unique identifier of the SNOMED&nbsp;CT concept.
-	 * @param descriptionTypeId the unique ID of the description type SNOMED&nbsp;CT concept.
-	 * @param duplicatePreferredTerm {@code true} if the preferred term should be included multiple time in the results. Otherwise {@code false}.
-	 * @return an ordered list of SNOMED&nbsp;CT descriptions.
-	 */
-	List<IComponent<String>> getDescriptionsWithPreferredTerm(final String conceptId, final String descriptionTypeId, final boolean duplicatePreferredTerm);
 
 	/**
 	 * Returns with the SNOMED&nbsp;CT concept identified by its unique ID.

@@ -16,10 +16,8 @@
 package com.b2international.snowowl.scripting.services;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
@@ -111,11 +109,6 @@ public class SnomedLookupService implements ISnomedLookupService {
 	@Override
 	public boolean descriptionTermMatches(final String descriptionTerm, final String termToMatch, final CaseSignificance caseSensitivity) {
 		return delegate.descriptionTermMatches(descriptionTerm, termToMatch, caseSensitivity);
-	}
-
-	@Override
-	public List<IComponent<String>> getDescriptionsWithPreferredTerm(final String conceptId, final String descriptionTypeId, final boolean duplicatePreferredTerm) {
-		return delegate.getDescriptionsWithPreferredTerm(conceptId, descriptionTypeId, duplicatePreferredTerm);
 	}
 
 	@Override
