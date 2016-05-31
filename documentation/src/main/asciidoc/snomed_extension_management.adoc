@@ -22,13 +22,12 @@ When new international release is available, the corresponding delta is imported
 
 == Data provisioning example for a single extension
 
+First, the International Release is imported with version tags created (_-v_).  The selected language refset is English.
+
 -------------------------------
 International release full import:
-sctimport rf2_release -l 900000000000509007 -t full -v C:/data/SnomedCT_RF2Release_INT_20160131.zip C:/data/snomed_ct_international.json
-
-B2i extension command line for importing the extension on the 2016-01-31 International release:
-sctimport rf2_release -l 900000000000509007 -t full -b 2016-01-31 -v C:/data/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip C:/data/snomed_ct_b2i_extension.json
--------------------------------
+>sctimport rf2_release -l 900000000000509007 -t full -v C:/data/SnomedCT_RF2Release_INT_20160131.zip C:/data/snomed_ct_international.json
+---------------------------------
 
 Where the _snomed_ct_international.json_ release descriptor file is:
 
@@ -45,7 +44,26 @@ Where the _snomed_ct_international.json_ release descriptor file is:
 }
 --------------------------
 
-and the _snomed_ct_b2i_extension.json_ release descriptor file is:
+After the import process, to check the terminology registry issue the command:
+
+------------------------
+>terminologyregistry listall
+-------------------------
+
+To see all the version branches created execute:
+
+------------------------
+>snowowl listbranches snomedStore
+-------------------------
+
+To import the extension terminology based on the _2016-01-31_ International release, issue the command:
+
+-------------------------------
+B2i extension command line for importing the extension on the 2016-01-31 International release:
+>sctimport rf2_release -l 900000000000509007 -t full -b 2016-01-31 C:/data/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip C:/data/snomed_ct_b2i_extension.json
+-------------------------------
+
+Where the _snomed_ct_b2i_extension.json_ release descriptor file is:
 
 --------------------------
 {
@@ -60,3 +78,16 @@ and the _snomed_ct_b2i_extension.json_ release descriptor file is:
 }
 --------------------------
 
+Again, after the import process, to check the terminology registry issue the command:
+
+------------------------
+>terminologyregistry listall
+-------------------------
+
+To see all the version branches created execute:
+
+------------------------
+>snowowl listbranches snomedStore
+-------------------------
+
+There should be a branch named _MAIN/2016-01-31/SNOMEDCT_B2i_ dedicated for the initial content of the extension.
