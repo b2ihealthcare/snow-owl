@@ -18,14 +18,10 @@ package com.b2international.snowowl.snomed.exporter.model;
 import java.io.File;
 import java.util.Set;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.MapSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Sets;
 
@@ -84,26 +80,6 @@ public final class SnomedExporterUtil {
 		return SnomedRefSetUtil.isComplexMapping(type);
 	}
 	
-	/*returns with the type of the reference set identified by the reference set identifier concept ID*/
-	private static SnomedRefSetType getType(final String refSetId) {
-		return getRefSet(refSetId).getType();
-	}
-
-	/*returns with the reference set lightweight representation identified by the reference set identifier concept ID*/
-	private static SnomedRefSetIndexEntry getRefSet(final String refSetId) {
-		return getBrowser().getRefSet(refSetId);
-	}
-	
-	/*returns true if the referenced component is a SNOMED CT concept*/
-	private static boolean isConceptType(final String refSetId) {
-		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == getBrowser().getRefSet(refSetId).getReferencedComponentType();
-	}
-	
-	/*returns with the SNOMED CT reference set browser service*/
-	private static SnomedClientRefSetBrowser getBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
-	}
-
 	private SnomedExporterUtil() { }
 	
 }

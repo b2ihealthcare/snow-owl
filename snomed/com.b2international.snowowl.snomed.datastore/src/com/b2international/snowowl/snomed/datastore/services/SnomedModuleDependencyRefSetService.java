@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.services;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -27,13 +28,18 @@ import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -58,10 +64,9 @@ public class SnomedModuleDependencyRefSetService {
 		// We ignore those cases when a new module is created or a component has moved to a module
 		// which hasn't got a MDR member. These cases will be handled at the export as it requires
 		// more calculation
-		
+		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
 		final Set<String> moduleIds = Sets.newHashSet();
 		final CDOChangeSetData changeSetData = transaction.getChangeSetData();
-		final SnomedClientRefSetBrowser browser = ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
 		
 		// collect the module IDs to update
 		moduleIds.addAll(getModuleIdsFromNewObjects(changeSetData.getNewObjects(), transaction));
@@ -71,7 +76,7 @@ public class SnomedModuleDependencyRefSetService {
 		// search for members where the module/referenced component ID equals to the collected ID
 		// and the source/target effective time is set
 		for (final String moduleId : moduleIds) {
-			final LongSet storageKeys = browser.getPublishedModuleDependencyMembers(moduleId);
+			final LongSet storageKeys = getPublishedModuleDependencyMembers(branchPath, moduleId);
 			
 			for (final LongIterator iterator = storageKeys.iterator(); iterator.hasNext();) {
 				final long storageKey = iterator.next();
@@ -91,6 +96,42 @@ public class SnomedModuleDependencyRefSetService {
 		}
 	}
 	
+	
+
+	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId) {
+		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
+		Preconditions.checkNotNull(id, "ID argument cannot be null.");
+		final BooleanQuery sourceModuleQuery = new BooleanQuery(true);
+		sourceModuleQuery.add(SnomedMappings.newQuery().module(id).matchAll(), Occur.MUST);
+		sourceModuleQuery.add(SnomedMappings.newQuery().memberSourceEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
+		
+		final BooleanQuery targetModuleQuery = new BooleanQuery(true);
+		targetModuleQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(id).matchAll(), Occur.MUST);
+		targetModuleQuery.add(SnomedMappings.newQuery().memberTargetEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
+		
+		final Query moduleQuery = SnomedMappings.newQuery().and(sourceModuleQuery).and(targetModuleQuery).matchAny();
+		final Query query = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE).and(moduleQuery).matchAll();
+		
+		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
+		service.search(branchPath, query, collector);
+		
+		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
+
+		try {
+			final DocIdsIterator iterator = collector.getDocIDs().iterator();
+			
+			while (iterator.next()) {
+				final int docID = iterator.getDocID();
+				final Document doc = service.document(branchPath, docID, SnomedMappings.fieldsToLoad().storageKey().build());
+				storageKeys.add(Mappings.storageKey().getValue(doc));
+			}
+		} catch (final IOException e) {
+			throw new IndexException("Error while querying module dependency reference set members.", e);
+		}
+
+		return storageKeys;		
+	}
+
 	/*
 	 * Collects the module IDs from the new objects.
 	 * Precommit state.

@@ -400,10 +400,6 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 		return getServiceForClass(ISnomedComponentService.class);
 	}
 	
-	private SnomedRefSetBrowser getRefSetBrowser() {
-		return getServiceForClass(SnomedRefSetBrowser.class);
-	}
-
 	private SnomedTerminologyBrowser getTerminologyBrowser() {
 		return getServiceForClass(SnomedTerminologyBrowser.class);
 	}
