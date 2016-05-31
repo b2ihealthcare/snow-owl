@@ -35,7 +35,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -305,8 +304,4 @@ public class SnomedPublishManager extends PublishManager {
 				.getVersions();
 	}
 	
-	private IEventBus getEventBus() {
-		return ApplicationContext.getInstance().getService(IEventBus.class);
-	}
-
 }

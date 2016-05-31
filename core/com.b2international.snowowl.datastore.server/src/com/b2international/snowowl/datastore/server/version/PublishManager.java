@@ -25,7 +25,6 @@ import static com.b2international.snowowl.datastore.server.CDOServerUtils.getRev
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Boolean.TRUE;
 import static java.text.MessageFormat.format;
@@ -52,6 +51,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -62,11 +62,14 @@ import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Iterables;
 
 
 /**
@@ -278,23 +281,31 @@ public abstract class PublishManager implements IPublishManager {
 	}
 
 	private void setFakeLastUpdateTimeOnExistingVersion(final IPublishOperationConfiguration configuration) {
-		final String versionId = configuration.getVersionId();
-		final ICodeSystemVersion version = getVersion(getBranchPathForPublication(), versionId);
-		checkNotNull(version, "Code system version cannot be found with ID: " + versionId);
-		final long versionStorageKey = version.getStorageKey();
-		final CodeSystemVersion codeSystemVersion = (CodeSystemVersion) getObjectIfExists(getTransaction(), versionStorageKey);
-		checkNotNull(codeSystemVersion, "Code system version does not exist in store. ID: " + versionStorageKey + " Version ID: " + versionId);
+		final ICodeSystemVersion version = getVersion(configuration);
+		checkNotNull(version, String.format("Code system version cannot be found with ID: %s.", configuration.getVersionId()));
+
+		final CodeSystemVersion codeSystemVersion = (CodeSystemVersion) getObjectIfExists(getTransaction(), version.getStorageKey());
+		checkNotNull(codeSystemVersion, String.format("Code System version does not exist in store. ID: %s, Version ID: %s.",
+				version.getStorageKey(), configuration.getVersionId()));
+		
 		codeSystemVersion.setLastUpdateDate(FAKE_LAST_UPDATE_TIME_DATE);
 	}
 
 	@Nullable
-	private ICodeSystemVersion getVersion(final IBranchPath branchPath, final String versionId) {
-		final ICodeSystemVersion version = uniqueIndex(getAllVersions(branchPath), new Function<ICodeSystemVersion, String>() {
-			public String apply(final ICodeSystemVersion version) {
-				return checkNotNull(version, "version").getVersionId();
-			}
-		}).get(versionId);
-		return version;
+	private ICodeSystemVersion getVersion(final IPublishOperationConfiguration configuration) {
+		final Collection<ICodeSystemVersion> versions = new CodeSystemRequests(getRepositoryUuid())
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(configuration.getCodeSystemShortName())
+				.setVersionId(configuration.getVersionId())
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getVersions();
+		
+		return Iterables.getOnlyElement(versions, null);
+	}
+	
+	protected IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 	/** Processes all changes for the given terminology as a part of the publication. */
