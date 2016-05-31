@@ -230,7 +230,7 @@ public abstract class PublishManager implements IPublishManager {
 	/** Returns with the branch path for the given transaction to perform the publication. This is version dependent. */
 	protected final IBranchPath getBranchPathForPublication() {
 		return null == getConfiguration() ? getMainPath()
-				: couldCreateVersion(getConfiguration()) ? getMainPath()
+				: couldCreateVersion(getConfiguration()) ? BranchPathUtils.createPath(getParentBranchPath())
 						: createPath(getParentBranchPath(), getConfiguration().getVersionId());
 	}
 
