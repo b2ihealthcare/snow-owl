@@ -51,6 +51,7 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 			result.setIconPath(input.getIconPath());
 			result.setTerminologyId(input.getSnowOwlId());
 			result.setRepositoryUuid(input.getRepositoryUuid());
+			result.setBranchPath(input.getBranchPath());
 			return result;
 		}
 	};
