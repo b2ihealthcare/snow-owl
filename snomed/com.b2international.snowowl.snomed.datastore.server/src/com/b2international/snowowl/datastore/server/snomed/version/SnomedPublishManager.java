@@ -30,8 +30,10 @@ import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -48,6 +50,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -278,6 +281,20 @@ public class SnomedPublishManager extends PublishManager {
 	/**Collects all new module dependency reference set members*/
 	private Collection<SnomedModuleDependencyRefSetMember> collectModuleDependecyRefSetMembers(final LongSet storageKeys) {
 		return SnomedModuleDependencyCollectorService.INSTANCE.collectModuleMembers(getTransaction(), storageKeys);
+	}
+	
+	@Override
+	protected Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
+		return new CodeSystemRequests(getRepositoryUuid())
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(getConfiguration().getCodeSystemShortName())
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getVersions();
+	}
+	
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 }

@@ -264,7 +264,7 @@ public abstract class PublishManager implements IPublishManager {
 		return null == getConfiguration() ? getMainPath() : BranchPathUtils.createPath(getConfiguration().getParentBranchPath());
 	}
 
-	private Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
+	protected Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
 		return InternalTerminologyRegistryServiceRegistry.INSTANCE.getService(getRepositoryUuid()).getCodeSystemVersionsFromRepository(branchPath,
 				getRepositoryUuid());
 	}
