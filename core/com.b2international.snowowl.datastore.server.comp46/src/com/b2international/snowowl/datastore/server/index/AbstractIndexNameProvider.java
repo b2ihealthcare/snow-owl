@@ -83,7 +83,6 @@ public abstract class AbstractIndexNameProvider implements IComponentNameProvide
 	 * @return the {@link ComponentIdAndLabel ID and label pair} of a component. May return with {@code null} if the component
 	 * does not exist in store.
 	 */
-	@Override
 	public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 

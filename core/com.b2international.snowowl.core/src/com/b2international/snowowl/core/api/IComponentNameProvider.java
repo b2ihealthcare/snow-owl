@@ -29,21 +29,11 @@ public interface IComponentNameProvider {
 	 * @return the name/label of the component. Or {@code null} if the component cannot be found.
 	 */
 	String getComponentLabel(IBranchPath branchPath, String componentId);
-
-	/**
-	 * Returns with the terminology dependent unique ID and the human readable label of a component specified by its unique storage key.
-	 * <br>This method could return with {@code null} if the component does not exist in the store on the specified branch.  
-	 * @param branchPath the branch path.
-	 * @param storageKey the primary storage key of the component
-	 * @return the {@link ComponentIdAndLabel ID and label pair} of a component. May return with {@code null} if the component does not exist in store.
-	 */
-	ComponentIdAndLabel getComponentIdAndLabel(IBranchPath branchPath, long storageKey);
 	
 	/**
 	 * No-operation name provider that always behaves as {@link String#valueOf(Object)} for any input.
 	 */
 	public static IComponentNameProvider NOOP_NAME_PROVIDER = new IComponentNameProvider() {
 		@Override public String getComponentLabel(final IBranchPath branchPath, final String componentId) { return String.valueOf(componentId);	}
-		@Override public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) { return null; }
 	}; 
 }

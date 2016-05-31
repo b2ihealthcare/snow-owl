@@ -15,16 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.server;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.index.AbstractIndexNameProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -33,17 +30,16 @@ import com.google.inject.Provider;
 /**
  * Component name provider implementation for SNOMED CT concepts.
  */
-public class SnomedConceptNameProvider extends AbstractIndexNameProvider implements ISnomedConceptNameProvider {
+public class SnomedConceptNameProvider implements ISnomedConceptNameProvider {
 
 	private static final long NAME_PROVIDER_TIMEOUT = TimeUnit.SECONDS.toMillis(10L);
 	
 	private final Provider<IEventBus> bus;
-	private final List<ExtendedLocale> locales;
+	private final Provider<LanguageSetting> languageSetting;
 
-	public SnomedConceptNameProvider(final SnomedIndexService service, final Provider<IEventBus> bus, final List<ExtendedLocale> locales) {
-		super(service);
+	public SnomedConceptNameProvider(final Provider<IEventBus> bus, final Provider<LanguageSetting> languageSetting) {
 		this.bus = bus;
-		this.locales = locales;
+		this.languageSetting = languageSetting;
 	}
 	
 	@Override
@@ -53,7 +49,7 @@ public class SnomedConceptNameProvider extends AbstractIndexNameProvider impleme
 			protected SnomedDescriptions execute(final SnomedDescriptionSearchRequestBuilder req) {
 				return req.build(branchPath.getPath()).executeSync(bus.get(), NAME_PROVIDER_TIMEOUT);
 			}
-		}.getPreferredTerm(componentId, locales);
+		}.getPreferredTerm(componentId, languageSetting.get().getLanguagePreference());
 		
 		return (pt != null) ? pt.getTerm() : componentId;
 	}

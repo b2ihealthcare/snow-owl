@@ -15,16 +15,27 @@
  */
 package com.b2international.snowowl.snomed.datastore.server;
 
-import com.b2international.snowowl.datastore.server.index.AbstractIndexNameProvider;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 
 /**
  * Component name provider implementation for SNOMED CT relationships.
  */
-public class SnomedRelationshipNameProvider extends AbstractIndexNameProvider implements ISnomedRelationshipNameProvider {
+public class SnomedRelationshipNameProvider implements ISnomedRelationshipNameProvider {
 
-	public SnomedRelationshipNameProvider(SnomedIndexService service) {
-		super(service);
+	@Override
+	public String getComponentLabel(IBranchPath branchPath, String componentId) {
+		final ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
+				.setComponentId(componentId)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		// TODO expand proper labels if name providers are viable
+		return String.format("%s - %s - %s", relationship.getSourceConcept().getId(), relationship.getTypeConcept().getId(), relationship.getDestinationConcept().getId());
 	}
+	
 }
