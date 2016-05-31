@@ -106,7 +106,7 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		whenCreatingVersion("v1", "20150130", "versionTest")
 			.then().assertThat().statusCode(201);
 		
-		assertVersionGetStatus("v1", 200);
+		assertVersionGetStatus("v1", 200, "versionTest");
 	}
 	
 }
