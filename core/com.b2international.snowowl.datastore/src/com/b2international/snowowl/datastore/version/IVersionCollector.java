@@ -17,12 +17,15 @@ package com.b2international.snowowl.datastore.version;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
 /**
  * Service for collection existing {@link ICodeSystemVersion versions}.
+ * 
+ * @deprecated - use {@link Request} API instead.
  */
 public interface IVersionCollector {
 
