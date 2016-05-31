@@ -127,6 +127,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 				.put("branchPath", nestedBranch.getPath())
 				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", true)
+				.put("snomedReleaseShortName", "extensionImport")
 				.build();
 
 		final String importId = assertImportConfigurationCanBeCreated(importConfiguration);
