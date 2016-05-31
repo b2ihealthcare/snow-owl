@@ -47,11 +47,9 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -71,9 +69,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	private final SnomedEditingContext context;
 	private final Workbook workbook;
 	private final ISnomedComponentService service;
-	private final SnomedRefSetBrowser browser;
 	private final SnomedConceptLookupService lookupService;
-	private final SnomedRefSetMembershipLookupService memberLookupService;
 	
 	private final CellStyle DEFAULT_STYLE;
 	private final CellStyle BOLD_STYLE;
@@ -86,9 +82,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		this.context = new SnomedEditingContext(branchPath);
 		this.workbook = new XSSFWorkbook();
 		this.service = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
-		this.browser = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
 		this.lookupService = new SnomedConceptLookupService();
-		this.memberLookupService = new SnomedRefSetMembershipLookupService();
 		
 		final Font headerFont = workbook.createFont();
 		headerFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
@@ -328,7 +322,8 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	}
 
 	private String getAcceptablilityId(final Description description) {
-		final Collection<SnomedRefSetMemberIndexEntry> membersForType = memberLookupService.getMembersForType(SnomedTerminologyComponentConstants.DESCRIPTION, 
+		final Collection<SnomedRefSetMemberIndexEntry> membersForType = memberLookupService.getMembersForType(
+				SnomedTerminologyComponentConstants.DESCRIPTION, 
 				Sets.newHashSet(SnomedRefSetType.LANGUAGE),	Sets.newHashSet(description.getId()));
 		
 		if (membersForType.isEmpty()) {

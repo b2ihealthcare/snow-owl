@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -30,11 +29,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 @Client
 public class SnomedRefSetMembershipLookupService extends AbstractSnomedRefSetMembershipLookupService {
 
-	@Override
-	protected SnomedClientIndexService getIndexService() {
-		return ApplicationContext.getServiceForClass(SnomedClientIndexService.class);
-	}
-	
 	@Override
 	protected SnomedClientTerminologyBrowser getTerminologyBrowser() {
 		return ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class);
