@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -61,6 +62,10 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	public SnomedDescriptionSearchRequestBuilder filterByConceptId(Collection<Long> conceptIdFilter) {
 		return addOption(OptionKey.CONCEPT_ID, Collections3.toImmutableSet(conceptIdFilter));
 	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterByConceptIds(Collection<String> componentIds) {
+		return filterByConceptId(StringToLongFunction.copyOf(componentIds));
+	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByType(String typeFilter) {
 		return addOption(OptionKey.TYPE, typeFilter);
@@ -78,4 +83,5 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	protected RevisionSearchRequest<SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
 	}
+
 }
