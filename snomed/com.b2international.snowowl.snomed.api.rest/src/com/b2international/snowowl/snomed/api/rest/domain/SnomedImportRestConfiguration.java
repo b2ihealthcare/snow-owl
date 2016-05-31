@@ -30,7 +30,6 @@ public class SnomedImportRestConfiguration {
 	private Rf2ReleaseType type;
 	private String branchPath;
 	private Boolean createVersions = Boolean.FALSE;
-	private String languageRefSetId;
 	private String snomedReleaseShortName = SNOMED_INT_SHORT_NAME;
 
 	public String getBranchPath() {
@@ -57,23 +56,6 @@ public class SnomedImportRestConfiguration {
 		this.createVersions = createVersions;
 	}
 
-	/**
-	 * Returns with the language reference set identifier concept ID for the import configuration.
-	 * @return the language reference set ID for the preferred language.
-	 */
-	public String getLanguageRefSetId() {
-		return languageRefSetId;
-	}
-
-	/**
-	 * Sets the language reference set identifier concept ID based on
-	 * the language reference set identifier concept ID argument.
-	 * @param languageRefSetId the language reference set ID for the preferred language. 
-	 */
-	public void setLanguageRefSetId(final String languageRefSetId) {
-		this.languageRefSetId = languageRefSetId;
-	}
-	
 	public String getSnomedReleaseShortName() {
 		return snomedReleaseShortName;
 	}
@@ -86,7 +68,6 @@ public class SnomedImportRestConfiguration {
 		return new SnomedImportConfiguration(
 				getType(), 
 				getBranchPath(),
-				getLanguageRefSetId(), 
 				getCreateVersions(),
 				StringUtils.isEmpty(getSnomedReleaseShortName()) 
 					? SNOMED_INT_SHORT_NAME : getSnomedReleaseShortName());
@@ -101,8 +82,6 @@ public class SnomedImportRestConfiguration {
 		builder.append(branchPath);
 		builder.append(", createVersions=");
 		builder.append(createVersions);
-		builder.append(", languageRefSetId=");
-		builder.append(languageRefSetId);
 		builder.append(", snomedReleaseShortName=");
 		builder.append(snomedReleaseShortName);
 		builder.append("]");

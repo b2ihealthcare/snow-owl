@@ -54,10 +54,9 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 	public ImportZipCommand() {
 		super(
 				"rf2_release", 
-				"-l <languageRefSetId> -t <type> -b <branch> -v <path to rf2 archive> <path to release descriptor file>",
+				"-t <type> -b <branch> -v <path to rf2 archive> <path to release descriptor file>",
 				"Imports SNOMED CT RF2 releases from a release archive",
 				new String[] { 
-					"-l <languageRefSetId>\tThe language reference set identifier to use for component labels.",
 					"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",
 					"-b <branch>\t\tThe existing branch to import the content onto. In case of extension import, an effective time from the base SNOMED CT release (e.g. 2016-01-31). If omitted 'MAIN' will be used.",
 					"-v\t\t\tCreates versions for each effective time found in the release archive. If omitted no versions will be created.",
@@ -65,9 +64,9 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 					"<path to release descriptor file>\tThe path to the release descriptor file.",
 					"E.g:",
 					"\tImporting the international release on MAIN (using US language reference set):",
-					"\tsctimport rf2_release -l 900000000000509007 -t full -v C:/SnomedCT_RF2Release_INT_20160131.zip C:/snomed_ct_international.json",
+					"\tsctimport rf2_release -t full -v C:/SnomedCT_RF2Release_INT_20160131.zip C:/snomed_ct_international.json",
 					"\tImport and extension on a branch (using US language reference set):",
-					"\tsctimport rf2_release -l 900000000000509007 -t full -b 2016-01-31 -v C:/SnomedCT_Release_B2i_20160201.zip C:/snomed_ct_b2i.json"
+					"\tsctimport rf2_release -t full -b 2016-01-31 -v C:/SnomedCT_Release_B2i_20160201.zip C:/snomed_ct_b2i.json"
 				});
 	}
 
@@ -81,42 +80,26 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 		
-		if (parameters.size() < 5) {
+		if (parameters.size() < 4) {
 			interpreter.println("Invalid number of arguments");
 			printDetailedHelp(interpreter);
 			return;
 		}
 		
-		String languageRefsetId = null;
 		ContentSubType contentSubType = null;
 		String branchPath = IBranchPath.MAIN_BRANCH;
 		boolean createVersions = false;
 		String archiveFilePath = null;
 		String metadataFilePath = null;
 		
-		// language refset identifier
-		
-		if (!"-l".equals(parameters.get(0))) {
-			interpreter.println("Language reference set identifier must be defined.");
-			printDetailedHelp(interpreter);
-			return;
-		} else {
-			languageRefsetId = parameters.get(1);
-			if (Strings.isNullOrEmpty(languageRefsetId)) {
-				interpreter.println("Language reference set identifier must be defined.");
-				printDetailedHelp(interpreter);
-				return;
-			}
-		}
-
 		// release type
 		
-		if (!"-t".equals(parameters.get(2))) {
+		if (!"-t".equals(parameters.get(0))) {
 			interpreter.println("Import type must be defined.");
 			printDetailedHelp(interpreter);
 			return;
 		} else {
-			String importType = parameters.get(3);
+			String importType = parameters.get(1);
 			try {
 				contentSubType = ContentSubType.getByNameIgnoreCase(importType);
 			} catch (IllegalArgumentException e) {
@@ -135,32 +118,6 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		// archive path
 		
 		if (parameters.contains("-b") && parameters.contains("-v")) {
-			if (parameters.size() > 7) {
-				archiveFilePath = parameters.get(7);
-				if (Strings.isNullOrEmpty(archiveFilePath)) {
-					interpreter.println("Import archive path is missing.");
-					printDetailedHelp(interpreter);
-					return;
-				}
-			} else {
-				interpreter.println("Import archive path is missing.");
-				printDetailedHelp(interpreter);
-				return;
-			}
-		} else if (parameters.contains("-b") && !parameters.contains("-v")) {
-			if (parameters.size() > 6) {
-				archiveFilePath = parameters.get(6);
-				if (Strings.isNullOrEmpty(archiveFilePath)) {
-					interpreter.println("Import archive path is missing.");
-					printDetailedHelp(interpreter);
-					return;
-				}
-			} else {
-				interpreter.println("Import archive path is missing.");
-				printDetailedHelp(interpreter);
-				return;
-			}
-		} else if (!parameters.contains("-b") && parameters.contains("-v")) {
 			if (parameters.size() > 5) {
 				archiveFilePath = parameters.get(5);
 				if (Strings.isNullOrEmpty(archiveFilePath)) {
@@ -173,8 +130,28 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				printDetailedHelp(interpreter);
 				return;
 			}
+		} else if (parameters.contains("-b") && !parameters.contains("-v")) {
+			if (parameters.size() > 4) {
+				archiveFilePath = parameters.get(4);
+				if (Strings.isNullOrEmpty(archiveFilePath)) {
+					interpreter.println("Import archive path is missing.");
+					printDetailedHelp(interpreter);
+					return;
+				}
+			} else {
+				interpreter.println("Import archive path is missing.");
+				printDetailedHelp(interpreter);
+				return;
+			}
+		} else if (!parameters.contains("-b") && parameters.contains("-v")) {
+			archiveFilePath = parameters.get(3);
+			if (Strings.isNullOrEmpty(archiveFilePath)) {
+				interpreter.println("Import archive path is missing.");
+				printDetailedHelp(interpreter);
+				return;
+			}
 		} else if (!parameters.contains("-b") && !parameters.contains("-v")) {
-			archiveFilePath = parameters.get(4);
+			archiveFilePath = parameters.get(2);
 			if (Strings.isNullOrEmpty(archiveFilePath)) {
 				interpreter.println("Import archive path is missing.");
 				printDetailedHelp(interpreter);
@@ -199,13 +176,17 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				printDetailedHelp(interpreter);
 				return;
 			}
+		} else {
+			interpreter.println("SNOMED CT RF2 release descriptor file must be specified");
+			printDetailedHelp(interpreter);
+			return;
 		}
 		
 		SnomedRelease snomedRelease = null;
 			
 		File metadataFile = new File(metadataFilePath);
 		
-		if (!metadataFile.isFile()) {
+		if (!metadataFile.isFile() || !metadataFilePath.endsWith(".json")) {
 			interpreter.println("Invalid metadata file path.");
 			printDetailedHelp(interpreter);
 			return;
@@ -214,7 +195,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				ObjectMapper mapper = new ObjectMapper();
 				@SuppressWarnings("unchecked")
 				Map<String, String> metadataMap = mapper.readValue(metadataFile, Map.class);
-				snomedRelease = SnomedReleases.newSnomedRelease(metadataMap).withBranchPath(branchPath).build();
+				snomedRelease = SnomedReleases.newSnomedRelease(metadataMap).build();
 			} catch (IOException e) {
 				interpreter.println("Unable to parse metadata file: " + e.getMessage());
 				printDetailedHelp(interpreter);
@@ -224,8 +205,8 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		
 		// branchPath
 		
-		if (parameters.contains("-b") && parameters.size() > 5) {
-			branchPath = parameters.get(5);
+		if (parameters.contains("-b")) {
+			branchPath = parameters.get(3);
 			if (snomedRelease.getReleaseType() == SnomedReleaseType.INTERNATIONAL) {
 				if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)) {
 					interpreter.println("Invalid branch path '" + branchPath + "'.");
@@ -248,10 +229,11 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 					}
 					
 					branchPath = extensionBranchPath.getPath();
-					snomedRelease.setBranchPath(branchPath);
 				}
 			}
 		}
+
+		snomedRelease.setBranchPath(branchPath);
 		
 		try {
 
@@ -261,8 +243,8 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				return;
 			}
 
-			final SnomedImportResult result = new ImportUtil().doImport(snomedRelease, authenticator.getUsername(), languageRefsetId, contentSubType,
-					branchPath, archiveFile, createVersions, new ConsoleProgressMonitor());
+			final SnomedImportResult result = new ImportUtil().doImport(snomedRelease, authenticator.getUsername(), contentSubType, branchPath,
+					archiveFile, createVersions, new ConsoleProgressMonitor());
 
 			Set<SnomedValidationDefect> validationDefects = result.getValidationDefects();
 			

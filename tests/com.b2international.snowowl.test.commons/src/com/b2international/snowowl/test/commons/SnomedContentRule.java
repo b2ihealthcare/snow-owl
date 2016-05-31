@@ -23,22 +23,18 @@ import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 public class SnomedContentRule extends ExternalResource {
 
 	private File importArchive;
-	private String languageRefSetId;
 	private ContentSubType contentType;
 	private SnomedRelease snomedRelease;
 	
-	public SnomedContentRule(SnomedRelease snomedRelease, String importArchivePath, String languageRefSetId, ContentSubType contentType) {
+	public SnomedContentRule(SnomedRelease snomedRelease, String importArchivePath, ContentSubType contentType) {
 		this.contentType = checkNotNull(contentType, "contentType");
 		this.importArchive = new File(PlatformUtil.toAbsolutePathBundleEntry(SnomedContentRule.class, importArchivePath));
-		this.languageRefSetId = checkNotNull(languageRefSetId, "languageRefSetId");
 		this.snomedRelease = snomedRelease;
 	}
 
 	@Override
 	protected void before() throws Throwable {
-		
-		
-		new ImportUtil().doImport(snomedRelease, "info@b2international.com", languageRefSetId, contentType, "MAIN", importArchive, true, new ConsoleProgressMonitor());
+		new ImportUtil().doImport(snomedRelease, "info@b2international.com", contentType, "MAIN", importArchive, true, new ConsoleProgressMonitor());
 	}
 	
 }

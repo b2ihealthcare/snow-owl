@@ -22,7 +22,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.japi.branches.SnomedBranchRequestTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeApiTest;
@@ -79,5 +78,5 @@ public class AllSnomedApiTests {
 			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnomedApiTests.class, "rest-configuration.yml")))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
 			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
-			.around(new SnomedContentRule(SnomedReleases.newSnomedInternationalRelease().build(), Resources.Snomed.MINI_RF2_INT, Concepts.REFSET_LANGUAGE_TYPE_UK, ContentSubType.FULL));
+			.around(new SnomedContentRule(SnomedReleases.newSnomedInternationalRelease().build(), Resources.Snomed.MINI_RF2_INT, ContentSubType.FULL));
 }

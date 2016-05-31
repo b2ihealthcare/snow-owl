@@ -29,7 +29,6 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.ConsoleProgressMonitor;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -42,7 +41,6 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolCon
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 
 /**
@@ -57,44 +55,30 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 	private final ImportConfiguration importConfiguration = new ImportConfiguration();
 	
 	private String userId;
-
 	private File receivedFilesDirectory;
 	
-	/**
-	 * 
-	 * @param protocol
-	 */
 	public SnomedImportIndication(final SnomedImportServerProtocol protocol) {
 		super(protocol, SnomedImportProtocolConstants.SIGNAL_IMPORT_RF2);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.net4j.signal.IndicationWithMonitoring#getIndicatingWorkPercent()
-	 */
-	@Override protected int getIndicatingWorkPercent() {
+	@Override
+	protected int getIndicatingWorkPercent() {
 		return 10;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.net4j.signal.IndicationWithMonitoring#indicating(org.eclipse.net4j.util.io.ExtendedDataInputStream, org.eclipse.net4j.util.om.monitor.OMMonitor)
-	 */
-	@Override protected void indicating(final ExtendedDataInputStream in, final OMMonitor monitor) throws Exception {
+	@Override
+	protected void indicating(final ExtendedDataInputStream in, final OMMonitor monitor) throws Exception {
 
 		monitor.begin(1 + 7 + 1);
 		OMMonitor refSetSubmonitor = null;
 		
 		try {
-			
-			final IBranchPath branchPath = BranchPathUtils.createPath(in.readUTF());
-			importConfiguration.setBranchPath(branchPath.getPath());
-			userId = in.readString();
-
 			// XXX: source kind is always FILES, since the server just receives a bunch of them
 			importConfiguration.setSourceKind(ImportSourceKind.FILES);
+			
+			importConfiguration.setBranchPath(BranchPathUtils.createPath(in.readUTF()).getPath());
+			userId = in.readString();
 			importConfiguration.setVersion(in.readEnum(ContentSubType.class));
-			importConfiguration.setLanguageRefSetId(in.readString());
 			importConfiguration.setCreateVersions(in.readBoolean());
 			
 			final int exludedRefSetIdCount = in.readInt();
@@ -151,7 +135,6 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 	}
 
 	private void addRefSetUrl(final File f) {
-		
 		try {
 			importConfiguration.addRefSetSource(f.toURI().toURL());
 		} catch (final MalformedURLException e) {
@@ -170,7 +153,6 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 
 		monitor.begin();
 		Async async = null;
-		FileOutputStream receivedFileOutputStream = null;
 		
 		try {
 			async = monitor.forkAsync();
@@ -180,16 +162,13 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			final File receivedFile = File.createTempFile("received", ".txt", receivedFilesDirectory);
 			receivedFile.deleteOnExit();
 			
-			receivedFileOutputStream = new FileOutputStream(receivedFile);
-			IOUtil.copy(in, receivedFileOutputStream, fileSize, new byte[SnomedImportProtocolConstants.BUFFER_SIZE]);
-			
-			fileCallback.setFile(receivedFile);
-			importConfiguration.addReleaseFileNameMapping(importConfiguration.toURL(receivedFile).getPath(), mappedName);
-			
+			try (FileOutputStream receivedFileOutputStream = new FileOutputStream(receivedFile)) {
+				IOUtil.copy(in, receivedFileOutputStream, fileSize, new byte[SnomedImportProtocolConstants.BUFFER_SIZE]);
+				fileCallback.setFile(receivedFile);
+				importConfiguration.addReleaseFileNameMapping(importConfiguration.toURL(receivedFile).getPath(), mappedName);
+			}
 		} finally {
-			
-			Closeables.closeQuietly(receivedFileOutputStream);
-			
+
 			if (null != async) {
 				async.stop();
 			}
@@ -202,7 +181,8 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 	 * (non-Javadoc)
 	 * @see org.eclipse.net4j.signal.IndicationWithMonitoring#responding(org.eclipse.net4j.util.io.ExtendedDataOutputStream, org.eclipse.net4j.util.om.monitor.OMMonitor)
 	 */
-	@Override protected void responding(final ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
+	@Override
+	protected void responding(final ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
 
 		monitor.begin(1.3);
 		Async async = null;

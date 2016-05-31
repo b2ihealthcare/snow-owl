@@ -196,7 +196,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
 		return new ImportUtil().doImport(
 				snomedRelease,
-				configuration.getLanguageRefSetId(), 
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
 				branch,
 				archiveFile,

@@ -86,10 +86,10 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -111,7 +111,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConcept
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -137,23 +136,50 @@ public final class ImportUtil {
 	private static final org.slf4j.Logger IMPORT_LOGGER = org.slf4j.LoggerFactory.getLogger(ImportUtil.class);
 	private static final String SNOMED_IMPORT_POST_PROCESSOR_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor";
 
-	public SnomedImportResult doImport(final SnomedRelease snomedRelease, final String languageRefSetId, 
-			final ContentSubType contentSubType, final IBranchPath branchPath, final File releaseArchive, final boolean shouldCreateVersions) throws Exception {
-		return doImport(snomedRelease, branchPath, languageRefSetId, contentSubType, releaseArchive, shouldCreateVersions, SYSTEM_USER_NAME, new NullProgressMonitor());
-	}
-	
-	public SnomedImportResult doImport(final SnomedRelease snomedRelease, final String userId, final String languageRefSetId, final ContentSubType contentSubType, 
-			String branchPathName, final File releaseArchive, final boolean createVersions, final IProgressMonitor monitor) throws ImportException {
+	public SnomedImportResult doImport(
+			final String requestingUserId,
+			final ImportConfiguration configuration,
+			final IProgressMonitor monitor) throws ImportException {
 		
-		IBranchPath branchPath = BranchPathUtils.createPath(branchPathName);
-		return doImport(snomedRelease, branchPath, languageRefSetId, contentSubType, releaseArchive, createVersions, userId, new ConsoleProgressMonitor());
+		try (SnomedImportContext context = new SnomedImportContext()) {
+			return doImportInternal(context, requestingUserId, configuration, monitor);
+		} catch (Exception e) {
+			throw new ImportException(e);
+		}
 	}
 
-	private SnomedImportResult doImport(final SnomedRelease snomedRelease, final IBranchPath branchPath, final String languageRefSetId, 
-			final ContentSubType contentSubType, final File releaseArchive, final boolean shouldCreateVersions, final String userId, final IProgressMonitor monitor) {
+	public SnomedImportResult doImport(
+			final SnomedRelease snomedRelease,
+			final ContentSubType contentSubType,
+			final IBranchPath branchPath,
+			final File releaseArchive,
+			final boolean shouldCreateVersions) throws Exception {
+		
+		return doImport(snomedRelease, branchPath, contentSubType, releaseArchive, shouldCreateVersions, SYSTEM_USER_NAME, new NullProgressMonitor());
+	}
+	
+	public SnomedImportResult doImport(
+			final SnomedRelease snomedRelease,
+			final String userId,
+			final ContentSubType contentSubType,
+			final String branchPathName,
+			final File releaseArchive,
+			final boolean createVersions,
+			final IProgressMonitor monitor) throws ImportException {
+		
+		return doImport(snomedRelease, BranchPathUtils.createPath(branchPathName), contentSubType, releaseArchive, createVersions, userId, monitor);
+	}
+
+	private SnomedImportResult doImport(
+			final SnomedRelease snomedRelease,
+			final IBranchPath branchPath,
+			final ContentSubType contentSubType,
+			final File releaseArchive,
+			final boolean shouldCreateVersions,
+			final String userId,
+			final IProgressMonitor monitor) {
 		
 		checkNotNull(branchPath, "branchPath");
-		checkNotNull(languageRefSetId, "languageRefSetId");
 		checkNotNull(contentSubType, "contentSubType");
 		checkNotNull(releaseArchive, "releaseArchive");
 		checkArgument(releaseArchive.canRead(), "Cannot read SNOMED CT RF2 release archive content.");
@@ -162,7 +188,6 @@ public final class ImportUtil {
 		final ImportConfiguration config = new ImportConfiguration();
 		config.setSnomedRelease(snomedRelease);
 		config.setVersion(contentSubType);
-		config.setLanguageRefSetId(languageRefSetId);
 		config.setBranchPath(branchPath.getPath());
 		config.setCreateVersions(shouldCreateVersions);
 		config.setArchiveFile(releaseArchive);
@@ -180,20 +205,10 @@ public final class ImportUtil {
 			config.addRefSetSource(refSetUrl);
 		}
 		
-		boolean languageRefSetFound = false;
+		String languageRefsetId = ApplicationContext.getServiceForClass(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
 		
-		final Collection<SnomedRefSetIndexEntry> existingRefSets = ApplicationContext.getServiceForClass(SnomedRefSetBrowser.class).getAllReferenceSets(branchPath);
-		for (final SnomedRefSetIndexEntry existingRefSet : existingRefSets) {
-			if (SnomedRefSetType.LANGUAGE.equals(existingRefSet.getType()) && languageRefSetId.equals(existingRefSet.getId())) {
-				languageRefSetFound = true;
-				break;
-			}
-		}
-		
-		if (!languageRefSetFound) {
-
-			final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new ConsoleProgressMonitor(), 
-					"Searching for language reference sets");
+		if (!new SnomedRefSetLookupService().exists(branchPath, languageRefsetId)) {
+			final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new ConsoleProgressMonitor(), "Searching for language reference sets");
 	
 			try {
 				for (String relativeLanguageRefSetPath : archiveFileSet.getAllFileName(zipFiles, LANGUAGE_REFERENCE_SET, contentSubType)) {
@@ -203,8 +218,8 @@ public final class ImportUtil {
 				throw new ImportException(e);
 			}
 	
-			if (!provider.getAvailableLabels().containsKey(languageRefSetId)) {
-				throw new ImportException("No language reference set with identifier '" + languageRefSetId + "' could be found in release archive.");
+			if (!provider.getAvailableLabels().containsKey(languageRefsetId)) {
+				throw new ImportException("No language reference set with identifier '" + languageRefsetId + "' could be found in release archive.");
 			}
 		}
 
@@ -227,7 +242,6 @@ public final class ImportUtil {
 		}
 
 		return doImport(userId, config, monitor);
-		
 	}
 	
 	private File createTemporaryFile(final File tmpDir, final ZipFile archive, final String entryPath) throws IOException {
@@ -242,14 +256,6 @@ public final class ImportUtil {
 			return file;
 		}
 		return new File("");
-	}
-
-	public SnomedImportResult doImport(final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) throws ImportException {
-		try (SnomedImportContext context = new SnomedImportContext()) {
-			return doImportInternal(context, requestingUserId, configuration, monitor); 
-		} catch (Exception e) {
-			throw new ImportException(e);
-		}
 	}
 
 	private SnomedImportResult doImportInternal(final SnomedImportContext context, final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) {
@@ -269,7 +275,6 @@ public final class ImportUtil {
 
 		final File stagingDirectoryRoot = new File(System.getProperty("java.io.tmpdir"));
 
-		context.setLanguageRefSetId(configuration.getLanguageRefSetId());
 		context.setVersionCreationEnabled(configuration.isCreateVersions());
 		context.setLogger(IMPORT_LOGGER);
 		context.setStagingDirectory(stagingDirectoryRoot);

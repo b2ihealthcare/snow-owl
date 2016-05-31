@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.collect.ImmutableMap;
@@ -44,7 +43,6 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("branchPath", "MAIN")
-				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", false)
 				.build();
 
@@ -76,7 +74,6 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("branchPath", testBranchPath.getPath())
-				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", true)
 				.build();
 		

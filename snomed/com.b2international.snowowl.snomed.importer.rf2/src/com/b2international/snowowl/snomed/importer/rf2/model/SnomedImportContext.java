@@ -65,7 +65,6 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 
 	private String[] sortedIgnoredRefSetIds;
 	private File stagingDirectory;
-	private String languageRefSetId;
 
 	private final LongSet visitedConcepts = PrimitiveSets.newLongOpenHashSet();
 	private final LongSet visitedRefSets = PrimitiveSets.newLongOpenHashSet();
@@ -80,24 +79,6 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 		if (getEditingContext() != null) {
 			getEditingContext().close();
 		}
-	}
-
-	/**
-	 * Returns the primary language reference set identifier, used for determining component labels.
-	 * 
-	 * @return the primary language reference set identifier
-	 */
-	public String getLanguageRefSetId() {
-		return languageRefSetId;
-	}
-
-	/**
-	 * Sets a new primary language reference set identifier for the import context.
-	 * 
-	 * @param languageRefSetId the primary language reference set identifier to set
-	 */
-	public void setLanguageRefSetId(final String languageRefSetId) {
-		this.languageRefSetId = languageRefSetId;
 	}
 
 	/**

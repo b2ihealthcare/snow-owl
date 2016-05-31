@@ -74,7 +74,7 @@ public final class ImportConfiguration {
 	private File languageRefSetFile;
 	private File descriptionType;
 	private File textDefinitionFile;
-	private String languageRefSetId;
+	private final String languageRefSetId;
 	
 	{
 		//set client side's language reference set ID based on the configuration. 
@@ -97,7 +97,7 @@ public final class ImportConfiguration {
 	private ReleaseFileSet releaseFileSet;
 	
 	//the terminology registry entry for the release to be imported
-	private SnomedRelease snomedRelease = SnomedFactory.eINSTANCE.createSnomedRelease();;
+	private SnomedRelease snomedRelease = SnomedFactory.eINSTANCE.createSnomedRelease(); // TODO change this
 	
 	private final Map<String, String> releaseFileNameMappings = Maps.newHashMap();
 
@@ -183,10 +183,6 @@ public final class ImportConfiguration {
 	
 	public String getLanguageRefSetId() {
 		return languageRefSetId;
-	}
-	
-	public void setLanguageRefSetId(final String languageRefSetId) {
-		this.languageRefSetId = languageRefSetId;
 	}
 	
 	public File getDescriptionType() {

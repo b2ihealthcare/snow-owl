@@ -25,14 +25,6 @@ import java.util.Date;
 public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 
 	/**
-	 * Returns the language reference set identifier for the preferred language that should be used for the import
-	 * process.
-	 * 
-	 * @return the language reference set identifier of the preferred language
-	 */
-	String getLanguageRefSetId();
-
-	/**
 	 * Determines whether the importer should create versions after processing each effective time "layer" in an RF2
 	 * import file. Only applicable for {@link Rf2ReleaseType#FULL FULL} imports.
 	 * 

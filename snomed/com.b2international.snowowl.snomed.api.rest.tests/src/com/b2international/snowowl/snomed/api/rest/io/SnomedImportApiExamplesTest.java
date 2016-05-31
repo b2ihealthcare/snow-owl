@@ -36,7 +36,6 @@ import org.junit.runners.MethodSorters;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -105,7 +104,6 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.FULL.name())
 				.put("branchPath", "DK")
-				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", true)
 				.build();
 		
@@ -125,7 +123,6 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("branchPath", nestedBranch.getPath())
-				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", true)
 				.put("snomedReleaseShortName", "extensionImport")
 				.build();

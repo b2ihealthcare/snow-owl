@@ -421,7 +421,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	}
 
 	private void initializeIndex(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId(), inferredTaxonomyBuilder, statedTaxonomyBuilder);
+		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, lastUnitEffectiveTimeKey, units, inferredTaxonomyBuilder, statedTaxonomyBuilder);
 		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 

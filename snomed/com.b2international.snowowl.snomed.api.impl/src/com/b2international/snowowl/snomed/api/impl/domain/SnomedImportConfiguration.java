@@ -37,9 +37,6 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	@NotEmpty
 	private final String branchPath;
 	
-	@NotEmpty
-	private final String languageRefSetId;
-	
 	@NotNull
 	private final boolean createVersion;
 	
@@ -58,11 +55,10 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	 * @param createVersion boolean indicating whether a new version has to be created for each individual 
 	 * effective times. Has no effect if the RF2 release type in *NOT* full.
 	 */
-	public SnomedImportConfiguration(final Rf2ReleaseType rf2ReleaseType, final String branchPath,  
-			final String languageRefSetId, final boolean createVersion, final String snomedReleaseShortName) {
+	public SnomedImportConfiguration(final Rf2ReleaseType rf2ReleaseType, final String branchPath, final boolean createVersion,
+			final String snomedReleaseShortName) {
 		this.rf2ReleaseType = rf2ReleaseType;
 		this.branchPath = branchPath;
-		this.languageRefSetId = languageRefSetId;
 		this.createVersion = createVersion;
 		this.snomedReleaseShortName = snomedReleaseShortName;
 	}
@@ -77,11 +73,6 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 		return branchPath;
 	}
 	
-	@Override
-	public String getLanguageRefSetId() {
-		return languageRefSetId;
-	}
-
 	@Override
 	public boolean shouldCreateVersion() {
 		return createVersion;
