@@ -26,6 +26,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 		extends SearchRequestBuilder<CodeSystemVersionSearchRequestBuilder, CodeSystemVersions> {
 
 	private String codeSystemShortName;
+	private String versionId;
 
 	protected CodeSystemVersionSearchRequestBuilder(final String repositoryId) {
 		super(repositoryId);
@@ -35,11 +36,17 @@ public final class CodeSystemVersionSearchRequestBuilder
 		this.codeSystemShortName = codeSystemShortName;
 		return getSelf();
 	}
+	
+	public CodeSystemVersionSearchRequestBuilder setVersionId(String versionId) {
+		this.versionId = versionId;
+		return getSelf();
+	}
 
 	@Override
 	protected SearchRequest<CodeSystemVersions> createSearch() {
 		final CodeSystemVersionSearchRequest req = new CodeSystemVersionSearchRequest();
 		req.setCodeSystemShortName(codeSystemShortName);
+		req.setVersionId(versionId);
 
 		return req;
 	}

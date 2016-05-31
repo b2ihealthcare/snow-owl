@@ -16,6 +16,7 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -23,11 +24,16 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
@@ -43,23 +49,28 @@ final class CodeSystemVersionSearchRequest extends SearchRequest<CodeSystemVersi
 	private static final long serialVersionUID = 1L;
 
 	private String codeSystemShortName;
+	private String versionId;
 
 	void setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
 	}
+	
+	void setVersionId(String versionId) {
+		this.versionId = versionId;
+	}
 
 	@Override
 	protected CodeSystemVersions doExecute(final BranchContext context) throws IOException {
-		final TermQuery systemShortNameQuery = new TermQuery(new Term(VERSION_SYSTEM_SHORT_NAME, codeSystemShortName));
-
+		final Query query = createQuery();
 		final IndexSearcher searcher = context.service(IndexSearcher.class);
-		final int totalHits = getTotalHits(searcher, systemShortNameQuery);
+		
+		final int totalHits = getTotalHits(searcher, query);
 
 		if (totalHits == 0) {
 			return new CodeSystemVersions(Collections.<ICodeSystemVersion> emptyList());
 		} else {
 			final List<ICodeSystemVersion> versions = Lists.newArrayList();
-			final TopDocs topDocs = searcher.search(systemShortNameQuery, totalHits);
+			final TopDocs topDocs = searcher.search(query, totalHits);
 			final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 
 			for (final ScoreDoc scoreDoc : scoreDocs) {
@@ -68,6 +79,26 @@ final class CodeSystemVersionSearchRequest extends SearchRequest<CodeSystemVersi
 			}
 
 			return new CodeSystemVersions(versions);
+		}
+	}
+
+	private Query createQuery() {
+		final BooleanQuery query = new BooleanQuery();
+
+		if (!StringUtils.isEmpty(codeSystemShortName)) {
+			final TermQuery systemShortNameQuery = new TermQuery(new Term(VERSION_SYSTEM_SHORT_NAME, codeSystemShortName));
+			query.add(systemShortNameQuery, Occur.MUST);
+		}
+		
+		if (!StringUtils.isEmpty(versionId)) {
+			final TermQuery versionIdQuery = new TermQuery(new Term(VERSION_VERSION_ID, versionId));
+			query.add(versionIdQuery, Occur.MUST);
+		}
+		
+		if (!query.clauses().isEmpty()) {
+			return query;
+		} else {
+			return new MatchAllDocsQuery();
 		}
 	}
 
