@@ -59,7 +59,6 @@ public class IndexBasedImportIndexServiceFeeder implements IImportIndexServiceFe
 	private void registerAcceptability(final ImportIndexServerService service, final IBranchPath branchPath) {
 		
 		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getServiceChecked(SnomedIndexService.class);
 		final Query memberQuery = SnomedMappings.newQuery().memberRefSetType(SnomedRefSetType.LANGUAGE).matchAll();
 		
 		ReferenceManager<IndexSearcher> manager = null;

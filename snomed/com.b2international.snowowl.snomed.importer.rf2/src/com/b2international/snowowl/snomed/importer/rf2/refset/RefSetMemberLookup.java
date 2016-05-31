@@ -23,12 +23,10 @@ import java.util.UUID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.commons.collections.UuidLongMap;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
@@ -66,7 +64,7 @@ public class RefSetMemberLookup<M extends SnomedRefSetMember> {
 			
 			if (null == m) {
 				
-				final long _storageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getMemberStorageKey(branchPath, memberId.toString());
+				final long _storageKey = getMemberStorageKey(branchPath, memberId.toString());
 				
 				if (_storageKey > 0L) {
 				

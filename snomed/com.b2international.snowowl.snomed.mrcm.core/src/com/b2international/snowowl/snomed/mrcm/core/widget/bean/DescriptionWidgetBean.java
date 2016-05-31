@@ -50,7 +50,6 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 			.id("225857101000154102") 
 			.iconId(Concepts.SYNONYM)
 			.moduleId(Concepts.MODULE_SCT_CORE)
-			.storageKey(0L)
 			.active(true)
 			.released(true)
 			.primitive(true)

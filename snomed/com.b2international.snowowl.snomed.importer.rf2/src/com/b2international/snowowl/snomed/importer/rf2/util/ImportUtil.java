@@ -81,11 +81,9 @@ import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
@@ -166,15 +164,13 @@ public final class ImportUtil {
 			config.addRefSetSource(refSetUrl);
 		}
 		
-		boolean languageRefSetFound = false;
-		
-		final Collection<SnomedRefSetIndexEntry> existingRefSets = ApplicationContext.getServiceForClass(SnomedRefSetBrowser.class).getAllReferenceSets(branchPath);
-		for (final SnomedRefSetIndexEntry existingRefSet : existingRefSets) {
-			if (SnomedRefSetType.LANGUAGE.equals(existingRefSet.getType()) && languageRefSetId.equals(existingRefSet.getId())) {
-				languageRefSetFound = true;
-				break;
-			}
-		}
+		boolean languageRefSetFound = SnomedRequests.prepareSearchRefSet()
+				.setLimit(0)
+				.setComponentIds(Collections.singleton(languageRefSetId))
+				.filterByType(SnomedRefSetType.LANGUAGE)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 		
 		if (!languageRefSetFound) {
 
@@ -407,15 +403,15 @@ public final class ImportUtil {
 				.build(branchPath.getPath())
 				.executeSync(getEventBus());
 		
-		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
+//		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
 		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptDocument>() {
 			@Override
 			public SnomedConceptDocument apply(ISnomedConcept concept) {
 				final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
-				final long storageKey = lookupService.getStorageKey(branchPath, concept.getId());
+//				final long storageKey = lookupService.getStorageKey(branchPath, concept.getId());
 				return SnomedConceptDocument.builder(concept)
 						.label(label)
-						.storageKey(storageKey)
+//						.storageKey(storageKey)
 						.build();
 			}
 		}).toList();

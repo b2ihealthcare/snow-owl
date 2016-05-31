@@ -34,7 +34,6 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -105,7 +104,7 @@ public class ComponentLookup<C extends CDOObject> {
 					
 					if (SnomedRefSet.class == clazz) {
 
-						storageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getStorageKey(branchPath, componentId);
+						storageKey = refSetBrowser.getStorageKey(branchPath, componentId);
 						
 					} else {
 						

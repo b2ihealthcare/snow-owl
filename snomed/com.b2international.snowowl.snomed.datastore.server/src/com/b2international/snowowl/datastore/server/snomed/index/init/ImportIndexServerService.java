@@ -44,7 +44,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
@@ -56,7 +55,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Index service for improving performance for SNOMED CT import.
  */
-public class ImportIndexServerService extends SingleDirectoryIndexImpl {
+public class ImportIndexServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImportIndexServerService.class);
 

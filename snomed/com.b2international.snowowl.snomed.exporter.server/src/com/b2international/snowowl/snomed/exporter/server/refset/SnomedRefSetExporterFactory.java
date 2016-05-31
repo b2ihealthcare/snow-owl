@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.NoopExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedAssociationRefSetExporter;
@@ -198,10 +197,6 @@ public class SnomedRefSetExporterFactory {
 		return getServiceForClass(SnomedTerminologyBrowser.class).isSuperTypeOfById(branchPath, Concepts.SDD_DRUG_REFERENCE_SET, refSetId);
 	}
 
-	private static boolean isConceptReferencedComponent(final IBranchPath branchPath, final String refSetId) {
-		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == getServiceForClass(SnomedRefSetBrowser.class).getRefSet(branchPath, refSetId).getReferencedComponentType();
-	}
-	
 	/*returns with a SNOMED CT reference set identified by the identifier concept ID, opened in the specified CDO view*/
 	private static SnomedRefSet getRefSet(final String id, final CDOView cdoView) {
 		final ILookupService<String, SnomedRefSet, CDOView> lookupService = CoreTerminologyBroker
