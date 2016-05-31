@@ -106,6 +106,5 @@
   <eClassifiers xsi:type="ecore:EEnum" name="SnomedReleaseType">
     <eLiterals name="INTERNATIONAL" literal="INTERNATIONAL"/>
     <eLiterals name="EXTENSION" value="1" literal="EXTENSION"/>
-    <eLiterals name="MIXED" value="2" literal="MIXED"/>
   </eClassifiers>
 </ecore:EPackage>

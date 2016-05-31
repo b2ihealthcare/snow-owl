@@ -48,17 +48,7 @@ public enum SnomedReleaseType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	EXTENSION(1, "EXTENSION", "EXTENSION"),
-
-	/**
-	 * The '<em><b>MIXED</b></em>' literal object.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #MIXED_VALUE
-	 * @generated
-	 * @ordered
-	 */
-	MIXED(2, "MIXED", "MIXED");
+	EXTENSION(1, "EXTENSION", "EXTENSION");
 
 	/**
 	 * The '<em><b>INTERNATIONAL</b></em>' literal value.
@@ -91,21 +81,6 @@ public enum SnomedReleaseType implements Enumerator {
 	public static final int EXTENSION_VALUE = 1;
 
 	/**
-	 * The '<em><b>MIXED</b></em>' literal value.
-	 * <!-- begin-user-doc -->
-	 * <p>
-	 * If the meaning of '<em><b>MIXED</b></em>' literal object isn't clear,
-	 * there really should be more of a description here...
-	 * </p>
-	 * <!-- end-user-doc -->
-	 * @see #MIXED
-	 * @model
-	 * @generated
-	 * @ordered
-	 */
-	public static final int MIXED_VALUE = 2;
-
-	/**
 	 * An array of all the '<em><b>Release Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -115,7 +90,6 @@ public enum SnomedReleaseType implements Enumerator {
 		new SnomedReleaseType[] {
 			INTERNATIONAL,
 			EXTENSION,
-			MIXED,
 		};
 
 	/**
@@ -168,7 +142,6 @@ public enum SnomedReleaseType implements Enumerator {
 		switch (value) {
 			case INTERNATIONAL_VALUE: return INTERNATIONAL;
 			case EXTENSION_VALUE: return EXTENSION;
-			case MIXED_VALUE: return MIXED;
 		}
 		return null;
 	}

@@ -747,7 +747,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		initEEnum(snomedReleaseTypeEEnum, SnomedReleaseType.class, "SnomedReleaseType");
 		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.INTERNATIONAL);
 		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.EXTENSION);
-		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.MIXED);
 
 		// Create resource
 		createResource(eNS_URI);

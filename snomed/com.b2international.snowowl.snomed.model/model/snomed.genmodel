@@ -12,7 +12,6 @@
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="snomed.ecore#//SnomedReleaseType">
       <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/INTERNATIONAL"/>
       <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/EXTENSION"/>
-      <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/MIXED"/>
     </genEnums>
     <genClasses ecoreClass="snomed.ecore#//Component">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//Component/id"/>
