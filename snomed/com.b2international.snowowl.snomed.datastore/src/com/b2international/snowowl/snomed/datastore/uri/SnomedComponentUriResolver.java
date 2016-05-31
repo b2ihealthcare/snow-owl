@@ -29,7 +29,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 
 public class SnomedComponentUriResolver implements ITerminologyComponentUriResolver<IComponent<String>> {
 
@@ -61,8 +60,6 @@ public class SnomedComponentUriResolver implements ITerminologyComponentUriResol
 		if (component instanceof SnomedConceptDocument
 				|| component instanceof SnomedConceptDocument) {
 			return terminologyPrefix + "code=" + component.getId();
-		} else if (component instanceof SnomedRefSetIndexEntry) {
-			return terminologyPrefix + "refset=" + component.getId();
 		}
 		throw new IllegalArgumentException("Unexpected component: " + component);
 	}
