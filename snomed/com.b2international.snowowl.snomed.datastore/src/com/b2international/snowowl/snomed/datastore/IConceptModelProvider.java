@@ -32,10 +32,9 @@ public interface IConceptModelProvider {
 	 * @param conceptModel the concept model containing the attribute constraints.
 	 * @param conceptId the SNOMED&nbsp;CT identifier of the concept.
 	 * @param terminologyBrowser the {@link SnomedTerminologyBrowser} to use.
-	 * @param refSetBrowser reference set browser to use.
 	 * @return a set of constraints associated with the SNOMED&nbsp;CT concept identified by the specified unique ID.
 	 */
-	public Set<ConstraintBase> getAllConstraints(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser, final SnomedClientRefSetBrowser refSetBrowser);
+	public Set<ConstraintBase> getAllConstraints(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser);
 	
 	/**
 	 * Returns an immutable set of <em>active</em> constraints, where the specified concept is part of the domain.
@@ -46,5 +45,5 @@ public interface IConceptModelProvider {
 	 * @param refSetBrowser reference set browser to use.
 	 * @return a set of constraints associated with the SNOMED&nbsp;CT concept identified by the specified unique ID for the validation process.
 	 */
-	public Set<ConstraintBase> getConstraintsForValidation(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser, final SnomedClientRefSetBrowser refSetBrowser);
+	public Set<ConstraintBase> getConstraintsForValidation(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser);
 }

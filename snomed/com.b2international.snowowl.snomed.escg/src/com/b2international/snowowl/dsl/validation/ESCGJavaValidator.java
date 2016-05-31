@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -136,15 +135,9 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final SnomedClientRefSetBrowser browser  = ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
-		
-		if (null == browser) {
-			return;
-		}
-		
 		try {
 			
-			boolean refSetExists = browser.getRefSet(refSet.getId()) != null;
+			boolean refSetExists = ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class).getConcept(refSet.getId()) != null;
 
 			// Concept id is not valid if the concept id length is less then 6 or longer then 18 -> should't be existed at all -> don't show 2 error messages
 			if (refSet.getId().length() < 6 || refSet.getId().length() > 18) {

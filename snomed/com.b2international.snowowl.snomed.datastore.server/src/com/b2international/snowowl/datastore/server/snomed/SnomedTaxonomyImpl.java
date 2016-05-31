@@ -16,13 +16,11 @@
 package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.commons.collect.LongSets.newLongSet;
 import static com.b2international.commons.collect.LongSets.toStringList;
 import static com.b2international.commons.graph.GraphUtils.getLongestPath;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Collections2.transform;
 import static com.google.common.collect.HashMultimap.create;
@@ -34,7 +32,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 
 import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.ints.IntIterator;
@@ -53,17 +51,25 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.time.TimeUtil;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.IsAStatement.Statement;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomy;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
@@ -74,11 +80,11 @@ import com.b2international.snowowl.snomed.dsl.query.ast.OrClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.ast.RefSet;
 import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Supplier;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -477,9 +483,8 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			}
 		} else {
 			initializeTaxonomyInBackgroud();
-			final Set<String> containerIds = newHashSet(getRefSetBrowser().getContainerRefSetIds(branchPath, conceptId));
-			containerIds.addAll(getRefSetBrowser().getContainerMappingRefSetIds(branchPath, conceptId));
-			return containerIds;
+			final SnomedConceptDocument concept = getTerminologyBrowser().getConcept(branchPath, conceptId);
+			return ImmutableSet.<String>builder().addAll(concept.getReferringRefSets()).addAll(concept.getReferringMappingRefSets()).build();
 		}
 	}
 	
@@ -615,17 +620,31 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			
 		}
 
-		final Supplier<LongKeyMap<LongSet>> refSetMapSupplier = memoize(new Supplier<LongKeyMap<LongSet>>() {
-			@Override
-			public LongKeyMap<LongSet> get() {
-				return getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
-		}});
-		
-		new Thread(new Runnable() {
-			@Override public void run() {
-				refSetMapSupplier.get();
-			}
-		}).start();
+		final Promise<LongKeyMap<LongSet>> refSetMapPromise = SnomedRequests.prepareSearchRefSet()
+			.all()
+			.filterByTypes(ImmutableSet.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.ATTRIBUTE_VALUE))
+			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+			.setExpand("members(limit:"+Integer.MAX_VALUE+",active:true)")
+			.build(branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.then(new Function<SnomedReferenceSets, LongKeyMap<LongSet>>() {
+				@Override
+				public LongKeyMap<LongSet> apply(SnomedReferenceSets input) {
+					final LongKeyMap<LongSet> refSetIdReferencedConceptIds = PrimitiveMaps.newLongKeyOpenHashMap();
+					for (SnomedReferenceSet refSet : input) {
+						final long refSetId = Long.parseLong(refSet.getId());
+						if (!refSetIdReferencedConceptIds.containsKey(refSetId)) {
+							refSetIdReferencedConceptIds.put(refSetId, PrimitiveSets.newLongOpenHashSet(refSet.getMembers().getTotal()));
+						}
+						
+						for (SnomedReferenceSetMember member : refSet.getMembers()) {
+							final long referencedComponentId = Long.parseLong(member.getReferencedComponent().getId());
+							refSetIdReferencedConceptIds.get(refSetId).add(referencedComponentId);
+						}
+					}
+					return refSetIdReferencedConceptIds;
+				}
+			});
 		
 		for (int i = 0; i < conceptCount; i++) {
 			descendants[i] = new int[incomingIsaHistogram[i]];
@@ -656,7 +675,7 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 			
 		}
 		
-		refSetMap = refSetMapSupplier.get();
+		refSetMap = refSetMapPromise.getSync();
 		
 		state.set(state.get().nextState());
 
@@ -955,10 +974,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	
 	private SnomedStatementBrowser getStatementBrowser() {
 		return getServiceForClass(SnomedStatementBrowser.class);
-	}
-	
-	private SnomedRefSetBrowser getRefSetBrowser() {
-		return getServiceForClass(SnomedRefSetBrowser.class);
 	}
 	
 }

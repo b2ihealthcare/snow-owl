@@ -21,9 +21,7 @@ import com.b2international.snowowl.snomed.datastore.EnumeratedConceptSetProcesso
 import com.b2international.snowowl.snomed.datastore.HierarchyConceptSetProcessor;
 import com.b2international.snowowl.snomed.datastore.ReferenceSetConceptSetProcessor;
 import com.b2international.snowowl.snomed.datastore.RelationshipConceptSetProcessor;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
@@ -34,21 +32,18 @@ import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 public class ConceptSetProcessorFactory {
 
 	@SuppressWarnings("unchecked")
-	public static <T extends ConceptSetDefinition> ConceptSetProcessor<T> createProcessor(final T conceptSetDefinition, 
-			final SnomedClientTerminologyBrowser terminologyBrowser, 
-			final SnomedClientRefSetBrowser refSetBrowser,
-			final SnomedClientIndexService indexService) {
+	public static <T extends ConceptSetDefinition> ConceptSetProcessor<T> createProcessor(final T conceptSetDefinition,	final SnomedClientTerminologyBrowser terminologyBrowser) {
 		
 		if (conceptSetDefinition instanceof HierarchyConceptSetDefinition) {
 			return (ConceptSetProcessor<T>) new HierarchyConceptSetProcessor((HierarchyConceptSetDefinition) conceptSetDefinition, terminologyBrowser);
 		} else if (conceptSetDefinition instanceof ReferenceSetConceptSetDefinition) {
-			return (ConceptSetProcessor<T>) new ReferenceSetConceptSetProcessor((ReferenceSetConceptSetDefinition) conceptSetDefinition, refSetBrowser);
+			return (ConceptSetProcessor<T>) new ReferenceSetConceptSetProcessor((ReferenceSetConceptSetDefinition) conceptSetDefinition);
 		} else if (conceptSetDefinition instanceof RelationshipConceptSetDefinition) {
-			return (ConceptSetProcessor<T>) new RelationshipConceptSetProcessor((RelationshipConceptSetDefinition) conceptSetDefinition, indexService);
+			return (ConceptSetProcessor<T>) new RelationshipConceptSetProcessor((RelationshipConceptSetDefinition) conceptSetDefinition);
 		} else if (conceptSetDefinition instanceof EnumeratedConceptSetDefinition) {
 			return (ConceptSetProcessor<T>) new EnumeratedConceptSetProcessor((EnumeratedConceptSetDefinition) conceptSetDefinition, terminologyBrowser);
 		} else if (conceptSetDefinition instanceof CompositeConceptSetDefinition) {
-			return (ConceptSetProcessor<T>) new CompositeConceptSetProcessor((CompositeConceptSetDefinition) conceptSetDefinition, terminologyBrowser, refSetBrowser, indexService);
+			return (ConceptSetProcessor<T>) new CompositeConceptSetProcessor((CompositeConceptSetDefinition) conceptSetDefinition, terminologyBrowser);
 		}
 		
 		throw new IllegalArgumentException("Unexpected concept set definition: " + conceptSetDefinition);

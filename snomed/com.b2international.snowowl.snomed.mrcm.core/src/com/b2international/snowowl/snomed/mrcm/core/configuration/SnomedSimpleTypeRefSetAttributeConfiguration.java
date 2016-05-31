@@ -21,22 +21,21 @@ import static com.b2international.snowowl.snomed.mrcm.core.configuration.Attribu
 import static com.b2international.snowowl.snomed.mrcm.mini.SectionType.DESCRIPTION_SECTION;
 import static com.b2international.snowowl.snomed.mrcm.mini.SectionType.PROPERTY_SECTION;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.browser.IClientRefSetBrowser;
 import com.b2international.snowowl.core.api.preferences.AbstractSerializableConfiguration;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.mini.SectionType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -44,7 +43,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -65,19 +63,8 @@ public final class SnomedSimpleTypeRefSetAttributeConfiguration extends Abstract
 		if (null == service)
 			return null;
 		
-		final SnomedRefSetMembershipLookupService lookupService = new SnomedRefSetMembershipLookupService();
-		final Collection<SnomedRefSetMemberIndexEntry> members = lookupService.getMembersForType(
-				SnomedTerminologyComponentConstants.CONCEPT, 
-				SIMPLE_TYPE_SET, 
-				concept.getId(),
-				//XXX akitta
-				//the number of the simple type concept referenced component type reference sets are stored in snor.
-				//simple type reference sets cannot contain duplicate reference set members.
-				//we can limit the search to gain ~50 times speed up. (~100 - 150 ms)
-				Sets.newHashSet(getRefSetBrowserService().getRefsSets()).size());
-		
-		for (final SnomedRefSetMemberIndexEntry refSetMembers : members) {
-			final String refSetIdentifierId = refSetMembers.getRefSetIdentifierId();
+		for (final SnomedReferenceSetMember member : getSimpleMembers(concept.getId())) {
+			final String refSetIdentifierId = member.getReferenceSetId();
 			final SnomedSimpleTypeRefSetAttributeConfiguration configuration = service.getConfiguration(refSetIdentifierId);
 			if (null != configuration)
 				return configuration;
@@ -97,19 +84,8 @@ public final class SnomedSimpleTypeRefSetAttributeConfiguration extends Abstract
 		if (null == service)
 			return null;
 		
-		final SnomedRefSetMembershipLookupService lookupService = new SnomedRefSetMembershipLookupService();
-		final Collection<SnomedRefSetMemberIndexEntry> members = lookupService.getMembersForType(
-				SnomedTerminologyComponentConstants.CONCEPT, 
-				SIMPLE_TYPE_SET, 
-				conceptId,
-				//XXX akitta
-				//the number of the simple type concept referenced component type reference sets are stored in snor.
-				//simple type reference sets cannot contain duplicate reference set members.
-				//we can limit the search to gain ~50 times speed up. (~100 - 150 ms)
-				Sets.newHashSet(getRefSetBrowserService().getRefsSets()).size());
-		
-		for (final SnomedRefSetMemberIndexEntry refSetMembers : members) {
-			final String refSetIdentifierId = refSetMembers.getRefSetIdentifierId();
+		for (final SnomedReferenceSetMember refSetMembers : getSimpleMembers(conceptId)) {
+			final String refSetIdentifierId = refSetMembers.getReferenceSetId();
 			final SnomedSimpleTypeRefSetAttributeConfiguration configuration = service.getConfiguration(refSetIdentifierId);
 			if (null != configuration)
 				return configuration;
@@ -117,8 +93,15 @@ public final class SnomedSimpleTypeRefSetAttributeConfiguration extends Abstract
 		return null;
 	}
 
-	private static IClientRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptDocument, String> getRefSetBrowserService() {
-		return ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
+	private static SnomedReferenceSetMembers getSimpleMembers(final String conceptId) {
+		final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByReferencedComponent(conceptId)
+				.filterByRefSetType(SIMPLE_TYPE_SET)
+				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		return members;
 	}
 
 	/**

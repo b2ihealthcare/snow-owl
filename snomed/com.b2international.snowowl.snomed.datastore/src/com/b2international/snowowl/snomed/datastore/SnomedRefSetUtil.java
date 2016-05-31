@@ -222,36 +222,6 @@ public abstract class SnomedRefSetUtil {
 	/**
 	 * Returns with the unique terminology component ID as a short for the <i>special field</i> of a 
 	 * SNOMED&nbsp;CT reference set member given as a {@link Document}.
-	 * @param document the document representing a SNOMED&nbsp;CT reference set member.
-	 * @return the terminology component ID.
-	 */
-	public static short getSpecialFieldComponentTypeId(final Document document) {
-		SnomedRefSetType type = get(SnomedMappings.memberRefSetType().getValue(document));
-
-		switch (Preconditions.checkNotNull(type, "SNOMED CT reference set type was null for document: " + document)) {
-			
-			case LANGUAGE://$FALL-THROUGH$
-			case ASSOCIATION://$FALL-THROUGH$
-			case DESCRIPTION_TYPE://$FALL-THROUGH$
-			case ATTRIBUTE_VALUE:
-				return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-			case QUERY://$FALL-THROUGH$
-			case SIMPLE://$FALL-THROUGH$
-			case CONCRETE_DATA_TYPE:
-				return CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
-			case SIMPLE_MAP://$FALL-THROUGH$
-			case COMPLEX_MAP://$FALL-THROUGH$ 
-			case EXTENDED_MAP:
-				return SnomedMappings.memberMapTargetComponentType().getShortValue(document);
-			default:
-				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
-		}
-		
-	}
-	
-	/**
-	 * Returns with the unique terminology component ID as a short for the <i>special field</i> of a 
-	 * SNOMED&nbsp;CT reference set member given as a {@link Document}.
 	 * <p>
 	 * <b>NOTE:&nbsp;</b>Does not support neither simple map nor complex map reference set types.</p>  
 	 * @param document the document representing a SNOMED&nbsp;CT reference set member.

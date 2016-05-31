@@ -22,19 +22,12 @@ import java.util.List;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.scripting.services.api.IQueryEvaluatorService;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Lists;
 
 /**
  * Service for evaluating an ESCG expression.
- * This evaluator service uses the latest version of the {@link SnomedClientTerminologyBrowser terminology}, 
- * {@link SnomedClientStatementBrowser statement} and {@link SnomedClientRefSetBrowser reference} set browsers for the 
-  * SNOMED&nbsp;CT terminology.
-  * 
  * @see IQueryEvaluatorService
  */
 public final class EscgEvaluatorService implements IQueryEvaluatorService<SnomedConceptDocument> {

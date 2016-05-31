@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -37,11 +39,10 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -352,32 +353,23 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	 * SNOMED&nbsp;CT reference set hierarchy browser handling reference set membership for unpersisted SNOMED&nbsp;CT concepts.
 	 * @see SnomedRefSetBrowser
 	 */
-	public final static class SnomedRefSetBrowserProvider extends SnomedClientRefSetBrowser {
+	public final static class SnomedRefSetBrowserProvider {
 
-		public static SnomedClientRefSetBrowser getRefSetBrowser(final Concept concept) {
-			CDOUtils.check(concept);
-			if (concept.cdoView().isDirty()) {
-				return new SnomedRefSetBrowserProvider(concept);
-			} else {
-				return ApplicationContext.getServiceForClass(SnomedClientRefSetBrowser.class);
-			}
+		public static SnomedRefSetBrowserProvider create(final Concept concept) {
+			return new SnomedRefSetBrowserProvider(concept);
 		}
 		
-		private String conceptId;
+		private final String conceptId;
 		private final Set<String> refSetIds;
-		private SnomedClientRefSetBrowser delegate;
+		private final IBranchPath branchPath;
 
 		/**
 		 * @param wrapperService
 		 */
 		private SnomedRefSetBrowserProvider(final Concept concept) {
-			super(ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class), 
-					SnowOwlApplication.INSTANCE.getEnviroment().provider(SnomedClientTerminologyBrowser.class),
-					ApplicationContext.getInstance().getService(IEventBus.class),
-					SnowOwlApplication.INSTANCE.getEnviroment().provider(LanguageSetting.class));
 			this.refSetIds = Sets.newHashSet();
-			Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
-			this.conceptId = Preconditions.checkNotNull(concept.getId(), "SNOMED CT concept ID cannot be null.");
+			this.conceptId = concept.getId();
+			this.branchPath = BranchPathUtils.createPath(concept.cdoView());
 			
 			// Save a snapshot from the new members from the transaction
 			final Iterable<SnomedRefSetMember> newRefSetMembers = ImmutableList.copyOf(ComponentUtils2.getNewObjects(concept.cdoView(), SnomedRefSetMember.class));
@@ -390,24 +382,25 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 					this.refSetIds.add(newRefSetMember.getRefSetIdentifierId());
 				}
 			}
-			
-			this.delegate = getRefSetBrowser();
 		}
 
-		private static SnomedClientRefSetBrowser getRefSetBrowser() {
-			return ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.b2international.snowowl.snomed.datastore.AbstractClientRefSetBrowser#isReferenced(java.lang.Object, java.lang.Object)
-		 */
-		@Override
 		public boolean isReferenced(final String refSetId, final String componentId) {
 			if (conceptId.equals(componentId)) {
-				return refSetIds.contains(refSetId) || delegate.isReferenced(refSetId, componentId);
+				return refSetIds.contains(refSetId) || isReferencedInStore(refSetId, componentId);
 			} else {
-				return delegate.isReferenced(refSetId, componentId);
+				return isReferencedInStore(refSetId, componentId);
 			}
+		}
+
+		private boolean isReferencedInStore(String referenceSetId, String referencedComponentId) {
+			return SnomedRequests.prepareSearchMember()
+					.setLimit(0)
+					.filterByActive(true)
+					.filterByReferencedComponent(referencedComponentId)
+					.filterByRefSet(referenceSetId)
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync().getTotal() > 0;
 		}
 	}
 }

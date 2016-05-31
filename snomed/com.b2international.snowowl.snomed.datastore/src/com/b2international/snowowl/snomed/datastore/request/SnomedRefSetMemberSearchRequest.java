@@ -66,6 +66,11 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		REFERENCED_COMPONENT,
 		
 		/**
+		 * The referenced component type to match
+		 */
+		REFERENCED_COMPONENT_TYPE,
+		
+		/**
 		 * Filter by refset type
 		 */
 		REFSET_TYPE,

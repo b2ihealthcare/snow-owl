@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -34,11 +33,14 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -64,7 +66,8 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 	@Override
 	public SnomedRefSetMember getComponent(final String uuid, final CDOView view) {
 
-		final long memberStorageKey = getRefSetBrowser().getMemberStorageKey(BranchPathUtils.createPath(view), uuid);
+		final IBranchPath branch = BranchPathUtils.createPath(view);
+		final long memberStorageKey = getStorageKey(branch, uuid);
 		CDOObject cdoObject = null;
 
 		//second attempt to lookup reference set member in transaction
@@ -109,37 +112,23 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 
 	@Override
 	public SnomedRefSetMemberIndexEntry getComponent(final IBranchPath branchPath, final String uuid) {
-		checkNotNull(branchPath, "The branch path cannot be null.");
-		checkNotNull(uuid, "The identifier of the SNOMED CT reference set member cannot be null.");
-
-		final SnomedIndexService service = getIndexService();
-
-		if (null == service) {
-			LOGGER.warn("Lucene index lookup service for SNOMED CT reference set members was not available.");
-			return null;
-		}
-
-		final List<SnomedRefSetMemberIndexEntry> result = service.search(branchPath, SnomedRefSetMembershipIndexQueryAdapter.createFindByUuidQuery(uuid), 1);
-
-		if (null == result) {
-			LOGGER.warn("Lucene index lookup service for SNOMED CT reference set members returned with null.");
-			return null;
-		}
-
-		return Iterables.getOnlyElement(result, null);
+		return SnomedRequests.prepareSearchMember()
+				.setComponentIds(Collections.singleton(uuid))
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry>() {
+					@Override
+					public SnomedRefSetMemberIndexEntry apply(SnomedReferenceSetMembers input) {
+						final SnomedReferenceSetMember member = Iterables.getOnlyElement(input, null);
+						return member == null ? null : SnomedRefSetMemberIndexEntry.builder(member).build();
+					}
+				})
+				.getSync();
 	}
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		return getRefSetBrowser().getMemberStorageKey(branchPath, id);
-	}
-
-	private SnomedIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-
-	private SnomedRefSetBrowser getRefSetBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
+		throw new UnsupportedOperationException("DO WE NEED THIS???");
 	}
 
 	@Override

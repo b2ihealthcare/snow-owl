@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Iterator;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
@@ -29,21 +28,16 @@ import com.google.common.collect.Lists;
 public class CompositeConceptSetProcessor extends ConceptSetProcessor<CompositeConceptSetDefinition> {
 
 	private final SnomedClientTerminologyBrowser terminologyBrowser;
-	private final SnomedClientRefSetBrowser refSetBrowser;
-	private final SnomedClientIndexService indexService;
 
-	public CompositeConceptSetProcessor(final CompositeConceptSetDefinition conceptSetDefinition, final SnomedClientTerminologyBrowser terminologyBrowser, final SnomedClientRefSetBrowser refSetBrowser,
-			final SnomedClientIndexService indexService) {
+	public CompositeConceptSetProcessor(final CompositeConceptSetDefinition conceptSetDefinition, final SnomedClientTerminologyBrowser terminologyBrowser) {
 		super(conceptSetDefinition);
 		this.terminologyBrowser = terminologyBrowser;
-		this.refSetBrowser = refSetBrowser;
-		this.indexService = indexService;
 	}
 
 	@Override
 	public boolean contains(final SnomedConceptDocument concept) {
 		for (final ConceptSetDefinition child : conceptSetDefinition.getChildren()) {
-			if (ConceptSetProcessorFactory.createProcessor(child, terminologyBrowser, refSetBrowser, indexService).contains(concept))
+			if (ConceptSetProcessorFactory.createProcessor(child, terminologyBrowser).contains(concept))
 				return true;
 		}
 		return false;
@@ -57,7 +51,7 @@ public class CompositeConceptSetProcessor extends ConceptSetProcessor<CompositeC
 		final List<Iterator<SnomedConceptDocument>> iterators = Lists.newArrayList();
 		for (final ConceptSetDefinition childConceptSetDefinition : conceptSetDefinition.getChildren()) {
 			final ConceptSetProcessor<ConceptSetDefinition> conceptSetProcessor = ConceptSetProcessorFactory.createProcessor(
-					childConceptSetDefinition, terminologyBrowser, refSetBrowser, indexService);
+					childConceptSetDefinition, terminologyBrowser);
 			iterators.add(conceptSetProcessor.getConcepts());
 		}
 		

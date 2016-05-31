@@ -26,26 +26,30 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDeletionPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -63,8 +67,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
 
 
 /**
@@ -75,7 +77,6 @@ public class EquivalentConceptMerger {
 	private final SnomedEditingContext editingContext;
 	private final List<LongSet> equivalenciesToFix;
 	private final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
-	private final SnomedRefSetBrowser refSetBrowser = ApplicationContext.getServiceForClass(SnomedRefSetBrowser.class);
 	
 	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongSet> equivalenciesToFix) {
 		this.editingContext = editingContext;
@@ -91,7 +92,14 @@ public class EquivalentConceptMerger {
 				.transformAndConcat(new Function<Concept, Iterable<SnomedRelationshipIndexEntry>>() {
 					@Override
 					public Iterable<SnomedRelationshipIndexEntry> apply(Concept input) {
-						return ApplicationContext.getInstance().getService(SnomedIndexService.class).search(BranchPathUtils.createPath(editingContext.getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(input.getId()));
+						final SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
+							.all()
+							.filterByActive(true)
+							.filterByDestination(input.getId())
+							.build(editingContext.getBranch())
+							.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+							.getSync();
+						return SnomedRelationshipIndexEntry.fromRelationships(relationships);
 					}
 				})
 				.transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
@@ -292,10 +300,7 @@ public class EquivalentConceptMerger {
 			if (referringMemberToRemove instanceof SnomedSimpleMapRefSetMember) {
 				final SnomedSimpleMapRefSetMember simpleMapMember = (SnomedSimpleMapRefSetMember) referringMemberToRemove;
 				
-				if (!refSetBrowser.hasMapping(branchPath, 
-						simpleMapMember.getRefSetIdentifierId(), 
-						id, 
-						simpleMapMember.getMapTargetComponentId())) {
+				if (!hasMapping(branchPath, simpleMapMember.getRefSetIdentifierId(), id, simpleMapMember.getMapTargetComponentId())) {
 					
 					final SnomedSimpleMapRefSetMember newMember = refSetEditingContext.createSimpleMapRefSetMember(
 							SnomedRefSetEditingContext.createConceptTypePair(id), 
@@ -314,9 +319,9 @@ public class EquivalentConceptMerger {
 				
 			} else {
 				
-				if (!refSetBrowser.isActiveMemberOf(branchPath, 
-						Long.parseLong(referringMemberToRemove.getRefSetIdentifierId()), 
-						Long.parseLong(id))) {
+				if (!isActiveMemberOf(branchPath, 
+						referringMemberToRemove.getRefSetIdentifierId(), 
+						id)) {
 					
 					final SnomedRefSetMember newMember = EcoreUtil.copy(referringMemberToRemove);
 					newMember.unsetEffectiveTime();
@@ -343,6 +348,29 @@ public class EquivalentConceptMerger {
 		}
 	}
 	
+	private boolean isActiveMemberOf(IBranchPath branchPath, String refSetIdentifierId, String referencedComponentId) {
+		return SnomedRequests.prepareSearchMember()
+				.setLimit(0)
+				.filterByActive(true)
+				.filterByRefSet(refSetIdentifierId)
+				.filterByReferencedComponent(referencedComponentId)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
+	}
+
+	private boolean hasMapping(IBranchPath branchPath, String refSetIdentifierId, String referencedComponentId, String mapTargetComponentId) {
+		return SnomedRequests.prepareSearchMember()
+				.setLimit(0)
+				.filterByActive(true)
+				.filterByRefSet(refSetIdentifierId)
+				.filterByReferencedComponent(referencedComponentId)
+				.filterByProps(OptionsBuilder.newBuilder().put(SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET, mapTargetComponentId).build())
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
+	}
+
 	private void removeDeprecatedRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Multimap<String, Relationship> inboundRelationshipMap) {
 		for (final Relationship inboundRelationship : Sets.newHashSet(inboundRelationshipMap.get(conceptToKeep.getId()))) {
 			if (conceptsToRemove.contains(inboundRelationship.getSource())) {

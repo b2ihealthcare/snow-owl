@@ -170,12 +170,12 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     }
 
     public long getMemberCdoId(final String uuid) {
-        final long memberStorageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getMemberStorageKey(importTargetBranchPath, uuid);
+//        final long memberStorageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getMemberStorageKey(importTargetBranchPath, uuid);
         return CDOUtils.NO_STORAGE_KEY == memberStorageKey ? getItemCdoId(new TermQuery(new Term(MEMBER_UUID, uuid))) : memberStorageKey;
     }
 
     public long getRefSetCdoId(final String identifierConceptId) {
-        final long storageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getStorageKey(importTargetBranchPath, identifierConceptId);
+//        final long storageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getStorageKey(importTargetBranchPath, identifierConceptId);
         return CDOUtils.NO_STORAGE_KEY == storageKey ? getItemCdoId(new TermQuery(new Term(REF_SET_ID, identifierConceptId))) : storageKey;
     }
 
