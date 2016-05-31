@@ -177,16 +177,8 @@
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.refsetmember">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </representation>
-      <representation
             class="com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMappingRefSetImpl"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </representation>
-      <representation
-            class="com.b2international.snowowl.snomed.datastore.index.refset.SnomedComplexMapRefSetMemberIndexEntry"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refsetmember">
       </representation>
    </extension>
    <extension
@@ -289,13 +281,6 @@
       </factory>
    </extension>
    <extension
-         point="com.b2international.snowowl.core.refSetMembershipLookupService">
-      <refSetMembershipLookupService
-            class="com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </refSetMembershipLookupService>
-   </extension>
-   <extension
          point="com.b2international.snowowl.core.nameProviderFactory">
       <nameProviderFactory
             class="com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProviderFactory"
@@ -318,11 +303,6 @@
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedIndexServiceConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.index.SnomedIndexServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
       <serviceConfigJob
             class="com.b2international.snowowl.snomed.datastore.LanguageConfigurationProviderConfigJob"
             id="com.b2international.snowowl.snomed.datastore.LanguageConfigurationProviderConfigJob"
