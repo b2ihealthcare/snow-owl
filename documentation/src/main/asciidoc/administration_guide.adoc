@@ -84,13 +84,9 @@ Available language reference sets will be displayed as above, after parsing the 
 Use the following OSGi command to start the import process:
 
 --------------------------
-osgi> sctimport rf2_release -l <languageRefSetId> -t <type> -b <branch> -v <path to archive file> <path to release descriptor file>
+osgi> sctimport rf2_release -t <type> -b <branch> -v <path to archive file> <path to release descriptor file>
 --------------------------
 
-<extension_metadata_file_path>\t\tPath to the metadata file describing the extension.
-
--l <languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
-previous step.
 -t <type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use.
 -b <branch>:: The existing branch to import the content onto. In case of extension import, an effective time from the base SNOMED CT release (e.g. 2016-01-31). If omitted 'MAIN' will be used.
 -v\t\tCreates versions for each effective time found in the release archive. If omitted no versions will be created.
@@ -114,13 +110,13 @@ Where the release descriptor json file contains the key/values as:
 Example `FULL` import with US language reference set:
 
 --------------------------
-osgi> sctimport rf2_release -l 900000000000509007 -t FULL /opt/SnomedCT_Release_INT_20130131.zip
+osgi> sctimport rf2_release -t FULL /opt/SnomedCT_Release_INT_20130131.zip
 --------------------------
 
 An example for the Danish extension:
 
 --------------------------
-osgi> sctimport rf2_extension -l 554461000005103 -t FULL -bv MAIN/2016-01-31 -cv false /SnomedCT_Release_DK1000005_20160215.zip /dk_extension.properties
+osgi> sctimport rf2_extension -t FULL -bv MAIN/2016-01-31 -cv false /SnomedCT_Release_DK1000005_20160215.zip /dk_extension.properties
 --------------------------
 
 NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
