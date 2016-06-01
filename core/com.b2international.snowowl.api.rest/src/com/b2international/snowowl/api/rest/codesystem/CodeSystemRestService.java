@@ -39,9 +39,10 @@ import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemCreateRequest;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
@@ -108,7 +109,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final String userId = principal.getName();
 		final CodeSystemRequests requests = new CodeSystemRequests(codeSystem.getRepositoryUuid());
 		
-		final CodeSystemCreateRequest req = buildCreateRequest(codeSystem, requests);
+		final Request<TransactionContext, String> req = buildCreateRequest(codeSystem, requests);
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
 		final String shortName = requests
@@ -128,8 +129,8 @@ public class CodeSystemRestService extends AbstractRestService {
 				.build();
 	}
 	
-	private CodeSystemCreateRequest buildCreateRequest(final ICodeSystem codeSystem, final CodeSystemRequests requests) {
-		return (CodeSystemCreateRequest) requests
+	private Request<TransactionContext, String> buildCreateRequest(final ICodeSystem codeSystem, final CodeSystemRequests requests) {
+		return requests
 				.prepareNewCodeSystem()
 				.setBranchPath(codeSystem.getBranchPath())
 				.setCitation(codeSystem.getCitation())

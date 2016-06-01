@@ -29,7 +29,7 @@ import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBu
 /**
  * @since 4.7
  */
-public final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, String> {
+final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, String> {
 
 	private static final long serialVersionUID = 1L;
 
