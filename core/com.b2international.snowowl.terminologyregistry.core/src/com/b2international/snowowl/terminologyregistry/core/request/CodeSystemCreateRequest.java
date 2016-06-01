@@ -19,7 +19,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
@@ -94,7 +94,7 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 	
 	@Override
 	public String execute(final TransactionContext context) {
-		validateCodeSystem(context);
+		checkCodeSystem(context);
 
 		final CodeSystem codeSystem = createCodeSystem(context);
 		context.add(codeSystem);
@@ -102,18 +102,18 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 		return codeSystem.getShortName();
 	}
 
-	private void validateCodeSystem(final TransactionContext context) {
+	private void checkCodeSystem(final TransactionContext context) {
 		final UserBranchPathMap branchPathMap = new UserBranchPathMap();
 		branchPathMap.putBranchPath(repositoryUuid, BranchPathUtils.createMainPath());
 
 		final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
 
 		if (registryService.getCodeSystemByOid(branchPathMap, oid) != null) {
-			throw new BadRequestException("Couldn't create code system with OID %s as it is not unique.", oid);
+			throw new AlreadyExistsException("Couldn't create code system with OID %s as it is not unique.", oid);
 		}
 
 		if (registryService.getCodeSystemByShortName(branchPathMap, shortName) != null) {
-			throw new BadRequestException("Couldn't create code system with short name %s as it is not unique.", shortName);
+			throw new AlreadyExistsException("Couldn't create code system with short name %s as it is not unique.", shortName);
 		}
 	}
 
