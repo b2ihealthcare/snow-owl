@@ -296,7 +296,7 @@ public class SnomedPublishManager extends PublishManager {
 				.setCodeSystemShortName(getConfiguration().getCodeSystemShortName())
 				.build(IBranchPath.MAIN_BRANCH)
 				.executeSync(getEventBus())
-				.getVersions();
+				.getItems();
 	}
 	
 }

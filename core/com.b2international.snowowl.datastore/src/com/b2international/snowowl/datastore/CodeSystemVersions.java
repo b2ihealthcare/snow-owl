@@ -15,21 +15,19 @@
  */
 package com.b2international.snowowl.datastore;
 
-import java.util.Collection;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
  * @since 4.7
  */
-public class CodeSystemVersions {
+public final class CodeSystemVersions extends CollectionResource<ICodeSystemVersion> {
 
-	private final Collection<ICodeSystemVersion> versions;
-
-	public CodeSystemVersions(final Collection<ICodeSystemVersion> versions) {
-		this.versions = versions;
-	}
-
-	public Collection<ICodeSystemVersion> getVersions() {
-		return versions;
+	private static final long serialVersionUID = 1L;
+	
+	public CodeSystemVersions(final List<ICodeSystemVersion> items) {
+		super(items);
 	}
 
 }

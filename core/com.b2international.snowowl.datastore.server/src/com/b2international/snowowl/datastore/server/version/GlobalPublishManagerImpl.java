@@ -319,7 +319,7 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					.setCodeSystemShortName(shortName)
 					.build(IBranchPath.MAIN_BRANCH)
 					.executeSync(getEventBus())
-					.getVersions();
+					.getItems();
 			versionsMap.put(toolingId, versions);
 		}
 		

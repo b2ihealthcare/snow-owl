@@ -259,7 +259,7 @@ public abstract class PublishManager implements IPublishManager {
 				.setVersionId(configuration.getVersionId())
 				.build(IBranchPath.MAIN_BRANCH)
 				.executeSync(getEventBus())
-				.getVersions()
+				.getItems()
 				.isEmpty();
 	}
 	
@@ -299,7 +299,7 @@ public abstract class PublishManager implements IPublishManager {
 				.setVersionId(configuration.getVersionId())
 				.build(IBranchPath.MAIN_BRANCH)
 				.executeSync(getEventBus())
-				.getVersions();
+				.getItems();
 		
 		return Iterables.getOnlyElement(versions, null);
 	}

@@ -119,7 +119,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 				.setVersionId(versionId)
 				.build(IBranchPath.MAIN_BRANCH)
 				.executeSync(getEventBus())
-				.getVersions();
+				.getItems();
 		
 		final com.b2international.snowowl.datastore.ICodeSystemVersion version = Iterables.getOnlyElement(versions, null);
 		if (version == null) {
@@ -201,7 +201,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 				.setCodeSystemShortName(shortName)
 				.build(IBranchPath.MAIN_BRANCH)
 				.executeSync(getEventBus())
-				.getVersions();
+				.getItems();
 	}
 	
 	private IEventBus getEventBus() {
