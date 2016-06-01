@@ -24,8 +24,6 @@ import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExis
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.getRevisions;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Boolean.TRUE;
 import static java.text.MessageFormat.format;
 import static org.eclipse.emf.cdo.common.revision.CDORevisionUtil.createDelta;
@@ -67,7 +65,6 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
@@ -256,12 +253,14 @@ public abstract class PublishManager implements IPublishManager {
 	protected abstract LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath);
 
 	private boolean couldCreateVersion(final IPublishOperationConfiguration configuration) {
-		return !newHashSet(transform(getAllVersions(getParentBranchPath()), new Function<ICodeSystemVersion, String>() {
-			@Override
-			public String apply(final ICodeSystemVersion version) {
-				return checkNotNull(version).getVersionId();
-			}
-		})).contains(configuration.getVersionId());
+		return new CodeSystemRequests(getRepositoryUuid())
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(configuration.getCodeSystemShortName())
+				.setVersionId(configuration.getVersionId())
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getVersions()
+				.isEmpty();
 	}
 	
 	private IBranchPath getParentBranchPath() {
