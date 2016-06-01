@@ -63,6 +63,7 @@ import com.b2international.snowowl.datastore.server.index.InternalTerminologyReg
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -377,7 +378,10 @@ public abstract class PublishManager implements IPublishManager {
 		return codeSystemVersion;
 	}
 	
-	protected abstract void addCodeSystemVersion(CodeSystemVersion codeSystemVersion);
+	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {
+		final CodeSystem codeSystem = Iterables.getOnlyElement(getEditingContext().getCodeSystems());
+		codeSystem.getCodeSystemVersions().add(codeSystemVersion);
+	}
 
 	/** Returns with the code system description. */
 	protected String getCodeSystemVersionDescription() {
