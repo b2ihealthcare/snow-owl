@@ -116,7 +116,7 @@ osgi> sctimport rf2_release -t FULL /opt/SnomedCT_Release_INT_20130131.zip
 An example for the Danish extension:
 
 --------------------------
-osgi> sctimport rf2_extension -t FULL -bv MAIN/2016-01-31 -cv false /SnomedCT_Release_DK1000005_20160215.zip /dk_extension.properties
+osgi> sctimport rf2_extension -t FULL -b MAIN/2016-01-31 -c false /SnomedCT_Release_DK1000005_20160215.zip /dk_extension.properties
 --------------------------
 
 NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
