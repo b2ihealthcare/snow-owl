@@ -38,7 +38,6 @@ public enum CodeSystemBuilderBroker {
 			}
 		}
 
-		// TODO return base code system builder as default
 		throw new IllegalStateException(String.format("Couldn't find code system builder for repository %s.", repositoryUuid));
 	}
 
