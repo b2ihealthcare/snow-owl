@@ -296,11 +296,11 @@ public abstract class BranchPathUtils {
 	/**
 	 * Returns true if the branch with the path specified exists within the specified repository.
 	 * @param repositoryUUID
-	 * @param branchName
+	 * @param branchPath
 	 * @return true if the branch exists in the repository
 	 */
-	public static boolean exists(String repositoryUUID, String branchName) {
-		return getAllDescendantBranchPathsFor(getMainBranchForRepository(repositoryUUID)).contains(branchName);
+	public static boolean exists(String repositoryUUID, String branchPath) {
+		return getAllDescendantBranchPathsFor(getMainBranchForRepository(repositoryUUID)).contains(branchPath);
 	}
 
 	/**
