@@ -63,9 +63,9 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 					"<path>\t\tSpecifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release).",
 					"<path to release descriptor file>\tThe path to the release descriptor file.",
 					"E.g:",
-					"\tImporting the international release on MAIN (using US language reference set):",
+					"\tImporting the international release on MAIN:",
 					"\tsctimport rf2_release -t full -v C:/SnomedCT_RF2Release_INT_20160131.zip C:/snomed_ct_international.json",
-					"\tImport and extension on a branch (using US language reference set):",
+					"\tImport and extension on a branch:",
 					"\tsctimport rf2_release -t full -b 2016-01-31 -v C:/SnomedCT_Release_B2i_20160201.zip C:/snomed_ct_b2i.json"
 				});
 	}
