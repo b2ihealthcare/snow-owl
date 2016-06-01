@@ -295,9 +295,15 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	}
 	
 	private ITagConfiguration createTagConfiguration(final String toolingId) {
+		checkNotNull(toolingId, "toolingId");
+		
 		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
-		return createForToolingId(checkNotNull(toolingId, "toolingId"), configuration.getVersionId())
-				.setUserId(configuration.getUserId()).build();
+		final String branchPath = configuration.getParentBranchPath();
+		
+		return createForToolingId(toolingId, configuration.getVersionId())
+				.setUserId(configuration.getUserId())
+				.setBranchPath(BranchPathUtils.createPath(branchPath))
+				.build();
 	}
 	
 	private Map<String, Collection<ICodeSystemVersion>> getExistingVersions() {
