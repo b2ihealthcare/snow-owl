@@ -21,7 +21,9 @@ Upgrading means to increase the version of the base international release. Durin
 When new international release is available, the corresponding delta is imported onto the MAIN branch.
 
 == Data provisioning example for a single extension
+The following example demonstrates how a blank server is provisioned for extension management.  The example is carried out using both the command line OSGi interface as well as the REST API.
 
+=== OSGi command line interface
 First, the full International Release is imported with version tags created (_-v_).  The selected language refset is English.
 
 ....
@@ -91,3 +93,96 @@ To see all the version branches created execute:
 ....
 
 There should be a branch named _MAIN/2016-01-31/SNOMEDCT_B2i_ dedicated for the initial content of the extension.
+
+=== REST API
+Importing the terminology and creating an entry in the terminology registry require two separate REST endpoints to be invoked.
+
+Upload the import configuration:
+....
+POST /snowowl/snomed-ct/v2/imports
+{
+  "createVersions": true,
+  "type": "FULL",
+  "branchPath": "MAIN",
+  "snomedReleaseShortName": ""
+}
+....
+
+Note: For backward compatibility, missing or empty _snomedReleaseShortName_ result in a SNOMED CT International Release entry in the terminology registry, no explicit operation is required.
+
+Import the International archive:
+....
+POST /snowowl/snomed-ct/v2/imports/{importId}/archive
+....
+
+After the import process, check the terminology registry for entry representing the International release:
+....
+GET /snowowl/admin/codesystems
+....
+
+Create new branch for extension:
+....
+POST /snowowl/snomed-ct/v2/branches
+{
+  "metadata": {},
+  "parent": "MAIN/2016-01-31",
+  "name": "Extension_branch"
+}
+....
+To check the branch created (_MAIN/2016-01-31/Extension_branch_):
+....
+GET /snowowl/snomed-ct/v2/branches
+....
+
+Create new Snomed Release for the extension. The extension will initially be based on the _2016-01-13_ International release:
+....
+POST /snowowl/admin/codesystems
+{
+	"oid": "2.16.840.1.113883.6.961",
+	"name": "B2i Healthcare SNOMED CT extension",
+	"shortName": "SNOMEDCT_B2i",
+	"organizationLink": "http://www.b2i.sg",
+	"primaryLanguage": "ENG",
+	"citation": "This is an example SNOMED CT extension by B2i Healthcare.",
+	"iconPath": "icons/b2i_extension_icon.png",
+	"terminologyId": "com.b2international.snowowl.terminology.snomed",
+	"repositoryUuid": "snomedStore",
+	"branchPath": "MAIN/2016-01-31/Extension_branch",
+	"extension": {
+		"baseCodeSystemOid": "2.16.840.1.113883.6.96",
+		"snomedReleaseType": "EXTENSION"
+	}
+}
+....
+
+Check the terminology registry for the extension entry:
+....
+GET /snowowl/admin/codesystems
+....
+
+Upload import configuration for extension import:
+....
+POST /snowowl/snomed-ct/v2/imports
+{
+  "createVersions": true,
+  "type": "DELTA",
+  "branchPath": "MAIN/2016-01-31/Extension_branch",
+  "snomedReleaseShortName": "SNOMEDCT_B2i"
+}
+....
+
+Import the extension:
+....
+POST /snowowl/snomed-ct/v2/imports/{importId}/archive
+....
+
+=== Versioning extension content
+There is no command line command available for versioning, the functionality is only accessible via the REST interface:
+....
+POST /snowowl/admin/codesystems/SNOMEDCT_B2i/versions
+{
+  "version": "Extension:2016-06-01",
+  "description": "Extension test version",
+  "effectiveDate": "20160601"
+}
+....
