@@ -39,8 +39,6 @@ import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -107,30 +105,9 @@ public class CodeSystemRestService extends AbstractRestService {
 		ApiValidation.checkInput(codeSystem);
 		
 		final String userId = principal.getName();
-		final CodeSystemRequests requests = new CodeSystemRequests(codeSystem.getRepositoryUuid());
-		
-		final Request<TransactionContext, String> req = buildCreateRequest(codeSystem, requests);
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
-		final String shortName = requests
-				.prepareCommit()
-				.setCommitComment(commitComment)
-				.setBody(req)
-				.setUserId(userId)
-				.setBranch(IBranchPath.MAIN_BRANCH)
-				.build()
-				.executeSync(getEventBus())
-				.getResultAs(String.class);
-		
-		return Responses
-				.created(linkTo(CodeSystemRestService.class)
-				.slash(shortName)
-				.toUri())
-				.build();
-	}
-	
-	private Request<TransactionContext, String> buildCreateRequest(final ICodeSystem codeSystem, final CodeSystemRequests requests) {
-		return requests
+		final String shortName = new CodeSystemRequests(codeSystem.getRepositoryUuid())
 				.prepareNewCodeSystem()
 				.setBranchPath(codeSystem.getBranchPath())
 				.setCitation(codeSystem.getCitation())
@@ -143,6 +120,14 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setAdditionaProperties(codeSystem.getAdditionalProperties() == null ? Maps.<String, String> newHashMap() : codeSystem.getAdditionalProperties())
+				.build(userId, IBranchPath.MAIN_BRANCH, commitComment)
+				.executeSync(getEventBus())
+				.getResultAs(String.class);
+		
+		return Responses
+				.created(linkTo(CodeSystemRestService.class)
+				.slash(shortName)
+				.toUri())
 				.build();
 	}
 	

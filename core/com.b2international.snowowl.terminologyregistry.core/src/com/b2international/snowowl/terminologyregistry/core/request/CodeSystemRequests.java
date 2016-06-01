@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
-
 /**
  * @since 4.7
  */
@@ -30,10 +28,6 @@ public class CodeSystemRequests {
 
 	public CodeSystemCreateRequestBuilder prepareNewCodeSystem() {
 		return new CodeSystemCreateRequestBuilder(repositoryId);
-	}
-
-	public RepositoryCommitRequestBuilder prepareCommit() {
-		return new RepositoryCommitRequestBuilder(repositoryId);
 	}
 
 	public CodeSystemGetRequestBuilder prepareGetCodeSystem() {
