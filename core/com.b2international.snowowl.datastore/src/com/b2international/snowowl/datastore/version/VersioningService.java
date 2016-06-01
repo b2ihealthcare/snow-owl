@@ -119,9 +119,7 @@ public class VersioningService implements IVersioningService {
 	
 	/**Creates a new versioning service for the given tooling feature.*/
 	public VersioningService(final String toolingId, final String... otherToolingIds) {
-		configuration = new PublishOperationConfiguration(
-				checkNotNull(toolingId, "toolingId"), 
-				checkNotNull(otherToolingIds, "otherToolingIds"));
+		configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
 		existingVersions = initExistingVersions(configuration.getToolingIds());
 		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
 		lockContexts = newHashMap();
@@ -130,9 +128,7 @@ public class VersioningService implements IVersioningService {
 	}
 	
 	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
-		configuration = new PublishOperationConfiguration(
-				checkNotNull(toolingId, "toolingId"), 
-				checkNotNull(otherToolingIds, "otherToolingIds"));
+		this.configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
 		this.existingVersions = existingVersions;
 		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
 		lockContexts = newHashMap();

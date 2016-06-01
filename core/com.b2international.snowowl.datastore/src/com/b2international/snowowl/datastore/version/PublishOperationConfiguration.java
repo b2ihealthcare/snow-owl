@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.version;
 import static com.b2international.commons.StringUtils.EMPTY_STRING;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Objects.toStringHelper;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Iterators.unmodifiableIterator;
 
@@ -55,6 +56,9 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 
 	/**Creates a publication operation configuration for the given tooling features.*/
 	public PublishOperationConfiguration(final UUID remoteJobId, final String toolingId, final String... otherToolingIds) {
+		checkNotNull(toolingId, "toolingId");
+		checkNotNull(otherToolingIds, "otherToolingIds");
+		
 		this.toolingIds = Lists.asList(toolingId, otherToolingIds);
 		this.remoteJobId = remoteJobId;
 		this.userId = getServiceForClass(ICDOConnectionManager.class).getUserId();
