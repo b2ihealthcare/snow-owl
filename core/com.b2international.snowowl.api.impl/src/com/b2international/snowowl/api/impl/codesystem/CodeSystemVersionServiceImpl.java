@@ -94,13 +94,8 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			throw new CodeSystemNotFoundException(shortName);
 		}
 		
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = new CodeSystemRequests(codeSystem.getRepositoryUuid())
-				.prepareSearchCodeSystemVersion()
-				.setCodeSystemShortName(shortName)
-				.build(IBranchPath.MAIN_BRANCH)
-				.executeSync(getEventBus())
-				.getVersions();
-		
+		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = getCodeSystemVersions(shortName,
+				codeSystem.getRepositoryUuid()); 
 		return toSortedCodeSystemVersionList(versions);
 	}
 	
