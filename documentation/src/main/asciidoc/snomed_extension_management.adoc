@@ -25,7 +25,7 @@ When new international release is available, the corresponding delta is imported
 First, the full International Release is imported with version tags created (_-v_).  The selected language refset is English.
 
 ....
->sctimport rf2_release -l 900000000000509007 -t full -v 
+>sctimport rf2_release -t full -v 
 C:/data/SnomedCT_RF2Release_INT_20160131.zip C:/data/snomed_ct_international.json
 ....
 
@@ -59,7 +59,7 @@ To see all the version branches created execute:
 To import a extension terminology based on the _2016-01-31_ International release, issue the command:
 
 ....
->sctimport rf2_release -l 900000000000509007 -t full -b 2016-01-31
+>sctimport rf2_release -t full -b 2016-01-31
 C:/data/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip C:/data/snomed_ct_b2i_extension.json
 ....
 
