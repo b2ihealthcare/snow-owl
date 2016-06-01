@@ -33,7 +33,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
 
-	public RepositoryCommitRequestBuilder(String repositoryId) {
+	protected RepositoryCommitRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
 	}
 
