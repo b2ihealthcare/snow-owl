@@ -148,7 +148,7 @@ POST /snowowl/admin/codesystems
 	"terminologyId": "com.b2international.snowowl.terminology.snomed",
 	"repositoryUuid": "snomedStore",
 	"branchPath": "MAIN/2016-01-31/Extension_branch",
-	"extension": {
+	"additionalProperties": {
 		"baseCodeSystemOid": "2.16.840.1.113883.6.96",
 		"snomedReleaseType": "EXTENSION"
 	}
