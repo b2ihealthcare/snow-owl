@@ -96,7 +96,7 @@ public interface ICodeSystem {
 	String getRepositoryUuid();
 	
 	/**
-	 * Returns a map with extension specific settings.
+	 * Returns a map with additional properties.
 	 */
-	Map<String, String> getExtension();
+	Map<String, String> getAdditionalProperties();
 }

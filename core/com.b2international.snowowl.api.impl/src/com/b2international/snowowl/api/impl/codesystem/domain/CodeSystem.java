@@ -47,7 +47,7 @@ public class CodeSystem implements ICodeSystem {
 	@NotEmpty
 	private String repositoryUuid;
 	
-	private Map<String, String> extensionMap;
+	private Map<String, String> additionalProperties;
 
 	@Override
 	public String getOid() {
@@ -100,8 +100,8 @@ public class CodeSystem implements ICodeSystem {
 	}
 	
 	@Override
-	public Map<String, String> getExtension() {
-		return extensionMap;
+	public Map<String, String> getAdditionalProperties() {
+		return additionalProperties;
 	}
 
 	public void setOid(final String oid) {
@@ -144,8 +144,8 @@ public class CodeSystem implements ICodeSystem {
 		this.repositoryUuid = repositoryUuid;
 	}
 	
-	public void setExtension(Map<String, String> extensionMap) {
-		this.extensionMap = extensionMap;
+	public void setAdditionalProperties(Map<String, String> additionalProperties) {
+		this.additionalProperties = additionalProperties;
 	}
 
 	@Override
@@ -163,16 +163,16 @@ public class CodeSystem implements ICodeSystem {
 		builder.append(primaryLanguage);
 		builder.append(", citation=");
 		builder.append(citation);
-		builder.append("]");
 		builder.append(", branchPath=");
 		builder.append(branchPath);
-		builder.append("]");
 		builder.append(", iconPath=");
 		builder.append(iconPath);
-		builder.append("]");
 		builder.append(", repositoryUuid=");
 		builder.append(repositoryUuid);
+		builder.append(", additionalProperties=");
+		builder.append(additionalProperties);
 		builder.append("]");
 		return builder.toString();
 	}
+	
 }

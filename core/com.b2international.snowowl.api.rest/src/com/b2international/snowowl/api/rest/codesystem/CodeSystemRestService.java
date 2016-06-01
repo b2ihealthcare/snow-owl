@@ -141,7 +141,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setRepositoryUuid(codeSystem.getRepositoryUuid())
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
-				.setExtension(codeSystem.getExtension() == null ? Maps.<String, String> newHashMap() : codeSystem.getExtension())
+				.setAdditionaProperties(codeSystem.getAdditionalProperties() == null ? Maps.<String, String> newHashMap() : codeSystem.getAdditionalProperties())
 				.build();
 	}
 	

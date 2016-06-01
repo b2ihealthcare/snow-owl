@@ -36,7 +36,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
-	private Map<String, String> extensionMap;
+	private Map<String, String> additionalProperties;
 
 	CodeSystemCreateRequestBuilder(final String repositoryId) {
 		super(repositoryId);
@@ -92,8 +92,8 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 		return getSelf();
 	}
 	
-	public CodeSystemCreateRequestBuilder setExtension(final Map<String, String> extensionMap) {
-		this.extensionMap = extensionMap;
+	public CodeSystemCreateRequestBuilder setAdditionaProperties(final Map<String, String> additionalProperties) {
+		this.additionalProperties = additionalProperties;
 		return getSelf();
 	}
 
@@ -110,7 +110,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 		req.setRepositoryUuid(repositoryUuid);
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
-		req.setExtension(extensionMap);
+		req.setAdditionalProperties(additionalProperties);
 
 		return req;
 	}

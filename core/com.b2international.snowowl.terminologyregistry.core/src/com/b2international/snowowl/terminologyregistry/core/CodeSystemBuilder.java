@@ -28,7 +28,7 @@ import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSyst
 public class CodeSystemBuilder extends BaseCodeSystemBuilder<CodeSystemBuilder, CodeSystem, CodeSystemEntry> {
 	
 	@Override
-	public CodeSystemBuilder withExtension(final Map<String, String> valueMap) {
+	public CodeSystemBuilder withAdditionalProperties(final Map<String, String> valueMap) {
 		// no additional values
 		return getSelf();
 	}

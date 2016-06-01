@@ -53,7 +53,7 @@ public interface CodeSystemBuilder<B extends CodeSystemBuilder<B, C, E>, C exten
 
 	B withBranchPath(String branchPath);
 	
-	B withExtension(Map<String, String> extensionMap);
+	B withAdditionalProperties(Map<String, String> additionalProperties);
 	
 	C build();
 	

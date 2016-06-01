@@ -43,7 +43,7 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
-	private Map<String, String> extensionMap;
+	private Map<String, String> additionalProperties;
 
 	CodeSystemCreateRequest() {
 	}
@@ -88,8 +88,8 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 		this.terminologyId = terminologyId;
 	}
 	
-	void setExtension(final Map<String, String> extensionMap) {
-		this.extensionMap = extensionMap;
+	void setAdditionalProperties(final Map<String, String> additionalProperties) {
+		this.additionalProperties = additionalProperties;
 	}
 	
 	@Override
@@ -129,7 +129,7 @@ public final class CodeSystemCreateRequest extends BaseRequest<TransactionContex
 				.withRepositoryUuid(repositoryUuid)
 				.withShortName(shortName)
 				.withTerminologyComponentId(terminologyId)
-				.withExtension(extensionMap)
+				.withAdditionalProperties(additionalProperties)
 				.build();
 	}
 

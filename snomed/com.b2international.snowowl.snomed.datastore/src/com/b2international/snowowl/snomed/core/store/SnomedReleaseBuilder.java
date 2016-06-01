@@ -54,7 +54,7 @@ public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBui
 		if (!valueMap.containsKey(KEY_ICON_PATH)) {
 			withIconPath(SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH);
 		}
-		return withExtension(valueMap);
+		return withAdditionalProperties(valueMap);
 	}
 	
 	@Override
@@ -90,7 +90,7 @@ public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBui
 	}
 
 	@Override
-	public SnomedReleaseBuilder withExtension(final Map<String, String> valueMap) {
+	public SnomedReleaseBuilder withAdditionalProperties(final Map<String, String> valueMap) {
 		this.baseCodeSystemOid = valueMap.get(KEY_BASE_CODE_SYSTEM_OID);
 
 		if (valueMap.containsKey(KEY_RELEASE_TYPE)) {
