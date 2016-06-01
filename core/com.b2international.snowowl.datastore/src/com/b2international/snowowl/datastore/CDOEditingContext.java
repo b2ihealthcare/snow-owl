@@ -55,7 +55,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
@@ -72,7 +71,7 @@ import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import com.google.common.collect.FluentIterable;
 
 /**
  * This class is a thin, generic wrapper around the underlying {@link CDOTransaction}. 
@@ -349,7 +348,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	public List<CodeSystem> getCodeSystems() {
 		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
-		return Lists.transform(cdoResource.getContents(), new UncheckedCastFunction<>(CodeSystem.class));
+		return FluentIterable.from(cdoResource.getContents()).filter(CodeSystem.class).toList();
 	}
 
 	/**
