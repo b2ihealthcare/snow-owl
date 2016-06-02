@@ -46,7 +46,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
-import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
@@ -108,11 +107,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			sb.append("Cannot start SNOMED CT import. Import configuration is ");
 			sb.append(valueOf(currentStatus).toLowerCase());
 			sb.append(".");
-			throw new SnomedImportException(sb.toString());
+			throw new BadRequestException(sb.toString());
 		}
 		
 		if (isImportAlreadyRunning()) {
-			throw new SnomedImportException("Cannot perform SNOMED CT import from RF2 archive. "
+			throw new BadRequestException("Cannot perform SNOMED CT import from RF2 archive. "
 					+ "An import is already in progress. Please try again later.");
 		}
 		
@@ -121,21 +120,21 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		final boolean isMain = Branch.MAIN_PATH.equals(configuration.getBranchPath());
 		
 		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType) && isMain) {
-			throw new SnomedImportException("Importing a full release of SNOMED CT "
+			throw new BadRequestException("Importing a full release of SNOMED CT "
 					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
 					+ "ontology is already available on the terminology server. "
 					+ "Please perform either a delta or a snapshot import instead.");
 		}
 		
 		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType) && isMain) {
-			throw new SnomedImportException("Importing a delta release of SNOMED CT "
+			throw new BadRequestException("Importing a delta release of SNOMED CT "
 					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
 					+ "ontology is not available on the terminology server. "
 					+ "Please perform either a full or a snapshot import instead.");
 		}
 		
 		if (!contentAvailable && !isMain) {
-			throw new SnomedImportException("Importing a release of SNOMED CT from an "
+			throw new BadRequestException("Importing a release of SNOMED CT from an "
 					+ "archive to other than MAIN branch is prohibited when SNOMED CT "
 					+ "ontology is not available on the terminology server. "
 					+ "Please perform a full import to MAIN branch first.");
@@ -151,7 +150,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		final String snomedReleaseShortName = configuration.getSnomedReleaseShortName();
 		final SnomedReleaseEntry snomedReleaseEntry = (SnomedReleaseEntry) getCodeSystem(snomedReleaseShortName);
 		if (snomedReleaseEntry == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(snomedReleaseShortName)) {
-			throw new SnomedImportException("Importing a release of SNOMED CT from an archive "
+			throw new BadRequestException("Importing a release of SNOMED CT from an archive "
 					+ "is prohibited when the given Snomed Release is not available. "
 					+ "Please perform either a new Snomed Release creation before "
 					+ "import or use INT Snomed Release.");
