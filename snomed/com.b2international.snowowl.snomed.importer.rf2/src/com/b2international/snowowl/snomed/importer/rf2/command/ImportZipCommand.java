@@ -51,6 +51,13 @@ import com.google.common.collect.FluentIterable;
  */
 public class ImportZipCommand extends AbstractRf2ImporterCommand {
 
+	private static final String TYPE_SWITCH = "-t";
+	private static final String BRANCH_OR_VERSION_SWITCH = "-b";
+	private static final String CREATE_VERSION_SWITCH = "-v";
+	private static final String DEFAULT_METADATA_FILE_EXTENSION = ".json";
+	
+	private static final String IMPORT_ARCHIVE_PATH_IS_MISSING = "Import archive path is missing.";
+
 	public ImportZipCommand() {
 		super(
 				"rf2_release", 
@@ -94,7 +101,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		
 		// release type
 		
-		if (!"-t".equals(parameters.get(0))) {
+		if (!TYPE_SWITCH.equals(parameters.get(0))) {
 			interpreter.println("Import type must be defined.");
 			printDetailedHelp(interpreter);
 			return;
@@ -111,49 +118,49 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 
 		// create version flag
 		
-		if (parameters.contains("-v")) {
+		if (parameters.contains(CREATE_VERSION_SWITCH)) {
 			createVersions = true;
 		}
 
 		// archive path
 		
-		if (parameters.contains("-b") && parameters.contains("-v")) {
+		if (parameters.contains(BRANCH_OR_VERSION_SWITCH) && parameters.contains(CREATE_VERSION_SWITCH)) {
 			if (parameters.size() > 5) {
 				archiveFilePath = parameters.get(5);
 				if (Strings.isNullOrEmpty(archiveFilePath)) {
-					interpreter.println("Import archive path is missing.");
+					interpreter.println(IMPORT_ARCHIVE_PATH_IS_MISSING);
 					printDetailedHelp(interpreter);
 					return;
 				}
 			} else {
-				interpreter.println("Import archive path is missing.");
+				interpreter.println(IMPORT_ARCHIVE_PATH_IS_MISSING);
 				printDetailedHelp(interpreter);
 				return;
 			}
-		} else if (parameters.contains("-b") && !parameters.contains("-v")) {
+		} else if (parameters.contains(BRANCH_OR_VERSION_SWITCH) && !parameters.contains(CREATE_VERSION_SWITCH)) {
 			if (parameters.size() > 4) {
 				archiveFilePath = parameters.get(4);
 				if (Strings.isNullOrEmpty(archiveFilePath)) {
-					interpreter.println("Import archive path is missing.");
+					interpreter.println(IMPORT_ARCHIVE_PATH_IS_MISSING);
 					printDetailedHelp(interpreter);
 					return;
 				}
 			} else {
-				interpreter.println("Import archive path is missing.");
+				interpreter.println(IMPORT_ARCHIVE_PATH_IS_MISSING);
 				printDetailedHelp(interpreter);
 				return;
 			}
-		} else if (!parameters.contains("-b") && parameters.contains("-v")) {
+		} else if (!parameters.contains(BRANCH_OR_VERSION_SWITCH) && parameters.contains(CREATE_VERSION_SWITCH)) {
 			archiveFilePath = parameters.get(3);
 			if (Strings.isNullOrEmpty(archiveFilePath)) {
-				interpreter.println("Import archive path is missing.");
+				interpreter.println(IMPORT_ARCHIVE_PATH_IS_MISSING);
 				printDetailedHelp(interpreter);
 				return;
 			}
-		} else if (!parameters.contains("-b") && !parameters.contains("-v")) {
+		} else if (!parameters.contains(BRANCH_OR_VERSION_SWITCH) && !parameters.contains(CREATE_VERSION_SWITCH)) {
 			archiveFilePath = parameters.get(2);
 			if (Strings.isNullOrEmpty(archiveFilePath)) {
-				interpreter.println("Import archive path is missing.");
+				interpreter.println(IMPORT_ARCHIVE_PATH_IS_MISSING);
 				printDetailedHelp(interpreter);
 				return;
 			}
@@ -186,7 +193,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			
 		File metadataFile = new File(metadataFilePath);
 		
-		if (!metadataFile.isFile() || !metadataFilePath.endsWith(".json")) {
+		if (!metadataFile.isFile() || !metadataFilePath.endsWith(DEFAULT_METADATA_FILE_EXTENSION)) {
 			interpreter.println("Invalid metadata file path.");
 			printDetailedHelp(interpreter);
 			return;
@@ -205,11 +212,11 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		
 		// branchPath
 		
-		if (parameters.contains("-b")) {
+		if (parameters.contains(BRANCH_OR_VERSION_SWITCH)) {
 			branchPath = parameters.get(3);
 			if (snomedRelease.getReleaseType() == SnomedReleaseType.INTERNATIONAL) {
 				if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)) {
-					interpreter.println("Invalid branch path '" + branchPath + "'.");
+					interpreter.println(String.format("Invalid branch path '%s'", branchPath));
 					printDetailedHelp(interpreter);
 					return;
 				}
