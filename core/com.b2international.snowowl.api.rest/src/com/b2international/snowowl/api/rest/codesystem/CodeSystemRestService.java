@@ -19,6 +19,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.security.Principal;
 
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,7 +38,6 @@ import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
@@ -60,7 +61,9 @@ import com.wordnik.swagger.annotations.ApiResponses;
 public class CodeSystemRestService extends AbstractRestService {
 
 	@Autowired
-	protected ICodeSystemService delegate;
+	private ICodeSystemService delegate;
+	@Resource
+	private IEventBus bus;
 
 	@ApiOperation(
 			value="Retrieve all code systems",
@@ -121,7 +124,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setAdditionaProperties(codeSystem.getAdditionalProperties() == null ? Maps.<String, String> newHashMap() : codeSystem.getAdditionalProperties())
 				.build(userId, IBranchPath.MAIN_BRANCH, commitComment)
-				.executeSync(getEventBus())
+				.executeSync(bus)
 				.getResultAs(String.class);
 		
 		return Responses
@@ -129,10 +132,6 @@ public class CodeSystemRestService extends AbstractRestService {
 				.slash(shortName)
 				.toUri())
 				.build();
-	}
-	
-	private IEventBus getEventBus() {
-		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
 }
