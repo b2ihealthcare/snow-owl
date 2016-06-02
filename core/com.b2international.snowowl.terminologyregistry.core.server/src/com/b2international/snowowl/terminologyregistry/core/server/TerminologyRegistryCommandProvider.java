@@ -170,9 +170,9 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 			.append("Effective date: ").append(dateFormat.format(effectiveDate)).append("\n")
 			.append("Creation date: ").append(importDate).append("\n")
 			.append("Last update: ").append(lastUpdateDate).append("\n")
-			.append("Version branch path: ").append(codeSystemVersion.getPath())
+			.append("Version branch path: ").append(codeSystemVersion.getPath()).append("\n")
 			.append("Parent branch path: ").append(codeSystemVersion.getParentBranchPath()).append("\n")
-			.append("Repository id: ").append(codeSystemVersion.getRepositoryUuid());
+			.append("Repository id: ").append(codeSystemVersion.getRepositoryUuid()).append("\n");
 		return builder.toString();
 	}
 	
