@@ -26,8 +26,10 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 
 /**
  * @since 4.5
@@ -184,10 +186,10 @@ public abstract class RevisionSearchRequest<B> extends BaseResourceRequest<Branc
 				options);
 	}
 
-//	protected void addComponentIdFilter(BooleanFilter filter) {
-//		if (!componentIds().isEmpty()) {
-//			addFilterClause(filter, createComponentIdFilter(), Occur.MUST);
-//		}		
-//	}
+	protected void addComponentIdFilter(ExpressionBuilder exp) {
+		if (!componentIds().isEmpty()) {
+			exp.must(RevisionDocument.Expressions.ids(componentIds));
+		}		
+	}
 
 }

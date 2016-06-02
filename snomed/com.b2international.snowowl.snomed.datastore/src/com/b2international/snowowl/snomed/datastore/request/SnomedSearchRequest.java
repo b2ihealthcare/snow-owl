@@ -17,8 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.List;
 
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
 /**
  * @since 4.5
@@ -54,15 +55,15 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 		return "id";
 	}
 	
-	protected final void addModuleClause(SnomedQueryBuilder queryBuilder) {
+	protected final void addModuleClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.MODULE)) {
-			queryBuilder.module(getString(OptionKey.MODULE));
+			queryBuilder.must(SnomedDocument.Expressions.module(getString(OptionKey.MODULE)));
 		}
 	}
 
-	protected final void addActiveClause(SnomedQueryBuilder queryBuilder) {
+	protected final void addActiveClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+			queryBuilder.must(SnomedDocument.Expressions.active(getBoolean(OptionKey.ACTIVE)));
 		}
 	}
 }
