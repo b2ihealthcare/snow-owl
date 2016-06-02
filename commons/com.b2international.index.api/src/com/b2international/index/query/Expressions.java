@@ -15,9 +15,10 @@
  */
 package com.b2international.index.query;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -27,46 +28,38 @@ import com.google.common.collect.Lists;
  */
 public class Expressions {
 	
-	public interface PredicateBuilder {
-		BinaryOperatorBuilder exactMatch(String field, String value);
-	}
-
-	public interface BinaryOperatorBuilder extends Buildable<Expression> {
-		BinaryOperatorBuilder and(BinaryOperatorBuilder expressionBuilder);
-		BinaryOperatorBuilder or(BinaryOperatorBuilder expressionBuilder);
-	}
-	
-	public interface Builder extends BinaryOperatorBuilder, PredicateBuilder {}
-	
-	private static final class BuilderImpl implements Builder {
-
-		private Optional<Expression> previous = Optional.absent();
+	public static final class ExpressionBuilder {
 		
-		@Override
-		public BinaryOperatorBuilder exactMatch(String field, String value) {
-			previous = Optional.<Expression>of(Expressions.exactMatch(field, value));
+		private final List<Expression> mustClauses = newArrayList();
+		private final List<Expression> mustNotClauses = newArrayList();
+		private final List<Expression> shouldClauses = newArrayList();
+		private final List<Expression> filterClauses = newArrayList();
+		
+		private ExpressionBuilder() {
+		}
+		
+		public ExpressionBuilder must(Expression e) {
+			this.mustClauses.add(e);
+			return this;
+		}
+		
+		public ExpressionBuilder mustNot(Expression e) {
+			this.mustNotClauses.add(e);
+			return this;
+		}
+		
+		public ExpressionBuilder should(Expression e) {
+			this.shouldClauses.add(e);
+			return this;
+		}
+		
+		public ExpressionBuilder filter(Expression e) {
+			this.filterClauses.add(e);
 			return this;
 		}
 
-		@Override
-		public BinaryOperatorBuilder and(BinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			And or = new And(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(or);
-			return this;
-		}
-
-		@Override
-		public BinaryOperatorBuilder or(BinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			Or or = new Or(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(or);
-			return this;
-		}
-
-		@Override
 		public Expression build() {
-			return previous.get();
+			throw new UnsupportedOperationException();
 		}
 		
 	}
@@ -103,9 +96,13 @@ public class Expressions {
 	public static Expression exactMatch(String field, Long value) {
 		return new LongPredicate(field, value);
 	}
-
-	public static PredicateBuilder builder() {
-		return new BuilderImpl();
+	
+	public static Expression match(String field, Boolean value) {
+		return new BooleanPredicate(field, value);
+	}
+	
+	public static Expression match(String field, Integer value) {
+		return new IntPredicate(field, value);
 	}
 
 	public static Expression matchAll() {
@@ -130,6 +127,10 @@ public class Expressions {
 	
 	public static Expression matchAnyLong(String field, Iterable<Long> storageKeys) {
 		return new LongSetPredicate(field, storageKeys);
+	}
+
+	public static ExpressionBuilder builder() {
+		return new ExpressionBuilder();
 	}
 
 }
