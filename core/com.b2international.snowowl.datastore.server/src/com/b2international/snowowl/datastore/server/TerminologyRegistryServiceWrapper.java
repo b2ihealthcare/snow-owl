@@ -215,6 +215,7 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 		
 
 		final BooleanQuery query = new BooleanQuery(true);
+		// XXX this approach will fail with the new extension support
 		query.add(new TermQuery(new Term(TerminologyRegistryIndexConstants.VERSION_REPOSITORY_UUID, codeSystem.getRepositoryUuid())), Occur.MUST);
 		query.add(new TermQuery(new Term(TerminologyRegistryIndexConstants.VERSION_VERSION_ID, ICodeSystemVersion.INITIAL_STATE)), Occur.MUST_NOT);
 		
@@ -422,11 +423,14 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 			if (isEquals(codeSystem, presentCodeSystem)) {
 				
 				for (final ICodeSystemVersion codeSystemVersion : getCodeSystemVersions(branchPath, presentCodeSystem.getShortName())) {
-					final String versionId = codeSystemVersion.getVersionId();
-					
-					if (comparator.compare(versionId, version) > 0) {
-						version = versionId;
+
+					if (codeSystemVersion.getCodeSystemShortName().equals(codeSystem.getShortName())) {
+						final String versionId = codeSystemVersion.getVersionId();
+						if (comparator.compare(versionId, version) > 0) {
+							version = versionId;
+						}
 					}
+					
 				}
 			}
 		}
@@ -438,13 +442,13 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 	//copy pasted from TREC
 	private boolean isEquals(final ICodeSystem codeSystem, final ICodeSystem eObject) {
 		// if OID is not empty for the two code systems, compare those, else fall back to short name comparison
-		if (!codeSystem.getOid().isEmpty() && !((ICodeSystem) eObject).getOid().isEmpty()) {
-			if (codeSystem.getOid().equals(((ICodeSystem) eObject).getOid())) {
+		if (!codeSystem.getOid().isEmpty() && !eObject.getOid().isEmpty()) {
+			if (codeSystem.getOid().equals(eObject.getOid())) {
 				return true;
 			}
 		} else {
 			// TODO find a better comparison than compare short names.
-			if (((ICodeSystem) eObject).getShortName().equals(codeSystem.getShortName())) {
+			if (eObject.getShortName().equals(codeSystem.getShortName())) {
 				return true;
 			}
 		}
