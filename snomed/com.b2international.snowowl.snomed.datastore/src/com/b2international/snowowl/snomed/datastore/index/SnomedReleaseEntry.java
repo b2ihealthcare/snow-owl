@@ -29,9 +29,9 @@ public class SnomedReleaseEntry extends CodeSystemEntry {
 	private final SnomedReleaseType snomedReleaseType;
 
 	public SnomedReleaseEntry(final String oid, final String name, final String shortName, final String orgLink, final String language,
-			final String citation, final String iconPath, final String snowOwlId, final String cdoId, final String repositoryUuid,
+			final String citation, final String iconPath, final String snowOwlId, final String storageKey, final String repositoryUuid,
 			final String branchPath, final String baseCodeSystemOid, final SnomedReleaseType snomedReleaseType) {
-		super(oid, name, shortName, orgLink, language, citation, iconPath, snowOwlId, cdoId, repositoryUuid, branchPath);
+		super(oid, name, shortName, orgLink, language, citation, iconPath, snowOwlId, storageKey, repositoryUuid, branchPath);
 		this.baseCodeSystemOid = baseCodeSystemOid;
 		this.snomedReleaseType = snomedReleaseType;
 	}
