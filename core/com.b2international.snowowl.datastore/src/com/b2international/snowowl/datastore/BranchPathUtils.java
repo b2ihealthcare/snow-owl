@@ -18,14 +18,11 @@ package com.b2international.snowowl.datastore;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
@@ -39,6 +36,7 @@ import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -300,19 +298,12 @@ public abstract class BranchPathUtils {
 	 * @return true if the branch exists in the repository
 	 */
 	public static boolean exists(String repositoryUUID, String branchPath) {
-		return getAllDescendantBranchPathsFor(getMainBranchForRepository(repositoryUUID)).contains(branchPath);
-	}
-
-	/**
-	 * Returns all descendant branch paths (including the branch itself) for a specified {@link Branch}. 
-	 * @param branch
-	 * @return
-	 */
-	public static Collection<String> getAllDescendantBranchPathsFor(Branch branch) {
-		Set<String> branchPaths = newHashSet();
-		branchPaths.add(branch.path());
-		collectBranches(branch, branchPaths);
-		return branchPaths;
+		try {
+			RepositoryRequests.branching(repositoryUUID).prepareGet(branchPath).executeSync(ApplicationContext.getInstance().getService(IEventBus.class), 1000);
+		} catch (NotFoundException e) {
+			return false;
+		}
+		return true;
 	}
 	
 	/**
@@ -322,15 +313,6 @@ public abstract class BranchPathUtils {
 	 */
 	public static Branch getMainBranchForRepository(String repositoryUUID) {
 		return RepositoryRequests.branching(repositoryUUID).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(ApplicationContext.getInstance().getService(IEventBus.class), 1000);
-	}
-	
-	// Depth-first traversal
-	private static void collectBranches(Branch parentBranch, Set<String> branches) {
-		branches.add(parentBranch.path());
-		Collection<? extends Branch> children = parentBranch.children();
-		for (Branch branch : children) {
-			collectBranches(branch, branches);
-		}
 	}
 	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {

@@ -89,6 +89,7 @@ import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -183,7 +184,7 @@ public final class ImportUtil {
 		checkNotNull(contentSubType, "contentSubType");
 		checkNotNull(releaseArchive, "releaseArchive");
 		checkArgument(releaseArchive.canRead(), "Cannot read SNOMED CT RF2 release archive content.");
-		checkArgument(BranchPathUtils.exists("snomedStore", branchPath.getPath()));
+		checkArgument(BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()));
 		
 		final ImportConfiguration config = new ImportConfiguration();
 		config.setSnomedRelease(snomedRelease);
