@@ -39,10 +39,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -195,54 +193,21 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 	protected SnomedReferenceSetMember toResource(SnomedRefSetMemberIndexEntry entry) {
 		final SnomedReferenceSetMemberImpl member = new SnomedReferenceSetMemberImpl();
 		member.setId(entry.getId());
-		member.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTimeAsLong()));
+		member.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTime()));
 		member.setReleased(entry.isReleased());
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
 		member.setIconId(entry.getIconId());
 		member.setReferenceSetId(entry.getRefSetIdentifierId());
 		member.setType(entry.getRefSetType());
+		member.setProperties(entry.getAdditionalProperties());
 		
-		// XXX would be nice to refactor this switch
+		// convert ID to resources where possible
 		final Builder<String, Object> props = ImmutableMap.builder();
 		switch (entry.getRefSetType()) {
-			case QUERY:
-				props.put(SnomedRf2Headers.FIELD_QUERY, entry.getQuery());
-				break;
-			case ATTRIBUTE_VALUE:
-				props.put(SnomedRf2Headers.FIELD_VALUE_ID, entry.getValueId());
-				break;
 			case ASSOCIATION:
 				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponentId()));
 				break;
-			case EXTENDED_MAP:
-				props.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, entry.getMapCategoryId());
-			case COMPLEX_MAP:
-				props.put(SnomedRf2Headers.FIELD_MAP_GROUP, entry.getMapGroup());
-				props.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, entry.getMapPriority());
-				props.put(SnomedRf2Headers.FIELD_MAP_RULE, entry.getMapRule() != null ? entry.getMapRule() : "");
-				props.put(SnomedRf2Headers.FIELD_MAP_ADVICE, entry.getMapAdvice() != null ? entry.getMapAdvice() : "");
-				props.put(SnomedRf2Headers.FIELD_CORRELATION_ID, entry.getCorrelationId());
-			case SIMPLE_MAP:
-				props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
-				props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
-				break;
-			case CONCRETE_DATA_TYPE:
-				props.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, entry.getAttributeLabel());
-				props.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, entry.getCharacteristicTypeId());
-				props.put(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
-				props.put(SnomedRf2Headers.FIELD_UNIT_ID, entry.getUomComponentId());
-				props.put(SnomedRf2Headers.FIELD_OPERATOR_ID, entry.getOperatorComponentId());
-				props.put(SnomedMappings.memberDataTypeOrdinal().fieldName(), entry.getRefSetPackageDataType().ordinal());
-				break;
-			case LANGUAGE:
-				props.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, entry.getAcceptabilityId());
-				break;
-			case DESCRIPTION_TYPE:
-				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, entry.getDescriptionFormat());
-				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, entry.getDescriptionLength());
-				break;
-			// TODO module dependency refset
 			default:
 				break;
 		}

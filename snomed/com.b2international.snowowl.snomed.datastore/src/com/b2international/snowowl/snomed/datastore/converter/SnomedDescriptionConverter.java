@@ -63,7 +63,7 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 		result.setActive(input.isActive());
 		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificanceId()));
 		result.setConceptId(input.getConceptId());
-		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTimeAsLong()));
+		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setId(input.getId());
 		result.setLanguageCode(input.getLanguageCode());
 		result.setModuleId(input.getModuleId());
@@ -72,7 +72,7 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 		result.setTerm(input.getTerm());
 		result.setTypeId(input.getTypeId());
 		result.setType(new SnomedConcept(input.getTypeId()));
-		result.setScore(input.getScore());
+//		result.setScore(input.getScore());
 		return result;
 	}
 	

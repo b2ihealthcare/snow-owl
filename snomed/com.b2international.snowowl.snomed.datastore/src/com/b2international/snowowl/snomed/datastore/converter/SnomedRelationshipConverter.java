@@ -64,7 +64,7 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		result.setActive(input.isActive());
 		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicTypeId()));
 		result.setDestinationNegated(input.isDestinationNegated());
-		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTimeAsLong()));
+		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setGroup(input.getGroup());
 		result.setId(input.getId());
 		result.setModifier(toRelationshipModifier(input.isUniversal()));
@@ -77,7 +77,7 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		result.setDestination(new SnomedConcept(input.getDestinationId()));
 		result.setSource(new SnomedConcept(input.getSourceId()));
 		result.setType(new SnomedConcept(input.getTypeId()));
-		result.setScore(input.getScore());
+//		result.setScore(input.getScore());
 		return result;
 	}
 	
