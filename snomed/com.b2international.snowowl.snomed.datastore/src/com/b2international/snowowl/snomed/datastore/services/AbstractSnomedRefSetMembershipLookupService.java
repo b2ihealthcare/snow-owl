@@ -42,14 +42,12 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter.SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -66,35 +64,6 @@ public abstract class AbstractSnomedRefSetMembershipLookupService {
 	protected abstract AbstractClientTerminologyBrowser<SnomedConceptDocument, String> getTerminologyBrowser();
 
 	protected abstract AbstractClientStatementBrowser<SnomedConceptDocument, SnomedRelationshipIndexEntry, String> getStatementBrowser();
-
-	/**
-	 * Returns with all the active simple type reference set members where the referenced component is a SNOMED&nbsp;CT concept identified by its unique ID and the map target is an
-	 * ATC concept.
-	 * @param conceptId the unique ID of the SNOMED&nbsp;CT concept.
-	 * @return a collection of simple map type reference sets representing mapping between SNOMED&nbsp;CT concept and ATC classification.
-	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getAtcMappings(final String conceptId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		final SnomedRefSetMembershipIndexQueryAdapter allMappingQuery = SnomedRefSetMembershipIndexQueryAdapter.createMappingMembershipQuery(CONCEPT, conceptId);
-		final Collection<SnomedRefSetMemberIndexEntry> members = getIndexService().searchUnsorted(allMappingQuery);
-		return Collections2.filter(members, new Predicate<SnomedRefSetMemberIndexEntry>() {
-			@Override public boolean apply(final SnomedRefSetMemberIndexEntry member) {
-				if (!member.isActive()) {
-					return false; //exclude inactive ones
-				}
-
-				if (SnomedRefSetUtil.isComplexMapping(member.getRefSetType())) {
-					return false; //exclude complex and extended map type members
-				}
-
-				if (!"com.b2international.snowowl.terminology.atc.concept".equals(member.getMapTargetComponentType())) { //Snow Owl specific unique ID for identifying ATC concepts
-					return false; //exclude members without ATC map target
-				}
-
-				return CONCEPT.equals(member.getReferencedComponentType()) && conceptId.equals(member.getReferencedComponentId()); //referenced component is the specified SNOMED CT concept  
-			}
-		});
-	}
 
 	/**
 	 * Returns with a collection of language type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced description
@@ -131,56 +100,6 @@ public abstract class AbstractSnomedRefSetMembershipLookupService {
 		return descriptionIds.isEmpty()
 				? Collections.<SnomedRefSetMemberIndexEntry>emptyList()
 						: getIndexService().searchUnsorted(createFindByRefSetTypeQuery(DESCRIPTION, wrapArguments(LANGUAGE), descriptionIds));
-	}
-
-	/**
-	 * Returns with all data type reference set members referencing a SNOMED&nbsp;CT concept.
-	 * @return all data type reference set members referencing a concept.
-	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getConceptConcreteDataTypes() {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByRefSetTypeQuery(CONCEPT);
-		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
-	}
-
-	/**
-	 * Returns with all data type reference set members referencing a SNOMED&nbsp;CT relationship.
-	 * @return all data type reference set members referencing a relationship.
-	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getRelationshipConcreteDataTypes() {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByRefSetTypeQuery(RELATIONSHIP);
-		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
-	}
-
-	/**
-	 * Returns with a collection of active data type {@link SnomedRefSetMemberIndexEntry reference set members} referencing the given SNOMED CT
-	 * concept.
-	 * 
-	 * @param conceptId the unique ID of the concept.
-	 * @return a collection of data type reference set members.
-	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getActiveConceptDataTypes(final String conceptId) {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
-				.createFindActivesByReferencedComponentIdQuery(CONCEPT, conceptId);
-		// XXX The number of allowed concrete domain datatypes are maximized in 100 for a concept
-		return getIndexService().search(createFindByRefSetTypeQuery, 100);
-	}
-
-	/**
-	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced relationships are given
-	 * as the relationship ID argument.
-	 * 
-	 * @param relationshipIds the relationship IDs.
-	 * @return a collection of data type reference set members referencing the given relationships.
-	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getRelationshipDataTypes(final String... relationshipIds) {
-		if (0 == relationshipIds.length) {
-			return Collections.<SnomedRefSetMemberIndexEntry> emptyList();
-		}
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
-				.createFindActivesByReferencedComponentIdsQuery(RELATIONSHIP, wrapArguments(relationshipIds));
-		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
 	}
 
 	private <T> List<T> wrapArguments(@SuppressWarnings("unchecked") final T... args) {

@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.mrcm.core.server.widget;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,6 +27,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
@@ -34,10 +36,12 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.component.IconIdProviderUtil;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.LeafWidgetBeanSorter;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
@@ -52,6 +56,8 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipGro
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipGroupWidgetModel.GroupFlag;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.b2international.snowowl.snomed.mrcm.mini.SectionType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ListMultimap;
@@ -161,7 +167,9 @@ public class WidgetBeanProvider {
 		if (conceptWidgetModel.getMappingContainerWidgetModel() != null) {
 			final List<MappingWidgetModel> unusedModels = Lists.newArrayList(
 					Lists.transform(conceptWidgetModel.getMappingContainerWidgetModel().getChildren(), new UncheckedCastFunction<WidgetModel, MappingWidgetModel>(MappingWidgetModel.class)));
-			final Collection<SnomedRefSetMemberIndexEntry> atcMappings = new SnomedRefSetMembershipLookupService().getAtcMappings(conceptId);
+			
+			// XXX we could add all mappings like this if the model supports it
+			final Collection<SnomedRefSetMemberIndexEntry> atcMappings = getAtcMappings(conceptId);
 			for (final SnomedRefSetMemberIndexEntry entry : atcMappings) {
 				if (!entry.isActive()) {
 					continue;
@@ -199,5 +207,23 @@ public class WidgetBeanProvider {
 		}
 		
 		return result;
+	}
+
+	private Collection<SnomedRefSetMemberIndexEntry> getAtcMappings(String conceptId) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByActive(true)
+				.filterByReferencedComponent(conceptId)
+				.filterByRefSetType(Collections.singleton(SnomedRefSetType.SIMPLE_MAP))
+				.filterByProps(OptionsBuilder.newBuilder().put(SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_TYPE, "com.b2international.snowowl.terminology.atc.concept").build())
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedRefSetMemberIndexEntry>>() {
+					@Override
+					public Collection<SnomedRefSetMemberIndexEntry> apply(SnomedReferenceSetMembers input) {
+						return SnomedRefSetMemberIndexEntry.from(input);
+					}
+				})
+				.getSync();
 	}
 }

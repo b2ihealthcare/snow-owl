@@ -23,6 +23,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,8 @@ import org.eclipse.emf.ecore.EObject;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.options.OptionsBuilder;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
@@ -48,11 +51,13 @@ import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
 import com.b2international.snowowl.snomed.datastore.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
@@ -65,6 +70,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ContainerWidgetBean;
@@ -80,6 +86,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMembe
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
@@ -137,8 +144,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 		}
 		final Collection<MappingWidgetBean> originalMappings = newArrayList(Iterables.filter(widgetBean.getMappings().getElements(), MappingWidgetBean.class));
 		final Collection<MappingWidgetBean> unvisitedMappings = newArrayList(originalMappings);
-		final SnomedRefSetMembershipLookupService lookupService = new SnomedRefSetMembershipLookupService();
-		final Collection<SnomedRefSetMemberIndexEntry> unvisitedAtcMappings = newArrayList(lookupService.getAtcMappings(concept.getId()));
+		final Collection<SnomedRefSetMemberIndexEntry> unvisitedAtcMappings = newArrayList(getAtcMappings(context.getBranch(), concept.getId()));
 		for (final MappingWidgetBean mapping : originalMappings) {
 			final String referenceSetMemberId = mapping.getUuid();
 			final IComponent<String> selectedValue = mapping.getSelectedValue();
@@ -219,6 +225,24 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 				SnomedModelExtensions.removeOrDeactivate(newMember);
 			}
 		}
+	}
+
+	private Collection<SnomedRefSetMemberIndexEntry> getAtcMappings(String branch, String conceptId) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByActive(true)
+				.filterByReferencedComponent(conceptId)
+				.filterByRefSetType(Collections.singleton(SnomedRefSetType.SIMPLE_MAP))
+				.filterByProps(OptionsBuilder.newBuilder().put(SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_TYPE, "com.b2international.snowowl.terminology.atc.concept").build())
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedRefSetMemberIndexEntry>>() {
+					@Override
+					public Collection<SnomedRefSetMemberIndexEntry> apply(SnomedReferenceSetMembers input) {
+						return SnomedRefSetMemberIndexEntry.from(input);
+					}
+				})
+				.getSync();
 	}
 
 	private SnomedSimpleMapRefSetMember searchInNewObjects(final SnomedEditingContext context, final MappingWidgetBean mapping) {
