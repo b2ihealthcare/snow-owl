@@ -521,7 +521,6 @@ public class IndexServiceSmokeTest {
 	 * @return
 	 */
 	private IBranchPath createVersionPath(String version) {
-		BranchPathUtils.createPath(BranchPathUtils.createMainPath(), version);
-		return null;
+		return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), version);
 	}
 }
