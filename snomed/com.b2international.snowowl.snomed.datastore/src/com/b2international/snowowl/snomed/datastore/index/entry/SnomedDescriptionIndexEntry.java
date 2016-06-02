@@ -15,19 +15,26 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.eclipse.emf.cdo.server.IStoreAccessor.QueryResourcesContext.ExactMatch;
+
 import java.util.Set;
 
 import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -49,33 +56,6 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 	public static Builder builder() {
 		return new Builder();
 	}
-	
-//	public static Builder builder(final Document doc) {
-//		final Builder builder = builder()
-//				.id(SnomedMappings.id().getValueAsString(doc)) 
-//				.term(SnomedMappings.descriptionTerm().getValue(doc)) 
-//				.moduleId(SnomedMappings.module().getValueAsString(doc))
-//				.languageCode(SnomedMappings.descriptionLanguageCode().getValue(doc))
-//				.storageKey(Mappings.storageKey().getValue(doc))
-//				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-//				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-//				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
-//				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
-//				.caseSignificanceId(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc))
-//				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
-//		
-//		final Iterable<String> preferredRefSetIds = SnomedMappings.descriptionPreferredReferenceSetId().getValuesAsStringList(doc);
-//		for (final String preferredRefSetId : preferredRefSetIds) {
-//			builder.acceptability(preferredRefSetId, Acceptability.PREFERRED);
-//		}
-//		
-//		final Iterable<String> acceptableRefSetIds = SnomedMappings.descriptionAcceptableReferenceSetId().getValuesAsStringList(doc);
-//		for (final String acceptableRefSetId : acceptableRefSetIds) {
-//			builder.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
-//		}
-//		
-//		return builder;
-//	}
 	
 	public static Builder builder(final ISnomedDescription input) {
 		final Builder builder = builder()
@@ -129,6 +109,67 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 		}).toList();
 	}
 
+	public final static class Fields extends SnomedDocument.Fields {
+		public static final String CONCEPT_ID = SnomedRf2Headers.FIELD_CONCEPT_ID;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String CASE_SIGNIFICANCE_ID = SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID;
+		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
+		public static final String LANGUAGE_CODE = SnomedRf2Headers.FIELD_LANGUAGE_CODE;
+		public static final String PREFERRED_IN = "preferredIn";
+		public static final String ACCEPTABLE_IN = "acceptableIn";
+	}
+	
+	public final static class Expressions extends SnomedDocument.Expressions {
+		
+		private Expressions() {
+		}
+
+		public static Expression concept(String conceptId) {
+			return concepts(Collections.singleton(conceptId));
+		}
+		
+		public static Expression concepts(Collection<String> conceptIds) {
+			return matchAny(Fields.CONCEPT_ID, conceptIds);
+		}
+		
+		public static Expression type(String typeId) {
+			return types(Collections.singleton(typeId));
+		}
+		
+		public static Expression types(Collection<String> typeIds) {
+			return matchAny(Fields.TYPE_ID, typeIds);
+		}
+		
+		public static Expression caseSignificance(String caseSignificanceId) {
+			return caseSignificances(Collections.singleton(caseSignificanceId));
+		}
+		
+		public static Expression caseSignificances(Collection<String> caseSignificanceIds) {
+			return matchAny(Fields.CASE_SIGNIFICANCE_ID, caseSignificanceIds);
+		}
+		
+		public static Expression acceptableIn(String languageReferenceSetId) {
+			return acceptableIn(Collections.singleton(languageReferenceSetId));
+		}
+		
+		public static Expression preferredIn(String languageReferenceSetId) {
+			return preferredIn(Collections.singleton(languageReferenceSetId));
+		}
+		
+		public static Expression acceptableIn(Collection<String> languageReferenceSetIds) {
+			return matchAny(Fields.ACCEPTABLE_IN, languageReferenceSetIds);
+		}
+		
+		public static Expression preferredIn(Collection<String> languageReferenceSetIds) {
+			return matchAny(Fields.PREFERRED_IN, languageReferenceSetIds);
+		}
+		
+		public static Expression languageCode(String languageCode) {
+			return exactMatch(Fields.LANGUAGE_CODE, languageCode);
+		}
+		
+	}
+	
 	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String term;

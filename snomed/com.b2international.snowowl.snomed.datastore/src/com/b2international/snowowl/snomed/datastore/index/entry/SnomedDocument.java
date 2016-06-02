@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchRange;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
@@ -32,6 +36,45 @@ import com.google.common.base.Predicate;
  * Common superclass for SNOMED CT transfer objects.
  */
 public abstract class SnomedDocument extends RevisionDocument implements IComponent<String>, Serializable {
+
+	public static abstract class Expressions extends RevisionDocument.Expressions {
+		
+		protected Expressions() {
+		}
+		
+		public static final Expression active() {
+			return active(true);
+		}
+		
+		public static final Expression inactive() {
+			return active(false);
+		}
+		
+		public static Expression active(boolean active) {
+			return match(Fields.ACTIVE, active);
+		}
+		
+		public static final Expression module(String moduleId) {
+			return exactMatch(Fields.MODULE_ID, moduleId);
+		}
+		
+		public static final Expression released() {
+			return match(Fields.RELEASED, true);
+		}
+		
+		public static final Expression unreleased() {
+			return match(Fields.RELEASED, false);
+		}
+		
+		public static final Expression effectiveTime(long effectiveTime) {
+			return effectiveTime(effectiveTime, effectiveTime);
+		}
+		
+		public static final Expression effectiveTime(long from, long to) {
+			return matchRange(Fields.EFFECTIVE_TIME, from, to);
+		}
+
+	}
 
 	public static final Predicate<SnomedDocument> ACTIVE_PREDICATE = new Predicate<SnomedDocument>() {
 		@Override
@@ -70,7 +113,7 @@ public abstract class SnomedDocument extends RevisionDocument implements ICompon
 
 	}
 	
-	public static class Fields {
+	public static class Fields extends RevisionDocument.Fields {
 		public static final String MODULE_ID = "moduleId";
 		public static final String RELEASED = "released";
 		public static final String ACTIVE = "active";

@@ -15,16 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,25 +50,7 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 	public static Builder builder() {
 		return new Builder();
 	}
-	
-//	public static Builder builder(final Document doc) {
-//		return builder()
-//				.id(SnomedMappings.id().getValueAsString(doc))
-//				.sourceId(SnomedMappings.relationshipSource().getValueAsString(doc))
-//				.typeId(SnomedMappings.relationshipType().getValueAsString(doc))
-//				.destinationId(SnomedMappings.relationshipDestination().getValueAsString(doc))
-//				.characteristicTypeId(SnomedMappings.relationshipCharacteristicType().getValueAsString(doc))
-//				.group(SnomedMappings.relationshipGroup().getValue(doc))
-//				.unionGroup(SnomedMappings.relationshipUnionGroup().getValue(doc))
-//				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-//				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-//				.modifierId(BooleanUtils.valueOf(SnomedMappings.relationshipUniversal().getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
-//				.destinationNegated(BooleanUtils.valueOf(SnomedMappings.relationshipDestinationNegated().getValue(doc)))
-//				.moduleId(SnomedMappings.module().getValueAsString(doc))
-//				.storageKey(Mappings.storageKey().getValue(doc))
-//				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
-//	}
-	
+
 	public static Builder builder(final ISnomedRelationship input) {
 		final Builder builder = builder()
 				.id(input.getId())
@@ -111,6 +98,75 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 				return builder(input).build();
 			}
 		}).toSet();
+	}
+	
+	public static final class Expressions extends SnomedDocument.Expressions {
+		
+		private Expressions() {}
+		
+		public static Expression sourceId(String sourceId) {
+			return sourceIds(Collections.singleton(sourceId));
+		}
+
+		public static Expression sourceIds(Collection<String> sourceIds) {
+			return matchAny(Fields.SOURCE_ID, sourceIds);
+		}
+		
+		public static Expression typeId(String typeId) {
+			return typeIds(Collections.singleton(typeId));
+		}
+
+		public static Expression typeIds(Collection<String> typeIds) {
+			return matchAny(Fields.TYPE_ID, typeIds);
+		}
+		
+		public static Expression destinationId(String destinationId) {
+			return destinationIds(Collections.singleton(destinationId));
+		}
+
+		public static Expression destinationIds(Collection<String> destinationIds) {
+			return matchAny(Fields.DESTINATION_ID, destinationIds);
+		}
+		
+		public static Expression characteristicTypeId(String characteristicTypeId) {
+			return characteristicTypeIds(Collections.singleton(characteristicTypeId));
+		}
+
+		public static Expression characteristicTypeIds(Collection<String> characteristicTypeIds) {
+			return matchAny(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeIds);
+		}
+		
+		public static Expression modifierId(String modifierId) {
+			return modifierIds(Collections.singleton(modifierId));
+		}
+
+		public static Expression modifierIds(Collection<String> modifierIds) {
+			return matchAny(Fields.MODIFIER_ID, modifierIds);
+		}
+		
+		public static Expression group(int group) {
+			return match(Fields.GROUP, group);
+		}
+		
+		public static Expression unionGroup(int unionGroup) {
+			return match(Fields.UNION_GROUP, unionGroup);
+		}
+		
+		public static Expression destinationNegated() {
+			return match(Fields.DESTINATION_NEGATED, true);
+		}
+		
+	}
+	
+	public static final class Fields extends SnomedDocument.Fields {
+		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
+		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
+		public static final String GROUP = "group"; // XXX different than RF2 header
+		public static final String UNION_GROUP = "unionGroup";
+		public static final String DESTINATION_NEGATED = "destinationNegated";
 	}
 
 	public static class Builder extends SnomedDocumentBuilder<Builder> {

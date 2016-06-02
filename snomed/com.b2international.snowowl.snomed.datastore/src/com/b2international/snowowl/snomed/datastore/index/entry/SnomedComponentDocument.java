@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.*;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
@@ -22,7 +24,17 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
  */
 public abstract class SnomedComponentDocument extends SnomedDocument {
 
-	public static class Fields {
+	public static abstract class Expressions extends SnomedDocument.Expressions {
+		
+		protected Expressions() {}
+		
+		public static final Expression namespace(String namespace) {
+			return exactMatch(Fields.NAMESPACE, namespace);
+		}
+		
+	}
+
+	public static class Fields extends SnomedDocument.Fields {
 		public static final String NAMESPACE = "namespace";
 	}
 	

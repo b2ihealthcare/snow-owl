@@ -15,11 +15,16 @@
  */
 package com.b2international.snowowl.datastore.index;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Collection;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
+import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
@@ -30,6 +35,21 @@ import com.google.common.base.Objects;
  * @since 4.7
  */
 public abstract class RevisionDocument extends Revision implements IComponent<String>, IconIdProvider<String> {
+
+	public static abstract class Expressions {
+
+		protected Expressions() {
+		}
+		
+		public static final Expression id(String id) {
+			return exactMatch(Fields.ID, id);
+		}
+		
+		public static final Expression ids(Collection<String> ids) {
+			return matchAny(Fields.ID, ids);
+		}
+
+	}
 
 	/**
 	 * @since 4.7

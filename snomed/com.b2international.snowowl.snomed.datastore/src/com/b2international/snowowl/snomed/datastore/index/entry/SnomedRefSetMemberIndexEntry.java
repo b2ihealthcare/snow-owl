@@ -259,9 +259,9 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				builder.additionalField(Fields.CORRELATION_ID, Long.valueOf(mapRefSetMember.getCorrelationId()));
 
 				addAdditionalFieldIfNotNull(builder, Fields.MAP_GROUP, Integer.valueOf(mapRefSetMember.getMapGroup()));
-				addAdditionalFieldIfNotNull(builder, Fields.MAP_ADVICE, mapRefSetMember.getMapAdvice());
+				addAdditionalFieldIfNotNull(builder, Fields.MAP_ADVICE, mapRefSetMember.getMapAdvice() == null ? "" : mapRefSetMember.getMapAdvice());
 				addAdditionalFieldIfNotNull(builder, Fields.MAP_PRIORITY, Integer.valueOf(mapRefSetMember.getMapPriority()));
-				addAdditionalFieldIfNotNull(builder, Fields.MAP_RULE, mapRefSetMember.getMapRule());
+				addAdditionalFieldIfNotNull(builder, Fields.MAP_RULE, mapRefSetMember.getMapRule() == null ? "" : mapRefSetMember.getMapRule());
 				
 				// extended refset
 				if (mapRefSetMember.getMapCategoryId() != null) {
@@ -669,6 +669,10 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return getStringField(Fields.VALUE_ID);
 	}
 
+	public Map<String, Object> getAdditionalProperties() {
+		return additionalFields;
+	}
+	
 	@Deprecated
 	public String getSpecialFieldLabel() {
 		throw new UnsupportedOperationException("Special field label needs to be computed separately.");

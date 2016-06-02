@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -35,6 +37,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
@@ -51,7 +54,80 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
 
-	public static class Fields {
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public final static class Expressions extends SnomedComponentDocument.Expressions {
+		
+		private Expressions() {
+		}
+
+		public static Expression parents(Collection<String> parentIds) {
+			return matchAny(Fields.PARENTS, parentIds);
+		}
+
+		public static Expression ancestors(Collection<String> ancestorIds) {
+			return matchAny(Fields.ANCESTORS, ancestorIds);
+		}
+
+		public static Expression statedParents(Collection<String> statedParentIds) {
+			return matchAny(Fields.STATED_PARENTS, statedParentIds);
+		}
+		
+		public static Expression statedAncestors(Collection<String> statedAncestorIds) {
+			return matchAny(Fields.STATED_ANCESTORS, statedAncestorIds);
+		}
+		
+		public static Expression primitive() {
+			return match(Fields.PRIMITIVE, true);
+		}
+		
+		public static Expression defining() {
+			return match(Fields.PRIMITIVE, false);
+		}
+		
+		public static Expression exhaustive() {
+			return match(Fields.EXHAUSTIVE, true);
+		}
+		
+		public static Expression refSetStorageKey(long storageKey) {
+			return exactMatch(Fields.REFSET_STORAGEKEY, storageKey);
+		}
+		
+		public static Expression refSetType(SnomedRefSetType type) {
+			return match(Fields.REFSET_TYPE, type.ordinal());
+		}
+		
+		public static Expression referencedComponentType(int referencedComponentType) {
+			return match(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentType);
+		}
+		
+		public static Expression structuralRefSet() {
+			return match(Fields.STRUCTURAL, true);
+		}
+		
+		public static Expression regularRefSet() {
+			return match(Fields.STRUCTURAL, false);
+		}
+		
+		public static Expression referringRefSet(String referringRefSet) {
+			return exactMatch(Fields.REFERRING_REFSETS, referringRefSet);
+		}
+		
+		public static Expression referringMappingRefSet(String referringMappingRefSet) {
+			return exactMatch(Fields.REFERRING_MAPPING_REFSETS, referringMappingRefSet);
+		}
+		
+		public static Expression referringPredicate(String referringPredicate) {
+			return exactMatch(Fields.REFERRING_PREDICATES, referringPredicate);
+		}
+		
+	}
+
+	public static class Fields extends SnomedComponentDocument.Fields {
+		public static final String REFSET_STORAGEKEY = "refSetStorageKey";
+		public static final String REFERRING_PREDICATES = "referringPredicates";
 		public static final String PRIMITIVE = "primitive";
 		public static final String EXHAUSTIVE = "exhaustive";
 		public static final String ANCESTORS = "ancestors";
@@ -62,10 +138,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		public static final String REFSET_TYPE = "refSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String STRUCTURAL = "structural";
-	}
-	
-	public static Builder builder() {
-		return new Builder();
+		public static final String REFERRING_REFSETS = "referringRefSets";
+		public static final String REFERRING_MAPPING_REFSETS = "referringMappingRefSets";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
@@ -129,7 +203,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private LongSet ancestors;
 		private LongSet statedParents;
 		private LongSet statedAncestors;
-		private Collection<String> predicates = Collections.emptyList();
+		private Collection<String> referringPredicates = Collections.emptyList();
 		private SnomedRefSetType refSetType;
 		private short referencedComponentType;
 		private float doi = DEFAULT_DOI;
@@ -177,8 +251,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
-		public Builder predicates(final Collection<String> componentReferringPredicates) {
-			this.predicates = componentReferringPredicates;
+		public Builder referringPredicates(final Collection<String> referringPredicates) {
+			this.referringPredicates = referringPredicates;
 			return getSelf();
 		}
 		
@@ -235,8 +309,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				entry.setStatedAncestors(statedAncestors);
 			}
 			
-			if (predicates != null) {
-				entry.setComponentReferringPredicates(predicates);
+			if (referringPredicates != null) {
+				entry.setReferringPredicates(referringPredicates);
 			}
 			
 			if (referringRefSets != null) {
@@ -264,7 +338,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private LongSet ancestors;
 	private LongSet statedParents;
 	private LongSet statedAncestors;
-	private Collection<String> predicates;
+	private Collection<String> referringPredicates;
 	private float doi;
 	private Collection<String> referringRefSets;
 	private Collection<String> referringMappingRefSets;
@@ -292,8 +366,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.structural = SnomedRefSetUtil.isStructural(id, refSetType);
 	}
 	
+	@JsonIgnore
 	public Collection<ConstraintDomain> getPredicates() {
-		return FluentIterable.from(predicates).transform(new Function<String, ConstraintDomain>() {
+		return FluentIterable.from(referringPredicates).transform(new Function<String, ConstraintDomain>() {
 			@Override 
 			public ConstraintDomain apply(final String predicateKey) {
 				final List<String> segments = Splitter.on(PredicateUtils.PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
@@ -304,8 +379,12 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}).toList();
 	}
 	
-	private void setComponentReferringPredicates(Collection<String> componentReferringPredicates) {
-		this.predicates = componentReferringPredicates;
+	private void setReferringPredicates(Collection<String> componentReferringPredicates) {
+		this.referringPredicates = componentReferringPredicates;
+	}
+	
+	public Collection<String> getReferringPredicates() {
+		return referringPredicates;
 	}
 	
 	public long getRefSetStorageKey() {
