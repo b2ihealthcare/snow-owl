@@ -37,7 +37,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +48,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ConsoleProgressMonitor;
@@ -58,10 +56,7 @@ import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
@@ -72,20 +67,19 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.core.store.SnomedReleaseBuilder;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
@@ -112,15 +106,16 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConcept
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -270,6 +265,8 @@ public final class ImportUtil {
 			return result;
 		}
 		
+		createSnomedReleaseIfNotExists(configuration.getSnomedRelease(), requestingUserId);
+		
 		final Set<URL> patchedRefSetURLs = Sets.newHashSet(configuration.getRefSetUrls());
 		final Set<String> patchedExcludedRefSetIDs = Sets.newHashSet(configuration.getExcludedRefSetIds());
 		final List<Importer> importers = Lists.newArrayList();
@@ -368,7 +365,6 @@ public final class ImportUtil {
 			OperationLockRunner.with(lockManager).run(new Runnable() { 
 				@Override 
 				public void run() {
-					createSnomedRelease(configuration.getSnomedRelease(), context, configuration.getBranchPath());
 					resultHolder[0] = doImportLocked(requestingUserId, configuration, result, branchPath, context, subMonitor, importers, editingContext, branch);
 				}
 			}, lockContext, IOperationLockManager.NO_TIMEOUT, lockTarget);
@@ -381,63 +377,29 @@ public final class ImportUtil {
 		return resultHolder[0];
 	}
 	
-	/*
-	 * Code systems must be committed to MAIN, therefore the proper editing context must be used accordingly 
-	 */
-	private void createSnomedRelease(final SnomedRelease snomedRelease, final SnomedImportContext context, final String branchPath) {
+	private void createSnomedReleaseIfNotExists(final SnomedRelease snomedRelease, final String userId) {
 		try {
-			// import works on MAIN -> get editingContext from import context
-			if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
-				if (!context.getEditingContext().isSnomedReleaseExists(snomedRelease.getShortName(), snomedRelease.getCodeSystemOID())) {
-					context.getEditingContext().add(snomedRelease);
-				}
-				
-				if (context.getEditingContext().isDirty()) {
-					new CDOServerCommitBuilder(context.getUserId(), String.format("Created SNOMED CT code system '%s' (OID: %s)", snomedRelease.getShortName(), snomedRelease.getCodeSystemOID()), context.getEditingContext().getTransaction())
-						.sendCommitNotification(false)
-						.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-						.commit();
-				}
-			// import works on a branch -> open a separate editingContext for MAIN
-			} else {
-				try (SnomedEditingContext snomedEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
-					
-					if (!snomedEditingContext.isSnomedReleaseExists(snomedRelease.getShortName(), snomedRelease.getCodeSystemOID())) {
-						snomedEditingContext.add(snomedRelease);
-					} else if (snomedRelease.getReleaseType() == SnomedReleaseType.EXTENSION) {
-						SnomedRelease existingSnomedRelease = snomedEditingContext.getSnomedRelease(snomedRelease.getShortName(), snomedRelease.getCodeSystemOID());
-						Date effectiveTimeOfExistingRelease = getBaseEffectiveTimeOf(existingSnomedRelease);
-						Date effectiveTimeOfRequestedSnomedRelease = getBaseEffectiveTimeOf(snomedRelease);
-						if (effectiveTimeOfExistingRelease != null && effectiveTimeOfRequestedSnomedRelease != null) {
-							if (effectiveTimeOfRequestedSnomedRelease.after(effectiveTimeOfExistingRelease)) {
-								// XXX index change processing does not follow this change!
-								existingSnomedRelease.setBranchPath(snomedRelease.getBranchPath());
-							}
-						}
-					}
-					
-					if (snomedEditingContext.isDirty()) {
-						CDOServerUtils.commit(snomedEditingContext, context.getUserId(), String.format("Created SNOMED CT code system '%s' (OID: %s)", snomedRelease.getShortName(), snomedRelease.getCodeSystemOID()), null);
-					}
-				}
-			}
-		} catch (CommitException e) {
-			throw new ImportException("Unable to commit SNOMED CT code system", e);
+			new CodeSystemRequests(snomedRelease.getRepositoryUuid())
+				.prepareNewCodeSystem()
+				.setBranchPath(snomedRelease.getBranchPath())
+				.setName(snomedRelease.getName())
+				.setShortName(snomedRelease.getShortName())
+				.setLanguage(snomedRelease.getLanguage())
+				.setLink(snomedRelease.getMaintainingOrganizationLink())
+				.setOid(snomedRelease.getCodeSystemOID())
+				.setCitation(snomedRelease.getCitation())
+				.setIconPath(snomedRelease.getIconPath())
+				.setTerminologyId(snomedRelease.getTerminologyComponentId())
+				.setRepositoryUuid(snomedRelease.getRepositoryUuid())
+				.setAdditionaProperties(ImmutableMap.<String, String>builder()
+						.put(SnomedReleaseBuilder.KEY_BASE_CODE_SYSTEM_OID, snomedRelease.getBaseCodeSystemOID())
+						.put(SnomedReleaseBuilder.KEY_RELEASE_TYPE, snomedRelease.getReleaseType().getName())
+						.build())
+						.build(userId, IBranchPath.MAIN_BRANCH, String.format("Created SNOMED CT code system '%s' (OID: %s)", snomedRelease.getShortName(), snomedRelease.getCodeSystemOID()))
+						.executeSync(getEventBus());
+		} catch (AlreadyExistsException e) {
+			// ignore and continue import
 		}
-	}
-
-	private Date getBaseEffectiveTimeOf(SnomedRelease snomedRelease) {
-		List<String> pathSegments = Splitter.on(Branch.SEPARATOR).splitToList(snomedRelease.getBranchPath());
-		int indexOfExtensionIdentifier = pathSegments.lastIndexOf(snomedRelease.getShortName());
-		if (indexOfExtensionIdentifier > 0) {
-			String baseEffectiveTime = pathSegments.get(indexOfExtensionIdentifier -1);
-			try {
-				return EffectiveTimes.parse(baseEffectiveTime, DateFormats.DEFAULT);
-			} catch (SnowowlRuntimeException | NullPointerException e) {
-				throw new ImportException(String.format("Unable to parse base effective time of SNOMED CT code system (%s)", snomedRelease.getBranchPath()), e);
-			}
-		}
-		return null;
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,

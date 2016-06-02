@@ -31,8 +31,8 @@ import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBu
  */
 public class SnomedReleaseBuilder extends CodeSystemBuilder<SnomedReleaseBuilder> {
 
-	private static final String KEY_BASE_CODE_SYSTEM_OID = "baseCodeSystemOID";
-	private static final String KEY_RELEASE_TYPE = "releaseType";
+	public static final String KEY_BASE_CODE_SYSTEM_OID = "baseCodeSystemOID";
+	public static final String KEY_RELEASE_TYPE = "releaseType";
 
 	private String baseCodeSystemOid;
 	private SnomedReleaseType type;
