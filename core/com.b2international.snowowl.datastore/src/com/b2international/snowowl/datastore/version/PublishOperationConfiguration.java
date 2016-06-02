@@ -41,6 +41,7 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 	private static final long serialVersionUID = -8002761922404393510L;
 
 	private final UUID remoteJobId;
+	private final String primaryToolingId;
 	private final Collection<String> toolingIds;
 	private final String userId;
 	private Date effectiveTime;
@@ -59,6 +60,7 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 		checkNotNull(toolingId, "toolingId");
 		checkNotNull(otherToolingIds, "otherToolingIds");
 		
+		this.primaryToolingId = toolingId;
 		this.toolingIds = Lists.asList(toolingId, otherToolingIds);
 		this.remoteJobId = remoteJobId;
 		this.userId = getServiceForClass(ICDOConnectionManager.class).getUserId();
@@ -83,6 +85,11 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 	@Override
 	public String getDescription() {
 		return nullToEmpty(description);
+	}
+	
+	@Override
+	public String getPrimaryToolingId() {
+		return primaryToolingId;
 	}
 
 	@Override

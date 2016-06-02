@@ -48,6 +48,8 @@ public interface IPublishOperationConfiguration extends Serializable, ToolingIdI
 	 */
 	Date getEffectiveTime();
 	
+	String getPrimaryToolingId();
+	
 	/**
 	 * Returns with the tooling IDs representing the contents that has to be published.
 	 */

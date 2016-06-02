@@ -70,6 +70,7 @@ import com.b2international.snowowl.datastore.version.IVersioningManager;
 import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequestBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -307,23 +308,29 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	}
 	
 	private Map<String, Collection<ICodeSystemVersion>> getExistingVersions() {
-		final Map<String, Collection<ICodeSystemVersion>> versionsMap = Maps.newHashMap();
+		final Map<String, Collection<ICodeSystemVersion>> existingVersions = Maps.newHashMap();
 		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
 		
 		for (final String toolingId : configuration.getToolingIds()) {
 			final String shortName = ConfigurationThreadLocal.getConfiguration().getCodeSystemShortName();
 			final String repositoryUuid = CodeSystemUtils.getRepositoryUuid(toolingId);
 			
-			final Collection<ICodeSystemVersion> versions = new CodeSystemRequests(repositoryUuid)
-					.prepareSearchCodeSystemVersion()
-					.setCodeSystemShortName(shortName)
+			final CodeSystemVersionSearchRequestBuilder requestBuilder = new CodeSystemRequests(repositoryUuid)
+					.prepareSearchCodeSystemVersion();
+			
+			if (toolingId.equals(configuration.getPrimaryToolingId())) {
+				requestBuilder.setCodeSystemShortName(shortName);
+			}
+			
+			final List<ICodeSystemVersion> versions = requestBuilder
 					.build(IBranchPath.MAIN_BRANCH)
 					.executeSync(getEventBus())
 					.getItems();
-			versionsMap.put(toolingId, versions);
+			
+			existingVersions.put(toolingId, versions);
 		}
 		
-		return versionsMap;
+		return existingVersions;
 	}
 	
 	private Map<String, Boolean> getTagPreferences(final Map<String, Collection<ICodeSystemVersion>> existingVersions) {
