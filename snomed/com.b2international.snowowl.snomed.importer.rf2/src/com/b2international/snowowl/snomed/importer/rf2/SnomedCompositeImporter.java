@@ -42,7 +42,10 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
@@ -55,6 +58,7 @@ import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSn
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
 import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.datastore.version.TagConfigurationBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.AbstractImportUnit;
 import com.b2international.snowowl.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.importer.ImportException;
@@ -71,18 +75,18 @@ import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.EffectiveTimeUnitOrdering;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -130,33 +134,46 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			importer.preImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 		}
 		
-		if (getImportBranchPath().getPath().equals(IBranchPath.MAIN_BRANCH)) {
-			getExistingVersions(importContext.getEditingContext());
-		} else {
-			try (SnomedEditingContext snomedEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
-				getExistingVersions(snomedEditingContext);
-			}
-		}
+		collectExistingVersions();
 	}
 
-	private void getExistingVersions(final SnomedEditingContext snomedEditingContext) {
-		SnomedRelease snomedRelease = snomedEditingContext.getSnomedRelease(importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID());
-		
-		if (snomedRelease != null) {
-			existingVersions = FluentIterable.from(snomedRelease.getCodeSystemVersions()).filter(new Predicate<CodeSystemVersion>() {
-				@Override public boolean apply(CodeSystemVersion input) {
-					return input.getParentBranchPath().equals(getImportBranchPath().getPath());
-				}
-			}).transform(new Function<CodeSystemVersion, String>() {
-				@Override public String apply(CodeSystemVersion input) {
+	private void collectExistingVersions() {
+		SnomedReleaseEntry releaseEntry = getSnomedReleaseEntry(importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID());
+		existingVersions = FluentIterable.from(new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.prepareSearchCodeSystemVersion()
+			.setCodeSystemShortName(releaseEntry.getShortName())
+			.build(IBranchPath.MAIN_BRANCH)
+			.executeSync(getEventBus())
+			.getItems()).transform(new Function<ICodeSystemVersion, String>() {
+				@Override public String apply(ICodeSystemVersion input) {
 					return EffectiveTimes.format(input.getEffectiveDate(), DateFormats.SHORT);
 				}
 			}).toSet();
-		} else {
-			throw new ImportException(String.format(
-					"Unable to find the specified SNOMED CT release among the registered terminologies. Short name: %s, OID: %s",
-					importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
+	}
+
+	private SnomedReleaseEntry getSnomedReleaseEntry(String shortName, String oid) {
+		CodeSystemEntry entry;
+		try {
+			entry = new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.prepareGetCodeSystem()
+				.setUniqueId(oid)
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus());
+		} catch (CodeSystemNotFoundException e) {
+			try {
+				entry = new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.prepareGetCodeSystem()
+					.setUniqueId(shortName)
+					.build(IBranchPath.MAIN_BRANCH)
+					.executeSync(getEventBus());
+			} catch (CodeSystemNotFoundException e2) {
+				throw new ImportException(String.format(
+						"Unable to find the specified SNOMED CT release among the registered terminologies. Short name: %s, OID: %s",
+						importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
+			}
 		}
+		
+		return (SnomedReleaseEntry) entry;
 	}
 
 	@Override
@@ -515,5 +532,9 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			.withEffectiveDate(effectiveDate)
 			.withParentBranchPath(getImportBranchPath().getPath())
 			.build();
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 }
