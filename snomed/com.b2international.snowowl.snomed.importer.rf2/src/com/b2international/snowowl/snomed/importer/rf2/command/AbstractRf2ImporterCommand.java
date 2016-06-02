@@ -16,13 +16,8 @@
 package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.text.MessageFormat;
-import java.util.Properties;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
-
-import com.b2international.snowowl.snomed.SnomedFactory;
-import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedReleaseType;
 
 /**
  * Represents an abstract OSGi command for importing SNOMED CT components from various sources. 
@@ -70,21 +65,5 @@ public abstract class AbstractRf2ImporterCommand {
 			interpreter.print("  ");
 			interpreter.println(detailedHelpRow);
 		}
-	}
-	
-	/**
-	 * Creates a Snomed Release descriptor from String properties.
-	 * @param config
-	 */
-	protected SnomedRelease createSnomedRelease(Properties properties) {
-		SnomedRelease snomedRelease = SnomedFactory.eINSTANCE.createSnomedRelease();
-		snomedRelease.setShortName(properties.getProperty("shortname"));
-		snomedRelease.setCodeSystemOID(properties.getProperty("OID"));
-		snomedRelease.setLanguage(properties.getProperty("language"));
-		snomedRelease.setCitation(properties.getProperty("citation"));
-		snomedRelease.setIconPath(properties.getProperty("icon_path"));
-		snomedRelease.setMaintainingOrganizationLink(properties.getProperty("maintaining_org_link"));
-		snomedRelease.setReleaseType(SnomedReleaseType.EXTENSION);
-		return snomedRelease;
 	}
 }
