@@ -30,7 +30,6 @@ import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -97,7 +96,7 @@ public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClient
 		final SnomedConcepts roots = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByActive(true)
-				.filterByStatedParent(Long.toString(SnomedMappings.ROOT_ID))
+				.filterByStatedParent(Long.toString(SnomedConceptDocument.ROOT_ID))
 				.setLocales(getLocales())
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
