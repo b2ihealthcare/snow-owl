@@ -109,11 +109,11 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 		final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
 
 		if (registryService.getCodeSystemByOid(branchPathMap, oid) != null) {
-			throw new AlreadyExistsException("Couldn't create code system with OID %s as it is not unique.", oid);
+			throw new AlreadyExistsException("Code system", oid);
 		}
 
 		if (registryService.getCodeSystemByShortName(branchPathMap, shortName) != null) {
-			throw new AlreadyExistsException("Couldn't create code system with short name %s as it is not unique.", shortName);
+			throw new AlreadyExistsException("Code system", shortName);
 		}
 	}
 
