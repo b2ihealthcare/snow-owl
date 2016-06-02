@@ -1,7 +1,7 @@
 = SNOMED CT Extension management
 
 == Introduction
-Snow Owl is capable of managing multiple SNOMED CT extensions on a single server. This document highlights how each extension is managed in a dedicated area and lists the main authoring scenarios.  Similarly to generic SNOMED CT authoring, content is developed via the help of a workflow where the work performed on a task is promoted to the repository after review.  Promoting (donating) content from an extension to the international content or between extensions is not supported.  Extension authors can follow their own release schedule and extension content can be versioned at any time during the authoring process. Extensions are based on a single international release version. The base international release can be upgraded ‘underneath’ the extension content. Extensions do not have an additional isolated area for long running development projects (project branch). The import and export of standard RF2 serialized content is supported.  
+Snow Owl is capable of managing multiple SNOMED CT extensions on a single server. This document highlights how each extension is managed in a dedicated area and lists the main authoring scenarios.  Similarly to generic SNOMED CT authoring, content is developed via the help of a workflow where the work performed on a task is promoted to the repository after review.  Promoting (donating) content from an extension to the international content or between extensions is not supported.  Extension authors can follow their own release schedule and extension content can be versioned at any time during the authoring process. Extensions are based on a single international release version. The base international release can be upgraded ‘underneath’ the extension content. Extensions do not have an additional isolated area for long running development projects (project branch). The import and export of standard RF2 serialized content is supported.
 The international content is not edited on the server, only updated via delta releases as consecutive releases are available from IHTSDO’s own authoring process. Search will be performed for both the native language and English as is currently supported. There will be no special search features to accommodate specific language requirements, such as word decompoundization.
 
 image::snomed_extensions.png[role="text-center"]
@@ -27,69 +27,69 @@ The following example demonstrates how a blank server is provisioned for extensi
 First, the full International Release is imported with version tags created (_-v_).  The selected language refset is English.
 
 ....
->sctimport rf2_release -t full -v 
-/path/to/file/SnomedCT_RF2Release_INT_20160131.zip /path/to/file/snomed_ct_international.json
+> sctimport rf2_release -t full -v /path/to/SnomedCT_RF2Release_INT_20160131.zip /path/to/snomed_ct_international.json
 ....
 
-Where the _snomed_ct_international.json_ release descriptor file is:
+Where the `snomed_ct_international.json` release descriptor file is:
 
-.....
- {
-	"name": "Systematized Nomenclature of Medicine Clinical Terms International Version",
-	"shortName": "SNOMEDCT",
-	"language": "ENG",
-	"codeSystemOID": "2.16.840.1.113883.6.96",
-	"baseCodeSystemOID": "2.16.840.1.113883.6.96",
-	"maintainingOrganizationLink": "http://www.ihtsdo.org",
-	"releaseType": "INTERNATIONAL",
-	"citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care."
- }
-.....
+[source,json]
+----
+{
+  "name": "Systematized Nomenclature of Medicine Clinical Terms International Version",
+  "shortName": "SNOMEDCT",
+  "language": "ENG",
+  "codeSystemOID": "2.16.840.1.113883.6.96",
+  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
+  "maintainingOrganizationLink": "http://www.ihtsdo.org",
+  "releaseType": "INTERNATIONAL",
+  "citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care."
+}
+----
 
 After the import process, to check the terminology registry issue the command:
 
 ....
->terminologyregistry listall
+> terminologyregistry listall
 ....
 
 To see all the version branches created execute:
 
 ....
->snowowl listbranches snomedStore
+> snowowl listbranches snomedStore
 ....
 
-To import a extension terminology based on the _2016-01-31_ International release, issue the command:
+To import an extension terminology based on the _2016-01-31_ International release, issue the command:
 
 ....
->sctimport rf2_release -t full -b 2016-01-31
-/path/to/file/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip /path/to/file/snomed_ct_b2i_extension.json
+> sctimport rf2_release -t full -b 2016-01-31 -v /path/to/SnomedCT_Extension_Release.zip /path/to/snomed_ct_extension.json
 ....
 
-Where the _snomed_ct_b2i_extension.json_ release descriptor file is:
+Where the `snomed_ct_extension.json` release descriptor file is:
 
-....
+[source,json]
+----
 {
-	"name": "B2i Healthcare SNOMED CT extension",
-	"shortName": "SNOMEDCT_B2i",
-	"language": "ENG",
-	"codeSystemOID": "2.16.840.1.113883.6.961",
-	"baseCodeSystemOID": "2.16.840.1.113883.6.96",
-	"maintainingOrganizationLink": "http://www.b2i.sg",
-	"releaseType": "EXTENSION",
-	"citation": "This is an example SNOMED CT extension by B2i Healthcare."
+  "name": "B2i Healthcare SNOMED CT extension",
+  "shortName": "SNOMEDCT_B2i",
+  "language": "ENG",
+  "codeSystemOID": "2.16.840.1.113883.6.961",
+  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
+  "maintainingOrganizationLink": "http://www.b2i.sg",
+  "releaseType": "EXTENSION",
+  "citation": "This is an example SNOMED CT extension by B2i Healthcare."
 }
-....
+----
 
 Again, after the import process, to check the terminology registry issue the command:
 
 ....
->terminologyregistry listall
+> terminologyregistry listall
 ....
 
 To see all the version branches created execute:
 
 ....
->snowowl listbranches snomedStore
+> snowowl listbranches snomedStore
 ....
 
 There should be a branch named _MAIN/2016-01-31/SNOMEDCT_B2i_ dedicated for the initial content of the extension.
@@ -115,7 +115,7 @@ Import the International archive:
 POST /snowowl/snomed-ct/v2/imports/{importId}/archive
 ....
 
-After the import process, check the terminology registry for entry representing the International release:
+After the import process, check the terminology registry for the entry representing the International release:
 ....
 GET /snowowl/admin/codesystems
 ....
