@@ -72,11 +72,6 @@ public class RAMDirectoryManager extends AbstractDirectoryManager implements IDi
 	}
 
 	@Override
-	public void firstStartup(final IndexBranchService service) {
-		return;
-	}
-
-	@Override
 	public List<String> listFiles(final BranchPath branchPath) {
 		return Collections.emptyList();
 	}
