@@ -55,21 +55,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	}
 
 	@Override
-	public Map<String, Integer> getAvailableDescriptionTypeIdsWithLength() {
-		return wrappedService.getAvailableDescriptionTypeIdsWithLength(getBranchPath());
-	}
-
-	@Override
-	public Set<String> getAvailableDescriptionTypeIds() {
-		return wrappedService.getAvailableDescriptionTypeIds(getBranchPath());
-	}
-
-	@Override
-	public Set<String> getAvailablePreferredTermIds() {
-		return wrappedService.getAvailablePreferredTermIds(getBranchPath());
-	}
-
-	@Override
 	public Set<String> getAvailableDataTypeLabels(final DataType dataType) {
 		return wrappedService.getAvailableDataTypeLabels(getBranchPath(), dataType);
 	}
@@ -82,11 +67,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	@Override
 	public long getExtensionConceptId(final String componentId) {
 		return wrappedService.getExtensionConceptId(getBranchPath(), componentId);
-	}
-
-	@Override
-	public String[] getIconId(final String... conceptId) {
-		return wrappedService.getIconId(getBranchPath(), conceptId);
 	}
 
 	@Override

@@ -44,35 +44,6 @@ public interface IClientSnomedComponentService {
 	void warmCache();
 
 	/**
-	 * Returns with all the IDs and the allowed term length of the description type SNOMED&nbsp;CT concepts. ID is included in the return set if concept fulfills the followings:
-	 * <ul>
-	 * <li>Concept is descendant of the {@code Description type (core metadata concept)} concept.</li>
-	 * <li>Concept is active</li>
-	 * <li>Concept has an active description type reference set member</li>
-	 * </ul>
-	 * @return a set of description type concept IDs and the allowed description term length.
-	 */
-	Map<String, Integer> getAvailableDescriptionTypeIdsWithLength();
-	
-	/**
-	 * Returns with all the IDs of the description type SNOMED&nbsp;CT concepts. ID is included in the return set if concept fulfills the followings:
-	 * <ul>
-	 * <li>Concept is descendant of the {@code Description type (core metadata concept)} concept.</li>
-	 * <li>Concept is active</li>
-	 * <li>Concept has an active description type reference set member</li>
-	 * </ul>
-	 * @return a set of description type concept IDs
-	 */
-	Set<String> getAvailableDescriptionTypeIds();
-
-	/**
-	 * Returns with a set of allowed SNOMED&nbsp;CT concepts' ID.<br>Concept is allowed as preferred description type concept if 
-	 * has an associated active description type reference set member and is the 'Synonym' concept or one of its descendant.
-	 * @return a set of SNOMED&nbsp;CT description type concept identifier that can act as a preferred term of a concept.
-	 */
-	Set<String> getAvailablePreferredTermIds();
-
-	/**
 	 * Returns with the available concrete domain data type labels for a specified concrete domain data type.
 	 * @param dataType the data type. E.g.: {@code BOOLEAN} or {@code DECIMAL}.
 	 * @return a set of concrete domain data type labels for a specified data type.
@@ -91,16 +62,6 @@ public interface IClientSnomedComponentService {
 	 * @return the extension namespace concept ID, or {@code -1L} if the ID was not found.
 	 */
 	long getExtensionConceptId(final String componentId);
-	
-	/**
-	* Returns with an array of SNOMED&nbsp;CT concept icon IDs for
-	* a bunch of SNOMED&nbsp;CT concepts given by their unique SNOMED&nbsp;CT concept ID.
-	* <br>Returning array may contain {@code null} elements. Order of the given concept IDs and the returning array
-	* of image IDs are the same.
-	* @param conceptId the concept IDs.
-	* @return a map concept concept IDs and associated image concept IDs.
-	*/
-	String[] getIconId(final String... conceptId);
 	
 	/**
 	 * Returns {@code true} if the SNOMED&nbsp;CT description exists with the given unique ID.

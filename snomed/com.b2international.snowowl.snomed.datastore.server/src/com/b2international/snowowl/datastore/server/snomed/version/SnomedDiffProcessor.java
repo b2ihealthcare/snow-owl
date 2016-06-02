@@ -50,9 +50,11 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.index.diff.FeatureChange;
 import com.b2international.snowowl.datastore.index.diff.NodeDelta;
 import com.b2international.snowowl.datastore.server.version.NodeDeltaDiffProcessor;
@@ -60,10 +62,14 @@ import com.b2international.snowowl.emf.compare.diff.AttributeDiff;
 import com.b2international.snowowl.emf.compare.diff.ReferenceDiff;
 import com.b2international.snowowl.emf.compare.diff.SingleValueAttributeDiff;
 import com.b2international.snowowl.emf.compare.diff.SingleValueReferenceDiff;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
@@ -75,6 +81,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 /**
@@ -596,7 +604,19 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 	}
 
 	private Set<String> getAllPreferredDescriptionIds(final SnomedLanguageRefSetMember member) {
-		return getComponentService().getAvailablePreferredTermIds(getBranchPath(member));
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByActive(true)
+				.filterByAncestor(Concepts.SYNONYM)
+				.build(getBranchPath(member).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 	}
 
 	private String getComponentLabel(final EObject component) {

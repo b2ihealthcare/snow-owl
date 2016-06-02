@@ -124,7 +124,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -339,22 +338,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 	}
 	
-	/**
-	 * Returns with a set of allowed SNOMED&nbsp;CT concepts' ID.<br>Concept is allowed as preferred description type concept if 
-	 * has an associated active description type reference set member and is the 'Synonym' concept or one of its descendant.
-	 * @return a set of SNOMED&nbsp;CT description type concept identifier that can act as a preferred term of a concept.
-	 */
-	@Override
-	public Set<String> getAvailablePreferredTermIds(final IBranchPath branchPath) {
-		checkAndJoin(branchPath, null);
-		try {
-			return (Set<String>) cache.get(branchPath).get(CacheKeyType.AVAILABLE_PREFERRED_TERM_IDS);
-		} catch (final ExecutionException e) {
-			LOGGER.error("Error while getting 'Synonym' concept and all descendants.", e);
-			throw new UncheckedExecutionException(e);
-		}
-	}
-	
 	@Override
 	public Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> getPredicates(final IBranchPath branchPath) {
 		checkAndJoin(branchPath, null);
@@ -377,43 +360,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 	}
 	
-	/**
-	 * Returns with all the IDs and the allowed term length of the description type SNOMED&nbsp;CT concepts. ID is included in the return set if concept fulfills the followings:
-	 * <ul>
-	 * <li>Concept is descendant of the {@code Description type (core metadata concept)} concept.</li>
-	 * <li>Concept is active</li>
-	 * <li>Concept has an active description type reference set member</li>
-	 * </ul>
-	 * @return a set of description type concept IDs and the allowed description term length.
-	 */
-	@Override
-	public Map<String, Integer> getAvailableDescriptionTypeIdsWithLength(final IBranchPath branchPath) {
-		checkAndJoin(branchPath, null);
-		try {
-			return (Map<String, Integer>) cache.get(branchPath).get(CacheKeyType.AVAILABLE_DESCRIPTION_IDS);
-		} catch (final ExecutionException e) {
-			LOGGER.error("Error while getting 'Synonym' concept and all descendants.", e);
-			throw new UncheckedExecutionException(e);
-		}
-	}
-	
-	/**
-	 * Returns with all the IDs of the description type SNOMED&nbsp;CT concepts. ID is included in the return set if concept fulfills the followings:
-	 * <ul>
-	 * <li>Concept is descendant of the {@code Description type (core metadata concept)} concept.</li>
-	 * <li>Concept is active</li>
-	 * <li>Concept has an active description type reference set member</li>
-	 * </ul>
-	 * @return a set of description type concept IDs.
-	 */
-	@Override
-	public Set<String> getAvailableDescriptionTypeIds(final IBranchPath branchPath) {
-		return newHashSet(getAvailableDescriptionTypeIdsWithLength(branchPath).keySet());
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#getExtensionConceptId(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
 	public long getExtensionConceptId(final IBranchPath branchPath, final String componentId) {
 		
@@ -2087,8 +2033,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		switch (type) {
 			case SYNONYM_AND_DESCENDATNTS:
 				return getConceptAndItsDescendants(branchPath, getTerminologyBrowser(), Concepts.SYNONYM);
-			case AVAILABLE_PREFERRED_TERM_IDS:
-				return getAvailablePreferredTypeIds(branchPath);
 			case DATA_TYPE_LABELS:
 				return getDataTypeLabels(branchPath);
 			case AVAILABLE_DESCRIPTION_IDS:
@@ -2288,81 +2232,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		return map;
 	}
 
-	
-	/*returns with the index service for SNOMED CT reference sets*/
-	private SnomedIndexService getRefSetIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-	
-	/**returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
-	 * has an associated active description type reference set member and is synonym or descendant of the synonym */
-	private Set<String> getAvailablePreferredTypeIds(final IBranchPath branchPath) {
-		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-		final LongSet preferredDescripitons = terminologyBrowser.getAllSubTypeIds(branchPath, SYNONYM_CONCEPT_ID);
-		preferredDescripitons.add(SYNONYM_CONCEPT_ID);
-		final SnomedRefSetMemberIndexQueryAdapter adapter = new SnomedRefSetMemberIndexQueryAdapter(Concepts.REFSET_DESCRIPTION_TYPE, null);
-		final Collection<SnomedRefSetMemberIndexEntry> descriptionTypeMembers = getRefSetIndexService().searchUnsorted(branchPath, adapter);
-		
-		final Iterable<SnomedRefSetMemberIndexEntry> filteredMembers = Iterables.filter(descriptionTypeMembers, new Predicate<SnomedRefSetMemberIndexEntry>() {
-			@Override public boolean apply(final SnomedRefSetMemberIndexEntry member) {
-				return member.isActive();
-			}
-		});
-		
-		final ImmutableSet<String> activeDescriptionTypeIds = ImmutableSet.copyOf(Iterables.transform(filteredMembers, new Function<SnomedRefSetMemberIndexEntry, String>() {
-			@Override public String apply(final SnomedRefSetMemberIndexEntry member) {
-				return member.getReferencedComponentId();
-			}
-		}));
-		
-		//as intersection is not serializable: java.io.NotSerializableException
-		return newHashSet(Sets.intersection(activeDescriptionTypeIds, toStringSet(preferredDescripitons)));
-	}
-	
-	/**returns with the FSN concept ID and the SYNONYM and all of descendants' IDs if the concepts are active and all the associated description type
-	 * reference set members are active.
-	 * @param branchPath
-	 */
-	private Map<String, Integer> getAvailableDescriptionTypes(final IBranchPath branchPath) {
-		final SnomedRefSetMemberIndexQueryAdapter adapter = new SnomedRefSetMemberIndexQueryAdapter(Concepts.REFSET_DESCRIPTION_TYPE, null);
-		final Collection<SnomedRefSetMemberIndexEntry> members = getRefSetIndexService().searchUnsorted(branchPath, adapter);
-		
-		final Iterable<SnomedRefSetMemberIndexEntry> descriptionTypeMembers = Iterables.filter(members, SnomedRefSetMemberIndexEntry.class);
-		
-		final Iterable<SnomedRefSetMemberIndexEntry> activeDescriptionTypeMembers = Iterables.filter(descriptionTypeMembers, new Predicate<SnomedRefSetMemberIndexEntry>() {
-			@Override public boolean apply(final SnomedRefSetMemberIndexEntry member) {
-				return member.isActive();
-			}
-		});
-		
-		Set<String> activeDescriptionTypeIds = newHashSet(Iterables.transform(activeDescriptionTypeMembers, new Function<SnomedRefSetMemberIndexEntry, String>() {
-			@Override public String apply(final SnomedRefSetMemberIndexEntry member) {
-				return member.getReferencedComponentId();
-			}
-		}));
-		
-		//get all active description type concept IDs from the ontology
-		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-		final LongSet descripitons = terminologyBrowser.getAllSubTypeIds(branchPath, DESCRIPTION_TYPE_ROOT_CONCEPT_ID);
-		
-		//intersection of the proper active description type concept IDs and the active description type reference set member referenced component IDs
-		activeDescriptionTypeIds = Sets.intersection(activeDescriptionTypeIds, toStringSet(descripitons));
-		
-		final Map<String, Integer> $ = Maps.newHashMap();
-		
-		//if active description type member has a corresponding active concept as well.
-		for (final SnomedRefSetMemberIndexEntry entry : activeDescriptionTypeMembers) {
-			
-			final String referencedComponentId = entry.getReferencedComponentId();
-			if (activeDescriptionTypeIds.contains(referencedComponentId)) {
-				$.put(referencedComponentId, entry.getDescriptionLength());
-			}
-			
-		}
-		
-		return $;
-	}
-
 	/*
 	 * Executes the given query and returns with the found components storage keys.
 	 */
@@ -2415,8 +2284,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	 */
 	private static enum CacheKeyType {
 		SYNONYM_AND_DESCENDATNTS,
-		AVAILABLE_PREFERRED_TERM_IDS,
-		AVAILABLE_DESCRIPTION_IDS,
 		DATA_TYPE_LABELS,
 		PREDICATE_TYPES,
 		REFERENCE_SET_CDO_IDS,

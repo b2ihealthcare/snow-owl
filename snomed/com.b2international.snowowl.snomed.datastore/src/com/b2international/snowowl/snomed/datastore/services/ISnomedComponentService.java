@@ -57,37 +57,6 @@ public interface ISnomedComponentService {
 	void warmCache(IBranchPath branchPath);
 
 	/**
-	 * Returns with all the IDs and the allowed term length of the description type SNOMED&nbsp;CT concepts. ID is included in the return set if concept fulfills the followings:
-	 * <ul>
-	 * <li>Concept is descendant of the {@code Description type (core metadata concept)} concept.</li>
-	 * <li>Concept is active</li>
-	 * <li>Concept has an active description type reference set member</li>
-	 * </ul>
-	 * @return a set of description type concept IDs and the allowed description term length.
-	 */
-	Map<String, Integer> getAvailableDescriptionTypeIdsWithLength(IBranchPath branchPath);
-	
-	/**
-	 * Returns with all the IDs of the description type SNOMED&nbsp;CT concepts. ID is included in the return set if concept fulfills the followings:
-	 * <ul>
-	 * <li>Concept is descendant of the {@code Description type (core metadata concept)} concept.</li>
-	 * <li>Concept is active</li>
-	 * <li>Concept has an active description type reference set member</li>
-	 * </ul>
-	 * @param branchPath
-	 * @return a set of description type concept IDs
-	 */
-	Set<String> getAvailableDescriptionTypeIds(IBranchPath branchPath);
-
-	/**
-	 * Returns with a set of allowed SNOMED&nbsp;CT concepts' ID.<br>Concept is allowed as preferred description type concept if 
-	 * has an associated active description type reference set member and is the 'Synonym' concept or one of its descendant.
-	 * @param branchPath
-	 * @return a set of SNOMED&nbsp;CT description type concept identifier that can act as a preferred term of a concept.
-	 */
-	Set<String> getAvailablePreferredTermIds(IBranchPath branchPath);
-
-	/**
 	 * Returns with the available concrete domain data type labels for a specified concrete domain data type.
 	 * @param branchPath
 	 * @param dataType the data type. E.g.: {@code BOOLEAN} or {@code DECIMAL}.

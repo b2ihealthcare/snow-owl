@@ -17,13 +17,23 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * @since 4.5
  */
 public final class SnomedReferenceSetMembers extends PageableCollectionResource<SnomedReferenceSetMember> {
+
+	public static final Function<SnomedReferenceSetMembers, Set<String>> GET_REFERENCED_COMPONENT_IDS = new Function<SnomedReferenceSetMembers, Set<String>>() {
+		@Override
+		public Set<String> apply(SnomedReferenceSetMembers input) {
+			return FluentIterable.from(input).transform(SnomedReferenceSetMember.GET_REFERENCED_COMPONENT_ID).toSet();
+		}
+	};
 
 	public SnomedReferenceSetMembers(int offset, int limit, int total) {
 		super(Collections.<SnomedReferenceSetMember>emptyList(), offset, limit, total);
