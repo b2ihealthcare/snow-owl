@@ -28,11 +28,11 @@ public enum CodeSystemBuilderBroker {
 
 	INSTANCE;
 
-	public CodeSystemBuilder<?, ?, ?> getCodeSystemBuilder(final String repositoryUuid) {
+	public CodeSystemBuilder<?> getCodeSystemBuilder(final String repositoryUuid) {
 		checkNotNull(repositoryUuid, "Repository identifier may not be null.");
 
 		final Collection<CodeSystemBuilder> builders = Extensions.getExtensions(CodeSystemBuilder.EXTENSION_ID, CodeSystemBuilder.class);
-		for (final CodeSystemBuilder<?, ?, ?> builder : builders) {
+		for (final CodeSystemBuilder<?> builder : builders) {
 			if (repositoryUuid.equals(builder.getRepositoryUuid())) {
 				return builder;
 			}

@@ -144,7 +144,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId);
 	}
 	
-	private CodeSystemBuilder<?, ?, ?> getCodeSystemBuilder() {
+	private CodeSystemBuilder<?> getCodeSystemBuilder() {
 		return CodeSystemBuilderBroker.INSTANCE.getCodeSystemBuilder(repositoryId);
 	}
 	

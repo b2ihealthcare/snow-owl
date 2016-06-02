@@ -17,18 +17,19 @@ package com.b2international.snowowl.snomed.core.store;
 
 import java.util.Map;
 
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntry;
-import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSystemBuilder;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 
 /**
  * @since 4.7
  */
-public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBuilder, SnomedRelease, SnomedReleaseEntry> {
+public class SnomedReleaseBuilder extends CodeSystemBuilder<SnomedReleaseBuilder> {
 
 	private static final String KEY_BASE_CODE_SYSTEM_OID = "baseCodeSystemOID";
 	private static final String KEY_RELEASE_TYPE = "releaseType";
@@ -58,10 +59,10 @@ public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBui
 	}
 	
 	@Override
-	public SnomedReleaseBuilder init(final SnomedReleaseEntry entry) {
+	public SnomedReleaseBuilder init(final CodeSystemEntry entry) {
 		super.init(entry);
-		this.baseCodeSystemOid = entry.getBaseCodeSystemOid();
-		this.type = entry.getSnomedReleaseType();
+		this.baseCodeSystemOid = ((SnomedReleaseEntry)entry).getBaseCodeSystemOid();
+		this.type = ((SnomedReleaseEntry)entry).getSnomedReleaseType();
 		return getSelf();
 	}
 
@@ -115,7 +116,7 @@ public class SnomedReleaseBuilder extends BaseCodeSystemBuilder<SnomedReleaseBui
 
 	@Override
 	public SnomedRelease build() {
-		final SnomedRelease snomedRelease = super.build();
+		final SnomedRelease snomedRelease = (SnomedRelease) super.build();
 		snomedRelease.setBaseCodeSystemOID(baseCodeSystemOid);
 		snomedRelease.setReleaseType(type);
 

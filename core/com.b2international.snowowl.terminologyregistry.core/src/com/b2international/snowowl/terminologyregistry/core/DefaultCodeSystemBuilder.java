@@ -15,24 +15,15 @@
  */
 package com.b2international.snowowl.terminologyregistry.core;
 
-import java.util.Map;
-
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
-import com.b2international.snowowl.terminologyregistry.core.builder.BaseCodeSystemBuilder;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 
 /**
  * @since 4.7
  */
-public class CodeSystemBuilder extends BaseCodeSystemBuilder<CodeSystemBuilder, CodeSystem, CodeSystemEntry> {
+public class DefaultCodeSystemBuilder extends CodeSystemBuilder<DefaultCodeSystemBuilder> {
 	
-	@Override
-	public CodeSystemBuilder withAdditionalProperties(final Map<String, String> valueMap) {
-		// no additional values
-		return getSelf();
-	}
-
 	@Override
 	public String getRepositoryUuid() {
 		throw new UnsupportedOperationException("Not supported.");
