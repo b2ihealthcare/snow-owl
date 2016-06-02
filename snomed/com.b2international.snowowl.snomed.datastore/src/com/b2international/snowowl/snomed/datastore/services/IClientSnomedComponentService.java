@@ -23,12 +23,10 @@ import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -157,12 +155,6 @@ public interface IClientSnomedComponentService {
 	 * @return a set of IDs for all descriptions in the ontology.
 	 */
 	LongSet getAllDescriptionIds();
-	
-	/**
-	 * Returns with a collection of all active {@link SnomedDescriptionIndexEntry} for the current branch.
-	 * @return a collection of {@link SnomedDescriptionIndexEntry}
-	 */
-	Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry();
 	
 	/**
 	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s for a concept which are belongs to the 

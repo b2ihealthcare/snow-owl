@@ -705,12 +705,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry(IBranchPath branchPath) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		return getIndexServerService().searchUnsorted(branchPath, SnomedDescriptionIndexQueryAdapter.createFindAllActiveDescriptionEntry());
-	}
-
-	@Override
 	public String[][] getAllDescriptionProperties(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		final int maxDoc = getIndexServerService().maxDoc(branchPath);
