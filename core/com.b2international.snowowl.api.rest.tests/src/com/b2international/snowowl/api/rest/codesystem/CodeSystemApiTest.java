@@ -101,7 +101,7 @@ public class CodeSystemApiTest {
 				.with().contentType(ContentType.JSON)
 				.and().body(requestBody)
 				.when().post("/codesystems")
-				.then().assertThat().statusCode(400);
+				.then().assertThat().statusCode(409);
 			
 	}
 
