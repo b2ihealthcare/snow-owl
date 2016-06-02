@@ -60,7 +60,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
-import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -86,7 +85,6 @@ import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
@@ -198,23 +196,22 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	/**
-	 * Returns the SNOMED CT releases available within the repository
-	 * @return
-	 */
-	public Collection<SnomedRelease> getSnomedReleases() {
-		return FluentIterable.from(getCodeSystems()).filter(SnomedRelease.class).toSet();
-	}
-	
-	/**
-	 * Tries to find a given {@link SnomedRelease} specified by either it's short name or it's code system OID on the given branch this editing
-	 * context was opened (!!!). However code systems are stored on MAIN.
+	 * Tries to find a given {@link SnomedRelease} specified by either it's short name or it's code system OID. Code systems are stored on MAIN. If
+	 * this editing context is not operating on MAIN it will throw {@link IllegalStateException}.
+	 * 
+	 * XXX Remove this method if code system version creation is implemented through REST.
 	 * 
 	 * @param shortName
 	 * @param codeSystemOID
 	 * @return
 	 */
 	public SnomedRelease getSnomedRelease(final String shortName, @Nullable final String codeSystemOID) {
-		Collection<SnomedRelease> existingReleases = getSnomedReleases();
+		
+		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
+			throw new IllegalStateException(String.format("Snomed releases are maintained on MAIN branch, this editing context uses %s", getBranch()));
+		}
+		
+		Collection<SnomedRelease> existingReleases = FluentIterable.from(getCodeSystems()).filter(SnomedRelease.class).toSet();
 		
 		// try to find the SNOMED release based on the code system OID
 		if (!Strings.isNullOrEmpty(codeSystemOID)) {
@@ -243,35 +240,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return null;
 	}
 	
-	/**
-	 * Checks if a given {@link SnomedRelease} specified by either it's short name or it's code system OID exists on the given branch this editing
-	 * context was opened (!!!). However code systems are stored on MAIN.
-	 * 
-	 * @param shortName
-	 * @param codeSystemOID
-	 * @return
-	 */
-	public boolean isSnomedReleaseExists(String shortName, String codeSystemOID) {
-		return getSnomedRelease(shortName, codeSystemOID) != null;
-	}
-	
-	/**
-	 * Returns all (including INT and EXT) SNOMED CT versions for the branch this editing context was created.
-	 *  
-	 * @return
-	 */
-	public Collection<SnomedVersion> getSnomedVersionsForBranch() {
-		return FluentIterable.from(getSnomedReleases()).transformAndConcat(new Function<SnomedRelease, List<SnomedVersion>>() {
-			@Override public List<SnomedVersion> apply(SnomedRelease input) {
-				return FluentIterable.from(input.getCodeSystemVersions()).transform(new UncheckedCastFunction<>(SnomedVersion.class)).toList();
-			}
-		}).filter(new Predicate<SnomedVersion>() {
-			@Override public boolean apply(SnomedVersion input) {
-				return input.getParentBranchPath().equals(getBranch());
-			}
-		}).toList();
-	}
-
 	private static SnomedClientIndexService getIndexService() {
 		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
 	}
