@@ -18,9 +18,6 @@ package com.b2international.snowowl.snomed.datastore;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
@@ -35,11 +32,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTree;
 import com.b2international.snowowl.snomed.core.tree.Trees;
-import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
-import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntryWithChildFlag;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -104,7 +98,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 		final SnomedConcepts roots = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByActive(true)
-				.filterByParent(Long.toString(SnomedMappings.ROOT_ID))
+				.filterByParent(Long.toString(SnomedConceptDocument.ROOT_ID))
 				.setLocales(getLocales())
 				.setExpand("pt(),parentIds()")
 				.build(getBranchPath().getPath())
