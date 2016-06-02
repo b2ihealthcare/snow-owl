@@ -15,19 +15,20 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.server;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryClientService;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 
@@ -37,17 +38,27 @@ import com.google.common.collect.FluentIterable;
  */
 public class TerminologyRegistryCommandProvider implements CommandProvider {
 
-	private static final String LISTALL_HELP = "\tterminologyregistry listall - List all registered terminologies\n";
-	private static final String VERSIONS_HELP = "\tterminologyregistry versions [codesystem shortname] - List all the available versions for a particular terminology identified by its shortname.\n";
-	private static final String DETAILS_HELP = "\tterminologyregistry details [-s codesystem shortname|-o codesystem OID] - Prints the detailed information of a particular terminology identified by its short name or OID.\n";
+	private static final String VERSIONS_COMMAND = "versions";
+	private static final String DETAILS_COMMAND = "details";
+	private static final String LISTALL_COMMAND = "listall";
+
+	private static final String OID_SWITCH = "-o";
+	private static final String SHORT_NAME_SWITCH = "-s";
+	private static final String USAGE = "Command usage: ";
+	
+	private static final String LISTALL_HELP = "terminologyregistry listall - List all registered terminologies";
+	private static final String VERSIONS_HELP = "terminologyregistry versions [codesystem shortname] - List all the available versions for a particular terminology identified by its short name.";
+	private static final String DETAILS_HELP = "terminologyregistry details [-s codesystem shortname | -o codesystem OID] - Prints the detailed information of a particular terminology identified by its short name or OID.";
 
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("--- Snow Owl terminology registry commands ---\n");
-		buffer.append(LISTALL_HELP);
-		buffer.append(DETAILS_HELP);
-		buffer.append(VERSIONS_HELP);
+		buffer.append("\t" + LISTALL_HELP);
+		buffer.append("\n");
+		buffer.append("\t" + DETAILS_HELP);
+		buffer.append("\n");
+		buffer.append("\t" + VERSIONS_HELP);
 		return buffer.toString();
 	}
 
@@ -58,17 +69,17 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 	public void _terminologyregistry(CommandInterpreter interpreter) {
 		try {
 			String cmd = interpreter.nextArgument();
-			if ("listall".equals(cmd)) {
+			if (LISTALL_COMMAND.equals(cmd)) {
 				listall(interpreter);
 				return;
 			}
 			
-			if ("details".equals(cmd)) {
+			if (DETAILS_COMMAND.equals(cmd)) {
 				details(interpreter);
 				return;
 			}
 			
-			if ("versions".equals(cmd)) {
+			if (VERSIONS_COMMAND.equals(cmd)) {
 				versions(interpreter);
 				return;
 			}
@@ -82,15 +93,30 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 	 * Print the versions
 	 */
 	private synchronized void versions(CommandInterpreter interpreter) {
-		String codeSystemShortName = interpreter.nextArgument();
+		final String codeSystemShortName = interpreter.nextArgument();
+		
 		if (Strings.isNullOrEmpty(codeSystemShortName)) {
-			interpreter.print("Command usage:" + VERSIONS_HELP);
+			interpreter.println(USAGE + VERSIONS_HELP);
 			return;
 		}
 		
-		final TerminologyRegistryClientService service = ApplicationContext.getInstance().getService(TerminologyRegistryClientService.class);
+		final TerminologyRegistryClientService service = getTerminologyRegistryService();
+		
+		ICodeSystem codeSystem = service.getCodeSystemByShortName(codeSystemShortName);
+		
+		if (codeSystem == null) {
+			interpreter.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystemShortName));
+			interpreter.println(USAGE + VERSIONS_HELP);
+			return;
+		}
+		
 		Collection<ICodeSystemVersion> codeSystemVersions = service.getCodeSystemVersions(codeSystemShortName);
-		interpreter.print(Joiner.on("\n").join(FluentIterable.from(codeSystemVersions).transform(new Function<ICodeSystemVersion, String>() {
+		
+		interpreter.print(Joiner.on("\n").join(FluentIterable.from(codeSystemVersions).filter(new Predicate<ICodeSystemVersion>() {
+			@Override public boolean apply(ICodeSystemVersion input) {
+				return input.getCodeSystemShortName().equals(codeSystemShortName);
+			}
+		}).transform(new Function<ICodeSystemVersion, String>() {
 			@Override public String apply(ICodeSystemVersion input) {
 				return getCodeSystemVersionInformation(input);
 			}
@@ -104,24 +130,31 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 		
 		String identifierTypeSwitch = interpreter.nextArgument();
 		
-		if (!"-s".equals(identifierTypeSwitch) && !"-o".equals(identifierTypeSwitch)) {
-			interpreter.print(DETAILS_HELP);
+		if (!SHORT_NAME_SWITCH.equals(identifierTypeSwitch) && !OID_SWITCH.equals(identifierTypeSwitch)) {
+			interpreter.println(USAGE + DETAILS_HELP);
 			return;
 		}
 		
-		String codeSystemId = interpreter.nextArgument();
-		if (Strings.isNullOrEmpty(codeSystemId)) {
-			interpreter.print(DETAILS_HELP);
+		String codeSystemNameOrId = interpreter.nextArgument();
+		if (Strings.isNullOrEmpty(codeSystemNameOrId)) {
+			interpreter.println(USAGE + DETAILS_HELP);
 			return;
 		}
 		
 		ICodeSystem codeSystem;
-		final TerminologyRegistryClientService service = ApplicationContext.getInstance().getService(TerminologyRegistryClientService.class);
-		if ("-s".equals(identifierTypeSwitch)) {
-			codeSystem = service.getCodeSystemByShortName(codeSystemId);
+		final TerminologyRegistryClientService service = getTerminologyRegistryService();
+		if (SHORT_NAME_SWITCH.equals(identifierTypeSwitch)) {
+			codeSystem = service.getCodeSystemByShortName(codeSystemNameOrId);
 		} else {
-			codeSystem = service.getCodeSystemByOid(codeSystemId);
+			codeSystem = service.getCodeSystemByOid(codeSystemNameOrId);
 		}
+		
+		if (codeSystem == null) {
+			interpreter.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystemNameOrId));
+			interpreter.println(USAGE + DETAILS_HELP);
+			return;
+		}
+		
 		interpreter.println(getCodeSystemInformation(codeSystem, service));
 	}
 
@@ -129,7 +162,7 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 	 * List all registered terminologies
 	 */
 	private synchronized void listall(CommandInterpreter interpreter) {
-		final TerminologyRegistryClientService service = ApplicationContext.getInstance().getService(TerminologyRegistryClientService.class);
+		final TerminologyRegistryClientService service = getTerminologyRegistryService();
 		interpreter.print(Joiner.on("\n").join(FluentIterable.from(service.getCodeSystems()).transform(new Function<ICodeSystem, String>() {
 			@Override public String apply(ICodeSystem input) {
 				return getCodeSystemInformation(input, service);
@@ -150,30 +183,22 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 		return builder.toString();
 	}
 	
-	/**
-	 * @param input
-	 * @param service
-	 * @return
-	 */
-	protected String getCodeSystemVersionInformation(ICodeSystemVersion codeSystemVersion) {
-		
+	private String getCodeSystemVersionInformation(ICodeSystemVersion codeSystemVersion) {
 		StringBuilder builder = new StringBuilder();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yy/MM/dd");
-        
-		Date effectiveDate = new Date(codeSystemVersion.getEffectiveDate());
-		Date importDate = new Date(codeSystemVersion.getImportDate());
-		Date lastUpdateDate = new Date(codeSystemVersion.getLastUpdateDate());
-		
 		builder
 			.append("Version id: ").append(codeSystemVersion.getVersionId()).append("\n")
 			.append("Description: ").append(codeSystemVersion.getDescription()).append("\n")
-			.append("Effective date: ").append(dateFormat.format(effectiveDate)).append("\n")
-			.append("Creation date: ").append(importDate).append("\n")
-			.append("Last update: ").append(lastUpdateDate).append("\n")
+			.append("Effective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.DEFAULT)).append("\n")
+			.append("Creation date: ").append(EffectiveTimes.format(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
+			.append("Last update: ").append(codeSystemVersion.getLastUpdateDate() > 0 ? EffectiveTimes.format(codeSystemVersion.getLastUpdateDate(), DateFormats.DEFAULT) : "-").append("\n")
 			.append("Version branch path: ").append(codeSystemVersion.getPath()).append("\n")
 			.append("Parent branch path: ").append(codeSystemVersion.getParentBranchPath()).append("\n")
 			.append("Repository id: ").append(codeSystemVersion.getRepositoryUuid()).append("\n");
 		return builder.toString();
+	}
+
+	private TerminologyRegistryClientService getTerminologyRegistryService() {
+		return ApplicationContext.getInstance().getService(TerminologyRegistryClientService.class);
 	}
 	
 }
