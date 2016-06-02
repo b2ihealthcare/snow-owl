@@ -17,6 +17,7 @@ package com.b2international.index.revision;
 
 import java.io.IOException;
 
+import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 
 /**
@@ -55,6 +56,6 @@ public interface RevisionSearcher {
 	 * @throws IOException
 	 *             - if something goes wrong during the execution of the query
 	 */
-	<T> Iterable<T> search(Query<T> query) throws IOException;
+	<T> Hits<T> search(Query<T> query) throws IOException;
 
 }

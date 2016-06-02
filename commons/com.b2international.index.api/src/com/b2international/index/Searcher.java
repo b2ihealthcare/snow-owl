@@ -45,6 +45,6 @@ public interface Searcher extends AutoCloseable {
 	 * @throws IOException
 	 *             - if something goes wrong during the execution of the query
 	 */
-	<T> Iterable<T> search(Query<T> query) throws IOException;
+	<T> Hits<T> search(Query<T> query) throws IOException;
 
 }

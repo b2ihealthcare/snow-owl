@@ -16,7 +16,6 @@
 package com.b2international.index.json;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
@@ -27,6 +26,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 
+import com.b2international.index.Hits;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
@@ -78,7 +78,7 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	@Override
-	public <T> Iterable<T> search(Query<T> query) throws IOException {
+	public <T> Hits<T> search(Query<T> query) throws IOException {
 		final Class<T> type = query.getType();
 		final org.apache.lucene.search.Query lq = toLuceneQuery(type, query);
 		
@@ -87,13 +87,13 @@ public class JsonDocumentSearcher implements Searcher {
 		final int totalHits = totalHitCollector.getTotalHits();
 		
 		if (query.getLimit() < 1 || totalHits < 1) {
-			return Collections.emptySet();
+			return Hits.empty();
 		}
 		
 		final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(query, totalHits), Sort.INDEXORDER, true, false);
 		
 		if (topDocs.scoreDocs.length < 1) {
-			return Collections.emptySet();
+			return Hits.empty();
 		}
 		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		final ImmutableList.Builder<T> matches = ImmutableList.builder();
@@ -106,7 +106,7 @@ public class JsonDocumentSearcher implements Searcher {
 			}
 			matches.add(readValue);
 		}
-		return matches.build();
+		return new Hits<>(matches.build(), query.getOffset(), query.getLimit(), totalHits);
 	}
 
 	private int numDocsToRetrieve(Query<?> query, int totalHits) {

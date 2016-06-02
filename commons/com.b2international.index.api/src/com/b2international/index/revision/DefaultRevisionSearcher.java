@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 
+import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -50,7 +51,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	}
 
 	@Override
-	public <T> Iterable<T> search(Query<T> query) throws IOException {
+	public <T> Hits<T> search(Query<T> query) throws IOException {
 		if (Revision.class.isAssignableFrom(query.getType())) {
 			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
 			query = Query.builder(query.getType())
