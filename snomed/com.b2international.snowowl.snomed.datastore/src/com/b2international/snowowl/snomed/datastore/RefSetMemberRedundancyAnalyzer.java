@@ -37,15 +37,19 @@ import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -54,10 +58,6 @@ import com.google.common.collect.Sets;
  */
 public abstract class RefSetMemberRedundancyAnalyzer {
 
-	private static final Function<SnomedRefSetMemberIndexEntry, String> INDEX_ENTRY_TO_REFERENCED_COMPONENT_ID = new Function<SnomedRefSetMemberIndexEntry, String>() {
-		@Override public String apply(final SnomedRefSetMemberIndexEntry member) { return member.getReferencedComponentId(); }
-	};
-	
 	private static final Function<SnomedRefSetMember, String> MEMBER_TO_REFERENCED_COMPONENT_ID = new Function<SnomedRefSetMember, String>() {
 		@Override public String apply(final SnomedRefSetMember member) { return member.getReferencedComponentId(); }
 	};
@@ -101,7 +101,7 @@ public abstract class RefSetMemberRedundancyAnalyzer {
 		}
 		
 		//get all persisted members and extract the unique component identifiers of the referenced components 
-		final Set<String> persistedIds = getPersistedReferencedComponentIds(refSet);
+		final Set<String> persistedIds = ImmutableSet.copyOf(getPersistedReferencedComponentIds(refSet));
 		
 		if (monitor.isCanceled()) {
 			monitor.setCanceled(true);
@@ -149,12 +149,34 @@ public abstract class RefSetMemberRedundancyAnalyzer {
 
 
 	/*returns with all persisted members and extract the unique component identifiers of the referenced components. returns with an empty set if the reference set has no members*/
-	private static Set<String> getPersistedReferencedComponentIds(final SnomedRegularRefSet refSet) {
+	private static Collection<String> getPersistedReferencedComponentIds(final SnomedRegularRefSet refSet) {
+		final String branch = BranchPathUtils.createPath(refSet.cdoView()).getPath();
 		return 0 == refSet.getMembers().size()
-				? Sets.<String>newHashSet()
-				: Sets.newHashSet(Collections2.transform(getAllMembers(refSet, getIndexService()), INDEX_ENTRY_TO_REFERENCED_COMPONENT_ID));
+				? ImmutableSet.<String>of()
+				: getAllMemberReferencedComponentIds(branch, refSet.getIdentifierId());
 	}
 	
+	private static Collection<String> getAllMemberReferencedComponentIds(String branch, String refSetId) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByRefSet(refSetId)
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedReferenceSetMembers, Collection<String>>() {
+					@Override
+					public Collection<String> apply(SnomedReferenceSetMembers input) {
+						return FluentIterable.from(input).transform(new Function<SnomedReferenceSetMember, String>() {
+							@Override
+							public String apply(SnomedReferenceSetMember input) {
+								return input.getReferencedComponent().getId();
+							}
+						}).toSet();
+					}
+				})
+				.getSync();
+		
+	}
+
 	/*returns with the detached reference set members from the CDO view*/
 	private static Set<SnomedRefSetMember> getDetachedMembers(final CDOView view) {
 		return Sets.newHashSet(ComponentUtils2.getDetachedObjects(view, SnomedRefSetMember.class));
@@ -180,23 +202,6 @@ public abstract class RefSetMemberRedundancyAnalyzer {
 		return SIMPLE_MAP.equals(refSet.getType());
 	}
 
-	/*executes the query to get all reference set members from a reference set*/
-	private static Collection<SnomedRefSetMemberIndexEntry> getAllMembers(final SnomedRegularRefSet refSet, final SnomedClientIndexService service) {
-		return checkNotNull(service.searchUnsorted(createGetAllMembersQuery(refSet)), 
-				"Search result was null.");
-	}
-
-	/*creates a query adapter that returns with all reference set members of the specified reference set*/
-	private static SnomedRefSetMemberIndexQueryAdapter createGetAllMembersQuery(final SnomedRegularRefSet refSet) {
-		return checkNotNull(new SnomedRefSetMemberIndexQueryAdapter(refSet.getIdentifierId(), null));
-	}
-
-	/*returns with the SNOMED CT reference set member specific lucene index service*/
-	private static SnomedClientIndexService getIndexService() {
-		return checkNotNull(ApplicationContext.getInstance().getService(SnomedClientIndexService.class), 
-				"Lucene index service for SNOMED CT reference sets was null.");
-	}
- 	
 	/**
 	 * Class for encapsulating two sets containing unique identifiers of terminology independent components.
 	 * <br><br><b>Note: </b>this class guarantees for the clients that the intersection of the redundant and non redundant 
