@@ -28,7 +28,7 @@ First, the full International Release is imported with version tags created (_-v
 
 ....
 >sctimport rf2_release -t full -v 
-C:/data/SnomedCT_RF2Release_INT_20160131.zip C:/data/snomed_ct_international.json
+/path/to/file/SnomedCT_RF2Release_INT_20160131.zip /path/to/file/snomed_ct_international.json
 ....
 
 Where the _snomed_ct_international.json_ release descriptor file is:
@@ -62,7 +62,7 @@ To import a extension terminology based on the _2016-01-31_ International releas
 
 ....
 >sctimport rf2_release -t full -b 2016-01-31
-C:/data/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip C:/data/snomed_ct_b2i_extension.json
+/path/to/file/SnomedCT_Release_INT_20160526-1116_b2i_cd_refsets.zip /path/to/file/snomed_ct_b2i_extension.json
 ....
 
 Where the _snomed_ct_b2i_extension.json_ release descriptor file is:
