@@ -44,6 +44,7 @@ import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
@@ -58,17 +59,21 @@ import com.b2international.snowowl.snomed.api.impl.domain.classification.Equival
 import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConceptSet;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponseChanges;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -245,18 +250,16 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		upsertClassificationRun(branchPath, classificationRun);
 	}
 
-	private SnomedRelationshipIndexEntry getSnomedRelationshipIndexEntry(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
-		SnomedRelationshipIndexEntry foundRelationshipIndexEntry = null;
-		final Long sourceId = relationshipChange.getSource().getId();
-		final List<SnomedRelationshipIndexEntry> relationshipIndexEntries = getIndexService().search(branchPath, new SnomedRelationshipIndexQueryAdapter(sourceId.toString(), SnomedRelationshipIndexQueryAdapter.SEARCH_SOURCE_ID));
-		for (SnomedRelationshipIndexEntry relationshipIndexEntry : relationshipIndexEntries) {
-			if (relationshipIndexEntry.getDestinationId().equals(relationshipChange.getDestination().getId().toString())
-				&& relationshipIndexEntry.getTypeId().equals(relationshipChange.getType().getId().toString())
-				&& relationshipIndexEntry.getGroup() == relationshipChange.getGroup()) {
-				foundRelationshipIndexEntry = relationshipIndexEntry;
-			}
-		}
-		return foundRelationshipIndexEntry;
+	private ISnomedRelationship getRelationship(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
+		return Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
+				.setLimit(1)
+				.filterBySource(relationshipChange.getSource().getId().toString())
+				.filterByDestination(relationshipChange.getDestination().getId().toString())
+				.filterByType(relationshipChange.getType().getId().toString())
+				.filterByGroup(new Byte(relationshipChange.getGroup()).intValue())
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync(), null);
 	}
 
 	public void deleteClassificationData(final UUID id) throws IOException {
@@ -304,8 +307,8 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			if (changeNature == ChangeNature.INFERRED) {
 				characteristicTypeId = Concepts.INFERRED_RELATIONSHIP;
 			} else {
-				final SnomedRelationshipIndexEntry snomedRelationshipIndexEntry = getSnomedRelationshipIndexEntry(branchPath, relationshipChange);
-				characteristicTypeId = snomedRelationshipIndexEntry.getCharacteristicTypeId();
+				final ISnomedRelationship existingRelationship = getRelationship(branchPath, relationshipChange);
+				characteristicTypeId = existingRelationship.getCharacteristicType().getConceptId();
 				if (changeNature == ChangeNature.REDUNDANT && characteristicTypeId.equals(Concepts.STATED_RELATIONSHIP)) {
 					classificationIssueFlags.setRedundantStatedFound(true);
 				}
