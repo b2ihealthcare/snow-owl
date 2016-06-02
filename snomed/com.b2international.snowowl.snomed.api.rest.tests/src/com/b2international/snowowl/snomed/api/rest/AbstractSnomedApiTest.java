@@ -76,7 +76,7 @@ public abstract class AbstractSnomedApiTest {
 	}
 	
 	protected void createCodeSystem(final String branchPath, final String shortName) {
-		final ImmutableMap<String, String> extension = ImmutableMap.<String, String>builder()
+		final ImmutableMap<String, String> additionalProperties = ImmutableMap.<String, String>builder()
 				.put("baseCodeSystemOID", SnomedTerminologyComponentConstants.SNOMED_INT_OID)
 				.put("releaseType", "DELTA")
 				.build();
@@ -92,7 +92,7 @@ public abstract class AbstractSnomedApiTest {
 				.put("oid", shortName)
 				.put("primaryLanguage", "ENG")
 				.put("organizationLink", "link")
-				.put("extension", extension)
+				.put("additionalProperties", additionalProperties)
 				.build();
 		
 		givenAuthenticatedRequest("/admin")
