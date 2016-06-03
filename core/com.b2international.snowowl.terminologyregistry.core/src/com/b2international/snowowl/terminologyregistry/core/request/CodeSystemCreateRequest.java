@@ -17,12 +17,15 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 
 import java.util.Map;
 
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.TerminologyRegistryService;
-import com.b2international.snowowl.datastore.UserBranchPathMap;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 
@@ -103,17 +106,33 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 	}
 
 	private void checkCodeSystem(final TransactionContext context) {
-		final UserBranchPathMap branchPathMap = new UserBranchPathMap();
-		branchPathMap.putBranchPath(repositoryUuid, BranchPathUtils.createMainPath());
-
-		final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
-
-		if (registryService.getCodeSystemByOid(branchPathMap, oid) != null) {
+		if (getCodeSystem(oid, context) != null) {
 			throw new AlreadyExistsException("Code system", oid);
 		}
-
-		if (registryService.getCodeSystemByShortName(branchPathMap, shortName) != null) {
+		
+		if (getCodeSystem(shortName, context) != null) {
 			throw new AlreadyExistsException("Code system", shortName);
+		}
+		
+		final Branch branch = RepositoryRequests
+				.branching(repositoryUuid)
+				.prepareGet(branchPath)
+				.execute(context);
+		
+		if (branch.isDeleted()) {
+			throw new BadRequestException("Branch with identifier %s is deleted.", branchPath);
+		}
+	}
+	
+	private CodeSystemEntry getCodeSystem(final String uniqeId, final TransactionContext context) {
+		try {
+			return new CodeSystemRequests(repositoryUuid)
+					.prepareGetCodeSystem()
+					.setUniqueId(uniqeId)
+					.build(IBranchPath.MAIN_BRANCH)
+					.execute(context);
+		} catch (CodeSystemNotFoundException e) {
+			 return null;
 		}
 	}
 
