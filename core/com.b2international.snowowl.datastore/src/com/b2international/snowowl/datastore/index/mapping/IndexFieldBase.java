@@ -91,6 +91,16 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
+	public T getOptionalValue(Document doc) {
+		return getField(doc) != null ? getValue(doc) : null;
+	}
+	
+	@Override
+	public String getOptionalValueAsString(Document doc) {
+		return getField(doc) != null ? getValueAsString(doc) : null;
+	}
+	
+	@Override
 	public final List<T> getValues(Document doc) {
 		final Builder<T> values = ImmutableList.builder();
 		for (IndexableField field : getFields(doc)) {

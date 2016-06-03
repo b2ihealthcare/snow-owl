@@ -40,6 +40,10 @@ public interface IndexField<T> {
 
 	String getValueAsString(Document doc);
 
+	T getOptionalValue(Document doc);
+
+	String getOptionalValueAsString(Document doc);
+
 	List<T> getValues(Document doc);
 
 	List<String> getValuesAsStringList(Document doc);

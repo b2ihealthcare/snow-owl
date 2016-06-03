@@ -54,6 +54,16 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	public T getValue(Document doc) {
 		return delegate.getValue(doc);
 	}
+	
+	@Override
+	public T getOptionalValue(Document doc) {
+		return delegate.getOptionalValue(doc);
+	}
+	
+	@Override
+	public String getOptionalValueAsString(Document doc) {
+		return delegate.getOptionalValueAsString(doc);
+	}
 
 	@Override
 	public List<T> getValues(Document doc) {
