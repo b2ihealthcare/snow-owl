@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.server;
 
-import java.util.Collection;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
@@ -28,9 +32,9 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryClientService;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Ordering;
 
 /**
  * OSGI command contribution with Snow Owl terminology registry commands.
@@ -110,13 +114,15 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		Collection<ICodeSystemVersion> codeSystemVersions = service.getCodeSystemVersions(codeSystemShortName);
+		List<ICodeSystemVersion> codeSystemVersions = newArrayList(service.getCodeSystemVersions(codeSystemShortName));
 		
-		interpreter.print(Joiner.on("\n").join(FluentIterable.from(codeSystemVersions).filter(new Predicate<ICodeSystemVersion>() {
-			@Override public boolean apply(ICodeSystemVersion input) {
-				return input.getCodeSystemShortName().equals(codeSystemShortName);
+		Collections.sort(codeSystemVersions, new Comparator<ICodeSystemVersion>() {
+			@Override public int compare(ICodeSystemVersion o1, ICodeSystemVersion o2) {
+				return Ordering.natural().compare(o1.getEffectiveDate(), o2.getEffectiveDate());
 			}
-		}).transform(new Function<ICodeSystemVersion, String>() {
+		});
+		
+		interpreter.print(Joiner.on("\n").join(FluentIterable.from(codeSystemVersions).transform(new Function<ICodeSystemVersion, String>() {
 			@Override public String apply(ICodeSystemVersion input) {
 				return getCodeSystemVersionInformation(input);
 			}
