@@ -215,8 +215,7 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 		
 
 		final BooleanQuery query = new BooleanQuery(true);
-		// XXX this approach will fail with the new extension support
-		query.add(new TermQuery(new Term(TerminologyRegistryIndexConstants.VERSION_REPOSITORY_UUID, codeSystem.getRepositoryUuid())), Occur.MUST);
+		query.add(new TermQuery(new Term(TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME, codeSystemShortName)), Occur.MUST);
 		query.add(new TermQuery(new Term(TerminologyRegistryIndexConstants.VERSION_VERSION_ID, ICodeSystemVersion.INITIAL_STATE)), Occur.MUST_NOT);
 		
 		final int hitCount = wrappedIndexService.getHitCount(branchPath, query, null);
@@ -423,14 +422,10 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 			if (isEquals(codeSystem, presentCodeSystem)) {
 				
 				for (final ICodeSystemVersion codeSystemVersion : getCodeSystemVersions(branchPath, presentCodeSystem.getShortName())) {
-
-					if (codeSystemVersion.getCodeSystemShortName().equals(codeSystem.getShortName())) {
-						final String versionId = codeSystemVersion.getVersionId();
-						if (comparator.compare(versionId, version) > 0) {
-							version = versionId;
-						}
+					final String versionId = codeSystemVersion.getVersionId();
+					if (comparator.compare(versionId, version) > 0) {
+						version = versionId;
 					}
-					
 				}
 			}
 		}
