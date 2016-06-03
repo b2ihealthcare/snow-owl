@@ -310,7 +310,7 @@ public abstract class SnomedComponentApiAssert {
 			final String componentId,
 			final boolean force) {
 
-		assertComponentCanBeDeleted(branchPath, componentType, componentId, force, 400);
+		assertComponentCanBeDeleted(branchPath, componentType, componentId, force, 409);
 	}
 
 	private static void assertComponentCanBeDeleted(final IBranchPath branchPath, 

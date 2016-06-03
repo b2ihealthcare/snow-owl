@@ -1181,11 +1181,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	@Override
 	public void delete(EObject object, boolean force) {
 		if (object instanceof Concept) {
-			delete((Concept) object);
+			delete((Concept) object, force);
 		} else if (object instanceof Description) {
-			delete((Description) object);
+			delete((Description) object, force);
 		} else if (object instanceof Relationship) {
-			delete((Relationship) object);
+			delete((Relationship) object, force);
 		} else if (object instanceof SnomedRefSetMember) {
 			delete((SnomedRefSetMember) object, force);
 		}
