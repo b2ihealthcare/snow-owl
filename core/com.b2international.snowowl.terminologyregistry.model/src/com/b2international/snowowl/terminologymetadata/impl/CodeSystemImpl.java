@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.terminologymetadata.impl;
 
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.internal.cdo.CDOObjectImpl;
-
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
+
+import org.eclipse.emf.common.util.EList;
+
+import org.eclipse.emf.ecore.EClass;
+
+import org.eclipse.emf.internal.cdo.CDOObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -28,6 +31,7 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackag
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getShortName <em>Short Name</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getCodeSystemOID <em>Code System OID</em>}</li>
@@ -37,12 +41,14 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackag
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getCitation <em>Citation</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getIconPath <em>Icon Path</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getTerminologyComponentId <em>Terminology Component Id</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getRepositoryUuid <em>Repository Uuid</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getCodeSystemVersions <em>Code System Versions</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getBranchPath <em>Branch Path</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
-public abstract class CodeSystemImpl extends CDOObjectImpl implements CodeSystem {
+public class CodeSystemImpl extends CDOObjectImpl implements CodeSystem {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -70,6 +76,24 @@ public abstract class CodeSystemImpl extends CDOObjectImpl implements CodeSystem
 	@Override
 	protected int eStaticFeatureCount() {
 		return 0;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getShortName() {
+		return (String)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__SHORT_NAME, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setShortName(String newShortName) {
+		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__SHORT_NAME, newShortName);
 	}
 
 	/**
@@ -106,24 +130,6 @@ public abstract class CodeSystemImpl extends CDOObjectImpl implements CodeSystem
 	 */
 	public void setName(String newName) {
 		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__NAME, newName);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public String getShortName() {
-		return (String)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__SHORT_NAME, true);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public void setShortName(String newShortName) {
-		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__SHORT_NAME, newShortName);
 	}
 
 	/**
@@ -219,10 +225,47 @@ public abstract class CodeSystemImpl extends CDOObjectImpl implements CodeSystem
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated NOT
+	 * @generated
 	 */
-	public CodeSystemVersionGroup getCodeSystemVersionGroup() {
-		return (CodeSystemVersionGroup) this.eContainer();
+	public String getRepositoryUuid() {
+		return (String)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__REPOSITORY_UUID, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setRepositoryUuid(String newRepositoryUuid) {
+		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__REPOSITORY_UUID, newRepositoryUuid);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@SuppressWarnings("unchecked")
+	public EList<CodeSystemVersion> getCodeSystemVersions() {
+		return (EList<CodeSystemVersion>)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__CODE_SYSTEM_VERSIONS, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getBranchPath() {
+		return (String)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__BRANCH_PATH, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setBranchPath(String newBranchPath) {
+		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__BRANCH_PATH, newBranchPath);
 	}
 
 } //CodeSystemImpl

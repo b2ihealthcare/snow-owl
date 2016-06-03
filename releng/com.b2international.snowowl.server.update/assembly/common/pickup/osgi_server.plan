@@ -10,6 +10,8 @@
         <artifact type="bundle" name="org.eclipse.core.net" version="1.2.100.I20110511-0800"/>
 
         <artifact type="bundle" name="com.b2international.org.apache.lucene" version="0.0.0"/>
+      	<artifact type="bundle" name="com.b2international.collections.fastutil" version="0.0.0"/>
+        <artifact type="bundle" name="com.b2international.collections.api" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.core" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.authentication" version="0.0.0"/>
 

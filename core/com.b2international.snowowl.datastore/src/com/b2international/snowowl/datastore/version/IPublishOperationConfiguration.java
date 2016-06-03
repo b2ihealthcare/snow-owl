@@ -37,10 +37,18 @@ public interface IPublishOperationConfiguration extends Serializable, ToolingIdI
 	String getVersionId();
 	
 	/**
+	 * Returns the parent branch path
+	 * @return
+	 */
+	String getParentBranchPath();
+	
+	/**
 	 * Returns with the configured effective time.
 	 * @return the effective time that has to be used for the publication process.
 	 */
 	Date getEffectiveTime();
+	
+	String getPrimaryToolingId();
 	
 	/**
 	 * Returns with the tooling IDs representing the contents that has to be published.
@@ -56,4 +64,10 @@ public interface IPublishOperationConfiguration extends Serializable, ToolingIdI
 	 * Returns with the description. 
 	 */
 	String getDescription();
+	
+	/**
+	 * The short name of the code system for the version.
+	 */
+	String getCodeSystemShortName();
+	
 }

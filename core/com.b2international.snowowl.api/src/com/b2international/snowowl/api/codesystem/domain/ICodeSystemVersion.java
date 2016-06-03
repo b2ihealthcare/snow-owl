@@ -35,6 +35,12 @@ public interface ICodeSystemVersion extends ICodeSystemVersionProperties {
 	 * @return the last modification date of this code system version (can be {@code null})
 	 */
 	Date getLastModificationDate();
+	
+	/**
+	 * Returns the parent branch path where the version branch is forked off
+	 * @return parent branch path
+	 */
+	String getParentBranchPath();
 
 	/**
 	 * Indicates if any modifications have been made on this code system version after releasing it.

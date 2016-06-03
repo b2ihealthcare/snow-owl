@@ -16,10 +16,18 @@
 package com.b2international.snowowl.api.rest.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Map;
 
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
+import com.jayway.restassured.http.ContentType;
 
 /**
  * @since 1.0
@@ -49,6 +57,13 @@ public class CodeSystemApiTest {
 		.then().assertThat().statusCode(200)
 		.and().body("shortName", equalTo("SNOMEDCT"));		
 	}
+	
+	private void assertCodeSystemExists(final String shortName) {
+		givenAuthenticatedRequest("/admin")
+		.when().get("/codesystems/{id}", shortName)
+		.then().assertThat().statusCode(200)
+		.and().body("shortName", equalTo(shortName));
+	}
 
 	@Test
 	public void getCodeSystemByNonExistentOid() {
@@ -56,4 +71,53 @@ public class CodeSystemApiTest {
 		.when().get("/codesystems/{id}", "1.2.3.4.10000")
 		.then().assertThat().statusCode(404);		
 	}
+	
+	@Test
+	public void createCodeSystem() {
+		final String shortName = "cs";
+		final String oid = "1";
+		final Map<?, ?> requestBody = newCodeSystem(shortName, oid);
+		
+		final String path = givenAuthenticatedRequest("/admin")
+			.with().contentType(ContentType.JSON)
+			.and().body(requestBody)
+			.when().post("/codesystems")
+			.then().assertThat().statusCode(201)
+			.and().header("Location", containsString(String.format("%s/%s", "codesystems", shortName)))
+			.and().body(equalTo(""))
+			.and().extract().response().getHeader("Location");
+		
+		assertEquals(shortName, lastPathSegment(path));
+		assertCodeSystemExists(shortName);
+	}
+	
+	@Test
+	public void createCodeSystemWithNonUniqueShortName() {
+		final String shortName = "cs";
+		final String oid = "1";
+		final Map<?, ?> requestBody = newCodeSystem(shortName, oid);
+		
+		givenAuthenticatedRequest("/admin")
+				.with().contentType(ContentType.JSON)
+				.and().body(requestBody)
+				.when().post("/codesystems")
+				.then().assertThat().statusCode(409);
+			
+	}
+
+	private Map<String, String> newCodeSystem(final String shortName, final String oid) {
+		return ImmutableMap.<String, String>builder()
+				.put("name", "CodeSystem")
+				.put("branchPath", "MAIN")
+				.put("shortName", shortName)
+				.put("citation", "citation")
+				.put("iconPath", "icons/snomed.png")
+				.put("repositoryUuid", "snomedStore")
+				.put("terminologyId", "concept")
+				.put("oid", oid)
+				.put("primaryLanguage", "ENG")
+				.put("organizationLink", "link")
+				.build();
+	}
+	
 }

@@ -24,6 +24,7 @@ import static com.b2international.snowowl.terminologyregistry.core.index.Termino
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_REPOSITORY_UUID;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_STORAGE_KEY;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -55,11 +56,13 @@ public class CodeSystemVersionIndexMappingStrategy extends AbstractIndexMappingS
 		doc.add(new LongField(VERSION_EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(version.getEffectiveDate()), Store.YES));
 		addStringFieldIfExists(doc, VERSION_DESCRIPTION, version.getDescription());
 		addStringFieldIfExists(doc, VERSION_VERSION_ID, version.getVersionId());
+		addStringFieldIfExists(doc, TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH, version.getParentBranchPath());
 		// XXX using EffectiveTimes here to handle possible null lastUpdateDate values 
 		doc.add(new LongField(VERSION_LATEST_UPDATE_DATE, EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()), Store.YES));
 		doc.add(new LongField(VERSION_STORAGE_KEY, getStorageKey(), Store.YES));
 		Mappings.storageKey().addTo(doc, getStorageKey());
-		addStringFieldIfExists(doc, VERSION_REPOSITORY_UUID, version.getCodeSystemVersionGroup().getRepositoryUuid());
+		addStringFieldIfExists(doc, VERSION_REPOSITORY_UUID, version.getCodeSystem().getRepositoryUuid());
+		addStringFieldIfExists(doc, VERSION_SYSTEM_SHORT_NAME, version.getCodeSystem().getShortName());
 		return doc;
 	}
 

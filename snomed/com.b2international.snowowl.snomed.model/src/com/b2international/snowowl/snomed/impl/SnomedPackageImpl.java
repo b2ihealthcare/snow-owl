@@ -17,14 +17,12 @@ package com.b2international.snowowl.snomed.impl;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 import com.b2international.snowowl.snomed.Annotatable;
-import com.b2international.snowowl.snomed.CodeSystem;
-import com.b2international.snowowl.snomed.CodeSystemVersion;
-import com.b2international.snowowl.snomed.CodeSystemVersionGroup;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Concepts;
@@ -33,6 +31,9 @@ import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedReleaseType;
+import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 
@@ -90,28 +91,28 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	private EClass codeSystemVersionGroupEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass codeSystemVersionEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass codeSystemEClass = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	private EClass conceptsEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedReleaseEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedVersionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EEnum snomedReleaseTypeEEnum = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -498,33 +499,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EClass getCodeSystemVersionGroup() {
-		return codeSystemVersionGroupEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getCodeSystemVersion() {
-		return codeSystemVersionEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getCodeSystem() {
-		return codeSystemEClass;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EClass getConcepts() {
 		return conceptsEClass;
 	}
@@ -536,6 +510,60 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 */
 	public EReference getConcepts_Concepts() {
 		return (EReference)conceptsEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedRelease() {
+		return snomedReleaseEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedRelease_BaseCodeSystemOID() {
+		return (EAttribute)snomedReleaseEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedRelease_ReleaseType() {
+		return (EAttribute)snomedReleaseEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedVersion() {
+		return snomedVersionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedVersion_Modules() {
+		return (EAttribute)snomedVersionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EEnum getSnomedReleaseType() {
+		return snomedReleaseTypeEEnum;
 	}
 
 	/**
@@ -607,14 +635,18 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		createEReference(relationshipEClass, RELATIONSHIP__MODIFIER);
 		createEReference(relationshipEClass, RELATIONSHIP__REFINABILITY_REF_SET_MEMBERS);
 
-		codeSystemVersionGroupEClass = createEClass(CODE_SYSTEM_VERSION_GROUP);
-
-		codeSystemVersionEClass = createEClass(CODE_SYSTEM_VERSION);
-
-		codeSystemEClass = createEClass(CODE_SYSTEM);
-
 		conceptsEClass = createEClass(CONCEPTS);
 		createEReference(conceptsEClass, CONCEPTS__CONCEPTS);
+
+		snomedReleaseEClass = createEClass(SNOMED_RELEASE);
+		createEAttribute(snomedReleaseEClass, SNOMED_RELEASE__BASE_CODE_SYSTEM_OID);
+		createEAttribute(snomedReleaseEClass, SNOMED_RELEASE__RELEASE_TYPE);
+
+		snomedVersionEClass = createEClass(SNOMED_VERSION);
+		createEAttribute(snomedVersionEClass, SNOMED_VERSION__MODULES);
+
+		// Create enums
+		snomedReleaseTypeEEnum = createEEnum(SNOMED_RELEASE_TYPE);
 	}
 
 	/**
@@ -656,9 +688,8 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		conceptEClass.getESuperTypes().add(this.getAnnotatable());
 		relationshipEClass.getESuperTypes().add(this.getComponent());
 		relationshipEClass.getESuperTypes().add(this.getAnnotatable());
-		codeSystemVersionGroupEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystemVersionGroup());
-		codeSystemVersionEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystemVersion());
-		codeSystemEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystem());
+		snomedReleaseEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystem());
+		snomedVersionEClass.getESuperTypes().add(theTerminologymetadataPackage.getCodeSystemVersion());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(componentEClass, Component.class, "Component", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -702,14 +733,20 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		initEReference(getRelationship_Modifier(), this.getConcept(), null, "modifier", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationship_RefinabilityRefSetMembers(), theSnomedRefSetPackage.getSnomedAttributeValueRefSetMember(), null, "refinabilityRefSetMembers", null, 0, -1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-		initEClass(codeSystemVersionGroupEClass, CodeSystemVersionGroup.class, "CodeSystemVersionGroup", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-		initEClass(codeSystemVersionEClass, CodeSystemVersion.class, "CodeSystemVersion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-		initEClass(codeSystemEClass, CodeSystem.class, "CodeSystem", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
 		initEClass(conceptsEClass, Concepts.class, "Concepts", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getConcepts_Concepts(), this.getConcept(), null, "concepts", null, 0, -1, Concepts.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
+
+		initEClass(snomedReleaseEClass, SnomedRelease.class, "SnomedRelease", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedRelease_BaseCodeSystemOID(), ecorePackage.getEString(), "baseCodeSystemOID", null, 0, 1, SnomedRelease.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedRelease_ReleaseType(), this.getSnomedReleaseType(), "releaseType", null, 0, 1, SnomedRelease.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(snomedVersionEClass, SnomedVersion.class, "SnomedVersion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedVersion_Modules(), ecorePackage.getEString(), "modules", null, 0, -1, SnomedVersion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		// Initialize enums and add enum literals
+		initEEnum(snomedReleaseTypeEEnum, SnomedReleaseType.class, "SnomedReleaseType");
+		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.INTERNATIONAL);
+		addEEnumLiteral(snomedReleaseTypeEEnum, SnomedReleaseType.EXTENSION);
 
 		// Create resource
 		createResource(eNS_URI);
@@ -745,6 +782,12 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		   new String[] {
 			 "columnType", "LONG VARCHAR",
 			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedRelease_BaseCodeSystemOID(), 
+		   source, 
+		   new String[] {
+			 "columnLength", "255"
 		   });
 	}
 

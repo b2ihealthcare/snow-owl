@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core;
+package com.b2international.snowowl.terminologyregistry.core.builder;
 
-import org.eclipse.emf.cdo.CDOState;
+import org.apache.lucene.document.Document;
 
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 
 /**
- * Code system factory representation.
+ * @since 4.7
  */
-public interface ICodeSystemFactory {
+public interface CodeSystemVersionEntryBuilder {
 
-	/**Creates and returns with a new {@link CodeSystem code system} instance.
-	 *<p>The new code system instance is in {@link CDOState#TRANSIENT transient} by default.*/
-	CodeSystem createNewCodeSystem();
-	
+	String EXTENSION_ID = "com.b2international.snowowl.terminologyregistry.core.codeSystemVersionEntryBuilder";
+
+	String getRepositoryUuid();
+
+	CodeSystemVersionEntry build(Document doc);
+
 }

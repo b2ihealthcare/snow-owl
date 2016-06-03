@@ -92,7 +92,7 @@ public class DiffIndexServerService extends IndexServerService<DiffConceptIndexE
 	}
 
 	public void tag(final String tag) {
-		IBranchPath versionPath = BranchPathUtils.createVersionPath(tag);
+		IBranchPath versionPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), tag);
 		// Will update to a newer value for the version path, if it existed previously 
 		invalidateCdoId(versionPath);
 		reopen(versionPath, getMostRecentPhysicalPath(versionPath));

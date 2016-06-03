@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.domain.exception;
+package com.b2international.snowowl.terminologyregistry.core.builder;
+
+import org.apache.lucene.document.Document;
+
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 
 /**
- * Thrown when the SNOMED CT RF2 import process fails to start for some reason.
+ * @since 4.7
  */
-public class SnomedImportException extends RuntimeException {
+public interface CodeSystemEntryBuilder {
+	
+	String EXTENSION_ID = "com.b2international.snowowl.terminologyregistry.core.codeSystemEntryBuilder";
+	
+	String getRepositoryUuid();
+	
+	CodeSystemEntry build(Document doc);
 
-	private static final long serialVersionUID = 9119450317641232155L;
-
-	/**
-	 * Creates a new exception instance with the given message.
-	 * 
-	 * @param message the message of the exception
-	 */
-	public SnomedImportException(final String message) {
-		super(message);
-	}
 }

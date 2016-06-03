@@ -161,7 +161,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 							Concepts.SYNONYM)); //synonym description type
 			
 			//attempt to create proper language type reference set members for the concept
-			final String languageRefSetId = getImportContext().getLanguageRefSetId();
+			String languageRefSetId = editingContext.getLanguageRefSetId();
 			final SnomedRefSet languageRefSet = new SnomedRefSetLookupService().getComponent(languageRefSetId, editingContext.getTransaction());
 			
 			if (languageRefSet instanceof SnomedStructuralRefSet) {

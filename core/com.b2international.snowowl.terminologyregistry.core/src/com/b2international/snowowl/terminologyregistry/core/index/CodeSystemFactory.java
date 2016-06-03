@@ -48,7 +48,8 @@ public abstract class CodeSystemFactory {
 		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME, Strings.nullToEmpty(codeSystem.getShortName()), Store.YES));
 		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_OID, Strings.nullToEmpty(codeSystem.getCodeSystemOID()), Store.YES));
 		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_STORAGE_KEY, Long.toString(CDOIDUtils.asLong(codeSystem.cdoID())), Store.YES));
-		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_REPOSITORY_UUID, codeSystem.getCodeSystemVersionGroup().getRepositoryUuid(), Store.YES));
+		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_REPOSITORY_UUID, codeSystem.getRepositoryUuid(), Store.YES));
+		doc.add(new StringField(TerminologyRegistryIndexConstants.SYSTEM_BRANCH_PATH, codeSystem.getBranchPath(), Store.YES));
 		
 		return doc;
 	}
@@ -64,7 +65,8 @@ public abstract class CodeSystemFactory {
 			doc.get(TerminologyRegistryIndexConstants.SYSTEM_ICON_PATH),
 			doc.get(TerminologyRegistryIndexConstants.SYSTEM_TERMINOLOGY_COMPONENT_ID),
 			doc.get(TerminologyRegistryIndexConstants.SYSTEM_STORAGE_KEY),
-			doc.get(TerminologyRegistryIndexConstants.SYSTEM_REPOSITORY_UUID)
+			doc.get(TerminologyRegistryIndexConstants.SYSTEM_REPOSITORY_UUID),
+			doc.get(TerminologyRegistryIndexConstants.SYSTEM_BRANCH_PATH)
 			);
 	}
 	
@@ -79,7 +81,8 @@ public abstract class CodeSystemFactory {
 				system.getIconPath(), 
 				system.getTerminologyComponentId(), 
 				CDOUtils.isTransient(system) ? CDOUtils.NO_STORAGE_KEY + "" : Long.toString(CDOIDUtils.asLong(system.cdoID())),
-				system.getCodeSystemVersionGroup().getRepositoryUuid());
+				system.getRepositoryUuid(),
+				system.getBranchPath());
 	}
 	
 	private CodeSystemFactory() {

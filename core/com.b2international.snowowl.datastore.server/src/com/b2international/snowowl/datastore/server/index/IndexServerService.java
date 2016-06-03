@@ -103,10 +103,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			
 			final IndexBranchService branchService = new IndexBranchService(key, physicalPath, getDirectoryManager());
 			
-			if (branchService.isFirstStartupAtMain()) {
-				getDirectoryManager().firstStartup(branchService);
-			}
-			
 			return branchService;
 		}
 	}

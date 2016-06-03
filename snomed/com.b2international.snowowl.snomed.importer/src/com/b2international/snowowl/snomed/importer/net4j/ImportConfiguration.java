@@ -27,7 +27,9 @@ import org.eclipse.core.runtime.Path;
 import com.b2international.commons.ZipURLHandler;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
@@ -54,6 +56,8 @@ public final class ImportConfiguration {
 	public static final String TEXT_DEFINITION_FILE_PROPERTY = "textDefinitionFile";
 	public static final String VERSION_PROPERTY = "version";
 	public static final String CREATE_VERSIONS_PROPERTY = "createVersions";
+	public static final String SNOMED_RELEASE = "snomedRelease";
+	public static final String SNOMED_RELEASE_TYPE = "snomedRelease.releaseType";
 	
 	public enum ImportSourceKind {
 		ARCHIVE,
@@ -70,7 +74,7 @@ public final class ImportConfiguration {
 	private File languageRefSetFile;
 	private File descriptionType;
 	private File textDefinitionFile;
-	private String languageRefSetId;
+	private final String languageRefSetId;
 	
 	{
 		//set client side's language reference set ID based on the configuration. 
@@ -91,6 +95,9 @@ public final class ImportConfiguration {
 
 	/* Not bound */
 	private ReleaseFileSet releaseFileSet;
+	
+	//the terminology registry entry for the release to be imported
+	private SnomedRelease snomedRelease = SnomedFactory.eINSTANCE.createSnomedRelease(); // TODO change this
 	
 	private final Map<String, String> releaseFileNameMappings = Maps.newHashMap();
 
@@ -176,10 +183,6 @@ public final class ImportConfiguration {
 	
 	public String getLanguageRefSetId() {
 		return languageRefSetId;
-	}
-	
-	public void setLanguageRefSetId(final String languageRefSetId) {
-		this.languageRefSetId = languageRefSetId;
 	}
 	
 	public File getDescriptionType() {
@@ -281,6 +284,14 @@ public final class ImportConfiguration {
 	
 	public void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
+	}
+
+	public SnomedRelease getSnomedRelease() {
+		return snomedRelease;
+	}
+
+	public void setSnomedRelease(SnomedRelease snomedRelease) {
+		this.snomedRelease = snomedRelease;
 	}
 	
 }

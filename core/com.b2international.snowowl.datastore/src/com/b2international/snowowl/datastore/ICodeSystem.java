@@ -85,5 +85,11 @@ public interface ICodeSystem extends Serializable {
 	 * @return
 	 */
 	long getStorageKey();
+	
+	/**
+	 * Returns the branch path of the code system.
+	 * @return the path for the code system.
+	 */
+	String getBranchPath();
 
 }

@@ -25,12 +25,15 @@ import static java.util.Collections.sort;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.google.common.base.Preconditions;
 
 /**
  * Version collector implementation.
+ * 
+ * @deprecated - use {@link Request} API instead.
  */
 public class VersionCollector implements IVersionCollector {
 

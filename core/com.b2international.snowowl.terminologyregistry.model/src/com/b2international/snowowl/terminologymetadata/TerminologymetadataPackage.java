@@ -69,105 +69,6 @@ public interface TerminologymetadataPackage extends EPackage {
 	TerminologymetadataPackage eINSTANCE = com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl.init();
 
 	/**
-	 * The meta object id for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionGroupImpl <em>Code System Version Group</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionGroupImpl
-	 * @see com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl#getCodeSystemVersionGroup()
-	 * @generated
-	 */
-	int CODE_SYSTEM_VERSION_GROUP = 0;
-
-	/**
-	 * The feature id for the '<em><b>Repository Uuid</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP__REPOSITORY_UUID = 0;
-
-	/**
-	 * The feature id for the '<em><b>Code Systems</b></em>' containment reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEMS = 1;
-
-	/**
-	 * The feature id for the '<em><b>Code System Versions</b></em>' containment reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEM_VERSIONS = 2;
-
-	/**
-	 * The number of structural features of the '<em>Code System Version Group</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP_FEATURE_COUNT = 3;
-
-	/**
-	 * The meta object id for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl <em>Code System</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl
-	 * @see com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl#getCodeSystem()
-	 * @generated
-	 */
-	int CODE_SYSTEM = 2;
-
-	/**
-	 * Returns the meta object for class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup <em>Code System Version Group</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Code System Version Group</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup
-	 * @generated
-	 */
-	EClass getCodeSystemVersionGroup();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getRepositoryUuid <em>Repository Uuid</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Repository Uuid</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getRepositoryUuid()
-	 * @see #getCodeSystemVersionGroup()
-	 * @generated
-	 */
-	EAttribute getCodeSystemVersionGroup_RepositoryUuid();
-
-	/**
-	 * Returns the meta object for the containment reference list '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getCodeSystems <em>Code Systems</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference list '<em>Code Systems</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getCodeSystems()
-	 * @see #getCodeSystemVersionGroup()
-	 * @generated
-	 */
-	EReference getCodeSystemVersionGroup_CodeSystems();
-
-	/**
-	 * Returns the meta object for the containment reference list '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getCodeSystemVersions <em>Code System Versions</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference list '<em>Code System Versions</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup#getCodeSystemVersions()
-	 * @see #getCodeSystemVersionGroup()
-	 * @generated
-	 */
-	EReference getCodeSystemVersionGroup_CodeSystemVersions();
-
-	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl <em>Code System Version</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -175,7 +76,7 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @see com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl#getCodeSystemVersion()
 	 * @generated
 	 */
-	int CODE_SYSTEM_VERSION = 1;
+	int CODE_SYSTEM_VERSION = 0;
 
 	/**
 	 * The feature id for the '<em><b>Version Id</b></em>' attribute.
@@ -196,13 +97,22 @@ public interface TerminologymetadataPackage extends EPackage {
 	int CODE_SYSTEM_VERSION__DESCRIPTION = 1;
 
 	/**
+	 * The feature id for the '<em><b>Parent Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH = 2;
+
+	/**
 	 * The feature id for the '<em><b>Effective Date</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION__EFFECTIVE_DATE = 2;
+	int CODE_SYSTEM_VERSION__EFFECTIVE_DATE = 3;
 
 	/**
 	 * The feature id for the '<em><b>Import Date</b></em>' attribute.
@@ -211,7 +121,7 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION__IMPORT_DATE = 3;
+	int CODE_SYSTEM_VERSION__IMPORT_DATE = 4;
 
 	/**
 	 * The feature id for the '<em><b>Last Update Date</b></em>' attribute.
@@ -220,7 +130,7 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION__LAST_UPDATE_DATE = 4;
+	int CODE_SYSTEM_VERSION__LAST_UPDATE_DATE = 5;
 
 	/**
 	 * The number of structural features of the '<em>Code System Version</em>' class.
@@ -229,7 +139,17 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_VERSION_FEATURE_COUNT = 5;
+	int CODE_SYSTEM_VERSION_FEATURE_COUNT = 6;
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl <em>Code System</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl
+	 * @see com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl#getCodeSystem()
+	 * @generated
+	 */
+	int CODE_SYSTEM = 1;
 
 	/**
 	 * The feature id for the '<em><b>Short Name</b></em>' attribute.
@@ -304,14 +224,117 @@ public interface TerminologymetadataPackage extends EPackage {
 	int CODE_SYSTEM__TERMINOLOGY_COMPONENT_ID = 7;
 
 	/**
+	 * The feature id for the '<em><b>Repository Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CODE_SYSTEM__REPOSITORY_UUID = 8;
+
+	/**
+	 * The feature id for the '<em><b>Code System Versions</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CODE_SYSTEM__CODE_SYSTEM_VERSIONS = 9;
+
+	/**
+	 * The feature id for the '<em><b>Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CODE_SYSTEM__BRANCH_PATH = 10;
+
+	/**
 	 * The number of structural features of the '<em>Code System</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_FEATURE_COUNT = 8;
+	int CODE_SYSTEM_FEATURE_COUNT = 11;
 
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion <em>Code System Version</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Code System Version</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion
+	 * @generated
+	 */
+	EClass getCodeSystemVersion();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getVersionId <em>Version Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Version Id</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getVersionId()
+	 * @see #getCodeSystemVersion()
+	 * @generated
+	 */
+	EAttribute getCodeSystemVersion_VersionId();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getDescription <em>Description</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Description</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getDescription()
+	 * @see #getCodeSystemVersion()
+	 * @generated
+	 */
+	EAttribute getCodeSystemVersion_Description();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getParentBranchPath <em>Parent Branch Path</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Parent Branch Path</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getParentBranchPath()
+	 * @see #getCodeSystemVersion()
+	 * @generated
+	 */
+	EAttribute getCodeSystemVersion_ParentBranchPath();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getEffectiveDate <em>Effective Date</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Effective Date</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getEffectiveDate()
+	 * @see #getCodeSystemVersion()
+	 * @generated
+	 */
+	EAttribute getCodeSystemVersion_EffectiveDate();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getImportDate <em>Import Date</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Import Date</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getImportDate()
+	 * @see #getCodeSystemVersion()
+	 * @generated
+	 */
+	EAttribute getCodeSystemVersion_ImportDate();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getLastUpdateDate <em>Last Update Date</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Last Update Date</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getLastUpdateDate()
+	 * @see #getCodeSystemVersion()
+	 * @generated
+	 */
+	EAttribute getCodeSystemVersion_LastUpdateDate();
 
 	/**
 	 * Returns the meta object for class '{@link com.b2international.snowowl.terminologymetadata.CodeSystem <em>Code System</em>}'.
@@ -322,6 +345,17 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 */
 	EClass getCodeSystem();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName <em>Short Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Short Name</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName()
+	 * @see #getCodeSystem()
+	 * @generated
+	 */
+	EAttribute getCodeSystem_ShortName();
 
 	/**
 	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemOID <em>Code System OID</em>}'.
@@ -344,17 +378,6 @@ public interface TerminologymetadataPackage extends EPackage {
 	 * @generated
 	 */
 	EAttribute getCodeSystem_Name();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName <em>Short Name</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Short Name</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName()
-	 * @see #getCodeSystem()
-	 * @generated
-	 */
-	EAttribute getCodeSystem_ShortName();
 
 	/**
 	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getMaintainingOrganizationLink <em>Maintaining Organization Link</em>}'.
@@ -412,69 +435,37 @@ public interface TerminologymetadataPackage extends EPackage {
 	EAttribute getCodeSystem_TerminologyComponentId();
 
 	/**
-	 * Returns the meta object for class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion <em>Code System Version</em>}'.
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getRepositoryUuid <em>Repository Uuid</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Code System Version</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion
+	 * @return the meta object for the attribute '<em>Repository Uuid</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getRepositoryUuid()
+	 * @see #getCodeSystem()
 	 * @generated
 	 */
-	EClass getCodeSystemVersion();
+	EAttribute getCodeSystem_RepositoryUuid();
 
 	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getVersionId <em>Version Id</em>}'.
+	 * Returns the meta object for the containment reference list '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemVersions <em>Code System Versions</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Version Id</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getVersionId()
-	 * @see #getCodeSystemVersion()
+	 * @return the meta object for the containment reference list '<em>Code System Versions</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemVersions()
+	 * @see #getCodeSystem()
 	 * @generated
 	 */
-	EAttribute getCodeSystemVersion_VersionId();
+	EReference getCodeSystem_CodeSystemVersions();
 
 	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getDescription <em>Description</em>}'.
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath <em>Branch Path</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Description</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getDescription()
-	 * @see #getCodeSystemVersion()
+	 * @return the meta object for the attribute '<em>Branch Path</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath()
+	 * @see #getCodeSystem()
 	 * @generated
 	 */
-	EAttribute getCodeSystemVersion_Description();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getEffectiveDate <em>Effective Date</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Effective Date</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getEffectiveDate()
-	 * @see #getCodeSystemVersion()
-	 * @generated
-	 */
-	EAttribute getCodeSystemVersion_EffectiveDate();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getImportDate <em>Import Date</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Import Date</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getImportDate()
-	 * @see #getCodeSystemVersion()
-	 * @generated
-	 */
-	EAttribute getCodeSystemVersion_ImportDate();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getLastUpdateDate <em>Last Update Date</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Last Update Date</em>'.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getLastUpdateDate()
-	 * @see #getCodeSystemVersion()
-	 * @generated
-	 */
-	EAttribute getCodeSystemVersion_LastUpdateDate();
+	EAttribute getCodeSystem_BranchPath();
 
 	/**
 	 * Returns the factory that creates the instances of the model.
@@ -499,38 +490,62 @@ public interface TerminologymetadataPackage extends EPackage {
 	 */
 	interface Literals {
 		/**
-		 * The meta object literal for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionGroupImpl <em>Code System Version Group</em>}' class.
+		 * The meta object literal for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl <em>Code System Version</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionGroupImpl
-		 * @see com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl#getCodeSystemVersionGroup()
+		 * @see com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl
+		 * @see com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl#getCodeSystemVersion()
 		 * @generated
 		 */
-		EClass CODE_SYSTEM_VERSION_GROUP = eINSTANCE.getCodeSystemVersionGroup();
+		EClass CODE_SYSTEM_VERSION = eINSTANCE.getCodeSystemVersion();
 
 		/**
-		 * The meta object literal for the '<em><b>Repository Uuid</b></em>' attribute feature.
+		 * The meta object literal for the '<em><b>Version Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute CODE_SYSTEM_VERSION_GROUP__REPOSITORY_UUID = eINSTANCE.getCodeSystemVersionGroup_RepositoryUuid();
+		EAttribute CODE_SYSTEM_VERSION__VERSION_ID = eINSTANCE.getCodeSystemVersion_VersionId();
 
 		/**
-		 * The meta object literal for the '<em><b>Code Systems</b></em>' containment reference list feature.
+		 * The meta object literal for the '<em><b>Description</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEMS = eINSTANCE.getCodeSystemVersionGroup_CodeSystems();
+		EAttribute CODE_SYSTEM_VERSION__DESCRIPTION = eINSTANCE.getCodeSystemVersion_Description();
 
 		/**
-		 * The meta object literal for the '<em><b>Code System Versions</b></em>' containment reference list feature.
+		 * The meta object literal for the '<em><b>Parent Branch Path</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEM_VERSIONS = eINSTANCE.getCodeSystemVersionGroup_CodeSystemVersions();
+		EAttribute CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH = eINSTANCE.getCodeSystemVersion_ParentBranchPath();
+
+		/**
+		 * The meta object literal for the '<em><b>Effective Date</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CODE_SYSTEM_VERSION__EFFECTIVE_DATE = eINSTANCE.getCodeSystemVersion_EffectiveDate();
+
+		/**
+		 * The meta object literal for the '<em><b>Import Date</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CODE_SYSTEM_VERSION__IMPORT_DATE = eINSTANCE.getCodeSystemVersion_ImportDate();
+
+		/**
+		 * The meta object literal for the '<em><b>Last Update Date</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CODE_SYSTEM_VERSION__LAST_UPDATE_DATE = eINSTANCE.getCodeSystemVersion_LastUpdateDate();
 
 		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl <em>Code System</em>}' class.
@@ -541,6 +556,14 @@ public interface TerminologymetadataPackage extends EPackage {
 		 * @generated
 		 */
 		EClass CODE_SYSTEM = eINSTANCE.getCodeSystem();
+
+		/**
+		 * The meta object literal for the '<em><b>Short Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CODE_SYSTEM__SHORT_NAME = eINSTANCE.getCodeSystem_ShortName();
 
 		/**
 		 * The meta object literal for the '<em><b>Code System OID</b></em>' attribute feature.
@@ -557,14 +580,6 @@ public interface TerminologymetadataPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute CODE_SYSTEM__NAME = eINSTANCE.getCodeSystem_Name();
-
-		/**
-		 * The meta object literal for the '<em><b>Short Name</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute CODE_SYSTEM__SHORT_NAME = eINSTANCE.getCodeSystem_ShortName();
 
 		/**
 		 * The meta object literal for the '<em><b>Maintaining Organization Link</b></em>' attribute feature.
@@ -607,54 +622,28 @@ public interface TerminologymetadataPackage extends EPackage {
 		EAttribute CODE_SYSTEM__TERMINOLOGY_COMPONENT_ID = eINSTANCE.getCodeSystem_TerminologyComponentId();
 
 		/**
-		 * The meta object literal for the '{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl <em>Code System Version</em>}' class.
+		 * The meta object literal for the '<em><b>Repository Uuid</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see com.b2international.snowowl.terminologymetadata.impl.CodeSystemVersionImpl
-		 * @see com.b2international.snowowl.terminologymetadata.impl.TerminologymetadataPackageImpl#getCodeSystemVersion()
 		 * @generated
 		 */
-		EClass CODE_SYSTEM_VERSION = eINSTANCE.getCodeSystemVersion();
+		EAttribute CODE_SYSTEM__REPOSITORY_UUID = eINSTANCE.getCodeSystem_RepositoryUuid();
 
 		/**
-		 * The meta object literal for the '<em><b>Version Id</b></em>' attribute feature.
+		 * The meta object literal for the '<em><b>Code System Versions</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute CODE_SYSTEM_VERSION__VERSION_ID = eINSTANCE.getCodeSystemVersion_VersionId();
+		EReference CODE_SYSTEM__CODE_SYSTEM_VERSIONS = eINSTANCE.getCodeSystem_CodeSystemVersions();
 
 		/**
-		 * The meta object literal for the '<em><b>Description</b></em>' attribute feature.
+		 * The meta object literal for the '<em><b>Branch Path</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute CODE_SYSTEM_VERSION__DESCRIPTION = eINSTANCE.getCodeSystemVersion_Description();
-
-		/**
-		 * The meta object literal for the '<em><b>Effective Date</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute CODE_SYSTEM_VERSION__EFFECTIVE_DATE = eINSTANCE.getCodeSystemVersion_EffectiveDate();
-
-		/**
-		 * The meta object literal for the '<em><b>Import Date</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute CODE_SYSTEM_VERSION__IMPORT_DATE = eINSTANCE.getCodeSystemVersion_ImportDate();
-
-		/**
-		 * The meta object literal for the '<em><b>Last Update Date</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute CODE_SYSTEM_VERSION__LAST_UPDATE_DATE = eINSTANCE.getCodeSystemVersion_LastUpdateDate();
+		EAttribute CODE_SYSTEM__BRANCH_PATH = eINSTANCE.getCodeSystem_BranchPath();
 
 	}
 

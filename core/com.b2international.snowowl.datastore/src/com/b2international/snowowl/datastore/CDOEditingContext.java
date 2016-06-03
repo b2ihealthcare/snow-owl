@@ -21,7 +21,6 @@ import static com.b2international.commons.exceptions.Exceptions.extractCause;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
@@ -69,9 +68,10 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 
 /**
  * This class is a thin, generic wrapper around the underlying {@link CDOTransaction}. 
@@ -341,11 +341,37 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	}
 	
 	/**
-	 * Returns with the {@link CodeSystemVersionGroup} for the repository where the current editing context works on.
-	 * @return the code system version group for storing meta information for the underlying repository such as code systems and versions.
+	 * Returns with an immutable list of the available code systems for the
+	 * repository where the current editing context works on.
+	 * 
+	 * @return an immutable list of the available code systems.
 	 */
-	public CodeSystemVersionGroup getCodeSystemVersionGroup() {
-		return (CodeSystemVersionGroup) getOnlyElement(transaction.getOrCreateResource(getMetaRootResourceName()).getContents());
+	public List<CodeSystem> getCodeSystems() {
+		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
+		return FluentIterable.from(cdoResource.getContents()).filter(CodeSystem.class).toList();
+	}
+
+	/**
+	 * Adds the given code system to the available code systems.
+	 * 
+	 * @return <code>true</code> if the code system collection changed as a
+	 *         result of the call.
+	 * @deprecated use {@link #add(EObject)} instead
+	 */
+	public boolean addCodeSystem(final CodeSystem codeSystem) {
+		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
+		return cdoResource.getContents().add(codeSystem);
+	}
+
+	/**
+	 * Removes the given code system from the available code systems.
+	 * 
+	 * @return true if the code system was removed as a result of this call.
+	 * @deprecated use {@link #delete(EObject)} instead
+	 */
+	public boolean removeCodeSystem(final CodeSystem codeSystem) {
+		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
+		return cdoResource.getContents().remove(codeSystem);
 	}
 	
 	/**
@@ -377,7 +403,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * @param object the object to be added to the contents of the editing context.
 	 */
 	public void add(final EObject object) {
-		getContents().add(checkNotNull(object, "object"));
+		if (object instanceof CodeSystem) {
+			transaction.getOrCreateResource(getMetaRootResourceName()).getContents().add(object);
+		} else {
+			getContents().add(checkNotNull(object, "object"));
+		}
 	}
 	
 	/**
@@ -405,7 +435,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * @throws ConflictException - if the component cannot be deleted
 	 */
 	public void delete(EObject object, boolean force) throws ConflictException {
-		EcoreUtil.remove(object);
+		if (object instanceof CodeSystem) {
+			transaction.getOrCreateResource(getMetaRootResourceName()).getContents().remove(object);
+		} else {
+			EcoreUtil.remove(object);
+		}
 	}
 	
 	/**

@@ -20,16 +20,10 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPa
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.FAKE_LAST_UPDATE_TIME_DATE;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.getRevisions;
-import static com.b2international.snowowl.datastore.server.version.GlobalPublishManagerImpl.ConfigurationThreadLocal.getConfiguration;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.collect.Iterables.isEmpty;
-import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Maps.uniqueIndex;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Boolean.TRUE;
 import static java.text.MessageFormat.format;
 import static org.eclipse.emf.cdo.common.revision.CDORevisionUtil.createDelta;
@@ -55,21 +49,25 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
-import com.google.common.base.Function;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Iterables;
 
 
 /**
@@ -101,7 +99,7 @@ public abstract class PublishManager implements IPublishManager {
 			aggregator.add(getTransaction());
 			publishTerminologyChanges();
 			logWork(monitor);
-			publishTerminologyMetadateChanges(configuration);
+			publishTerminologyMetadataChanges(configuration);
 			logWork(monitor);
 
 		} catch (final SnowowlServiceException e) {
@@ -144,17 +142,6 @@ public abstract class PublishManager implements IPublishManager {
 	/** Returns with the CDO editing context for the update process. */
 	protected final CDOEditingContext getEditingContext() {
 		return editingContextSupplier.get();
-	}
-
-	/** Creates and returns with the new code systems version. */
-	protected abstract CodeSystemVersion createCodeSystemVersion();
-
-	/**
-	 * Creates a new code system for the underlying terminology/content. By default returns with {@code null}. If this method returns with
-	 * {@code null} the new code system will not get persisted even if its absence.
-	 */
-	protected CodeSystem createCodeSystem() {
-		return null;
 	}
 
 	/** Returns with the desired effective time date. */
@@ -216,11 +203,6 @@ public abstract class PublishManager implements IPublishManager {
 	protected void postProcess() {
 	}
 
-	/** Returns with the {@link CodeSystemVersionGroup code system version group} instance for the underlying repository. */
-	protected CodeSystemVersionGroup getCodeSystemVersionGroup() {
-		return check(getEditingContext().getCodeSystemVersionGroup());
-	}
-
 	/** Adjusts all un.versioned components given as a set of component storage keys. */
 	protected void adjustComponents(final LongSet storageKeys) {
 		LOGGER.info("Adjusting effective time on components...");
@@ -248,8 +230,9 @@ public abstract class PublishManager implements IPublishManager {
 
 	/** Returns with the branch path for the given transaction to perform the publication. This is version dependent. */
 	protected final IBranchPath getBranchPathForPublication() {
-		return null == getConfiguration() ? getMainPath() : couldCreateVersion(getConfiguration()) ? getMainPath() : createPath(getMainPath(),
-				getConfiguration().getVersionId());
+		return null == getConfiguration() ? getMainPath()
+				: couldCreateVersion(getConfiguration()) ? BranchPathUtils.createPath(getParentBranchPath())
+						: createPath(getParentBranchPath(), getConfiguration().getVersionId());
 	}
 
 	/** Returns with the underlying transaction for the publication process. */
@@ -267,34 +250,29 @@ public abstract class PublishManager implements IPublishManager {
 		return getEffectiveTime();
 	}
 
-	/** Processes all changes for the given terminology as a part of the publication. */
-	private void processTerminologyChanges() {
-		checkNotNull(getConfiguration(), "Publish operation configuration was null.");
-		LOGGER.info("Collecting unversioned components...");
-		final LongSet storageKeys = getUnversionedComponentStorageKeys(getBranchPathForPublication());
-		LOGGER.info("Unversioned components have been successfully collected.");
-		preProcess(storageKeys);
-		adjustComponents(storageKeys);
-		postProcess();
-	}
-
 	protected abstract LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath);
 
 	private boolean couldCreateVersion(final IPublishOperationConfiguration configuration) {
-		return !newHashSet(transform(getAllVersions(createMainPath()), new Function<ICodeSystemVersion, String>() {
-			@Override
-			public String apply(final ICodeSystemVersion version) {
-				return checkNotNull(version).getVersionId();
-			}
-		})).contains(configuration.getVersionId());
+		return new CodeSystemRequests(getRepositoryUuid())
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(configuration.getCodeSystemShortName())
+				.setVersionId(configuration.getVersionId())
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getItems()
+				.isEmpty();
+	}
+	
+	private IBranchPath getParentBranchPath() {
+		return null == getConfiguration() ? getMainPath() : BranchPathUtils.createPath(getConfiguration().getParentBranchPath());
 	}
 
-	private Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
+	protected Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
 		return InternalTerminologyRegistryServiceRegistry.INSTANCE.getService(getRepositoryUuid()).getCodeSystemVersionsFromRepository(branchPath,
 				getRepositoryUuid());
 	}
 
-	private void publishTerminologyMetadateChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {
+	private void publishTerminologyMetadataChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {
 		if (couldCreateVersion(configuration)) {
 			processTerminologyMetadataChanges();
 		} else {
@@ -303,27 +281,42 @@ public abstract class PublishManager implements IPublishManager {
 	}
 
 	private void setFakeLastUpdateTimeOnExistingVersion(final IPublishOperationConfiguration configuration) {
-		final String versionId = configuration.getVersionId();
-		final ICodeSystemVersion version = getVersion(getBranchPathForPublication(), versionId);
-		checkNotNull(version, "Code system version cannot be found with ID: " + versionId);
-		final long versionStorageKey = version.getStorageKey();
-		final CodeSystemVersion codeSystemVersion = (CodeSystemVersion) getObjectIfExists(getTransaction(), versionStorageKey);
-		checkNotNull(codeSystemVersion, "Code system version does not exist in store. ID: " + versionStorageKey + " Version ID: " + versionId);
+		final ICodeSystemVersion version = getVersion(configuration);
+		checkNotNull(version, String.format("Code system version cannot be found with ID: %s.", configuration.getVersionId()));
+
+		final CodeSystemVersion codeSystemVersion = (CodeSystemVersion) getObjectIfExists(getTransaction(), version.getStorageKey());
+		checkNotNull(codeSystemVersion, String.format("Code System version does not exist in store. ID: %s, Version ID: %s.",
+				version.getStorageKey(), configuration.getVersionId()));
+		
 		codeSystemVersion.setLastUpdateDate(FAKE_LAST_UPDATE_TIME_DATE);
 	}
 
 	@Nullable
-	private ICodeSystemVersion getVersion(final IBranchPath branchPath, final String versionId) {
-		final ICodeSystemVersion version = uniqueIndex(getAllVersions(branchPath), new Function<ICodeSystemVersion, String>() {
-			public String apply(final ICodeSystemVersion version) {
-				return checkNotNull(version, "version").getVersionId();
-			}
-		}).get(versionId);
-		return version;
+	private ICodeSystemVersion getVersion(final IPublishOperationConfiguration configuration) {
+		final Collection<ICodeSystemVersion> versions = new CodeSystemRequests(getRepositoryUuid())
+				.prepareSearchCodeSystemVersion()
+				.setCodeSystemShortName(configuration.getCodeSystemShortName())
+				.setVersionId(configuration.getVersionId())
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus())
+				.getItems();
+		
+		return Iterables.getOnlyElement(versions, null);
+	}
+	
+	protected IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
+	/** Processes all changes for the given terminology as a part of the publication. */
 	private void publishTerminologyChanges() throws SnowowlServiceException {
-		processTerminologyChanges();
+		checkNotNull(getConfiguration(), "Publish operation configuration was null.");
+		LOGGER.info("Collecting unversioned components...");
+		final LongSet storageKeys = getUnversionedComponentStorageKeys(getBranchPathForPublication());
+		LOGGER.info("Unversioned components have been successfully collected.");
+		preProcess(storageKeys);
+		adjustComponents(storageKeys);
+		postProcess();
 	}
 
 	private IBranchPath getMainPath() {
@@ -366,38 +359,36 @@ public abstract class PublishManager implements IPublishManager {
 	/** Applies the code system changes for the publication process. */
 	private void processTerminologyMetadataChanges() {
 		LOGGER.info("Processing terminology metadata changes...");
-		addCodeSystemVersion(getCodeSystemVersionGroup());
-		if (!hasCodeSystem()) {
-			final CodeSystem codeSystem = createCodeSystem();
-			if (null != codeSystem) {
-				getCodeSystemVersionGroup().getCodeSystems().add(codeSystem);
-			}
-		}
+		
+		final CodeSystemVersion codeSystemVersion = createCodeSystemVersion();
+		addCodeSystemVersion(codeSystemVersion);
+		
 		LOGGER.info("Terminology metadata change processing successfully finished.");
 	}
-
-	private boolean hasCodeSystem() {
-		return !isEmpty(getCodeSystemVersionGroup().getCodeSystems());
+	
+	protected CodeSystemVersion createCodeSystemVersion() {
+		final CodeSystemVersion codeSystemVersion = TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
+		codeSystemVersion.setEffectiveDate(getEffectiveTime());
+		codeSystemVersion.setImportDate(new Date());
+		codeSystemVersion.setVersionId(getVersionName());
+		codeSystemVersion.setParentBranchPath(getConfiguration().getParentBranchPath());
+		codeSystemVersion.setDescription(getCodeSystemVersionDescription());
+		
+		return codeSystemVersion;
 	}
-
-	/** Adds a brand new code system version to the given code system argument. */
-	private boolean addCodeSystemVersion(final CodeSystemVersionGroup group) {
-		return group.getCodeSystemVersions().add(createAndInitializeCodeSystemVersion());
-	}
-
-	/** Creates a new code system version instance based on the publish configuration. */
-	private CodeSystemVersion createAndInitializeCodeSystemVersion() {
-		final CodeSystemVersion version = createCodeSystemVersion();
-		version.setEffectiveDate(getEffectiveTime());
-		version.setImportDate(new Date());
-		version.setVersionId(getVersionName());
-		version.setDescription(getCodeSystemVersionDescription());
-		return version;
+	
+	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {
+		final CodeSystem codeSystem = Iterables.getOnlyElement(getEditingContext().getCodeSystems());
+		codeSystem.getCodeSystemVersions().add(codeSystemVersion);
 	}
 
 	/** Returns with the code system description. */
-	private String getCodeSystemVersionDescription() {
+	protected String getCodeSystemVersionDescription() {
 		return nullToEmpty(getConfiguration().getDescription());
+	}
+	
+	protected IPublishOperationConfiguration getConfiguration() {
+		return GlobalPublishManagerImpl.ConfigurationThreadLocal.getConfiguration(); 
 	}
 
 	private void handleError(final SnowowlServiceException e) throws SnowowlServiceException {

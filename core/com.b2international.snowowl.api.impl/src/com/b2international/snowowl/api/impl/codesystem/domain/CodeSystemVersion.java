@@ -28,6 +28,7 @@ public class CodeSystemVersion implements ICodeSystemVersion {
 	private Date lastModificationDate;
 	private String description;
 	private String version;
+	private String parentBranchPath;
 	private boolean patched;
 
 	@Override
@@ -54,6 +55,11 @@ public class CodeSystemVersion implements ICodeSystemVersion {
 	public String getVersion() {
 		return version;
 	}
+	
+	@Override
+	public String getParentBranchPath() {
+		return parentBranchPath;
+	}
 
 	@Override
 	public boolean isPatched() {
@@ -79,6 +85,10 @@ public class CodeSystemVersion implements ICodeSystemVersion {
 	public void setVersion(final String version) {
 		this.version = version;
 	}
+	
+	public void setParentBranchPath(final String parentBranchPath) {
+		this.parentBranchPath = parentBranchPath;
+	}
 
 	public void setPatched(final boolean patched) {
 		this.patched = patched;
@@ -97,6 +107,8 @@ public class CodeSystemVersion implements ICodeSystemVersion {
 		builder.append(description);
 		builder.append(", version=");
 		builder.append(version);
+		builder.append(", parentBranchPath=");
+		builder.append(parentBranchPath);
 		builder.append(", patched=");
 		builder.append(patched);
 		builder.append("]");

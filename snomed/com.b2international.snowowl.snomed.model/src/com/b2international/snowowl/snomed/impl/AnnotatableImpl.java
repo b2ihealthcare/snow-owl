@@ -29,10 +29,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.AnnotatableImpl#getConcreteDomainRefSetMembers <em>Concrete Domain Ref Set Members</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

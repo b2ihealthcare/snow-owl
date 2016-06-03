@@ -153,7 +153,6 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		details.setCompletionDate(configuration.getCompletionDate());
 		details.setCreateVersions(configuration.shouldCreateVersion());
 		details.setId(importId);
-		details.setLanguageRefSetId(configuration.getLanguageRefSetId());
 		details.setStartDate(configuration.getStartDate());
 		details.setStatus(getImportStatus(configuration.getStatus()));
 		details.setType(configuration.getRf2ReleaseType());

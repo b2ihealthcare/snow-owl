@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.version;
 import static com.b2international.commons.StringUtils.EMPTY_STRING;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Objects.toStringHelper;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Iterators.unmodifiableIterator;
 
@@ -40,11 +41,14 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 	private static final long serialVersionUID = -8002761922404393510L;
 
 	private final UUID remoteJobId;
+	private final String primaryToolingId;
 	private final Collection<String> toolingIds;
 	private final String userId;
 	private Date effectiveTime;
 	private String versionId;
+	private String parentBranchPath; 
 	private String description;
+	private String codeSystemShortName;
 
 	/**Creates a publication operation configuration for the given tooling features with a random remote job identifier.*/
 	public PublishOperationConfiguration(final String toolingId, final String... otherToolingIds) {
@@ -53,6 +57,10 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 
 	/**Creates a publication operation configuration for the given tooling features.*/
 	public PublishOperationConfiguration(final UUID remoteJobId, final String toolingId, final String... otherToolingIds) {
+		checkNotNull(toolingId, "toolingId");
+		checkNotNull(otherToolingIds, "otherToolingIds");
+		
+		this.primaryToolingId = toolingId;
 		this.toolingIds = Lists.asList(toolingId, otherToolingIds);
 		this.remoteJobId = remoteJobId;
 		this.userId = getServiceForClass(ICDOConnectionManager.class).getUserId();
@@ -77,6 +85,11 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 	@Override
 	public String getDescription() {
 		return nullToEmpty(description);
+	}
+	
+	@Override
+	public String getPrimaryToolingId() {
+		return primaryToolingId;
 	}
 
 	@Override
@@ -122,6 +135,25 @@ public class PublishOperationConfiguration implements IPublishOperationConfigura
 		this.description = nullToEmpty(description);
 	}
 
+
+	@Override
+	public String getParentBranchPath() {
+		return parentBranchPath;
+	}
+
+	public void setParentBranchPath(String parentBranchPath) {
+		this.parentBranchPath = parentBranchPath;
+	}
+
+	@Override
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	public void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
+	}
+	
 	@Override
 	public String toString() {
 		return toStringHelper(this)

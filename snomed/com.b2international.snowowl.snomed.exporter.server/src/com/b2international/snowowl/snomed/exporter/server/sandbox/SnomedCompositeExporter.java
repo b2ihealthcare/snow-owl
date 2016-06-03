@@ -21,7 +21,6 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.bottomToTopI
 import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.concat;
@@ -48,6 +47,7 @@ import com.b2international.commons.collections.CloseableList;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -232,7 +232,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	private Map<IBranchPath, Long> createBranchPathMap() {
 		final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
 		for (final ICodeSystemVersion version : getAllVersion()) {
-			branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+			branchPathMap.put(BranchPathUtils.createPath(version.getPath()), version.getEffectiveDate());
 		}
 		branchPathMap.put(createMainPath(), UNSET_EFFECTIVE_TIME);
 		return unmodifiableMap(branchPathMap);

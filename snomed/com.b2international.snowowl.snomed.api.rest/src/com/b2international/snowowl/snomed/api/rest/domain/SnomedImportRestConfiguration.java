@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
+
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -27,7 +30,7 @@ public class SnomedImportRestConfiguration {
 	private Rf2ReleaseType type;
 	private String branchPath;
 	private Boolean createVersions = Boolean.FALSE;
-	private String languageRefSetId;
+	private String snomedReleaseShortName = SNOMED_INT_SHORT_NAME;
 
 	public String getBranchPath() {
 		return branchPath;
@@ -53,29 +56,21 @@ public class SnomedImportRestConfiguration {
 		this.createVersions = createVersions;
 	}
 
-	/**
-	 * Returns with the language reference set identifier concept ID for the import configuration.
-	 * @return the language reference set ID for the preferred language.
-	 */
-	public String getLanguageRefSetId() {
-		return languageRefSetId;
+	public String getSnomedReleaseShortName() {
+		return snomedReleaseShortName;
 	}
-
-	/**
-	 * Sets the language reference set identifier concept ID based on
-	 * the language reference set identifier concept ID argument.
-	 * @param languageRefSetId the language reference set ID for the preferred language. 
-	 */
-	public void setLanguageRefSetId(final String languageRefSetId) {
-		this.languageRefSetId = languageRefSetId;
+	
+	public void setSnomedReleaseShortName(String snomedReleaseShortName) {
+		this.snomedReleaseShortName = snomedReleaseShortName;
 	}
 	
 	public ISnomedImportConfiguration toConfig() {
 		return new SnomedImportConfiguration(
 				getType(), 
 				getBranchPath(),
-				getLanguageRefSetId(), 
-				getCreateVersions());
+				getCreateVersions(),
+				StringUtils.isEmpty(getSnomedReleaseShortName()) 
+					? SNOMED_INT_SHORT_NAME : getSnomedReleaseShortName());
 	}
 
 	@Override
@@ -87,8 +82,8 @@ public class SnomedImportRestConfiguration {
 		builder.append(branchPath);
 		builder.append(", createVersions=");
 		builder.append(createVersions);
-		builder.append(", languageRefSetId=");
-		builder.append(languageRefSetId);
+		builder.append(", snomedReleaseShortName=");
+		builder.append(snomedReleaseShortName);
 		builder.append("]");
 		return builder.toString();
 	}

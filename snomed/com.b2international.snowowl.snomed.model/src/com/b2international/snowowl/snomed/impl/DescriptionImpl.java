@@ -32,6 +32,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMembe
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.DescriptionImpl#getInactivationIndicatorRefSetMembers <em>Inactivation Indicator Ref Set Members</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.DescriptionImpl#getAssociationRefSetMembers <em>Association Ref Set Members</em>}</li>
@@ -42,7 +43,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMembe
  *   <li>{@link com.b2international.snowowl.snomed.impl.DescriptionImpl#getCaseSignificance <em>Case Significance</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.DescriptionImpl#getLanguageRefSetMembers <em>Language Ref Set Members</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

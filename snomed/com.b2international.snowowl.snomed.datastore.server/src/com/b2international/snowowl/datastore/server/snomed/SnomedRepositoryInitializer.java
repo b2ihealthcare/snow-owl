@@ -56,16 +56,6 @@ public class SnomedRepositoryInitializer extends RepositoryInitializer {
 	));
 	
 	@Override
-	protected EClass getCodeSystemVersionGroupClass() {
-		return SnomedPackage.eINSTANCE.getCodeSystemVersionGroup();
-	}
-	
-	@Override
-	protected EClass getCodeSystemVersionClass() {
-		return SnomedPackage.eINSTANCE.getCodeSystemVersion();
-	}
-
-	@Override
 	protected boolean shouldCreateDbIndexes() {
 		return false;
 	}

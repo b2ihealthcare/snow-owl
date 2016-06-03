@@ -38,6 +38,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
 import com.b2international.snowowl.api.rest.domain.ICodeSystemVersionPropertiesMixin;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -124,6 +125,11 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Value("${api.licenseUrl}")
 	public void setApiLicenseUrl(final String apiLicenseUrl) {
 		this.apiLicenseUrl = apiLicenseUrl;
+	}
+	
+	@Bean
+	public IEventBus eventBus() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 	}
 
 	@Bean

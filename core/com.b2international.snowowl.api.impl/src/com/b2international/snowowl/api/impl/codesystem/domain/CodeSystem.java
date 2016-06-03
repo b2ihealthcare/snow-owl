@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.api.impl.codesystem.domain;
 
+import java.util.Map;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 
 /**
@@ -22,11 +26,28 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 public class CodeSystem implements ICodeSystem {
 
 	private String oid;
+	
+	@NotEmpty
 	private String name;
+	@NotEmpty
 	private String shortName;
+	
 	private String organizationLink;
+	
+	@NotEmpty
 	private String primaryLanguage;
+	@NotEmpty
 	private String citation;
+	@NotEmpty
+	private String branchPath;
+	@NotEmpty
+	private String iconPath;
+	@NotEmpty
+	private String terminologyId;
+	@NotEmpty
+	private String repositoryUuid;
+	
+	private Map<String, String> additionalProperties;
 
 	@Override
 	public String getOid() {
@@ -58,6 +79,31 @@ public class CodeSystem implements ICodeSystem {
 		return citation;
 	}
 
+	@Override
+	public String getBranchPath() {
+		return branchPath;
+	}
+	
+	@Override
+	public String getIconPath() {
+		return iconPath;
+	}
+	
+	@Override
+	public String getTerminologyId() {
+		return terminologyId;
+	}
+	
+	@Override
+	public String getRepositoryUuid() {
+		return repositoryUuid;
+	}
+	
+	@Override
+	public Map<String, String> getAdditionalProperties() {
+		return additionalProperties;
+	}
+
 	public void setOid(final String oid) {
 		this.oid = oid;
 	}
@@ -81,6 +127,26 @@ public class CodeSystem implements ICodeSystem {
 	public void setCitation(final String citation) {
 		this.citation = citation;
 	}
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
+	}
+	
+	public void setIconPath(String iconPath) {
+		this.iconPath = iconPath;
+	}
+	
+	public void setTerminologyId(String terminologyId) {
+		this.terminologyId = terminologyId;
+	}
+	
+	public void setRepositoryUuid(String repositoryUuid) {
+		this.repositoryUuid = repositoryUuid;
+	}
+	
+	public void setAdditionalProperties(Map<String, String> additionalProperties) {
+		this.additionalProperties = additionalProperties;
+	}
 
 	@Override
 	public String toString() {
@@ -97,7 +163,16 @@ public class CodeSystem implements ICodeSystem {
 		builder.append(primaryLanguage);
 		builder.append(", citation=");
 		builder.append(citation);
+		builder.append(", branchPath=");
+		builder.append(branchPath);
+		builder.append(", iconPath=");
+		builder.append(iconPath);
+		builder.append(", repositoryUuid=");
+		builder.append(repositoryUuid);
+		builder.append(", additionalProperties=");
+		builder.append(additionalProperties);
 		builder.append("]");
 		return builder.toString();
 	}
+	
 }

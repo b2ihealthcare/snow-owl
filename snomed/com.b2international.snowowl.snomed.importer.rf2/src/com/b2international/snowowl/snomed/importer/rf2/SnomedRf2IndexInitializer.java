@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
-import static com.b2international.commons.collect.LongSets.newLongSet;
-import static com.b2international.commons.collect.LongSets.toStringList;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -50,10 +48,10 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.csv.CsvLexer.EOL;
-import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
+import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -163,7 +161,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	private ISnomedTaxonomyBuilder inferredTaxonomyBuilder;
 	private ISnomedTaxonomyBuilder statedTaxonomyBuilder;
 
-	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId, ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder) {
+	public SnomedRf2IndexInitializer(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder) {
 		super("SNOMED CT RF2 based index initializer...");
 		this.branchPath = branchPath;
 		this.effectiveTimeKey = lastUnitEffectiveTimeKey;

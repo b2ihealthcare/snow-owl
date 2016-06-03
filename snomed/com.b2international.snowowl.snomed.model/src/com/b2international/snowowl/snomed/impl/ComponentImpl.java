@@ -30,6 +30,7 @@ import com.b2international.snowowl.snomed.SnomedPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ComponentImpl#getId <em>Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ComponentImpl#isActive <em>Active</em>}</li>
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.SnomedPackage;
  *   <li>{@link com.b2international.snowowl.snomed.impl.ComponentImpl#getModule <em>Module</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ComponentImpl#isReleased <em>Released</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

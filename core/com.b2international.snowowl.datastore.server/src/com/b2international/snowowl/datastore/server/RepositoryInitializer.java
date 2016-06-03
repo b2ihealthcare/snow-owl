@@ -16,14 +16,12 @@
 package com.b2international.snowowl.datastore.server;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
-import static com.b2international.commons.StringUtils.EMPTY_STRING;
 import static com.b2international.commons.platform.Extensions.getExtensions;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.INITIAL_STATE;
 import static com.b2international.snowowl.datastore.cdo.CDOCommitInfoConstants.INITIALIZER_COMMIT_COMMENT;
 import static com.b2international.snowowl.datastore.cdo.CDOCommitInfoConstants.SYSTEM_USER_ID;
 import static com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider.ROOT_RESOURCE_NAMEPROVIDER_EXTENSION_POINT_ID;
 import static com.b2international.snowowl.datastore.server.ServerDbUtils.createCdoCreatedIndexOnTables;
-import static com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage.CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEM_VERSIONS;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.any;
@@ -47,14 +45,12 @@ import static org.eclipse.emf.cdo.server.StoreThreadLocal.release;
 import static org.eclipse.emf.cdo.server.StoreThreadLocal.setAccessor;
 import static org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager.BranchLoader.NEW_BRANCH;
 import static org.eclipse.emf.cdo.spi.server.InternalSession.TEMP_VIEW_ID;
-import static org.eclipse.emf.ecore.InternalEObject.EOPPOSITE_FEATURE_BASE;
 import static org.eclipse.emf.ecore.InternalEObject.EStore.NO_INDEX;
 import static org.eclipse.net4j.util.lifecycle.LifecycleUtil.checkActive;
 import static org.eclipse.net4j.util.lifecycle.LifecycleUtil.deactivate;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -82,7 +78,6 @@ import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.eclipse.net4j.util.transaction.TransactionException;
@@ -94,17 +89,14 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessionProtocol;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.google.common.base.Predicate;
 
 /**
- * Abstract repository initializer implementation responsible for creating the
+ * Repository initializer implementation responsible for creating the
  * domain specific root resources.
  * @see CDOEditingContext
  */
-public abstract class RepositoryInitializer implements IRepositoryInitializer {
+public class RepositoryInitializer implements IRepositoryInitializer {
 
 	private static final Logger LOGGER = getLogger(RepositoryInitializer.class);
 	
@@ -117,6 +109,7 @@ public abstract class RepositoryInitializer implements IRepositoryInitializer {
 		
 		
 		final ICDORepository repository = find(CDORepositoryManager.getInstance()._iterator(), new Predicate<ICDORepository>() {
+			@Override
 			public boolean apply(final ICDORepository repository) {
 				return repositoryUuid.equals(repository.getUuid());
 			}
@@ -213,18 +206,6 @@ public abstract class RepositoryInitializer implements IRepositoryInitializer {
 	}
 
 	/**
-	 * Returns with the {@link EClass} of the concrete {@link CodeSystemVersionGroup} for the repository. 
-	 * @return the code system version group class.
-	 */
-	protected abstract EClass getCodeSystemVersionGroupClass();
-	
-	/**
-	 * Returns with the {@link EClass} of the concrete {@link CodeSystemVersion} for the repository. 
-	 * @return the code system version class.
-	 */
-	protected abstract EClass getCodeSystemVersionClass();
-
-	/**
 	 * Generates and returns with a new unique CDO ID for the given CDO revision argument from the repository. 
 	 * @param repository the repository where the new ID has to be generated.
 	 * @param newRevision the new revision to generate a new ID for.
@@ -249,10 +230,10 @@ public abstract class RepositoryInitializer implements IRepositoryInitializer {
 	}
 	
 	/**Returns with an array of desired root resource unique names.*/
-	private Collection<String> getRootResourceNames(final String repsotiryUuid) {
-		checkNotNull(repsotiryUuid, "repsotiryUuid");
+	private Collection<String> getRootResourceNames(final String repositoryUuid) {
+		checkNotNull(repositoryUuid, "repositoryUuid");
 		final Collection<String> rootResourceNames = newHashSet();
-		for (final CDORootResourceNameProvider provider : getRootResourceNameProvidersForRepository(repsotiryUuid)) {
+		for (final CDORootResourceNameProvider provider : getRootResourceNameProvidersForRepository(repositoryUuid)) {
 			rootResourceNames.addAll(provider.getRootResourceNames());
 		}
 		return unmodifiableCollection(rootResourceNames);
@@ -334,50 +315,11 @@ public abstract class RepositoryInitializer implements IRepositoryInitializer {
 			rootRevisionDelta.addFeatureDelta(createAddRevisionDelta(newResourceRevision.getID(), rootCdoResourceContentsCdoList.size()));
 			
 			final boolean metaRoot = any(rootResourceNameProviders, new Predicate<CDORootResourceNameProvider>() {
+				@Override
 				public boolean apply(final CDORootResourceNameProvider provider) {
 					return provider.isMetaRootResource(resourceName);
 				}
 			});
-			
-			if (metaRoot) {
-				
-				final InternalCDORevision newGroupRevision = createCodeSystemVersionGroupRevision(revisionManager);
-				newGroupRevision.setBranchPoint(branchPoint);
-				newGroupRevision.setContainerID(NULL);
-				newGroupRevision.setContainingFeatureID(0);
-				newGroupRevision.set(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersionGroup_RepositoryUuid(), NO_INDEX, repositoryUuid);
-				
-				final CDOID groupCdoId = getCdoIdForNewRevision(repository, newGroupRevision);
-				newGroupRevision.setID(groupCdoId);
-				newGroupRevision.setResourceID(resourceCdoId);
-				
-				newObjects.add(newGroupRevision);
-				
-				final CDOList resourceContentsCdoList = newResourceRevision.getList(EresourcePackage.eINSTANCE.getCDOResource_Contents());
-				resourceContentsCdoList.add(groupCdoId);
-				
-				if (shouldCreateVersionWithEmptyContent()) {
-				
-					final InternalCDORevision newVersionRevision = createCodeSystemVersionRevision(revisionManager);
-					newVersionRevision.setBranchPoint(branchPoint);
-					newVersionRevision.setContainerID(groupCdoId);
-					newVersionRevision.setContainingFeatureID(EOPPOSITE_FEATURE_BASE - CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEM_VERSIONS);
-					newVersionRevision.set(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_Description(), NO_INDEX, EMPTY_STRING);
-					newVersionRevision.set(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_ImportDate(), NO_INDEX, new Date());
-					newVersionRevision.set(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_VersionId(), NO_INDEX, INITIAL_STATE);
-					
-					final CDOID versionCdoId = getCdoIdForNewRevision(repository, newVersionRevision);
-					newVersionRevision.setID(versionCdoId);
-					
-					final CDOList groupVersionCdoList = newGroupRevision.getList(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersionGroup_CodeSystemVersions());
-					groupVersionCdoList.add(versionCdoId);
-					
-					newObjects.add(newVersionRevision);
-					
-				}
-				
-				
-			}
 			
 			newObjects.addAll(createAdditionalRevisionsForResource(newResourceRevision, metaRoot, repository));
 			
@@ -422,14 +364,6 @@ public abstract class RepositoryInitializer implements IRepositoryInitializer {
 	/*initialize a new CDO revision delta representing a CDO root resource.*/
 	private InternalCDORevision createResourceRevsion(final InternalCDORevisionManager revisionManager) {
 		return (InternalCDORevision) revisionManager.getFactory().createRevision(CDO_RESOURCE);
-	}
-
-	private InternalCDORevision createCodeSystemVersionGroupRevision(final InternalCDORevisionManager revisionManager) {
-		return (InternalCDORevision) revisionManager.getFactory().createRevision(getCodeSystemVersionGroupClass());
-	}
-	
-	private InternalCDORevision createCodeSystemVersionRevision(final InternalCDORevisionManager revisionManager) {
-		return (InternalCDORevision) revisionManager.getFactory().createRevision(getCodeSystemVersionClass());
 	}
 
 	/*checks whether a CDO root resource already exists in the given repository with the unique root resource name.*/

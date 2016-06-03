@@ -62,33 +62,6 @@ public interface SnomedFactory extends EFactory {
 	Relationship createRelationship();
 
 	/**
-	 * Returns a new object of class '<em>Code System Version Group</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Code System Version Group</em>'.
-	 * @generated
-	 */
-	CodeSystemVersionGroup createCodeSystemVersionGroup();
-
-	/**
-	 * Returns a new object of class '<em>Code System Version</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Code System Version</em>'.
-	 * @generated
-	 */
-	CodeSystemVersion createCodeSystemVersion();
-
-	/**
-	 * Returns a new object of class '<em>Code System</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Code System</em>'.
-	 * @generated
-	 */
-	CodeSystem createCodeSystem();
-
-	/**
 	 * Returns a new object of class '<em>Concepts</em>'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -96,6 +69,24 @@ public interface SnomedFactory extends EFactory {
 	 * @generated
 	 */
 	Concepts createConcepts();
+
+	/**
+	 * Returns a new object of class '<em>Release</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Release</em>'.
+	 * @generated
+	 */
+	SnomedRelease createSnomedRelease();
+
+	/**
+	 * Returns a new object of class '<em>Version</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Version</em>'.
+	 * @generated
+	 */
+	SnomedVersion createSnomedVersion();
 
 	/**
 	 * Returns the package supported by this factory.

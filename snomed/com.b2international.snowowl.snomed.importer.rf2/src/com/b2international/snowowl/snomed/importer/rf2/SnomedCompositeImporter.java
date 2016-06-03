@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -42,9 +42,11 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -56,36 +58,42 @@ import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSn
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
 import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.datastore.version.TagConfigurationBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.AbstractImportUnit;
 import com.b2international.snowowl.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
-import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.EffectiveTimeUnitOrdering;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 
 /**
  * A composite importer that coordinates the operation of its child importers:
@@ -106,12 +114,15 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private final SnomedImportContext importContext; //will be used when tagging version (Snow Owl 3.1)
 	private Rf2BasedSnomedTaxonomyBuilder inferredTaxonomyBuilder;
 	private Rf2BasedSnomedTaxonomyBuilder statedTaxonomyBuilder;
+	private Set<String> existingVersions;
+	private List<SnomedVersion> versionsToCreate;
 	
 	public SnomedCompositeImporter(final Logger logger, final SnomedImportContext importContext, final List<Importer> importers, final Ordering<AbstractImportUnit> unitOrdering) {
 		super(logger);
 		this.importContext = Preconditions.checkNotNull(importContext, "Import context argument cannot be null.");
 		this.importers = ImmutableList.copyOf(checkNotNull(importers, "importers"));
 		this.unitOrdering = checkNotNull(unitOrdering, "unitOrdering");
+		versionsToCreate = newArrayList();
 	}
 
 	@Override
@@ -122,6 +133,47 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		for (final Importer importer : importers) {
 			importer.preImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 		}
+		
+		collectExistingVersions();
+	}
+
+	private void collectExistingVersions() {
+		SnomedReleaseEntry releaseEntry = getSnomedReleaseEntry(importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID());
+		existingVersions = FluentIterable.from(new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.prepareSearchCodeSystemVersion()
+			.setCodeSystemShortName(releaseEntry.getShortName())
+			.build(IBranchPath.MAIN_BRANCH)
+			.executeSync(getEventBus())
+			.getItems()).transform(new Function<ICodeSystemVersion, String>() {
+				@Override public String apply(ICodeSystemVersion input) {
+					return EffectiveTimes.format(input.getEffectiveDate(), DateFormats.SHORT);
+				}
+			}).toSet();
+	}
+
+	private SnomedReleaseEntry getSnomedReleaseEntry(String shortName, String oid) {
+		CodeSystemEntry entry;
+		try {
+			entry = new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.prepareGetCodeSystem()
+				.setUniqueId(oid)
+				.build(IBranchPath.MAIN_BRANCH)
+				.executeSync(getEventBus());
+		} catch (CodeSystemNotFoundException e) {
+			try {
+				entry = new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.prepareGetCodeSystem()
+					.setUniqueId(shortName)
+					.build(IBranchPath.MAIN_BRANCH)
+					.executeSync(getEventBus());
+			} catch (CodeSystemNotFoundException e2) {
+				throw new ImportException(String.format(
+						"Unable to find the specified SNOMED CT release among the registered terminologies. Short name: %s, OID: %s",
+						importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
+			}
+		}
+		
+		return (SnomedReleaseEntry) entry;
 	}
 
 	@Override
@@ -154,9 +206,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	@Override
 	public void doImport(final SubMonitor subMonitor, final AbstractImportUnit unit) {
-
 		try {
-			
 			final IBranchPath branchPath = getImportBranchPath();
 			
 			final SnomedCompositeImportUnit compositeUnit = (SnomedCompositeImportUnit) unit;
@@ -174,14 +224,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					final String currentUnitEffectiveTimeKey = subUnit.getEffectiveTimeKey();
 					
 					if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
-						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled());
+						createSnomedVersionFor(lastUnitEffectiveTimeKey);
 						lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
 					}
 					
 					subUnit.doImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 				}
 				
-				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled());
+				createSnomedVersionFor(lastUnitEffectiveTimeKey);
 				
 			} else {
 			
@@ -209,7 +259,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					
 					if (!Objects.equal(lastUnitEffectiveTimeKey, currentUnitEffectiveTimeKey)) {
 						updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
-						updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled());
+						createSnomedVersionFor(lastUnitEffectiveTimeKey);
 						lastUnitEffectiveTimeKey = currentUnitEffectiveTimeKey;
 					}
 						
@@ -217,7 +267,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 				
 				updateInfrastructure(units, branchPath, lastUnitEffectiveTimeKey);
-				updateCodeSystemMetadata(lastUnitEffectiveTimeKey, importContext.isVersionCreationEnabled());
+				createSnomedVersionFor(lastUnitEffectiveTimeKey);
 			}
 			
 		} finally {	
@@ -255,6 +305,44 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		for (final Importer importer : importers) {
 			importer.postImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
+		}
+		
+		if (getImportBranchPath().getPath().equals(IBranchPath.MAIN_BRANCH)) {
+			createNewVersions(importContext.getEditingContext());
+		} else {
+			try (SnomedEditingContext snomedEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
+				createNewVersions(snomedEditingContext);
+			}
+		}
+	}
+
+	private void createNewVersions(SnomedEditingContext snomedEditingContext) {
+		try {
+
+			SnomedRelease snomedRelease = checkNotNull(snomedEditingContext.getSnomedRelease(importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
+			snomedRelease.getCodeSystemVersions().addAll(versionsToCreate);
+			
+			if (snomedEditingContext.isDirty()) {
+				
+				new CDOServerCommitBuilder(importContext.getUserId(), String.format("Created %s SNOMED CT versions for branch '%s'", versionsToCreate.size(), getImportBranchPath().getPath()), snomedEditingContext.getTransaction())
+					.sendCommitNotification(false)
+					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+					.commit();
+				
+				getLogger().info(String.format("Version tags created: %s", Joiner.on(", ").join(FluentIterable.from(versionsToCreate).transform(new Function<SnomedVersion, String>() {
+					@Override public String apply(SnomedVersion input) {
+						return String.format("[%s]", input.getVersionId());
+					}
+				}))));
+				
+			}
+			
+		} catch (NullPointerException e) {
+			throw new ImportException(String.format(
+					"Unable to find the specified SNOMED CT release among the registered terminologies. Short name: %s, OID: %s",
+					importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
+		} catch (CommitException e) {
+			throw new ImportException(String.format("Unable to commit SNOMED CT versions for branch %s", getImportBranchPath().getPath()), e);
 		}
 	}
 
@@ -350,56 +438,53 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	}
 
 	private void initializeIndex(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId(), inferredTaxonomyBuilder, statedTaxonomyBuilder);
+		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(branchPath, lastUnitEffectiveTimeKey, units, inferredTaxonomyBuilder, statedTaxonomyBuilder);
 		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 
-	private void updateCodeSystemMetadata(final String lastUnitEffectiveTimeKey, final boolean shouldCreateVersionAndTag) {
+	protected void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
 		
 		if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
 			return;
 		}
 		
-		final ICDOTransactionAggregator aggregator = importContext.getAggregator(lastUnitEffectiveTimeKey);
 		final SnomedEditingContext editingContext = importContext.getEditingContext();
-		final CDOTransaction transaction = editingContext.getTransaction();
 		
 		try {
-			
-			final CodeSystemVersionGroup group = check(editingContext.getCodeSystemVersionGroup());
-			
-			if (group.getCodeSystems().isEmpty()) {
-				group.getCodeSystems().add(new SnomedCodeSystemFactory().createNewCodeSystem());
-			}
-			
+
 			boolean existingVersionFound = false;
-			
-			if (shouldCreateVersionAndTag) {
-				for (final CodeSystemVersion codeSystemVersion : group.getCodeSystemVersions()) {
-					String existingEffectiveTimeKey = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
-					
-					if (lastUnitEffectiveTimeKey.equals(existingEffectiveTimeKey)) {
+
+			if (importContext.isVersionCreationEnabled()) {
+				
+				Set<String> existingEffectiveTimes = Sets.union(FluentIterable.from(versionsToCreate).transform(new Function<SnomedVersion, String>() {
+					@Override public String apply(SnomedVersion input) {
+						return EffectiveTimes.format(input.getEffectiveDate(), DateFormats.SHORT);
+					}
+				}).toSet(), existingVersions);
+				
+				for (String existingEffectiveTime : existingEffectiveTimes) {
+					if (lastUnitEffectiveTimeKey.equals(existingEffectiveTime)) {
 						existingVersionFound = true;
 						break;
 					}
 				}
 				
 				if (!existingVersionFound) {
-					group.getCodeSystemVersions().add(createVersion(lastUnitEffectiveTimeKey));
+					versionsToCreate.add(createVersion(lastUnitEffectiveTimeKey));
 				} else {
-					getLogger().warn("Not adding code system version entry for {}, a previous entry with the same effective time exists.", lastUnitEffectiveTimeKey);
+					getLogger().warn("Existing SNOMED CT version found for effective time {}.", lastUnitEffectiveTimeKey);
 				}
 			}
 			
-			if (transaction.isDirty()) {
-				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), aggregator)
-				.sendCommitNotification(false)
-				.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-				.commit();
+			if (editingContext.isDirty()) {
+				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), importContext.getAggregator(lastUnitEffectiveTimeKey))
+					.sendCommitNotification(false)
+					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+					.commit();
 			}
 			
-			if (!existingVersionFound && shouldCreateVersionAndTag) {
-				final IBranchPath snomedBranchPath = BranchPathUtils.createPath(transaction);
+			if (!existingVersionFound && importContext.isVersionCreationEnabled()) {
+				final IBranchPath snomedBranchPath = getImportBranchPath();
 				final Date effectiveDate = EffectiveTimes.parse(lastUnitEffectiveTimeKey, DateFormats.SHORT);
 				final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 				
@@ -435,16 +520,21 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 	}
 	
-	private CodeSystemVersion createVersion(final String version) {
+	private SnomedVersion createVersion(final String version) {
 
-		Date effectiveDate = EffectiveTimes.parse(version, DateFormats.SHORT);
-		String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
+		final Date effectiveDate = EffectiveTimes.parse(version, DateFormats.SHORT);
+		final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 		
-		final CodeSystemVersion codeSystemVersion = SnomedFactory.eINSTANCE.createCodeSystemVersion();
-		codeSystemVersion.setImportDate(new Date());
-		codeSystemVersion.setVersionId(formattedEffectiveDate); 
-		codeSystemVersion.setDescription("RF2 import of SNOMED Clinical Terms");
-		codeSystemVersion.setEffectiveDate(effectiveDate);
-		return codeSystemVersion;
+		return SnomedReleases.newSnomedVersion()
+			.withVersionId(formattedEffectiveDate)
+			.withDescription("SNOMED CT version created by an RF2 import process")
+			.withImportDate(new Date())
+			.withEffectiveDate(effectiveDate)
+			.withParentBranchPath(getImportBranchPath().getPath())
+			.build();
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 }

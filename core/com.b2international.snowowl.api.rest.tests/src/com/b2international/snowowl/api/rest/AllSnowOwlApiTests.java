@@ -25,6 +25,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.rest.auth.BasicAuthenticationTest;
 import com.b2international.snowowl.api.rest.codesystem.CodeSystemApiTest;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -39,10 +40,10 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	CodeSystemApiTest.class,
 })
 public class AllSnowOwlApiTests {
-
+	
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnowOwlApiTests.class, "rest-configuration.yml")))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
-			.around(new SnomedContentRule(Resources.Snomed.MINI_RF2_INT, "900000000000508004", ContentSubType.FULL));
+			.around(new SnomedContentRule(SnomedReleases.newSnomedInternationalRelease().build(), Resources.Snomed.MINI_RF2_INT, ContentSubType.FULL));
 }

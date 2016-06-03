@@ -2,6 +2,9 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="codeSystemVersionProvider" name="Code System Version Provider" schema="schema/codeSystemVersionProvider.exsd"/>
+   <extension-point id="codeSystemBuilder" name="Code SystemBuilder" schema="schema/codeSystemBuilder.exsd"/>
+   <extension-point id="codeSystemEntryBuilder" name="Code System Entry Builder" schema="schema/codeSystemEntryBuilder.exsd"/>
+   <extension-point id="codeSystemVersionEntryBuilder" name="Code System Version Entry Builder" schema="schema/codeSystemVersionEntryBuilder.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob

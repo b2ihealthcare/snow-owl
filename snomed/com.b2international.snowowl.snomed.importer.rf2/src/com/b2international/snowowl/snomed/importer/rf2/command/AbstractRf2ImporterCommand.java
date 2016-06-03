@@ -26,7 +26,7 @@ import org.eclipse.osgi.framework.console.CommandInterpreter;
 public abstract class AbstractRf2ImporterCommand {
 
 	private static final String MAIN_COMMAND_NAME = "sctimport";
-
+	
 	public static final String HEADER = "---Snow Owl SNOMED CT importer commands---";
 
 	private final String name;

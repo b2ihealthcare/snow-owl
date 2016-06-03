@@ -63,45 +63,86 @@ The server can be stopped cleanly by running `bin/shutdown.sh`:
 
 == Importing content from a release archive
 
-To import a `SnomedCT_Release_XXX_xxxxxxxx.zip` release archive, the file must be present in the Snow Owl Server host
-file system, which we will refer to as {import_zip_directory}.
-
-=== Choosing the language reference set
-
-To list the available language reference set identifiers, use the following command:
-
---------------------------
-osgi> sctimport rf2_languages {import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip
-[...]
-900000000000508004  Great Britain English language reference set
-900000000000509007  United States of America English language reference set
---------------------------
-
-Available language reference sets will be displayed as above, after parsing the archive is completed.
+To import a `SnomedCT_Release_XXX_xxxxxxxx.zip` release archive, the file must be present in the Snow Owl Server host file system, which we will refer to as {import_archive}.
 
 === Starting the import
 
 Use the following OSGi command to start the import process:
 
 --------------------------
-osgi> sctimport rf2_release -l <languageRefSetId> -t <type> <file>
+osgi> sctimport rf2_release -t <type> -b <branch> -v /path/to/{import_archive} /path/to/{release_descriptor_file}
 --------------------------
 
-<languageRefSetId>:: The language reference set identifier to use, selected from the list available identifiers in the
-previous step
-<type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use
-<file>:: The absolute path of the release archive file to import, +
-`{import_zip_directory}/SnomedCT_Release_XXX_xxxxxxxx.zip`
+-t <type>:: One of `FULL`, `SNAPSHOT` or `DELTA`, depending on the import type the administrator wants to use. The parameter is case-insensitive.
+-b <branch>:: The existing branch to import the content onto. In case of extension import, an effective time from the base SNOMED CT release (e.g. 2016-01-31). If omitted `MAIN` will be used.
+-v:: Creates versions for each effective time found in the release archive. If omitted no versions will be created.
+/path/to/{import_archive}:: Specifies the release archive to import. Must be a `.zip` file with a supported internal structure, such as the release archive of the International Release.
+/path/to/{release_descriptor_file}:: The path to the release descriptor `.json` file.
 
-NOTE: While the import is running, there is no feedback on the OSGi console until the process is finished; log output
-can be observed throughout the import session in the file `serviceability/logs/log.log`. The import may take several
-hours depending on your hardware and JVM configuration.
+==== Release decriptor file
 
-Example `FULL` import with US language reference set:
+The release descriptor `.json` file could contain the following attributes as key/value pairs:
+
+Name:: Descriptive name of the code system.
+Short name:: Short name of the code system. Must *not* contain any whitespaces, must be *unique* among the other code systems already present in Snow Owl.
+
+TIP: See `terminologyregistry listall` OSGi command to list all existing code systems.
+
+Language:: Three letter language code of the code system.
+Code system OID:: The OID of the code system.
+Base code system OID:: The OID of the base code system / release this SNOMED CT release depends on.
+Maintaining organization link:: Maintaining organization link.
+Release type:: The type of the release. Either `INTERNATIONAL` or `EXTENSION`.
+Citation:: Citation.
+
+=== Examples
+
+==== International import
 
 --------------------------
-osgi> sctimport rf2_release -l 900000000000509007 -t FULL /opt/SnomedCT_Release_INT_20130131.zip
+osgi> sctimport rf2_release -t FULL /path/to/{international_import_archive} /path/to/snomed_ct_international.json
 --------------------------
+
+Where `snomed_ct_international.json` looks like:
+
+[source,json]
+----
+{
+  "name": "Systematized Nomenclature of Medicine Clinical Terms International Version",
+  "shortName": "SNOMEDCT",
+  "language": "ENG",
+  "codeSystemOID": "2.16.840.1.113883.6.96",
+  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
+  "maintainingOrganizationLink": "http://www.ihtsdo.org",
+  "releaseType": "INTERNATIONAL",
+  "citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care."
+}
+----
+
+==== Extension import
+
+An extension import based on the 2015-01-31 version of the international release:
+--------------------------
+osgi> sctimport rf2_release -t FULL -b 2015-01-31 -v /path/to/{extension_import_archive} /path/to/snomed_ct_extension.json
+--------------------------
+
+Where `snomed_ct_extension.json` looks like:
+
+[source,json]
+----
+{
+  "name": "SNOMED CT Special Extension",
+  "shortName": "SNOMEDCT-SE",
+  "language": "ENG",
+  "codeSystemOID": "2.16.840.1.113883.6.96.2",
+  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
+  "maintainingOrganizationLink": "http://www.snomed-special-extension.org",
+  "releaseType": "EXTENSION",
+  "citation": "Long citation about the details of SNOMED CT special extension"
+}
+----
+
+NOTE: While the import is running, feedback might be delayed on the OSGi console. Log output can be observed throughout the import session in the file `serviceability/logs/log.log`. The import may take several hours depending on your hardware and JVM configuration.
 
 == Single administrator operations
 
@@ -281,11 +322,11 @@ The user identifier will be used for associating commits to the terminology repo
 
 ==== "Hot" backups
 
-The example shell script `snowowl_hot_backup_mysql.sh` exercises all functionality mentioned above, and produces a .zip 
-archive containing database dumps and copies of index folders in the directory it is started from. Please update the variable 
-`SNOW_OWL_SERVER_HOME` so that it points to the installation folder of Snow Owl Server before running the script. 
+The example shell script `snowowl_hot_backup_mysql.sh` exercises all functionality mentioned above, and produces a .zip
+archive containing database dumps and copies of index folders in the directory it is started from. Please update the variable
+`SNOW_OWL_SERVER_HOME` so that it points to the installation folder of Snow Owl Server before running the script.
 
-The return value is 0 for successful backups, and 1 if an error occurs while backing up content from the server. The script 
+The return value is 0 for successful backups, and 1 if an error occurs while backing up content from the server. The script
 produces timestamped diagnostic output on its standard output; error messages are directed to the standard error output.
 
 To create backups regularly, add a dedicated non-login user for backups as root:
@@ -323,7 +364,7 @@ changed ownership of `/storage/backups/snowowl_full_backup_mysql.sh' to snowowl-
 mode of `/storage/backups/snowowl_full_backup_mysql.sh' changed to 0744 (rwxr--r--)
 --------------------------
 
-Add the script to the backup user's crontab (the example runs the script at 4 AM, and outputs log entries to logfiles 
+Add the script to the backup user's crontab (the example runs the script at 4 AM, and outputs log entries to logfiles
 with a year-month-date suffix in /var/log/snowowl-backup):
 
 --------------------------
@@ -337,19 +378,19 @@ with a year-month-date suffix in /var/log/snowowl-backup):
 0 4 * * * cd /storage/backups && ( ./snowowl_full_backup_mysql.sh >> /var/log/snowowl-backup/log-`date +\%Y\%m\%d` 2>&1 )
 --------------------------
 
-(If the standard error output is not redirected with the "2>&1" part of the command, errors will be captured by cron 
-and mailed to the snowowl-backup user's mailbox. The destination can be changed by uncommenting the MAILTO parameter 
+(If the standard error output is not redirected with the "2>&1" part of the command, errors will be captured by cron
+and mailed to the snowowl-backup user's mailbox. The destination can be changed by uncommenting the MAILTO parameter
 and setting it to a different address.)
 
 ==== "Cold" backups
 
-When the server is shut down, the above mentioned REST service for enumerating store content and getting exclusive 
+When the server is shut down, the above mentioned REST service for enumerating store content and getting exclusive
 write locks for the repositories is not available, so a separate script, `snowowl_cold_backup_mysql.sh` is being provided for this case.
 
 ==== Backing up and restoring data in the issue tracker
 
-A detailed list of steps are available at the Move Installation page of Mozilla Wiki (which describes moving the installation from 
-one machine to another, but can also be applied for backup and restore on the same server). The important parts to take note of 
+A detailed list of steps are available at the Move Installation page of Mozilla Wiki (which describes moving the installation from
+one machine to another, but can also be applied for backup and restore on the same server). The important parts to take note of
 are the commands used for dumping the SQL database:
 
 --------------------------
@@ -369,6 +410,5 @@ Applying the dump goes as follows:
 $ mysql -u (username) -p(password) bugs < /path/to/bugzilla-backup.sql
 --------------------------
 
-In addition to the contents of the database, the `data` directory and the `localconfig` file from Bugzilla's 
+In addition to the contents of the database, the `data` directory and the `localconfig` file from Bugzilla's
 installation directory should also be preserved.
-

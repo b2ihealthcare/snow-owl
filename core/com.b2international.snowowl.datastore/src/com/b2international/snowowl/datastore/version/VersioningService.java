@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.version;
 import static com.b2international.commons.status.Statuses.serializableOk;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CONFIGURE_VERSION;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
@@ -120,10 +119,17 @@ public class VersioningService implements IVersioningService {
 	
 	/**Creates a new versioning service for the given tooling feature.*/
 	public VersioningService(final String toolingId, final String... otherToolingIds) {
-		configuration = new PublishOperationConfiguration(
-				checkNotNull(toolingId, "toolingId"), 
-				checkNotNull(otherToolingIds, "otherToolingIds"));
+		configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
 		existingVersions = initExistingVersions(configuration.getToolingIds());
+		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
+		lockContexts = newHashMap();
+		lockTargets = newHashMap();
+		locked = new AtomicBoolean();
+	}
+	
+	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
+		this.configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
+		this.existingVersions = existingVersions;
 		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
 		lockContexts = newHashMap();
 		lockTargets = newHashMap();
@@ -132,7 +138,8 @@ public class VersioningService implements IVersioningService {
 
 	@Override
 	public Collection<ICodeSystemVersion> getExistingVersions(final String toolingId) {
-		return existingVersions.get(checkNotNull(toolingId, "toolingId"));
+		checkNotNull(toolingId, "toolingId");
+		return existingVersions.get(toolingId);
 	}
 
 	@Override
@@ -155,11 +162,22 @@ public class VersioningService implements IVersioningService {
 				}
 			}
 		}
-		
 		configuration.setVersionId(versionId);
 		return okStatus();
 	}
-
+	
+	@Override
+	public IStatus configureParentBranchPath(String parentBranchPath) {
+		configuration.setParentBranchPath(parentBranchPath);
+		return okStatus();
+	}
+	
+	@Override
+	public IStatus configureCodeSystemShortName(String codeSystemShortName) {
+		configuration.setCodeSystemShortName(codeSystemShortName);
+		return okStatus();
+	}
+	
 	@Override
 	public IStatus configureEffectiveTime(final Date effectiveTime) {
 		for (final String toolingId : getToolingIds()) {
@@ -180,6 +198,8 @@ public class VersioningService implements IVersioningService {
 
 	@Override
 	public IStatus tag() {
+		
+		//TODO: this check should be performed within the publishComponents() method
 		final Map<String, Boolean> performTagPerToolingFeatures = shouldPerformTag();
 		try {
 			publishComponents();
@@ -208,6 +228,7 @@ public class VersioningService implements IVersioningService {
 		}
 	}
 	
+	@Override
 	public void releaseLock() throws SnowowlServiceException {
 		try {
 			if (locked.get()) {
@@ -251,19 +272,6 @@ public class VersioningService implements IVersioningService {
 		return checkNotNull(getFirst(getToolingIds(), null), "No tooling ID was configured for the version process.");
 	}
 
-	private void checkCanCreateNewVersion(final String toolingId, final String versionId) throws VersioningException {
-		
-		checkNotNull(toolingId, "toolingId");
-		if (!hasVersions(toolingId)) {
-			if (!isContentExists(toolingId)) {
-				throw new NoContentException(getRepositoryUuid(toolingId));
-			}
-		} else {
-			checkForChanges(toolingId, getCurrentBranchPath(toolingId));
-		}		
-		
-	}
-
 	private IStatus validateEffectiveTimeForVersion(final String toolingId, final Date effectiveTime, final String versionId) {
 		
 		if (!CoreTerminologyBroker.getInstance().isEffectiveTimeSupported(toolingId)) {
@@ -271,11 +279,11 @@ public class VersioningService implements IVersioningService {
 		}
 		
 		
-		if (!hasVersions(toolingId)) {
+		if (CompareUtils.isEmpty(existingVersions.get(toolingId))) {
 			return new TimeValidator().validate(effectiveTime);
 		}
 		
-		if (isMainVersion(versionId) || BranchPathUtils.isMain(getCurrentBranchPath(toolingId))) {
+		if (IBranchPath.MAIN_BRANCH.equals(versionId) || BranchPathUtils.isMain(getCurrentBranchPath(toolingId))) {
 			return new TimeValidator(getMostRecentVersionEffectiveDateTime(toolingId)).validate(effectiveTime);
 		}
 		
@@ -297,28 +305,24 @@ public class VersioningService implements IVersioningService {
 		return allTagsWithHead;
 	}
 	
-	private boolean isContentExists(final String toolingId) {
-		return ContentAvailabilityInfoManager.INSTANCE.isAvailable(getRepositoryUuid(checkNotNull(toolingId, "toolingId")));
-	}
-	
-	private boolean isMainVersion(final String versionId) {
-		return IBranchPath.MAIN_BRANCH.equals(versionId);
-	}
-
-	private boolean hasVersions(final String toolingId) {
-		return !CompareUtils.isEmpty(existingVersions.get(toolingId));
-	}
-	
 	private void checkForChanges(final String toolingId, final IBranchPath branchPath) throws NoChangesException {
-		final String versionId = branchPath.lastSegment();
 		
-		final long lastModificationOnBranch = getLastModificationBranch(checkNotNull(toolingId, "toolingId"), versionId);
-		final long versionBranchCreationTime = getVersionBranchCreationTime(toolingId, isMainVersion(versionId) ? getPreviosVersionId(toolingId) : versionId);
+		checkNotNull(toolingId, "toolingId");
+		String branchPathName = branchPath.getPath();
+		
+		final long lastModificationOnBranch = getLastModificationBranch(toolingId, branchPath);
+		
+		if (IBranchPath.MAIN_BRANCH.equals(branchPathName)) {
+			branchPathName = IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + getAllVersionsWithHead(toolingId).get(1).getVersionId();
+		} 
+		
+		final long versionBranchCreationTime = getVersionBranchCreationTime(toolingId,  branchPathName);
+		
 		if (lastModificationOnBranch <= versionBranchCreationTime) {
 			throw new NoChangesException(getRepositoryUuid(toolingId));
 		}
 		
-		final ICodeSystemVersion version = null == versionId ? getVersion(toolingId, getCurrentBranchPath(toolingId).lastSegment()) : getVersion(toolingId, versionId);
+		final ICodeSystemVersion version = getVersion(toolingId, branchPath.lastSegment());
 		if (null == version) {
 			return;
 		}
@@ -328,33 +332,25 @@ public class VersioningService implements IVersioningService {
 		}
 	}
 
-	private long getVersionBranchCreationTime(final String toolingId, final String versionId) {
-		return getBranchForVersion(toolingId, versionId).getBase().getTimeStamp();
-	}
-	
-	private String getPreviosVersionId(final String toolingId) {
-		return getAllVersionsWithHead(toolingId).get(1).getVersionId();
-	}
-	
-	private CDOBranch getBranchForVersion(final String toolingId, final String versionId) {
-		if (isMainVersion(versionId)) {
-			return getMainBranch(toolingId);
+	private long getVersionBranchCreationTime(final String toolingId, final String versionPath) {
+		
+		CDOBranch branch = null;
+		
+		ICDOConnection cdoConnection = getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid(toolingId));
+		
+		if (IBranchPath.MAIN_BRANCH.equals(versionPath)) {
+			branch = cdoConnection.getMainBranch();
+		} else {
+			final IBranchPath versionBranchPath = BranchPathUtils.createPath(versionPath);
+			branch = cdoConnection.getBranch(versionBranchPath);
+			Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath + "' does not exist in '" + getRepositoryUuid(toolingId) + "'.");
 		}
-		final IBranchPath versionBranchPath = createVersionPath(versionId);
-		final CDOBranch branch = getConnection(toolingId).getBranch(versionBranchPath);
-		return Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath + "' does not exist in '" + getRepositoryUuid(toolingId) + "'.");
+		
+		return branch.getBase().getTimeStamp();
 	}
-
-
-	private CDOBranch getMainBranch(final String toolingId) {
-		return getConnection(toolingId).getMainBranch();
-	}
-
-	private ICDOConnection getConnection(final String toolingId) {
-		return getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid(toolingId));
-	}
-
-	@Nullable private ICodeSystemVersion getVersion(final String toolingId, final String versionId) {
+	
+	@Nullable 
+	private ICodeSystemVersion getVersion(final String toolingId, final String versionId) {
 		final ICodeSystemVersion version = uniqueIndex(getAllVersionsWithHead(toolingId), new Function<ICodeSystemVersion, String>() {
 			public String apply(final ICodeSystemVersion version) {
 				return checkNotNull(version, "version").getVersionId();
@@ -369,9 +365,14 @@ public class VersioningService implements IVersioningService {
 		return get(versions, 0).getEffectiveDate();
 	}
 	
-	private long getLastModificationBranch(final String toolingId, @Nullable final String versionId) {
-		final String repositoryUuid = getRepositoryUuid(checkNotNull(toolingId, "toolingId"));
-		return getServiceForClass(ICDOBranchActionManager.class).getLastCommitTime(repositoryUuid, null == versionId ? getCurrentBranchPath(toolingId) : createVersionPath(versionId));
+	private long getLastModificationBranch(final String toolingId, @Nullable final IBranchPath branchPath) {
+		
+		checkNotNull(toolingId, "toolingId");
+		checkNotNull(branchPath, "branchPath");
+		
+		final String repositoryUuid = getRepositoryUuid(toolingId);
+		ICDOBranchActionManager branchActionManager = getServiceForClass(ICDOBranchActionManager.class);
+		return branchActionManager.getLastCommitTime(repositoryUuid, branchPath);
 	}
 	
 	private HashMap<String, Collection<ICodeSystemVersion>> initExistingVersions(final Iterable<String> toolingIds) {
@@ -398,7 +399,6 @@ public class VersioningService implements IVersioningService {
 				}
 			}));
 		}
-		
 		return unmodifiableMap(currentVersionSuppliers);
 	}
 
@@ -425,6 +425,9 @@ public class VersioningService implements IVersioningService {
 		}
 	}
 	
+	/*
+	 * Checks if the version id for the requested repositories (identified by their tooling id) exists or not.
+	 */
 	private Map<String, Boolean> shouldPerformTag() {
 		final Map<String, Boolean> shouldPerformTagPerToolingFeature = newHashMap(); 
 		for (final String toolingId : getToolingIds()) {
@@ -449,7 +452,17 @@ public class VersioningService implements IVersioningService {
 	}
 
 	private IStatus tryCheckCanCreateNewVersion() throws VersioningException {
-		checkCanCreateNewVersion(getPrimaryToolingId(), getVersionId());
+		String toolingId = getPrimaryToolingId();
+		
+		checkNotNull(toolingId, "toolingId");
+		if (CompareUtils.isEmpty(existingVersions.get(toolingId))) {
+			
+			if (!ContentAvailabilityInfoManager.INSTANCE.isAvailable(getRepositoryUuid(toolingId))) {
+				throw new NoContentException(getRepositoryUuid(toolingId));
+			}
+		} else {
+			checkForChanges(toolingId, getCurrentBranchPath(toolingId));
+		}	
 		return okStatus();
 	}
 
@@ -462,8 +475,10 @@ public class VersioningService implements IVersioningService {
 		return checkNotNull(versionIdSupplier, "Current version ID supplier does not exist for: " + toolingId).get().getVersionId();
 	}
 	
+	//TODO: This is the only access to versioning from the REST API
 	private IBranchPath getCurrentBranchPath(final String toolingId) {
-		return createVersionPath(getCurrentVersionId(checkNotNull(toolingId, "toolingId")));
+		checkNotNull(toolingId, "toolingId");
+		return BranchPathUtils.createPath(getCurrentVersionId(toolingId));
 	}
 
 	private void tryReleaseLock() throws OperationLockException {
@@ -575,5 +590,6 @@ public class VersioningService implements IVersioningService {
 	private String getToolingName(final String toolingId) {
 		return CoreTerminologyBroker.getInstance().getTerminologyInformation(checkNotNull(toolingId, "toolingId")).getName();
 	}
+	
 	
 }

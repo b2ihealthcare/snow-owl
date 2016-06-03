@@ -30,11 +30,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSe
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.InactivatableImpl#getInactivationIndicatorRefSetMembers <em>Inactivation Indicator Ref Set Members</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.InactivatableImpl#getAssociationRefSetMembers <em>Association Ref Set Members</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

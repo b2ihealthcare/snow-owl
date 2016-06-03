@@ -29,13 +29,14 @@ import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseIndexMappingStrategy;
+import com.b2international.snowowl.snomed.datastore.index.SnomedVersionIndexMappingStrategy;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemIndexMappingStrategy;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
 
 /**
  * CDO change processor for SNOMED CT import process. Does nothing but maps business 
@@ -82,14 +83,14 @@ public class SnomedImportCDOChangeProcessor implements ICDOChangeProcessor {
 				indexService.registerMember(String.valueOf(newObject.eGet(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_Uuid())), newObject.cdoID());
 				
 			//code system goes to the 'real' index 
-			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(eClass)) {
+			} else if (SnomedPackage.eINSTANCE.getSnomedRelease().isSuperTypeOf(eClass)) {
 				final SnomedIndexServerService mainIndexService = (SnomedIndexServerService) getServiceForClass(SnomedIndexService.class);
-				mainIndexService.index(branchPath, new CodeSystemIndexMappingStrategy((CodeSystem) newObject));
+				mainIndexService.index(branchPath, new SnomedReleaseIndexMappingStrategy((SnomedRelease) newObject));
 				
 			//new version as well
-			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(eClass)) {
+			} else if (SnomedPackage.eINSTANCE.getSnomedVersion().isSuperTypeOf(eClass)) {
 				final SnomedIndexServerService mainIndexService = (SnomedIndexServerService) getServiceForClass(SnomedIndexService.class);
-				mainIndexService.index(branchPath, new CodeSystemVersionIndexMappingStrategy((CodeSystemVersion) newObject));
+				mainIndexService.index(branchPath, new SnomedVersionIndexMappingStrategy((SnomedVersion) newObject));
 				
 			}
 			

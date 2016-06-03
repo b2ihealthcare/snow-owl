@@ -22,42 +22,41 @@ import org.eclipse.osgi.framework.console.CommandInterpreter;
 
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 
 public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 
-	private ImportUtil importUtil;
-
 	public ImportRefSetCommand() {
-		super("rf2_refset", "<path> ... -t <type> [-x <excludedId> ...]", "Imports reference sets in RF2 format", new String[] {
-				"<path> ...\t\tSpecifies the file or files to be used for importing.",
-				"-t <type>\t\tSets the import type (FULL, SNAPSHOT, or DELTA).",
-				"-x <excludedId> ...\tExcludes the specified reference set IDs from the import. All other reference sets will be imported."
-		});
-		
-		importUtil = new ImportUtil();
+		super(
+				"rf2_refset",
+				"<path> ... -t <type> [-x <excludedId> ...]",
+				"Imports reference sets in RF2 format",
+				new String[] {
+					"<path> ...\t\tSpecifies the file or files to be used for importing.",
+					"-t <type>\t\tSets the import type (FULL, SNAPSHOT, or DELTA).",
+					"-x <excludedId> ...\tExcludes the specified reference set IDs from the import. All other reference sets will be imported."
+				});
 	}
 	
 	@Override
 	public void execute(final CommandInterpreter interpreter) {
 		
-		final SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
+		// TODO should make this command branch path aware as well
+		boolean isTerminologyAvailable = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).isTerminologyAvailable(BranchPathUtils.createMainPath());
 		
-		if (terminologyBrowser == null) {
-			interpreter.println("No terminology browser is present; a core release has to be imported first.");
+		if (!isTerminologyAvailable) {
+			interpreter.println("SNOMED CT terminology is not present, a core release has to be imported first.");
 			return;
 		}
 		
 		final ImportConfiguration configuration = new ImportConfiguration();
-		final ILanguageConfigurationProvider languageConfigurationProvider = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class);
-		configuration.setLanguageRefSetId(languageConfigurationProvider.getLanguageConfiguration().getLanguageRefSetId());
 		
 		String arg = null;
 		
@@ -135,7 +134,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 			}
 			
 			final String userId = authenticator.getUsername();
-			importUtil.doImport(userId, configuration, new ConsoleProgressMonitor());
+			new ImportUtil().doImport(userId, configuration, new ConsoleProgressMonitor());
 			
 		} catch (final ImportException e) {
 			interpreter.println("Caught exception during import.");

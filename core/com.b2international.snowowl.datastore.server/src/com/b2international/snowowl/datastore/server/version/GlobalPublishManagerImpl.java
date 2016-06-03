@@ -16,15 +16,12 @@
 package com.b2international.snowowl.datastore.server.version;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator.create;
 import static com.b2international.snowowl.datastore.oplock.IOperationLockManager.IMMEDIATE;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CREATE_VERSION;
 import static com.b2international.snowowl.datastore.version.TagConfigurationBuilder.createForToolingId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.getFirst;
 import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Iterables.size;
@@ -38,7 +35,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,14 +44,13 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.slf4j.Logger;
 
-import com.b2international.commons.collections.Procedure;
-import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.CodeSystemService;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
@@ -72,10 +67,14 @@ import com.b2international.snowowl.datastore.version.IPublishOperationConfigurat
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
 import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.datastore.version.IVersioningManager;
-import com.b2international.snowowl.datastore.version.VersionCollector;
 import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequestBuilder;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -99,7 +98,6 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 		
 		final AbstractRemoteJob job = new AbstractRemoteJob(buildTaskName(configuration)) {
 			protected IStatus runWithListenableMonitor(final IProgressMonitor monitor) {
-
 				ConfigurationThreadLocal.setConfiguration(configuration);
 				final DatastoreLockContext lockContext = createLockContext(configuration.getUserId());
 				final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets = createLockTargets(configuration);
@@ -107,9 +105,11 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 				acquireLocks(lockContext, lockTargets);
 				
 				try ( final ICDOTransactionAggregator aggregator = create(Lists.<CDOTransaction>newArrayList()); ) {
-			
 					final IProgressMonitor subMonitor = convert(monitor, TASK_WORK_STEP * size(configuration) + 1);
-					final Map<String, Boolean> performTagPerToolingFeatures = getTagPreferences();
+					
+					final Map<String, Collection<ICodeSystemVersion>> existingVersions = getExistingVersions();
+					final Map<String, Boolean> performTagPerToolingFeatures = getTagPreferences(existingVersions);
+					
 					subMonitor.worked(1);
 					
 					// create version managers
@@ -121,7 +121,7 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					});
 					
 					doPublish(aggregator, versioningManagers, subMonitor);
-					doCommitChanges(aggregator, subMonitor);
+					doCommitChanges(aggregator, subMonitor, existingVersions);
 					doTag(performTagPerToolingFeatures, subMonitor);
 					postCommit(aggregator, versioningManagers, monitor);
 					
@@ -187,11 +187,8 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					sb.append(",");
 				}
 			}
-			
 		}
-		
 		sb.append(".");
-		
 		return sb.toString();
 	}
 	
@@ -207,7 +204,9 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	}
 	
 	private SingleRepositoryAndBranchLockTarget createLockTarget(final String toolingId) {
-		return createLockTarget(checkNotNull(toolingId, "toolingId"), createMainPath());
+		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
+		final String branchPath = configuration.getParentBranchPath();
+		return createLockTarget(checkNotNull(toolingId, "toolingId"), BranchPathUtils.createPath(branchPath));
 	}
 	
 	private SingleRepositoryAndBranchLockTarget createLockTarget(final String toolingId, final IBranchPath branchPath) {
@@ -224,11 +223,12 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 		return getServiceForClass(IDatastoreOperationLockManager.class);
 	}
 	
-	/**Commits the change set based on the transaction aggregator content.*/
-	private void doCommitChanges(final ICDOTransactionAggregator aggregator, final IProgressMonitor monitor) throws SnowowlServiceException {
+	/**Commits the change set based on the transaction aggregator content. */
+	private void doCommitChanges(final ICDOTransactionAggregator aggregator, final IProgressMonitor monitor,
+			final Map<String, Collection<ICodeSystemVersion>> existingVersions) throws SnowowlServiceException {
 		try {
 			LOGGER.info("Persisting changes...");
-			new CDOServerCommitBuilder(ConfigurationThreadLocal.getConfiguration().getUserId(), getCommitComment(), aggregator)
+			new CDOServerCommitBuilder(ConfigurationThreadLocal.getConfiguration().getUserId(), getCommitComment(existingVersions), aggregator)
 				.parentContextDescription(CREATE_VERSION)
 				.commit();
 			LOGGER.info("Changes have been successfully persisted.");
@@ -241,15 +241,26 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 		}
 	}
 	
-	/**Returns with the commit comment for the version operation.*/
-	private String getCommitComment() {
+	/**Returns with the commit comment for the version operation. */
+	private String getCommitComment(final Map<String, Collection<ICodeSystemVersion>> existingVersions) {
 		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
-		final String primaryToolingId = checkNotNull(getFirst(configuration.getToolingIds(), null), 
+		final String primaryToolingId = checkNotNull(getFirst(configuration.getToolingIds(), null),
 				"No tooling ID were available for the publication process.");
+		
 		final Date effectiveTime = configuration.getEffectiveTime();
 		final String versionId = configuration.getVersionId();
 		final String toolingName = getToolingName(primaryToolingId);
-		if (isVersionAlreadyExists(primaryToolingId)) {
+		
+		final Optional<ICodeSystemVersion> optional = FluentIterable
+				.from(existingVersions.get(primaryToolingId))
+				.firstMatch(new Predicate<ICodeSystemVersion>() {
+					@Override
+					public boolean apply(ICodeSystemVersion input) {
+						return input.getVersionId().equals(versionId);
+					}
+				});
+		
+		if (optional.isPresent()) {
 			return format(ADJUST_EFFECTIVE_TIME_COMMIT_COMMENT_TEMPLATE, EffectiveTimes.format(effectiveTime), toolingName, versionId);
 		} else {
 			return format(NEW_VERSION_COMMIT_COMMENT_TEMPLATE, versionId, toolingName);
@@ -260,9 +271,10 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	private void doTag(final Map<String, Boolean> performTagPerToolingFeatures, final IProgressMonitor monitor) {
 		final IPublishOperationConfiguration publishConfiguration = ConfigurationThreadLocal.getConfiguration();
 		final Collection<String> toolingIds = publishConfiguration.getToolingIds();
+		final ITagService tagService = getServiceForClass(ITagService.class);
+
 		for (final String toolingId : toolingIds) {
 			if (performTagPerToolingFeatures.get(toolingId)) {
-				final ITagService tagService = getServiceForClass(ITagService.class);
 				final ITagConfiguration tagConfiguration = createTagConfiguration(toolingId);
 				tagService.tag(tagConfiguration);
 				monitor.worked(1);
@@ -284,25 +296,47 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	}
 	
 	private ITagConfiguration createTagConfiguration(final String toolingId) {
+		checkNotNull(toolingId, "toolingId");
+		
 		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
-		return createForToolingId(checkNotNull(toolingId, "toolingId"), configuration.getVersionId())
-				.setUserId(configuration.getUserId()).build();
+		final String branchPath = configuration.getParentBranchPath();
+		
+		return createForToolingId(toolingId, configuration.getVersionId())
+				.setUserId(configuration.getUserId())
+				.setBranchPath(BranchPathUtils.createPath(branchPath))
+				.build();
 	}
 	
-	private HashMap<String, Collection<ICodeSystemVersion>> getExistingVersions(final Iterable<String> toolingIds) {
-		final Map<String , Collection<ICodeSystemVersion>> versions = Maps.newConcurrentMap();
-		ConcurrentCollectionUtils.forEach(toolingIds, new Procedure<String>() {
-			protected void doApply(final String toolingId) {
-				versions.put(toolingId, new VersionCollector(toolingId).getVersions());
+	private Map<String, Collection<ICodeSystemVersion>> getExistingVersions() {
+		final Map<String, Collection<ICodeSystemVersion>> existingVersions = Maps.newHashMap();
+		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
+		
+		for (final String toolingId : configuration.getToolingIds()) {
+			final String shortName = ConfigurationThreadLocal.getConfiguration().getCodeSystemShortName();
+			final String repositoryUuid = CodeSystemUtils.getRepositoryUuid(toolingId);
+			
+			final CodeSystemVersionSearchRequestBuilder requestBuilder = new CodeSystemRequests(repositoryUuid)
+					.prepareSearchCodeSystemVersion();
+			
+			if (toolingId.equals(configuration.getPrimaryToolingId())) {
+				requestBuilder.setCodeSystemShortName(shortName);
 			}
-		});
-		return newHashMap(versions);
+			
+			final List<ICodeSystemVersion> versions = requestBuilder
+					.build(IBranchPath.MAIN_BRANCH)
+					.executeSync(getEventBus())
+					.getItems();
+			
+			existingVersions.put(toolingId, versions);
+		}
+		
+		return existingVersions;
 	}
 	
-	private Map<String, Boolean> getTagPreferences() {
+	private Map<String, Boolean> getTagPreferences(final Map<String, Collection<ICodeSystemVersion>> existingVersions) {
 		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
-		final Map<String, Collection<ICodeSystemVersion>> existingVersions = getExistingVersions(configuration.getToolingIds());
-		final Map<String, Boolean> shouldPerformTagPerToolingFeature = newHashMap(); 
+		final Map<String, Boolean> shouldPerformTagPerToolingFeature = newHashMap();
+		
 		for (final String toolingId : configuration.getToolingIds()) {
 			shouldPerformTagPerToolingFeature.put(toolingId, !tryFind(existingVersions.get(toolingId), new Predicate<ICodeSystemVersion>() {
 				@Override public boolean apply(final ICodeSystemVersion version) {
@@ -310,21 +344,13 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 				}
 			}).isPresent());
 		}
+		
 		return shouldPerformTagPerToolingFeature;
 	}
 	
-	private boolean isVersionAlreadyExists(final String toolingId) {
-		final String versionId = ConfigurationThreadLocal.getConfiguration().getVersionId();
-		final String repositoryUuid = CodeSystemUtils.getRepositoryUuid(toolingId);
-		final CodeSystemService codeSystemService = getServiceForClass(CodeSystemService.class);
-		final Collection<ICodeSystemVersion> allTags = codeSystemService.getAllTagsDecorateWithPatched(repositoryUuid);
-		final ICodeSystemVersion existingVersion = find(allTags, new Predicate<ICodeSystemVersion>() {
-			public boolean apply(final ICodeSystemVersion version) {
-				return nullToEmpty(checkNotNull(version, "version").getVersionId()).equals(versionId);
-			}
-		}, null);
-		return null != existingVersion;
-	};
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
 
 	private String getToolingName(final String toolingId) {
 		return CoreTerminologyBroker.getInstance().getTerminologyName(toolingId);

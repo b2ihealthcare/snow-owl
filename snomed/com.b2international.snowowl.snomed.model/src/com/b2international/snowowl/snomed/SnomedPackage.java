@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 
@@ -635,209 +636,6 @@ public interface SnomedPackage extends EPackage {
 
 
 	/**
-	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.CodeSystemVersionGroupImpl <em>Code System Version Group</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see com.b2international.snowowl.snomed.impl.CodeSystemVersionGroupImpl
-	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getCodeSystemVersionGroup()
-	 * @generated
-	 */
-	int CODE_SYSTEM_VERSION_GROUP = 6;
-
-	/**
-	 * The feature id for the '<em><b>Repository Uuid</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP__REPOSITORY_UUID = TerminologymetadataPackage.CODE_SYSTEM_VERSION_GROUP__REPOSITORY_UUID;
-
-	/**
-	 * The feature id for the '<em><b>Code Systems</b></em>' containment reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEMS = TerminologymetadataPackage.CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEMS;
-
-	/**
-	 * The feature id for the '<em><b>Code System Versions</b></em>' containment reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEM_VERSIONS = TerminologymetadataPackage.CODE_SYSTEM_VERSION_GROUP__CODE_SYSTEM_VERSIONS;
-
-	/**
-	 * The number of structural features of the '<em>Code System Version Group</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_GROUP_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_VERSION_GROUP_FEATURE_COUNT + 0;
-
-
-	/**
-	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.CodeSystemVersionImpl <em>Code System Version</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see com.b2international.snowowl.snomed.impl.CodeSystemVersionImpl
-	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getCodeSystemVersion()
-	 * @generated
-	 */
-	int CODE_SYSTEM_VERSION = 7;
-
-	/**
-	 * The feature id for the '<em><b>Version Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION__VERSION_ID = TerminologymetadataPackage.CODE_SYSTEM_VERSION__VERSION_ID;
-
-	/**
-	 * The feature id for the '<em><b>Description</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION__DESCRIPTION = TerminologymetadataPackage.CODE_SYSTEM_VERSION__DESCRIPTION;
-
-	/**
-	 * The feature id for the '<em><b>Effective Date</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION__EFFECTIVE_DATE = TerminologymetadataPackage.CODE_SYSTEM_VERSION__EFFECTIVE_DATE;
-
-	/**
-	 * The feature id for the '<em><b>Import Date</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION__IMPORT_DATE = TerminologymetadataPackage.CODE_SYSTEM_VERSION__IMPORT_DATE;
-
-	/**
-	 * The feature id for the '<em><b>Last Update Date</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION__LAST_UPDATE_DATE = TerminologymetadataPackage.CODE_SYSTEM_VERSION__LAST_UPDATE_DATE;
-
-	/**
-	 * The number of structural features of the '<em>Code System Version</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_VERSION_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_VERSION_FEATURE_COUNT + 0;
-
-	/**
-	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.CodeSystemImpl <em>Code System</em>}' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see com.b2international.snowowl.snomed.impl.CodeSystemImpl
-	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getCodeSystem()
-	 * @generated
-	 */
-	int CODE_SYSTEM = 8;
-
-	/**
-	 * The feature id for the '<em><b>Short Name</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__SHORT_NAME = TerminologymetadataPackage.CODE_SYSTEM__SHORT_NAME;
-
-	/**
-	 * The feature id for the '<em><b>Code System OID</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__CODE_SYSTEM_OID = TerminologymetadataPackage.CODE_SYSTEM__CODE_SYSTEM_OID;
-
-	/**
-	 * The feature id for the '<em><b>Name</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__NAME = TerminologymetadataPackage.CODE_SYSTEM__NAME;
-
-	/**
-	 * The feature id for the '<em><b>Maintaining Organization Link</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__MAINTAINING_ORGANIZATION_LINK = TerminologymetadataPackage.CODE_SYSTEM__MAINTAINING_ORGANIZATION_LINK;
-
-	/**
-	 * The feature id for the '<em><b>Language</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__LANGUAGE = TerminologymetadataPackage.CODE_SYSTEM__LANGUAGE;
-
-	/**
-	 * The feature id for the '<em><b>Citation</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__CITATION = TerminologymetadataPackage.CODE_SYSTEM__CITATION;
-
-	/**
-	 * The feature id for the '<em><b>Icon Path</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__ICON_PATH = TerminologymetadataPackage.CODE_SYSTEM__ICON_PATH;
-
-	/**
-	 * The feature id for the '<em><b>Terminology Component Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM__TERMINOLOGY_COMPONENT_ID = TerminologymetadataPackage.CODE_SYSTEM__TERMINOLOGY_COMPONENT_ID;
-
-	/**
-	 * The number of structural features of the '<em>Code System</em>' class.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CODE_SYSTEM_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 0;
-
-
-	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.ConceptsImpl <em>Concepts</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -845,7 +643,7 @@ public interface SnomedPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getConcepts()
 	 * @generated
 	 */
-	int CONCEPTS = 9;
+	int CONCEPTS = 6;
 
 	/**
 	 * The feature id for the '<em><b>Concepts</b></em>' containment reference list.
@@ -864,6 +662,236 @@ public interface SnomedPackage extends EPackage {
 	 * @ordered
 	 */
 	int CONCEPTS_FEATURE_COUNT = 1;
+
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.SnomedReleaseImpl <em>Release</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.impl.SnomedReleaseImpl
+	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedRelease()
+	 * @generated
+	 */
+	int SNOMED_RELEASE = 7;
+
+	/**
+	 * The feature id for the '<em><b>Short Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__SHORT_NAME = TerminologymetadataPackage.CODE_SYSTEM__SHORT_NAME;
+
+	/**
+	 * The feature id for the '<em><b>Code System OID</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__CODE_SYSTEM_OID = TerminologymetadataPackage.CODE_SYSTEM__CODE_SYSTEM_OID;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__NAME = TerminologymetadataPackage.CODE_SYSTEM__NAME;
+
+	/**
+	 * The feature id for the '<em><b>Maintaining Organization Link</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__MAINTAINING_ORGANIZATION_LINK = TerminologymetadataPackage.CODE_SYSTEM__MAINTAINING_ORGANIZATION_LINK;
+
+	/**
+	 * The feature id for the '<em><b>Language</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__LANGUAGE = TerminologymetadataPackage.CODE_SYSTEM__LANGUAGE;
+
+	/**
+	 * The feature id for the '<em><b>Citation</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__CITATION = TerminologymetadataPackage.CODE_SYSTEM__CITATION;
+
+	/**
+	 * The feature id for the '<em><b>Icon Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__ICON_PATH = TerminologymetadataPackage.CODE_SYSTEM__ICON_PATH;
+
+	/**
+	 * The feature id for the '<em><b>Terminology Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__TERMINOLOGY_COMPONENT_ID = TerminologymetadataPackage.CODE_SYSTEM__TERMINOLOGY_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Repository Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__REPOSITORY_UUID = TerminologymetadataPackage.CODE_SYSTEM__REPOSITORY_UUID;
+
+	/**
+	 * The feature id for the '<em><b>Code System Versions</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__CODE_SYSTEM_VERSIONS = TerminologymetadataPackage.CODE_SYSTEM__CODE_SYSTEM_VERSIONS;
+
+	/**
+	 * The feature id for the '<em><b>Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__BRANCH_PATH = TerminologymetadataPackage.CODE_SYSTEM__BRANCH_PATH;
+
+	/**
+	 * The feature id for the '<em><b>Base Code System OID</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__BASE_CODE_SYSTEM_OID = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Release Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE__RELEASE_TYPE = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 1;
+
+	/**
+	 * The number of structural features of the '<em>Release</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_RELEASE_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_FEATURE_COUNT + 2;
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.impl.SnomedVersionImpl <em>Version</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.impl.SnomedVersionImpl
+	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedVersion()
+	 * @generated
+	 */
+	int SNOMED_VERSION = 8;
+
+	/**
+	 * The feature id for the '<em><b>Version Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION__VERSION_ID = TerminologymetadataPackage.CODE_SYSTEM_VERSION__VERSION_ID;
+
+	/**
+	 * The feature id for the '<em><b>Description</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION__DESCRIPTION = TerminologymetadataPackage.CODE_SYSTEM_VERSION__DESCRIPTION;
+
+	/**
+	 * The feature id for the '<em><b>Parent Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION__PARENT_BRANCH_PATH = TerminologymetadataPackage.CODE_SYSTEM_VERSION__PARENT_BRANCH_PATH;
+
+	/**
+	 * The feature id for the '<em><b>Effective Date</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION__EFFECTIVE_DATE = TerminologymetadataPackage.CODE_SYSTEM_VERSION__EFFECTIVE_DATE;
+
+	/**
+	 * The feature id for the '<em><b>Import Date</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION__IMPORT_DATE = TerminologymetadataPackage.CODE_SYSTEM_VERSION__IMPORT_DATE;
+
+	/**
+	 * The feature id for the '<em><b>Last Update Date</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION__LAST_UPDATE_DATE = TerminologymetadataPackage.CODE_SYSTEM_VERSION__LAST_UPDATE_DATE;
+
+	/**
+	 * The feature id for the '<em><b>Modules</b></em>' attribute list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION__MODULES = TerminologymetadataPackage.CODE_SYSTEM_VERSION_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Version</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_VERSION_FEATURE_COUNT = TerminologymetadataPackage.CODE_SYSTEM_VERSION_FEATURE_COUNT + 1;
+
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.SnomedReleaseType <em>Release Type</em>}' enum.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+	 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedReleaseType()
+	 * @generated
+	 */
+	int SNOMED_RELEASE_TYPE = 9;
 
 
 	/**
@@ -1246,36 +1274,6 @@ public interface SnomedPackage extends EPackage {
 	EReference getRelationship_RefinabilityRefSetMembers();
 
 	/**
-	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.CodeSystemVersionGroup <em>Code System Version Group</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Code System Version Group</em>'.
-	 * @see com.b2international.snowowl.snomed.CodeSystemVersionGroup
-	 * @generated
-	 */
-	EClass getCodeSystemVersionGroup();
-
-	/**
-	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.CodeSystemVersion <em>Code System Version</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Code System Version</em>'.
-	 * @see com.b2international.snowowl.snomed.CodeSystemVersion
-	 * @generated
-	 */
-	EClass getCodeSystemVersion();
-
-	/**
-	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.CodeSystem <em>Code System</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Code System</em>'.
-	 * @see com.b2international.snowowl.snomed.CodeSystem
-	 * @generated
-	 */
-	EClass getCodeSystem();
-
-	/**
 	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.Concepts <em>Concepts</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1295,6 +1293,69 @@ public interface SnomedPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getConcepts_Concepts();
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.SnomedRelease <em>Release</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Release</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedRelease
+	 * @generated
+	 */
+	EClass getSnomedRelease();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.SnomedRelease#getBaseCodeSystemOID <em>Base Code System OID</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Base Code System OID</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedRelease#getBaseCodeSystemOID()
+	 * @see #getSnomedRelease()
+	 * @generated
+	 */
+	EAttribute getSnomedRelease_BaseCodeSystemOID();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.SnomedRelease#getReleaseType <em>Release Type</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Release Type</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedRelease#getReleaseType()
+	 * @see #getSnomedRelease()
+	 * @generated
+	 */
+	EAttribute getSnomedRelease_ReleaseType();
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.SnomedVersion <em>Version</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Version</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedVersion
+	 * @generated
+	 */
+	EClass getSnomedVersion();
+
+	/**
+	 * Returns the meta object for the attribute list '{@link com.b2international.snowowl.snomed.SnomedVersion#getModules <em>Modules</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute list '<em>Modules</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedVersion#getModules()
+	 * @see #getSnomedVersion()
+	 * @generated
+	 */
+	EAttribute getSnomedVersion_Modules();
+
+	/**
+	 * Returns the meta object for enum '{@link com.b2international.snowowl.snomed.SnomedReleaseType <em>Release Type</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for enum '<em>Release Type</em>'.
+	 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+	 * @generated
+	 */
+	EEnum getSnomedReleaseType();
 
 	/**
 	 * Returns the factory that creates the instances of the model.
@@ -1611,36 +1672,6 @@ public interface SnomedPackage extends EPackage {
 		EReference RELATIONSHIP__REFINABILITY_REF_SET_MEMBERS = eINSTANCE.getRelationship_RefinabilityRefSetMembers();
 
 		/**
-		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.impl.CodeSystemVersionGroupImpl <em>Code System Version Group</em>}' class.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see com.b2international.snowowl.snomed.impl.CodeSystemVersionGroupImpl
-		 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getCodeSystemVersionGroup()
-		 * @generated
-		 */
-		EClass CODE_SYSTEM_VERSION_GROUP = eINSTANCE.getCodeSystemVersionGroup();
-
-		/**
-		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.impl.CodeSystemVersionImpl <em>Code System Version</em>}' class.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see com.b2international.snowowl.snomed.impl.CodeSystemVersionImpl
-		 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getCodeSystemVersion()
-		 * @generated
-		 */
-		EClass CODE_SYSTEM_VERSION = eINSTANCE.getCodeSystemVersion();
-
-		/**
-		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.impl.CodeSystemImpl <em>Code System</em>}' class.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see com.b2international.snowowl.snomed.impl.CodeSystemImpl
-		 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getCodeSystem()
-		 * @generated
-		 */
-		EClass CODE_SYSTEM = eINSTANCE.getCodeSystem();
-
-		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.impl.ConceptsImpl <em>Concepts</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -1657,6 +1688,60 @@ public interface SnomedPackage extends EPackage {
 		 * @generated
 		 */
 		EReference CONCEPTS__CONCEPTS = eINSTANCE.getConcepts_Concepts();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.impl.SnomedReleaseImpl <em>Release</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.impl.SnomedReleaseImpl
+		 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedRelease()
+		 * @generated
+		 */
+		EClass SNOMED_RELEASE = eINSTANCE.getSnomedRelease();
+
+		/**
+		 * The meta object literal for the '<em><b>Base Code System OID</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_RELEASE__BASE_CODE_SYSTEM_OID = eINSTANCE.getSnomedRelease_BaseCodeSystemOID();
+
+		/**
+		 * The meta object literal for the '<em><b>Release Type</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_RELEASE__RELEASE_TYPE = eINSTANCE.getSnomedRelease_ReleaseType();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.impl.SnomedVersionImpl <em>Version</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.impl.SnomedVersionImpl
+		 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedVersion()
+		 * @generated
+		 */
+		EClass SNOMED_VERSION = eINSTANCE.getSnomedVersion();
+
+		/**
+		 * The meta object literal for the '<em><b>Modules</b></em>' attribute list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_VERSION__MODULES = eINSTANCE.getSnomedVersion_Modules();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.SnomedReleaseType <em>Release Type</em>}' enum.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.SnomedReleaseType
+		 * @see com.b2international.snowowl.snomed.impl.SnomedPackageImpl#getSnomedReleaseType()
+		 * @generated
+		 */
+		EEnum SNOMED_RELEASE_TYPE = eINSTANCE.getSnomedReleaseType();
 
 	}
 

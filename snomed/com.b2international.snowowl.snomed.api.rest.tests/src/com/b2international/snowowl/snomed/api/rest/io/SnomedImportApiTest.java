@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.collect.ImmutableMap;
@@ -33,12 +32,6 @@ import com.jayway.restassured.response.ValidatableResponse;
  * @since 2.0
  */
 public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
-
-	private void assertImportConfigurationCreationFails(final Map<?, ?> importConfiguration) {
-		whenCreatingImportConfiguration(importConfiguration)
-		.then().assertThat().statusCode(400)
-		.and().body("status", equalTo(400));
-	}
 
 	private ValidatableResponse assertImportConfigurationStatus(final String importId, final int expectedStatus) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
@@ -50,7 +43,6 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("branchPath", "MAIN")
-				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", false)
 				.build();
 
@@ -76,16 +68,15 @@ public class SnomedImportApiTest extends AbstractSnomedImportApiTest {
 	}
 
 	@Test
-	public void noVersionsAllowedOnBranch() {
+	public void versionsAllowedOnBranch() {
 		givenBranchWithPath(testBranchPath);
 
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("branchPath", testBranchPath.getPath())
-				.put("languageRefSetId", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.put("createVersions", true)
 				.build();
-
-		assertImportConfigurationCreationFails(importConfiguration);
+		
+		assertImportConfigurationCanBeCreated(importConfiguration);
 	}
 }

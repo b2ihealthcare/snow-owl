@@ -84,6 +84,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
@@ -119,6 +120,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
@@ -192,7 +194,52 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
 	}
-
+	
+	/**
+	 * Tries to find a given {@link SnomedRelease} specified by either it's short name or it's code system OID. Code systems are stored on MAIN. If
+	 * this editing context is not operating on MAIN it will throw {@link IllegalStateException}.
+	 * 
+	 * XXX Remove this method if code system version creation is implemented through REST.
+	 * 
+	 * @param shortName
+	 * @param codeSystemOID
+	 * @return
+	 */
+	public SnomedRelease getSnomedRelease(final String shortName, @Nullable final String codeSystemOID) {
+		
+		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
+			throw new IllegalStateException(String.format("Snomed releases are maintained on MAIN branch, this editing context uses %s", getBranch()));
+		}
+		
+		Collection<SnomedRelease> existingReleases = FluentIterable.from(getCodeSystems()).filter(SnomedRelease.class).toSet();
+		
+		// try to find the SNOMED release based on the code system OID
+		if (!Strings.isNullOrEmpty(codeSystemOID)) {
+			if (FluentIterable.from(existingReleases).allMatch(new Predicate<SnomedRelease>() {
+				@Override public boolean apply(SnomedRelease input) {
+					return !Strings.isNullOrEmpty(input.getCodeSystemOID());
+				}
+			})) {
+				return FluentIterable.from(existingReleases).firstMatch(new Predicate<SnomedRelease>() {
+					@Override public boolean apply(SnomedRelease input) {
+						return input.getCodeSystemOID().equals(codeSystemOID);
+					}
+				}).orNull();
+			}
+		}
+		
+		// if OID is missing then use code system short name
+		if (!Strings.isNullOrEmpty(shortName)) {
+			return FluentIterable.from(existingReleases).firstMatch(new Predicate<SnomedRelease>() {
+				@Override public boolean apply(SnomedRelease input) {
+					return input.getShortName().equalsIgnoreCase(shortName);
+				}
+			}).orNull();
+		}
+		
+		return null;
+	}
+	
 	private static SnomedClientIndexService getIndexService() {
 		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
 	}

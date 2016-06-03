@@ -17,11 +17,9 @@ package com.b2international.snowowl.terminologymetadata.util;
 
 import com.b2international.snowowl.terminologymetadata.*;
 
-import java.util.List;
-
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+
 import org.eclipse.emf.ecore.util.Switch;
 
 /**
@@ -62,7 +60,7 @@ public class TerminologymetadataSwitch<T> extends Switch<T> {
 	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @parameter ePackage the package in question.
+	 * @param ePackage the package in question.
 	 * @return whether this is a switch for the given package.
 	 * @generated
 	 */
@@ -81,12 +79,6 @@ public class TerminologymetadataSwitch<T> extends Switch<T> {
 	@Override
 	protected T doSwitch(int classifierID, EObject theEObject) {
 		switch (classifierID) {
-			case TerminologymetadataPackage.CODE_SYSTEM_VERSION_GROUP: {
-				CodeSystemVersionGroup codeSystemVersionGroup = (CodeSystemVersionGroup)theEObject;
-				T result = caseCodeSystemVersionGroup(codeSystemVersionGroup);
-				if (result == null) result = defaultCase(theEObject);
-				return result;
-			}
 			case TerminologymetadataPackage.CODE_SYSTEM_VERSION: {
 				CodeSystemVersion codeSystemVersion = (CodeSystemVersion)theEObject;
 				T result = caseCodeSystemVersion(codeSystemVersion);
@@ -104,17 +96,17 @@ public class TerminologymetadataSwitch<T> extends Switch<T> {
 	}
 
 	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System Version Group</em>'.
+	 * Returns the result of interpreting the object as an instance of '<em>Code System Version</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
 	 * returning a non-null result will terminate the switch.
 	 * <!-- end-user-doc -->
 	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System Version Group</em>'.
+	 * @return the result of interpreting the object as an instance of '<em>Code System Version</em>'.
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
 	 * @generated
 	 */
-	public T caseCodeSystemVersionGroup(CodeSystemVersionGroup object) {
+	public T caseCodeSystemVersion(CodeSystemVersion object) {
 		return null;
 	}
 
@@ -130,21 +122,6 @@ public class TerminologymetadataSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseCodeSystem(CodeSystem object) {
-		return null;
-	}
-
-	/**
-	 * Returns the result of interpreting the object as an instance of '<em>Code System Version</em>'.
-	 * <!-- begin-user-doc -->
-	 * This implementation returns null;
-	 * returning a non-null result will terminate the switch.
-	 * <!-- end-user-doc -->
-	 * @param object the target of the switch.
-	 * @return the result of interpreting the object as an instance of '<em>Code System Version</em>'.
-	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-	 * @generated
-	 */
-	public T caseCodeSystemVersion(CodeSystemVersion object) {
 		return null;
 	}
 

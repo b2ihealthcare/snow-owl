@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.impl.RelationshipImpl#getConcreteDomainRefSetMembers <em>Concrete Domain Ref Set Members</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.RelationshipImpl#getGroup <em>Group</em>}</li>
@@ -43,7 +44,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
  *   <li>{@link com.b2international.snowowl.snomed.impl.RelationshipImpl#getModifier <em>Modifier</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.RelationshipImpl#getRefinabilityRefSetMembers <em>Refinability Ref Set Members</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

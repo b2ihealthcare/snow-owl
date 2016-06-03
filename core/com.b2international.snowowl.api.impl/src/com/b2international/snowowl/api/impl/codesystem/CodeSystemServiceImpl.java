@@ -48,6 +48,10 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 			result.setOrganizationLink(input.getOrgLink());
 			result.setPrimaryLanguage(input.getLanguage());
 			result.setShortName(input.getShortName());
+			result.setIconPath(input.getIconPath());
+			result.setTerminologyId(input.getSnowOwlId());
+			result.setRepositoryUuid(input.getRepositoryUuid());
+			result.setBranchPath(input.getBranchPath());
 			return result;
 		}
 	};
@@ -64,7 +68,7 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 	protected static TerminologyRegistryService getRegistryService() {
 		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
 	}
-
+	
 	@Override
 	public List<ICodeSystem> getCodeSystems() {
 		return toSortedCodeSystemList(getRegistryService().getCodeSystems(MAIN_BRANCH_PATH_MAP));
@@ -91,4 +95,5 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 	private List<ICodeSystem> toSortedCodeSystemList(final Collection<com.b2international.snowowl.datastore.ICodeSystem> sourceCodeSystems) {
 		return SHORT_NAME_ORDERING.immutableSortedCopy(transform(sourceCodeSystems, CODE_SYSTEM_CONVERTER));
 	}
+	
 }

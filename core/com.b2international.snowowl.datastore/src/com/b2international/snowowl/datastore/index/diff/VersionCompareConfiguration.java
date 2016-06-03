@@ -63,7 +63,7 @@ public class VersionCompareConfiguration implements Serializable {
 		}
 		
 		public Builder source(final ICodeSystemVersion version) {
-			return source(BranchPathUtils.createVersionPath(version.getVersionId()), version.isPatched());
+			return source(BranchPathUtils.createPath(version.getPath()), version.isPatched());
 		}
 
 		public Builder sourcePatched(final boolean patched) {
@@ -78,7 +78,7 @@ public class VersionCompareConfiguration implements Serializable {
 		}
 		
 		public Builder target(final ICodeSystemVersion version) {
-			return target(BranchPathUtils.createVersionPath(version.getVersionId()), version.isPatched());
+			return target(BranchPathUtils.createPath(version.getPath()), version.isPatched());
 		}
 		
 		public Builder targetPatched(final boolean patched) {

@@ -44,4 +44,5 @@ public interface ICodeSystemVersionProperties {
 	 * @return the effective date of this code system version (can be {@code null})
 	 */
 	Date getEffectiveDate();
+	
 }

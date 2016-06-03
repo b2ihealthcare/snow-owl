@@ -25,9 +25,11 @@ public abstract class TerminologyRegistryIndexConstants {
 	public static final String VERSION_EFFECTIVE_DATE = "versionVersionEffectiveDate";
 	public static final String VERSION_DESCRIPTION = "versionVersionDescription";
 	public static final String VERSION_VERSION_ID = "versionVersionId";
+	public static final String VERSION_PARENT_BRANCH_PATH = "parentBranchPath";
 	public static final String VERSION_LATEST_UPDATE_DATE = "versionLatestUpdateDate";
 	public static final String VERSION_STORAGE_KEY = "versionStorageKey";
 	public static final String VERSION_REPOSITORY_UUID = "versionRepositoryUuid";
+	public static final String VERSION_SYSTEM_SHORT_NAME = "versionSystemShortName";
 	
 	public static final String SYSTEM_OID = "systemOid";
 	public static final String SYSTEM_NAME = "systemName"; 
@@ -39,6 +41,7 @@ public abstract class TerminologyRegistryIndexConstants {
 	public static final String SYSTEM_TERMINOLOGY_COMPONENT_ID = "systemTerminologyComponentId";
 	public static final String SYSTEM_STORAGE_KEY = "systemStorageKey";
 	public static final String SYSTEM_REPOSITORY_UUID = "systemRepositoryUuid";
+	public static final String SYSTEM_BRANCH_PATH = "systemBranchPath";
 	
 	private TerminologyRegistryIndexConstants() { /*not here*/ }
 	

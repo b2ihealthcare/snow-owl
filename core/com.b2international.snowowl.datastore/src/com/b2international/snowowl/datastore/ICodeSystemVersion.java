@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
@@ -88,6 +87,18 @@ public interface ICodeSystemVersion extends Serializable {
 	String getVersionId();
 	
 	/**
+	 * Returns the parent branch path where the version branch is forked off
+	 * @return parent branch path
+	 */
+	String getParentBranchPath();
+	
+	/**
+	 * Returns the full path of this version including the MAIN prefix as well as the version tag.
+	 * @return
+	 */
+	String getPath();
+	
+	/**
 	 * Returns with {@code true} if any modifications have been made on 
 	 * the branch associated with the current code system version for
 	 * the terminology or content. Otherwise {@code false}. 
@@ -105,6 +116,11 @@ public interface ICodeSystemVersion extends Serializable {
 	 * Returns with the UUID of the repository where the current version belongs to. 
 	 */
 	String getRepositoryUuid();
+	
+	/**
+	 * Returns with the short name of the container code system.
+	 */
+	String getCodeSystemShortName();
 	
 	/**Predicate producing {@code true} output only and if only the processed {@link ICodeSystemVersion version}
 	 * is {@link ICodeSystemVersion#isPatched() patched}. Otherwise {@code false}.*/
@@ -139,7 +155,7 @@ public interface ICodeSystemVersion extends Serializable {
 	 *{@link IBranchPath} instance with the {@link BranchPathUtils#createVersionPath(String)} method. */
 	Function<ICodeSystemVersion, IBranchPath> TO_BRANCH_PATH_FUNC = new Function<ICodeSystemVersion, IBranchPath>() {
 		public IBranchPath apply(final ICodeSystemVersion version) {
-			return createVersionPath(version.getVersionId());
+			return BranchPathUtils.createPath(version.getPath());
 		}
 	};
 

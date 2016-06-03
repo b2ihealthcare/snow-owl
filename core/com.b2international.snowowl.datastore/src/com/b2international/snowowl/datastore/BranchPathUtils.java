@@ -35,11 +35,15 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.tasks.Task;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -153,20 +157,6 @@ public abstract class BranchPathUtils {
 	 */
 	public static IBranchPath createPath(final CDOObject object) {
 		return createPath(CDOUtils.check(object).cdoView());
-	}
-	
-	/**
-	 * Returns with a new {@link IBranchPath branch path} representing a version branch. 
-	 * The ancestor of the returning branch path is always the {@link IBranchPath#MAIN_BRANCH}.
-	 * <p>This method will return with a path representing the MAIN branch only and if only the 
-	 * given version name argument equals with the {@link IBranchPath#MAIN_BRANCH}. 
-	 * @param versionName the version name.
-	 * @return the branch path representing the version branch.
-	 */
-	public static IBranchPath createVersionPath(final String versionName) {
-		return IBranchPath.MAIN_BRANCH.equals(versionName) 
-				? createMainPath() 
-				: createPath(createMainPath(), checkNotNull(versionName, "versionName"));
 	}
 	
 	/**
@@ -287,9 +277,7 @@ public abstract class BranchPathUtils {
 			}
 			
 		}
-		
 		return new BackwardListIterator<IBranchPath>(unmodifiableList($));
-		
 	}
 	
 	/**
@@ -301,6 +289,30 @@ public abstract class BranchPathUtils {
 	 */
 	public static Iterator<IBranchPath> bottomToTopIterator(final IBranchPath branchPath) {
 		return new BackwardListIterator<IBranchPath>(newArrayList(topToBottomIterator(checkNotNull(branchPath, "branchPath"))));
+	}
+	
+	/**
+	 * Returns true if the branch with the path specified exists within the specified repository.
+	 * @param repositoryUUID
+	 * @param branchPath
+	 * @return true if the branch exists in the repository
+	 */
+	public static boolean exists(String repositoryUUID, String branchPath) {
+		try {
+			RepositoryRequests.branching(repositoryUUID).prepareGet(branchPath).executeSync(ApplicationContext.getInstance().getService(IEventBus.class), 1000);
+		} catch (NotFoundException e) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Returns the MAIN branch for the repository specified by it's repository UUID.
+	 * @param repositoryUUID
+	 * @return
+	 */
+	public static Branch getMainBranchForRepository(String repositoryUUID) {
+		return RepositoryRequests.branching(repositoryUUID).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(ApplicationContext.getInstance().getService(IEventBus.class), 1000);
 	}
 	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {

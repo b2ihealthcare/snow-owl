@@ -26,17 +26,18 @@ import org.eclipse.emf.cdo.CDOObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getVersionId <em>Version Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getDescription <em>Description</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getParentBranchPath <em>Parent Branch Path</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getEffectiveDate <em>Effective Date</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getImportDate <em>Import Date</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getLastUpdateDate <em>Last Update Date</em>}</li>
  * </ul>
- * </p>
  *
  * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystemVersion()
- * @model abstract="true"
+ * @model
  * @extends CDOObject
  * @generated
  */
@@ -92,6 +93,32 @@ public interface CodeSystemVersion extends CDOObject {
 	 * @generated
 	 */
 	void setDescription(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Parent Branch Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Parent Branch Path</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Parent Branch Path</em>' attribute.
+	 * @see #setParentBranchPath(String)
+	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystemVersion_ParentBranchPath()
+	 * @model
+	 * @generated
+	 */
+	String getParentBranchPath();
+
+	/**
+	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion#getParentBranchPath <em>Parent Branch Path</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Parent Branch Path</em>' attribute.
+	 * @see #getParentBranchPath()
+	 * @generated
+	 */
+	void setParentBranchPath(String value);
 
 	/**
 	 * Returns the value of the '<em><b>Effective Date</b></em>' attribute.
@@ -173,14 +200,10 @@ public interface CodeSystemVersion extends CDOObject {
 
 	/**
 	 * <!-- begin-user-doc -->
-	 * <p>
-	 * If the meaning of the '<em>Code System Version Group</em>' reference isn't clear,
-	 * there really should be more of a description here...
-	 * </p>
 	 * <!-- end-user-doc -->
 	 * @model kind="operation"
 	 * @generated
 	 */
-	CodeSystemVersionGroup getCodeSystemVersionGroup();
+	CodeSystem getCodeSystem();
 
 } // CodeSystemVersion

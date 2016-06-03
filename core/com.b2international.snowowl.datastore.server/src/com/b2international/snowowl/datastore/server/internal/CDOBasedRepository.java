@@ -60,6 +60,12 @@ import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilderBroker;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemEntryBuilder;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemEntryBuilderBroker;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionEntryBuilder;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionEntryBuilderBroker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Provider;
 
@@ -138,6 +144,18 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId);
 	}
 	
+	private CodeSystemBuilder<?> getCodeSystemBuilder() {
+		return CodeSystemBuilderBroker.INSTANCE.getCodeSystemBuilder(repositoryId);
+	}
+	
+	private CodeSystemEntryBuilder getCodeSystemEntryBuilder() {
+		return CodeSystemEntryBuilderBroker.INSTANCE.getCodeSystemEntryBuilder(repositoryId);
+	}
+	
+	private CodeSystemVersionEntryBuilder getCodeSystemVersionEntryBuilder() {
+		return CodeSystemVersionEntryBuilderBroker.INSTANCE.getCodeSystemVersionEntryBuilder(repositoryId);
+	}
+	
 	@Override
     public long getBaseTimestamp(CDOBranch branch) {
         return branch.getBase().getTimeStamp();
@@ -167,9 +185,22 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		return new ServiceProvider() {
 			@Override
 			public <T> T service(Class<T> type) {
+				if (type.isAssignableFrom(CodeSystemBuilder.class)) {
+					return (T) getCodeSystemBuilder();
+				}
+				
+				if (type.isAssignableFrom(CodeSystemEntryBuilder.class)) {
+					return (T) getCodeSystemEntryBuilder();
+				}
+				
+				if (type.isAssignableFrom(CodeSystemVersionEntryBuilder.class)) {
+					return (T) getCodeSystemVersionEntryBuilder();
+				}
+				
 				if (registry.containsKey(type)) {
 					return (T) registry.get(type);
 				}
+				
 				return env.service(type);
 			}
 			
