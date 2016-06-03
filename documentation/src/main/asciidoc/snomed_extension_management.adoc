@@ -149,7 +149,7 @@ POST /snowowl/admin/codesystems
 	"repositoryUuid": "snomedStore",
 	"branchPath": "MAIN/2016-01-31/Extension_branch",
 	"additionalProperties": {
-		"baseCodeSystemOid": "2.16.840.1.113883.6.96",
+		"baseCodeSystemOID": "2.16.840.1.113883.6.96",
 		"snomedReleaseType": "EXTENSION"
 	}
 }
