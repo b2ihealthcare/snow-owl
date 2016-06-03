@@ -32,7 +32,6 @@ import static java.util.Collections.emptyList;
 import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -95,15 +94,12 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
@@ -138,15 +134,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
 
 	/**
-	 * returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
-	 * has an associated active description type reference set member and is synonym or descendant of the synonym
-	 * @deprecated - move this to the caller
-	 */
-	public static Set<String> getAvailablePreferredTypeIds() {
-		return ApplicationContext.getInstance().getService(IClientSnomedComponentService.class).getAvailablePreferredTermIds();
-	}
-	
-	/**
 	 * Returns with a pair, identifying a preferred term associated with the specified SNOMED&nbsp;CT concept.
 	 * <br>This method may return with {@code null}.
 	 * <ul>
@@ -165,28 +152,29 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @deprecated - revise API
 	 */
 	public static Pair<String, IdStorageKeyPair> getPreferredTermMemberFromIndex(final Concept concept, String languageRefSetId) {
-		checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
-		checkNotNull(concept.cdoView(), "Underlying CDO view for the SNOMED CT concept argument was null.");
-		Preconditions.checkArgument(!concept.cdoView().isClosed(), "Underlying CDO view for the SNOMED CT concept argument was closed.");
-
-		final Collection<SnomedRefSetMemberIndexEntry> preferredTermMembers = 
-				new SnomedRefSetMembershipLookupService().getPreferredTermMembers(concept, languageRefSetId);
-		final SnomedRefSetMemberIndexEntry preferredMember = Iterables.getFirst(preferredTermMembers, null);
-		
-		if (null == preferredMember) {
-			return null;
-		}
-
-		//throw new exception since it should not happen at all
-		if (preferredTermMembers.size() > 1) {
-			final String message = "Multiple preferred terms are associated with a SNOMED CT concept: " + concept.getId() + " " + 
-					concept.getFullySpecifiedName() + "\nMembers: " + Arrays.toString(preferredTermMembers.toArray());
-			LOGGER.error(message);
-			//XXX akitta: do not throw exception for now, as the application cannot be tested with the dataset with duplicate preferred term members
-//			throw new IllegalArgumentException(message);
-		}
-		
-		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
+		throw new UnsupportedOperationException("Unsupported API");
+//		checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
+//		checkNotNull(concept.cdoView(), "Underlying CDO view for the SNOMED CT concept argument was null.");
+//		Preconditions.checkArgument(!concept.cdoView().isClosed(), "Underlying CDO view for the SNOMED CT concept argument was closed.");
+//
+//		final Collection<SnomedRefSetMemberIndexEntry> preferredTermMembers = 
+//				new SnomedRefSetMembershipLookupService().getPreferredTermMembers(concept, languageRefSetId);
+//		final SnomedRefSetMemberIndexEntry preferredMember = Iterables.getFirst(preferredTermMembers, null);
+//		
+//		if (null == preferredMember) {
+//			return null;
+//		}
+//
+//		//throw new exception since it should not happen at all
+//		if (preferredTermMembers.size() > 1) {
+//			final String message = "Multiple preferred terms are associated with a SNOMED CT concept: " + concept.getId() + " " + 
+//					concept.getFullySpecifiedName() + "\nMembers: " + Arrays.toString(preferredTermMembers.toArray());
+//			LOGGER.error(message);
+//			//XXX akitta: do not throw exception for now, as the application cannot be tested with the dataset with duplicate preferred term members
+////			throw new IllegalArgumentException(message);
+//		}
+//		
+//		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
 	}
 
 	public Concept buildDraftConceptFromNormalForm(final NormalFormWrapper normalForm) {
