@@ -65,16 +65,16 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(HT);
 		sb.append(SnomedMappings.memberMapPriority().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberMapRule().getValue(doc)));
+		sb.append(nullToEmpty(SnomedMappings.memberMapRule().getOptionalValue(doc)));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberMapAdvice().getValue(doc)));
+		sb.append(nullToEmpty(SnomedMappings.memberMapAdvice().getOptionalValue(doc)));
 		sb.append(HT);
 		sb.append(nullToEmpty(SnomedMappings.memberMapTargetComponentId().getValue(doc)));
 		sb.append(HT);
 		sb.append(SnomedMappings.memberCorrelationId().getValueAsString(doc));
 		if (extended) {
 			sb.append(HT);
-			sb.append(nullToEmpty(SnomedMappings.memberMapCategoryId().getValueAsString(doc)));
+			sb.append(nullToEmpty(SnomedMappings.memberMapCategoryId().getOptionalValueAsString(doc)));
 		}
 		return sb.toString();
 	}
