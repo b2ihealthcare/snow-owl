@@ -1,6 +1,79 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.7.0
+
+### Added
+- New feature, SNOMED CT Extension support
+ * `POST` `/codesystems` - creates a new codesystem (or release in SNOMED CT)
+- Representations
+ * New `branchPath` property on CodeSystems (currently active path of a CodeSystem or SNOMED CT Release)
+ * New `repositoryUuid` property on CodeSystems (the current repository of the CodeSystem or SNOMED CT Release)
+ * New `parentBranchPath` property on CodeSystemVersions (the parent branch path where the version branch is forked off)
+- `effectiveTime` based filtering for all components (currently members only, other components will be support on release of 4.7)
+
+### Changed
+- SNOMED CT Extension support
+ * `GET` `/codesystems` - returns all currently known codesystems (in SNOMED CT, all releases, including extensions)
+ * `GET` `/codesystems/:id` - returns a codesystem by its unique identifier, which can be its short name or its oid (both should be unique)
+ * `POST` `/codesystems/:id/versions` - create a new version in a codesystem (or release in SNOMED CT)
+- SNOMED CT RF2 import
+ * `POST` `/imports` - new optional property `snomedReleaseShortName`, identifies the target code system of the import, the default value is the short name of the SNOMED CT International Release
+ * 
+- Revise handling of structural reference set members (language, inactivation and association members)
+ * Try to reuse members where possible (reactivate if necessary)
+ * Keep only one active language reference set member per description and do not create new ones when acceptability changes
+
+### Dependencies
+- Replaced custom `3.2.2` version of `org.semanticweb.owl.owlapi` module with a dependency to the `3.4.4` version of it.
+ * Makes it possible to use `ELK v0.4.2` runtime and during tests
+- Upgrade custom `Protegé` libraries from `4.1` to `4.3`
+- Replaced the unsupported [pcj](http://pcj.sourceforge.net/) library with [FastUtil](https://github.com/vigna/fastutil) and also added a nice primitive collection API on top of it to support replacement of the primitive collection library underneath (and/or support multiple libraries with different capabilities, performance at the same time)
+
+### New modules
+- `com.b2international.collections.api` - primitive collections API
+- `com.b2international.collections.fastutil` - [FastUtil](https://github.com/vigna/fastutil) implementation of primitive collections API
+- `com.b2international.collections.jackson` - Jackson Ser/Deser module for primitive collections API interfaces
+ 
+### Bugs
+- Reduces thread usage of SNOMED CT change processing
+- Index initialization during SNOMED CT RF2 import now filters content based on the current latest system effective time, resulting in much more reliable imports and content when the import completes
+
+### Known issues
+- Representation of a codesystem from SNOMED CT does not support `additionalProperties`
+- No RF2 import config validation when the branchPath is unrelated with the given `snomedReleaseShortName` property
+
+## 4.6.0
+
+### Added
+- All references set member properties are supported (using RF2 property names)
+- Support for rebase queueing
+ * `GET` `/merges` - returns all merges happened since the start of the server ()
+ * `GET` `/merges/:id` - return a merge by its identifier
+ * `POST` `/merges` - creates and starts a new merge between two branch points
+ * `DELETE` `/merges/:id` - deletes a merge object by its identifier
+- Expansion support improvements
+ * Expand `targetComponent` on association reference set members
+ * Expand `members` of any SNOMED CT core component (Concept, Description, Relationship) (eq. `expand=members()`)
+ * Support `stated` and `inferred` expansion of `descendants` and `ancestors` (both Java and REST API)
+- Representations (Java and REST API)
+ * New `iconId` property on SNOMED CT model components (not available in JSON representations)
+ * New, expandable `typeConcept` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+ * New, expandable `sourceConcept` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+ * New, expandable `destinationConcept` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+ * New, expandable `type` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+
+### Changed
+- REST API property changes
+ * `targetComponentId` changed to `targetComponent` (became nested object, expandable)
+- Search improvements (Java API only, no REST support yet)
+ * Support for fuzzy matching
+ * Support for parsed terms
+ * Support for DOI based scoring (using a default DOI file, not configurable yet)
+ * Support for search profiles
+- The type of the `group` property changed from `byte` to `int` to support greater than `127` values
+- Using time based rolling policy with 90 days worth of history instead of fixed window with size restriction
+
 ## 4.5.0
 
 ### Added
