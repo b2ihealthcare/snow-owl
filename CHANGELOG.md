@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
  * New `repositoryUuid` property on CodeSystems (the current repository of the CodeSystem or SNOMED CT Release)
  * New `parentBranchPath` property on CodeSystemVersions (the parent branch path where the version branch is forked off)
 - `effectiveTime` based filtering for all components (currently members only, other components will be support on release of 4.7)
+- New module for support full javadoc of Snow Owl public APIs (`com.b2international.snowowl.javadoc`). The new module is part of the `site` Maven profile.
 
 ### Changed
 - SNOMED CT Extension support
