@@ -59,7 +59,11 @@ public class Expressions {
 		}
 
 		public Expression build() {
-			throw new UnsupportedOperationException();
+			if (mustClauses.isEmpty() && mustNotClauses.isEmpty() && shouldClauses.isEmpty() && filterClauses.isEmpty()) {
+				return matchAll();
+			} else {
+				throw new UnsupportedOperationException();
+			}
 		}
 		
 	}
@@ -121,6 +125,10 @@ public class Expressions {
 		return new StringRangePredicate(field, from, to);
 	}
 
+	public static Expression matchAnyInt(String field, Iterable<Integer> values) {
+		return new IntSetPredicate(field, ImmutableSet.copyOf(values));
+	}
+	
 	public static Expression matchAny(String field, Iterable<String> values) {
 		return new StringSetPredicate(field, ImmutableSet.copyOf(values));
 	}
