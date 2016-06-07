@@ -32,14 +32,6 @@
      </factory>
   </extension>
   <extension
-        point="com.b2international.snowowl.core.expressionUriEvaluator">
-     <evaluator
-           class="com.b2international.snowowl.dsl.escg.EscgExpressionUriEvaluator"
-           id="com.b2international.snowowl.dsl.escg.evaluator"
-           language="ESCG">
-     </evaluator>
-  </extension>
-  <extension
         point="com.b2international.snowowl.core.bootstrapFragments">
      <bootstrapFragment
            class="com.b2international.snowowl.dsl.EscgBootstrap">
