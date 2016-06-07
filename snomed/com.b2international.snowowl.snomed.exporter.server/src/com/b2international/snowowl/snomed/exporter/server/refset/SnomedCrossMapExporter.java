@@ -132,8 +132,8 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 						
 						if (complex) {
 							
-							entry.rule = SnomedMappings.memberMapRule().getValue(doc);
-							entry.advice = SnomedMappings.memberMapAdvice().getValue(doc);
+							entry.rule = doc.getField(SnomedMappings.memberMapRule().fieldName()) == null ? null : SnomedMappings.memberMapRule().getValue(doc);
+							entry.advice = doc.getField(SnomedMappings.memberMapAdvice().fieldName()) == null ? null : SnomedMappings.memberMapAdvice().getValue(doc);
 							entry.group = SnomedMappings.memberMapGroup().getValueAsString(doc);
 							entry.priority = SnomedMappings.memberMapPriority().getValueAsString(doc); 
 							

@@ -66,9 +66,13 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(SnomedMappings.memberMapTargetComponentId().getValue(doc));
 		if (includeMapTargetDescription) {
 			sb.append(HT);
-			sb.append(nullToEmpty(SnomedMappings.memberMapTargetComponentDescription().getValue(doc)));
+			sb.append(nullToEmpty(getMemberTargetComponentDescription(doc)));
 		}
 		return sb.toString();
+	}
+
+	private String getMemberTargetComponentDescription(Document doc) {
+		return doc.getField(SnomedMappings.memberMapTargetComponentDescription().fieldName()) == null ? null : SnomedMappings.memberMapTargetComponentDescription().getValue(doc);
 	}
 	
 	@Override

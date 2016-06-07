@@ -65,18 +65,30 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(HT);
 		sb.append(SnomedMappings.memberMapPriority().getValueAsString(doc));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberMapRule().getValue(doc)));
+		sb.append(nullToEmpty(getMemberMapRule(doc)));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberMapAdvice().getValue(doc)));
+		sb.append(nullToEmpty(getMemberMapAdvice(doc)));
 		sb.append(HT);
 		sb.append(nullToEmpty(SnomedMappings.memberMapTargetComponentId().getValue(doc)));
 		sb.append(HT);
 		sb.append(SnomedMappings.memberCorrelationId().getValueAsString(doc));
 		if (extended) {
 			sb.append(HT);
-			sb.append(nullToEmpty(SnomedMappings.memberMapCategoryId().getValueAsString(doc)));
+			sb.append(nullToEmpty(getMemberMapCategoryId(doc)));
 		}
 		return sb.toString();
+	}
+
+	private String getMemberMapCategoryId(Document doc) {
+		return doc.getField(SnomedMappings.memberMapCategoryId().fieldName()) == null ? null : SnomedMappings.memberMapCategoryId().getValueAsString(doc);
+	}
+
+	private String getMemberMapAdvice(Document doc) {
+		return doc.getField(SnomedMappings.memberMapAdvice().fieldName()) == null ? null : SnomedMappings.memberMapAdvice().getValue(doc);
+	}
+
+	private String getMemberMapRule(Document doc) {
+		return doc.getField(SnomedMappings.memberMapRule().fieldName()) == null ? null : SnomedMappings.memberMapRule().getValue(doc);
 	}
 	
 	@Override

@@ -76,6 +76,7 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 		super(configuration, refSetId, mapSetSetting);
 		complex = getMapSetSetting().isComplex();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<MapTargetEntry, String>() {
+			@Override
 			public String apply(final MapTargetEntry input) {
 				return new StringBuilder(input.uuid).append(HT)
 					.append(getMapSetSetting().getMapSchemeId()).append(HT)
@@ -125,8 +126,8 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 						entry.mapTarget = SnomedMappings.memberMapTargetComponentId().getValue(doc);
 						
 						if (complex) {
-							entry.rule = SnomedMappings.memberMapRule().getValue(doc);
-							entry.advice = SnomedMappings.memberMapAdvice().getValue(doc);
+							entry.rule = doc.getField(SnomedMappings.memberMapRule().fieldName()) == null ? null : SnomedMappings.memberMapRule().getValue(doc);;
+							entry.advice = doc.getField(SnomedMappings.memberMapAdvice().fieldName()) == null ? null : SnomedMappings.memberMapAdvice().getValue(doc);
 						}
 						
 						$[i] = entry;

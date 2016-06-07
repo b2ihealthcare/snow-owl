@@ -51,13 +51,10 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 
 	@Override
 	public String transform(Document doc) {
-		
-		String memberUomId = null != doc.getField(SnomedMappings.memberUomId().fieldName()) ? nullToEmpty(SnomedMappings.memberUomId().getValueAsString(doc)) : "";
-		
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(memberUomId);
+		sb.append(nullToEmpty(getMemberUomId(doc)));
 		sb.append(HT);
 		sb.append(SnomedMappings.memberOperatorId().getValueAsString(doc));
 		sb.append(HT);
@@ -65,10 +62,18 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 		sb.append(HT);
 		sb.append(SnomedMappings.memberSerializedValue().getValue(doc));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberCharacteristicTypeId().getValueAsString(doc)));
+		sb.append(nullToEmpty(getMemberCharacteristicTypeId(doc)));
 		return sb.toString();
 	}
+
+	private String getMemberCharacteristicTypeId(Document doc) {
+		return doc.getField(SnomedMappings.memberCharacteristicTypeId().fieldName()) == null ? null : SnomedMappings.memberCharacteristicTypeId().getValueAsString(doc);
+	}
 	
+	private String getMemberUomId(Document doc) {
+		return doc.getField(SnomedMappings.memberUomId().fieldName()) == null ? null : SnomedMappings.memberUomId().getValueAsString(doc);
+	}
+
 	@Override
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER_WITH_LABEL;
