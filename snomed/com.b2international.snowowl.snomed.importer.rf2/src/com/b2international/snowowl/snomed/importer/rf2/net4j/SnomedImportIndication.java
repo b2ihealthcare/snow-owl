@@ -33,9 +33,11 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.importer.net4j.*;
+import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolConstants;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
+import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -195,15 +197,10 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			final SnomedImportResult importResult = new ImportUtil().doImport(userId, importConfiguration, new ConsoleProgressMonitor());
 			
 			out.writeInt(importResult.getVisitedConcepts().size());
-			out.writeInt(importResult.getVisitedRefSets().size());
 			out.writeInt(importResult.getValidationDefects().size());
 			
 			for (final SnomedConceptDocument visitedConcept : importResult.getVisitedConcepts()) {
 				out.writeObject(visitedConcept);
-			}
-			
-			for (final SnomedRefSetIndexEntry visitedRefSet : importResult.getVisitedRefSets()) {
-				out.writeObject(visitedRefSet);
 			}
 			
 			for (final SnomedValidationDefect validationDefect : importResult.getValidationDefects()) {

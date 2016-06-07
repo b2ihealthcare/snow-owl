@@ -28,7 +28,6 @@ import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.google.common.io.Closeables;
 
 /**
@@ -189,10 +188,9 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 	@Override protected SnomedImportResult confirming(final ExtendedDataInputStream in, final OMMonitor monitor) throws Exception {
 		
 		final int visitedConceptCount = in.readInt();
-		final int visitedRefSetCount = in.readInt();
 		final int validationDefectCount = in.readInt();
 		
-		monitor.begin(visitedConceptCount + visitedRefSetCount + validationDefectCount);
+		monitor.begin(visitedConceptCount + validationDefectCount);
 		
 		try {
 
@@ -202,10 +200,6 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			
 			for (int i = 0; i < visitedConceptCount; i++) {
 				result.getVisitedConcepts().add((SnomedConceptDocument) in.readObject(indexEntryLoader));
-			}
-			
-			for (int i = 0; i < visitedRefSetCount; i++) {
-				result.getVisitedRefSets().add((SnomedRefSetIndexEntry) in.readObject(indexEntryLoader));
 			}
 			
 			for (int i = 0; i < validationDefectCount; i++) {
