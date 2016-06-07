@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -59,7 +57,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.remotejobs.RemoteJobResultRegistry;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
@@ -68,6 +65,7 @@ import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
@@ -75,11 +73,10 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
@@ -103,6 +100,7 @@ import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferen
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
@@ -116,8 +114,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().iconId().build();
-
 	private final IListener invalidationListener = new IListener() {
 		@Override 
 		public void notifyEvent(final IEvent event) {
@@ -209,10 +205,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 
 	private static SnomedTerminologyBrowser getTerminologyBrowser() {
 		return getServiceForClass(SnomedTerminologyBrowser.class);
-	}
-	
-	private static IndexServerService<?> getIndexServerService() {
-		return ClassUtils.checkAndCast(getServiceForClass(SnomedIndexService.class), IndexServerService.class);
 	}
 
 	private void setStale(final IBranchPath branchPath) {
@@ -309,15 +301,15 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 			private void registerEntry(final long conceptId, final StatementFragment subject, final Nature changeNature) {
 				
-				final ChangeConcept sourceComponent = createChangeConcept(branchPath, terminologyBrowser, conceptId);
-				final ChangeConcept typeComponent = createChangeConcept(branchPath, terminologyBrowser, subject.getTypeId());
-				final ChangeConcept destinationComponent = createChangeConcept(branchPath, terminologyBrowser, subject.getDestinationId());
+				final ChangeConcept sourceComponent = createChangeConcept(branchPath, conceptId);
+				final ChangeConcept typeComponent = createChangeConcept(branchPath, subject.getTypeId());
+				final ChangeConcept destinationComponent = createChangeConcept(branchPath, subject.getDestinationId());
 				
 				final long modifierId = subject.isUniversal() 
 						? LongConcepts.UNIVERSAL_RESTRICTION_MODIFIER_ID
 						: LongConcepts.EXISTENTIAL_RESTRICTION_MODIFIER_ID;
 				
-				final ChangeConcept modifierComponent = createChangeConcept(branchPath, terminologyBrowser, modifierId);
+				final ChangeConcept modifierComponent = createChangeConcept(branchPath, modifierId);
 				
 				final RelationshipChangeEntry entry = new RelationshipChangeEntry(
 						changeNature, 
@@ -373,7 +365,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				
 				final ChangeConcept sourceComponent = createChangeConcept(
 						branchPath, 
-						terminologyBrowser, 
 						conceptId);
 				
 				final ConceptConcreteDomainChangeEntry responseEntry = new ConceptConcreteDomainChangeEntry(
@@ -395,24 +386,31 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		return convertedChanges;
 	}
 
-	private ChangeConcept createChangeConcept(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final long id) {
-		
-		final IndexServerService<?> indexService = getIndexServerService();
-		
-		final TopDocs topDocs = indexService.search(branchPath, SnomedMappings.newQuery().concept().id(id).matchAll(), 1);
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return new ChangeConcept(id, Long.parseLong(Concepts.ROOT_CONCEPT));
-		} else {
-			final Document doc = indexService.document(branchPath, topDocs.scoreDocs[0].doc, FIELDS_TO_LOAD);
-			return new ChangeConcept(id, SnomedMappings.iconId().getValue(doc));
-		}
+	private ChangeConcept createChangeConcept(final IBranchPath branchPath, final long id) {
+		return SnomedRequests.prepareGetConcept()
+			.setComponentId(Long.toString(id))
+			.build(branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.then(new Function<ISnomedConcept, ChangeConcept>() {
+				@Override
+				public ChangeConcept apply(ISnomedConcept input) {
+					return new ChangeConcept(id, Long.parseLong(input.getIconId()));
+				}
+			})
+			.fail(new Function<Throwable, ChangeConcept>() {
+				@Override
+				public ChangeConcept apply(Throwable input) {
+					return new ChangeConcept(id, Long.parseLong(Concepts.ROOT_CONCEPT));
+				}
+			})
+			.getSync();
 	}
 
 	private ConcreteDomainElement createConcreteDomainElement(final IBranchPath branchPath, final SnomedTerminologyBrowser terminologyBrowser, final ConcreteDomainFragment fragment) {
 		
 		final ChangeConcept unitConcept = (ConcreteDomainFragment.UNSET_UOM_ID == fragment.getUomId()) 
 				? null
-				: createChangeConcept(branchPath, terminologyBrowser, fragment.getUomId());
+				: createChangeConcept(branchPath, fragment.getUomId());
 		
 		final ConcreteDomainElement concreteDomainElement = new ConcreteDomainElement(
 				fragment.getLabel().utf8ToString(), 
@@ -476,7 +474,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 						.label(conceptId + " (unresolved)")
 						.iconId(Concepts.ROOT_CONCEPT) 
 						.moduleId(Concepts.MODULE_ROOT)
-						.storageKey(Long.MAX_VALUE) // XXX: set Long.MAX_VALUE storage key to never suggest it as a replacement	
 						.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 						.build();
 			} else {
