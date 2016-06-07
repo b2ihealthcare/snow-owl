@@ -708,53 +708,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public boolean isActive(final IBranchPath branchPath, final long storageKey) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		return isActive(branchPath, PrimitiveLists.newLongArrayList(new long[] { storageKey })).get(0);
-	}
-
-	@Override
-	public BitSet isActive(final IBranchPath branchPath, final LongList storageKeys) {
-		if (null == storageKeys || storageKeys.isEmpty()) {
-			return new BitSet(0);
-		}
-		
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-			
-			final BitSet $ = new BitSet(storageKeys.size());
-			
-			int i = 0;
-			for (final LongListIterator itr = storageKeys.listIterator(); itr.hasNext(); /*not much*/) {
-				
-				$.set(i++, isActive(itr.next(), indexService, searcher));
-				
-			}
-			return $;
-		} catch (final IOException e) {
-			LOGGER.error("Error while getting status for components.");
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-		}
-		
-	}
-
-	@Override
 	public long getDescriptionStorageKey(final IBranchPath branchPath, final String descriptionId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(branchPath, "Concept ID argument cannot be null.");
@@ -767,35 +720,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 		final Document doc = getIndexServerService().document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().storageKey().build());
 		return Mappings.storageKey().getValue(doc);
-	}
-	
-	@Override
-	public boolean descriptionExists(final IBranchPath branchPath, final String descriptionId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(descriptionId, "Description ID argument cannot be null.");
-		return componentExists(branchPath, descriptionId, SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER);
-	}
-	
-	@Override
-	public boolean relationshipExists(final IBranchPath branchPath, final String relationshipId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(relationshipId, "Relationship ID argument cannot be null.");
-		return componentExists(branchPath, relationshipId, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER);
-	}
-
-	@Override
-	public boolean componentExists(final IBranchPath branchPath, final String componentId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(componentId, "SNOMED CT core component ID argument cannot be null.");
-		
-		try {
-			final Query query = SnomedMappings.newQuery().id(componentId).matchAll();
-			return getIndexServerService().getHitCount(branchPath, query, null) > 0;
-		} catch (final NumberFormatException e) {
-			LOGGER.warn("Invalid SNOMED CT core component ID. ID: '" + componentId + "'.");
-			return false;
-		}
-		
 	}
 	
 	@Override
@@ -974,72 +898,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public Collection<IdStorageKeyPair> getAllMemberIdStorageKeys(final IBranchPath branchPath, final int refSetTypeOrdinal) {
-		
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(SnomedRefSetType.get(refSetTypeOrdinal), "SNOMED CT reference set type was null for ordinal. Ordinal: " + refSetTypeOrdinal);;
-		
-		final Query query = SnomedMappings.newQuery().memberRefSetType(refSetTypeOrdinal).matchAll();
-		
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
-		
-		final int maxDoc = indexService.maxDoc(branchPath);
-		final DocIdCollector collector = DocIdCollector.create(maxDoc);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-			
-			indexService.search(branchPath, query, collector);
-			
-			final int hitCount = collector.getDocIDs().size();
-			final IdStorageKeyPair[] $ = new IdStorageKeyPair[hitCount];
-
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			int i = 0;
-			while (itr.next()) {
-				
-				final Document doc = searcher.doc(itr.getDocID(), MEMBER_UUID_STORAGE_KEY_TO_LOAD);
-				$[i++] = new IdStorageKeyPair(
-						checkNotNull(SnomedMappings.memberUuid().getValue(doc), "Cannot get UUID field for document. [" + doc + "]"),
-						Mappings.storageKey().getValue(doc));
-				
-			}
-			
-			return Arrays.asList($);
-			
-		} catch (final IOException e) {
-			
-			LOGGER.error("Error while getting component ID and storage keys for components.");
-			throw new SnowowlRuntimeException(e);
-			
-		} finally {
-			
-			if (null != manager && null != searcher) {
-				
-				try {
-					
-					manager.release(searcher);
-					
-				} catch (final IOException e) {
-					
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-					
-				}
-				
-			}
-			
-		}
-	}
-	
-	@Override
 	public LongSet getAllDescriptionIds(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
@@ -1162,52 +1020,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 	}
 
-	@Override
-	public LongSet getAllRefSetIds(final IBranchPath branchPath) {
-		
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		IndexSearcher searcher = null;
-		ReferenceManager<IndexSearcher> manager = null;
-		
-		try {
-			
-			@SuppressWarnings("rawtypes")
-			final IndexServerService indexService = getIndexServerService();
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-			
-			final int maxDoc = indexService.maxDoc(branchPath);
-			final DocIdCollector collector = DocIdCollector.create(maxDoc);
-			
-			indexService.search(branchPath, SnomedMappings.newQuery().refSet().matchAll(), collector);
-			
-			final LongSet $ = PrimitiveSets.newLongOpenHashSet();
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			while (itr.next()) {
-				Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_KEY_TO_LOAD);
-				$.add(SnomedMappings.id().getValue(doc));
-			}
-			
-			return $;
-			
-		} catch (final IOException e) {
-			LOGGER.error("Error while getting all reference set identifier concept IDs.");
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-			
-		}
-	}
-	
 	@Override
 	public LongKeyLongMap getConceptModuleMapping(final IBranchPath branchPath) {
 		
@@ -1394,12 +1206,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		return Pair.<String, String>of(term, ""); //XXX: previous implementation added back the member's target.
 	}
 
-	@Override
-	@Deprecated
-	public Set<Pair<String, String>> getReferenceSetMemberLabels(final IBranchPath branchPath, final String refSetId) {
-		throw new UnsupportedOperationException("Can't retrieve reference set member labels.");		
-	}
-	
 	@Override
 	public Collection<SnomedRefSetMemberFragment> getRefSetMemberFragments(final IBranchPath branchPath, final String refSetId) {
 		
@@ -1621,30 +1427,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 	}
 	
-	@Override
-	public Multimap<String, String> getPreferredTermToIdsMapping(final IBranchPath branchPath, final String focusConceptId) {
-		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(focusConceptId, "focusConceptId");
-
-		final Query subtypeOrSelfQuery = SnomedMappings.newQuery().parent(focusConceptId).ancestor(focusConceptId).id(focusConceptId).matchAny();
-		final Query query = SnomedMappings.newQuery().active().type(CONCEPT_NUMBER).and(subtypeOrSelfQuery).matchAll();
-		
-		final SnomedComponentLabelCollector collector = new SnomedComponentLabelCollector();
-		getIndexServerService().search(branchPath, query, collector);
-		final LongKeyMap<String> idLabelMapping = collector.getIdLabelMapping();
-
-		final Multimap<String, String> ptToIdsMapping = HashMultimap.create();
-		for (final LongIterator keys = idLabelMapping.keySet().iterator(); keys.hasNext(); /**/) {
-			final long key = keys.next();
-			final String id = Long.toString(key);
-			final String pt = StringUtils.valueOfOrEmptyString(idLabelMapping.get(key));
-			ptToIdsMapping.put(pt, id);
-		}
-		
-		return ptToIdsMapping;
-	}
-	
 	private LongSet getUnpublishedStorageKeys(final IBranchPath branchPath, final Query query) {
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(query, "query");
@@ -1755,92 +1537,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 	}
 	
-	@Override
-	public String getDescriptionInactivationId(final IBranchPath branchPath, final String descriptionId) {
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(descriptionId, "descriptionId");
-		final Query query = SnomedMappings.newQuery().memberReferencedComponentId(descriptionId).and(DESCRIPTION_INACTIVATION_REFSET_QUERY).matchAll();
-		final TopDocs topDocs = getIndexServerService().search(branchPath, query, 1);
-		if (isEmpty(topDocs)) {
-			return null;
-		}
-		final Document doc = getIndexServerService().document(branchPath, topDocs.scoreDocs[0].doc, MEMBER_VALUE_ID_FIELDS_TO_LOAD);
-		return SnomedMappings.memberValueId().getValue(doc);
-	}
-	
-	@Override
-	public String getOntologyStatistics(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		
-		final int conceptsCount = getServiceForClass(SnomedTerminologyBrowser.class).getAllSubTypeCountById(branchPath, ROOT_CONCEPT);
-		
-		final int descriptionsCount = getIndexServerService().getHitCount(branchPath, SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER).matchAll(), null);
-		final int relationshipsCount = getIndexServerService().getHitCount(branchPath, SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER).matchAll(), null);
-		
-		final SnomedQueryBuilder definingTypeQuery = SnomedMappings.newQuery();
-		for (final String definingCharacteristicTypeId : DEFINING_CHARACTERISTIC_TYPES) {
-			definingTypeQuery.relationshipCharacteristicType(definingCharacteristicTypeId);
-		}
-		final Query activeDefiningRelationshipsQuery = SnomedMappings.newQuery()
-				.active()
-				.type(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
-				.and(definingTypeQuery.matchAny())
-				.matchAll();
-		final int definingRelationshipsCount = getIndexServerService().getHitCount(branchPath, activeDefiningRelationshipsQuery, null);
-		
-		final Query activeConcreteDomainQuery = SnomedMappings.newQuery().active().memberRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE).matchAll();
-		final int concreteDomainCount = getIndexServerService().getHitCount(branchPath, activeConcreteDomainQuery, null);
-		
-		final int languageCount = getIndexServerService().getHitCount(branchPath, SnomedMappings.newQuery().memberRefSetType(SnomedRefSetType.LANGUAGE).active().matchAll(), null);
-		
-		final SnomedQueryBuilder mappingTypeQuery = SnomedMappings.newQuery();
-		for (final SnomedRefSetType mappingType : filter(SnomedRefSetType.VALUES, new Predicate<SnomedRefSetType>() {
-			@Override
-			public boolean apply(final SnomedRefSetType type) {
-				return isMapping(type);
-			}
-		})) {
-			mappingTypeQuery.memberRefSetType(mappingType.ordinal());
-		}
-		final Query activeMappingsQuery = SnomedMappings.newQuery().active().and(mappingTypeQuery.matchAny()).matchAll();
-		final int mappingCount = getIndexServerService().getHitCount(branchPath, activeMappingsQuery, null);
-		
-		final StringBuilder sb = new StringBuilder();
-		sb.append("SNOMED CT ontology statistics on '");
-		sb.append(branchPath.getPath());
-		sb.append("':\n");
-		
-		sb.append("Number of active concepts: ");
-		sb.append(getIntegerInstance().format(conceptsCount));
-		sb.append("\n");
-		
-		sb.append("Number of active descriptions: ");
-		sb.append(getIntegerInstance().format(descriptionsCount));
-		sb.append("\n");
-		
-		sb.append("Number of active relationships: ");
-		sb.append(getIntegerInstance().format(relationshipsCount));
-		sb.append("\n");
-		
-		sb.append("Number of active defining relationships: ");
-		sb.append(getIntegerInstance().format(definingRelationshipsCount));
-		sb.append("\n");
-		
-		sb.append("Number of active concrete domains: ");
-		sb.append(getIntegerInstance().format(concreteDomainCount));
-		sb.append("\n");
-		
-		sb.append("Number of active language type reference set members: ");
-		sb.append(getIntegerInstance().format(languageCount));
-		sb.append("\n");
-		
-		sb.append("Number of active mapping type reference set members: ");
-		sb.append(getIntegerInstance().format(mappingCount));
-		sb.append("\n");
-		
-		return sb.toString();
-	}
-	
 	@SuppressWarnings("rawtypes")
 	private Set<String> getReferencedComponentIdsByRefSetId(final IBranchPath branchPath, final IndexServerService indexService, 
 			final ReferenceManager<IndexSearcher> manager, final IndexSearcher searcher, final String refSetId) throws IOException {
@@ -1889,22 +1585,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 		return storageKeys;
 	}
-
-	/*
-	 * Returns true if the component with the given type exists.
-	 */
-	private boolean componentExists(final IBranchPath branchPath, final String componentId, final int componentType) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(componentId, "Component ID argument cannot be null.");
-		return getIndexServerService().getHitCount(branchPath, SnomedMappings.newQuery().type(componentType).id(componentId).matchAll(), null) > 0;
-	}
-	
-	/*returns with the server side index service.*/
-	@SuppressWarnings("rawtypes")
-	private IndexServerService getIndexServerService() {
-		return (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-	
 
 	/*returns true only and if only the SNOMED CT component identified by its unique ID is active. Otherwise false.*/
 	private boolean isActive(final long storageKey, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {

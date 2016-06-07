@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.services;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +28,6 @@ import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Multimap;
@@ -65,36 +60,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	}
 
 	@Override
-	public long getExtensionConceptId(final String componentId) {
-		return wrappedService.getExtensionConceptId(getBranchPath(), componentId);
-	}
-
-	@Override
-	public boolean descriptionExists(final String descriptionId) {
-		return wrappedService.descriptionExists(getBranchPath(), descriptionId);
-	}
-
-	@Override
-	public boolean relationshipExists(final String relationshipId) {
-		return wrappedService.relationshipExists(getBranchPath(), relationshipId);
-	}
-
-	@Override
-	public boolean componentExists(final String componentId) {
-		return wrappedService.componentExists(getBranchPath(), componentId);
-	}
-
-	@Override
-	public Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final short terminologyComponentId) {
-		return wrappedService.getAllComponentIdStorageKeys(getBranchPath(), terminologyComponentId);
-	}
-
-	@Override
-	public Collection<IdStorageKeyPair> getAllMemberIdStorageKeys(final int refSetTypeOrdinal) {
-		return wrappedService.getAllMemberIdStorageKeys(getBranchPath(), refSetTypeOrdinal);
-	}
-
-	@Override
 	public LongSet getAllReferringMembersStorageKey(final String componentId, final EnumSet<SnomedRefSetType> types) {
 		return wrappedService.getAllReferringMembersStorageKey(getBranchPath(), componentId, types);
 	}
@@ -110,19 +75,9 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	}
 	
 	@Override
-	public LongSet getAllRefSetIds() {
-		return wrappedService.getAllRefSetIds(getBranchPath());
-	}
-	
-	@Override
 	@Deprecated
 	public Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId) {
 		return wrappedService.getReferencedConceptTerms(getBranchPath(), refSetId, descriptionTypeId);
-	}
-	
-	@Override
-	public Collection<SnomedRefSetMemberFragment> getRefSetMemberFragments(final String refSetId) {
-		return wrappedService.getRefSetMemberFragments(getBranchPath(), checkNotNull(refSetId, "refSetId"));
 	}
 	
 	@Override
@@ -133,11 +88,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	@Override
 	public Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules() {
 		return wrappedService.getExistingModules(getBranchPath());
-	}
-	
-	@Override
-	public Map<String, Date> getExistingModulesWithEffectiveTime() {
-		return wrappedService.getExistingModulesWithEffectiveTime(getBranchPath());
 	}
 	
 	@Override

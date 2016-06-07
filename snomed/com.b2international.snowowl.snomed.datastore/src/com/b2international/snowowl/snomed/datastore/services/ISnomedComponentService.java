@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.services;
 
 import java.io.Serializable;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
@@ -25,10 +24,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -70,14 +66,6 @@ public interface ISnomedComponentService {
 	 * @return the 'Synonym' concept and all descendant IDs.
 	 */
 	Set<String> getSynonymAndDescendantIds(IBranchPath branchPath);
-	
-	/**
-	 * Returns with the namespace extension concept ID for a specified namespace extracted from the given SNOMED&nbsp;CT core component ID.
-	 * @param branchPath the branch path.
-	 * @param componentId the unique ID of the SNOMED&nbsp;CT core component.
-	 * @return the extension namespace concept ID, or {@code -1L} if the ID was not found.
-	 */
-	long getExtensionConceptId(final IBranchPath branchPath, final String componentId);
 	
 	/**
 	 * Returns with an array of labels for components identified by their unique SNOMED&nbsp;CT core component ID.
@@ -131,46 +119,6 @@ public interface ISnomedComponentService {
 	@Nullable String[][] getAllDescriptionProperties(final IBranchPath branchPath);
 	
 	/**
-	 * This method returns an array containing the followings:
-	 * <ul>
-	 * <li>Source concept ID.</li>
-	 * <li>Type concept ID.</li>
-	 * <li>Destination concept ID.</li>
-	 * <li>Relationship destination negated. (Empty string if not negated, 'NOT' if negated.)</>
-	 * </ul>
-	 * Clients can make sure, that the order will *NOT* change. Clients can also make sure, if one of the followings described above is 
-	 * *NOT* available, this method rather returns with {@code null}.
-	 * <p>This method will return with {@code null} if the given ID is *NOT* a valid SNOMED&nbsp;CT relationship ID.
-	 * <p>This method also returns with {@code null} if no relationship can be found in the store with the given ID on the specified branch.
-	 * @param branchPath the branch path.
-	 * @param relationshipId the unique ID of the SNOMED&nbsp;CT relationship.
-	 * @return an array of the source, type and destination concept IDs of the relationship. Also includes negated information.
-	 */
-	@Nullable String[] getRelationshipProperties(final IBranchPath branchPath, final String relationshipId);
-	
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT component is active. Returns with {@code false} if the 
-	 * component is retired. This method also returns with {@code false} if no SNOMED&nbsp;CT component were found 
-	 * with the specified unique storage key (CDO ID) on the specified branch.
-	 * @param branchPath the branch path.
-	 * @param storageKey the unique storage key of the SNOMED&nbsp;CT component.
-	 * @return {@code true} if the component is active. Otherwise {@code false}.
-	 */
-	boolean isActive(final IBranchPath branchPath, final long storageKey);
-	
-	/**
-	 * Returns with a bit set representing the status of a bunch of SNOMED&nbsp;CT components.
-	 * A set bit representing an active status of an associated component identified by its unique storage key.
-	 * If the bit is unset, then the component is retired. Clients can make sure that specified list of 
-	 * storage key and the returning bit set has exactly the same order.
-	 * <br>The bit will be unset if no component cannot be found on the specified branch.
-	 * @param branchPath the branch path.
-	 * @param storageKeys a list of component storage keys.
-	 * @return a bit set representing the status of a bunch of components.
-	 */
-	BitSet isActive(final IBranchPath branchPath, final LongList storageKeys);
-
-	/**
 	* Returns with an array of SNOMED&nbsp;CT concept icon IDs for
 	* a bunch of SNOMED&nbsp;CT concepts given by their unique SNOMED&nbsp;CT concept ID.
 	* <br>Returning array may contain {@code null} elements. Order of the given concept IDs and the returning array
@@ -193,48 +141,14 @@ public interface ISnomedComponentService {
 	long getDescriptionStorageKey(final IBranchPath branchPath, final String descriptionId);
 	
 	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT description exists with the given unique ID.
-	 * @param branchPath the branch path.
-	 * @param descriptionId the unique ID of the description.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean descriptionExists(final IBranchPath branchPath, final String descriptionId);
-
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT relationship exists with the given unique ID.
-	 * @param branchPath the branch path.
-	 * @param relationshipId the unique ID of the relationship.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean relationshipExists(final IBranchPath branchPath, final String relationshipId);
-
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT core component exists with the given unique ID.
-	 * @param branchPath the branch path.
-	 * @param componentId the unique ID of the SNOMED&nbsp;CT core component.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean componentExists(final IBranchPath branchPath, final String componentId);
-	
-	/**
 	 * Returns with a collection of {@link IdStorageKeyPair#getId() component ID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
 	 * for all components in the SNOMED&nbsp;CT ontology on a specified {@link IBranchPath branch}. Retired members are included in the result set.
 	 * @param branchPath the branch path.
 	 * @param terminologyComponentId the application specific terminology component ID. See: {@link SnomedTerminologyComponentConstants#REFSET_MEMBER_NUMBER}.
 	 * @return a collection of component ID - storage key pairs. 
-	 * @see #getAllMemberIdStorageKeys(IBranchPath, short)
 	 */
 	Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId);
 
-	/**
-	 * Returns with a collection of {@link IdStorageKeyPair#getId() UUID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
-	 * for all reference set members that belong to the given {@link SnomedRefSetType SNOMED&nbsp;CT reference set type} given as an ordinal
-	 * @param branchPath the branch path.
-	 * @param refSetTypeOrdinal the reference set type
-	 * @return a collection of reference set member UUID - storage key pairs. 
-	 */
-	Collection<IdStorageKeyPair> getAllMemberIdStorageKeys(final IBranchPath branchPath, final int refSetTypeOrdinal);
-	
 	/**
 	 * Returns with a collection of reference set member storage keys (CDO IDs) where a component given its unique {@code componentId}
 	 * is either the referenced component or depending on the {@link SnomedRefSetType type} is the target component.
@@ -264,13 +178,6 @@ public interface ISnomedComponentService {
 	LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType);
 	
 	/**
-	 * Returns with the identifier concept IDs of all available SNOMED&nbsp;CT reference sets.
-	 * @param branchPath the branch path.
-	 * @return a set containing all reference set identifier concept IDs.
-	 */
-	LongSet getAllRefSetIds(final IBranchPath branchPath);
-	
-	/**
 	 * Returns with a map of SNOMED&nbsp;CT concept IDs and the associated terms of the descriptions given as the description type IDs from
 	 * a reference set.
 	 * @param branchPath branch path.
@@ -280,15 +187,6 @@ public interface ISnomedComponentService {
 	 */
 	@Deprecated
 	Map<String, String> getReferencedConceptTerms(final IBranchPath branchPath, final String refSetId, final String... descriptionTypeId);
-	
-	/**
-	 * Returns with a pair of reference set member referenced component label and map target component label.
-	 * The map target component label is optional, and could be {@code null}.
-	 * @param branchPath the branch path.
-	 * @param refSetId the reference set ID.
-	 * @return a set of referenced component and map target component label pairs.
-	 */
-	Set<Pair<String, String>> getReferenceSetMemberLabels(final IBranchPath branchPath, final String refSetId);
 	
 	/**
 	 * Returns with a pair of referenced component and target component label for a reference set member.
@@ -333,14 +231,6 @@ public interface ISnomedComponentService {
 	<V> Multimap<String, V> getAllConcreteDomainsForName(final IBranchPath branchPath, final String concreteDomainName);
 	
 	/**
-	 * Returns with a multimap of concept preferred terms and the concept IDs. The mapping will be collected 
-	 * for the focus concept argument (inclusive) and all its descendant concepts.
-	 * @param branchPath the branch path for the operation.
-	 * @param focusConceptId the ID of the concept and its all descendant which preferred term to ID mapping has to be created.
-	 */
-	Multimap<String, String> getPreferredTermToIdsMapping(final IBranchPath branchPath, final String focusConceptId);
-	
-	/**
 	 * @param branchPath
 	 * @return
 	 */
@@ -378,39 +268,12 @@ public interface ISnomedComponentService {
 	LongSet getSelfAndAllSubtypeStorageKeysForInactivation(final IBranchPath branchPath, final String... focusConceptIds);
 	
 	/**
-	 * Returns with a mapping between the CDO ID and identifier concept ID for all reference sets.
-	 * @param branchPath branch path for the reference set visibility.
-	 * @return a mapping between reference set CDO IDs and identifier concept IDs.
-	 */
-	Map<CDOID, String> getRefSetCdoIdIdMapping(final IBranchPath branchPath);
-	
-	/**
 	 * Returns with a set of all core SNOMED&nbsp;CT component IDs. The returning set 
 	 * includes the IDs of the retired components.
 	 * @param branchPath the branch path for the component visibility.
 	 * @return a set of all core component IDs.
 	 */
 	LongSet getAllCoreComponentIds(final IBranchPath branchPath);
-	
-	/**
-	 * Returns with description inactivation reference set member's value ID associated with the
-	 * given SNOMED&nbsp;CT description if any. May return with {@code null} if the description
-	 * does not exist, active or even if no reason was specified for the inactivation process.
-	 * @param branchPath the branch path for the visibility.
-	 * @param descriptionId the description ID.
-	 * @return the description inactivation ID or {@code null} if does not exist or the description
-	 * has not been retired.
-	 */
-	@Nullable String getDescriptionInactivationId(final IBranchPath branchPath, final String descriptionId);
-	
-	/**
-	 * Returns with some statistical information about the underlying ontology such as 
-	 * the number of active concepts, description, defining and non-defining properties
-	 * and concrete domains.
-	 * @param branchPath the branch path for the ontology visibility.
-	 * @return statistical information as a string.
-	 */
-	String getOntologyStatistics(final IBranchPath branchPath);
 	
 	/**
 	 * Serializable representation of a component ID and storage key pair.

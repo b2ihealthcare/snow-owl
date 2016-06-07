@@ -16,18 +16,13 @@
 package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Multimap;
@@ -57,51 +52,6 @@ public interface IClientSnomedComponentService {
 	Set<String> getSynonymAndDescendantIds();
 	
 	/**
-	 * Returns with the namespace extension concept ID for a specified namespace extracted from the given SNOMED&nbsp;CT core component ID.
-	 * @param componentId the unique ID of the SNOMED&nbsp;CT core component.
-	 * @return the extension namespace concept ID, or {@code -1L} if the ID was not found.
-	 */
-	long getExtensionConceptId(final String componentId);
-	
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT description exists with the given unique ID.
-	 * @param descriptionId the unique ID of the description.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean descriptionExists(final String descriptionId);
-	
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT relationship exists with the given unique ID.
-	 * @param relationshipId the unique ID of the relationship.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean relationshipExists(final String relationshipId);
-	
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT core component exists with the given unique ID.
-	 * @param componentId the unique ID of the SNOMED&nbsp;CT core component.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	boolean componentExists(final String componentId);
-	
-	/**
-	 * Returns with a collection of {@link IdStorageKeyPair#getId() component ID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
-	 * for all components in the SNOMED&nbsp;CT ontology on the currently active {@link IBranchPath branch}. Retired members are included in the result set.
-	 * @param terminologyComponentId the application specific terminology component ID. See: {@link SnomedTerminologyComponentConstants#REFSET_MEMBER_NUMBER}.
-	 * @return a collection of component ID - storage key pairs. 
-	 * @see #getAllMemberIdStorageKeys(IBranchPath, short)
-	 */
-	Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final short terminologyComponentId);
-
-	/**
-	 * Returns with a collection of {@link IdStorageKeyPair#getId() UUID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
-	 * for all reference set members that belong to the given {@link SnomedRefSetType SNOMED&nbsp;CT reference set type} given as an ordinal
-	 * @param refSetTypeOrdinal the reference set type
-	 * @return a collection of reference set member UUID - storage key pairs. 
-	 */
-	Collection<IdStorageKeyPair> getAllMemberIdStorageKeys(final int refSetTypeOrdinal);
-	
-	/**
 	 * Returns with a collection of reference set member storage keys (CDO IDs) where a component given its unique {@code componentId}
 	 * is either the referenced component or depending on the {@link SnomedRefSetType type} is the target component.
 	 * <br>(e.g.: map target for simple map reference set member, value in case of attribute value type, etc.)  
@@ -127,12 +77,6 @@ public interface IClientSnomedComponentService {
 	Collection<SnomedDescriptionFragment> getDescriptionFragmentsForConcept(final String conceptId, final String languageRefSetId);
 	
 	/**
-	 * Returns with the identifier concept IDs of all available SNOMED&nbsp;CT reference sets.
-	 * @return a set containing all reference set identifier concept IDs.
-	 */
-	LongSet getAllRefSetIds();
-	
-	/**
 	 * Returns with a map of SNOMED&nbsp;CT concept IDs and the associated terms of the descriptions given as the description type IDs from
 	 * a reference set.
 	 * @param refSetId the reference set ID.
@@ -141,13 +85,6 @@ public interface IClientSnomedComponentService {
 	 */
 	@Deprecated
 	Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId);
-	
-	/**
-	 * Returns with a collection of {@link SnomedRefSetMemberFragment reference set member}s contained by the given reference set. 
-	 * @param refSetId the reference set identifier concept ID.
-	 * @return a collection of reference set members from a given reference set.
-	 */
-	Collection<SnomedRefSetMemberFragment> getRefSetMemberFragments(final String refSetId);
 	
 	/**
 	 * Returns with a multimap or SNOMED&nbsp;CT component IDs and the associated concrete domain values for the 
@@ -162,12 +99,5 @@ public interface IClientSnomedComponentService {
 	 * @return a collection of existing module dependency reference set members.
 	 */
 	Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules();
-	
-	/**
-	 * Returns with a map containing every module of the Module Dependency reference set and the latest effective time for the module.
-	 * The provided date could be <code>null</code>.
-	 * @return a map where the key is the module ID and the value is the module's latest effective time
-	 */
-	Map<String, Date> getExistingModulesWithEffectiveTime();
 	
 }
