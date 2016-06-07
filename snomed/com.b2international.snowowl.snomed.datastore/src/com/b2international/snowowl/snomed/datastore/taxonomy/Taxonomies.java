@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
@@ -32,21 +33,21 @@ public final class Taxonomies {
 	private Taxonomies() {
 	}
 	
-	public static Taxonomy inferred(IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, SnomedStatementBrowser statementBrowser) {
-		return buildTaxonomy(branchPath, commitChangeSet, conceptIds, statementBrowser, StatementCollectionMode.INFERRED_ISA_ONLY);
+	public static Taxonomy inferred(RevisionSearcher searcher, IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, SnomedStatementBrowser statementBrowser) {
+		return buildTaxonomy(searcher, branchPath, commitChangeSet, conceptIds, statementBrowser, StatementCollectionMode.INFERRED_ISA_ONLY);
 	}
 	
-	public static Taxonomy stated(IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, SnomedStatementBrowser statementBrowser) {
-		return buildTaxonomy(branchPath, commitChangeSet, conceptIds, statementBrowser, StatementCollectionMode.STATED_ISA_ONLY);
+	public static Taxonomy stated(RevisionSearcher searcher, IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, SnomedStatementBrowser statementBrowser) {
+		return buildTaxonomy(searcher, branchPath, commitChangeSet, conceptIds, statementBrowser, StatementCollectionMode.STATED_ISA_ONLY);
 	}
 
-	private static Taxonomy buildTaxonomy(IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds,
+	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds,
 			SnomedStatementBrowser statementBrowser, final StatementCollectionMode mode) {
 		final IsAStatementWithId[] statements = statementBrowser.getActiveStatements(branchPath, mode);
 		final ISnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
 		final ISnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
 		oldTaxonomy.build();
-		new SnomedTaxonomyUpdateRunnable(branchPath, commitChangeSet, newTaxonomy, mode.getCharacteristicType()).run();
+		new SnomedTaxonomyUpdateRunnable(searcher, branchPath, commitChangeSet, newTaxonomy, mode.getCharacteristicType()).run();
 		final Pair<LongSet, LongSet> diff = newTaxonomy.difference(oldTaxonomy);
 		return new Taxonomy(newTaxonomy, oldTaxonomy, diff);
 	}
