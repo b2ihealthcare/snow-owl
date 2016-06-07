@@ -233,7 +233,11 @@ public abstract class SnomedBranchingApiAssert {
 	}
 	
 	public static void assertBranchCanBeMerged(final IBranchPath branchPath, final String commitComment) {
-		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(branchPath, branchPath.getParent(), commitComment)));
+		assertBranchCanBeMerged(branchPath, branchPath.getParent(), commitComment);
+	}
+	
+	public static void assertBranchCanBeMerged(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
 		ResponseBody<?> entry = waitForMergeJob(id);
 		
 		assertNotNull(entry);

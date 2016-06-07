@@ -118,10 +118,14 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final String typeId, final Map<?, ?> acceptabilityMap) {
+		assertDescriptionCreated(branchPath, symbolicName, Concepts.ROOT_CONCEPT, typeId, acceptabilityMap);
+	}
+	
+	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final String conceptId, final String typeId, final Map<?, ?> acceptabilityMap) {
 		final Date creationDate = new Date();
 
 		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("conceptId", Concepts.ROOT_CONCEPT)
+				.put("conceptId", conceptId)
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("typeId", typeId)
 				.put("term", "New description at " + creationDate)
@@ -138,11 +142,16 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName) {
+		// destination - Morphologic abnormality
+		assertRelationshipCreated(branchPath, symbolicName, Concepts.ROOT_CONCEPT, "49755003");
+	}
+	
+	private void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName, final String sourceId, final String destinationId) {
 		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("sourceId", Concepts.ROOT_CONCEPT)
+				.put("sourceId", sourceId)
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("typeId", "116676008") // Associated morphology
-				.put("destinationId", "49755003") // Morphologic abnormality
+				.put("destinationId", destinationId)
 				.put("commitComment", "New relationship")
 				.build();
 
@@ -284,6 +293,130 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
 		assertRelationshipExists(testBranchPath.getParent(), "R2");
 		assertRelationshipNotExists(testBranchPath, "R2");
+	}
+	
+	@Test
+	public void mergeNewConceptToNotParentBranch01() {
+		final IBranchPath b1 = createRandomBranchPath();
+		final IBranchPath b2 = createRandomBranchPath();
+		
+		givenBranchWithPath(b1);
+		givenBranchWithPath(b2);
+		
+		assertConceptCreated(b1, "C1");
+		assertConceptExists(b1, "C1");
+		
+		assertConceptNotExists(b2, "C1");
+		
+		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
+		
+		assertConceptExists(b1, "C1");
+		assertConceptExists(b2, "C1");
+	}
+	
+	@Test
+	public void mergeNewConceptToNotParentBranch02() {
+		final IBranchPath b1 = createRandomBranchPath();
+		givenBranchWithPath(b1);
+		
+		assertConceptCreated(b1, "C1");
+		assertConceptExists(b1, "C1");
+		
+		assertConceptCreated(BranchPathUtils.createMainPath(), "C");
+		assertConceptExists(BranchPathUtils.createMainPath(), "C");
+		
+		final IBranchPath b2 = createRandomBranchPath();
+		givenBranchWithPath(b2);
+		
+		assertConceptExists(b2, "C");
+		assertConceptNotExists(b1, "C");
+		assertConceptNotExists(b2, "C1");
+		
+		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
+		
+		assertConceptExists(b2, "C");
+		assertConceptExists(b2, "C1");
+	}
+	
+	@Test
+	public void mergeNewDescriptionToNotParentBranch() {
+		final IBranchPath b1 = createRandomBranchPath();
+		final IBranchPath b2 = createRandomBranchPath();
+		
+		givenBranchWithPath(b1);
+		givenBranchWithPath(b2);
+		
+		assertDescriptionCreated(b1, "D", ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(b1, "D");
+
+		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
+
+		assertDescriptionExists(b1, "D");
+		assertDescriptionExists(b2, "D");
+	}
+	
+	@Test
+	public void mergeNewRelationshipToNotParentBranch() {
+		final IBranchPath b1 = createRandomBranchPath();
+		final IBranchPath b2 = createRandomBranchPath();
+		
+		givenBranchWithPath(b1);
+		givenBranchWithPath(b2);
+		
+		assertRelationshipCreated(b1, "R");
+		assertRelationshipExists(b1, "R");
+
+		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
+
+		assertRelationshipExists(b1, "R");
+		assertRelationshipExists(b2, "R");
+	}
+
+	@Test
+	public void noMergeNewDescriptionToNotParentBranch() {
+		final IBranchPath mainPath = BranchPathUtils.createMainPath();
+		assertConceptCreated(mainPath, "C");
+		assertConceptExists(mainPath, "C");
+		
+		final IBranchPath b1 = createRandomBranchPath();
+		givenBranchWithPath(b1);
+		
+		final String conceptId = symbolicNameMap.get("C");
+		assertDescriptionCreated(b1, "D1", conceptId, SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(b1, "D1");
+		
+		final IBranchPath b2 = createRandomBranchPath();
+		givenBranchWithPath(b2);
+		
+		assertConceptCanBeDeleted(b2, "C");
+		assertConceptNotExists(b2, "C");
+
+		assertMergeJobFails(b1, b2, "Merge b1 to b2");
+		assertDescriptionNotExists(b2, "D1");
+	}
+	
+	@Test
+	public void noMergeNewRelationshipToNotParentBranch() {
+		final IBranchPath mainPath = BranchPathUtils.createMainPath();
+		assertConceptCreated(mainPath, "C");
+		assertConceptExists(mainPath, "C");
+		
+		final IBranchPath b1 = createRandomBranchPath();
+		givenBranchWithPath(b1);
+		assertConceptExists(b1, "C");
+		
+		final String conceptId = symbolicNameMap.get("C");
+		assertRelationshipCreated(b1, "R", Concepts.ROOT_CONCEPT, conceptId);
+		assertRelationshipExists(b1, "R");
+		
+		final IBranchPath b2 = createRandomBranchPath();
+		givenBranchWithPath(b2);
+		
+		assertConceptCanBeDeleted(b2, "C");
+		assertConceptNotExists(b2, "C");
+		
+		assertMergeJobFails(b1, b2, "Merge b1 to b2");
+		assertRelationshipNotExists(b2, "R");
 	}
 
 	@Test
