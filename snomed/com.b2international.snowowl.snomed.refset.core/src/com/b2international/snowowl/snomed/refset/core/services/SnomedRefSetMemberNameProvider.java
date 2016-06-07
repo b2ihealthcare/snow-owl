@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
@@ -111,9 +110,4 @@ public enum SnomedRefSetMemberNameProvider implements IComponentNameProvider {
 		return sb.toString();
 	}
 
-	// TODO
-	@Override
-	public ComponentIdAndLabel getComponentIdAndLabel(IBranchPath branchPath, long storageKey) {
-		return null;
-	}
 }
