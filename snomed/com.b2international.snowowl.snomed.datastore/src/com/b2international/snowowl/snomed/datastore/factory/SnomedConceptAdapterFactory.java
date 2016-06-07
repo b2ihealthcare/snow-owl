@@ -21,7 +21,6 @@ import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
@@ -55,7 +54,6 @@ public class SnomedConceptAdapterFactory extends TypeSafeAdapterFactory {
 						.id(concept.getId())
 						.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
 						.moduleId(concept.getModule().getId()) 
-						.storageKey(CDOUtils.getStorageKey(concept))
 						.active(concept.isActive())
 						.primitive(concept.isPrimitive())
 						.exhaustive(concept.isExhaustive())
