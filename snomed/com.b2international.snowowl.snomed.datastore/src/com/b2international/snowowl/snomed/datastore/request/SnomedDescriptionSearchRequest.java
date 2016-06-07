@@ -20,46 +20,16 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.ChainedFilter;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.classic.QueryParser.Operator;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.DisjunctionMaxQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FuzzyQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.spans.SpanFirstQuery;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
-import org.apache.lucene.util.QueryBuilder;
-import org.apache.lucene.util.Version;
-import org.apache.lucene.util.automaton.LevenshteinAutomata;
-
 import com.b2international.collections.longs.LongCollection;
-import com.b2international.index.MultiPhrasePrefixQuery;
-import com.b2international.snowowl.core.TextConstants;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.lucene.BookendTokenFilter;
-import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
-import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -67,8 +37,6 @@ import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -95,7 +63,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 
 	@Override
 	protected SnomedDescriptions doExecute(BranchContext context) throws IOException {
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 2) {
 			throw new BadRequestException("Description term must be at least 2 characters long.");
 		}
@@ -139,9 +107,9 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 	}
 
-	private SnomedDescriptions search(BranchContext context, final IndexSearcher searcher, Long languageRefSetId, int offset, int limit) throws IOException {
+	private SnomedDescriptions search(BranchContext context, final RevisionSearcher searcher, Long languageRefSetId, int offset, int limit) throws IOException {
 		
-		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().description();
+		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		
@@ -171,28 +139,14 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		addLocaleFilter(context, filters, ops, languageRefSetId); 
 		
 		final Query query = createFilteredQuery(queryBuilder.matchAll(), filters, ops);
-		final int totalHits = getTotalHits(searcher, query);
-		
-		if (limit < 1 || totalHits < 1) {
-			return new SnomedDescriptions(offset, limit, totalHits);
-		}
 		
 		// TODO: control score tracking
-		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, offset, limit, totalHits), sort, true, false);
-		if (topDocs.scoreDocs.length < 1) {
-			return new SnomedDescriptions(offset, limit, topDocs.totalHits);
+		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(query);
+		if (limit < 1 || hits.getTotal() < 1) {
+			return new SnomedDescriptions(offset, limit, hits.getTotal());
+		} else {
+			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), offset, limit, hits.getTotal());
 		}
-		
-		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final ImmutableList.Builder<SnomedDescriptionIndexEntry> descriptionBuilder = ImmutableList.builder();
-		
-		for (int i = offset; i < scoreDocs.length; i++) {
-			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			final SnomedDescriptionIndexEntry indexEntry = SnomedDescriptionIndexEntry.builder(doc).score(scoreDocs[i].score).build();
-			descriptionBuilder.add(indexEntry);
-		}
-
-		return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(descriptionBuilder.build(), offset, limit, topDocs.totalHits);
 	}
 	
 	private void addDescriptionTermQuery(final SnomedQueryBuilder queryBuilder) {

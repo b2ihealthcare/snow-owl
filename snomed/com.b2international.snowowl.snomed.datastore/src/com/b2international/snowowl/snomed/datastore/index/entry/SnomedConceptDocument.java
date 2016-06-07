@@ -96,11 +96,24 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}
 		
 		public static Expression refSetType(SnomedRefSetType type) {
-			return match(Fields.REFSET_TYPE, type.ordinal());
+			return refSetTypes(Collections.singleton(type));
+		}
+		
+		public static Expression refSetTypes(Collection<SnomedRefSetType> types) {
+			return matchAnyInt(Fields.REFSET_TYPE, FluentIterable.from(types).transform(new Function<SnomedRefSetType, Integer>() {
+				@Override
+				public Integer apply(SnomedRefSetType input) {
+					return input.ordinal();
+				}
+			}).toSet());
 		}
 		
 		public static Expression referencedComponentType(int referencedComponentType) {
 			return match(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentType);
+		}
+		
+		public static Expression referencedComponentTypes(Collection<Integer> referencedComponentTypes) {
+			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 		}
 		
 		public static Expression structuralRefSet() {

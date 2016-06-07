@@ -21,27 +21,16 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.CustomScoreQuery;
-import org.apache.lucene.queries.function.FunctionQuery;
-import org.apache.lucene.queries.function.FunctionValues;
-import org.apache.lucene.queries.function.ValueSource;
-import org.apache.lucene.queries.function.valuesource.DualFloatFunction;
-import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
-import org.apache.lucene.queries.function.valuesource.LongFieldSource;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.*;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.options.Options;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -57,8 +46,6 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.collect.ImmutableList;
 
@@ -145,42 +132,47 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 
 	@Override
 	protected SnomedConcepts doExecute(BranchContext context) throws IOException {
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 
-		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().concept();
+		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
+		addComponentIdFilter(queryBuilder);
 		
 		if (containsKey(OptionKey.NAMESPACE)) {
-			queryBuilder.conceptNamespaceId(Long.valueOf(getString(OptionKey.NAMESPACE)));
+			queryBuilder.must(namespace(getString(OptionKey.NAMESPACE)));
 		}
 		
 		if (containsKey(OptionKey.DEFINITION_STATUS)) {
-			queryBuilder.primitive(Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS)));
+			if (Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS))) {
+				queryBuilder.must(primitive());
+			} else if (Concepts.FULLY_DEFINED.equals(getString(OptionKey.DEFINITION_STATUS))) {
+				queryBuilder.must(defining());
+			}
 		}
 		
 		if (containsKey(OptionKey.PARENT)) {
-			queryBuilder.parent(getString(OptionKey.PARENT));
+			queryBuilder.must(parents(getCollection(OptionKey.PARENT, String.class)));
 		}
 		
 		if (containsKey(OptionKey.STATED_PARENT)) {
-			queryBuilder.statedParent(getString(OptionKey.STATED_PARENT));
+			queryBuilder.must(statedParents(getCollection(OptionKey.STATED_PARENT, String.class)));
 		}
 		
 		if (containsKey(OptionKey.ANCESTOR)) {
-			final String ancestorId = getString(OptionKey.ANCESTOR);
-			queryBuilder.and(SnomedMappings.newQuery()
-					.parent(ancestorId)
-					.ancestor(ancestorId)
-					.matchAny());
+			final Collection<String> ancestorIds = getCollection(OptionKey.ANCESTOR, String.class);
+			queryBuilder.must(Expressions.builder()
+					.should(parents(ancestorIds))
+					.should(ancestors(ancestorIds))
+					.build());
 		}
 		
 		if (containsKey(OptionKey.STATED_ANCESTOR)) {
-			final String ancestorId = getString(OptionKey.STATED_ANCESTOR);
-			queryBuilder.and(SnomedMappings.newQuery()
-					.statedParent(ancestorId)
-					.statedAncestor(ancestorId)
-					.matchAny());
+			final Collection<String> ancestorIds = getCollection(OptionKey.STATED_ANCESTOR, String.class);
+			queryBuilder.must(Expressions.builder()
+					.should(statedParents(ancestorIds))
+					.should(statedAncestors(ancestorIds))
+					.build());
 		}
 
 		final BooleanFilter filter = new BooleanFilter();
@@ -211,7 +203,6 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			searchProfileQuery = SearchProfileQueryProvider.provideQuery(context.branch().branchPath(), userId);
 		}
 
-		addComponentIdFilter(filter);
 		
 		if (containsKey(OptionKey.TERM)) {
 			final BooleanQuery bq = buildBooleanQuery(queryBuilder.matchAll(), Occur.MUST);
@@ -276,40 +267,13 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			sort = Sort.INDEXORDER;
 		}
 		
-		final int totalHits = getTotalHits(searcher, query);
-		if (limit() < 1 || totalHits < 1) {
-			return new SnomedConcepts(offset(), limit(), totalHits);
-		}
-		
 		// TODO: control score tracking
-		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), sort, true, false);
-		if (topDocs.scoreDocs.length < 1) {
-			return new SnomedConcepts(offset(), limit(), topDocs.totalHits);
+		final Hits<SnomedConceptDocument> hits = searcher.search(query);
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedConcepts(offset(), limit(), hits.getTotal());
+		} else {
+			return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
-		
-		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final ImmutableList.Builder<SnomedConceptDocument> conceptsBuilder = ImmutableList.builder();
-		
-		final Options expand = expand();
-		for (int i = offset(); i < scoreDocs.length; i++) {
-			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			final Builder builder = SnomedConceptDocument.builder(doc).score(scoreDocs[i].score);
-			
-			if (expand != null) {
-				if (expand.containsKey("parentIds") || expand.containsKey("ancestors")) {
-					builder.parents(SnomedMappings.parent().getValueAsLongSet(doc));
-					builder.statedParents(SnomedMappings.statedParent().getValueAsLongSet(doc));
-				}
-				
-				if (expand.containsKey("ancestorIds") || expand.containsKey("ancestors")) {
-					builder.ancestors(SnomedMappings.ancestor().getValueAsLongSet(doc));
-					builder.statedAncestors(SnomedMappings.statedAncestor().getValueAsLongSet(doc));
-				}
-			}
-			
-			conceptsBuilder.add(builder.build());
-		}
-		return SnomedConverters.newConceptConverter(context, expand, locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
 	private BooleanQuery buildBooleanQuery(final Query query, final Occur occur) {

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
@@ -31,6 +33,7 @@ import java.util.Set;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -70,6 +73,8 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public static class Fields {
 		// known RF2 fields
+		public static final String REFERENCE_SET_ID = "referenceSetId"; // XXX different than the RF2 header field name
+		public static final String REFERENCED_COMPONENT_ID = SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID;
 		public static final String ACCEPTABILITY_ID = SnomedRf2Headers.FIELD_ACCEPTABILITY_ID;
 		public static final String VALUE_ID = SnomedRf2Headers.FIELD_VALUE_ID;
 		public static final String TARGET_COMPONENT = SnomedRf2Headers.FIELD_TARGET_COMPONENT;
@@ -94,6 +99,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		// extra index fields to store datatype and map target type
 		public static final String DATA_TYPE = "dataType";
 		public static final String MAP_TARGET_TYPE = "mapTargetType";
+		public static final String REFSET_TYPE = "referenceSetType";
 	}
 	
 	private static final Set<String> ADDITIONAL_FIELDS = ImmutableSet.<String>builder()
@@ -312,7 +318,32 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}).toList();
 	}
 
-	public static class Builder extends SnomedDocumentBuilder<Builder> {
+	public static final class Expressions extends SnomedDocument.Expressions {
+
+		public static Expression referenceSetId(Collection<String> referenceSetIds) {
+			return matchAny(Fields.REFERENCE_SET_ID, referenceSetIds);
+		}
+
+		public static Expression referencedComponentIds(Collection<String> referencedComponentIds) {
+			return matchAny(Fields.REFERENCED_COMPONENT_ID, referencedComponentIds);
+		}
+		
+		public static Expression targetComponents(Collection<String> targetComponentIds) {
+			return matchAny(Fields.TARGET_COMPONENT, targetComponentIds);
+		}
+
+		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
+			return matchAnyInt(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(new Function<SnomedRefSetType, Integer>() {
+				@Override
+				public Integer apply(SnomedRefSetType input) {
+					return input.ordinal();
+				}
+			}).toSet());
+		}
+		
+	}
+	
+	public static final class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String referencedComponentId;
 		private final Map<String, Object> additionalFields = newHashMap();
