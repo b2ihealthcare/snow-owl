@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
@@ -40,11 +39,6 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 
 		@Override
 		protected Branch execute(RepositoryContext context, Branch source, Branch target) {
-
-			if (!source.parent().equals(target)) {
-				throw new BadRequestException("Cannot merge source '%s' into target '%s'; target is not the direct parent of source.", source.path(), target.path());
-			}
-
 			try (Locks locks = new Locks(context, source, target)) {
 				return target.merge(source, commitMessage);
 			} catch (BranchMergeException e) {
