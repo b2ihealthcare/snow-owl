@@ -45,6 +45,9 @@ final class CodeSystemGetRequest extends BaseResourceRequest<BranchContext, Code
 	private static final long serialVersionUID = 1L;
 
 	private String uniqueId;
+	
+	CodeSystemGetRequest() {
+	}
 
 	public void setUniqueId(String uniqueId) {
 		this.uniqueId = uniqueId;

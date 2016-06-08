@@ -50,6 +50,9 @@ final class CodeSystemVersionSearchRequest extends SearchRequest<CodeSystemVersi
 
 	private String codeSystemShortName;
 	private String versionId;
+	
+	CodeSystemVersionSearchRequest() {
+	}
 
 	void setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
