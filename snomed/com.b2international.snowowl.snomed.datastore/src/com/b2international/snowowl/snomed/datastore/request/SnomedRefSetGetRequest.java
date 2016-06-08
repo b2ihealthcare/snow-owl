@@ -26,7 +26,7 @@ import com.b2international.snowowl.datastore.request.GetRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * @since 4.5
@@ -44,7 +44,7 @@ final class SnomedRefSetGetRequest extends GetRequest<SnomedReferenceSet> {
 
 	@Override
 	protected SnomedReferenceSet process(BranchContext context, IComponent<String> component, Options expand) {
-		return SnomedConverters.newRefSetConverter(context, expand, locales()).convert((SnomedRefSetIndexEntry) component);
+		return SnomedConverters.newRefSetConverter(context, expand, locales()).convert((SnomedConceptDocument) component);
 	}
 	
 	@Override
