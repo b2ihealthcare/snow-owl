@@ -32,30 +32,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConceptDocument, String> {
 
 	/**
-	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the specified branch. 
-	 * @param branchPath the branch path.
-	 * @return an iterable of all SNOMED&nbsp;CT concepts.
-	 */
-	Iterable<SnomedConceptDocument> getConcepts(final IBranchPath branchPath);
-	
-	/**
-	 * Returns with a collection of concepts given with the concept unique IDs.
-	 * <p>If the IDs argument references a non existing concept, then that concept will
-	 * be omitted from the result set, instead of populating its value as {@code null}.  
-	 * @param branchPath the branch path.
-	 * @param ids the unique IDs for the collection.
-	 * @return a collection of concepts.
-	 */
-	Collection<SnomedConceptDocument> getConcepts(final IBranchPath branchPath, final Iterable<String> ids);
-	
-	/**
-	 * Returns with the number of all SNOMED&nbsp;CT concepts for the specified branch. 
-	 * @param branchPath the branch path.
-	 * @return the number of all SNOMED&nbsp;CT concepts.
-	 */
-	int getConceptCount(final IBranchPath branchPath);
-	
-	/**
 	 * Returns with a set of the active direct descendant concept IDs of a SNOMED&nbsp;CT concept given by its unique ID.
 	 * @param branchPath the branch path.
 	 * @param conceptId the unique ID of the concept.
@@ -86,22 +62,6 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 * @return a set of concept IDs of all active ancestor concepts.
 	 */
 	LongSet getAllSuperTypeIds(final IBranchPath branchPath, final long conceptId);
-	
-	/**
-	 * Returns with a set of the active direct descendant concept storage keys of a SNOMED&nbsp;CT concept given by its unique ID.
-	 * @param branchPath the branch path.
-	 * @param conceptId the unique ID of the concept.
-	 * @return a set of concept storage keys of the active direct descendant concepts.
-	 */
-	LongSet getSubTypeStorageKeys(final IBranchPath branchPath, final String conceptId);
-
-	/**
-	 * Returns with a set of all active descendant concept storage keys of a SNOMED&nbsp;CT concept given by its unique ID.
-	 * @param branchPath the branch path.
-	 * @param conceptId the unique ID of the concept.
-	 * @return a set of concept storage keys of all active descendant concepts.
-	 */
-	LongSet getAllSubTypeStorageKeys(final IBranchPath branchPath, final String conceptId);
 	
 	/**
 	 * Returns with a 2D array of IDs and storage keys of all the active SNOMED&nbsp;CT concepts from the ontology.
@@ -201,12 +161,4 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 */
 	int getHeight(final IBranchPath branchPath, final String conceptId);
 	
-	/**
-	 * Returns with {@code true} if the investigated concept is a leaf node in the ontology.
-	 * In other words, it has no children.
-	 * @param branchPath the branch path.
-	 * @param conceptId the unique ID of the concept to check.
-	 * @return {@code true} if the concept is a leaf, otherwise {@code false}.
-	 */
-	boolean isLeaf(final IBranchPath branchPath, final String conceptId);
 }

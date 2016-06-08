@@ -157,7 +157,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.moduleId(concept.getModule().getId())
 			.exhaustive(concept.isExhaustive())
 			.primitive(concept.isPrimitive())
-			.predicates(referringPredicates.get(id))
+			.referringPredicates(referringPredicates.get(id))
 	//		.relevant() // TODO register change type
 			;
 		

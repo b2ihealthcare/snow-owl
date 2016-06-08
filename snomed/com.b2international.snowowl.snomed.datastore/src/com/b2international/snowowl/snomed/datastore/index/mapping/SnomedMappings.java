@@ -157,10 +157,6 @@ class SnomedMappings {
 		return new SnomedFieldsToLoadBuilder();
 	}
 
-	public static SnomedDocumentBuilder doc() {
-		return new SnomedDocumentBuilder();
-	}
-
 	/* 
 	 * Computed fields and utility methods
 	 */

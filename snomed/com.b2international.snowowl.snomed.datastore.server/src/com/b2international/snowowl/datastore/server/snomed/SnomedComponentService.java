@@ -349,58 +349,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 	}
 	
-	@Override
-	public Map<CDOID, String> getRefSetCdoIdIdMapping(final IBranchPath branchPath) {
-		checkAndJoin(branchPath, null);
-		try {
-			return (Map<CDOID, String>) cache.get(branchPath).get(CacheKeyType.REFERENCE_SET_CDO_IDS);
-		} catch (final ExecutionException e) {
-			LOGGER.error("Error while getting reference set CDO ID to ID mapping on '" + branchPath + "' branch.", e);
-			throw new UncheckedExecutionException(e);
-		}
-	}
-	
-	@Override
-	public long getExtensionConceptId(final IBranchPath branchPath, final String componentId) {
-		
-		if (!SnomedTerminologyComponentConstants.isCoreComponentId(componentId)) {
-			return -1L;
-		}
-		
-		final char format = componentId.charAt(componentId.length() - 3);
-		
-		long namespaceId = -1L;
-		
-		try {
-
-			// get namespace -> namespace identifier concept ID cache based on the current state of the dataset
-			LongKeyLongMap nameSpaceIds = (LongKeyLongMap) cache.get(branchPath).get(CacheKeyType.NAMESPACE_IDS);
-			
-			if ('0' == format) {
-				namespaceId = nameSpaceIds.get(0L);
-			} else {
-				namespaceId = nameSpaceIds.get(Long.parseLong(componentId.substring(componentId.length() - 10, componentId.length() - 3)));
-			}
-			
-			if (namespaceId < 1) {
-
-				// try to get the namespace identifier concept ID from a predefined map (regardless of the dataset state)
-				final long namespaceConceptIdFromInternalMap = NamespaceMapping.getExtensionNamespaceId(componentId);
-				if (namespaceConceptIdFromInternalMap < 1) {
-					LOGGER.trace("Cannot find extension namespace concept ID for SNOMED CT component: " + componentId);
-					return -1L;
-				}
-
-				return namespaceConceptIdFromInternalMap;
-			}
-			
-			return namespaceId;
-			
-		} catch (final ExecutionException e) {
-			throw new SnowowlRuntimeException(e);
-		}
-	}
-	
 	/**
 	 * Warms the underlying cache on the specified branch.
 	 */
@@ -679,32 +627,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 		
 		return result;
-	}
-	
-	@Override
-	public String[] getRelationshipProperties(final IBranchPath branchPath, final String relationshipId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(relationshipId, "SNOMED CT relationship ID argument cannot be null.");
-		
-		//if not a valid relationship ID
-		if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER != 
-				SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(relationshipId)) {
-			return null;
-		}
-		
-		final TopDocs topDocs = getIndexServerService().search(branchPath, SnomedMappings.newQuery().type(RELATIONSHIP_NUMBER).id(relationshipId).matchAll(), 1);
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return null;
-		}
-		
-		final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
-		final Document doc = getIndexServerService().document(branchPath, scoreDoc.doc, RELATIONSHIP_FIELDS_TO_LOAD);
-		
-		final String sourceId = SnomedMappings.relationshipSource().getValueAsString(doc);
-		final String typeId = SnomedMappings.relationshipType().getValueAsString(doc);
-		final String destinationId = SnomedMappings.relationshipDestination().getValueAsString(doc);
-		final String negated = (SnomedMappings.relationshipDestinationNegated().getValue(doc) == 0) ? "" : "NOT";
-		return new String[] { sourceId, typeId, destinationId, negated };
 	}
 	
 	@Override

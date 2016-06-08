@@ -149,22 +149,6 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	}
 	
 	/**
-	 * Returns with an iterable of all SNOMED&nbsp;CT concepts for the currently active branch. 
-	 * @return an iterable of all SNOMED&nbsp;CT concepts.
-	 */
-	public Iterable<SnomedConceptDocument> getConcepts() {
-		return getWrappedService().getConcepts(getBranchPath());
-	}
-
-	/**
-	 * Returns with the number of all SNOMED&nbsp;CT concepts for the currently active branch.
-	 * @return the number of all SNOMED&nbsp;CT concepts.
-	 */
-	public int getConceptCount() {
-		return getWrappedService().getConceptCount(getBranchPath());
-	}
-
-	/**
 	 * Returns with a set of all active descendant concept IDs of a SNOMED&nbsp;CT concept given by its unique ID.
 	 * @param conceptId the unique ID of the concept.
 	 * @return a set of concept IDs of all active descendant concepts.
@@ -198,33 +182,6 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 */
 	public LongSet getAllSuperTypeIds(final long conceptId) {
 		return getWrappedService().getAllSuperTypeIds(getBranchPath(), conceptId);
-	}
-
-	/**
-	 * Returns with a set of the active direct descendant concept storage keys of a SNOMED&nbsp;CT concept given by its unique ID.
-	 * @param conceptId the unique ID of the concept.
-	 * @return a set of concept storage keys of the active direct descendant concepts.
-	 */
-	public LongSet getSubTypeStorageKeys(final String conceptId) {
-		return getWrappedService().getSubTypeStorageKeys(getBranchPath(), conceptId);
-	}
-
-	/**
-	 * Returns with a set of all active descendant concept storage keys of a SNOMED&nbsp;CT concept given by its unique ID.
-	 * @param conceptId the unique ID of the concept.
-	 * @return a set of concept storage keys of all active descendant concepts.
-	 */
-	public LongSet getAllSubTypeStorageKeys(final String conceptId) {
-		return getWrappedService().getAllSubTypeStorageKeys(getBranchPath(), conceptId);
-	}
-
-	/**
-	 * Returns with a 2D array of IDs and storage keys of all the active SNOMED&nbsp;CT concepts from the ontology.
-	 * <p>The first dimension is the concept ID the second dimension is the storage key (CDO ID).
-	 * @return a 2D array of concept IDs and storage keys.
-	 */
-	public long[][] getAllActiveConceptIdsStorageKeys() {
-		return getWrappedService().getAllActiveConceptIdsStorageKeys(getBranchPath());
 	}
 
 	/**
