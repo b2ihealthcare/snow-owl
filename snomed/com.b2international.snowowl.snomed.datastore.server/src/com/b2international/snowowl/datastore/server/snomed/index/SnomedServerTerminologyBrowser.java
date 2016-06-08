@@ -581,34 +581,6 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	}
 	
 	@Override
-	public boolean contains(final IBranchPath branchPath, final String expression, final String conceptId) {
-		checkNotNull(conceptId, "SNOMED CT core component ID argument cannot be null.");
-		checkNotNull(expression, "Query expression wrapper argument cannot be null.");
-		
-		if (EscgExpressionConstants.UNRESTRICTED_EXPRESSION.equals(expression)) {
-			return true;
-		}
-		
-		if (EscgExpressionConstants.REJECT_ALL_EXPRESSION.equals(expression)) {
-			return false;
-		}
-		
-		final IEscgQueryEvaluatorService escgService = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorService.class);
-		
-		try {
-			
-			final BooleanQuery query = escgService.evaluateBooleanQuery(branchPath, expression);
-			query.add(SnomedMappings.newQuery().id(conceptId).matchAll(), Occur.MUST);
-			return 0 < service.getHitCount(branchPath, query, null);
-		
-		} catch (final EscgParseFailedException e) {
-			
-			final LongCollection evaluateConceptIds = escgService.evaluateConceptIds(branchPath, expression);
-			return evaluateConceptIds.contains(Long.valueOf(conceptId));
-		}
-	}
-	
-	@Override
 	public int getDepth(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(conceptId, "conceptId");
 		

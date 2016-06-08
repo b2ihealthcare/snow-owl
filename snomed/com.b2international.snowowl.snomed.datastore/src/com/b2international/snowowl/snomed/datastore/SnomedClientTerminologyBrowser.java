@@ -269,17 +269,6 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	}
 
 	/**
-	 * Returns {@code true} only and if only a SNOMED&nbsp;CT concept given by its ID is contained by the subset of SNOMED&nbsp;CT concepts specified
-	 * as the query expression. Otherwise returns with {@code false}.
-	 * @param expression the expression representing a bunch of concepts.
-	 * @param conceptId the ID of the SNOMED&nbsp;CT concept to check. 
-	 * @return {@code true} if the concept is in the subset of concepts represented as the expression. 
-	 */
-	public boolean contains(final String expression, final String conceptId) {
-		return getWrappedService().contains(getBranchPath(), expression, conceptId);
-	}
-
-	/**
 	 * Returns the sub types of the specified concept, with an additional boolean flag to indicate whether the concept has children or not.
 	 * 
 	 * @param concept the concept

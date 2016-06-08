@@ -16,9 +16,6 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
@@ -26,8 +23,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.filteredrefset.FilteredRefSetMemberBrowser2;
-import com.b2international.snowowl.snomed.datastore.filteredrefset.IRefSetMemberOperation;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
@@ -165,16 +160,6 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
 	 */
 	boolean exists(final IBranchPath branchPath, final String conceptId);
-	
-	/**
-	 * Returns {@code true} only and if only a SNOMED&nbsp;CT concept given by its ID is contained by the subset of SNOMED&nbsp;CT concepts specified
-	 * as the query expression. Otherwise returns with {@code false}.
-	 * @param branchPath the branch path.
-	 * @param expression the expression representing a bunch of concepts.
-	 * @param conceptId the ID of the SNOMED&nbsp;CT concept to check. 
-	 * @return {@code true} if the concept is in the subset of concepts represented as the expression. 
-	 */
-	boolean contains(final IBranchPath branchPath, final String expression, final String conceptId);
 	
 	/**
 	 * Returns with the unique storage key (CDO ID) of the SNOMED&nbsp;CT concept specified with it's unique ID.
