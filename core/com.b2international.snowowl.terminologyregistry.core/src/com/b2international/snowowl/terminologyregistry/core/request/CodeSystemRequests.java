@@ -34,6 +34,10 @@ public class CodeSystemRequests {
 		return new CodeSystemGetRequestBuilder(repositoryId);
 	}
 
+	public CodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
+		return new CodeSystemSearchRequestBuilder(repositoryId);
+	}
+
 	public CodeSystemVersionSearchRequestBuilder prepareSearchCodeSystemVersion() {
 		return new CodeSystemVersionSearchRequestBuilder(repositoryId);
 	}
