@@ -15,33 +15,22 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import java.io.Serializable;
-
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
+import java.io.IOException;
 
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.ClassUtils;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
-import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.StatementObjectIdCollector;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
@@ -52,23 +41,18 @@ import com.b2international.snowowl.snomed.dsl.query.ast.OrClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.ast.RefSet;
 import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
-import com.google.common.base.Preconditions;
 
 /**
  * Evaluator service for getting SNOMED&nbsp;CT concept IDs.
  */
-public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<LongSet, com.b2international.snowowl.snomed.dsl.query.RValue> {
+public class ConceptIdQueryEvaluator2 implements IQueryEvaluator<LongSet, com.b2international.snowowl.snomed.dsl.query.RValue> {
 	
-	private static final long serialVersionUID = -8592143402592449211L;
-	
-	private final IBranchPath branchPath;
+	private final RevisionSearcher searcher;
+	private final IndexQueryQueryEvaluator queryEvaluator;
 
-	/**
-	 * Creates a query evaluator service that works on the specified branch.
-	 * @param branchPath the branch path.
-	 */
-	public ConceptIdQueryEvaluator2(final IBranchPath branchPath) {
-		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
+	public ConceptIdQueryEvaluator2(RevisionSearcher searcher) {
+		this.searcher = searcher;
+		this.queryEvaluator = new IndexQueryQueryEvaluator();
 	}
 
 	/**
@@ -78,104 +62,58 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	public LongSet evaluate(final com.b2international.snowowl.snomed.dsl.query.RValue expression) {
 		
 		if (expression instanceof ConceptRef) {
-			
-			final ConceptRef concept = (ConceptRef) expression;
-			final String conceptId = Preconditions.checkNotNull(concept.getConceptId());
-			final BooleanQuery mainQuery = (BooleanQuery) SnomedMappings.newQuery().active().concept().matchAll();
-			final SnomedIndexServerService service = getIndexService();
-			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
-			
-			switch (concept.getQuantifier()) {
-				
-				case SELF:
-					return PrimitiveSets.newLongOpenHashSet(new long[] { Long.parseLong(conceptId) });
-					
-				case ANY_SUBTYPE:
-					final Query descendatQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
-					mainQuery.add(descendatQuery, Occur.MUST);
-					service.search(branchPath, mainQuery, collector);
-					return PrimitiveSets.newLongOpenHashSet(collector.getValues());
-
-				case SELF_AND_ANY_SUBTYPE:
-					mainQuery.add(SnomedMappings.newQuery().id(conceptId).parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
-					service.search(branchPath, mainQuery, collector);
-					return PrimitiveSets.newLongOpenHashSet(collector.getValues());
-					
-				default:
-					throw new IllegalArgumentException("Unknown concept quantifier type: " + concept.getQuantifier());
-			}
-			
+			final Expression conceptRefExpression = queryEvaluator.evaluate(expression);
+			return getMatchingConceptIds(conceptRefExpression);
 		} else if (expression instanceof AttributeClause) {
 			
 			final AttributeClause clause = (AttributeClause) expression;
 			
-			final LongSet attributeIdSet = evaluate(clause.getLeft());
-			final LongSet valueIdSet = evaluate(clause.getRight());
+			final LongSet typeIds = evaluate(clause.getLeft());
+			final LongSet destinationIds = evaluate(clause.getRight());
 
-			final BooleanQuery query = (BooleanQuery) SnomedMappings.newQuery().active().relationship().matchAll();
-			
-			final BooleanQuery negatedQuery = new BooleanQuery(true);
-			//filter out the top most relationship types with index query if possible to better performance
-			for (final LongIterator itr = SnomedComponentService.TOP_MOST_RELATIONSHIP_TYPE_IDS_AS_LONG.iterator(); itr.hasNext(); /*not much*/) {
+			final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
+					.selectAll()
+					.where(Expressions.builder()
+							.must(SnomedRelationshipIndexEntry.Expressions.active())
+							.must(SnomedRelationshipIndexEntry.Expressions.typeIds(LongSets.toStringSet(typeIds)))
+							.must(SnomedRelationshipIndexEntry.Expressions.destinationIds(LongSets.toStringSet(destinationIds)))
+							.build())
+					.limit(Integer.MAX_VALUE)
+					.build();
+			try {
+				final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
+				final LongSet sourceIds = PrimitiveSets.newLongOpenHashSet(hits.getHits().size());
 				
-				final long attributeId = itr.next();
-				if (!attributeIdSet.contains(attributeId)) { //queries must not contain the following relationship types 
-					
-					negatedQuery.add(createStatementAttributeIdQuery(attributeId), Occur.MUST);
-					
+				for (SnomedRelationshipIndexEntry hit : hits) {
+					sourceIds.add(Long.parseLong(hit.getSourceId()));
 				}
 				
+				return sourceIds;
+			} catch (IOException e) {
+				throw new SnowowlRuntimeException(e);
 			}
 			
-			query.add(negatedQuery, Occur.MUST_NOT);
-
-			final StatementObjectIdCollector collector = new StatementObjectIdCollector(attributeIdSet, valueIdSet);
-			
-			//workaround to disable scoring on MUST_NOT boolean query. See: https://issues.apache.org/jira/browse/LUCENE-4395
-			getIndexService().search(branchPath, new ConstantScoreQuery(query), collector);
-
-			return PrimitiveSets.newLongOpenHashSet(collector.getObjectIds());
-			
 		} else if (expression instanceof RefSet) {
-			
-			final RefSet refSet = (RefSet) expression;
-			final String refSetId = refSet.getId();
-			
-			final Query query = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).and(createRefSetQuery(refSetId)).matchAll();
-			final SnomedIndexServerService service = getIndexService();
-			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
-			service.search(branchPath, query, collector);
-			return PrimitiveSets.newLongOpenHashSet(collector.getValues());
-			
+			return getMatchingConceptIds(queryEvaluator.evaluate(expression));
 		} else if (expression instanceof SubExpression) {
-			
 			return evaluate(((SubExpression) expression).getValue());
-			
 		} else if (expression instanceof OrClause) {
-			
 			final OrClause orClause = (OrClause) expression;
 			final LongSet result = evaluate(orClause.getLeft());
 			result.addAll(evaluate(orClause.getRight()));
-			
 			return result;
-		
 		} else if (expression instanceof AndClause) {
 			
 			final AndClause clause = (AndClause) expression;
 			
 			if (clause.getRight() instanceof NotClause) {
-				
 				return handleAndNot(clause.getLeft(), (NotClause) clause.getRight());
-				
 			} else if (clause.getLeft() instanceof NotClause) {
-				
 				return handleAndNot(clause.getRight(), (NotClause) clause.getLeft());
-				
 			} else {
 
 				final LongSet leftIds = evaluate(clause.getLeft());
 				final LongSet rightIds = evaluate(clause.getRight());
-				
 				return leftIds.size() < rightIds.size() 
 						? PrimitiveSets.newLongOpenHashSet(LongSets.intersection(leftIds, rightIds)) 
 						: PrimitiveSets.newLongOpenHashSet(LongSets.intersection(rightIds, leftIds));
@@ -183,16 +121,32 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			}
 			
 		} else if (expression instanceof NumericDataClause) {
-			final NumericDataClause clause = (NumericDataClause) expression;
-			return getByNumericalAttributes(evaluate(clause.getConcepts()), clause);
+			return PrimitiveSets.newLongOpenHashSet();
 		} else if (expression instanceof NumericDataGroupClause) {
-			final NumericDataGroupClause clause = (NumericDataGroupClause) expression;
-			return getByNumericalAttributesGroup(evaluate(clause.getConcepts()), clause.getNumericData(), evaluate(clause.getSubstances()));
+			return PrimitiveSets.newLongOpenHashSet();
 		} else if (expression instanceof NotClause) {
 			throw new NotImplementedException("Can't start expression with NOT: %s", expression);
 		}
 	
 		throw new IllegalArgumentException("Don't know how to expand: " + expression);
+	}
+
+	private LongSet getMatchingConceptIds(Expression expression) {
+		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
+				.selectAll()
+				.where(expression)
+				.limit(Integer.MAX_VALUE)
+				.build();
+		try {
+			final Hits<SnomedConceptDocument> hits = searcher.search(query);
+			final LongSet ids = PrimitiveSets.newLongOpenHashSet(hits.getHits().size());
+			for (SnomedConceptDocument hit : hits) {
+				ids.add(Long.parseLong(hit.getId()));
+			}
+			return ids;
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 
 	private LongSet handleAndNot(final RValue notNegated, final NotClause negated) {
@@ -208,38 +162,4 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 		return notNegatedIds;
 	}
 
-	private LongSet getByNumericalAttributes(final LongCollection conceptIds, final NumericDataClause numericDataClause) {
-		return PrimitiveSets.newLongOpenHashSet();
-	}
-
-	private LongSet getByNumericalAttributesGroup(final LongCollection concepts, final NumericDataClause numericDataClause, final LongCollection substanceConcepts) {
-		return PrimitiveSets.newLongOpenHashSet();
-	}
-	
-	/*returns with the server side index service*/
-	private SnomedIndexServerService getIndexService() {
-		return ClassUtils.checkAndCast(ApplicationContext.getInstance().getService(SnomedIndexService.class), SnomedIndexServerService.class);
-	}
-	
-	private Query createStatementAttributeIdQuery(final long attributeId) {
-		return SnomedMappings.newQuery().relationshipType(attributeId).matchAll();
-	}
-
-	private Term createRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Term createMappingRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringMappingRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Query createRefSetQuery(String refSetId) {
-		final BooleanQuery refSetQuery = new BooleanQuery(true);
-		refSetQuery.add(new TermQuery(createRefSetTerm(refSetId)), Occur.SHOULD);
-		refSetQuery.add(new TermQuery(createMappingRefSetTerm(refSetId)), Occur.SHOULD);
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(refSetQuery, Occur.MUST);
-		return query;
-	}
-	
 }
