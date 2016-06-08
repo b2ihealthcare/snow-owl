@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -34,9 +35,12 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -332,8 +336,9 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, LongIndexField field) {
 		if (containsKey(key)) {
 			try {
-				IBranchPath branchPath = context.branch().branchPath();
-				LongCollection conceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, getString(key));
+				final String escg = getString(key);
+				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
+				final LongSet conceptIds = new ConceptIdQueryEvaluator2(context.service(RevisionSearcher.class)).evaluate(expression);
 				Filter conceptFilter = field.createTermsFilter(conceptIds);
 				addFilterClause(filters, conceptFilter);
 				ops.add(ChainedFilter.AND);
