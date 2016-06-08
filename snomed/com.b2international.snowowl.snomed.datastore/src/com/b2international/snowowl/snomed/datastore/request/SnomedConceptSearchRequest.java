@@ -201,10 +201,10 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			}
 		}
 		
-		BooleanQuery searchProfileQuery = null;
+		Expression searchProfileQuery = null;
 		if (containsKey(OptionKey.SEARCH_PROFILE)) {
 			final String userId = getString(OptionKey.SEARCH_PROFILE);
-			searchProfileQuery = SearchProfileQueryProvider.provideQuery(context.branch().branchPath(), userId);
+			searchProfileQuery = SearchProfileQueryProvider.provideQuery(userId);
 		}
 
 		
@@ -256,17 +256,17 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 					});
 
 			final Query filteredQuery = createFilteredQuery(bq, filter);
-			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			final Expression q = addSearchProfile(searchProfileQuery, filteredQuery);
 			query = new CustomScoreQuery(q, functionQuery);
 			sort = Sort.RELEVANCE;
 		} else if (containsKey(OptionKey.USE_DOI)) {
 			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
-			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			final Expression q = addSearchProfile(searchProfileQuery, filteredQuery);
 			query = new CustomScoreQuery(createConstantScoreQuery(q), new FunctionQuery(DOI_VALUE_SOURCE));
 			sort = Sort.RELEVANCE;
 		} else {
 			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
-			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
+			final Expression q = addSearchProfile(searchProfileQuery, filteredQuery);
 			query = createConstantScoreQuery(q);
 			sort = Sort.INDEXORDER;
 		}
@@ -290,12 +290,14 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 	}
 	
-	private Query addSearchProfile(final BooleanQuery searchProfileQuery, final Query query) {
+	private Expression addSearchProfile(final Expression searchProfileQuery, final Expression query) {
 		if (searchProfileQuery == null) {
 			return query;
 		} else {
-			searchProfileQuery.add(query, Occur.MUST);
-			return searchProfileQuery;
+			return Expressions.builder()
+					.must(searchProfileQuery)
+					.must(query)
+					.build();
 		}
 	}
 	

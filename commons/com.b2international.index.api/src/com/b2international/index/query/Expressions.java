@@ -145,4 +145,8 @@ public class Expressions {
 		return new ExpressionBuilder();
 	}
 
+	public static Expression boost(Expression expression, float boost) {
+		return new BoostPredicate(expression, boost);
+	}
+
 }
