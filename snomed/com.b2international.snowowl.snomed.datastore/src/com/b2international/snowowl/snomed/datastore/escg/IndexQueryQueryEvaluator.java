@@ -15,16 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore.escg;
 
-import java.io.Serializable;
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.referringMappingRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.referringRefSet;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
+import java.util.Collections;
+import java.util.Set;
 
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
 import com.b2international.snowowl.snomed.dsl.query.ast.NotClause;
@@ -35,47 +37,57 @@ import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.ast.RefSet;
 import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * Query evaluator transforming a parsed {@link com.b2international.snowowl.snomed.dsl.query.RValue right value} 
- * into a {@link BooleanQuery boolean index query}.
- * @see Serializable
- * @see IQueryEvaluator
+ * into a {@link Expression expression}.
  */
-public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<BooleanQuery, com.b2international.snowowl.snomed.dsl.query.RValue> {
+public class IndexQueryQueryEvaluator implements IQueryEvaluator<Expression, com.b2international.snowowl.snomed.dsl.query.RValue> {
 
-	private static final long serialVersionUID = 1976491781836431852L;
-
+	/**
+	 * A sorted set of the top most relationship type concept IDs.
+	 * <p>
+	 * <b>NOTE:&nbsp;</b>Just for estimation.
+	 */
+	public static final Set<String> TOP_MOST_RELATIONSHIP_TYPE_IDS = ImmutableSortedSet.<String>of(
+			Concepts.IS_A,
+			Concepts.FINDING_SITE,
+			Concepts.HAS_ACTIVE_INGREDIENT,
+			Concepts.METHOD,
+			Concepts.MORPHOLOGY,
+			Concepts.PART_OF,
+			Concepts.HAS_DOSE_FORM,
+			Concepts.PROCEDURE_SITE_DIRECT,
+			Concepts.INTERPRETS,
+			Concepts.CAUSATIVE_AGENT	
+	);
+	
 	@Override
-	public BooleanQuery evaluate(final com.b2international.snowowl.snomed.dsl.query.RValue expression) {
-		
-		final BooleanQuery mainQuery = new BooleanQuery();
-		
+	public Expression evaluate(final com.b2international.snowowl.snomed.dsl.query.RValue expression) {
 		if (expression instanceof ConceptRef) {
-
 			final ConceptRef concept = (ConceptRef) expression;
-			
-			final StringBuilder sb = new StringBuilder();
-			sb.append("Concept ID was null for ");
-			sb.append(concept);
-			sb.append(".");
-			
-			final String conceptId = Preconditions.checkNotNull(concept.getConceptId(), sb.toString());
+			final String conceptId = Preconditions.checkNotNull(concept.getConceptId(), "conceptId");
 	
 			switch (concept.getQuantifier()) {
 				case SELF:
-					
-					mainQuery.add(SnomedMappings.newQuery().id(conceptId).matchAll(), Occur.MUST);
-					return mainQuery;
-					
+					return id(conceptId);
 				case ANY_SUBTYPE:
-					mainQuery.add(SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
-					return mainQuery;
+					return Expressions.builder().must(
+							Expressions.builder()
+								.should(parents(Collections.singleton(conceptId)))
+								.should(ancestors(Collections.singleton(conceptId)))
+								.build())
+							.build();
 					
 				case SELF_AND_ANY_SUBTYPE:
-					
-					mainQuery.add(SnomedMappings.newQuery().id(conceptId).parent(conceptId).ancestor(conceptId).matchAny(), Occur.MUST);
-					return mainQuery;
+					return Expressions.builder().must(
+							Expressions.builder()
+								.should(id(conceptId))
+								.should(parents(Collections.singleton(conceptId)))
+								.should(ancestors(Collections.singleton(conceptId)))
+								.build())
+							.build();
 					
 				default:
 					throw new EscgParseFailedException("Unknown concept quantifier type: " + concept.getQuantifier());
@@ -83,57 +95,39 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 			
 			
 		} else if (expression instanceof RefSet) {
-			
-			final RefSet refSet = (RefSet) expression;
-			final String refSetId = refSet.getId();
-			
-			mainQuery.add(createRefSetQuery(refSetId), Occur.MUST);
-			
-			return mainQuery;
-			
+			final String refSetId = ((RefSet) expression).getId();
+			return Expressions.builder().must(
+					Expressions.builder()
+						.should(referringRefSet(refSetId))
+						.should(referringMappingRefSet(refSetId))
+						.build())
+					.build();
 		} else if (expression instanceof SubExpression) {
-			
 			final SubExpression subExpression = (SubExpression) expression;
 			return evaluate(subExpression.getValue());
-			
 		} else if (expression instanceof OrClause) {
-			
 			final OrClause orClause = (OrClause) expression;
-			
-			final BooleanQuery orQuery = new BooleanQuery();
-			
-			orQuery.add(evaluate(orClause.getLeft()), Occur.SHOULD);
-			orQuery.add(evaluate(orClause.getRight()), Occur.SHOULD);
-			
-			mainQuery.add(orQuery, Occur.MUST);
-			return mainQuery;
-			
+			return Expressions.builder().must(
+					Expressions.builder()
+						.should(evaluate(orClause.getLeft()))
+						.should(evaluate(orClause.getRight()))
+						.build())
+					.build();
 		} else if (expression instanceof AndClause) {
 
 			final AndClause clause = (AndClause) expression;
 			
 			if (clause.getRight() instanceof NotClause) {
-				
 				final NotClause notClause = (NotClause) clause.getRight();
-				
-				return handleAndNot(mainQuery, clause.getLeft(), notClause);
-				
+				return handleAndNot(clause.getLeft(), notClause);
 			} else if (clause.getLeft() instanceof NotClause) {
-				
 				final NotClause notClause = (NotClause) clause.getLeft();
-				
-				return handleAndNot(mainQuery, clause.getRight(), notClause);
-				
+				return handleAndNot(clause.getRight(), notClause);
 			} else {
-
-				final BooleanQuery leftQuery = evaluate(clause.getLeft());
-				final BooleanQuery rightQuery = evaluate(clause.getRight());
-				
-				mainQuery.add(leftQuery, Occur.MUST);
-				mainQuery.add(rightQuery, Occur.MUST);
-				
-				return mainQuery;
-				
+				return Expressions.builder()
+						.must(evaluate(clause.getLeft()))
+						.must(evaluate(clause.getRight()))
+						.build();
 			}
 			
 		} else if (expression instanceof NumericDataClause) {
@@ -147,36 +141,14 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		throw new EscgParseFailedException("Do not know how to evaluate " + expression);
 	}
 
-	private BooleanQuery handleAndNot(final BooleanQuery mainQuery, final RValue notNegated, final NotClause negated) {
+	private Expression handleAndNot(final RValue notNegated, final NotClause negated) {
 		if (notNegated instanceof NotClause) {
 			throw new EscgParseFailedException("Cannot AND two NOT clauses yet");
 		}
-		
-		final BooleanQuery notNegatedQuery = evaluate(notNegated);
-		final BooleanQuery negatedConceptsQuery = evaluate(negated.getValue());
-		
-		mainQuery.add(notNegatedQuery, Occur.MUST);
-		mainQuery.add(negatedConceptsQuery, Occur.MUST_NOT);
-		
-		return mainQuery;
+		return Expressions.builder()
+				.must(evaluate(notNegated))
+				.mustNot(evaluate(negated.getValue()))
+				.build();
 	}
 	
-	private Term createRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Term createMappingRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringMappingRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Query createRefSetQuery(String refSetId) {
-		final BooleanQuery refSetQuery = new BooleanQuery(true);
-		refSetQuery.add(new TermQuery(createRefSetTerm(refSetId)), Occur.SHOULD);
-		refSetQuery.add(new TermQuery(createMappingRefSetTerm(refSetId)), Occur.SHOULD);
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(refSetQuery, Occur.MUST);
-		query.add(SnomedMappings.newQuery().active().matchAll(), Occur.MUST);
-		return query;
-	}
-
 }
