@@ -112,6 +112,10 @@ public class Expressions {
 	public static Expression matchAll() {
 		return new MatchAll();
 	}
+	
+	public static Expression matchNone() {
+		return new MatchNone();
+	}
 
 	public static Expression matchRange(String fieldName, long from, long to) {
 		return new RangePredicate(fieldName, from, to);
