@@ -17,6 +17,7 @@ package com.b2international.snowowl.api.japi.codesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -59,12 +61,47 @@ public class CodeSystemRequestTest {
 	public void createCodeSystem() {
 		final String shortName = "sn1";
 		final String oid = "oid1";
+
+		assertCodeSystemCreated(shortName, oid);
+		
+		final ICodeSystem codeSystem = getCodeSystem(shortName);
+		assertEquals(shortName, codeSystem.getShortName());
+	}
+	
+	@Test
+	public void updateCodeSystem() {
+		final String shortName = "sn2";
+		final String oid = "oid2";
 		
 		createCodeSystem(shortName, oid);
-		final ICodeSystem codeSystem = getCodeSystem(shortName);
+		final ICodeSystem oldCodeSystem = getCodeSystem(shortName);
+		assertNotNull(oldCodeSystem);
 		
-		assertNotNull(codeSystem);
-		assertEquals(shortName, codeSystem.getShortName());
+		requests.prepareUpdateCodeSystem(shortName)
+			.setName("updated name")
+			.build("system", BRANCH, String.format("Updated code system %s.", shortName))
+			.executeSync(bus);
+		
+		final ICodeSystem updatedCodeSystem = getCodeSystem(shortName);
+		assertNotNull(updatedCodeSystem);
+		assertEquals("updated name", updatedCodeSystem.getName());
+	}
+	
+	@Test
+	public void noUpdateCodeSystem() {
+		assertCodeSystemCreated("sn3", "oid3");
+		assertCodeSystemCreated("sn4", "oid4");
+		
+		try {
+			requests.prepareUpdateCodeSystem("sn4")
+			.setShortName("sn3")
+			.build("system", BRANCH, "Updated code system.")
+			.executeSync(bus);	
+		} catch (BadRequestException e) {
+			return;
+		}
+		
+		fail("BadRequestException was not thrown when updateing short name to nonunique.");
 	}
 	
 	@Test
@@ -110,6 +147,12 @@ public class CodeSystemRequestTest {
 		} catch (CodeSystemNotFoundException e) {
 			return null;
 		}
+	}
+	
+	private void assertCodeSystemCreated(final String shortName, final String oid) {
+		createCodeSystem(shortName, oid);
+		final ICodeSystem codeSystem = getCodeSystem(shortName);
+		assertNotNull(codeSystem);
 	}
 
 }

@@ -84,6 +84,42 @@ public class CodeSystemApiTest {
 				.then().assertThat().statusCode(409);
 			
 	}
+	
+	@Test
+	public void updateCodeSystem() {
+		assertCodeSystemCreated("cs2", "2");
+		
+		final ImmutableMap<String, String> requestBody = ImmutableMap.<String, String>builder()
+				.put("name", "updated name")
+				.put("repositoryUuid", "snomedStore")
+				.build();
+		
+		givenAuthenticatedRequest("/admin")
+			.with().contentType(ContentType.JSON)
+			.and().body(requestBody)
+			.when().put("codesystems/{id}", "cs2")
+			.then().assertThat().statusCode(204);
+		
+		givenAuthenticatedRequest("/admin")
+			.when().get("/codesystems/{id}", "cs2")
+			.then().assertThat().statusCode(200)
+			.and().body("name", equalTo("updated name"));
+	}
+	
+	@Test
+	public void noUpdateCodeSystem() {
+		assertCodeSystemCreated("cs3", "3");
+		
+		final ImmutableMap<String, String> requestBody = ImmutableMap.<String, String>builder()
+				.put("name", "updated name")
+				.build();
+		
+		givenAuthenticatedRequest("/admin")
+			.with().contentType(ContentType.JSON)
+			.and().body(requestBody)
+			.when().put("codesystems/{id}", "cs3")
+			.then().assertThat().statusCode(400);
+	}
 
 	private void assertCodeSystemExists(final String shortName) {
 		givenAuthenticatedRequest("/admin")
