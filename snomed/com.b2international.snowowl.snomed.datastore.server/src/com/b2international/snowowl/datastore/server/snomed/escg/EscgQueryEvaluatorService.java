@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 

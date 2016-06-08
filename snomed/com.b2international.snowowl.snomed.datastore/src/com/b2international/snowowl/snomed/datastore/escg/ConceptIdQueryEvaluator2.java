@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.escg;
+package com.b2international.snowowl.snomed.datastore.escg;
 
 import java.io.IOException;
 
@@ -27,8 +27,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
-import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
-import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
