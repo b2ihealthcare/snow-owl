@@ -51,8 +51,9 @@ import com.google.common.collect.Maps;
 
 /**
  * Server side service singleton for terminology metadata.
- *
+ * @deprecated use CodeSystemRequests instead
  */
+@Deprecated
 public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService {
 
 	INSTANCE;

@@ -21,8 +21,9 @@ import java.util.Map;
 
 /**
  * Representation of the global terminology registry service. 
- * 
+ * @deprecated use CodeSystemRequests instead
  */
+@Deprecated
 public interface TerminologyRegistryService {
 	
 	/**Returns with all the {@link ICodeSystem code systems } available in the application from a given branch.*/
