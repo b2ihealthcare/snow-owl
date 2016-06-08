@@ -10,4 +10,5 @@ Require-Bundle: org.junit;bundle-version="4.11.0",
  com.b2international.snowowl.api.rest
 Import-Package: com.b2international.snowowl.snomed,
  com.b2international.snowowl.snomed.core.store,
- com.b2international.snowowl.snomed.datastore
+ com.b2international.snowowl.snomed.datastore,
+ com.b2international.snowowl.terminologyregistry.core.request

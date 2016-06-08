@@ -52,19 +52,10 @@ public class CodeSystemApiTest {
 
 	@Test
 	public void getCodeSystemByShortName() {
-		givenAuthenticatedRequest("/admin")
-		.when().get("/codesystems/{id}", "SNOMEDCT")
-		.then().assertThat().statusCode(200)
-		.and().body("shortName", equalTo("SNOMEDCT"));		
+		final String shortName = "SNOMEDCT";
+		assertCodeSystemExists(shortName);
 	}
 	
-	private void assertCodeSystemExists(final String shortName) {
-		givenAuthenticatedRequest("/admin")
-		.when().get("/codesystems/{id}", shortName)
-		.then().assertThat().statusCode(200)
-		.and().body("shortName", equalTo(shortName));
-	}
-
 	@Test
 	public void getCodeSystemByNonExistentOid() {
 		givenAuthenticatedRequest("/admin")
@@ -76,19 +67,8 @@ public class CodeSystemApiTest {
 	public void createCodeSystem() {
 		final String shortName = "cs";
 		final String oid = "1";
-		final Map<?, ?> requestBody = newCodeSystem(shortName, oid);
 		
-		final String path = givenAuthenticatedRequest("/admin")
-			.with().contentType(ContentType.JSON)
-			.and().body(requestBody)
-			.when().post("/codesystems")
-			.then().assertThat().statusCode(201)
-			.and().header("Location", containsString(String.format("%s/%s", "codesystems", shortName)))
-			.and().body(equalTo(""))
-			.and().extract().response().getHeader("Location");
-		
-		assertEquals(shortName, lastPathSegment(path));
-		assertCodeSystemExists(shortName);
+		assertCodeSystemCreated(shortName, oid);
 	}
 	
 	@Test
@@ -105,6 +85,28 @@ public class CodeSystemApiTest {
 			
 	}
 
+	private void assertCodeSystemExists(final String shortName) {
+		givenAuthenticatedRequest("/admin")
+		.when().get("/codesystems/{id}", shortName)
+		.then().assertThat().statusCode(200)
+		.and().body("shortName", equalTo(shortName));
+	}
+	
+	private void assertCodeSystemCreated(final String shortName, final String oid) {
+		final Map<?, ?> requestBody = newCodeSystem(shortName, oid);
+		final String path = givenAuthenticatedRequest("/admin")
+				.with().contentType(ContentType.JSON)
+				.and().body(requestBody)
+				.when().post("/codesystems")
+				.then().assertThat().statusCode(201)
+				.and().header("Location", containsString(String.format("%s/%s", "codesystems", shortName)))
+				.and().body(equalTo(""))
+				.and().extract().response().getHeader("Location");
+			
+		assertEquals(shortName, lastPathSegment(path));
+		assertCodeSystemExists(shortName);
+	}
+	
 	private Map<String, String> newCodeSystem(final String shortName, final String oid) {
 		return ImmutableMap.<String, String>builder()
 				.put("name", "CodeSystem")
