@@ -144,6 +144,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	
 	private final Set<SnomedRelease> newCodeSystems = newHashSet();
 	private final Set<SnomedVersion> newCodeSystemVersions = newHashSet();
+	private final Set<SnomedRelease> dirtyCodeSystems = newHashSet();
 	private final Set<SnomedVersion> dirtyCodeSystemVersions = newHashSet();
 	
 	//the collection of the new artefacts in a minimalistic form. Used for logging.
@@ -215,7 +216,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
-			if (SnomedPackage.eINSTANCE.getSnomedVersion().isSuperTypeOf(dirtyObject.eClass())) {
+			if (SnomedPackage.eINSTANCE.getSnomedRelease().isSuperTypeOf(dirtyObject.eClass())) {
+				dirtyCodeSystems.add((SnomedRelease) dirtyObject);
+			} else if (SnomedPackage.eINSTANCE.getSnomedVersion().isSuperTypeOf(dirtyObject.eClass())) {
 				checkAndSetCodeSystemLastUpdateTime(dirtyObject);
 			}
 		}
@@ -330,6 +333,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		for (final SnomedVersion newCodeSystemVersion : newCodeSystemVersions) {
 			index.index(branchPath, new SnomedVersionIndexMappingStrategy(newCodeSystemVersion));
+		}
+		
+		for (final SnomedRelease newCodeSystem : dirtyCodeSystems) {
+			index.index(branchPath, new SnomedReleaseIndexMappingStrategy(newCodeSystem));
 		}
 		
 		for (final SnomedVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
