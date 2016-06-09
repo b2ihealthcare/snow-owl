@@ -27,8 +27,8 @@ public class StatementFragment implements Serializable {
 	private final long typeId;
 	private final long destinationId;
 	private final boolean destinationNegated;
-	private final byte group;
-	private final byte unionGroup;
+	private final int group;
+	private final int unionGroup;
 	private final boolean universal;
 
 	// Only stored if the original relationship identifier and storage key is known
@@ -36,14 +36,14 @@ public class StatementFragment implements Serializable {
 	private final long storageKey;
 
 	public StatementFragment(final long typeId, final long destinationId) {
-		this(typeId, destinationId, false, (byte) 0, (byte) 0, false, -1L, -1L);
+		this(typeId, destinationId, false, 0, 0, false, -1L, -1L);
 	}
 
 	public StatementFragment(final long typeId,
 			final long destinationId,
 			final boolean destinationNegated,
-			final byte group,
-			final byte unionGroup,
+			final int group,
+			final int unionGroup,
 			final boolean universal) {
 
 		this(typeId, destinationId, destinationNegated, group, unionGroup, universal, -1L, -1L);
@@ -52,8 +52,8 @@ public class StatementFragment implements Serializable {
 	public StatementFragment(final long typeId,
 			final long destinationId,
 			final boolean destinationNegated,
-			final byte group,
-			final byte unionGroup,
+			final int group,
+			final int unionGroup,
 			final boolean universal,
 			final long statementId,
 			final long storageKey) {
@@ -81,11 +81,11 @@ public class StatementFragment implements Serializable {
 		return destinationNegated;
 	}
 
-	public byte getGroup() {
+	public int getGroup() {
 		return group;
 	}
 
-	public byte getUnionGroup() {
+	public int getUnionGroup() {
 		return unionGroup;
 	}
 
