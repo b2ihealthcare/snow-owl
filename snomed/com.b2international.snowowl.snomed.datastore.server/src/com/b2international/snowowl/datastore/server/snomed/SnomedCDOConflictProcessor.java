@@ -98,8 +98,16 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 			.build();
 
 	private static final Map<EClass, EAttribute> RELEASED_ATTRIBUTE_MAP = ImmutableMap.of(
-			SnomedPackage.Literals.COMPONENT, SnomedPackage.Literals.COMPONENT__RELEASED,
-			SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__RELEASED);
+			SnomedPackage.Literals.COMPONENT, 
+			SnomedPackage.Literals.COMPONENT__RELEASED,
+			SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, 
+			SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__RELEASED);
+	
+	private static final Set<EStructuralFeature> EFFECTIVE_TIME_FEATURES = ImmutableSet.<EStructuralFeature>of(
+			SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME,
+			SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME,
+			SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME,
+			SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME);
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOConflictProcessor.class);
 
@@ -137,10 +145,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta) {
 		final EStructuralFeature feature = targetFeatureDelta.getFeature();
 		
-		if (SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME.equals(feature) 
-				|| SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME.equals(feature)
-				|| SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME.equals(feature)
-				|| SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME.equals(feature)) {
+		if (EFFECTIVE_TIME_FEATURES.contains(feature)) {
 		
 			if (Type.UNSET.equals(targetFeatureDelta.getType())) {
 				return targetFeatureDelta;
@@ -152,6 +157,34 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 		
 		return super.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
+	}
+
+	@Override
+	public void postProcess(CDOTransaction transaction) {
+		super.postProcess(transaction);
+		
+		final ImmutableMultimap.Builder<String, Object> conflictingItems = ImmutableMultimap.builder();
+		postProcessLanguageRefSetMembers(transaction, conflictingItems);
+		postProcessTaxonomy(transaction, conflictingItems);
+		postProcessRefSetMembers(transaction, conflictingItems);
+		
+		Map<String, Object> result = ImmutableMap.<String, Object>copyOf(conflictingItems.build().asMap());
+		if (!result.isEmpty()) {
+			throw new MergeConflictException(result, "Conflicts detected on %s concept(s) while post-processing changes.", result.size());
+		}
+	}
+
+	@Override
+	protected void unlinkObject(final CDOObject object) {
+	
+		if (object instanceof Relationship) {
+			((Relationship) object).setSource(null);
+			((Relationship) object).setDestination(null);
+		} else if (object instanceof SnomedRefSetMember) {
+			super.unlinkObject(object);
+		} else {
+			LOGGER.warn("Unexpected CDO object not unlinked: {}.", object);
+		}
 	}
 
 	private Conflict checkDuplicateComponentIds(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
@@ -221,21 +254,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return null;
 	}
 
-	@Override
-	public void postProcess(CDOTransaction transaction) {
-		super.postProcess(transaction);
-		
-		final ImmutableMultimap.Builder<String, Object> conflictingItems = ImmutableMultimap.builder();
-		postProcessLanguageRefSetMembers(transaction, conflictingItems);
-		postProcessTaxonomy(transaction, conflictingItems);
-		postProcessRefSetMembers(transaction, conflictingItems);
-		
-		Map<String, Object> result = ImmutableMap.<String, Object>copyOf(conflictingItems.build().asMap());
-		if (!result.isEmpty()) {
-			throw new MergeConflictException(result, "Conflicts detected on %s concept(s) while post-processing changes.", result.size());
-		}
-	}
-	
 	private void postProcessRefSetMembers(CDOTransaction transaction, Builder<String, Object> conflictingItems) {
 		final Set<String> detachedMemberIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, SnomedRefSetMember.class)).transform(new Function<SnomedRefSetMember, String>() {
 			@Override
@@ -363,19 +381,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 					conflictingItems.put(Long.toString(invalidRelationship.getMissingConceptId()), invalidRelationship);
 				}	
 			}
-		}
-	}
-
-	@Override
-	protected void unlinkObject(final CDOObject object) {
-
-		if (object instanceof Relationship) {
-			((Relationship) object).setSource(null);
-			((Relationship) object).setDestination(null);
-		} else if (object instanceof SnomedRefSetMember) {
-			super.unlinkObject(object);
-		} else {
-			LOGGER.warn("Unexpected CDO object not unlinked: {}.", object);
 		}
 	}
 }
