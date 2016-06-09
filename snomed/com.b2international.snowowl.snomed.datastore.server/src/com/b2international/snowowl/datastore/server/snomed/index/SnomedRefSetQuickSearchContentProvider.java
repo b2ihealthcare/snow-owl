@@ -25,6 +25,7 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.index.compat.Highlighting;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
@@ -81,8 +82,8 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 					input.getIconId(), 
 					label, 
 					false,
-					getMatchRegions(queryExpression, label),
-					getSuffixes(queryExpression, label));
+					Highlighting.getMatchRegions(queryExpression, label),
+					Highlighting.getSuffixes(queryExpression, label));
 		}
 	}
 	

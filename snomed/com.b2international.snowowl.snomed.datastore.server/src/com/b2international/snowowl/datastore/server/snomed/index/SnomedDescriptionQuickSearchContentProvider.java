@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.index.compat.Highlighting;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
@@ -36,7 +37,6 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -68,8 +68,8 @@ public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSe
 								description.getTypeId(), 
 								description.getTerm(), 
 								false,
-								getMatchRegions(queryExpression, description.getTerm()),
-								getSuffixes(queryExpression, description.getTerm()));
+								Highlighting.getMatchRegions(queryExpression, description.getTerm()),
+								Highlighting.getSuffixes(queryExpression, description.getTerm()));
 						hits.add(hit);
 					}
 					

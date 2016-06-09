@@ -26,6 +26,7 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.index.compat.Highlighting;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -52,7 +53,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 
 /**
@@ -83,8 +83,8 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 					input.getIconId(), 
 					label, 
 					approximate,
-					getMatchRegions(queryExpression, label),
-					getSuffixes(queryExpression, label));
+					Highlighting.getMatchRegions(queryExpression, label),
+					Highlighting.getSuffixes(queryExpression, label));
 		}
 
 	}
