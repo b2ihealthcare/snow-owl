@@ -124,7 +124,7 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 				.put("type", Rf2ReleaseType.DELTA.name())
 				.put("branchPath", nestedBranch.getPath())
 				.put("createVersions", true)
-				.put("snomedReleaseShortName", "extensionImport")
+				.put("codeSystemShortName", "extensionImport")
 				.build();
 
 		final String importId = assertImportConfigurationCanBeCreated(importConfiguration);
