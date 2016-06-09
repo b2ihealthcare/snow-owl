@@ -44,6 +44,7 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl;
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getRepositoryUuid <em>Repository Uuid</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getCodeSystemVersions <em>Code System Versions</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getBranchPath <em>Branch Path</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.impl.CodeSystemImpl#getExtensionOf <em>Extension Of</em>}</li>
  * </ul>
  *
  * @generated
@@ -266,6 +267,24 @@ public class CodeSystemImpl extends CDOObjectImpl implements CodeSystem {
 	 */
 	public void setBranchPath(String newBranchPath) {
 		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__BRANCH_PATH, newBranchPath);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public CodeSystem getExtensionOf() {
+		return (CodeSystem)eGet(TerminologymetadataPackage.Literals.CODE_SYSTEM__EXTENSION_OF, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setExtensionOf(CodeSystem newExtensionOf) {
+		eSet(TerminologymetadataPackage.Literals.CODE_SYSTEM__EXTENSION_OF, newExtensionOf);
 	}
 
 } //CodeSystemImpl

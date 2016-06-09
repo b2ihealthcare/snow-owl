@@ -40,10 +40,11 @@ public class CodeSystemEntry implements Serializable, ICodeSystem {
 	private final long storageKey;
 	private final String repositoryUuid;
 	private final String branchPath;
+	private final String extensionOf;
 	
 	public CodeSystemEntry(final String oid, final String name, final String shortName, final String orgLink, final String language,
 			final String citation, final String iconPath, final String snowOwlId, final String storageKey, final String repositoryUuid,
-			final String branchPath) {
+			final String branchPath, final String extensionOf) {
 		
 		this.storageKey = Long.parseLong(storageKey);
 		this.repositoryUuid = repositoryUuid;
@@ -56,6 +57,7 @@ public class CodeSystemEntry implements Serializable, ICodeSystem {
 		this.iconPath = iconPath;
 		this.snowOwlId = snowOwlId;
 		this.branchPath = branchPath;
+		this.extensionOf = extensionOf;
 	}
 
 	@Override
@@ -111,6 +113,11 @@ public class CodeSystemEntry implements Serializable, ICodeSystem {
 	@Override
 	public String getBranchPath() {
 		return branchPath;
+	}
+	
+	@Override
+	public String getExtensionOf() {
+		return extensionOf;
 	}
 
 	@Override

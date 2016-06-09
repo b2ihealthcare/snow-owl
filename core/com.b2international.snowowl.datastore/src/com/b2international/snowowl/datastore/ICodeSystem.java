@@ -91,5 +91,10 @@ public interface ICodeSystem extends Serializable {
 	 * @return the path for the code system.
 	 */
 	String getBranchPath();
+	
+	/**
+	 * Returns the unique ID of the base Code System.
+	 */
+	String getExtensionOf();
 
 }

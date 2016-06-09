@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.api.impl.codesystem.domain;
 
-import java.util.Map;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
@@ -46,8 +44,7 @@ public class CodeSystem implements ICodeSystem {
 	private String terminologyId;
 	@NotEmpty
 	private String repositoryUuid;
-	
-	private Map<String, String> additionalProperties;
+	private String extensionOf;
 
 	@Override
 	public String getOid() {
@@ -100,8 +97,8 @@ public class CodeSystem implements ICodeSystem {
 	}
 	
 	@Override
-	public Map<String, String> getAdditionalProperties() {
-		return additionalProperties;
+	public String getExtensionOf() {
+		return extensionOf;
 	}
 
 	public void setOid(final String oid) {
@@ -144,8 +141,8 @@ public class CodeSystem implements ICodeSystem {
 		this.repositoryUuid = repositoryUuid;
 	}
 	
-	public void setAdditionalProperties(Map<String, String> additionalProperties) {
-		this.additionalProperties = additionalProperties;
+	public void setExtensionOf(String extensionOf) {
+		this.extensionOf = extensionOf;
 	}
 
 	@Override
@@ -169,8 +166,8 @@ public class CodeSystem implements ICodeSystem {
 		builder.append(iconPath);
 		builder.append(", repositoryUuid=");
 		builder.append(repositoryUuid);
-		builder.append(", additionalProperties=");
-		builder.append(additionalProperties);
+		builder.append(", extensionOf=");
+		builder.append(extensionOf);
 		builder.append("]");
 		return builder.toString();
 	}
