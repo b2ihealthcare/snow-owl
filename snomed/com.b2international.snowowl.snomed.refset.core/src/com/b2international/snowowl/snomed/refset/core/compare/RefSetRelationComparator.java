@@ -31,7 +31,6 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -108,7 +107,6 @@ public class RefSetRelationComparator {
 	private final class AddedOrRelatedReferencedComponentDeltaFunction implements Function<SnomedConceptDocument, Collection<ReferencedComponentDelta>> {
 		private final Collection<SnomedConceptDocument> referencedComponents;
 		private SnomedHierarchy hierarchy;
-		private LongKeyMap statements;
 
 		public AddedOrRelatedReferencedComponentDeltaFunction(Collection<SnomedConceptDocument> referencedComponents) {
 			final Runnable initBuilder = new Runnable() {
@@ -117,15 +115,7 @@ public class RefSetRelationComparator {
 				}
 			};
 			
-			final Runnable getStatements = new Runnable() {
-
-				@Override public void run() {
-					statements = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getAllActiveStatements();
-				}
-			};
-			
-			ForkJoinUtils.runInParallel(initBuilder, getStatements);
-			
+			initBuilder.run();
 			this.referencedComponents = referencedComponents;
 		}
 

@@ -22,7 +22,6 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.Lists;
@@ -34,12 +33,6 @@ import com.google.common.collect.Sets;
  * 
  */
 public class RelationTester {
-
-	private final SnomedClientStatementBrowser statementBrowser;
-
-	public RelationTester(SnomedClientStatementBrowser statementBrowser) {
-		this.statementBrowser = statementBrowser;
-	}
 
 	public boolean isRelated(String predicateId, String candidateId) {
 		Set<String> visited = Sets.newHashSet();

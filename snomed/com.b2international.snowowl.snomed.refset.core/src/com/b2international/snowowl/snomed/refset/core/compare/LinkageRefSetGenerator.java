@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.refset.core.compare.ReferencedComponentDelta.DeltaKind;
@@ -51,14 +50,12 @@ import com.google.common.collect.Sets;
 public class LinkageRefSetGenerator {
 
 	private final SnomedRefSetEditingContext editingContext;
-	private final SnomedClientStatementBrowser statementBrowser;
 	private final String moduleId;
 	private final RelationTester relationTester;
 
-	public LinkageRefSetGenerator(final SnomedRefSetEditingContext editingContext, final SnomedClientStatementBrowser statementBrowser) {
+	public LinkageRefSetGenerator(final SnomedRefSetEditingContext editingContext) {
 		this.editingContext = editingContext;
-		this.statementBrowser = statementBrowser;
-		this.relationTester = new RelationTester(statementBrowser);
+		this.relationTester = new RelationTester();
 		this.moduleId = this.editingContext.getSnomedEditingContext().getDefaultModuleConcept().getModule().getId();
 	}
 
