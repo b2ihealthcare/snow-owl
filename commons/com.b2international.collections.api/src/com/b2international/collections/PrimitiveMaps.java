@@ -25,6 +25,7 @@ import com.b2international.collections.bytes.ByteKeyLongMap;
 import com.b2international.collections.bytes.ByteKeyMap;
 import com.b2international.collections.bytes.ByteValueMap;
 import com.b2international.collections.ints.IntKeyMap;
+import com.b2international.collections.ints.IntValueMap;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongKeyLongMap;
@@ -143,6 +144,14 @@ public abstract class PrimitiveMaps {
 	
 	public static <K> ByteValueMap<K> newObjectKeyByteOpenHashMapWithExpectedSize(int expectedSize) {
 		return FACTORY.newObjectKeyByteOpenHashMapWithExpectedSize(expectedSize);
+	}
+	
+	public static <K> IntValueMap<K> newObjectKeyIntOpenHashMap() {
+		return FACTORY.newObjectKeyIntOpenHashMap();
+	}
+	
+	public static <K> IntValueMap<K> newObjectKeyIntOpenHashMapWithExpectedSize(int expectedSize) {
+		return FACTORY.newObjectKeyIntOpenHashMapWithExpectedSize(expectedSize);
 	}
 	
 	public static <K> LongValueMap<K> newObjectKeyLongOpenHashMap() {

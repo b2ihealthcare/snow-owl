@@ -19,6 +19,7 @@ import com.b2international.collections.bytes.ByteKeyLongMap;
 import com.b2international.collections.bytes.ByteKeyMap;
 import com.b2international.collections.bytes.ByteValueMap;
 import com.b2international.collections.ints.IntKeyMap;
+import com.b2international.collections.ints.IntValueMap;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongKeyLongMap;
@@ -71,6 +72,10 @@ public interface PrimitiveMapFactory {
 	
 	<K> ByteValueMap<K> newObjectKeyByteOpenHashMapWithExpectedSize(int expectedSize);
 
+	<K> IntValueMap<K> newObjectKeyIntOpenHashMap();
+	
+	<K> IntValueMap<K> newObjectKeyIntOpenHashMapWithExpectedSize(int expectedSize);
+	
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMap();
 	
 	<K> LongValueMap<K> newObjectKeyLongOpenHashMapWithExpectedSize(int expectedSize);

@@ -22,6 +22,7 @@ import com.b2international.collections.bytes.ByteKeyMapWrapper;
 import com.b2international.collections.bytes.ByteValueMap;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntKeyMapWrapper;
+import com.b2international.collections.ints.IntValueMap;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongKeyFloatMapWrapper;
 import com.b2international.collections.longs.LongKeyIntMap;
@@ -32,6 +33,7 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongKeyMapWrapper;
 import com.b2international.collections.longs.LongValueMap;
 import com.b2international.collections.objects.ObjectKeyByteMapWrapper;
+import com.b2international.collections.objects.ObjectKeyIntMapWrapper;
 import com.b2international.collections.objects.ObjectKeyLongMapWrapper;
 import com.google.common.hash.HashFunction;
 
@@ -138,6 +140,16 @@ public class FastUtilPrimitiveMapFactory implements PrimitiveMapFactory {
 	@Override
 	public <K> ByteValueMap<K> newObjectKeyByteOpenHashMapWithExpectedSize(int expectedSize) {
 		return ObjectKeyByteMapWrapper.createWithExpectedSize(expectedSize);
+	}
+	
+	@Override
+	public <K> IntValueMap<K> newObjectKeyIntOpenHashMap() {
+		return ObjectKeyIntMapWrapper.create();
+	}
+	
+	@Override
+	public <K> IntValueMap<K> newObjectKeyIntOpenHashMapWithExpectedSize(int expectedSize) {
+		return ObjectKeyIntMapWrapper.createWithExpectedSize(expectedSize);
 	}
 
 	@Override
