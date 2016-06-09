@@ -68,20 +68,6 @@ public interface ISnomedComponentService {
 	Set<String> getSynonymAndDescendantIds(IBranchPath branchPath);
 	
 	/**
-	 * Returns with an array of labels for components identified by their unique SNOMED&nbsp;CT core component ID.
-	 * <br>The component type will be identified from the core component ID.
-	 * <p>Clients can make sure that the order of the specified component IDs will be the same as the returning array of label.
-	 * <p>The returning array may contain {@code null}s. Clients must take care of them.
-	 * <p>If the specified component ID is *NOT* a valid SNOMED&nbsp;CT core component ID, it will be ignored and the associated
-	 * label will be {@code null}.
-	 * @param branchPath the branch path.
-	 * @param componentIds the unique ID of a SNOMED&nbsp;CT core components.
-	 * @return an array of labels.
-	 * @expert
-	 */
-	@Nullable String[] getLabels(final IBranchPath branchPath, final String... componentIds);
-	
-	/**
 	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s for a concept, all belonging to the given language.
 	 * @param branchPath branch path.
 	 * @param conceptId the container concept ID.
@@ -119,28 +105,6 @@ public interface ISnomedComponentService {
 	@Nullable String[][] getAllDescriptionProperties(final IBranchPath branchPath);
 	
 	/**
-	* Returns with an array of SNOMED&nbsp;CT concept icon IDs for
-	* a bunch of SNOMED&nbsp;CT concepts given by their unique SNOMED&nbsp;CT concept ID.
-	* <br>Returning array may contain {@code null} elements. Order of the given concept IDs and the returning array
-	* of image IDs are the same.
-	* @param branchPath the branch path.
-	* @param conceptId the concept IDs.
-	* @return a map concept concept IDs and associated image concept IDs.
-	* @deprecated - will be removed in 4.7
-	*/
-	@Nullable String[] getIconId(final IBranchPath branchPath, final String... conceptId);
-	
-	/**
-	 * Returns with the unique storage key (CDO ID) of the SNOMED&nbsp;CT description specified with it's unique ID.
-	 * This method will return with {@code -1} if no description can be found on the specified branch with the given
-	 * description ID. 
-	 * @param branchPath the branch path.
-	 * @param descriptionId the unique ID of the description.
-	 * @return the storage key of the description, or {@code -1} if the description does not exist.
-	 */
-	long getDescriptionStorageKey(final IBranchPath branchPath, final String descriptionId);
-	
-	/**
 	 * Returns with a collection of {@link IdStorageKeyPair#getId() component ID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
 	 * for all components in the SNOMED&nbsp;CT ontology on a specified {@link IBranchPath branch}. Retired members are included in the result set.
 	 * @param branchPath the branch path.
@@ -159,13 +123,6 @@ public interface ISnomedComponentService {
 	 * @return a collection of reference set member storage keys.
 	 */
 	LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final EnumSet<SnomedRefSetType> types);
-	
-	/**
-	 * Returns with the a set of SNOMED CT IDs for all description.
-	 * @param branchPath the branch path.
-	 * @return a set of IDs for all descriptions in the ontology.
-	 */
-	LongSet getAllDescriptionIds(final IBranchPath branchPath);
 	
 	/**
 	 * Returns with a collection of the reference set member's referenced component storage keys.  
@@ -187,16 +144,6 @@ public interface ISnomedComponentService {
 	 */
 	@Deprecated
 	Map<String, String> getReferencedConceptTerms(final IBranchPath branchPath, final String refSetId, final String... descriptionTypeId);
-	
-	/**
-	 * Returns with a pair of referenced component and target component label for a reference set member.
-	 * If the reference set member does not belong to a mapping type reference set, then the map target component
-	 * label could be {@code null}. It returns with {@code null} {@link Pair} if the reference set does not exist.
-	 * @param branchPath the branch path.
-	 * @param uuid the reference set member UUID.
-	 * @return a pair of referenced component and map type component labels.
-	 */
-	Pair<String, String> getMemberLabel(final IBranchPath branchPath, final String uuid);
 	
 	/**
 	 * Returns with a collection of {@link SnomedRefSetMemberFragment reference set member}s contained by the given reference set. 

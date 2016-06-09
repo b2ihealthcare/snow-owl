@@ -158,15 +158,6 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	}
 
 	/**
-	 * Returns with a set of the active direct descendant concept IDs of a SNOMED&nbsp;CT concept given by its unique ID.
-	 * @param conceptId the unique ID of the concept.
-	 * @return a set of concept IDs of the active direct descendant concepts.
-	 */
-	public LongSet getSubTypeIds(final long conceptId) {
-		return getWrappedService().getSubTypeIds(getBranchPath(), conceptId);
-	}
-
-	/**
 	 * Returns with a set of the active direct ancestor concept IDs of a SNOMED&nbsp;CT concept given by its unique ID.
 	 * @param conceptId the unique ID of the concept.
 	 * @return a set of concept IDs of the active direct ancestor concepts.

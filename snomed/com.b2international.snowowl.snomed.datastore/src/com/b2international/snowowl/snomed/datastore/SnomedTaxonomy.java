@@ -208,15 +208,6 @@ public interface SnomedTaxonomy {
 	int getDepth(final String conceptId);
 	
 	/**
-	 * Returns with the height of the current concept from the taxonomy.
-	 * The height of a node is the number of edges on the longest path from the node to a leaf.
-	 * <br>A leaf node will have a height of 0.
-	 * @param conceptId the concept ID of the focus concept/node.
-	 * @return the height of the node in the taxonomy.
-	 */
-	int getHeight(final String conceptId);
-	
-	/**
 	 * Returns with {@code true} if the concept given with the unique concept ID argument is 
 	 * a leaf node. In other words, it does not have any active descendants. Otherwise {@code false}.
 	 * @param conceptId the ID of the concept to check.

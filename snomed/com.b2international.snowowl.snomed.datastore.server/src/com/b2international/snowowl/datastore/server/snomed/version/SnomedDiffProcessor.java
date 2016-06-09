@@ -650,10 +650,6 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		}
 	}
 
-	private String getConceptLabel(final IBranchPath branchPath, final String conceptId) {
-		return getLabels(branchPath, conceptId)[0];
-	}
-	
 	private String getMemberLabel(final SnomedRefSetMember member) {
 		final Pair<String, String> labelPair = getComponentService().getMemberLabel(getBranchPath(member), member.getUuid());
 		final StringBuffer sb = new StringBuffer();
@@ -663,13 +659,6 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			sb.append(labelPair.getB());
 		}
 		return sb.toString();
-	}
-	
-	private String[] getRelationshipLabels(final EObject component, final Relationship relationship) {
-		return getLabels(getBranchPath(component), 
-				relationship.getSource().getId(), 
-				relationship.getType().getId(), 
-				relationship.getDestination().getId());
 	}
 	
 	private short getTerminologyComponentId(final EObject component) {
@@ -682,10 +671,6 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		} else {
 			throw new IllegalArgumentException("Unknown component type of: " + component);
 		}
-	}
-	
-	private String[] getLabels(final IBranchPath branchPath, final String... ids) {
-		return getComponentService().getLabels(branchPath, ids);
 	}
 	
 	private ISnomedComponentService getComponentService() {

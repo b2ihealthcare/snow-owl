@@ -517,20 +517,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		}
 	}
 	
-	@Override
-	public int getHeight(final String conceptId) {
-		if (isInitialized()) {
-			final Multimap<String, String> parentageMap = create();
-			for (final String subtypeId : getAllSubtypes(conceptId)) {
-				parentageMap.putAll(subtypeId, getSupertypes(subtypeId));
-			}
-			return getLongestPath(parentageMap).size();
-		} else {
-			initializeTaxonomyInBackgroud();
-			return getTerminologyBrowser().getHeight(branchPath, conceptId);
-		}
-	}
-	
 	private synchronized void build(final IBranchPath branchPath) throws IllegalStateException {
 		
 		if (!InitializationState.isUninitialized(state.get())) {

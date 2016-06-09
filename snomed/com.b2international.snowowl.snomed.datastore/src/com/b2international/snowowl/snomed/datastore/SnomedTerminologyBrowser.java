@@ -141,24 +141,4 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	 */
 	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildFlag(final IBranchPath branchPath, final SnomedConceptDocument concept);
 	
-	/**
-	 * Returns with the depth of the current concept from the taxonomy.
-	 * The depth of a node is the number of edges from the node to the tree's root node.
-	 * <br>A root node will have a depth of 0.
-	 * @param branchPath the branch path.
-	 * @param conceptId the concept ID of the focus concept/node.
-	 * @return the height of the node in the taxonomy.
-	 */
-	int getDepth(final IBranchPath branchPath, final String conceptId);
-	
-	/**
-	 * Returns with the height of the current concept from the taxonomy.
-	 * The height of a node is the number of edges on the longest path from the node to a leaf.
-	 * <br>A leaf node will have a height of 0.
-	 * @param branchPath the branch path.
-	 * @param conceptId the concept ID of the focus concept/node.
-	 * @return the height of the node in the taxonomy.
-	 */
-	int getHeight(final IBranchPath branchPath, final String conceptId);
-	
 }

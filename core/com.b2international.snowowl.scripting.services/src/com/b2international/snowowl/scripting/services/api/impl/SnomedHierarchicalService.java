@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.scripting.services.api.IHierarchicalService;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -170,7 +169,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		
 		final Set<SnomedConceptDocument> $ = Sets.newHashSet();
 		
-		final List<SnomedRelationshipIndexEntry> inboundStatements = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getInboundStatementsById(targetConceptId);
+		final List<SnomedRelationshipIndexEntry> inboundStatements = statementBrowser.getInboundStatementsById(targetConceptId);
 		
 		for (final SnomedRelationshipIndexEntry relationship : inboundStatements) {
 			
@@ -466,13 +465,6 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				"SNOMED CT concept hierarchy browsing service was null.");
 	}
 	
-	/*returns with the SNOMED CT concept hierarchy browsing service registered to the application context*/
-	private SnomedClientStatementBrowser getStatementBrowser() {
-		return Preconditions.checkNotNull(
-				ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class), 
-				"SNOMED CT concept statement browsing service was null.");
-	}
-
 	private long asLong(final String id) {
 		return Long.parseLong(id);
 	}

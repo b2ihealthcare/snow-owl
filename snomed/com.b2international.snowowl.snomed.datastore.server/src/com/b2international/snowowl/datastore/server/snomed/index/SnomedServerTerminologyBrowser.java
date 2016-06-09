@@ -78,8 +78,7 @@ public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser 
 	
 	@Override
 	public Collection<SnomedConceptDocument> getSuperTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		checkNotNull(concept, "Concept must not be null.");
-		return getSuperTypesById(branchPath, concept.getId());
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
@@ -444,76 +443,76 @@ public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser 
 		return false;
 	}
 	
-	@Override
-	public int getDepth(final IBranchPath branchPath, final String conceptId) {
-		checkNotNull(conceptId, "conceptId");
-		
-		final long conceptIdL = Long.parseLong(conceptId);
-		final LongSet allSuperTypeIds = getAllSuperTypeIds(branchPath, conceptIdL);
-		if (CompareUtils.isEmpty(allSuperTypeIds)) {
-			return 0;
-		}
-		
-		final Multimap<Long, Long> parentageMap = Multimaps.synchronizedMultimap(HashMultimap.<Long, Long>create());
-		parentageMap.putAll(conceptIdL, toSet(allSuperTypeIds));
-		parallelForEach(allSuperTypeIds, new LongSets.LongCollectionProcedure() {
-			@Override
-			public void apply(long conceptId) {
-				final LongSet superTypeIds = getSuperTypeIds(branchPath, conceptId);
-				parentageMap.putAll(conceptId, toSet(superTypeIds));
-			}
-		});
-		
-		return GraphUtils.getLongestPath(parentageMap).size() - 1;
-		
-	}
+//	@Override
+//	public int getDepth(final IBranchPath branchPath, final String conceptId) {
+//		checkNotNull(conceptId, "conceptId");
+//		
+//		final long conceptIdL = Long.parseLong(conceptId);
+//		final LongSet allSuperTypeIds = getAllSuperTypeIds(branchPath, conceptIdL);
+//		if (CompareUtils.isEmpty(allSuperTypeIds)) {
+//			return 0;
+//		}
+//		
+//		final Multimap<Long, Long> parentageMap = Multimaps.synchronizedMultimap(HashMultimap.<Long, Long>create());
+//		parentageMap.putAll(conceptIdL, toSet(allSuperTypeIds));
+//		parallelForEach(allSuperTypeIds, new LongSets.LongCollectionProcedure() {
+//			@Override
+//			public void apply(long conceptId) {
+//				final LongSet superTypeIds = getSuperTypeIds(branchPath, conceptId);
+//				parentageMap.putAll(conceptId, toSet(superTypeIds));
+//			}
+//		});
+//		
+//		return GraphUtils.getLongestPath(parentageMap).size() - 1;
+//		
+//	}
 	
-	@Override
-	public int getHeight(final IBranchPath branchPath, final String conceptId) {
-		checkNotNull(conceptId, "conceptId");
-		
-		final Query query = getAllSubTypesQuery(conceptId);
-
-		final AtomicReference<IndexSearcher> searcher = new AtomicReference<IndexSearcher>();
-		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-		service.search(branchPath, query, collector);
-
-		ReferenceManager<IndexSearcher> manager = null;
-
-		try {
-
-			final Multimap<Long, Long> parentageMap = Multimaps.synchronizedMultimap(HashMultimap.<Long, Long>create());
-			manager = service.getManager(branchPath);
-			searcher.set(manager.acquire());
-			IndexUtils.parallelForEachDocId(collector.getDocIDs(), new IndexUtils.DocIdProcedure() {
-				@Override
-				public void apply(final int docId) throws IOException {
-					final Document doc = searcher.get().doc(docId, SnomedMappings.fieldsToLoad().id().parent().build());
-					final long id = SnomedMappings.id().getValue(doc);
-					parentageMap.putAll(id, SnomedMappings.parent().getValues(doc));
-				}
-			});
-			
-			return GraphUtils.getLongestPath(parentageMap).size();
-			
-		} catch (final IOException e) {
-			throw new IndexException("Error while getting height of node '" + conceptId + "'.", e);
-		} finally {
-			if (null != manager && null != searcher.get()) {
-				try {
-					manager.release(searcher.get());
-				} catch (final IOException e) {
-					try {
-						manager.release(searcher.get());
-					} catch (final IOException e1) {
-						e.addSuppressed(e1);
-					}
-					throw new IndexException("Error while releasing index searcher.", e);
-				}
-			}
-		}
-		
-	}
+//	@Override
+//	public int getHeight(final IBranchPath branchPath, final String conceptId) {
+//		checkNotNull(conceptId, "conceptId");
+//		
+//		final Query query = getAllSubTypesQuery(conceptId);
+//
+//		final AtomicReference<IndexSearcher> searcher = new AtomicReference<IndexSearcher>();
+//		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
+//		service.search(branchPath, query, collector);
+//
+//		ReferenceManager<IndexSearcher> manager = null;
+//
+//		try {
+//
+//			final Multimap<Long, Long> parentageMap = Multimaps.synchronizedMultimap(HashMultimap.<Long, Long>create());
+//			manager = service.getManager(branchPath);
+//			searcher.set(manager.acquire());
+//			IndexUtils.parallelForEachDocId(collector.getDocIDs(), new IndexUtils.DocIdProcedure() {
+//				@Override
+//				public void apply(final int docId) throws IOException {
+//					final Document doc = searcher.get().doc(docId, SnomedMappings.fieldsToLoad().id().parent().build());
+//					final long id = SnomedMappings.id().getValue(doc);
+//					parentageMap.putAll(id, SnomedMappings.parent().getValues(doc));
+//				}
+//			});
+//			
+//			return GraphUtils.getLongestPath(parentageMap).size();
+//			
+//		} catch (final IOException e) {
+//			throw new IndexException("Error while getting height of node '" + conceptId + "'.", e);
+//		} finally {
+//			if (null != manager && null != searcher.get()) {
+//				try {
+//					manager.release(searcher.get());
+//				} catch (final IOException e) {
+//					try {
+//						manager.release(searcher.get());
+//					} catch (final IOException e1) {
+//						e.addSuppressed(e1);
+//					}
+//					throw new IndexException("Error while releasing index searcher.", e);
+//				}
+//			}
+//		}
+//		
+//	}
 	
 	@Override
 	public Collection<SnomedConceptDocument> getSuperTypesById(final IBranchPath branchPath, final String id) {
@@ -524,9 +523,4 @@ public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser 
 		return builder.build();
 	}
 
-	@Override
-	protected Query getSubTypesQuery(String id) {
-		return SnomedMappings.newQuery().parent(id).and(getTerminologyComponentTypeQuery()).matchAll();
-	}
-	
 }

@@ -127,7 +127,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
@@ -403,62 +402,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public String[] getLabels(final IBranchPath branchPath, final String... componentIds) {
-		
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(componentIds, "SNOMED CT component ID argument cannot be null.");
-		
-		final String[] labels = new String[componentIds.length];
-		
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-			
-			for (int i = 0; i < componentIds.length; i++) {
-				
-				labels[i] = getComponentLabel(branchPath, componentIds[i], indexService, searcher);
-				
-			}
-			
-		} catch (final IOException e) {
-			
-			LOGGER.error("Error while searching for component labels.");
-			throw new SnowowlRuntimeException(e);
-			
-		} finally {
-			
-			if (null != manager && null != searcher) {
-				
-				try {
-					
-					manager.release(searcher);
-					
-				} catch (final IOException e) {
-					
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-					
-				}
-				
-			}
-			
-		}
-		
-		return labels;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService#getDescriptionFragmentsForConcept(com.b2international.snowowl.core.api.IBranchPath, java.lang.String, java.lang.String)
-	 */
-	@Override
 	public Collection<SnomedDescriptionFragment> getDescriptionFragmentsForConcept(final IBranchPath branchPath, final String conceptId, final String languageRefSetId) {
 		
 		checkNotNull(branchPath, "branchPath");
@@ -627,21 +570,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 		
 		return result;
-	}
-	
-	@Override
-	public long getDescriptionStorageKey(final IBranchPath branchPath, final String descriptionId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(branchPath, "Concept ID argument cannot be null.");
-		
-		final TopDocs topDocs = getIndexServerService().search(branchPath, SnomedMappings.newQuery().type(DESCRIPTION_NUMBER).id(descriptionId).matchAll(), 1);
-		
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return -1L;
-		}
-		
-		final Document doc = getIndexServerService().document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().storageKey().build());
-		return Mappings.storageKey().getValue(doc);
 	}
 	
 	@Override
@@ -819,94 +747,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		
 	}
 	
-	@Override
-	public LongSet getAllDescriptionIds(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
-		
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-
-			final int maxDoc = searcher.getIndexReader().maxDoc();
-			final DocIdCollector collector = DocIdCollector.create(maxDoc);
-			searcher.search(SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER).matchAll(), collector);
-			
-			final int hitCount = collector.getDocIDs().size();
-			
-			if (0 == hitCount) {
-				return LongCollections.emptySet();
-			}
-			
-			final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(hitCount);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_KEY_TO_LOAD);
-				$.add(SnomedMappings.id().getValue(doc));
-			}
-			
-			return $;
-		} catch (final IOException e) {
-			LOGGER.error("Error while getting all description IDs.");
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-		}
-	}
-	
-	@Override
-	public String[] getIconId(final IBranchPath branchPath, final String... conceptIds) {
-	
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(conceptIds, "SNOMED CT concept ID argument cannot be null.");
-	
-		final String[] $ = new String[conceptIds.length];
-	
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
-	
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-	
-		try {
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-	
-			for (int i = 0; i < conceptIds.length; i++) {
-	
-				$[i] = getIconId(conceptIds[i], searcher);
-	
-			}
-		} catch (final IOException e) {
-			LOGGER.error("Error while searching for component image IDs.");
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-		}
-		return $;
-	}
-
 	@Override
 	public LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType) {
 		
@@ -1509,65 +1349,65 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 
 	/*returns true only and if only the SNOMED CT component identified by its unique ID is active. Otherwise false.*/
-	private boolean isActive(final long storageKey, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
-		final Query query = SnomedMappings.newQuery().storageKey(storageKey).matchAll();
-		final TopDocs topDocs = searcher.search(query, 1);
-		// cannot found matching component
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return false;
-		}
-		
-		final Document doc = service.document(searcher, topDocs.scoreDocs[0].doc, COMPONENT_STATUS_TO_LOAD);
-		return SnomedMappings.active().getValue(doc) == 1;
-		
-	}
+//	private boolean isActive(final long storageKey, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
+//		final Query query = SnomedMappings.newQuery().storageKey(storageKey).matchAll();
+//		final TopDocs topDocs = searcher.search(query, 1);
+//		// cannot found matching component
+//		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
+//			return false;
+//		}
+//		
+//		final Document doc = service.document(searcher, topDocs.scoreDocs[0].doc, COMPONENT_STATUS_TO_LOAD);
+//		return SnomedMappings.active().getValue(doc) == 1;
+//		
+//	}
 	
 	/*returns with the label of the component if any. this method may return with null.*/
-	@Nullable private String getComponentLabel(final IBranchPath branchPath, final String componentId, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
-		
-		
-		
-		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
-		List<ExtendedLocale> languagePreference = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
-		
-		
-		short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(componentId);
-		
-		String componentLabel = componentId;
-		switch (referencedComponentType) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-				ISnomedConcept concept = SnomedRequests.prepareGetConcept()
-						.setComponentId(componentId)
-						.setExpand("pt()")
-						.setLocales(languagePreference)
-					.build(branchPath.getPath())
-					.executeSync(eventBus);
-				componentLabel = concept.getPt().getTerm();
-				break;
-				
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-				ISnomedDescription description = SnomedRequests.prepareGetDescription()
-						.setComponentId(componentId)
-						.setLocales(languagePreference)
-					.build(branchPath.getPath())
-					.executeSync(eventBus);
-				
-				componentLabel = description.getTerm();
-				break;
-			case RELATIONSHIP_NUMBER:
-				ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
-						.setComponentId(componentId)
-						.setLocales(languagePreference)
-					.build(branchPath.getPath())
-					.executeSync(eventBus);
-				componentLabel = relationship.getSourceConcept().getPt().getTerm() + " " +  relationship.getTypeConcept().getPt().getTerm() + " " +  relationship.getDestinationConcept().getPt().getTerm();
-				break;
-			
-		}
-		
-		
-		
-		return componentLabel;
+//	@Nullable private String getComponentLabel(final IBranchPath branchPath, final String componentId, final IndexServerService<?> service, final IndexSearcher searcher) throws IOException {
+//		
+//		
+//		
+//		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
+//		List<ExtendedLocale> languagePreference = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+//		
+//		
+//		short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(componentId);
+//		
+//		String componentLabel = componentId;
+//		switch (referencedComponentType) {
+//			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+//				ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+//						.setComponentId(componentId)
+//						.setExpand("pt()")
+//						.setLocales(languagePreference)
+//					.build(branchPath.getPath())
+//					.executeSync(eventBus);
+//				componentLabel = concept.getPt().getTerm();
+//				break;
+//				
+//			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+//				ISnomedDescription description = SnomedRequests.prepareGetDescription()
+//						.setComponentId(componentId)
+//						.setLocales(languagePreference)
+//					.build(branchPath.getPath())
+//					.executeSync(eventBus);
+//				
+//				componentLabel = description.getTerm();
+//				break;
+//			case RELATIONSHIP_NUMBER:
+//				ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
+//						.setComponentId(componentId)
+//						.setLocales(languagePreference)
+//					.build(branchPath.getPath())
+//					.executeSync(eventBus);
+//				componentLabel = relationship.getSourceConcept().getPt().getTerm() + " " +  relationship.getTypeConcept().getPt().getTerm() + " " +  relationship.getDestinationConcept().getPt().getTerm();
+//				break;
+//			
+//		}
+//		
+//		
+//		
+//		return componentLabel;
 		
 //		Query labelQuery = null;
 //		
@@ -1600,29 +1440,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 //		
 //		//could be null
 //		return Mappings.label().getValue(doc);
-	}
-	
-	private String getIconId(final String conceptId, final IndexSearcher searcher) throws IOException {
-
-		checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-
-		final Query query = SnomedMappings.newQuery().type(CONCEPT_NUMBER).id(conceptId).matchAll();
-		final TopDocs topDocs = searcher.search(query, 1);
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return null;
-		}
-
-		final Document doc = getIndexServerService().document(searcher, topDocs.scoreDocs[0].doc, COMPONENT_ICON_ID_TO_LOAD);
-
-		if (null == doc) {
-			return SnomedIconProvider.getInstance().getIconId(conceptId);
-		}
-
-		final String iconId = Mappings.iconId().getValue(doc);
-
-		return StringUtils.isEmpty(iconId) ? null : iconId;
-
-	}
+//	}
 	
 	/*returns with the identifier concept ID of the currently used language setting specified 
 	 * by the selected SNOMED CT language type reference set*/
@@ -1639,8 +1457,8 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return getDataTypeLabels(branchPath);
 			case AVAILABLE_DESCRIPTION_IDS:
 				return getAvailableDescriptionTypes(branchPath);
-			case NAMESPACE_IDS:
-				return getNameSpaceIds(branchPath);
+//			case NAMESPACE_IDS:
+//				return getNameSpaceIds(branchPath);
 			case PREDICATE_TYPES:
 				return getAllPredicates(branchPath);
 			case REFERENCE_SET_CDO_IDS:

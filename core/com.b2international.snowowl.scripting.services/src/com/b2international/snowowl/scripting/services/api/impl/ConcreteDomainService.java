@@ -34,7 +34,6 @@ import com.b2international.snowowl.scripting.services.api.IConcreteDomainService
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -59,7 +58,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId) {
 		final Set<String> ids = newHashSet(conceptId);
-		final Collection<SnomedRelationshipIndexEntry> sourceRelationships = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getActiveOutboundStatementsById(conceptId);
+		final Collection<SnomedRelationshipIndexEntry> sourceRelationships = statementBrowser.getActiveOutboundStatementsById(conceptId);
 		final String[] activeSourceIds = Iterables.toArray(Iterables.transform(sourceRelationships, new Function<SnomedRelationshipIndexEntry, String>() {
 			@Override public String apply(final SnomedRelationshipIndexEntry relationship) {
 				return relationship.getId();

@@ -144,11 +144,6 @@ public class SnomedClientTaxonomyServiceImpl extends ActiveBranchPathAwareServic
 	}
 
 	@Override
-	public int getHeight(final String conceptId) {
-		return delegate.getHeight(getBranchPath(), conceptId);
-	}
-
-	@Override
 	public boolean isLeaf(final String conceptId) {
 		return delegate.isLeaf(getBranchPath(), conceptId);
 	}
