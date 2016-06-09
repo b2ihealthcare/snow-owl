@@ -250,7 +250,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 				.filterBySource(relationshipChange.getSource().getId().toString())
 				.filterByDestination(relationshipChange.getDestination().getId().toString())
 				.filterByType(relationshipChange.getType().getId().toString())
-				.filterByGroup(new Byte(relationshipChange.getGroup()).intValue())
+				.filterByGroup(relationshipChange.getGroup())
 				.build(branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync(), null);
