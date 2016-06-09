@@ -77,7 +77,7 @@ final class CodeSystemGetRequest extends BaseResourceRequest<BranchContext, Code
 		} else {
 			final TopDocs topDocs = searcher.search(boolQuery, 1);
 			final Document doc = searcher.doc(topDocs.scoreDocs[0].doc);
-			return context.service(CodeSystemEntryBuilder.class).build(doc);
+			return new CodeSystemEntryBuilder().build(doc);
 		}
 	}
 

@@ -43,7 +43,6 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.collect.Maps;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -122,7 +121,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setRepositoryUuid(codeSystem.getRepositoryUuid())
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
-				.setAdditionaProperties(codeSystem.getAdditionalProperties() == null ? Maps.<String, String> newHashMap() : codeSystem.getAdditionalProperties())
+				.setExtensionOf(codeSystem.getExtensionOf())
 				.build(userId, IBranchPath.MAIN_BRANCH, commitComment)
 				.executeSync(bus)
 				.getResultAs(String.class);
