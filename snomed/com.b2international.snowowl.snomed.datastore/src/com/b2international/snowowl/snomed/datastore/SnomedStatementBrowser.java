@@ -35,15 +35,6 @@ public interface SnomedStatementBrowser {
 	<T extends IsAStatement> T[] getActiveStatements(final IBranchPath branchPath, final StatementCollectionMode mode);
 	
 	/**
-	 * Returns with a map of SNOMED CT relationships. Clients can make sure, that all the returning statements are active.
-	 * <br>The values are the source concept IDs the values are the associated outbound {@link StatementFragment relationships}.
-	 * @param branchPath the branch path.
-	 * @return a map of all active statements grouped by the source concept IDs.
-	 * @see StatementFragment
-	 */
-	LongKeyMap getAllActiveStatements(final IBranchPath branchPath);
-
-	/**
 	 * Returns with the unique storage key (CDO ID) of the SNOMED&nbsp;CT relationship specified with it's unique ID.
 	 * This method will return with {@code -1} if no relationship can be found on the specified branch with the given
 	 * relationship ID.

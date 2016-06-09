@@ -77,16 +77,6 @@ public class SnomedServerStatementBrowser implements SnomedStatementBrowser {
 	}
 
 	@Override
-	public LongKeyMap getAllActiveStatements(final IBranchPath branchPath) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		final Query query = SnomedMappings.newQuery().relationship().active().matchAll();
-		final int hitCount = service.getHitCount(branchPath, query, null);
-		final StatementFragmentCollector collector = new StatementFragmentCollector(hitCount);
-		service.search(branchPath, query, collector);
-		return collector.getStatementMap();
-	}
-
-	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String relationshipId) {
 
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
