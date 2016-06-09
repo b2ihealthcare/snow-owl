@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.util;
 
-import com.b2international.snowowl.snomed.*;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
@@ -26,6 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
@@ -114,22 +112,6 @@ public class SnomedAdapterFactory extends AdapterFactoryImpl {
 			@Override
 			public Adapter caseConcepts(Concepts object) {
 				return createConceptsAdapter();
-			}
-			@Override
-			public Adapter caseSnomedRelease(SnomedRelease object) {
-				return createSnomedReleaseAdapter();
-			}
-			@Override
-			public Adapter caseSnomedVersion(SnomedVersion object) {
-				return createSnomedVersionAdapter();
-			}
-			@Override
-			public Adapter caseCodeSystem(CodeSystem object) {
-				return createCodeSystemAdapter();
-			}
-			@Override
-			public Adapter caseCodeSystemVersion(CodeSystemVersion object) {
-				return createCodeSystemVersionAdapter();
 			}
 			@Override
 			public Adapter defaultCase(EObject object) {
@@ -246,62 +228,6 @@ public class SnomedAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createConceptsAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.SnomedRelease <em>Release</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.snomed.SnomedRelease
-	 * @generated
-	 */
-	public Adapter createSnomedReleaseAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.SnomedVersion <em>Version</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.snomed.SnomedVersion
-	 * @generated
-	 */
-	public Adapter createSnomedVersionAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystem <em>Code System</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem
-	 * @generated
-	 */
-	public Adapter createCodeSystemAdapter() {
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.terminologymetadata.CodeSystemVersion <em>Code System Version</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see com.b2international.snowowl.terminologymetadata.CodeSystemVersion
-	 * @generated
-	 */
-	public Adapter createCodeSystemVersionAdapter() {
 		return null;
 	}
 
