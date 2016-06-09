@@ -15,24 +15,25 @@
  */
 package com.b2international.index.query;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-
 /**
- * Represents a predicate against a single field
- * 
  * @since 4.7
  */
-public abstract class Predicate implements Expression {
+public final class TextPredicate extends Predicate {
 
-	private final String field;
-	
-	protected Predicate(String field) {
-		this.field = checkNotNull(field, "feature");
-	}
+	private final String term;
 
-	public String getField() {
-		return field;
+	TextPredicate(String field, String term) {
+		super(field);
+		this.term = term;
 	}
 	
+	public String term() {
+		return term;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("TEXT(%s = %s)", getField(), term);
+	}
+
 }

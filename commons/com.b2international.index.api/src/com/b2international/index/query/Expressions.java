@@ -34,6 +34,7 @@ public class Expressions {
 		private final List<Expression> mustNotClauses = newArrayList();
 		private final List<Expression> shouldClauses = newArrayList();
 		private final List<Expression> filterClauses = newArrayList();
+		private int minShouldMatch = 1;
 		
 		private ExpressionBuilder() {
 		}
@@ -57,6 +58,11 @@ public class Expressions {
 			this.filterClauses.add(e);
 			return this;
 		}
+		
+		public ExpressionBuilder setMinimumNumberShouldMatch(int minShouldMatch) {
+			this.minShouldMatch = minShouldMatch;
+			return this;
+		}
 
 		public Expression build() {
 			if (mustClauses.isEmpty() && mustNotClauses.isEmpty() && shouldClauses.isEmpty() && filterClauses.isEmpty()) {
@@ -65,7 +71,7 @@ public class Expressions {
 				throw new UnsupportedOperationException();
 			}
 		}
-		
+
 	}
 	
 	public static Expression nestedMatch(final String path, Expression expression) {
@@ -147,6 +153,18 @@ public class Expressions {
 
 	public static Expression boost(Expression expression, float boost) {
 		return new BoostPredicate(expression, boost);
+	}
+	
+	public static Expression matchText(String field, String term) {
+		return new TextPredicate(field, term);
+	}
+	
+	public static Expression matchTextPrefix(String field, String term) {
+		return new PrefixTextPredicate(field, term);
+	}
+	
+	public static Expression matchTextFuzzy(String field, String term) {
+		return new FuzzyTextPredicate(field, term);
 	}
 
 }

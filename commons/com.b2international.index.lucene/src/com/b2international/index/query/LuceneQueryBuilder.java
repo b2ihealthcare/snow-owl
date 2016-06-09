@@ -28,14 +28,17 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeFilter;
 import org.apache.lucene.search.PrefixFilter;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
+import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.json.JsonDocumentMapping;
@@ -57,7 +60,7 @@ public final class LuceneQueryBuilder {
 			this.query = query;
 		}
 		
-		public DequeItem(Filter filter) {
+		DequeItem(Filter filter) {
 			this.query = filter;
 		}
 
@@ -144,6 +147,10 @@ public final class LuceneQueryBuilder {
 			visit((StringSetPredicate) expression);
 		} else if (expression instanceof LongSetPredicate) {
 			visit((LongSetPredicate) expression);
+		} else if (expression instanceof PrefixTextPredicate) {
+			visit((PrefixTextPredicate) expression);
+		} else if (expression instanceof FuzzyTextPredicate) {
+			visit((FuzzyTextPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -172,6 +179,16 @@ public final class LuceneQueryBuilder {
 		deque.push(new DequeItem(toChildQuery));
 	}
 
+	private void visit(FuzzyTextPredicate predicate) {
+		final FuzzyQuery query = new FuzzyQuery(new Term(predicate.getField(), predicate.term()), LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
+		deque.push(new DequeItem(query));
+	}
+	
+	private void visit(PrefixTextPredicate predicate) {
+		final Query query = new PrefixQuery(new Term(predicate.getField(), predicate.prefix()));
+		deque.push(new DequeItem(query));
+	}
+	
 //	private void visit(TextPredicate predicate) {
 //		Feature feature = predicate.getFeature();
 //		Operator operator = predicate.getOperator();
