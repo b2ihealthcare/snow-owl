@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.bytes.ByteKeyMap;
-import com.b2international.collections.bytes.ByteValueMap;
+import com.b2international.collections.ints.IntKeyMap;
+import com.b2international.collections.ints.IntValueMap;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
@@ -109,7 +109,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 		private final List<UnionGroup> unionGroups;
 
-		private byte groupNumber = NUMBER_NOT_PRESERVED;
+		private int groupNumber = NUMBER_NOT_PRESERVED;
 
 		/**
 		 * Creates a new group instance.
@@ -127,11 +127,11 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			return unionGroups;
 		}
 
-		public byte getGroupNumber() {
+		public int getGroupNumber() {
 			return groupNumber;
 		}
 
-		public void setGroupNumber(final byte groupNumber) {
+		public void setGroupNumber(final int groupNumber) {
 			checkArgument(groupNumber > NUMBER_NOT_PRESERVED, "Illegal group number '%s'.", groupNumber);
 			this.groupNumber = groupNumber;
 		}
@@ -199,17 +199,17 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				return;
 			}
 
-			final ByteKeyMap<UnionGroup> oldNumberMap = PrimitiveMaps.newByteKeyOpenHashMapWithExpectedSize(unionGroups.size());
+			final IntKeyMap<UnionGroup> oldNumberMap = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(unionGroups.size());
 			for (final UnionGroup unionGroup : unionGroups) {
 				oldNumberMap.put(unionGroup.getUnionGroupNumber(), unionGroup);
 			}
 
-			final ByteValueMap<UnionGroup> newNumberMap = PrimitiveMaps.newObjectKeyByteOpenHashMapWithExpectedSize(unionGroups.size());
+			final IntValueMap<UnionGroup> newNumberMap = PrimitiveMaps.newObjectKeyIntOpenHashMapWithExpectedSize(unionGroups.size());
 			for (final UnionGroup unionGroup : unionGroups) {
 				final Optional<UnionGroup> otherUnionGroup = Iterables.tryFind(other.unionGroups, Predicates.equalTo(unionGroup));
 				if (otherUnionGroup.isPresent()) {
-					final byte oldNumber = unionGroup.getUnionGroupNumber();
-					final byte newNumber = otherUnionGroup.get().getUnionGroupNumber();
+					final int oldNumber = unionGroup.getUnionGroupNumber();
+					final int newNumber = otherUnionGroup.get().getUnionGroupNumber();
 
 					if (oldNumber != newNumber) {
 						newNumberMap.put(unionGroup, newNumber);
@@ -220,8 +220,8 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			final Iterator<UnionGroup> itr = newNumberMap.keySet().iterator();
 			while (itr.hasNext()) {
 				final UnionGroup unionGroupToAdjust = itr.next();
-				final byte oldNumber = unionGroupToAdjust.getUnionGroupNumber();
-				final byte newNumber = newNumberMap.get(unionGroupToAdjust);
+				final int oldNumber = unionGroupToAdjust.getUnionGroupNumber();
+				final int newNumber = newNumberMap.get(unionGroupToAdjust);
 
 				final UnionGroup swap = oldNumberMap.get(newNumber);
 				if (swap != null) {
@@ -237,7 +237,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		}
 
 		public void fillNumbers() {
-			byte unionGroupNumber = 1;
+			int unionGroupNumber = 1;
 
 			for (final UnionGroup unionGroup : unionGroups) {
 				if (unionGroup.getUnionGroupNumber() == NUMBER_NOT_PRESERVED) {
@@ -260,7 +260,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 		private final List<RelationshipFragment> fragments;
 
-		private byte unionGroupNumber = NUMBER_NOT_PRESERVED;
+		private int unionGroupNumber = NUMBER_NOT_PRESERVED;
 
 		/**
 		 * Creates a new union group instance with the specified parameters,
@@ -281,11 +281,11 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			return fragments;
 		}
 
-		public byte getUnionGroupNumber() {
+		public int getUnionGroupNumber() {
 			return unionGroupNumber;
 		}
 
-		public void setUnionGroupNumber(final byte unionGroupNumber) {
+		public void setUnionGroupNumber(final int unionGroupNumber) {
 			checkArgument(unionGroupNumber > NUMBER_NOT_PRESERVED, "Illegal union group number '%s'.", unionGroupNumber);
 			this.unionGroupNumber = unionGroupNumber;
 		}
@@ -605,17 +605,17 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				return;
 			}
 
-			final ByteKeyMap<Group> oldNumberMap = PrimitiveMaps.newByteKeyOpenHashMapWithExpectedSize(groups.size());
+			final IntKeyMap<Group> oldNumberMap = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(groups.size());
 			for (final Group group : groups) {
 				oldNumberMap.put(group.getGroupNumber(), group);
 			}
 
-			final ByteValueMap<Group> newNumberMap = PrimitiveMaps.newObjectKeyByteOpenHashMapWithExpectedSize(groups.size());
+			final IntValueMap<Group> newNumberMap = PrimitiveMaps.newObjectKeyIntOpenHashMapWithExpectedSize(groups.size());
 			for (final Group group : groups) {
 				final Optional<Group> otherGroup = Iterables.tryFind(other.groups, Predicates.equalTo(group));
 				if (otherGroup.isPresent()) {
-					final byte oldNumber = group.getGroupNumber();
-					final byte newNumber = otherGroup.get().getGroupNumber();
+					final int oldNumber = group.getGroupNumber();
+					final int newNumber = otherGroup.get().getGroupNumber();
 
 					if (oldNumber != newNumber) {
 						newNumberMap.put(group, newNumber);
@@ -627,8 +627,8 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			final Iterator<Group> itr = newNumberMap.keySet().iterator();
 			while (itr.hasNext()) {
 				final Group groupToAdjust = itr.next();
-				final byte oldNumber = groupToAdjust.getGroupNumber();
-				final byte newNumber = newNumberMap.get(groupToAdjust);
+				final int oldNumber = groupToAdjust.getGroupNumber();
+				final int newNumber = newNumberMap.get(groupToAdjust);
 
 				final Group swap = oldNumberMap.get(newNumber);
 				if (swap != null) {
@@ -644,7 +644,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		}
 
 		public void fillNumbers() {
-			byte groupNumber = 1;
+			int groupNumber = 1;
 
 			for (final Group group : groups) {
 				group.fillNumbers();
@@ -668,9 +668,9 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	 * should be used when the fragments in this group/union group are converted into
 	 * relationships.
 	 */
-	private static final byte NUMBER_NOT_PRESERVED = -1;
+	private static final int NUMBER_NOT_PRESERVED = -1;
 
-	private static final byte ZERO_GROUP = 0;
+	private static final int ZERO_GROUP = 0;
 
 	private final LongKeyMap<Collection<StatementFragment>> generatedNonIsACache = PrimitiveMaps.newLongKeyOpenHashMap();
 
@@ -805,18 +805,17 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 	private Iterable<Group> toGroups(final boolean preserveNumbers, final Collection<StatementFragment> nonIsARelationshipFragments) {
 
-		final Map<Byte, Collection<StatementFragment>> relationshipsByGroupId = Multimaps.index(nonIsARelationshipFragments, 
-				new Function<StatementFragment, Byte>() {
+		final Map<Integer, Collection<StatementFragment>> relationshipsByGroupId = Multimaps.index(nonIsARelationshipFragments, new Function<StatementFragment, Integer>() {
 			@Override
-			public Byte apply(final StatementFragment input) {
+			public Integer apply(final StatementFragment input) {
 				return input.getGroup();
 			}
 		}).asMap();
 
 		final Collection<Collection<Group>> groups = Maps.transformEntries(relationshipsByGroupId, 
-				new EntryTransformer<Byte, Collection<StatementFragment>, Collection<Group>>() {
+				new EntryTransformer<Integer, Collection<StatementFragment>, Collection<Group>>() {
 			@Override
-			public Collection<Group> transformEntry(final Byte key, final Collection<StatementFragment> values) {
+			public Collection<Group> transformEntry(final Integer key, final Collection<StatementFragment> values) {
 				final Iterable<UnionGroup> unionGroups = toUnionGroups(preserveNumbers, values);
 				final Iterable<UnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
 
@@ -844,7 +843,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		});
 	}
 
-	private Group toNonZeroGroup(final boolean preserveNumbers, final byte groupNumber, final Iterable<UnionGroup> disjointUnionGroups) {
+	private Group toNonZeroGroup(final boolean preserveNumbers, final int groupNumber, final Iterable<UnionGroup> disjointUnionGroups) {
 		final Group group = new Group(disjointUnionGroups);
 		if (preserveNumbers) {
 			group.setGroupNumber(groupNumber);
@@ -853,18 +852,17 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	}
 
 	private Iterable<UnionGroup> toUnionGroups(final boolean preserveNumbers, final Collection<StatementFragment> values) {
-		final Map<Byte, Collection<StatementFragment>> relationshipsByUnionGroupId = Multimaps.index(values, 
-				new Function<StatementFragment, Byte>() {
+		final Map<Integer, Collection<StatementFragment>> relationshipsByUnionGroupId = Multimaps.index(values, new Function<StatementFragment, Integer>() {
 			@Override
-			public Byte apply(final StatementFragment input) {
+			public Integer apply(final StatementFragment input) {
 				return input.getUnionGroup();
 			}
 		}).asMap();
 
 		final Collection<Collection<UnionGroup>> unionGroups = Maps.transformEntries(relationshipsByUnionGroupId, 
-				new EntryTransformer<Byte, Collection<StatementFragment>, Collection<UnionGroup>>() {
+				new EntryTransformer<Integer, Collection<StatementFragment>, Collection<UnionGroup>>() {
 			@Override
-			public Collection<UnionGroup> transformEntry(final Byte key, final Collection<StatementFragment> values) {
+			public Collection<UnionGroup> transformEntry(final Integer key, final Collection<StatementFragment> values) {
 				if (key == 0) {
 					// Relationships in union group 0 form separate union groups
 					return ImmutableList.copyOf(toZeroUnionGroups(values));
@@ -889,7 +887,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		});
 	}
 
-	private UnionGroup toNonZeroUnionGroup(final boolean preserveNumbers, final byte unionGroupNumber, final Collection<StatementFragment> values) {
+	private UnionGroup toNonZeroUnionGroup(final boolean preserveNumbers, final int unionGroupNumber, final Collection<StatementFragment> values) {
 		final Iterable<RelationshipFragment> fragments = FluentIterable.from(values).transform(new Function<StatementFragment, RelationshipFragment>() {
 			@Override
 			public RelationshipFragment apply(final StatementFragment input) {
@@ -979,7 +977,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		});
 	}
 
-	private Iterable<StatementFragment> fromUnionGroup(final UnionGroup unionGroup, final byte groupNumber, final byte unionGroupNumber) {
+	private Iterable<StatementFragment> fromUnionGroup(final UnionGroup unionGroup, final int groupNumber, final int unionGroupNumber) {
 		return FluentIterable.from(unionGroup.getRelationshipFragments()).transform(new Function<RelationshipFragment, StatementFragment>() {
 			@Override
 			public StatementFragment apply(final RelationshipFragment input) {
