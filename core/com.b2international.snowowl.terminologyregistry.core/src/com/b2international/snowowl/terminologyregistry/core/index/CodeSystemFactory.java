@@ -66,7 +66,8 @@ public abstract class CodeSystemFactory {
 			doc.get(TerminologyRegistryIndexConstants.SYSTEM_TERMINOLOGY_COMPONENT_ID),
 			doc.get(TerminologyRegistryIndexConstants.SYSTEM_STORAGE_KEY),
 			doc.get(TerminologyRegistryIndexConstants.SYSTEM_REPOSITORY_UUID),
-			doc.get(TerminologyRegistryIndexConstants.SYSTEM_BRANCH_PATH)
+			doc.get(TerminologyRegistryIndexConstants.SYSTEM_BRANCH_PATH),
+			doc.get(TerminologyRegistryIndexConstants.SYSTEM_EXTENSION_OF)
 			);
 	}
 	
@@ -82,7 +83,8 @@ public abstract class CodeSystemFactory {
 				system.getTerminologyComponentId(), 
 				CDOUtils.isTransient(system) ? CDOUtils.NO_STORAGE_KEY + "" : Long.toString(CDOIDUtils.asLong(system.cdoID())),
 				system.getRepositoryUuid(),
-				system.getBranchPath());
+				system.getBranchPath(),
+				system.getExtensionOf() == null ? "" : system.getExtensionOf().getShortName());
 	}
 	
 	private CodeSystemFactory() {
