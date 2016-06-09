@@ -58,4 +58,9 @@ public interface RevisionSearcher {
 	 */
 	<T> Hits<T> search(Query<T> query) throws IOException;
 
+	/**
+	 * @return the branch where this {@link RevisionSearcher} will execute all read operations
+	 */
+	String branch();
+	
 }

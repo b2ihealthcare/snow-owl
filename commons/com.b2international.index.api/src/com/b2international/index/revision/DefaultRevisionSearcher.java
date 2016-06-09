@@ -73,5 +73,10 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 		}
 		return searcher.search(query);
 	}
+	
+	@Override
+	public String branch() {
+		return branch.path();
+	}
 
 }
