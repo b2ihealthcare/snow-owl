@@ -23,17 +23,6 @@ import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactor
  */
 public class CodeSystemBuilder {
 	
-	public static final String KEY_NAME = "name";
-	public static final String KEY_SHORT_NAME = "shortName";
-	public static final String KEY_LANGUAGE = "language";
-	public static final String KEY_CODE_SYSTEM_OID = "codeSystemOID";
-	public static final String KEY_MAINTAINING_ORGANIZATION_LINK = "maintainingOrganizationLink";
-	public static final String KEY_CITATION = "citation";
-	public static final String KEY_ICON_PATH = "iconPath";
-	public static final String KEY_TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
-	public static final String KEY_REPOSITORY_UUID = "repositoryUuid";
-	public static final String KEY_EXTENSION_OF = "extensionOf";
-
 	private String citation;
 	private String codeSystemOid;
 	private String iconPath;

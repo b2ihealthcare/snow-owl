@@ -45,7 +45,7 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	private Date completionDate;
 	
 	@NotEmpty
-	private final String snomedReleaseShortName;
+	private final String codeSystemShortName;
 	
 	/**
 	 * Creates a new import configuration instance.
@@ -56,11 +56,11 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	 * effective times. Has no effect if the RF2 release type in *NOT* full.
 	 */
 	public SnomedImportConfiguration(final Rf2ReleaseType rf2ReleaseType, final String branchPath, final boolean createVersion,
-			final String snomedReleaseShortName) {
+			final String codeSystemShortName) {
 		this.rf2ReleaseType = rf2ReleaseType;
 		this.branchPath = branchPath;
 		this.createVersion = createVersion;
-		this.snomedReleaseShortName = snomedReleaseShortName;
+		this.codeSystemShortName = codeSystemShortName;
 	}
 
 	@Override
@@ -94,8 +94,8 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	}
 	
 	@Override
-	public String getSnomedReleaseShortName() {
-		return snomedReleaseShortName;
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
 	}
 	
 	/**

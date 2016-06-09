@@ -30,9 +30,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -41,6 +39,8 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolCon
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.google.common.io.Files;
 
 /**
@@ -88,8 +88,7 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			}
 			
 			//Ecore object cannot be serialized directly
-			SnomedRelease snomedRelease = SnomedReleases.newSnomedRelease()
-				.withBaseCodeSystemOid(in.readString())
+			final CodeSystem codeSystem = new CodeSystemBuilder()
 				.withBranchPath(in.readString())
 				.withCitation(in.readUTF())
 				.withCodeSystemOid(in.readString())
@@ -97,9 +96,10 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 				.withMaintainingOrganizationLink(in.readString())
 				.withName(in.readUTF())
 				.withShortName(in.readString())
-				.withType(in.readString()).build();
+				.withExtensionOf(null) // TODO
+				.build();
 			
-			importConfiguration.setSnomedRelease(snomedRelease);
+			importConfiguration.setCodeSystem(codeSystem);
 			
 			monitor.worked();
 			

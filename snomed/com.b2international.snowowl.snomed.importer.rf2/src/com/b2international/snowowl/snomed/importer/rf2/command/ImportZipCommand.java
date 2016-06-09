@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.command;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
@@ -32,15 +35,14 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
-import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedReleaseType;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -55,6 +57,17 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 	private static final String BRANCH_OR_VERSION_SWITCH = "-b";
 	private static final String CREATE_VERSION_SWITCH = "-v";
 	private static final String DEFAULT_METADATA_FILE_EXTENSION = ".json";
+	
+	private static final String KEY_NAME = "name";
+	private static final String KEY_SHORT_NAME = "shortName";
+	private static final String KEY_LANGUAGE = "language";
+	private static final String KEY_CODE_SYSTEM_OID = "codeSystemOID";
+	private static final String KEY_MAINTAINING_ORGANIZATION_LINK = "maintainingOrganizationLink";
+	private static final String KEY_CITATION = "citation";
+	private static final String KEY_ICON_PATH = "iconPath";
+	private static final String KEY_TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
+	private static final String KEY_REPOSITORY_UUID = "repositoryUuid";
+	private static final String KEY_EXTENSION_OF = "extensionOf";
 	
 	private static final String IMPORT_ARCHIVE_PATH_IS_MISSING = "Import archive path is missing.";
 
@@ -188,8 +201,8 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			printDetailedHelp(interpreter);
 			return;
 		}
-		
-		SnomedRelease snomedRelease = null;
+
+		CodeSystem codeSystem = null;
 			
 		File metadataFile = new File(metadataFilePath);
 		
@@ -202,7 +215,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				ObjectMapper mapper = new ObjectMapper();
 				@SuppressWarnings("unchecked")
 				Map<String, String> metadataMap = mapper.readValue(metadataFile, Map.class);
-				snomedRelease = SnomedReleases.newSnomedRelease(metadataMap).build();
+				codeSystem = createCodeSystem(metadataMap);
 			} catch (IOException e) {
 				interpreter.println("Unable to parse metadata file: " + e.getMessage());
 				printDetailedHelp(interpreter);
@@ -214,23 +227,23 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		
 		if (parameters.contains(BRANCH_OR_VERSION_SWITCH)) {
 			branchPath = parameters.get(3);
-			if (snomedRelease.getReleaseType() == SnomedReleaseType.INTERNATIONAL) {
+			if (codeSystem.getExtensionOf() == null) {
 				if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)) {
 					interpreter.println(String.format("Invalid branch path '%s'", branchPath));
 					printDetailedHelp(interpreter);
 					return;
 				}
-			} else if (snomedRelease.getReleaseType() == SnomedReleaseType.EXTENSION) {
+			} else {
 				if (!branchPath.equalsIgnoreCase(IBranchPath.MAIN_BRANCH)) {
 
 					IBranchPath parentBranchPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), branchPath);
-					IBranchPath extensionBranchPath = BranchPathUtils.createPath(parentBranchPath, snomedRelease.getShortName());
+					IBranchPath extensionBranchPath = BranchPathUtils.createPath(parentBranchPath, codeSystem.getShortName());
 
 					if (!BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, extensionBranchPath.getPath())) {
 						IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 						SnomedRequests.branching().prepareCreate()
 							.setParent(parentBranchPath.getPath())
-							.setName(snomedRelease.getShortName())
+							.setName(codeSystem.getShortName())
 							.build()
 							.executeSync(eventBus);
 					}
@@ -240,7 +253,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			}
 		}
 
-		snomedRelease.setBranchPath(branchPath);
+		codeSystem.setBranchPath(branchPath);
 		
 		try {
 
@@ -250,7 +263,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				return;
 			}
 
-			final SnomedImportResult result = new ImportUtil().doImport(snomedRelease, authenticator.getUsername(), contentSubType, branchPath,
+			final SnomedImportResult result = new ImportUtil().doImport(codeSystem, authenticator.getUsername(), contentSubType, branchPath,
 					archiveFile, createVersions, new ConsoleProgressMonitor());
 
 			Set<SnomedValidationDefect> validationDefects = result.getValidationDefects();
@@ -270,6 +283,26 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		} catch (final ImportException e) {
 			interpreter.printStackTrace(e);
 		}
+	}
+	
+	private CodeSystem createCodeSystem(final Map<String, String> values) {
+		return new CodeSystemBuilder()
+				.withBranchPath(getValue(KEY_NAME, null, values))
+				.withCitation(getValue(KEY_CITATION, null, values))
+				.withCodeSystemOid(getValue(KEY_CODE_SYSTEM_OID, null, values))
+				.withExtensionOf(null) // TODO
+				.withIconPath(getValue(KEY_ICON_PATH, SNOMED_INT_ICON_PATH, values))
+				.withLanguage(getValue(KEY_LANGUAGE, null, values))
+				.withMaintainingOrganizationLink(getValue(KEY_MAINTAINING_ORGANIZATION_LINK, null, values))
+				.withName(getValue(KEY_NAME, null, values))
+				.withRepositoryUuid(getValue(KEY_REPOSITORY_UUID, REPOSITORY_UUID, values))
+				.withShortName(getValue(KEY_SHORT_NAME, null, values))
+				.withTerminologyComponentId(getValue(KEY_TERMINOLOGY_COMPONENT_ID, TERMINOLOGY_ID, values))
+				.build();
+	}
+
+	private String getValue(final String key, final String defaultValue, final Map<String, String> values) {
+		return values.get(key) == null ? defaultValue : values.get(key);
 	}
 
 	private List<String> getParameters(final CommandInterpreter interpreter) {

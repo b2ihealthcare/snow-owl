@@ -59,7 +59,7 @@ public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 	 * 
 	 * @return the short name of the Snomed Release to use.
 	 */
-	String getSnomedReleaseShortName();
+	String getCodeSystemShortName();
 
 	/**
 	 * Enumerates possible values for the state of an RF2 import process. 
