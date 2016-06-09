@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.cdo;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -104,6 +105,11 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		return Iterables.filter(targetMap.values(), InternalCDORevision.class);
 	}
 
+	@Override
+	public Map<String, Object> handleCDOConflicts(CDOTransaction targetTransaction, Map<CDOID, Conflict> conflicts) {
+		return Collections.<String, Object>emptyMap();
+	}
+	
 	@Override
 	public void postProcess(final CDOTransaction transaction) throws ConflictException {
 		for (final CDOID idToUnlink : idsToUnlink) {
