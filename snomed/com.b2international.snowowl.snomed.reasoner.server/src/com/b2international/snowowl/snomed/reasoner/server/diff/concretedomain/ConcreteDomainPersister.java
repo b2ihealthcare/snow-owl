@@ -81,9 +81,9 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 				componentPair,
 				nullIfUnset(addedEntry.getUomId()),
 				Concepts.CD_EQUAL,
-				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue().utf8ToString()), 
+				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue()), 
 				Concepts.INFERRED_RELATIONSHIP, 
-				addedEntry.getLabel().utf8ToString(), 
+				addedEntry.getLabel(), 
 				moduleConcept.getId(), 
 				concreteDataTypeRefSet);
 		

@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
 
-import org.apache.lucene.util.BytesRef;
-
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 
@@ -31,8 +29,8 @@ public class ConcreteDomainFragment implements Serializable {
 
 	public static final long UNSET_UOM_ID = -1L;
 	
-	private final BytesRef value;
-	private final BytesRef label;
+	private final String value;
+	private final String label;
 	private final byte type;
 	private final long uomId;
 	private final long storageKey;
@@ -47,7 +45,7 @@ public class ConcreteDomainFragment implements Serializable {
 	 * @param uomId UOM concept ID.
 	 * @param storageKey the storage key of the concrete domain.
 	 */
-	public ConcreteDomainFragment(final BytesRef value, final BytesRef label, final byte type, final long uomId, final long storageKey, final long refSetId) {
+	public ConcreteDomainFragment(final String value, final String label, final byte type, final long uomId, final long storageKey, final long refSetId) {
 		this.value = Preconditions.checkNotNull(value, "Value argument cannot be null.");
 		this.label = Preconditions.checkNotNull(label, "Label argument cannot be null.");
 		this.storageKey = storageKey;
@@ -61,7 +59,7 @@ public class ConcreteDomainFragment implements Serializable {
 	 * @return the label
 	 * @see BytesRef
 	 */
-	public BytesRef getLabel() {
+	public String getLabel() {
 		return label;
 	}
 	
@@ -70,7 +68,7 @@ public class ConcreteDomainFragment implements Serializable {
 	 * @return the serialized value.
 	 * @see BytesRef
 	 */
-	public BytesRef getValue() {
+	public String getValue() {
 		return value;
 	}
 
@@ -157,7 +155,7 @@ public class ConcreteDomainFragment implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ConcreteDomainFragment [value=" + value.utf8ToString() + ", label=" + label.utf8ToString()
+		return "ConcreteDomainFragment [value=" + value + ", label=" + label
 				+ ", type=" + type + ", uomId=" + uomId + ", storageKey="
 				+ storageKey + ", refSetId=" + refSetId + "]";
 	}

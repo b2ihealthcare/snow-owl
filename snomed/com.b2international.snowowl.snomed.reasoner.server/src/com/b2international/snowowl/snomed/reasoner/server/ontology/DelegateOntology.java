@@ -29,7 +29,7 @@ import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -60,13 +60,14 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 	private final DefaultPrefixManager prefixManager;
 
-	private final IBranchPath branchPath;
-
+	private final RevisionSearcher searcher;
+	
 	private final boolean trackingChanges;
 	
 	private final OWLOntology plusOntology;
 
 	private volatile InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
+
 
 	/**
 	 * 
@@ -75,11 +76,11 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 	 * @param branchPath
 	 * @throws OWLOntologyCreationException 
 	 */
-	public DelegateOntology(final OWLOntologyManager manager, final OWLOntologyID ontologyID, final IBranchPath branchPath) throws OWLOntologyCreationException {
+	public DelegateOntology(final OWLOntologyManager manager, final OWLOntologyID ontologyID, final RevisionSearcher searcher) throws OWLOntologyCreationException {
 		super();
 		this.manager = manager;
 		this.ontologyID = ontologyID;
-		this.branchPath = branchPath;
+		this.searcher = searcher;
 		this.prefixManager = SnomedOntologyUtils.createPrefixManager(this);
 		this.plusOntology = manager.createOntology();
 		this.trackingChanges = (null == ontologyID.getVersionIRI());
@@ -1149,14 +1150,14 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 	private InitialReasonerTaxonomyBuilder getReasonerTaxonomyBuilder() {
 
 		if (null == reasonerTaxonomyBuilder) {
-			reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
+			reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(searcher, Type.REASONER);
 		}
 
 		return reasonerTaxonomyBuilder;
 	}
 
 	@Override public String toString() {
-		return "DelegateOntology[branchPath=" + branchPath + "]";
+		return "DelegateOntology[branch=" + searcher.branch() + "]";
 	}
 
 	public void dispose() {
