@@ -21,25 +21,23 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
@@ -206,44 +204,32 @@ public abstract class AbstractSnomedRefSetDerivator {
 	 * @throws SnowowlServiceException
 	 */
 	protected void deriveRelationships(final SubMonitor parentMonitor) throws SnowowlServiceException {
-		
 		final SubMonitor monitor = parentMonitor.newChild(1);
 		monitor.setTaskName("Creating relationship simple type reference set...");
-		monitor.setWorkRemaining(conceptIds.size());
 		
-		final Set<SnomedRefSetMember> refSetMembers = Sets.newHashSet();
 		final SnomedRegularRefSet refSet = createSimpleTypeRefSet(" - relationships", RELATIONSHIP);
 		
-		final SnomedClientStatementBrowser browser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-		final LongKeyMap activeStatements = browser.getAllActiveStatements();
+		final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterBySource(conceptIds)
+				.build(context.getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 		
-		for (final String conceptId : conceptIds) {
-			
+		final Set<SnomedRefSetMember> refSetMembers = Sets.newHashSet();
+		monitor.setWorkRemaining(outboundRelationships.getTotal());
+		for (ISnomedRelationship relationship : outboundRelationships) {
+			isCanceled(monitor);
 			if (isCanceled) {
 				return;
 			}
-
-			Object object = activeStatements.get(Long.parseLong(conceptId));
-
-			if (object instanceof List) {
-
-				@SuppressWarnings("unchecked")
-				final List<StatementFragment> fragments = (List<StatementFragment>) object;
-
-				for (final StatementFragment fragment : fragments) {
-
-					if (conceptIds.contains(Long.toString(fragment.getDestinationId()))) {
-
-						final ComponentIdentifierPair<String> identifierPair = ComponentIdentifierPair.<String>create(RELATIONSHIP, Long.toString(fragment.getStatementId()));
-						final SnomedRefSetMember refSetMember = context.getRefSetEditingContext().createSimpleTypeRefSetMember(identifierPair, moduleId, refSet);
-
-						refSetMembers.add(refSetMember);
-					}
-				}
+			if (conceptIds.contains(relationship.getDestinationId())) {
+				final ComponentIdentifierPair<String> identifierPair = ComponentIdentifierPair.<String>create(RELATIONSHIP, relationship.getId());
+				final SnomedRefSetMember refSetMember = context.getRefSetEditingContext().createSimpleTypeRefSetMember(identifierPair, moduleId, refSet);
+				refSetMembers.add(refSetMember);
 			}
-
 			monitor.worked(1);
-			isCanceled(monitor);
 		}
 		
 		refSet.getMembers().addAll(refSetMembers);
