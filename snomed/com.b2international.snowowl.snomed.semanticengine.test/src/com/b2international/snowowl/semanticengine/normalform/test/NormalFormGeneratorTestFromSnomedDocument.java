@@ -24,7 +24,6 @@ import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.semanticengine.normalform.ScgExpressionNormalFormGenerator;
 import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
@@ -284,12 +283,11 @@ public class NormalFormGeneratorTestFromSnomedDocument {
 			Expression expectedShortNormalFormExpression) {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 		RecursiveTerminologyBrowser<SnomedConceptDocument, String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
-		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-		ScgExpressionNormalFormGenerator normalFormGenerator = new ScgExpressionNormalFormGenerator(recursiveTerminologyBrowser, statementBrowser);
+		ScgExpressionNormalFormGenerator normalFormGenerator = new ScgExpressionNormalFormGenerator(recursiveTerminologyBrowser);
 		Expression longNormalFormExpression = normalFormGenerator.getLongNormalForm(originalExpression);
 		TestUtils.assertExpressionsEqual("Long normal form expression different from expected.", expectedLongNormalFormExpression, longNormalFormExpression);
 		
-		normalFormGenerator = new ScgExpressionNormalFormGenerator(recursiveTerminologyBrowser, statementBrowser);
+		normalFormGenerator = new ScgExpressionNormalFormGenerator(recursiveTerminologyBrowser);
 		Expression shortNormalFormExpression = normalFormGenerator.getShortNormalForm(originalExpression);
 		TestUtils.assertExpressionsEqual("Short normal form expression different from expected.", expectedShortNormalFormExpression, shortNormalFormExpression);
 	}

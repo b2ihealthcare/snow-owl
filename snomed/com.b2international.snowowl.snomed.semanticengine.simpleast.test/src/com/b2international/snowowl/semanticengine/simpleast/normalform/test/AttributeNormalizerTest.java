@@ -33,7 +33,6 @@ import com.b2international.snowowl.semanticengine.simpleast.normalform.Attribute
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeNormalizer;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
@@ -45,8 +44,7 @@ public class AttributeNormalizerTest {
 	@Before
 	public void beforeTest() {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-		attributeNormalizer = new AttributeNormalizer(terminologyBrowser, statementBrowser);
+		attributeNormalizer = new AttributeNormalizer(terminologyBrowser);
 	}
 	
 	@Test

@@ -37,7 +37,6 @@ import com.b2international.snowowl.semanticengine.normalform.FocusConceptNormali
 import com.b2international.snowowl.semanticengine.normalform.FocusConceptNormalizer;
 import com.b2international.snowowl.semanticengine.test.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
@@ -50,8 +49,7 @@ public class FocusConceptNormalizerTest {
 	public void beforeTest() {
 		SnomedClientTerminologyBrowser snomedTerminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 		terminologyBrowser = new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(snomedTerminologyBrowser);
-		focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser,
-				ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class));
+		focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
 	}
 	
 	@Test

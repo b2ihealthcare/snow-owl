@@ -35,7 +35,6 @@ import com.b2international.snowowl.semanticengine.simpleast.normalform.FocusConc
 import com.b2international.snowowl.semanticengine.simpleast.normalform.FocusConceptNormalizer;
 import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
@@ -49,8 +48,7 @@ public class FocusConceptNormalizerTest {
 	@Before
 	public void beforeTest() {
 		terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser,
-				ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class));
+		focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
 	}
 	
 	@Test

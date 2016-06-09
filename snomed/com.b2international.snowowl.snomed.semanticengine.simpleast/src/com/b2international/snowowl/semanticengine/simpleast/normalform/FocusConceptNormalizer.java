@@ -23,12 +23,16 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
-import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
 
 /**
@@ -62,11 +66,9 @@ public class FocusConceptNormalizer {
 	
 	private final SubsumptionTester subsumptionTester;
 	private final SnomedClientTerminologyBrowser terminologyBrowser;
-	private final SnomedClientStatementBrowser statementBrowser;
 	
-	public FocusConceptNormalizer(SnomedClientTerminologyBrowser terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
+	public FocusConceptNormalizer(SnomedClientTerminologyBrowser terminologyBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
-		this.statementBrowser = statementBrowser;
 		this.subsumptionTester = new SubsumptionTester(terminologyBrowser);
 	}
 
@@ -78,7 +80,7 @@ public class FocusConceptNormalizer {
 	public FocusConceptNormalizationResult normalizeFocusConcepts(Collection<ConceptRef> focusConcepts) {
 		Collection<SnomedConceptDocument> proximalPrimitiveSuperTypes = collectProximalPrimitiveSupertypes(focusConcepts);
 		Collection<SnomedConceptDocument> filteredPrimitiveSuperTypes = filterRedundantSuperTypes(proximalPrimitiveSuperTypes);
-		ConceptDefinitionNormalizer conceptDefinitionNormalizer = new ConceptDefinitionNormalizer(terminologyBrowser, statementBrowser);
+		ConceptDefinitionNormalizer conceptDefinitionNormalizer = new ConceptDefinitionNormalizer(terminologyBrowser);
 		Map<ConceptRef, ConceptDefinition> conceptDefinitions = conceptDefinitionNormalizer.getNormalizedConceptDefinitions(focusConcepts);
 		ConceptDefinitionMerger conceptDefinitionMerger = new ConceptDefinitionMerger(subsumptionTester);
 		ConceptDefinition mergedFocusConceptDefinitions = conceptDefinitionMerger.mergeDefinitions(conceptDefinitions);
@@ -138,15 +140,20 @@ public class FocusConceptNormalizer {
 			return proximatePrimitiveSuperTypes;
 		}
 		
-		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-		Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(concept.getId());
-		for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-			if (relationship.getTypeId().equals(QueryAstUtils.IS_A)) {
-				if (terminologyBrowser.getConcept(relationship.getDestinationId()).isPrimitive()) {
-					proximatePrimitiveSuperTypes.add(terminologyBrowser.getConcept(relationship.getDestinationId()));
-				} else {
-					proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(terminologyBrowser.getConcept(relationship.getDestinationId())));
-				}
+		final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterByType(Concepts.IS_A)
+				.filterBySource(concept.getId())
+				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		//for (int i = 0; i < outgoingRelationships.length; i++) {
+		for (ISnomedRelationship relationship : outboundRelationships) {
+			if (terminologyBrowser.getConcept(relationship.getDestinationId()).isPrimitive()) {
+				proximatePrimitiveSuperTypes.add(terminologyBrowser.getConcept(relationship.getDestinationId()));
+			} else {
+				proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(terminologyBrowser.getConcept(relationship.getDestinationId())));
 			}
 		}
 //		int[] outgoingRelationships = terminologyBrowser.getData().outgoingRelationships[concept];

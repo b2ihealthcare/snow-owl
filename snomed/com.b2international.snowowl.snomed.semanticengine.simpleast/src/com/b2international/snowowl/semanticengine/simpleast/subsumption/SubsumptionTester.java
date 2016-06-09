@@ -21,14 +21,17 @@ import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -234,10 +237,16 @@ public class SubsumptionTester {
 	public boolean isSubsumed(SnomedConceptDocument predicate, SnomedConceptDocument candidate) {
 		if (!candidate.isActive()) {
 			String replacementConceptId = null;
-			SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-			SnomedConceptDocument conceptMini = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(candidate.getId());
-			Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(conceptMini.getId());
-			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
+			
+			final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true)
+					.filterBySource(candidate.getId())
+					.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
+			//for (int i = 0; i < outgoingRelationships.length; i++) {
+			for (ISnomedRelationship relationship : outboundRelationships) {
 				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
 					replacementConceptId = relationship.getDestinationId();
 					break;
