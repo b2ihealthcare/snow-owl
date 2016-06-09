@@ -100,6 +100,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String DATA_TYPE = "dataType";
 		public static final String MAP_TARGET_TYPE = "mapTargetType";
 		public static final String REFSET_TYPE = "referenceSetType";
+		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 	}
 	
 	private static final Set<String> ADDITIONAL_FIELDS = ImmutableSet.<String>builder()
