@@ -330,26 +330,26 @@ public interface CodeSystem extends CDOObject {
 	void setBranchPath(String value);
 
 	/**
-	 * Returns the value of the '<em><b>Extension Of</b></em>' containment reference.
+	 * Returns the value of the '<em><b>Extension Of</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <p>
 	 * If the meaning of the '<em>Extension Of</em>' containment reference isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Extension Of</em>' containment reference.
+	 * @return the value of the '<em>Extension Of</em>' reference.
 	 * @see #setExtensionOf(CodeSystem)
 	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_ExtensionOf()
-	 * @model containment="true"
+	 * @model
 	 * @generated
 	 */
 	CodeSystem getExtensionOf();
 
 	/**
-	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf <em>Extension Of</em>}' containment reference.
+	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf <em>Extension Of</em>}' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Extension Of</em>' containment reference.
+	 * @param value the new value of the '<em>Extension Of</em>' reference.
 	 * @see #getExtensionOf()
 	 * @generated
 	 */

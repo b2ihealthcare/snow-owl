@@ -251,7 +251,7 @@ public interface TerminologymetadataPackage extends EPackage {
 	int CODE_SYSTEM__BRANCH_PATH = 10;
 
 	/**
-	 * The feature id for the '<em><b>Extension Of</b></em>' containment reference.
+	 * The feature id for the '<em><b>Extension Of</b></em>' reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -477,10 +477,10 @@ public interface TerminologymetadataPackage extends EPackage {
 	EAttribute getCodeSystem_BranchPath();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf <em>Extension Of</em>}'.
+	 * Returns the meta object for the reference '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf <em>Extension Of</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference '<em>Extension Of</em>'.
+	 * @return the meta object for the reference '<em>Extension Of</em>'.
 	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf()
 	 * @see #getCodeSystem()
 	 * @generated
@@ -666,7 +666,7 @@ public interface TerminologymetadataPackage extends EPackage {
 		EAttribute CODE_SYSTEM__BRANCH_PATH = eINSTANCE.getCodeSystem_BranchPath();
 
 		/**
-		 * The meta object literal for the '<em><b>Extension Of</b></em>' containment reference feature.
+		 * The meta object literal for the '<em><b>Extension Of</b></em>' reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
