@@ -16,10 +16,12 @@
 package com.b2international.snowowl.datastore.server.cdo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -107,6 +109,13 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 
 	@Override
 	public Map<String, Object> handleCDOConflicts(CDOTransaction targetTransaction, Map<CDOID, Conflict> conflicts) {
+		if (!conflicts.isEmpty()) {
+			Map<String, Object> results = newHashMap();
+			for (Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
+				results.put(entry.getKey().toString(), ConflictMapper.convert(entry.getValue()));
+			}
+			return results;
+		}
 		return Collections.<String, Object>emptyMap();
 	}
 	
