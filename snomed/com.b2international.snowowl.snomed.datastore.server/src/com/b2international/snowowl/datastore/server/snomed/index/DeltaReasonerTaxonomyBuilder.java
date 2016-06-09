@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.lucene.util.BytesRef;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.ecore.EClass;
@@ -291,8 +290,8 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 		final long storageKey = CDOIDUtils.asLong(member.cdoID());
 		final long refSetId = Long.valueOf(member.getRefSetIdentifierId());
 		
-		return new ConcreteDomainFragment(new BytesRef(member.getSerializedValue()), 
-				new BytesRef(member.getLabel()), 
+		return new ConcreteDomainFragment(member.getSerializedValue(), 
+				member.getLabel(), 
 				ordinal, 
 				uomId, 
 				storageKey, 
