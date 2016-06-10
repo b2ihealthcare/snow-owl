@@ -33,8 +33,10 @@ import com.b2international.snowowl.core.api.NullBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOManagedItem;
+import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -46,6 +48,50 @@ import com.google.common.cache.LoadingCache;
 public class CodeSystemUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CodeSystemUtils.class);
+
+	/**
+	 * Predicate for selecting those {@link ICodeSystem}s:
+	 * <li/> that are residing in the repository denoted by the given repositoryUuid
+	 * <li/> whose branch path matches the active branch's path.
+	 * 
+	 * Note: if the active branch is a task branch, this predicate will ignore the last segment (task id part) of the active branch path.
+	 * @author endre
+	 */
+	private static final class ActiveCodeSystemPredicate implements Predicate<ICodeSystem> {
+		
+		private final IBranchPathMap branchPathMap;
+		private final String repositoryUuid;
+
+		private ActiveCodeSystemPredicate(IBranchPathMap branchPathMap, String repositoryUuid) {
+			this.branchPathMap = branchPathMap;
+			this.repositoryUuid = repositoryUuid;
+		}
+
+		@Override
+		public boolean apply(ICodeSystem input) {
+			IBranchPath activeBranchPath = branchPathMap.getBranchPath(repositoryUuid);
+			//ignore last segment if we are on a task branch 
+			if (getServiceForClass(TaskManager.class).hasActiveTask())
+				return activeBranchPath.getParentPath().equals(input.getBranchPath());
+			
+			return activeBranchPath.getPath().equals(input.getBranchPath());
+		}
+	}
+
+	private static final class SameRepositoryCodeSystemPredicate implements Predicate<ICodeSystem> {
+	
+		private final String repositoryUUID;
+
+		private SameRepositoryCodeSystemPredicate(String repositoryUUID) {
+			this.repositoryUUID = Preconditions.checkNotNull(repositoryUUID, "repository UUID cannot be null");
+		}
+
+		@Override
+		public boolean apply(ICodeSystem input) {
+			return input.getRepositoryUuid().equals(repositoryUUID);
+		}
+	}
+
 	
 	private static final LoadingCache<String, ICDOManagedItem<?>> TOOLING_ID_MANAGED_ITEM_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<String, ICDOManagedItem<?>>() {
 		@Override public ICDOManagedItem<?> load(final String toolingId) throws Exception {
@@ -168,6 +214,14 @@ public class CodeSystemUtils {
 	public static String getSnowOwlToolingId(final String repositoryUuid) {
 		Preconditions.checkNotNull(repositoryUuid, "Repository UUID argument cannot be null.");
 		return getConnection(repositoryUuid).getSnowOwlTerminologyComponentId();
+	}
+	
+	public static Predicate<ICodeSystem> sameRepositoryCodeSystemPredicate(final String repositoryUUID) {
+		return new SameRepositoryCodeSystemPredicate(repositoryUUID);
+	}
+	
+	public static Predicate<ICodeSystem> activeCodeSystemPredicate(final IBranchPathMap branchPathMap, final String repositoryUuid) {
+		return new ActiveCodeSystemPredicate(branchPathMap, repositoryUuid);
 	}
 	
 	/*returns with the connection for the given repository UUID*/
