@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core;
+package com.b2international.snowowl.terminologyregistry.core.preferences;
 
 import java.io.File;
 import java.util.Collection;
@@ -43,7 +43,7 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 
 	private static final String CODE_SYSTEMS_KEY = "com.b2international.snowowl.terminologyregistry.core.codeSystems";
 	
-	public ConfigurationEntrySerializer<ConfigNode<String, ICodeSystem>> codeSystemSerializer;
+	public ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>> codeSystemSerializer;
 	
 	public TerminologyExtensionConfiguration(PreferencesService preferencesService, File defaultsPath) {
 		super(preferencesService, NODE_NAME);
@@ -52,12 +52,12 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 
 	private void init(File defaultsPath) {
 		
-		codeSystemSerializer = new ConfigurationEntrySerializer<ConfigNode<String, ICodeSystem>>(preferences, CODE_SYSTEMS_KEY, new File(defaultsPath, "extensions.xml")) {
+		codeSystemSerializer = new ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>>(preferences, CODE_SYSTEMS_KEY, new File(defaultsPath, "extensions.xml")) {
 			
 			@Override
-			protected ConfigNode<String, ICodeSystem> computeDefault() {
+			protected ConfigNode<String, PreferredTerminologyExtension> computeDefault() {
 				
-				ConfigNode<String, ICodeSystem> configNode = new ConfigNode<String, ICodeSystem>(CODE_SYSTEMS_KEY);
+				ConfigNode<String, PreferredTerminologyExtension> configNode = new ConfigNode<String, PreferredTerminologyExtension>(CODE_SYSTEMS_KEY);
 
 				
 				Collection<ICodeSystem> codeSystems = ApplicationContext.getInstance().getService(TerminologyRegistryService.class).getCodeSystems(new UserBranchPathMap());
@@ -70,9 +70,10 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 				
 				ImmutableMap<String, Collection<ICodeSystem>> asMap = repositoryTocodeSystemMultiMap.asMap();
 				for (String key : asMap.keySet()) {
-					Collection<ICodeSystem> collection = asMap.get(key);
 					
-					if (collection.isEmpty())
+					Iterable<PreferredTerminologyExtension> collection = Iterables.transform(asMap.get(key), new PreferredTerminologyExtension.CodeSystemToPojoFunction());
+					
+					if (Iterables.isEmpty(collection))
 						continue;
 					
 					configNode.addChild(key, Iterables.getLast(collection));
@@ -84,7 +85,7 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 		};
 	}
 
-	public ConfigurationEntrySerializer<ConfigNode<String, ICodeSystem>> getCodeSystemSerializer() {
+	public ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>> getCodeSystemSerializer() {
 		return codeSystemSerializer;
 	}
 }
