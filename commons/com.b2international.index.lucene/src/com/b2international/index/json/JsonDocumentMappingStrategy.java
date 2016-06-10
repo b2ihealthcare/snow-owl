@@ -26,6 +26,7 @@ import org.apache.lucene.document.StoredField;
 import com.b2international.index.Analyzed;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.lucene.IndexField;
+import com.b2international.index.lucene.IntIndexField;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,13 +64,21 @@ public class JsonDocumentMappingStrategy {
 						indexField.addTo(doc, item);
 					}
 				} else {
-					indexField.addTo(doc, value);
+					indexField.addTo(doc, convert(indexField, value));
 				}
 			}
 		}
 		return doc;
 	}
 	
+	private Object convert(IndexField indexField, Object value) {
+		if (indexField instanceof IntIndexField && value instanceof Enum) {
+			return ((Enum<?>) value).ordinal();
+		} else {
+			return value;
+		}
+	}
+
 	private IndexField getIndexField(Field field) {
 		final Class<?> fieldType = Reflections.getType(field);
 		final String fieldName = field.getName();
@@ -84,10 +93,10 @@ public class JsonDocumentMappingStrategy {
 			return Fields.floatField(fieldName);
 		} else if (fieldType == Long.class || fieldType == long.class) {
 			return Fields.longField(fieldName);
+		} else if (fieldType.isEnum()) {
+			return Fields.searchOnlyIntField(fieldName);
 		} else if (fieldType.isArray()) {
 			throw new UnsupportedOperationException("Arrays are not supported: " + field);
-		} else if (fieldType.isEnum()) {
-			throw new UnsupportedOperationException("Enums are not supported: " + field);
 		} else {
 			return Fields.none();
 		}

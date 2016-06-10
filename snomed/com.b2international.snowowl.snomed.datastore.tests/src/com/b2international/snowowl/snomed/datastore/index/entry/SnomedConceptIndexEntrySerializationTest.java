@@ -26,6 +26,8 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -58,6 +60,31 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.ancestors(PrimitiveSets.newLongOpenHashSet(-1L))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(-1L))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L))
+				.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, concept);
+		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, STORAGE_KEY1);
+		assertDocEquals(concept, actual);
+	}
+	
+	@Test
+	public void indexRefSetConcept() throws Exception {
+		final SnomedConceptDocument concept = SnomedConceptDocument.builder()
+				.id(Concepts.ROOT_CONCEPT)
+				.iconId(Concepts.ROOT_CONCEPT)
+				.active(true)
+				.released(true)
+				.effectiveTime(new Date().getTime())
+				.moduleId(Concepts.MODULE_ROOT)
+				.exhaustive(true)
+				.primitive(true)
+				.parents(PrimitiveSets.newLongOpenHashSet(-1L))
+				.ancestors(PrimitiveSets.newLongOpenHashSet(-1L))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(-1L))
+				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L))
+				.refSetType(SnomedRefSetType.ASSOCIATION)
+				.refSetStorageKey(STORAGE_KEY1)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, concept);

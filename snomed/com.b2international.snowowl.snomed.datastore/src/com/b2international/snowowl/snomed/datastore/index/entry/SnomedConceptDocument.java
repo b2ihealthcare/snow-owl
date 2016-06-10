@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyInt;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -218,11 +222,12 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private LongSet statedAncestors;
 		private Collection<String> referringPredicates = Collections.emptyList();
 		private SnomedRefSetType refSetType;
-		private short referencedComponentType;
+		private int referencedComponentType;
 		private float doi = DEFAULT_DOI;
 		private Collection<String> referringRefSets;
 		private Collection<String> referringMappingRefSets;
 		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
+		private boolean structural = false;
 
 		@JsonCreator
 		private Builder() {
@@ -270,12 +275,27 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}
 		
 		public Builder refSet(final SnomedRefSet refSet) {
-			this.refSetType = refSet.getType();
-			this.referencedComponentType = refSet.getReferencedComponentType();
-			this.refSetStorageKey = CDOIDUtil.getLong(refSet.cdoID());
-			return getSelf();
+			structural = SnomedRefSetUtil.isStructural(refSet.getIdentifierId(), refSet.getType());
+			return refSetType(refSet.getType())
+					.referencedComponentType(refSet.getReferencedComponentType())
+					.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()));
 		}
 		
+		Builder refSetStorageKey(long refSetStorageKey) {
+			this.refSetStorageKey = refSetStorageKey;
+			return getSelf();
+		}
+
+		Builder referencedComponentType(int referencedComponentType) {
+			this.referencedComponentType = referencedComponentType;
+			return getSelf();
+		}
+
+		Builder refSetType(SnomedRefSetType refSetType) {
+			this.refSetType = refSetType;
+			return getSelf();
+		}
+
 		public Builder doi(float doi) {
 			this.doi = doi;
 			return getSelf();
@@ -302,7 +322,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					namespace,
 					primitive, 
 					exhaustive,
-					refSetType, referencedComponentType, refSetStorageKey);
+					refSetType, 
+					referencedComponentType, 
+					refSetStorageKey,
+					structural);
 			
 			entry.setDoi(doi);
 			
@@ -337,13 +360,12 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return entry;
 		}
 
-
 	}
 
 	private final boolean primitive;
 	private final boolean exhaustive;
 	private final SnomedRefSetType refSetType;
-	private final short referencedComponentType;
+	private final int referencedComponentType;
 	private final boolean structural;
 	private final long refSetStorageKey;
 	
@@ -367,8 +389,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final boolean primitive,
 			final boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
-			final short referencedComponentType,
-			final long refSetStorageKey) {
+			final int referencedComponentType,
+			final long refSetStorageKey,
+			final boolean structural) {
 
 		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace);
 		this.primitive = primitive;
@@ -376,7 +399,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
 		this.refSetStorageKey = refSetStorageKey;
-		this.structural = SnomedRefSetUtil.isStructural(id, refSetType);
+		this.structural = structural;
 	}
 	
 	@JsonIgnore
@@ -480,7 +503,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return refSetType;
 	}
 	
-	public short getReferencedComponentType() {
+	public int getReferencedComponentType() {
 		return referencedComponentType;
 	}
 	

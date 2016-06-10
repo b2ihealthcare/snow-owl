@@ -47,6 +47,7 @@ public abstract class BaseRevisionIndexTest {
 	protected static final long STORAGE_KEY1 = 1L;
 	protected static final long STORAGE_KEY2 = 2L;
 	
+	private ObjectMapper mapper;
 	private Mappings mappings;
 	private RevisionIndex index;
 	private Map<String, RevisionBranch> branches = newHashMap();
@@ -63,7 +64,7 @@ public abstract class BaseRevisionIndexTest {
 		// initialize MAIN branch with 0,0 timestamps
 		branches.put(RevisionBranch.MAIN_PATH, new RevisionBranch(null, RevisionBranch.MAIN_PATH, 0L, 0L));
 		
-		final ObjectMapper mapper = new ObjectMapper();
+		mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
@@ -76,6 +77,10 @@ public abstract class BaseRevisionIndexTest {
 		if (index != null) {
 			index.admin().delete();
 		}
+	}
+	
+	protected final ObjectMapper getMapper() {
+		return mapper;
 	}
 	
 	protected void configureMapper(ObjectMapper mapper) {
