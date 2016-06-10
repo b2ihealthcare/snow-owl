@@ -14,5 +14,6 @@ Export-Package: com.b2international.snowowl.terminologyregistry.core,
  com.b2international.snowowl.terminologyregistry.core.bean,
  com.b2international.snowowl.terminologyregistry.core.builder,
  com.b2international.snowowl.terminologyregistry.core.index,
+ com.b2international.snowowl.terminologyregistry.core.preferences,
  com.b2international.snowowl.terminologyregistry.core.request,
  com.b2international.snowowl.terminologyregistry.core.util
