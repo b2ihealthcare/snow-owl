@@ -49,7 +49,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
@@ -80,6 +79,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -393,6 +393,10 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		
 	}
 	
+	private String getConceptLabel(IBranchPath branchPath, String componentId) {
+		return componentId;
+	}
+
 	private NodeDelta createInactivatableAssociationChangedDelta(final ReferenceDiff diff) {
 		return createInactivatableAssociationChangedDelta((SnomedAssociationRefSetMember) diff.getValue(), isAddition(diff));
 	}
@@ -630,7 +634,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			final Relationship relationship = (Relationship) component;
 			
 			final String negation = relationship.isDestinationNegated() ? " NOT " : "";
-			final String[] labels = getRelationshipLabels(component, relationship);
+			final String[] labels = new String[]{relationship.getSource().getId(), relationship.getType().getId(), relationship.getDestination().getId()};
 			final StringBuilder sb = new StringBuilder();
 			sb.append(labels[0]);
 			sb.append(" - ");
@@ -650,13 +654,16 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		}
 	}
 
-	private String getMemberLabel(final SnomedRefSetMember member) {
-		final Pair<String, String> labelPair = getComponentService().getMemberLabel(getBranchPath(member), member.getUuid());
+	static String getMemberLabel(final SnomedRefSetMember member) {
+		return getMemberLabel(member.getReferencedComponentId(), member instanceof SnomedSimpleMapRefSetMember ? ((SnomedSimpleMapRefSetMember) member).getMapTargetComponentId() : null);
+	}
+	
+	static String getMemberLabel(final String referencedComponentLabel, final String mapTargetLabel) {
 		final StringBuffer sb = new StringBuffer();
-		sb.append(labelPair.getA());
-		if (!isEmpty(labelPair.getB())) {
+		sb.append(referencedComponentLabel);
+		if (!isEmpty(mapTargetLabel)) {
 			sb.append(" - ");
-			sb.append(labelPair.getB());
+			sb.append(mapTargetLabel);
 		}
 		return sb.toString();
 	}

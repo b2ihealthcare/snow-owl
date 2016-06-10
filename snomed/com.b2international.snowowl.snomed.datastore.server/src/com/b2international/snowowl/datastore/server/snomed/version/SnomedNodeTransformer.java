@@ -38,7 +38,6 @@ import java.util.Set;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 
-import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.SetDifference;
 import com.b2international.commons.http.ExtendedLocale;
@@ -62,7 +61,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -374,14 +372,7 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	}
 
 	private String getMemberLabel(final SnomedRefSetMemberFragment member, final IBranchPath branchPath) {
-		final Pair<String, String> labelPair = getComponentService().getMemberLabel(branchPath, member.getUuid());
-		final StringBuffer sb = new StringBuffer();
-		sb.append(labelPair.getA());
-		if (!isEmpty(labelPair.getB())) {
-			sb.append(" - ");
-			sb.append(labelPair.getB());
-		}
-		return sb.toString();
+		return SnomedDiffProcessor.getMemberLabel(member.getSourceId(), member.getTargetId());
 	}
 	
 	private boolean isRegularRefSet(final IBranchPath branchPath, final long refSetStorageKey) {
