@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.server.cdo;
 
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.Objects;
 
 /**
@@ -26,28 +28,28 @@ public class MergeConflict implements Serializable {
 
 	private static final long serialVersionUID = 5238168089442966388L;
 
-	private String target = null;
-	private String source = null;
-	private String message;
+	private String targetId = null;
+	private String sourceId = null;
+	private final String message;
 	
-	public MergeConflict(String source, String target, String message) {
-		this.source = source;
-		this.target = target;
+	public MergeConflict(@Nullable final String sourceId, @Nullable final String targetId, final String message) {
+		this.sourceId = sourceId;
+		this.targetId = targetId;
 		this.message = message;
 	}
 	
 	/**
-	 * @return the source
+	 * @return the sourceId
 	 */
-	public String getSource() {
-		return source;
+	public String getSourceId() {
+		return sourceId;
 	}
 	
 	/**
-	 * @return the target
+	 * @return the targetId
 	 */
-	public String getTarget() {
-		return target;
+	public String getTargetId() {
+		return targetId;
 	}
 	
 	/**

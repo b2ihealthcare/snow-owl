@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -160,6 +161,18 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 
 	@Override
+	public Map<String, Object> handleCDOConflicts(CDOTransaction sourceTransaction, CDOTransaction targetTransaction, Map<CDOID, Conflict> conflicts) {
+		if (!conflicts.isEmpty()) {
+			Map<String, Object> results = newHashMap();
+			for (Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
+				results.put(entry.getKey().toString(), SnomedMergeConflictMapper.convert(entry.getValue(), sourceTransaction, targetTransaction));
+			}
+			return results;
+		}
+		return super.handleCDOConflicts(sourceTransaction, targetTransaction, conflicts);
+	}
+	
+	@Override
 	public void postProcess(CDOTransaction transaction) {
 		super.postProcess(transaction);
 		
@@ -206,7 +219,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		final CDOID conflictingNewInTarget = newComponentIdsInTarget.get(newComponentIdInSource);
 		if (null != conflictingNewInTarget) {
 			final String sourceType = sourceRevision.getEClass().getName();
-			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget,
+			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget, sourceType,
 					"Two SNOMED CT %ss are using the same '%s' identifier.", sourceType, newComponentIdInSource);
 		} else {
 			return null;
@@ -247,7 +260,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		for (final EStructuralFeature feature : featuresToCheck) {
 			final CDOID targetId = (CDOID) internalSourceRevision.getValue(feature);
 			if (detachedTargetIds.contains(targetId)) {
-				return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId);
+				return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId, internalSourceRevision.getEClass().getName());
 			}
 		}
 
@@ -345,7 +358,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 							continue label;
 						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
 							conflictingItems.put(concept.getId(), new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), 
-									conceptDescriptionMember.cdoID(),
+									conceptDescriptionMember.cdoID(), conceptDescriptionMember.eClass().getName(),
 									"Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s",
 									description.getId(), conceptDescription.getId()));
 						}
@@ -353,7 +366,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 						if (description.equals(conceptDescription)) {
 							conflictingItems.put(concept.getId(), new AddedInSourceAndTargetConflict(
 									newLanguageRefSetMember.cdoID(), 
-									conceptDescriptionMember.cdoID(),
+									conceptDescriptionMember.cdoID(), conceptDescriptionMember.eClass().getName(),
 									"Different acceptability selected for the same description, %s", description.getId()));
 						}
 					}

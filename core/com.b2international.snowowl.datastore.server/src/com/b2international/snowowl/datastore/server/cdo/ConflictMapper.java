@@ -25,13 +25,13 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
  */
 public class ConflictMapper {
 
-	private static final String CHANGED_IN_SOURCE_AND_TARGET_MESSAGE = "%s was changed both in source and target branch.";
-	private static final String CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s was changed in source branch but detached in target branch.";
-	private static final String CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s was changed in target branch but detached in source branch.";
-	private static final String ADDED_IN_SOURCE_AND_TARGET_MESSAGE = "%s and %s uses the same domain key on source and target branch.";
-	private static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s on source branch referencing %s which was detached on target branch.";
+	public static final String CHANGED_IN_SOURCE_AND_TARGET_MESSAGE = "%s was changed both in source and target branch.";
+	public static final String CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s was changed in source branch but detached in target branch.";
+	public static final String CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s was changed in target branch but detached in source branch.";
+	public static final String ADDED_IN_SOURCE_AND_TARGET_MESSAGE = "%s and %s uses the same domain key on source and target branch.";
+	public static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s on source branch referencing %s which was detached on target branch.";
 
-	public static MergeConflict convert(Conflict conflict) {
+	public static MergeConflict convert(final Conflict conflict) {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
 			return from((ChangedInSourceAndTargetConflict) conflict);
 		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
@@ -47,30 +47,30 @@ public class ConflictMapper {
 	}
 	
 	
-	public static MergeConflict from(ChangedInSourceAndTargetConflict conflict) {
-		String id = conflict.getID().toString();
+	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict) {
+		final String id = conflict.getID().toString();
 		return new MergeConflict(id, id, String.format(CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, id));
 	}
 	
-	public static MergeConflict from(ChangedInSourceAndDetachedInTargetConflict conflict) {
-		String id = conflict.getID().toString();
+	public static MergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict) {
+		final String id = conflict.getID().toString();
 		return new MergeConflict(id, null, String.format(CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, id));
 	}
 	
-	public static MergeConflict from(ChangedInTargetAndDetachedInSourceConflict conflict) {
-		String id = conflict.getID().toString();
+	public static MergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict) {
+		final String id = conflict.getID().toString();
 		return new MergeConflict(null, id, String.format(CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, id));
 	}
 	
-	public static MergeConflict from(AddedInSourceAndTargetConflict conflict) {
-		String sourceId = conflict.getSourceId().toString();
-		String targetId = conflict.getTargetId().toString();
+	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict) {
+		final String sourceId = conflict.getSourceId().toString();
+		final String targetId = conflict.getTargetId().toString();
 		return new MergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_AND_TARGET_MESSAGE, sourceId, targetId));
 	}
 	
-	public static MergeConflict from(AddedInSourceAndDetachedInTargetConflict conflict) {
-		String sourceId = conflict.getSourceId().toString();
-		String targetId = conflict.getTargetId().toString();
+	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict) {
+		final String sourceId = conflict.getSourceId().toString();
+		final String targetId = conflict.getTargetId().toString();
 		return new MergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, sourceId, targetId));
 	}
 }
