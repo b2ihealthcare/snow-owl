@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.services;
 
-import java.util.Collection;
-
 import javax.annotation.Nullable;
 
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 
 /**
  * Lookup service for SNOMED&nbsp;CT ontology.
@@ -80,130 +77,6 @@ public interface ISnomedLookupService {
 	 * @return an array of description terms.
 	 */
 	String[] getDescriptionTerms(final long conceptId, final long descriptionTypeConceptId);
-
-	/**
-	 * Returns with all active {@link SnomedDescriptionFragment description}s for a concept. 
-	 * @param conceptId the unique ID of the concept.
-	 * @return a collection of all active {@link SnomedDescriptionFragment description}s of the concept.
-	 */
-	Collection<SnomedDescriptionFragment> getAllDescriptionsForConcept(final String conceptId);
-	
-	/**
-	 * Returns with all active {@link SnomedDescriptionFragment description}s of a concept from a given language.
-	 * @param conceptId the unique concept ID.
-	 * @param languageRefSetId the identifier concept ID of the language reference set.
-	 * @return a collection of all active {@link SnomedDescriptionFragment description}s of a concept from a given language.
-	 */
-	Collection<SnomedDescriptionFragment> getAllDescriptionsForConcept(final String conceptId, final String languageRefSetId);
-	
-	/**
-	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s of a concept based on the given description type concept ID.
-	 * @param conceptId the concept ID.
-	 * @param descriptionTypeId the description type concept ID. 
-	 * @return a collection of active description of a concept from a given description type.
-	 */
-	Collection<SnomedDescriptionFragment> getDescriptionsForConcept(final String conceptId, final String descriptionTypeId);
-
-	/**
-	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s of a concept based on the given description type concept ID from a 
-	 * given language.
-	 * @param conceptId the concept ID.
-	 * @param descriptionTypeId the description type concept ID.
-	 * @param languageRefSetId the identifier concept ID of the language type reference set. 
-	 * @return a collection of active description of a concept from a given description type from a given language.
-	 */
-	Collection<SnomedDescriptionFragment> getDescriptionsForConcept(final String conceptId, final String descriptionTypeId, final String languageRefSetId);
-	
-	/**
-	 * Returns with the preferred term of the concept.
-	 * @param conceptId the concept ID.
-	 * @return the the preferred {@link SnomedDescriptionFragment description} of a concept.
-	 */
-	SnomedDescriptionFragment getPreferredTermForConcept(final String conceptId);
-	
-	/**
-	 * Returns with the preferred term of the concept from a given language.
-	 * @param conceptId the concept identifier.
-	 * @param languageRefSetId the identifier concept ID of the language type reference set.
-	 * @return the preferred description of a concept from a given language.
-	 */
-	SnomedDescriptionFragment getPreferredTermForConcept(final String conceptId, final String languageRefSetId);
-
-	/**
-	 * Returns with the previous preferred description of the concept if it has changed.
-	 * <p>This method will return with {@code null} if:
-	 * <ul>
-	 * <li>Concept PT has not changed between the current and the most recent version.</li>
-	 * <li>The concept did not have a PT on the given point of time.</li>
-	 * </ul> 
-	 * @param conceptId the concept ID.
-	 * @return the previous preferred description of the concept if has changed. If not changed. It returns with {@code null}.
-	 */
-	SnomedDescriptionFragment getPreviousPreferredTerm(final String conceptId);
-
-	/**
-	 * Returns with the previous preferred description from the given version of the concept if it has changed.
-	 * <p>This method will return with {@code null} if:
-	 * <ul>
-	 * <li>Previous version does not exist.</li>
-	 * <li>Concept PT has not changed between the current and the given version.</li>
-	 * <li>The concept did not have a PT on the given point of time.</li>
-	 * </ul>
-	 * @param conceptId the concept ID.
-	 * @return one of the preferred description from a given version of the concept if has changed. If not changed. It returns with {@code null}.
-	 */
-	SnomedDescriptionFragment getPreviousPreferredTerm(final String conceptId, final String previousVersionId);
-	
-	/**
-	 * Returns with all active and accepted {@link SnomedDescriptionFragment description}s for a concept.
-	 * <p><b>NOTE:&nbsp;</b>The returning does not contain preferred descriptions such as fully specified name and/or preferred terms.
-	 * @param conceptId the unique ID of the concept.
-	 * @return a collection of all active {@link SnomedDescriptionFragment description}s of the concept. Preferred descriptions such as PT and/or FSN are excluded.
-	 */
-	Collection<SnomedDescriptionFragment> getAllAcceptedDescriptionsForConcept(final String conceptId);
-	
-	/**
-	 * Returns with all active and accepted {@link SnomedDescriptionFragment description}s of a concept from a given language.
-	 * <p><b>NOTE:&nbsp;</b>The returning does not contain preferred descriptions such as fully specified name and/or preferred terms.
-	 * @param conceptId the unique concept ID.
-	 * @param languageRefSetId the identifier concept ID of the language reference set.
-	 * @return a collection of all active {@link SnomedDescriptionFragment description}s of a concept from a given language. Preferred descriptions such as PT and/or FSN are excluded.
-	 */
-	Collection<SnomedDescriptionFragment> getAllAcceptedDescriptionsForConcept(final String conceptId, final String languageRefSetId);
-	
-	/**
-	 * Returns with a collection of active and accepted {@link SnomedDescriptionFragment description}s of a concept based on the given description type concept ID.
-	 * <p><b>NOTE:&nbsp;</b>The returning does not contain preferred descriptions such as fully specified name and/or preferred terms.
-	 * @param conceptId the concept ID.
-	 * @param descriptionTypeId the description type concept ID. 
-	 * @return a collection of active description of a concept from a given description type. Preferred descriptions such as PT and/or FSN are excluded.
-	 */
-	Collection<SnomedDescriptionFragment> getAcceptedDescriptionsForConcept(final String conceptId, final String descriptionTypeId);
-	
-	/**
-	 * Returns with a collection of active and accepted {@link SnomedDescriptionFragment description}s of a concept based on the given description type concept ID from a 
-	 * given language.
-	 * <p><b>NOTE:&nbsp;</b>The returning does not contain preferred descriptions such as fully specified name and/or preferred terms.
-	 * @param conceptId the concept ID.
-	 * @param descriptionTypeId the description type concept ID.
-	 * @param languageRefSetId the identifier concept ID of the language type reference set. 
-	 * @return a collection of active description of a concept from a given description type from a given language. Preferred descriptions such as PT and/or FSN are excluded.
-	 */
-	Collection<SnomedDescriptionFragment> getAcceptedDescriptionsForConcept(final String conceptId, final String descriptionTypeId, final String languageRefSetId);
-	
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT concept specified by its unique ID has a preferred term. Otherwise returns with {@code false}, 
-	 * @param conceptId the unique ID of the SNOMED&nbsp;CT concept.
-	 * @return {@code true} if the concept has preferred term, otherwise false.
-	 */
-	boolean isPreferredTermExists(final long conceptId);
-
-	/**
-	 * Returns with the preferred term of a SNOMED&nbsp;CT concept.
-	 * @param conceptId the ID of the concept.
-	 * @return the preferred term of the concept.
-	 */
-	String getPreferredTerm(final long conceptId);
 
 	/**
 	 * Returns the preferred terms of a concept.

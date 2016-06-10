@@ -26,10 +26,8 @@ import javax.annotation.Nullable;
 
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
@@ -66,15 +64,6 @@ public interface ISnomedComponentService {
 	 * @return the 'Synonym' concept and all descendant IDs.
 	 */
 	Set<String> getSynonymAndDescendantIds(IBranchPath branchPath);
-	
-	/**
-	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s for a concept, all belonging to the given language.
-	 * @param branchPath branch path.
-	 * @param conceptId the container concept ID.
-	 * @param languageRefSetId the unique language reference set concept identifier.
-	 * @return a collection of active descriptions for a concept in a given language.
-	 */
-	Collection<SnomedDescriptionFragment> getDescriptionFragmentsForConcept(final IBranchPath branchPath, final String conceptId, final String languageRefSetId);
 	
 	/**
 	 * This method returns with an array of the owner SNOMED&nbsp;CT concept ID description type concept ID and the term of the description specified 

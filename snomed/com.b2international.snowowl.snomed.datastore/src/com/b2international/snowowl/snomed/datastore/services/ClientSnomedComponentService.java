@@ -26,7 +26,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -64,16 +63,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 		return wrappedService.getAllReferringMembersStorageKey(getBranchPath(), componentId, types);
 	}
 
-	@Override
-	public LongSet getAllDescriptionIds() {
-		return wrappedService.getAllDescriptionIds(getBranchPath());
-	}
-
-	@Override
-	public Collection<SnomedDescriptionFragment> getDescriptionFragmentsForConcept(final String conceptId, final String languageRefSetId) {
-		return wrappedService.getDescriptionFragmentsForConcept(getBranchPath(), conceptId, languageRefSetId);
-	}
-	
 	@Override
 	@Deprecated
 	public Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId) {

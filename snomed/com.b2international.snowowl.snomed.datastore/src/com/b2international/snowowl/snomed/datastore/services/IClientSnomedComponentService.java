@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -60,21 +59,6 @@ public interface IClientSnomedComponentService {
 	 * @return a collection of reference set member storage keys.
 	 */
 	LongSet getAllReferringMembersStorageKey(final String componentId, final EnumSet<SnomedRefSetType> types);
-	
-	/**
-	 * Returns with the a set of SNOMED CT IDs for all description.
-	 * @return a set of IDs for all descriptions in the ontology.
-	 */
-	LongSet getAllDescriptionIds();
-	
-	/**
-	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s for a concept which are belongs to the 
-	 * given language.
-	 * @param conceptId the container concept ID.
-	 * @param languageRefSetId the unique language reference set concept identifier.
-	 * @return a collection of active descriptions for a concept in a given language.
-	 */
-	Collection<SnomedDescriptionFragment> getDescriptionFragmentsForConcept(final String conceptId, final String languageRefSetId);
 	
 	/**
 	 * Returns with a map of SNOMED&nbsp;CT concept IDs and the associated terms of the descriptions given as the description type IDs from
