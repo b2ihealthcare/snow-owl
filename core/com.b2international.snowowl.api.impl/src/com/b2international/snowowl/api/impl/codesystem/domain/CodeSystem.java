@@ -22,6 +22,136 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 /**
  */
 public class CodeSystem implements ICodeSystem {
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static Builder builder(final com.b2international.snowowl.datastore.ICodeSystem input) {
+		return builder()
+				.oid(input.getOid())
+				.name(input.getName())
+				.shortName(input.getShortName())
+				.link(input.getOrgLink())
+				.language(input.getLanguage())
+				.citation(input.getCitation())
+				.branchPath(input.getBranchPath())
+				.iconPath(input.getIconPath())
+				.terminologyId(input.getSnowOwlId())
+				.repositoryId(input.getRepositoryUuid())
+				.extensionOf(input.getExtensionOf());
+	}
+	
+	public static class Builder {
+		
+		private String oid;
+		private String name;
+		private String shortName;
+		private String link;
+		private String language;
+		private String citation;
+		private String branchPath;
+		private String iconPath;
+		private String terminologyId;
+		private String repositoryId;
+		private String extensionOf;
+		
+		private Builder() {}
+		
+		public Builder oid(final String oid) {
+			this.oid = oid;
+			return getSelf();
+		}
+		
+		public Builder name(final String name) {
+			this.name = name;
+			return getSelf();
+		}
+		
+		public Builder shortName(final String shortName) {
+			this.shortName = shortName;
+			return getSelf();
+		}
+		
+		public Builder link(final String link) {
+			this.link = link;
+			return getSelf();
+		}
+		
+		public Builder language(final String language) {
+			this.language = language;
+			return getSelf();
+		}
+		
+		public Builder citation(final String citation) {
+			this.citation = citation;
+			return getSelf();
+		}
+		
+		public Builder branchPath(final String branchPath) {
+			this.branchPath = branchPath;
+			return getSelf();
+		}
+		
+		public Builder iconPath(final String iconPath) {
+			this.iconPath = iconPath;
+			return getSelf();
+		}
+		
+		public Builder terminologyId(final String terminologyId) {
+			this.terminologyId = terminologyId;
+			return getSelf();
+		}
+		
+		public Builder repositoryId(final String repositoryId) {
+			this.repositoryId = repositoryId;
+			return getSelf();
+		}
+		
+		public Builder extensionOf(final String extensionOf) {
+			this.extensionOf = extensionOf;
+			return getSelf();
+		}
+		
+		public CodeSystem build() {
+			return new CodeSystem(
+					oid, 
+					name, 
+					shortName, 
+					link, 
+					language, 
+					citation, 
+					branchPath, 
+					iconPath, 
+					terminologyId, 
+					repositoryId,
+					extensionOf);
+		}
+		
+		private Builder getSelf() {
+			return this;
+		}
+		
+	}
+	
+	public CodeSystem() {
+	}
+	
+	private CodeSystem(final String oid, final String name, final String shortName, final String link, final String language,
+			final String citation, final String branchPath, final String iconPath, final String terminologyId, final String repositoryId,
+			final String extensionOf) {
+		this.oid = oid;
+		this.name = name;
+		this.shortName = shortName;
+		this.organizationLink = link;
+		this.primaryLanguage = language;
+		this.citation = citation;
+		this.branchPath = branchPath;
+		this.iconPath = iconPath;
+		this.terminologyId = terminologyId;
+		this.repositoryUuid = repositoryId;
+		this.extensionOf = extensionOf;
+	}
 
 	private String oid;
 	
