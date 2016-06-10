@@ -27,9 +27,9 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
  * 
@@ -70,16 +70,8 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 				out.writeString(excludedId);
 			}
 			
-			//Ecore object cannot be serialized directly
 			final CodeSystem codeSystem = importConfiguration.getCodeSystem();
-			out.writeString(codeSystem.getBranchPath());
-			out.writeUTF(codeSystem.getCitation());
-			out.writeString(codeSystem.getCodeSystemOID());
-			out.writeString(codeSystem.getLanguage());
-			out.writeString(codeSystem.getMaintainingOrganizationLink());
-			out.writeUTF(codeSystem.getName());
-			out.writeString(codeSystem.getShortName());
-			// TODO write extensionOf
+			out.writeObject(codeSystem);
 			
 			monitor.worked();
 			

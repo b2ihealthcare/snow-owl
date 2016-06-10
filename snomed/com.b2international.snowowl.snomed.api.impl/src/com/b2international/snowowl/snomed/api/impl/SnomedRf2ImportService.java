@@ -32,6 +32,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -54,8 +55,6 @@ import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -159,20 +158,20 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		final CodeSystem codeSystem;
 		if (codeSystemEntry == null) {
-			codeSystem = SnomedReleases.newSnomedInternationalRelease().build();
+			codeSystem = SnomedReleases.newSnomedInternationalRelease();
 		} else {
-			codeSystem = new CodeSystemBuilder()
-					.withName(codeSystemEntry.getName())
-					.withShortName(codeSystemEntry.getShortName())
-					.withCodeSystemOid(codeSystemEntry.getOid())
-					.withLanguage(codeSystemEntry.getLanguage())
-					.withMaintainingOrganizationLink(codeSystemEntry.getOrgLink())
-					.withCitation(codeSystemEntry.getCitation())
-					.withBranchPath(IBranchPath.MAIN_BRANCH)
-					.withIconPath(codeSystemEntry.getIconPath())
-					.withRepositoryUuid(codeSystemEntry.getRepositoryUuid())
-					.withTerminologyComponentId(codeSystemEntry.getSnowOwlId())
-					.withExtensionOf(null) // TODO
+			codeSystem = CodeSystem.builder()
+					.name(codeSystemEntry.getName())
+					.shortName(codeSystemEntry.getShortName())
+					.oid(codeSystemEntry.getOid())
+					.language(codeSystemEntry.getLanguage())
+					.link(codeSystemEntry.getOrgLink())
+					.citation(codeSystemEntry.getCitation())
+					.branchPath(codeSystemEntry.getBranchPath())
+					.iconPath(codeSystemEntry.getIconPath())
+					.repositoryId(codeSystemEntry.getRepositoryUuid())
+					.terminologyId(codeSystemEntry.getSnowOwlId())
+					.extensionOf(codeSystemEntry.getExtensionOf())
 					.build();
 		}
 		

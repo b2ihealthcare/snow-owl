@@ -29,6 +29,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.ConsoleProgressMonitor;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
@@ -39,8 +40,6 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolCon
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.google.common.io.Files;
 
 /**
@@ -87,18 +86,7 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 				importConfiguration.excludeRefSet(in.readString());
 			}
 			
-			//Ecore object cannot be serialized directly
-			final CodeSystem codeSystem = new CodeSystemBuilder()
-				.withBranchPath(in.readString())
-				.withCitation(in.readUTF())
-				.withCodeSystemOid(in.readString())
-				.withLanguage(in.readString())
-				.withMaintainingOrganizationLink(in.readString())
-				.withName(in.readUTF())
-				.withShortName(in.readString())
-				.withExtensionOf(null) // TODO
-				.build();
-			
+			final CodeSystem codeSystem = (CodeSystem) in.readObject();
 			importConfiguration.setCodeSystem(codeSystem);
 			
 			monitor.worked();

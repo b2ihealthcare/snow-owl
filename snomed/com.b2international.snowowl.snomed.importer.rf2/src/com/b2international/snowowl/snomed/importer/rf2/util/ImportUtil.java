@@ -53,10 +53,12 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.platform.Extensions;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
@@ -104,7 +106,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedConcept
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescriptionImporter;
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -178,6 +179,7 @@ public final class ImportUtil {
 		checkNotNull(releaseArchive, "releaseArchive");
 		checkArgument(releaseArchive.canRead(), "Cannot read SNOMED CT RF2 release archive content.");
 		checkArgument(BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()));
+		ApiValidation.checkInput(codeSystem);
 		
 		final ImportConfiguration config = new ImportConfiguration();
 		config.setCodeSystem(codeSystem);
@@ -277,7 +279,7 @@ public final class ImportUtil {
 		context.setContentSubType(configuration.getVersion());
 		context.setIgnoredRefSetIds(patchedExcludedRefSetIDs);
 		context.setCodeSystemShortName(configuration.getCodeSystem().getShortName());
-		context.setCodeSystemOID(configuration.getCodeSystem().getCodeSystemOID());
+		context.setCodeSystemOID(configuration.getCodeSystem().getOid());
 
 		try {
 
@@ -382,16 +384,16 @@ public final class ImportUtil {
 				.setBranchPath(codeSystem.getBranchPath())
 				.setName(codeSystem.getName())
 				.setShortName(codeSystem.getShortName())
-				.setLanguage(codeSystem.getLanguage())
-				.setLink(codeSystem.getMaintainingOrganizationLink())
-				.setOid(codeSystem.getCodeSystemOID())
+				.setLanguage(codeSystem.getPrimaryLanguage())
+				.setLink(codeSystem.getOrganizationLink())
+				.setOid(codeSystem.getOid())
 				.setCitation(codeSystem.getCitation())
 				.setIconPath(codeSystem.getIconPath())
-				.setTerminologyId(codeSystem.getTerminologyComponentId())
+				.setTerminologyId(codeSystem.getTerminologyId())
 				.setRepositoryUuid(codeSystem.getRepositoryUuid())
-				.setExtensionOf(codeSystem.getExtensionOf() == null ? null : codeSystem.getExtensionOf().getShortName())
+				.setExtensionOf(codeSystem.getExtensionOf())
 				.build(userId, IBranchPath.MAIN_BRANCH, String.format("Created SNOMED CT code system '%s' (OID: %s)",
-					codeSystem.getShortName(), codeSystem.getCodeSystemOID()))
+					codeSystem.getShortName(), codeSystem.getOid()))
 				.executeSync(getEventBus());
 		} catch (AlreadyExistsException e) {
 			// ignore and continue import

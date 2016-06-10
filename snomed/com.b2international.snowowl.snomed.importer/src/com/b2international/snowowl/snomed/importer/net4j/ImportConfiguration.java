@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ZipURLHandler;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -32,8 +33,6 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -97,7 +96,7 @@ public final class ImportConfiguration {
 	private ReleaseFileSet releaseFileSet;
 	
 	//the terminology registry entry for the release to be imported
-	private CodeSystem codeSystem = TerminologymetadataFactory.eINSTANCE.createCodeSystem(); // TODO change this
+	private CodeSystem codeSystem;
 	
 	private final Map<String, String> releaseFileNameMappings = Maps.newHashMap();
 

@@ -29,6 +29,7 @@ import java.util.Set;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
 import com.b2international.commons.ConsoleProgressMonitor;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -41,8 +42,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -202,9 +201,8 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 
-		CodeSystem codeSystem = null;
-			
-		File metadataFile = new File(metadataFilePath);
+		final CodeSystem codeSystem;
+		final File metadataFile = new File(metadataFilePath);
 		
 		if (!metadataFile.isFile() || !metadataFilePath.endsWith(DEFAULT_METADATA_FILE_EXTENSION)) {
 			interpreter.println("Invalid metadata file path.");
@@ -286,18 +284,18 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 	}
 	
 	private CodeSystem createCodeSystem(final Map<String, String> values) {
-		return new CodeSystemBuilder()
-				.withBranchPath(getValue(KEY_NAME, null, values))
-				.withCitation(getValue(KEY_CITATION, null, values))
-				.withCodeSystemOid(getValue(KEY_CODE_SYSTEM_OID, null, values))
-				.withExtensionOf(null) // TODO
-				.withIconPath(getValue(KEY_ICON_PATH, SNOMED_INT_ICON_PATH, values))
-				.withLanguage(getValue(KEY_LANGUAGE, null, values))
-				.withMaintainingOrganizationLink(getValue(KEY_MAINTAINING_ORGANIZATION_LINK, null, values))
-				.withName(getValue(KEY_NAME, null, values))
-				.withRepositoryUuid(getValue(KEY_REPOSITORY_UUID, REPOSITORY_UUID, values))
-				.withShortName(getValue(KEY_SHORT_NAME, null, values))
-				.withTerminologyComponentId(getValue(KEY_TERMINOLOGY_COMPONENT_ID, TERMINOLOGY_ID, values))
+		return CodeSystem.builder()
+				.branchPath(getValue(KEY_NAME, null, values))
+				.citation(getValue(KEY_CITATION, null, values))
+				.oid(getValue(KEY_CODE_SYSTEM_OID, null, values))
+				.extensionOf(getValue(KEY_EXTENSION_OF, null, values))
+				.iconPath(getValue(KEY_ICON_PATH, SNOMED_INT_ICON_PATH, values))
+				.language(getValue(KEY_LANGUAGE, null, values))
+				.link(getValue(KEY_MAINTAINING_ORGANIZATION_LINK, null, values))
+				.name(getValue(KEY_NAME, null, values))
+				.repositoryId(getValue(KEY_REPOSITORY_UUID, REPOSITORY_UUID, values))
+				.shortName(getValue(KEY_SHORT_NAME, null, values))
+				.terminologyId(getValue(KEY_TERMINOLOGY_COMPONENT_ID, TERMINOLOGY_ID, values))
 				.build();
 	}
 

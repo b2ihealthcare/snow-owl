@@ -25,26 +25,27 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 
 /**
  * @since 4.7
  */
 public class SnomedReleases {
 
-	public static CodeSystemBuilder newSnomedInternationalRelease() {
-		return new CodeSystemBuilder()
-				.withName(SNOMED_INT_NAME)
-				.withShortName(SNOMED_INT_SHORT_NAME)
-				.withCodeSystemOid(SNOMED_INT_OID)
-				.withLanguage(SNOMED_INT_LANGUAGE)
-				.withMaintainingOrganizationLink(SNOMED_INT_LINK)
-				.withCitation(SNOMED_INT_CITATION)
-				.withBranchPath(IBranchPath.MAIN_BRANCH)
-				.withTerminologyComponentId(TERMINOLOGY_ID)
-				.withRepositoryUuid(REPOSITORY_UUID)
-				.withIconPath(SNOMED_INT_ICON_PATH);
+	public static CodeSystem newSnomedInternationalRelease() {
+		return CodeSystem.builder()
+				.name(SNOMED_INT_NAME)
+				.shortName(SNOMED_INT_SHORT_NAME)
+				.oid(SNOMED_INT_OID)
+				.language(SNOMED_INT_LANGUAGE)
+				.link(SNOMED_INT_LINK)
+				.citation(SNOMED_INT_CITATION)
+				.branchPath(IBranchPath.MAIN_BRANCH)
+				.iconPath(SNOMED_INT_ICON_PATH)
+				.repositoryId(REPOSITORY_UUID)
+				.terminologyId(TERMINOLOGY_ID)
+				.build();
 	}
 
 }
