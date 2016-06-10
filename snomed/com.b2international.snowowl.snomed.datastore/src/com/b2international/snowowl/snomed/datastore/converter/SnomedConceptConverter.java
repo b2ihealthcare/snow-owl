@@ -206,6 +206,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			final SnomedRelationships relationships = SnomedRequests
 					.prepareSearchRelationship()
 					.all()
+					.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
 					.filterBySource(conceptIds)
 					.setExpand(expandOptions.get("expand", Options.class))
 					.setLocales(locales())
