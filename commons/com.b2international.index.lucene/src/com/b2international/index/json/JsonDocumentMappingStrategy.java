@@ -57,14 +57,18 @@ public class JsonDocumentMappingStrategy {
 				continue;
 			}
 			final Object value = Reflections.getValue(object, field);
-			final IndexField indexField = getIndexField(field);
-			if (Fields.none() != indexField && value != null) {
-				if (value instanceof Iterable) {
-					for (Object item : (Iterable<?>) value) {
-						indexField.addTo(doc, item);
+			if (Reflections.isMapType(field)) {
+				// TODO support maps
+			} else {
+				final IndexField indexField = getIndexField(field);
+				if (Fields.none() != indexField && value != null) {
+					if (value instanceof Iterable) {
+						for (Object item : (Iterable<?>) value) {
+							indexField.addTo(doc, item);
+						}
+					} else {
+						indexField.addTo(doc, convert(indexField, value));
 					}
-				} else {
-					indexField.addTo(doc, convert(indexField, value));
 				}
 			}
 		}

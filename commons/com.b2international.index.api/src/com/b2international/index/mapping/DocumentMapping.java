@@ -72,7 +72,11 @@ public final class DocumentMapping {
 			.transform(new Function<Field, Class<?>>() {
 				@Override
 				public Class<?> apply(Field field) {
-					return Reflections.getType(field);
+					if (Reflections.isMapType(field)) {
+						return Map.class;
+					} else {
+						return Reflections.getType(field);
+					}
 				}
 			})
 			.filter(new Predicate<Class<?>>() {

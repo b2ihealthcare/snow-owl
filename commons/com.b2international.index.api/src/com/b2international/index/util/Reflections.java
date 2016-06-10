@@ -22,6 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import com.b2international.index.IndexException;
@@ -84,6 +85,17 @@ public class Reflections {
 
 	public static Class<?> getFieldType(Class<?> type, String field) {
 		return getType(getField(type, field));
+	}
+
+	public static boolean isMapType(Field field) {
+		final Type fieldType = field.getGenericType();
+		if (fieldType instanceof ParameterizedType) {
+			final ParameterizedType pType = (ParameterizedType) fieldType;
+			if (pType.getRawType() instanceof Class<?>) {
+				return Map.class.isAssignableFrom((Class<?>) pType.getRawType());
+			}
+		}
+		return false;
 	}
 	
 }

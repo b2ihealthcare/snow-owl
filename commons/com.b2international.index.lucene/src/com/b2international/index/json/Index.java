@@ -58,6 +58,10 @@ class Index implements Operation {
 	/* traverse the fields and map the given object and its nested objects */
 	private void collectDocs(String uid, String key, Object object, final DocumentMapping mapping, final Collection<Document> docs) throws IOException {
 		for (Field field : mapping.getFields()) {
+			// skip Maps
+			if (Reflections.isMapType(field)) {
+				continue;
+			}
 			final Class<?> fieldType = Reflections.getType(field);
 			if (DocumentMapping.isNestedDoc(fieldType)) {
 				final DocumentMapping nestedTypeMapping = mapping.getNestedMapping(fieldType);
