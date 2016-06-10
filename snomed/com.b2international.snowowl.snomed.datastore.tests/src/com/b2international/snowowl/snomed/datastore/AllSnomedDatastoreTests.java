@@ -25,6 +25,7 @@ import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdent
 import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntrySerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedPredicateDocumentSerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationImplTest;
@@ -44,7 +45,8 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 	InMemorySnomedIdentifierServiceTest.class,
 	SnomedConceptIndexEntrySerializationTest.class,
 	SnomedRelationshipIndexEntrySerializationTest.class,
-	SnomedDescriptionIndexEntrySerializationTest.class
+	SnomedDescriptionIndexEntrySerializationTest.class,
+	SnomedPredicateDocumentSerializationTest.class
 })
 public class AllSnomedDatastoreTests {
 

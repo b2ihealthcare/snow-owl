@@ -17,173 +17,240 @@ package com.b2international.snowowl.snomed.datastore.snor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.ThreadSafe;
-
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 /**
- * Lightweight representation of a MRCM rule associated with a SNOMED&nbsp;CT concept attribute.
- * <p><b>NOTE: </b>this class is equals based on the {@link #mostSigBits} and the {@link #leastSigBits} values.
+ * Index document of a MRCM rule.
+ * 
  * @see PredicateType
  */
-@Immutable
-@ThreadSafe
-public class PredicateIndexEntry extends RevisionDocument implements ITerminologyComponentIdProvider {
+@Doc
+@JsonDeserialize(builder = PredicateIndexEntry.Builder.class)
+public final class PredicateIndexEntry extends RevisionDocument implements ITerminologyComponentIdProvider {
 
 	private static final long serialVersionUID = -3084452506109842527L;
 
 	/**
-	 * SNOMED&nbsp;CT concept attribute predicate type. 
+	 * SNOMED&nbsp;CT concept attribute predicate type.
+	 * 
 	 * @see PredicateIndexEntry
 	 */
-	@Immutable
-	@ThreadSafe
 	public static enum PredicateType {
-		/**Relationship type predicate.*/
+		/** Relationship type predicate. */
 		RELATIONSHIP,
-		/**Description type predicate.*/
+		/** Description type predicate. */
 		DESCRIPTION,
-		/**Data type predicate.*/
+		/** Data type predicate. */
 		DATATYPE;
-		
+
 		/**
 		 * Returns with the {@link PredicateType predicate type} enumeration identified by the unique ordinal value.
-		 * @param ordinal the unique ordinal value of the predicate type.
- 		 * @return the predicate type.
+		 * 
+		 * @param ordinal
+		 *            the unique ordinal value of the predicate type.
+		 * @return the predicate type.
 		 */
 		public static PredicateType getByOrdinal(final int ordinal) {
 			return PredicateType.values()[ordinal];
 		}
 	}
+
+	public static Builder descriptionBuilder() {
+		return new Builder(PredicateType.DESCRIPTION);
+	}
+	
+	public static Builder relationshipBuilder() {
+		return new Builder(PredicateType.RELATIONSHIP);
+	}
+	
+	public static Builder dataTypeBuilder() {
+		return new Builder(PredicateType.DATATYPE);
+	}
 	
 	/**
-	 * Creates a description type predicate.
-	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
-	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
-	 * @param descriptionTypeId the description type concept identifier.
-	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties. 
-	 * @return the new description type predicate instance.
+	 * @since 4.7
 	 */
-	public static PredicateIndexEntry createDescriptionTypePredicate(final long storageKey, final String queryExpression, final long descriptionTypeId, final byte flags) {
-		final PredicateIndexEntry predicate = new PredicateIndexEntry(storageKey, queryExpression, PredicateType.DESCRIPTION, flags);
-		predicate.descriptionTypeId = descriptionTypeId;
-		return predicate;
+	public static final class Builder extends RevisionDocumentBuilder<Builder> {
+
+		private PredicateType type;
+		private String domain;
+		private int minCardinality;
+		private int maxCardinality;
+		private String descriptionTypeId;
+		private String dataTypeName;
+		private String dataTypeLabel;
+		private DataType dataType;
+		private GroupRule groupRule;
+		private String characteristicTypeExpression;
+		private String relationshipTypeExpression;
+		private String relationshipValueExpression;
+
+		/* Required for Jackson deserialization */
+		@JsonCreator
+		Builder() {
+		}
+
+		Builder(PredicateType type) {
+			this.type = type;
+		}
+
+		public Builder id(long storageKey) {
+			return id(Long.toString(storageKey));
+		}
+
+		public Builder domain(String expression) {
+			this.domain = expression;
+			return getSelf();
+		}
+
+		public Builder cardinality(int min, int max) {
+			return minCardinality(min).maxCardinality(max);
+		}
+		
+		public Builder minCardinality(int minCardinality) {
+			this.minCardinality = minCardinality;
+			return getSelf();
+		}
+
+		public Builder maxCardinality(int maxCardinality) {
+			this.maxCardinality = maxCardinality;
+			return getSelf();
+		}
+		
+		public Builder descriptionType(String typeId) {
+			this.descriptionTypeId = typeId;
+			return getSelf();
+		}
+		
+		public Builder dataTypeLabel(String dataTypeLabel) {
+			this.dataTypeLabel = dataTypeLabel;
+			return getSelf();
+		}
+		
+		public Builder dataTypeName(String dataTypeName) {
+			this.dataTypeName = dataTypeName;
+			return getSelf();
+		}
+		
+		public Builder dataType(DataType dataType) {
+			this.dataType = dataType;
+			return getSelf();
+		}
+		
+		public Builder characteristicTypeExpression(String characteristicTypeExpression) {
+			this.characteristicTypeExpression = characteristicTypeExpression;
+			return getSelf();
+		}
+		
+		public Builder relationshipTypeExpression(String relationshipTypeExpression) {
+			this.relationshipTypeExpression = relationshipTypeExpression;
+			return getSelf();
+		}
+		
+		public Builder relationshipValueExpression(String relationshipValueExpression) {
+			this.relationshipValueExpression = relationshipValueExpression;
+			return getSelf();
+		}
+		
+		public Builder groupRule(GroupRule groupRule) {
+			this.groupRule = groupRule;
+			return getSelf();
+		}
+
+		public PredicateIndexEntry build() {
+			final PredicateIndexEntry doc = new PredicateIndexEntry(id, domain, type, minCardinality, maxCardinality);
+			switch (type) {
+			case DESCRIPTION:
+				doc.descriptionTypeId = checkNotNull(descriptionTypeId, "descriptionTypeId");
+				break;
+			case DATATYPE:
+				doc.dataType = checkNotNull(dataType, "dataType");
+				doc.dataTypeLabel = checkNotNull(dataTypeLabel, "dataTypeLabel");
+				doc.dataTypeName = checkNotNull(dataTypeName, "dataTypeName");
+				break;
+			case RELATIONSHIP:
+				doc.groupRule = checkNotNull(groupRule, "groupRule");
+				doc.characteristicTypeExpression = checkNotNull(characteristicTypeExpression, "characteristicTypeExpression");
+				doc.relationshipTypeExpression = checkNotNull(relationshipTypeExpression, "relationshipTypeExpression");
+				doc.relationshipValueExpression = checkNotNull(relationshipValueExpression, "relationshipValueExpression");
+				break;
+			default: throw new NotImplementedException("Unsupported predicate type '%s'", type);
+			}
+			return doc;
+		}
+
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+
 	}
 
+	/** Type of the predicate. Cannot be {@code null}. */
+	private final PredicateType type;
+	/** The unique ID of the description type SNOMED&nbsp;CT concept. Can be {@code null}. */
+	private String descriptionTypeId;
+	/** The humane readable name of the concrete domain data type. E.g.: {@code Vitamin} or {@code Clinically significant}. */
+	private String dataTypeLabel;
+	/** The unique came-case name of the concrete domain data type. E.g.: {@code isVitamin}. Can be {@code null}. */
+	private String dataTypeName;
 	/**
-	 * Creates a concrete domain predicate.
-	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
-	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
-	 * @param dataType the data type of the concrete domain. See: {@link DataType}.
-	 * @param dataTypeName the unique name of the concrete domain. E.g.: {@code isVitamin} or {@code isClinicallySignificant}.
-	 * @param dataTypeLabel the humane readable label of the concrete domain. E.g.: {@code Vitamin} or {@code Clinically significant}.
-	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties. 
-	 * @return the new data type predicate instance.
+	 * Represents the concrete domain of the predicate. Can be {@code null} if the current predicate type is NOT {@link PredicateType#DATATYPE data
+	 * type}.
 	 */
-	public static PredicateIndexEntry createDataTypeTypePredicate(final long storageKey, final String queryExpression, final DataType dataType, final String dataTypeName, final String dataTypeLabel, final byte flags) {
-		final PredicateIndexEntry predicate = new PredicateIndexEntry(storageKey, queryExpression, PredicateType.DATATYPE, flags);
-		predicate.dataTypeType = checkNotNull(dataType, "Data type argument cannot be null.");
-		predicate.dataTypeLabel = checkNotNull(dataTypeLabel, "Concrete domain data type label argument cannot be null.");
-		predicate.dataTypeName = checkNotNull(dataTypeName, "Concrete domain data type name argument cannot be null.");
-		return predicate;
-	}
-	
+	private DataType dataType;
+	/** ESCG expression describing the allowed SNOMED&nbsp;CT relationship type concept IDs. Can be {@code null}. */
+	private String relationshipTypeExpression;
+	/** ESCG expression describing the allowed SNOMED&nbsp;CT relationship value concept IDs. Can be {@code null}. */
+	private String relationshipValueExpression;
+	/** ESCG expression describing the allowed SNOMED&nbsp;CT relationship characteristic type concept IDs. Can be {@code null}. */
+	private String characteristicTypeExpression;
 	/**
-	 * Factory method for creating a new relationship type predicate.
-	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
-	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
-	 * @param relationshipTypeExpression expression specifying the IDs of the allowed relationship type SNOMED&nbsp;CT concepts. 
-	 * @param relationshipvValueExpression expression specifying the IDs of the allowed relationship value SNOMED&nbsp;CT concepts.
-	 * @param characteristicTypeExpression expression specifying the IDs of the allowed relationship characteristic type SNOMED&nbsp;CT concepts.
-	 * @param groupRule the group role. See: {@link GroupRule}.
-	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties.
-	 * @return the new relationship type predicate.
+	 * Enumeration instance for the relationship group role. Can be {@code null} if the current predicate instance is NOT a
+	 * {@link PredicateType#RELATIONSHIP relationship type}.
 	 */
-	public static PredicateIndexEntry createRelationshipTypePredicate(final long storageKey, final String queryExpression, final String relationshipTypeExpression, final String relationshipvValueExpression, 
-			final String characteristicTypeExpression, final GroupRule groupRule, final byte flags) {
-		
-		final PredicateIndexEntry predicate = new PredicateIndexEntry(storageKey, queryExpression, PredicateType.RELATIONSHIP, flags);
-		predicate.relationshipTypeExpression = checkNotNull(relationshipTypeExpression, "Relationship type IDs argument cannot be null.");
-		predicate.relationshipvValueExpression = checkNotNull(relationshipvValueExpression, "Relationship value IDs argument cannot be null.");
-		predicate.characteristicTypeExpression = checkNotNull(characteristicTypeExpression, "Relationship characteristic type IDs argument cannot be null.");
-		
-		predicate.groupRule = checkNotNull(groupRule, "Group role argument cannot be null.");
-		return predicate;
-	}
-	
-	/**
-	 * Factory method for encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties.
-	 * @param required boolean flag for describing the required property.
-	 * @param multiple boolean flag for representing the multiple property.
-	 * @return the byte flag representing the above boolean value.
-	 */
-	public static byte createFlags(final boolean required, final boolean multiple) {
-		byte flags = 0;
-		if (required){ 
-			flags |= MIN_CARDINALITY;
-		}
-		if (multiple) {
-			flags |= MAX_CARDINALITY;
-		}
-		return flags;
-	}
+	private GroupRule groupRule;
+	/** The parsed query expression. Represents the domain part of the MRCM attribute constraint. */
+	private final String domain;
+	private final int minCardinality;
+	private final int maxCardinality;
 
-	/**Required or optional.*/
-	private static final int MIN_CARDINALITY = 1 << 0;
-	/**Single or multiple.*/
-	private static final int MAX_CARDINALITY = 1 << 1;
-	
-	/**Type of the predicate. Cannot be {@code null}.*/
-	@Nonnull private final PredicateType type;
-	/**The unique ID of the description type SNOMED&nbsp;CT concept. Can be {@code null}.*/
-	@Nullable private long descriptionTypeId;
-	/**The humane readable name of the concrete domain data type. E.g.: {@code Vitamin} or {@code Clinically significant}.*/
-	@Nullable private String dataTypeLabel;
-	/**The unique came-case name of the concrete domain data type. E.g.: {@code isVitamin}. Can be {@code null}.*/
-	@Nullable private String dataTypeName;
-	/**Represents the concrete domain of the predicate. Can be {@code null} if the current predicate type is NOT {@link PredicateType#DATATYPE data type}.*/
-	@Nullable private DataType dataTypeType;
-	/**ESCG expression describing the allowed SNOMED&nbsp;CT relationship type concept IDs. Can be {@code null}.*/
-	@Nullable private String relationshipTypeExpression;
-	/**ESCG expression describing the allowed SNOMED&nbsp;CT relationship value concept IDs. Can be {@code null}.*/
-	@Nullable private String relationshipvValueExpression;
-	/**ESCG expression describing the allowed SNOMED&nbsp;CT relationship characteristic type concept IDs. Can be {@code null}.*/
-	@Nullable private String characteristicTypeExpression;
-	/**Enumeration instance for the relationship group role. Can be {@code null} if the current predicate instance is NOT a {@link PredicateType#RELATIONSHIP relationship type}.*/
-	@Nullable private GroupRule groupRule;
-	/**The parsed query expression. Represents the domain part of the MRCM attribute constraint.*/
-	@Nonnull private final String queryExpression;
-	/**Flags for representing the {@link #isMultiple()} and {@link #isRequired()} properties.*/
-	private final byte flags;
-	
 	/**
 	 * Private constructor.
-	 * @param queryExpression query expression describing the domain part of the attribute constraint.
-	 * @param type the type of the predicate representation.
-	 * @param flags the flags for describing the {@code isMultiple} and {@code isRequired} boolean properties.
+	 * 
+	 * @param domain
+	 *            query expression describing the domain part of the attribute constraint.
+	 * @param type
+	 *            the type of the predicate representation.
+	 * @param flags
+	 *            the flags for describing the {@code isMultiple} and {@code isRequired} boolean properties.
 	 */
-	private PredicateIndexEntry(final long storageKey, final String queryExpression, final PredicateType type, final byte flags) {
-		super(Long.toString(storageKey), createLabel(storageKey, type), null);
-		this.queryExpression = checkNotNull(queryExpression, "Query expression argument cannot be null.");
-		this.type = checkNotNull(type, "Predicate type argument cannot be null.");
-		this.flags = flags;
+	private PredicateIndexEntry(final String id, final String domain, final PredicateType type, final int minCardinality,
+			final int maxCardinality) {
+		super(id, createLabel(id, type), null);
+		this.domain = checkNotNull(domain, "queryExpression");
+		this.type = checkNotNull(type, "type");
+		this.minCardinality = minCardinality;
+		this.maxCardinality = maxCardinality;
 	}
-	
-	private static String createLabel(long storageKey, PredicateType type) {
+
+	private static String createLabel(String storageKey, PredicateType type) {
 		return Objects.toStringHelper(PredicateIndexEntry.class).add("id", storageKey).add("type", type).toString();
 	}
 
 	/**
 	 * Returns with the type of the current predicate instance.
+	 * 
 	 * @return the predicate type.
 	 * @see PredicateType.
 	 */
@@ -192,117 +259,130 @@ public class PredicateIndexEntry extends RevisionDocument implements ITerminolog
 	}
 
 	/**
+	 * Returns with the query expression wrapper representing the domain part of the MRCM attribute constraint.
+	 * 
+	 * @return the query expression wrapper.
+	 */
+	public String getDomain() {
+		return domain;
+	}
+
+	/**
 	 * Returns with the unique ID of the description type SNOMED&nbsp;CT concept.
+	 * 
 	 * @return the ID of the description type concept.
 	 */
-	public long getDescriptionTypeId() {
-		Preconditions.checkState(PredicateType.DESCRIPTION.equals(type), "Predicate type was not a description type but " + type);
+	public String getDescriptionTypeId() {
 		return descriptionTypeId;
 	}
 
 	/**
-	 * Returns with the unique name of the concrete domain data type. This name *SHOULD* uniquely identify the predicate.
-	 * <br>The format is given in camel-case. E.g.: {@code isVitamin}.
+	 * Returns with the unique name of the concrete domain data type. This name *SHOULD* uniquely identify the predicate. <br>
+	 * The format is given in camel-case. E.g.: {@code isVitamin}.
+	 * 
 	 * @return the unique camel-case name of the concrete domain data type.
 	 */
 	public String getDataTypeName() {
-		Preconditions.checkState(PredicateType.DATATYPE.equals(type), "Predicate type was not a data type type but " + type);
 		return dataTypeName;
-	}
-	
-	/**
-	 * Returns with the humane readable name of the concrete domain data type. E.g.: {@code Vitamin}.
-	 * @return the human readable name of the data type.
-	 */
-	public String getDataTypeLabel() {
-		Preconditions.checkState(PredicateType.DATATYPE.equals(type), "Predicate type was not a data type type but " + type);
-		return dataTypeLabel;
-	}
-	
-	/**
-	 * Returns with the type of the concrete domain.
-	 * @return the concrete domain.
-	 */
-	public DataType getDataTypeType() {
-		Preconditions.checkState(PredicateType.DATATYPE.equals(type), "Predicate type was not a data type type but " + type);
-		return dataTypeType;
 	}
 
 	/**
-	 * Returns with an ESCG expression describing the SNOMED&nbsp;CT relationship characteristic type concept IDs associated with the current predicate.
+	 * Returns with the humane readable name of the concrete domain data type. E.g.: {@code Vitamin}.
+	 * 
+	 * @return the human readable name of the data type.
+	 */
+	public String getDataTypeLabel() {
+		return dataTypeLabel;
+	}
+
+	/**
+	 * Returns with the type of the concrete domain.
+	 * 
+	 * @return the concrete domain.
+	 */
+	public DataType getDataType() {
+		return dataType;
+	}
+
+	/**
+	 * Returns with an ESCG expression describing the SNOMED&nbsp;CT relationship characteristic type concept IDs associated with the current
+	 * predicate.
+	 * 
 	 * @return the relationship characteristic type concept IDs represented as an ESCG expression.
 	 */
 	public String getCharacteristicTypeExpression() {
-		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(type), "Predicate type was not a relationship type but " + type);
 		return characteristicTypeExpression;
 	}
 
 	/**
 	 * Returns with an ESCG expression describing the SNOMED&nbsp;CT relationship type concept IDs associated with the current predicate.
+	 * 
 	 * @return the relationship type concept IDs represented as an ESCG expression.
 	 */
 	public String getRelationshipTypeExpression() {
-		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(type), "Predicate type was not a relationship type but " + type);
 		return relationshipTypeExpression;
 	}
-	
+
 	/**
 	 * Returns with an ESCG expression describing the SNOMED&nbsp;CT relationship value concept IDs associated with the current predicate.
+	 * 
 	 * @return the relationship value concept IDs represented as an ESCG expression.
 	 */
 	public String getRelationshipValueExpression() {
-		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(type), "Predicate type was not a relationship type but " + type);
-		return relationshipvValueExpression;
+		return relationshipValueExpression;
 	}
-	
+
 	/**
 	 * Returns with the group role.
+	 * 
 	 * @return the group role.
 	 */
 	public GroupRule getGroupRule() {
-		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(type), "Predicate type was not a relationship type but " + type);
 		return groupRule;
 	}
 
 	/**
-	 * Returns with the value of the {@link #flags} property.
-	 * @return the value of the {@link #flags} property.
+	 * Returns the minimum cardinality of this MRCM predicate.
+	 * 
+	 * @return
 	 */
-	public byte getFlags() {
-		return flags;
+	public int getMinCardinality() {
+		return minCardinality;
 	}
-	
+
 	/**
-	 * Returns {@code true} if the predicate is required according to the associated MRCM rule. 
+	 * Returns the maximum cardinality of this MRCM predicate.
+	 * 
+	 * @return
+	 */
+	public int getMaxCardinality() {
+		return maxCardinality;
+	}
+
+	/**
+	 * Returns {@code true} if the predicate is required according to the associated MRCM rule.
+	 * 
 	 * @return {@code true} if the predicate is required, otherwise {@code false}.
 	 */
+	@JsonIgnore
 	public boolean isRequired() {
-		return isAnyFlagSet(MIN_CARDINALITY);
+		return minCardinality > 0;
 	}
 
 	/**
-	 * Returns {@code true} if the predicate is multiple according to the associated MRCM rule. 
+	 * Returns {@code true} if the predicate is multiple according to the associated MRCM rule.
+	 * 
 	 * @return {@code true} if the predicate is multiple, otherwise {@code false}.
 	 */
+	@JsonIgnore
 	public boolean isMultiple() {
-		return isAnyFlagSet(MAX_CARDINALITY);
-	}
-	
-	/**
-	 * Returns with the query expression wrapper representing the domain part of the MRCM attribute constraint.
-	 * @return the query expression wrapper.
-	 */
-	public String getQueryExpression() {
-		return queryExpression;
-	}
-
-	/*helper method to extract boolean properties from a byte flag*/
-	private boolean isAnyFlagSet(final int flag) {
-		return (flags & flag) != 0;
+		return maxCardinality > 1;
 	}
 
 	@Override
+	@JsonIgnore
 	public String getTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.PREDICATE_TYPE;
 	}
+
 }

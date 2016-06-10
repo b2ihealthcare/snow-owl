@@ -144,7 +144,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final LowerBound lowerBound = predicate.isRequired() ? LowerBound.REQUIRED : LowerBound.OPTIONAL;
 		final UpperBound upperBound = predicate.isMultiple()? UpperBound.MULTIPLE : UpperBound.SINGLE;
 		final DataTypeWidgetModel dataTypeWidgetModel = DataTypeWidgetModel.createRegularModel(lowerBound, upperBound, 
-				predicate.getDataTypeName(), predicate.getDataTypeType());
+				predicate.getDataTypeName(), predicate.getDataType());
 		dataTypeWidgetModels.add(dataTypeWidgetModel);
 	}
 
