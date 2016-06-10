@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.terminologyregistry.core.preferences.TerminologyExtensionConfiguration;
 
 /**
  * {@link BootstrapFragment} for creating and registering {@link TerminologyExtensionConfiguration} 
