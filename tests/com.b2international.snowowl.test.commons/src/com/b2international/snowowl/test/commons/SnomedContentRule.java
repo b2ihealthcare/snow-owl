@@ -11,9 +11,9 @@ import org.junit.rules.ExternalResource;
 
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
  * JUnit test rule to import SNOMED CT content during automated tests.
@@ -25,8 +25,8 @@ public class SnomedContentRule extends ExternalResource {
 	private File importArchive;
 	private ContentSubType contentType;
 	private CodeSystem codeSystem;
-	
-	public SnomedContentRule(CodeSystem codeSystem, String importArchivePath, ContentSubType contentType) {
+
+	public SnomedContentRule(final CodeSystem codeSystem, final String importArchivePath, final ContentSubType contentType) {
 		this.contentType = checkNotNull(contentType, "contentType");
 		this.importArchive = new File(PlatformUtil.toAbsolutePathBundleEntry(SnomedContentRule.class, importArchivePath));
 		this.codeSystem = codeSystem;
@@ -34,7 +34,8 @@ public class SnomedContentRule extends ExternalResource {
 
 	@Override
 	protected void before() throws Throwable {
-		new ImportUtil().doImport(codeSystem, "info@b2international.com", contentType, "MAIN", importArchive, true, new ConsoleProgressMonitor());
+		new ImportUtil().doImport(codeSystem, "info@b2international.com", contentType, "MAIN", importArchive, true,
+				new ConsoleProgressMonitor());
 	}
-	
+
 }
