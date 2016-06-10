@@ -93,40 +93,4 @@ public class SnomedServerStatementBrowser implements SnomedStatementBrowser {
 		return Mappings.storageKey().getValue(doc);
 	}
 
-	@Override
-	public Collection<SnomedRelationshipIndexEntry> getActiveInboundStatementsById(final IBranchPath branchPath, final String conceptId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
-		try {
-			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			final Query query = SnomedMappings.newQuery().active().relationshipDestination(Long.valueOf(conceptId)).matchAll();
-			service.search(branchPath, query, collector);
-			return createResultObjects(branchPath, collector.getDocIDs().iterator());
-		} catch (final IOException e) {
-			throw new RuntimeException("Error when querying active outbound statements of concept. ID: " + conceptId, e);
-		}
-	}
-
-	@Override
-	public Collection<SnomedRelationshipIndexEntry> getActiveOutboundStatementsById(final IBranchPath branchPath, final String conceptId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(conceptId, "SNOMED CT concept ID cannot be null.");
-		try {
-			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			final Query query = SnomedMappings.newQuery().active().relationshipSource(Long.valueOf(conceptId)).matchAll();
-			service.search(branchPath, query, collector);
-			return createResultObjects(branchPath, collector.getDocIDs().iterator());
-		} catch (final IOException e) {
-			throw new RuntimeException("Error when querying active outbound statements of concept. ID: " + conceptId, e);
-		}
-	}
-
-	private Query getRelationshipSourceOrDestinationQuery(final String conceptId) {
-		final Long longConceptId = Long.valueOf(conceptId);
-		return SnomedMappings.newQuery()
-				.relationshipSource(longConceptId)
-				.relationshipDestination(longConceptId)
-				.matchAny();
-	}
-
 }

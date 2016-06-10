@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.Collection;
-
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * Browser service for the SNOMED&nbsp;CT relationships.
@@ -43,21 +39,5 @@ public interface SnomedStatementBrowser {
 	 * @return the storage key of the relationship, or {@code -1} if the relationship does not exist.
 	 */
 	long getStorageKey(final IBranchPath branchPath, final String relationshipId);
-
-	/**
-	* Returns a collection of all active destination relationships for the specified concept.
-	* @param branchPath the branch path reference limiting visibility to a particular branch.
-	* @param conceptId the concept ID.
-	* @return a collection of active inbound statements for the specified concept
-	*/
-	Collection<SnomedRelationshipIndexEntry> getActiveInboundStatementsById(final IBranchPath branchPath, final String conceptId);
-	
-	/**
-	* Returns a collection of all active source relationships for the specified concept.
-	* @param branchPath the branch path reference limiting visibility to a particular branch.
-	* @param conceptId the concept ID.
-	* @return a collection of active outbound statements for the specified concept
-	*/
-	Collection<SnomedRelationshipIndexEntry> getActiveOutboundStatementsById(final IBranchPath branchPath, final String conceptId);
 
 }
