@@ -26,13 +26,16 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedClientPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
@@ -123,12 +126,13 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 		}
 
 		// Retrieve applicable predicates
-		final SnomedClientPredicateBrowser predicateBrowser = ApplicationContext.getServiceForClass(SnomedClientPredicateBrowser.class);
+		final SnomedPredicateBrowser predicateBrowser = ApplicationContext.getServiceForClass(SnomedPredicateBrowser.class);
+		final IBranchPath branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE);
 		final Collection<PredicateIndexEntry> predicates;
 		if (ruleParentIds.isEmpty()) {
-			predicates = predicateBrowser.getPredicates(conceptIdString, ruleRefSetId);
+			predicates = predicateBrowser.getPredicates(branchPath, conceptIdString, ruleRefSetId);
 		} else {
-			predicates = predicateBrowser.getPredicates(ruleParentIds, ruleRefSetId);
+			predicates = predicateBrowser.getPredicates(branchPath, ruleParentIds, ruleRefSetId);
 		}
 
 		// Use extended terminology browser for creating an index entry
