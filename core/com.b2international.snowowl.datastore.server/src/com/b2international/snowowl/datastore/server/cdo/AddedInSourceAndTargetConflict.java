@@ -28,20 +28,22 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 	private final CDOID sourceId;
 	private final CDOID targetId;
 	private final String message;
+	private final String type;
 
-	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message, Object...args) {
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String type, final String message, Object...args) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
+		this.type = type;
 		this.message = String.format(message, args);
 	}
 
-	public String getMessage() {
-		return message;
-	}
-	
 	@Override
 	public CDOID getID() {
 		return sourceId;
+	}
+	
+	public String getMessage() {
+		return message;
 	}
 
 	public CDOID getSourceId() {
@@ -50,6 +52,10 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 
 	public CDOID getTargetId() {
 		return targetId;
+	}
+	
+	public String getType() {
+		return type;
 	}
 
 	@Override

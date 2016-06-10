@@ -28,10 +28,12 @@ public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
+	private final String type;
 
-	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId) {
+	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId, final String type) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
+		this.type = type;
 	}
 
 	@Override
@@ -45,6 +47,10 @@ public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 
 	public CDOID getTargetId() {
 		return targetId;
+	}
+	
+	public String getType() {
+		return type;
 	}
 
 	@Override
