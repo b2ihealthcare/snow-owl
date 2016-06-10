@@ -82,11 +82,11 @@ public final class ConceptReferringMemberChangeProcessor {
 		final Iterable<Long> detachedMemberStorageKeys = CDOIDUtils.createCdoIdToLong(detachedComponents);
 		final Iterable<SnomedRefSetMemberIndexEntry> detachedMembers = searcher.get(SnomedRefSetMemberIndexEntry.class, detachedMemberStorageKeys);
 		for (SnomedRefSetMemberIndexEntry doc : detachedMembers) {
-			final SnomedRefSetType type = doc.getRefSetType(); 
+			final SnomedRefSetType type = doc.getReferenceSetType(); 
 			if (doc.isActive() && isValidType(type)) {
 				final String uuid = doc.getId();
 				final String referencedComponentId = doc.getReferencedComponentId();
-				final String refSetId = doc.getRefSetIdentifierId();
+				final String refSetId = doc.getReferenceSetId();
 				memberChanges.put(referencedComponentId, new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, type));
 			}
 		}

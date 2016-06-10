@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
 import java.util.Collection;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -29,7 +27,6 @@ import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
@@ -83,12 +80,10 @@ public class SnomedImportCDOChangeProcessor implements ICDOChangeProcessor {
 				
 			//code system goes to the 'real' index 
 			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(eClass)) {
-				final SnomedIndexServerService mainIndexService = (SnomedIndexServerService) getServiceForClass(SnomedIndexService.class);
 				mainIndexService.index(branchPath, new CodeSystemIndexMappingStrategy((CodeSystem) newObject));
 				
 			//new version as well
 			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(eClass)) {
-				final SnomedIndexServerService mainIndexService = (SnomedIndexServerService) getServiceForClass(SnomedIndexService.class);
 				mainIndexService.index(branchPath, new CodeSystemVersionIndexMappingStrategy((CodeSystemVersion) newObject));
 				
 			}

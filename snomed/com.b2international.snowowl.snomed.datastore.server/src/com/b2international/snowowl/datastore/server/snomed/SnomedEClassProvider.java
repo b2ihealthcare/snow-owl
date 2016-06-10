@@ -72,7 +72,7 @@ public class SnomedEClassProvider implements IEClassProvider {
 							final EClass value = entry.getValue();
 							if (SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER == value) {
 								final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) rev;
-								return getRefSetMemberClass(member.getRefSetType());
+								return getRefSetMemberClass(member.getReferenceSetType());
 							} else {
 								return value;
 							}

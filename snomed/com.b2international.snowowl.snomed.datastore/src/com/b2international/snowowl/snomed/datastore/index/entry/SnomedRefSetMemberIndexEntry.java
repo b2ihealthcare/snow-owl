@@ -33,6 +33,7 @@ import java.util.Set;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
+import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -60,6 +61,11 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.util.SnomedRefSetSwitch;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
@@ -69,6 +75,8 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
+@Doc
+@JsonDeserialize(builder = SnomedRefSetMemberIndexEntry.Builder.class)
 public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public static class Fields {
@@ -149,11 +157,11 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.moduleId(source.getModuleId())
 				.referencedComponentId(source.getReferencedComponentId())
 				.referencedComponentType(source.getReferencedComponentType())
-				.referenceSetId(source.getRefSetIdentifierId())
-				.referenceSetType(source.getRefSetType())
+				.referenceSetId(source.getReferenceSetId())
+				.referenceSetType(source.getReferenceSetType())
 				.released(source.isReleased())
-				.mapTargetComponentType(source.getMapTargetComponentTypeAsShort())
-				.additionalFields(source.additionalFields);
+				.mapTargetComponentType(source.getMapTargetComponentType())
+				.additionalFields(source.additionalProperties);
 	}
 	
 	public static final Builder builder(final SnomedReferenceSetMember input) {
@@ -347,13 +355,14 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	public static final class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String referencedComponentId;
-		private final Map<String, Object> additionalFields = newHashMap();
+		private final Map<String, Object> additionalProperties = newHashMap();
 
 		private String referenceSetId;
 		private SnomedRefSetType referenceSetType;
 		private short referencedComponentType;
 		private short mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 
+		@JsonCreator
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
@@ -368,13 +377,14 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 
+		@JsonAnySetter
 		public Builder additionalField(final String fieldName, final Object fieldValue) {
-			this.additionalFields.put(fieldName, fieldValue);
+			this.additionalProperties.put(fieldName, fieldValue);
 			return this;
 		}
 
 		public Builder additionalFields(final Map<String, Object> additionalFields) {
-			this.additionalFields.putAll(additionalFields);
+			this.additionalProperties.putAll(additionalFields);
 			return this;
 		}
 
@@ -425,7 +435,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 					active, 
 					effectiveTime, 
 					referencedComponentId, 
-					ImmutableMap.copyOf(additionalFields),
+					ImmutableMap.copyOf(additionalProperties),
 					referenceSetId,
 					referenceSetType,
 					referencedComponentType,
@@ -434,7 +444,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 
 	private final String referencedComponentId;
-	private final ImmutableMap<String, Object> additionalFields;
+	private final Map<String, Object> additionalProperties;
 
 	private final String referenceSetId;
 	private final SnomedRefSetType referenceSetType;
@@ -448,7 +458,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			final boolean active, 
 			final long effectiveTimeLong, 
 			final String referencedComponentId, 
-			final ImmutableMap<String, Object> additionalFields,
+			final Map<String, Object> additionalProperties,
 			final String referenceSetId,
 			final SnomedRefSetType referenceSetType,
 			final short referencedComponentType,
@@ -466,7 +476,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		checkArgument(mapTargetComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Map target component type '%s' is invalid.", referencedComponentType);
 
 		this.referencedComponentId = checkNotNull(referencedComponentId, "Reference component identifier may not be null.");
-		this.additionalFields = checkNotNull(additionalFields, "Additional field map may not be null.");
+		this.additionalProperties = checkNotNull(additionalProperties, "Additional field map may not be null.");
 		this.referenceSetId = checkNotNull(referenceSetId, "Reference set identifier may not be null.");
 		this.referenceSetType = checkNotNull(referenceSetType, "Reference set type may not be null.");
 		this.referencedComponentType = referencedComponentType;
@@ -480,6 +490,181 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return referencedComponentId;
 	}
 
+	@JsonAnyGetter
+	public Map<String, Object> getAdditionalProperties() {
+		return additionalProperties;
+	}
+
+	/**
+	 * @return the identifier of the member's reference set
+	 */
+	public String getReferenceSetId() {
+		return referenceSetId;
+	}
+
+	/**
+	 * @return the type of the member's reference set
+	 */
+	public SnomedRefSetType getReferenceSetType() {
+		return referenceSetType;
+	}
+
+	/**
+	 * @return the {@code String} terminology component identifier of the map target in this member, or
+	 *         {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT} if not known (or the reference set is not a map)
+	 */
+	public short getMapTargetComponentType() {
+		return mapTargetComponentType;
+	}
+
+	@Override
+	public String toString() {
+		return toStringHelper()
+				.add("referencedComponentId", referencedComponentId)
+				.add("additionalFields", additionalProperties)
+				.add("referenceSetType", referenceSetType)
+				.add("referencedComponentType", referencedComponentType)
+				.add("mapTargetComponentType", mapTargetComponentType)
+				.toString();
+	}
+	
+	// Model helper methods, should not be present in the JSON output
+
+	@SuppressWarnings("unchecked")
+	@JsonIgnore
+	public <T> T getValue() {
+		final DataType dataType = getRefSetPackageDataType();
+		return (T) (dataType == null ? null : SnomedRefSetUtil.deserializeValue(dataType, getStringField(Fields.DATA_VALUE))); 
+	}
+
+	@JsonIgnore
+	public DataType getRefSetPackageDataType() {
+		final Integer dataTypeOrdinal = getIntegerField(Fields.DATA_TYPE);
+		return dataTypeOrdinal == null ? null : DataType.get(dataTypeOrdinal);
+	}
+
+	@JsonIgnore
+	public String getUomComponentId() {
+		return StringUtils.valueOfOrEmptyString(getOptionalField(Fields.UNIT_ID).orNull());
+	}
+
+	@JsonIgnore
+	public String getAttributeLabel() {
+		return getStringField(Fields.ATTRIBUTE_NAME);
+	}
+
+	@JsonIgnore
+	public String getOperatorComponentId() {
+		return StringUtils.valueOfOrEmptyString(getLongField(Fields.OPERATOR_ID));
+	}
+
+	@JsonIgnore
+	public String getCharacteristicTypeId() {
+		return StringUtils.valueOfOrEmptyString(getLongField(Fields.CHARACTERISTIC_TYPE_ID));
+	}	
+
+	@JsonIgnore
+	public String getAcceptabilityId() {
+		return StringUtils.valueOfOrEmptyString(getLongField(Fields.ACCEPTABILITY_ID));
+	}
+
+	@JsonIgnore
+	public Integer getDescriptionLength() {
+		return getIntegerField(Fields.DESCRIPTION_LENGTH);
+	}
+	
+	@JsonIgnore
+	public String getDescriptionFormat() {
+		return StringUtils.valueOfOrEmptyString(getLongField(Fields.DESCRIPTION_FORMAT));
+	}
+
+	@JsonIgnore
+	public String getMapTargetComponentId() {
+		return getOptionalField(Fields.MAP_TARGET).transform(new UncheckedCastFunction<>(String.class)).orNull();
+	}
+
+	@JsonIgnore
+	public Integer getMapGroup() {
+		return getIntegerField(Fields.MAP_GROUP);
+	}
+
+	@JsonIgnore
+	public Integer getMapPriority() {
+		return getIntegerField(Fields.MAP_PRIORITY);
+	}
+
+	@JsonIgnore
+	public String getMapRule() {
+		return getStringField(Fields.MAP_RULE);
+	}
+
+	@JsonIgnore
+	public String getMapAdvice() {
+		return getStringField(Fields.MAP_ADVICE);
+	}
+	
+	@JsonIgnore
+	public String getMapCategoryId() {
+		return StringUtils.valueOfOrEmptyString(getLongField(Fields.MAP_CATEGORY_ID));
+	}
+	
+	@JsonIgnore
+	public String getCorrelationId() {
+		return StringUtils.valueOfOrEmptyString(getLongField(Fields.CORRELATION_ID));
+	}
+
+	@JsonIgnore
+	public String getMapTargetDescription() {
+		return getStringField(Fields.MAP_TARGET_DESCRIPTION);
+	}
+	
+	@JsonIgnore
+	public String getQuery() {
+		return getStringField(Fields.QUERY);
+	}
+	
+	@JsonIgnore
+	public String getTargetComponentId() {
+		return getStringField(Fields.TARGET_COMPONENT);
+	}
+	
+	@JsonIgnore
+	public String getValueId() {
+		return getStringField(Fields.VALUE_ID);
+	}
+	
+	@JsonIgnore
+	public Acceptability getAcceptability() {
+		return Acceptability.getByConceptId(getAcceptabilityId());
+	}
+	
+	@JsonIgnore
+	public RelationshipRefinability getRefinability() {
+		return RelationshipRefinability.getByConceptId(getValueId());
+	}
+	
+	@JsonIgnore
+	public InactivationIndicator getInactivationIndicator() {
+		return InactivationIndicator.getByConceptId(getValueId());
+	}
+	
+	/**
+	 * @return the {@code String} terminology component identifier of the component referenced in this member
+	 */
+	@JsonIgnore
+	public String getReferencedComponentType() {
+		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
+	}
+
+	/**
+	 * @return the {@code String} terminology component identifier of the map target in this member, or
+	 *         {@link CoreTerminologyBroker#UNSPECIFIED} if not known (or the reference set is not a map)
+	 */
+	@JsonIgnore
+	public String getMapTargetComponentTypeString() {
+		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(mapTargetComponentType);
+	}
+	
 	/**
 	 * @param fieldName the name of the additional field
 	 * @return the {@code String} value stored for the field
@@ -549,7 +734,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 
 	private Optional<Object> getOptionalField(final String fieldName) {
-		return Optional.fromNullable(additionalFields.get(fieldName));
+		return Optional.fromNullable(additionalProperties.get(fieldName));
 	}
 
 	private <T> T getField(final String fieldName, final Class<T> type) {
@@ -558,156 +743,6 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	private <T> T getField(final String fieldName, Function<Object, T> transformFunction) {
 		return getOptionalField(fieldName).transform(transformFunction).orNull();
-	}
-
-	/**
-	 * @return the identifier of the member's reference set
-	 */
-	public String getRefSetIdentifierId() {
-		return referenceSetId;
-	}
-
-	/**
-	 * @return the type of the member's reference set
-	 */
-	public SnomedRefSetType getRefSetType() {
-		return referenceSetType;
-	}
-
-	/**
-	 * @return the {@code String} terminology component identifier of the component referenced in this member
-	 */
-	public String getReferencedComponentType() {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
-	}
-
-	/**
-	 * @return the {@code String} terminology component identifier of the map target in this member, or
-	 *         {@link CoreTerminologyBroker#UNSPECIFIED} if not known (or the reference set is not a map)
-	 */
-	public String getMapTargetComponentType() {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(mapTargetComponentType);
-	}
-	
-	/**
-	 * @return the {@code String} terminology component identifier of the map target in this member, or
-	 *         {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT} if not known (or the reference set is not a map)
-	 */
-	public short getMapTargetComponentTypeAsShort() {
-		return mapTargetComponentType;
-	}
-
-	@Override
-	public String toString() {
-		return toStringHelper()
-				.add("referencedComponentId", referencedComponentId)
-				.add("additionalFields", additionalFields)
-				.add("referenceSetType", referenceSetType)
-				.add("referencedComponentType", referencedComponentType)
-				.add("mapTargetComponentType", mapTargetComponentType)
-				.toString();
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> T getValue() {
-		return (T) SnomedRefSetUtil.deserializeValue(getRefSetPackageDataType(), getStringField(Fields.DATA_VALUE)); 
-	}
-
-	public DataType getRefSetPackageDataType() {
-		return DataType.get(getIntegerField(Fields.DATA_TYPE));
-	}
-
-	public String getUomComponentId() {
-		return StringUtils.valueOfOrEmptyString(getOptionalField(Fields.UNIT_ID).orNull());
-	}
-
-	public String getAttributeLabel() {
-		return getStringField(Fields.ATTRIBUTE_NAME);
-	}
-
-	public String getOperatorComponentId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.OPERATOR_ID));
-	}
-
-	public String getCharacteristicTypeId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.CHARACTERISTIC_TYPE_ID));
-	}	
-
-	public Acceptability getAcceptability() {
-		return Acceptability.getByConceptId(getAcceptabilityId());
-	}
-
-	public String getAcceptabilityId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.ACCEPTABILITY_ID));
-	}
-
-	public Integer getDescriptionLength() {
-		return getIntegerField(Fields.DESCRIPTION_LENGTH);
-	}
-	
-	public String getDescriptionFormat() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.DESCRIPTION_FORMAT));
-	}
-
-	public String getMapTargetComponentId() {
-		return getOptionalField(Fields.MAP_TARGET).transform(new UncheckedCastFunction<>(String.class)).orNull();
-	}
-
-	public int getMapGroup() {
-		return getIntegerField(Fields.MAP_GROUP);
-	}
-
-	public int getMapPriority() {
-		return getIntegerField(Fields.MAP_PRIORITY);
-	}
-
-	public String getMapRule() {
-		return getStringField(Fields.MAP_RULE);
-	}
-
-	public String getMapAdvice() {
-		return getStringField(Fields.MAP_ADVICE);
-	}
-	
-	public String getMapCategoryId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.MAP_CATEGORY_ID));
-	}
-	
-	public String getCorrelationId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.CORRELATION_ID));
-	}
-
-	public String getMapTargetDescription() {
-		return getStringField(Fields.MAP_TARGET_DESCRIPTION);
-	}
-	
-	public String getQuery() {
-		return getStringField(Fields.QUERY);
-	}
-	
-	public String getTargetComponentId() {
-		return getStringField(Fields.TARGET_COMPONENT);
-	}
-
-	public RelationshipRefinability getRefinability() {
-		return RelationshipRefinability.getByConceptId(getValueId());
-	}
-	
-	public InactivationIndicator getInactivationIndicator() {
-		return InactivationIndicator.getByConceptId(getValueId());
-	}
-
-	public String getValueId() {
-		return getStringField(Fields.VALUE_ID);
-	}
-
-	public Map<String, Object> getAdditionalProperties() {
-		return additionalFields;
-	}
-	
-	@Deprecated
-	public String getSpecialFieldLabel() {
-		throw new UnsupportedOperationException("Special field label needs to be computed separately.");
 	}
 
 }

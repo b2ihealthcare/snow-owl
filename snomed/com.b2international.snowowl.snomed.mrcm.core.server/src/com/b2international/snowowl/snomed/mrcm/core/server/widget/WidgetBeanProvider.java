@@ -175,8 +175,8 @@ public class WidgetBeanProvider {
 					continue;
 				}
 				
-				final String mapTargetComponentType = entry.getMapTargetComponentType();
-				final short mapTargetComponentTypeShort = entry.getMapTargetComponentTypeAsShort();
+				final String mapTargetComponentType = entry.getMapTargetComponentTypeString();
+				final short mapTargetComponentTypeShort = entry.getMapTargetComponentType();
 				final String mapTargetComponentId = entry.getMapTargetComponentId();
 				
 				final MappingWidgetModel model = conceptWidgetModel.getMappingContainerWidgetModel().getFirstMatching(mapTargetComponentType);

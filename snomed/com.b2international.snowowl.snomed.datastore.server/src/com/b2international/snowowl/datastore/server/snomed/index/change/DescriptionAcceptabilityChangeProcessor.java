@@ -93,7 +93,7 @@ public class DescriptionAcceptabilityChangeProcessor {
 			
 			if (before.isActive()) {
 				final String uuid = before.getId();
-				final String refSetId = before.getRefSetIdentifierId();
+				final String refSetId = before.getReferenceSetId();
 				final String referencedComponentId = before.getReferencedComponentId();
 				final String beforeAcceptabilityId = before.getAcceptabilityId();
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
