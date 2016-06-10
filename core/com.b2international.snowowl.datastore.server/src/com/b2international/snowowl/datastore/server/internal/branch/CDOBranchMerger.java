@@ -65,6 +65,11 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 
 		return delegate.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
 	}
+	
+	@Override
+	protected void preProcess() {
+		delegate.preProcess(getSourceMap(), getTargetMap());
+	}
 
 	public void postProcess(final CDOTransaction transaction) {
 		delegate.postProcess(transaction);

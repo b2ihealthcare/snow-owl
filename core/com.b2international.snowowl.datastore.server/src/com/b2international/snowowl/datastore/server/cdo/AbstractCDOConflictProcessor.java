@@ -120,6 +120,10 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 	
 	@Override
+	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap) {
+	}
+	
+	@Override
 	public void postProcess(final CDOTransaction transaction) throws ConflictException {
 		for (final CDOID idToUnlink : idsToUnlink) {
 			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
