@@ -169,8 +169,10 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     		merger.postProcess(targetTransaction);
     		return targetTransaction;
     	} catch (CDOMerger.ConflictException e) {
-    		Map<String, Object> conflictMap = merger.handleCDOConflicts(targetTransaction);
+    		CDOTransaction sourceTransaction = connection.createTransaction(sourceBranch);
+    		Map<String, Object> conflictMap = merger.handleCDOConflicts(sourceTransaction, targetTransaction);
     		LifecycleUtil.deactivate(targetTransaction);
+    		LifecycleUtil.deactivate(sourceTransaction);
 			throw new MergeConflictException(conflictMap, String.format("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path()));
     	}
     }

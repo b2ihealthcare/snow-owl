@@ -70,7 +70,7 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 		delegate.postProcess(transaction);
 	}
 	
-	public Map<String, Object> handleCDOConflicts(CDOTransaction targetTransaction) {
-		return delegate.handleCDOConflicts(targetTransaction, getConflicts());
+	public Map<String, Object> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+		return delegate.handleCDOConflicts(sourceTransaction, targetTransaction, getConflicts());
 	}
 }

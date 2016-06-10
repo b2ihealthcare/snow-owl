@@ -108,10 +108,10 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 
 	@Override
-	public Map<String, Object> handleCDOConflicts(CDOTransaction targetTransaction, Map<CDOID, Conflict> conflicts) {
+	public Map<String, Object> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
-			Map<String, Object> results = newHashMap();
-			for (Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
+			final Map<String, Object> results = newHashMap();
+			for (final Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
 				results.put(entry.getKey().toString(), ConflictMapper.convert(entry.getValue()));
 			}
 			return results;
