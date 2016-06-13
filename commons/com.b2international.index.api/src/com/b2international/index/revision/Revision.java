@@ -73,32 +73,20 @@ public abstract class Revision implements WithId {
 		this.replacedIns = replacedIns;
 	}
 	
-	@JsonIgnore
 	public final long getStorageKey() {
 		return storageKey;
 	}
 	
-	@JsonIgnore
 	public final Collection<ReplacedIn> getReplacedIns() {
 		return ImmutableList.copyOf(replacedIns);
 	}
 
-	@JsonIgnore
 	public final String getBranchPath() {
 		return branchPath;
 	}
 	
-	@JsonIgnore
 	public final long getCommitTimestamp() {
 		return commitTimestamp;
-	}
-
-	public static Expression matchRevisionsOnBranch(RevisionBranch branch, Iterable<Long> storageKeys) {
-		return Expressions.and(Expressions.matchAnyLong(STORAGE_KEY, storageKeys), branchFilter(branch));
-	}
-	
-	public static Expression matchRevisionOnBranch(RevisionBranch branch, long storageKey) {
-		return Expressions.and(Expressions.exactMatch(STORAGE_KEY, storageKey), branchFilter(branch));
 	}
 
 	public static Expression branchFilter(RevisionBranch branch) {

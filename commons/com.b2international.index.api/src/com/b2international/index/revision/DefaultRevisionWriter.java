@@ -85,15 +85,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		for (Class<? extends Revision> type : storageKeysByType.keySet()) {
 			final Collection<Long> storageKeysToUpdate = storageKeysByType.get(type);
 			if (!storageKeysToUpdate.isEmpty()) {
-				Expression where = null;
-				for (Long storageKey : storageKeysToUpdate) {
-					final Expression matchKey = Expressions.exactMatch(Revision.STORAGE_KEY, storageKey);
-					if (where == null) {
-						where = matchKey;
-					} else {
-						where = Expressions.or(matchKey, where);
-					}
-				}
+				final Expression where = Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate);
 				queriesByType.put(type, Query.builder(type).selectAll().where(where).limit(Integer.MAX_VALUE).build());
 			}
 		}

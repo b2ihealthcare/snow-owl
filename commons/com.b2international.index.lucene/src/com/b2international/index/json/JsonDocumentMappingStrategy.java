@@ -18,18 +18,17 @@ package com.b2international.index.json;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 
-import com.b2international.index.Analyzed;
 import com.b2international.index.lucene.Fields;
-import com.b2international.index.lucene.IndexField;
-import com.b2international.index.lucene.IntIndexField;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.util.Reflections;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @since 4.7
@@ -50,60 +49,52 @@ public class JsonDocumentMappingStrategy {
 		JsonDocumentMapping._uid().addTo(doc, uid);
 		// TODO create byte fields
 		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
+		final ObjectNode node = mapper.valueToTree(object);
 		// add all other fields
-		for (Field field : mapping.getFields()) {
-			if (JsonDocumentMapping._id().fieldName().equals(field.getName())) {
+		final Iterator<Entry<String, JsonNode>> fields = node.fields();
+		while (fields.hasNext()) {
+			final Entry<String, JsonNode> field = fields.next();
+			final String name = field.getKey();
+			if (JsonDocumentMapping._id().fieldName().equals(name)) {
 				// skip _id field we add that manually
 				continue;
-			}
-			final Object value = Reflections.getValue(object, field);
-			if (Reflections.isMapType(field)) {
-				// TODO support maps
-			} else {
-				final IndexField indexField = getIndexField(field);
-				if (Fields.none() != indexField && value != null) {
-					if (value instanceof Iterable) {
-						for (Object item : (Iterable<?>) value) {
-							indexField.addTo(doc, item);
-						}
-					} else {
-						indexField.addTo(doc, convert(indexField, value));
-					}
-				}
-			}
+			}			
+			final JsonNode value = field.getValue();
+			addToDoc(doc, name, value, mapping);
 		}
 		return doc;
 	}
+
+	private void addToDoc(final Document doc, final String name, final JsonNode node, DocumentMapping mapping) {
+		switch (node.getNodeType()) {
+		case ARRAY:
+			// FIXME deeply nested objects, etc.
+			// for now only basic lists are supported
+			final Iterator<JsonNode> array = node.iterator();
+			while (array.hasNext()) {
+				addToDoc(doc, name, array.next(), mapping);
+			}
+			break;
+		case STRING:
+			// TODO get from mapping if the field is analyzed and use text fields
+			Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
+			break;
+		case BOOLEAN:
+			Fields.searchOnlyBoolField(name).addTo(doc, node.booleanValue());
+			break;
+		case NUMBER:
+			Class<?> fieldType = mapping.getField(name).getType();
+			if (fieldType == Long.class || fieldType == long.class) {
+				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
+			} else if (fieldType == Float.class || fieldType == float.class) {
+				Fields.searchOnlyFloatField(name).addTo(doc, node.floatValue());
+			} else if (fieldType == Integer.class || fieldType == int.class) {
+				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
+			}
+			break;
+		default:
+			break;
+		}
+	}
 	
-	private Object convert(IndexField indexField, Object value) {
-		if (indexField instanceof IntIndexField && value instanceof Enum) {
-			return ((Enum<?>) value).ordinal();
-		} else {
-			return value;
-		}
-	}
-
-	private IndexField getIndexField(Field field) {
-		final Class<?> fieldType = Reflections.getType(field);
-		final String fieldName = field.getName();
-		final boolean analyzed = field.isAnnotationPresent(Analyzed.class);
-		if (fieldType == String.class) {
-			return analyzed ? Fields.textField(fieldName) : Fields.stringField(fieldName);
-		} else if (fieldType == Boolean.class || fieldType == boolean.class) {
-			return Fields.boolField(fieldName);
-		} else if (fieldType == Integer.class || fieldType == int.class) {
-			return Fields.intField(fieldName);
-		} else if (fieldType == Float.class || fieldType == float.class) {
-			return Fields.floatField(fieldName);
-		} else if (fieldType == Long.class || fieldType == long.class) {
-			return Fields.longField(fieldName);
-		} else if (fieldType.isEnum()) {
-			return Fields.searchOnlyIntField(fieldName);
-		} else if (fieldType.isArray()) {
-			throw new UnsupportedOperationException("Arrays are not supported: " + field);
-		} else {
-			return Fields.none();
-		}
-	}
-
 }

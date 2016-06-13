@@ -40,13 +40,13 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	
 	@Override
 	public <T extends Revision> T get(Class<T> type, long storageKey) throws IOException {
-		final Query<T> query = Query.builder(type).selectAll().where(Revision.matchRevisionOnBranch(branch, storageKey)).build();
+		final Query<T> query = Query.builder(type).selectAll().where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey)).limit(2).build();
 		return Iterables.getOnlyElement(search(query), null);
 	}
 	
 	@Override
 	public <T extends Revision> Iterable<T> get(Class<T> type, Iterable<Long> storageKeys) throws IOException {
-		final Query<T> query = Query.builder(type).selectAll().where(Revision.matchRevisionsOnBranch(branch, storageKeys)).build();
+		final Query<T> query = Query.builder(type).selectAll().where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).build();
 		return search(query);
 	}
 
