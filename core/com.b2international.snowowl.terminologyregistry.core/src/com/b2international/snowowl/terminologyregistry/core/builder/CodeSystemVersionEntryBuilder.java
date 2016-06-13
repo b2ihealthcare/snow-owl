@@ -18,11 +18,11 @@ package com.b2international.snowowl.terminologyregistry.core.builder;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_DESCRIPTION;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_EFFECTIVE_DATE;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_IMPORT_DATE;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_LATEST_UPDATE_DATE;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_REPOSITORY_UUID;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_STORAGE_KEY;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_LATEST_UPDATE_DATE;
 
 import org.apache.lucene.document.Document;
 
@@ -37,10 +37,10 @@ public class CodeSystemVersionEntryBuilder {
 
 	public CodeSystemVersionEntry build(final Document doc) {
 		return new CodeSystemVersionEntry(
-				Mappings.longDocValuesField(VERSION_IMPORT_DATE).getValue(doc),
-				Mappings.longDocValuesField(VERSION_EFFECTIVE_DATE).getValue(doc),
-				Mappings.longDocValuesField(VERSION_LATEST_UPDATE_DATE).getValue(doc),
-				Mappings.stringDocValuesField(VERSION_DESCRIPTION).getValue(doc),
+				Mappings.longField(VERSION_IMPORT_DATE).getValue(doc),
+				Mappings.longField(VERSION_EFFECTIVE_DATE).getValue(doc),
+				Mappings.longField(VERSION_LATEST_UPDATE_DATE).getValue(doc),
+				doc.get(VERSION_DESCRIPTION),
 				doc.get(VERSION_VERSION_ID), 
 				doc.get(TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH) != null
 					? doc.get(TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH): "MAIN",
