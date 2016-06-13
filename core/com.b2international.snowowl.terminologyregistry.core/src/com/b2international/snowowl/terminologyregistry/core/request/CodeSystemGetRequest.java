@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_OID;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME;
 
 import java.io.IOException;
 
@@ -33,9 +33,8 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.BaseResourceRequest;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemEntryBuilder;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 
 /**
  * @since 4.7
@@ -77,7 +76,7 @@ final class CodeSystemGetRequest extends BaseResourceRequest<BranchContext, Code
 		} else {
 			final TopDocs topDocs = searcher.search(boolQuery, 1);
 			final Document doc = searcher.doc(topDocs.scoreDocs[0].doc);
-			return new CodeSystemEntryBuilder().build(doc);
+			return CodeSystemEntry.builder(doc).build();
 		}
 	}
 
