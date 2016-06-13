@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.index.compat.Highlighting;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.FullQuickSearchElement;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
@@ -69,8 +70,8 @@ public class DataTypeLabelQuickSearchContentProvider extends AbstractQuickSearch
 					label, 
 					false, 
 					terminologyComponentId,
-					getMatchRegions(queryExpression, label),
-					getSuffixes(queryExpression, label));
+					Highlighting.getMatchRegions(queryExpression, label),
+					Highlighting.getSuffixes(queryExpression, label));
 		}
 	};
 
