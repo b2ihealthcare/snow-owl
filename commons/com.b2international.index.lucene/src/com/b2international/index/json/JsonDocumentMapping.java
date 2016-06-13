@@ -33,11 +33,11 @@ public class JsonDocumentMapping {
 	}
 	
 	public static IndexField<String> _uid() {
-		return Fields.stringField(DocumentMapping._UID);
+		return Fields.searchOnlyStringField(DocumentMapping._UID);
 	}
 
 	public static IndexField<String> _type() {
-		return Fields.stringField(DocumentMapping._TYPE);
+		return Fields.searchOnlyStringField(DocumentMapping._TYPE);
 	}
 
 	public static Filter filterByType(String type) {
