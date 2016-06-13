@@ -68,6 +68,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -218,29 +219,24 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 			@Override
 			public Builder caseSnomedConcreteDataTypeRefSetMember(final SnomedConcreteDataTypeRefSetMember concreteDataTypeMember) {
-				builder.additionalField(Fields.ATTRIBUTE_NAME, concreteDataTypeMember.getLabel())
+				return builder.additionalField(Fields.ATTRIBUTE_NAME, concreteDataTypeMember.getLabel())
 						.additionalField(Fields.DATA_TYPE, concreteDataTypeMember.getDataType().ordinal())
 						.additionalField(Fields.DATA_VALUE, concreteDataTypeMember.getSerializedValue())
-						.additionalField(Fields.CHARACTERISTIC_TYPE_ID, Long.valueOf(concreteDataTypeMember.getCharacteristicTypeId()))
-						.additionalField(Fields.OPERATOR_ID, Long.valueOf(concreteDataTypeMember.getOperatorComponentId()));
-
-				if (concreteDataTypeMember.getUomComponentId() != null) {
-					builder.additionalField(Fields.UNIT_ID, concreteDataTypeMember.getUomComponentId());
-				}
-
-				return builder;
+						.additionalField(Fields.CHARACTERISTIC_TYPE_ID, concreteDataTypeMember.getCharacteristicTypeId())
+						.additionalField(Fields.OPERATOR_ID, concreteDataTypeMember.getOperatorComponentId())
+						.addAdditionalFieldIfNotNull(Fields.UNIT_ID, concreteDataTypeMember.getUomComponentId());
 			}
 
 			@Override
 			public Builder caseSnomedDescriptionTypeRefSetMember(final SnomedDescriptionTypeRefSetMember descriptionTypeMember) {
 				return builder
-						.additionalField(Fields.DESCRIPTION_FORMAT, Long.valueOf(descriptionTypeMember.getDescriptionFormat()))
+						.additionalField(Fields.DESCRIPTION_FORMAT, descriptionTypeMember.getDescriptionFormat())
 						.additionalField(Fields.DESCRIPTION_LENGTH, descriptionTypeMember.getDescriptionLength());
 			}
 
 			@Override
 			public Builder caseSnomedLanguageRefSetMember(final SnomedLanguageRefSetMember languageMember) {
-				return builder.additionalField(Fields.ACCEPTABILITY_ID, Long.valueOf(languageMember.getAcceptabilityId()));
+				return builder.additionalField(Fields.ACCEPTABILITY_ID, languageMember.getAcceptabilityId());
 			}
 
 			@Override
@@ -257,33 +253,24 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 			@Override
 			public Builder caseSnomedSimpleMapRefSetMember(final SnomedSimpleMapRefSetMember mapRefSetMember) {
-				builder.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType());
-				builder.additionalField(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId());
-
-				if (mapRefSetMember.getMapTargetComponentDescription() != null) {
-					builder.additionalField(Fields.MAP_TARGET_DESCRIPTION, mapRefSetMember.getMapTargetComponentDescription());
-				}
-
-				return builder;
+				return builder
+						.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType())
+						.additionalField(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
+						.addAdditionalFieldIfNotNull(Fields.MAP_TARGET_DESCRIPTION, mapRefSetMember.getMapTargetComponentDescription());
 			}
 			
 			@Override
 			public Builder caseSnomedComplexMapRefSetMember(final SnomedComplexMapRefSetMember mapRefSetMember) {
-				builder.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType());
-				builder.additionalField(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId());
-				builder.additionalField(Fields.CORRELATION_ID, Long.valueOf(mapRefSetMember.getCorrelationId()));
-
-				addAdditionalFieldIfNotNull(builder, Fields.MAP_GROUP, Integer.valueOf(mapRefSetMember.getMapGroup()));
-				addAdditionalFieldIfNotNull(builder, Fields.MAP_ADVICE, mapRefSetMember.getMapAdvice() == null ? "" : mapRefSetMember.getMapAdvice());
-				addAdditionalFieldIfNotNull(builder, Fields.MAP_PRIORITY, Integer.valueOf(mapRefSetMember.getMapPriority()));
-				addAdditionalFieldIfNotNull(builder, Fields.MAP_RULE, mapRefSetMember.getMapRule() == null ? "" : mapRefSetMember.getMapRule());
-				
-				// extended refset
-				if (mapRefSetMember.getMapCategoryId() != null) {
-					addAdditionalFieldIfNotNull(builder, Fields.MAP_CATEGORY_ID, Long.valueOf(mapRefSetMember.getMapCategoryId()));
-				}
-
-				return builder;
+				return builder
+						.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType())
+						.additionalField(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
+						.additionalField(Fields.CORRELATION_ID, mapRefSetMember.getCorrelationId())
+						.addAdditionalFieldIfNotNull(Fields.MAP_GROUP, Integer.valueOf(mapRefSetMember.getMapGroup()))
+						.addAdditionalFieldIfNotNull(Fields.MAP_ADVICE, Strings.nullToEmpty(mapRefSetMember.getMapAdvice()))
+						.addAdditionalFieldIfNotNull(Fields.MAP_PRIORITY, Integer.valueOf(mapRefSetMember.getMapPriority()))
+						.addAdditionalFieldIfNotNull(Fields.MAP_RULE, Strings.nullToEmpty(mapRefSetMember.getMapRule()))
+						// extended refset
+						.addAdditionalFieldIfNotNull(Fields.MAP_CATEGORY_ID, mapRefSetMember.getMapCategoryId());
 			}
 			
 			@Override
@@ -294,23 +281,10 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}.doSwitch(refSetMember);
 	}
 	
-	private static void addAdditionalFieldIfNotNull(final Builder builder, final String fieldName, final Object value) {
-		if (value != null) {
-			builder.additionalField(fieldName, value);
-		}
-	}
-	
 	private static Object convertValue(String rf2Field, Object value) {
 		switch (rf2Field) {
-		case SnomedRf2Headers.FIELD_ACCEPTABILITY_ID:
-		case SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID:
-		case SnomedRf2Headers.FIELD_CORRELATION_ID:
-		case SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT:
-		case SnomedRf2Headers.FIELD_MAP_CATEGORY_ID:
-		case SnomedRf2Headers.FIELD_OPERATOR_ID:
 		case SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME:
 		case SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME:
-		case SnomedRf2Headers.FIELD_UNIT_ID:
 			if (value instanceof String && !StringUtils.isEmpty((String) value)) {
 				return Long.valueOf((String) value);
 			}
@@ -377,6 +351,13 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 
+		Builder addAdditionalFieldIfNotNull(final String fieldName, final Object value) {
+			if (value != null) {
+				additionalField(fieldName, value);
+			}
+			return this;
+		}
+		
 		@JsonAnySetter
 		public Builder additionalField(final String fieldName, final Object fieldValue) {
 			this.additionalProperties.put(fieldName, fieldValue);
@@ -560,17 +541,17 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	@JsonIgnore
 	public String getOperatorComponentId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.OPERATOR_ID));
+		return getStringField(Fields.OPERATOR_ID);
 	}
 
 	@JsonIgnore
 	public String getCharacteristicTypeId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.CHARACTERISTIC_TYPE_ID));
+		return getStringField(Fields.CHARACTERISTIC_TYPE_ID);
 	}	
 
 	@JsonIgnore
 	public String getAcceptabilityId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.ACCEPTABILITY_ID));
+		return getStringField(Fields.ACCEPTABILITY_ID);
 	}
 
 	@JsonIgnore
@@ -580,7 +561,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	@JsonIgnore
 	public String getDescriptionFormat() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.DESCRIPTION_FORMAT));
+		return getStringField(Fields.DESCRIPTION_FORMAT);
 	}
 
 	@JsonIgnore
@@ -610,12 +591,12 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	@JsonIgnore
 	public String getMapCategoryId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.MAP_CATEGORY_ID));
+		return getStringField(Fields.MAP_CATEGORY_ID);
 	}
 	
 	@JsonIgnore
 	public String getCorrelationId() {
-		return StringUtils.valueOfOrEmptyString(getLongField(Fields.CORRELATION_ID));
+		return getStringField(Fields.CORRELATION_ID);
 	}
 
 	@JsonIgnore
@@ -689,6 +670,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	public Integer getIntegerField(final String fieldName) {
 		return getField(fieldName, Integer.class);
 	}
+	
 	/**
 	 * @param fieldName the name of the additional field
 	 * @return the {@code Long} value stored for the field
