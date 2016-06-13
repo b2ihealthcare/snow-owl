@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.rest.branches;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
@@ -24,9 +22,8 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
-import static com.google.common.collect.Maps.newHashMap;
+import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
 
-import java.util.Date;
 import java.util.Map;
 
 import org.junit.Test;
@@ -41,158 +38,12 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 2.0
  */
 public class SnomedMergeApiTest extends AbstractSnomedApiTest {
-
-	private final Map<String, String> symbolicNameMap = newHashMap();
-
-	// --------------------------------------------------------
-	// Symbolic component existence checks
-	// --------------------------------------------------------
-
-	private void assertConceptExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertConceptExists(branchPath, symbolicNameMap.get(symbolicName));
-	}
-
-	private void assertDescriptionExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertDescriptionExists(branchPath, symbolicNameMap.get(symbolicName));
-	}
-
-	private void assertRelationshipExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertRelationshipExists(branchPath, symbolicNameMap.get(symbolicName));
-	}
-
-	private void assertConceptNotExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertConceptNotExists(branchPath, symbolicNameMap.get(symbolicName));
-	}
-
-	private void assertDescriptionNotExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertDescriptionNotExists(branchPath, symbolicNameMap.get(symbolicName));
-	}
-
-	private void assertRelationshipNotExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertRelationshipNotExists(branchPath, symbolicNameMap.get(symbolicName));
-	}
-
-	// --------------------------------------------------------
-	// Symbolic component creation
-	// --------------------------------------------------------
-
-	private void assertComponentCreated(final IBranchPath branchPath, 
-			final String symbolicName, 
-			final SnomedComponentType componentType, 
-			final Map<?, ?> requestBody) {
-
-		symbolicNameMap.put(symbolicName, SnomedComponentApiAssert.assertComponentCreated(branchPath, componentType, requestBody));
-	}
-
-	private void assertConceptCreated(final IBranchPath branchPath, final String symbolicName) {
-		final Date creationDate = new Date();
-
-		final Map<?, ?> fsnDescription = ImmutableMap.<String, Object>builder()
-				.put("typeId", FULLY_SPECIFIED_NAME)
-				.put("term", "New FSN at " + creationDate)
-				.put("languageCode", "en")
-				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
-				.build();
-
-		final Map<?, ?> ptDescription = ImmutableMap.<String, Object>builder()
-				.put("typeId", SYNONYM)
-				.put("term", "New PT at " + creationDate)
-				.put("languageCode", "en")
-				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
-				.build();
-
-		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
-				.put("commitComment", "New concept")
-				.put("parentId", Concepts.ROOT_CONCEPT)
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
-
-		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.CONCEPT, conceptBuilder.build());
-	}
-
-	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final String typeId, final Map<?, ?> acceptabilityMap) {
-		assertDescriptionCreated(branchPath, symbolicName, Concepts.ROOT_CONCEPT, typeId, acceptabilityMap);
-	}
-	
-	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final String conceptId, final String typeId, final Map<?, ?> acceptabilityMap) {
-		final Date creationDate = new Date();
-
-		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("conceptId", conceptId)
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("typeId", typeId)
-				.put("term", "New description at " + creationDate)
-				.put("languageCode", "en")
-				.put("acceptability", acceptabilityMap)
-				.put("commitComment", "New description")
-				.build();
-
-		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.DESCRIPTION, requestBody);
-	}
-	
-	private void assertDescriptionCreated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> acceptabilityMap) {
-		assertDescriptionCreated(branchPath, symbolicName, Concepts.SYNONYM, acceptabilityMap);
-	}
-
-	private void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName) {
-		// destination - Morphologic abnormality
-		assertRelationshipCreated(branchPath, symbolicName, Concepts.ROOT_CONCEPT, "49755003");
-	}
-	
-	private void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName, final String sourceId, final String destinationId) {
-		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("sourceId", sourceId)
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("typeId", "116676008") // Associated morphology
-				.put("destinationId", destinationId)
-				.put("commitComment", "New relationship")
-				.build();
-
-		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.RELATIONSHIP, requestBody);
-	}
-
-	// --------------------------------------------------------
-	// Symbolic component updates
-	// --------------------------------------------------------
-
-	private void assertComponentCanBeUpdated(final IBranchPath branchPath, 
-			final String symbolicName, 
-			final SnomedComponentType componentType, 
-			final Map<?, ?> requestBody) {
-
-		SnomedComponentApiAssert.assertComponentCanBeUpdated(branchPath, componentType, symbolicNameMap.get(symbolicName), requestBody);
-	}
-
-	private void assertConceptCanBeUpdated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> requestBody) {
-		assertComponentCanBeUpdated(branchPath, symbolicName, SnomedComponentType.CONCEPT, requestBody);
-	}
-
-	private void assertDescriptionCanBeUpdated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> requestBody) {
-		assertComponentCanBeUpdated(branchPath, symbolicName, SnomedComponentType.DESCRIPTION, requestBody);
-	}
-
-	// --------------------------------------------------------
-	// Symbolic component deletion
-	// --------------------------------------------------------
-
-	private void assertComponentCanBeDeleted(final IBranchPath branchPath, final String symbolicName, final SnomedComponentType componentType) {
-		SnomedComponentApiAssert.assertComponentCanBeDeleted(branchPath, componentType, symbolicNameMap.get(symbolicName));
-	}
-
-	private void assertConceptCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
-		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.CONCEPT);
-	}
-
-	private void assertDescriptionCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
-		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.DESCRIPTION);
-	}
 
 	@Override
 	public void setup() {
