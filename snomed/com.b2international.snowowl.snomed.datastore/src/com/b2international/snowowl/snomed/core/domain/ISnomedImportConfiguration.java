@@ -55,9 +55,9 @@ public interface ISnomedImportConfiguration extends ISnomedRF2Configuration {
 	Date getCompletionDate();
 	
 	/**
-	 * Returns the short name of the SnomedRelease to use for the import.
+	 * Returns the short name of the Code System to use for the import.
 	 * 
-	 * @return the short name of the Snomed Release to use.
+	 * @return the short name of the Code System to use.
 	 */
 	String getCodeSystemShortName();
 

@@ -55,8 +55,6 @@ public final class ImportConfiguration {
 	public static final String TEXT_DEFINITION_FILE_PROPERTY = "textDefinitionFile";
 	public static final String VERSION_PROPERTY = "version";
 	public static final String CREATE_VERSIONS_PROPERTY = "createVersions";
-	public static final String SNOMED_RELEASE = "snomedRelease";
-	public static final String SNOMED_RELEASE_TYPE = "snomedRelease.releaseType";
 	
 	public enum ImportSourceKind {
 		ARCHIVE,
