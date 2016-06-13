@@ -18,14 +18,10 @@ package com.b2international.snowowl.snomed.mrcm.core.widget;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.LongArrayTransformedToSet;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -136,7 +132,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final DescriptionWidgetModel descriptionWidgetModel = DescriptionWidgetModel.createRegularModel(
 				lowerBound, 
 				upperBound, 
-				getIds(predicate.getDescriptionTypeId()));
+				Collections.singleton(predicate.getDescriptionTypeId()));
 		descriptionWidgetModels.add(descriptionWidgetModel);
 	}
 
@@ -186,14 +182,6 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		
 	}
 
-	private static Set<String> getIds(final long... ids) {
-		if (CompareUtils.isEmpty(ids)) {
-			return Collections.emptySet();
-		}
-		Arrays.sort(ids);
-		return new LongArrayTransformedToSet(ids);
-	}
-	
 	private static <T> List<T> newSynchronizedList() {
 		return Collections.synchronizedList(Lists.<T>newArrayList());
 	}
