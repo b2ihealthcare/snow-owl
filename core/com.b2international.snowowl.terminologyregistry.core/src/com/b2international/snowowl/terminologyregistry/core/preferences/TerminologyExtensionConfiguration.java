@@ -24,10 +24,11 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.preferences.ConfigNode;
 import com.b2international.snowowl.core.api.preferences.PreferenceBase;
 import com.b2international.snowowl.core.api.preferences.io.ConfigurationEntrySerializer;
+import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
-import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -61,22 +62,19 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 
 				
 				Collection<ICodeSystem> codeSystems = ApplicationContext.getInstance().getService(TerminologyRegistryService.class).getCodeSystems(new UserBranchPathMap());
-				ImmutableListMultimap<String, ICodeSystem> repositoryTocodeSystemMultiMap = Multimaps.index(codeSystems, new Function<ICodeSystem, String>() {
-					@Override
-					public String apply(ICodeSystem input) {
-						return input.getRepositoryUuid();
-					}
-				});
+				ImmutableListMultimap<String, ICodeSystem> repositoryToCodeSystemMultiMap = Multimaps.index(codeSystems, CodeSystemUtils.toRepositoryUuidFunction());
 				
-				ImmutableMap<String, Collection<ICodeSystem>> asMap = repositoryTocodeSystemMultiMap.asMap();
-				for (String key : asMap.keySet()) {
+				ImmutableMap<String, Collection<ICodeSystem>> repositoryToCodeSystemMap = repositoryToCodeSystemMultiMap.asMap();
+				for (String repositoryUuid : repositoryToCodeSystemMap.keySet()) {
 					
-					Iterable<PreferredTerminologyExtension> collection = Iterables.transform(asMap.get(key), new PreferredTerminologyExtension.CodeSystemToPojoFunction());
+					Iterable<PreferredTerminologyExtension> collection = FluentIterable.<ICodeSystem> from(repositoryToCodeSystemMap.get(repositoryUuid))
+																					.filter(CodeSystemUtils.mainCodeSystemPredicate())
+																					.transform(new PreferredTerminologyExtension.CodeSystemToPojoFunction());
 					
 					if (Iterables.isEmpty(collection))
 						continue;
 					
-					configNode.addChild(key, Iterables.getLast(collection));
+					configNode.addChild(repositoryUuid, Iterables.getOnlyElement(collection));
 				}
 
 				return configNode;
