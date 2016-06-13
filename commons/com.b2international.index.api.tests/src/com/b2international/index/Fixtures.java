@@ -18,11 +18,14 @@ package com.b2international.index;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
-import com.b2international.index.Doc;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
@@ -167,6 +170,49 @@ public class Fixtures {
 		@Override
 		public int hashCode() {
 			return Objects.hash(parentData);
+		}
+		
+	}
+	
+	@Doc
+	public static class DataWithMap {
+		
+		Map<String, Object> properties;
+
+		@JsonCreator
+		DataWithMap() {
+			/*JSON deserialization*/
+		}
+		
+		public DataWithMap(Map<String, Object> properties) {
+			this.properties = properties;
+		}
+		
+		@JsonAnyGetter
+		public Map<String, Object> getProperties() {
+			return properties;
+		}
+		
+		@JsonAnySetter
+		void setProperties(String key, Object value) {
+			if (properties == null) {
+				properties = Maps.newHashMap();
+			}
+			properties.put(key, value);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			DataWithMap other = (DataWithMap) obj;
+			return Objects.equals(properties, other.properties);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(properties);
 		}
 		
 	}

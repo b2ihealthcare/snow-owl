@@ -16,8 +16,7 @@
 package com.b2international.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -31,6 +30,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -39,7 +39,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(Data.class, DataWithMap.class);
 	}
 	
 	@Test
@@ -96,6 +96,19 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		// search for field1Changed value, it should return a single doc
 		final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
 		final Iterable<Data> matches = search(query);
+		assertThat(matches).hasSize(1);
+		assertThat(matches).containsOnly(data);
+	}
+	
+	@Test
+	public void indexDocumentWithMapType() throws Exception {
+		final DataWithMap data = new DataWithMap(ImmutableMap.<String, Object>of("field1", "field1Value", "field2", "field2Value"));
+		indexDocument(KEY, data);
+		assertEquals(data, getDocument(DataWithMap.class, KEY));
+		
+		
+		final Query<DataWithMap> query = Query.builder(DataWithMap.class).selectAll().where(Expressions.exactMatch("field1", "field1Value")).build();
+		final Iterable<DataWithMap> matches = search(query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
 	}
