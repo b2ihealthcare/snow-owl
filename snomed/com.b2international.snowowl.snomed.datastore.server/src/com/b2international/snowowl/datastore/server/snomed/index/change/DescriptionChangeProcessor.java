@@ -48,7 +48,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	@Override
-	protected void doProcess(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		final Map<String, Multimap<Acceptability, RefSetMemberChange>> acceptabilityChangesByDescription = new DescriptionAcceptabilityChangeProcessor().process(commitChangeSet, searcher);
 		// delete detached descriptions
 		deleteRevisions(SnomedDescriptionIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION));
