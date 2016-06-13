@@ -71,7 +71,15 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			}
 			
 			final CodeSystem codeSystem = importConfiguration.getCodeSystem();
-			out.writeObject(codeSystem);
+			out.writeString(codeSystem.getBranchPath());
+			out.writeUTF(codeSystem.getCitation());
+			out.writeString(codeSystem.getExtensionOf());
+			out.writeString(codeSystem.getIconPath());
+			out.writeUTF(codeSystem.getName());
+			out.writeString(codeSystem.getOid());
+			out.writeString(codeSystem.getOrganizationLink());
+			out.writeString(codeSystem.getPrimaryLanguage());
+			out.writeString(codeSystem.getShortName());
 			
 			monitor.worked();
 			

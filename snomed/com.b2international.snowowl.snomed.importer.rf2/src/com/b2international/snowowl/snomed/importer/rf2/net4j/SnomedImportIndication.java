@@ -32,6 +32,8 @@ import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -86,7 +88,20 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 				importConfiguration.excludeRefSet(in.readString());
 			}
 			
-			final CodeSystem codeSystem = (CodeSystem) in.readObject();
+			final CodeSystem codeSystem = CodeSystem.builder()
+					.branchPath(in.readString())
+					.citation(in.readUTF())
+					.extensionOf(in.readString())
+					.iconPath(in.readString())
+					.name(in.readUTF())
+					.oid(in.readString())
+					.link(in.readString())
+					.language(in.readString())
+					.repositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.shortName(in.readString())
+					.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+					.build();
+			
 			importConfiguration.setCodeSystem(codeSystem);
 			
 			monitor.worked();
