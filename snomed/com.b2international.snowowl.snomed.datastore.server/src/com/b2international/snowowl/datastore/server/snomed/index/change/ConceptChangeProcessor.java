@@ -35,6 +35,7 @@ import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
@@ -101,7 +102,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	}
 	
 	@Override
-	protected void doProcess(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		// process concept deletions first
 		deleteRevisions(SnomedConceptDocument.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT));
 		// collect member changes
@@ -207,18 +208,39 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		}).toSet();
 		
 		// collect dirty concepts due to change in hierarchy
-		final Set<String> iconIdChanges = newHashSet();
-		iconIdChanges.addAll(getAffectedConcepts(commitChangeSet, inferredTaxonomy));
-		iconIdChanges.addAll(getAffectedConcepts(commitChangeSet, statedTaxonomy));
-		iconIdChanges.removeAll(currentDirtyConceptIds);
+		final Set<String> conceptsToBeLoaded = newHashSet();
+		conceptsToBeLoaded.addAll(getAffectedConcepts(commitChangeSet, inferredTaxonomy));
+		conceptsToBeLoaded.addAll(getAffectedConcepts(commitChangeSet, statedTaxonomy));
+		conceptsToBeLoaded.removeAll(currentDirtyConceptIds);
+		
+		// collect inferred taxonomy changes
+		conceptsToBeLoaded.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
+		conceptsToBeLoaded.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getB(), inferredTaxonomy.getOldTaxonomy()));
+		// collect stated taxonomy changes
+		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
+		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), inferredTaxonomy.getOldTaxonomy()));
 		
 		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
-		for (String id : iconIdChanges) {
-			lookupService.getComponent(id, commitChangeSet.getView());
+		for (String id : conceptsToBeLoaded) {
+			// TODO performance issue here with lookupservice
+			dirtyConcepts.add(lookupService.getComponent(id, commitChangeSet.getView()));
 		}
+		
 		return dirtyConcepts;
 	}
 	
+	private Set<String> registerConceptAndDescendants(LongCollection relationshipIds, ISnomedTaxonomyBuilder taxonomy) {
+		final Set<String> ids = newHashSet();
+		final LongIterator relationshipIdIterator = relationshipIds.iterator();
+		while (relationshipIdIterator.hasNext()) {
+			String relationshipId = Long.toString(relationshipIdIterator.next());
+			String conceptId = taxonomy.getSourceNodeId(relationshipId);
+			ids.add(conceptId);
+			ids.addAll(LongSets.toStringSet(taxonomy.getAllDescendantNodeIds(conceptId)));
+		}
+		return ids;
+	}
+
 	private Collection<String> getAffectedConcepts(ICDOCommitChangeSet commitChangeSet, Taxonomy taxonomy) {
 		final Set<String> iconIdUpdates = newHashSet();
 		final ISnomedTaxonomyBuilder newTaxonomy = taxonomy.getNewTaxonomy();

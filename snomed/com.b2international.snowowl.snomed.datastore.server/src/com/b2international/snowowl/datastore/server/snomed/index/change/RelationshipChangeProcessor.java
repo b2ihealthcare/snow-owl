@@ -36,7 +36,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	@Override
-	protected void doProcess(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		deleteRevisions(SnomedRelationshipIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP));
 		
 		final Iterable<Relationship> relationshipsToIndex = Iterables.concat(commitChangeSet.getNewComponents(Relationship.class), commitChangeSet.getDirtyComponents(Relationship.class));

@@ -36,7 +36,7 @@ public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	@Override
-	protected void doProcess(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		deleteRevisions(SnomedRefSetMemberIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER));
 		
 		final Iterable<SnomedRefSetMember> membersToIndex = Iterables.concat(commitChangeSet.getNewComponents(SnomedRefSetMember.class), commitChangeSet.getDirtyComponents(SnomedRefSetMember.class));

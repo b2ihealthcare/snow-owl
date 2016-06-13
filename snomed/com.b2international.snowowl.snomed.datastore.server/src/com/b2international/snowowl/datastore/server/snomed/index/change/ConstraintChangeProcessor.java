@@ -25,10 +25,8 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
@@ -52,7 +50,7 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	@Override
-	public void doProcess(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) {
+	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) {
 		final Collection<AttributeConstraint> newAndDirtyConstraints = newHashSet();
 
 		for (ConceptModelPredicate predicate : Iterables.concat(commitChangeSet.getNewComponents(ConceptModelPredicate.class),
@@ -75,10 +73,10 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 	
 	private void index(AttributeConstraint constraint) {
 		final ConceptSetDefinition domain = constraint.getDomain();
-		final String queryExpression = PredicateUtils.getEscgExpression(domain);
+		final String domainExpression = PredicateUtils.getEscgExpression(domain);
 		GroupRule groupRule = GroupRule.ALL_GROUPS;
-		boolean required = false;
-		boolean multiple = false;
+		int minCardinality = -1;
+		int maxCardinality = 0;
 		
 		ConceptModelPredicate predicate = constraint.getPredicate();
 		
@@ -89,8 +87,9 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 				return;
 			}
 			predicate = cardinalityPredicate.getPredicate();
-			required = PredicateUtils.isRequired(cardinalityPredicate);
-			multiple = PredicateUtils.isMultiple(cardinalityPredicate);
+			minCardinality = cardinalityPredicate.getMinCardinality();
+			maxCardinality = cardinalityPredicate.getMaxCardinality();
+			
 			if (cardinalityPredicate.getGroupRule() != null) {
 				groupRule = cardinalityPredicate.getGroupRule();
 			} else {
@@ -98,52 +97,38 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 			}
 		}
 
-		// reindex entire attribute constraint
-		PredicateIndexEntry
-			.clear()
-			.storageKey(CDOIDUtil.getLong(constraint.cdoID()))
-			.type(SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID)
-			.predicateQueryExpression(queryExpression)
-			.predicateRequired(required)
-			.predicateMultiple(multiple);
+		final PredicateIndexEntry.Builder doc;
 		
 		if (predicate instanceof DescriptionPredicate) {
-			createDescriptionPredicateDocument(doc, (DescriptionPredicate) predicate);
+			doc = PredicateIndexEntry.descriptionBuilder().descriptionType(((DescriptionPredicate) predicate).getTypeId());
 		} else if (predicate instanceof ConcreteDomainElementPredicate) {
-			createConcreteDomainPredicateDocument(doc, (ConcreteDomainElementPredicate) predicate);
+			final ConcreteDomainElementPredicate dataTypePredicate = (ConcreteDomainElementPredicate) predicate;
+			doc = PredicateIndexEntry.dataTypeBuilder()
+					.dataTypeLabel(dataTypePredicate.getLabel())
+					.dataTypeName(dataTypePredicate.getName())
+					.dataType(dataTypePredicate.getType());
 		} else if (predicate instanceof RelationshipPredicate) {
-			createRelationshipPredicateDocument(doc, (RelationshipPredicate) predicate, groupRule);
+			final RelationshipPredicate relationshipPredicate = (RelationshipPredicate) predicate;
+			final String characteristicTypeConceptId = relationshipPredicate.getCharacteristicTypeConceptId();
+			final String type = PredicateUtils.getEscgExpression(relationshipPredicate.getAttribute());
+			final String valueType = PredicateUtils.getEscgExpression(relationshipPredicate.getRange());
+			final String characteristicType = Strings.isNullOrEmpty(characteristicTypeConceptId) ? "<" + Concepts.CHARACTERISTIC_TYPE : "<<" + characteristicTypeConceptId;
+
+			doc = PredicateIndexEntry.relationshipBuilder()
+				.relationshipTypeExpression(type)
+				.relationshipValueExpression(valueType)
+				.characteristicTypeExpression(characteristicType)
+				.groupRule(groupRule);
 		} else {
 			throw new IllegalArgumentException("Cannot index constraint " + constraint);
 		}
+		
+		doc.id(CDOIDUtil.getLong(constraint.cdoID()))
+			.domain(domainExpression)
+			.minCardinality(minCardinality)
+			.maxCardinality(maxCardinality);
+		
+		indexRevision(constraint.cdoID(), doc.build());
 	}
 
-	public static void createConcreteDomainPredicateDocument(SnomedDocumentBuilder doc, ConcreteDomainElementPredicate predicate) {
-		doc
-			.predicateType(PredicateType.DATATYPE)
-			.predicateDataTypeLabel(predicate.getLabel())
-			.predicateDataTypeName(predicate.getName())
-			.predicateDataType(predicate.getType());
-	}
-
-	public static void createDescriptionPredicateDocument(SnomedDocumentBuilder doc, DescriptionPredicate predicate) {
-		doc
-			.predicateType(PredicateType.DESCRIPTION)
-			.predicateDescriptionTypeId(Long.valueOf(predicate.getTypeId()));
-	}
-
-	public static void createRelationshipPredicateDocument(SnomedDocumentBuilder doc, RelationshipPredicate predicate, GroupRule groupRule) {
-		final String characteristicTypeConceptId = predicate.getCharacteristicTypeConceptId();
-		final String type = PredicateUtils.getEscgExpression(predicate.getAttribute());
-		final String valueType = PredicateUtils.getEscgExpression(predicate.getRange());
-		final String characteristicType = Strings.isNullOrEmpty(characteristicTypeConceptId) ? "<" + Concepts.CHARACTERISTIC_TYPE : "<<" + characteristicTypeConceptId;
-
-		doc
-			.predicateType(PredicateType.RELATIONSHIP)
-			.predicateRelationshipTypeExpression(type)
-			.predicateRelationshipValueExpression(valueType)
-			.predicateCharacteristicTypeExpression(characteristicType)
-			.predicateGroupRule(groupRule.name());
-	}
-	
 }
