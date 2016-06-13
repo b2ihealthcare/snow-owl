@@ -148,10 +148,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		final String codeSystemShortName = configuration.getCodeSystemShortName();
 		final CodeSystemEntry codeSystemEntry = getCodeSystem(codeSystemShortName);
 		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(codeSystemShortName)) {
-			throw new BadRequestException("Importing a release of SNOMED CT from an archive "
-					+ "is prohibited when the given Code System is not available. "
-					+ "Please perform either a new Code System creation before "
-					+ "import or use INT Code System.");
+			throw new BadRequestException("Importing a release of SNOMED CT from an archive is prohibited "
+					+ "when SNOMED CT extension with short name %s does not exist. Please create it before "
+					+ "importing content with this configuration, or use SNOMEDCT for importing the "
+					+ "International Release; in this case the corresponding code system will be created automatically.", 
+					codeSystemShortName);
 		}
 		
 		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
