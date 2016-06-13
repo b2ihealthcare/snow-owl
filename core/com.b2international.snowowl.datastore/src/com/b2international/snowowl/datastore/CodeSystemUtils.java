@@ -306,6 +306,22 @@ public class CodeSystemUtils {
 		return new ActiveCodeSystemPredicate(branchPathMap, repositoryUuid);
 	}
 	
+	public static Predicate<ICodeSystem> mainCodeSystemPredicate() {
+		return new MainCodeSystemPredicate();
+	}	
+	
+	public static Function<ICodeSystem, String> toShortNameFunction() {
+		return new CodeSystemToShortNameFunction();
+	}
+
+	public static Function<ICodeSystem, String> toRepositoryUuidFunction() {
+		return new CodeSystemToRepositoryUuidFunction();
+	}
+
+	public static Function<ICodeSystem, String> toBranchPathFunction() {
+		return new CodeSystemToBranchPathFunction();
+	}
+	
 	/*returns with the connection for the given repository UUID*/
 	private static ICDOConnection getConnection(final String repositoryUuid) {
 		return getConnectionManager().getByUuid(repositoryUuid);
