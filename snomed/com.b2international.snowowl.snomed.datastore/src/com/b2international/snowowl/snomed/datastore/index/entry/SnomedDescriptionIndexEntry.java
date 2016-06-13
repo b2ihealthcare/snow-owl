@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchText;
 import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
@@ -24,9 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.eclipse.emf.cdo.server.IStoreAccessor.QueryResourcesContext.ExactMatch;
-
 import java.util.Set;
 
 import com.b2international.index.Doc;
@@ -124,6 +124,18 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 		private Expressions() {
 		}
 
+		public static Expression term(String term) {
+			return matchText(Fields.TERM, term);
+		}
+		
+		public static Expression termPrefix(String term) {
+			return matchTextPrefix(Fields.TERM, term);
+		}
+		
+		public static Expression fuzzyTerm(String term) {
+			return matchTextFuzzy(Fields.TERM, term);
+		}
+		
 		public static Expression concept(String conceptId) {
 			return concepts(Collections.singleton(conceptId));
 		}
@@ -247,7 +259,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 		}
 
 		public SnomedDescriptionIndexEntry build() {
-			return new SnomedDescriptionIndexEntry(id,
+			final SnomedDescriptionIndexEntry doc = new SnomedDescriptionIndexEntry(id,
 					term,
 					moduleId,
 					released, 
@@ -260,6 +272,11 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
 					preferredIn, acceptableIn);
+			doc.setBranchPath(branchPath);
+			doc.setCommitTimestamp(commitTimestamp);
+			doc.setStorageKey(storageKey);
+			doc.setReplacedIns(replacedIns);
+			return doc;
 		}
 	}
 

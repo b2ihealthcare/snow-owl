@@ -169,6 +169,12 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 
 		public PredicateIndexEntry build() {
 			final PredicateIndexEntry doc = new PredicateIndexEntry(id, domain, type, minCardinality, maxCardinality);
+			
+			doc.setBranchPath(branchPath);
+			doc.setCommitTimestamp(commitTimestamp);
+			doc.setStorageKey(storageKey);
+			doc.setReplacedIns(replacedIns);
+			
 			switch (type) {
 			case DESCRIPTION:
 				doc.descriptionTypeId = checkNotNull(descriptionTypeId, "descriptionTypeId");

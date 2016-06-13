@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
@@ -53,6 +55,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertDocEquals(member, actual);
 	}
 	
@@ -70,9 +73,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.additionalField(Fields.MAP_TARGET, "A01")
 				.build();
 			
-			indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
-			final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
-			assertDocEquals(member, actual);
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertDocEquals(member, actual);
 	}
 	
 }

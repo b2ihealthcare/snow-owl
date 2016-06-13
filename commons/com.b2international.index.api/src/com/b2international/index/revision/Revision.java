@@ -23,7 +23,6 @@ import java.util.Collections;
 import com.b2international.index.WithId;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 
 
@@ -48,7 +47,7 @@ public abstract class Revision implements WithId {
 	private Collection<ReplacedIn> replacedIns = Collections.emptySet();
 	
 	@Override
-	public void set_id(String _id) {
+	public final void set_id(String _id) {
 		this._id = _id;
 	}
 	
@@ -57,19 +56,19 @@ public abstract class Revision implements WithId {
 		return checkNotNull(_id);
 	}
 	
-	void setBranchPath(String branchPath) {
+	protected final void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
 	}
 	
-	void setCommitTimestamp(long createdTimestamp) {
+	protected final void setCommitTimestamp(long createdTimestamp) {
 		this.commitTimestamp = createdTimestamp;
 	}
 	
-	void setStorageKey(long storageKey) {
+	protected final void setStorageKey(long storageKey) {
 		this.storageKey = storageKey;
 	}
 	
-	void setReplacedIns(Collection<ReplacedIn> replacedIns) {
+	protected final void setReplacedIns(Collection<ReplacedIn> replacedIns) {
 		this.replacedIns = replacedIns;
 	}
 	

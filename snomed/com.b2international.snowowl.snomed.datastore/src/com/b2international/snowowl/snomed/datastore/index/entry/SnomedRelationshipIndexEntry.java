@@ -233,7 +233,7 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 		}
 
 		public SnomedRelationshipIndexEntry build() {
-			return new SnomedRelationshipIndexEntry(id,
+			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(id,
 					label,
 					moduleId, 
 					released, 
@@ -247,6 +247,11 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 					group, 
 					unionGroup, 
 					destinationNegated);
+			doc.setBranchPath(branchPath);
+			doc.setCommitTimestamp(commitTimestamp);
+			doc.setStorageKey(storageKey);
+			doc.setReplacedIns(replacedIns);
+			return doc;
 		}
 	}
 

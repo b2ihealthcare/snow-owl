@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -62,7 +64,9 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 				.unionGroup(1)
 				.build();
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, relationship);
-		assertDocEquals(relationship, getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, STORAGE_KEY1));
+		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertDocEquals(relationship, actual);
 	}
 	
 }

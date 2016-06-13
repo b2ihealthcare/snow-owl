@@ -20,11 +20,13 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.ReplacedIn;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
@@ -69,6 +71,12 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		protected String label;
 		protected String iconId;
 		
+		// XXX only for JSON deserialization
+		protected long storageKey;
+		protected String branchPath;
+		protected long commitTimestamp;
+		protected Collection<ReplacedIn> replacedIns = Collections.emptyList();
+		
 		public B id(final String id) {
 			this.id = id;
 			return getSelf();
@@ -86,7 +94,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 			this.iconId = iconId;
 			return getSelf();
 		}
-
 		
 		protected abstract B getSelf();
 		

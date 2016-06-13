@@ -428,7 +428,7 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 		
 		public SnomedRefSetMemberIndexEntry build() {
-			return new SnomedRefSetMemberIndexEntry(id,
+			final SnomedRefSetMemberIndexEntry doc = new SnomedRefSetMemberIndexEntry(id,
 					label,
 					moduleId, 
 					released, 
@@ -440,6 +440,11 @@ public class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 					referenceSetType,
 					referencedComponentType,
 					mapTargetComponentType);
+			doc.setBranchPath(branchPath);
+			doc.setCommitTimestamp(commitTimestamp);
+			doc.setStorageKey(storageKey);
+			doc.setReplacedIns(replacedIns);
+			return doc;
 		}
 	}
 
