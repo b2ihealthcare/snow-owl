@@ -89,16 +89,16 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			}
 			
 			final CodeSystem codeSystem = CodeSystem.builder()
-					.branchPath(in.readString())
+					.branchPath(in.readUTF())
 					.citation(in.readUTF())
-					.extensionOf(in.readString())
-					.iconPath(in.readString())
+					.extensionOf(in.readUTF())
+					.iconPath(in.readUTF())
 					.name(in.readUTF())
-					.oid(in.readString())
-					.link(in.readString())
-					.language(in.readString())
+					.oid(in.readUTF())
+					.link(in.readUTF())
+					.language(in.readUTF())
 					.repositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.shortName(in.readString())
+					.shortName(in.readUTF())
 					.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 					.build();
 			
