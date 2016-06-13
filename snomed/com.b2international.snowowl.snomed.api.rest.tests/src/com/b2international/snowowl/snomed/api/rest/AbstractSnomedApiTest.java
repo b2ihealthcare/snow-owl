@@ -45,12 +45,12 @@ public abstract class AbstractSnomedApiTest {
 		
 		@Override
 		protected void starting(Description description) {
-			System.out.println("=====Start of " + description + "=====");
+			System.out.println("===== Start of " + description + " =====");
 		}
 		
 		@Override
 		protected void finished(Description description) {
-			System.out.println("=====End of " + description + "=====");
+			System.out.println("===== End of " + description + " =====");
 		}
 		
 	};
