@@ -19,7 +19,6 @@ import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 
-import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.annotations.Client;
@@ -154,7 +153,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a set of concept IDs of all active descendant concepts.
 	 */
 	public LongSet getAllSubTypeIds(final long conceptId) {
-		return getWrappedService().getAllSubTypeIds(getBranchPath(), conceptId);
+		return getWrappedBrowser().getAllSubTypeIds(getBranchPath(), conceptId);
 	}
 
 	/**
@@ -163,7 +162,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a set of concept IDs of the active direct ancestor concepts.
 	 */
 	public LongSet getSuperTypeIds(final long conceptId) {
-		return getWrappedService().getSuperTypeIds(getBranchPath(), conceptId);
+		return getWrappedBrowser().getSuperTypeIds(getBranchPath(), conceptId);
 	}
 
 	/**
@@ -172,7 +171,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a set of concept IDs of all active ancestor concepts.
 	 */
 	public LongSet getAllSuperTypeIds(final long conceptId) {
-		return getWrappedService().getAllSuperTypeIds(getBranchPath(), conceptId);
+		return getWrappedBrowser().getAllSuperTypeIds(getBranchPath(), conceptId);
 	}
 
 	/**
@@ -182,28 +181,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a map of concept IDs and storage keys.
 	 */
 	public LongKeyLongMap getConceptIdToStorageKeyMap(final IBranchPath branchPath) {
-		return getWrappedService().getConceptIdToStorageKeyMap(getBranchPath());
-	}
-
-	/**
-	 * Returns all active SNOMED&nbsp;CT concept identifiers from the ontology.
-	 * @param branchPath the branch path.
-	 * @return a collection of concept IDs for all active concepts.;
-	 */
-	public LongCollection getAllActiveConceptIds() {
-		return getWrappedService().getAllActiveConceptIds(getBranchPath());
-	}
-
-	/**
-	 * Returns {@code true} only and if only the specified SNOMED&nbsp;CT <b>core</b> component ID does not
-	 * exist in the store. Otherwise it returns with {@code false}.
-	 * <p><b>NOTE:&nbsp;</b>this method is not aware of checking reference set and reference set members IDs.
-	 * In case of checking *NON* core component IDs, this method returns {@code false}.
-	 * @param componentId the SNOMED&nbsp;CT core component ID to check.
-	 * @return {@code true} if the ID is unique, otherwise returns with {@code false}.
-	 */
-	public boolean isUniqueId(final String componentId) {
-		return getWrappedService().isUniqueId(getBranchPath(), componentId);
+		return getWrappedBrowser().getConceptIdToStorageKeyMap(getBranchPath());
 	}
 
 	/**
@@ -213,7 +191,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 */
 	@Override
 	public boolean exists(final String conceptId) {
-		return getWrappedService().exists(getBranchPath(), conceptId);
+		return getWrappedBrowser().exists(getBranchPath(), conceptId);
 	}
 
 	/**
@@ -223,43 +201,12 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return the sub types with additional child flag
 	 */
 	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildInformation(final SnomedConceptDocument concept) {
-		return getWrappedService().getSubTypesWithChildFlag(getBranchPath(), concept);
-	}
-
-	/**
-	 * Returns with the depth of the current concept from the taxonomy.
-	 * The depth of a node is the number of edges from the node to the tree's root node.
-	 * <br>A root node will have a depth of 0.
-	 * @param conceptId the concept ID of the focus concept/node.
-	 * @return the height of the node in the taxonomy.
-	 */
-	public int getDepth(final String conceptId) {
-		return getWrappedService().getDepth(getBranchPath(), conceptId);
+		return getWrappedBrowser().getSubTypesWithChildFlag(getBranchPath(), concept);
 	}
 	
-	/**
-	 * Returns with the height of the current concept from the taxonomy.
-	 * The height of a node is the number of edges on the longest path from the node to a leaf.
-	 * <br>A leaf node will have a height of 0.
-	 * @param conceptId the concept ID of the focus concept/node.
-	 * @return the height of the node in the taxonomy.
-	 */
-	public int getHeight(final String conceptId) {
-		return getWrappedService().getHeight(getBranchPath(), conceptId);
+	@Override
+	public SnomedTerminologyBrowser getWrappedBrowser() {
+		return (SnomedTerminologyBrowser) super.getWrappedBrowser();
 	}
 	
-	private SnomedTerminologyBrowser getWrappedService() {
-		return (SnomedTerminologyBrowser) getWrappedBrowser();
-	}
-	
-		private boolean containsSubType(Collection<SnomedConceptDocument> proximalPrimitiveSuperTypes, SnomedConceptDocument conceptToTest) {
-		Collection<SnomedConceptDocument> conceptSubTypes = getSubTypes(conceptToTest);
-		for (SnomedConceptDocument conceptMini : proximalPrimitiveSuperTypes) {
-			if (conceptSubTypes.contains(conceptMini)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 }
