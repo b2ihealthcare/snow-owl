@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -25,15 +24,9 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.index.revision.RevisionWriter;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 /**
  * @since 4.3
@@ -53,22 +46,6 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 		return description;
 	}
 	
-	@Override
-	public final void process(ICDOCommitChangeSet commitChangeSet, RevisionWriter writer) throws IOException {
-		final RevisionSearcher searcher = writer.searcher();
-		doProcess(commitChangeSet, searcher);
-		
-		// execute document updates and deletes after the commit change set processing
-		for (Class<? extends Revision> type : ImmutableMultimap.copyOf(deletions).keySet()) {
-			writer.remove(type, Sets.newHashSet(deletions.get(type)));
-		}
-		
-		writer.putAll(ImmutableMap.copyOf(mappings));
-	}
-
-	protected void doProcess(ICDOCommitChangeSet commitChangeSet, final RevisionSearcher searcher) throws IOException {
-	}
-
 	protected final void indexRevision(CDOID storageKey, Revision revision) {
 		indexRevision(CDOIDUtil.getLong(storageKey), revision);
 	}
@@ -79,6 +56,16 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 	
 	protected final void deleteRevisions(Class<? extends Revision> type, Collection<CDOID> storageKeys) {
 		deletions.putAll(type, CDOIDUtils.createCdoIdToLong(storageKeys));
+	}
+	
+	@Override
+	public Map<Long, Revision> getMappings() {
+		return mappings;
+	}
+	
+	@Override
+	public Multimap<Class<? extends Revision>, Long> getDeletions() {
+		return deletions;
 	}
 	
 }
