@@ -22,6 +22,7 @@ import static com.b2international.snowowl.terminologyregistry.core.index.Termino
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_STORAGE_KEY;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_LATEST_UPDATE_DATE;
 
 import org.apache.lucene.document.Document;
 
@@ -38,7 +39,7 @@ public class CodeSystemVersionEntryBuilder {
 		return new CodeSystemVersionEntry(
 				Mappings.longDocValuesField(VERSION_IMPORT_DATE).getValue(doc),
 				Mappings.longDocValuesField(VERSION_EFFECTIVE_DATE).getValue(doc),
-				Mappings.longDocValuesField(VERSION_EFFECTIVE_DATE).getValue(doc),
+				Mappings.longDocValuesField(VERSION_LATEST_UPDATE_DATE).getValue(doc),
 				Mappings.stringDocValuesField(VERSION_DESCRIPTION).getValue(doc),
 				doc.get(VERSION_VERSION_ID), 
 				doc.get(TerminologyRegistryIndexConstants.VERSION_PARENT_BRANCH_PATH) != null
