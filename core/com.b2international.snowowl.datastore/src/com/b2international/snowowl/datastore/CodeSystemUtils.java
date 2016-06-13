@@ -16,9 +16,11 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Comparator;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
@@ -30,14 +32,21 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOManagedItem;
+import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 /**
  * Contains various continent methods for {@link ICodeSystem} and {@link ICodeSystemVersion}.
@@ -46,6 +55,103 @@ import com.google.common.cache.LoadingCache;
 public class CodeSystemUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CodeSystemUtils.class);
+
+	/**
+	 * Predicate for selecting those {@link ICodeSystem}s:
+	 * <li/> that are residing in the repository denoted by the given repositoryUuid
+	 * <li/> whose branch path matches the active branch's path.
+	 * 
+	 * Note: if the active branch is a task branch, this predicate will ignore the last segment (task id part) of the active branch path.
+	 * @author endre
+	 */
+	private static final class ActiveCodeSystemPredicate implements Predicate<ICodeSystem> {
+		
+		private final IBranchPathMap branchPathMap;
+		private final String repositoryUuid;
+
+		private ActiveCodeSystemPredicate(IBranchPathMap branchPathMap, String repositoryUuid) {
+			this.branchPathMap = branchPathMap;
+			this.repositoryUuid = repositoryUuid;
+		}
+
+		@Override
+		public boolean apply(ICodeSystem input) {
+			IBranchPath activeBranchPath = branchPathMap.getBranchPath(repositoryUuid);
+			//ignore last segment if we are on a task branch 
+			if (getServiceForClass(TaskManager.class).hasActiveTask())
+				return activeBranchPath.getParentPath().equals(input.getBranchPath());
+			
+			return activeBranchPath.getPath().equals(input.getBranchPath());
+		}
+	}
+
+	private static final class SameRepositoryCodeSystemPredicate implements Predicate<ICodeSystem> {
+	
+		private final String repositoryUUID;
+
+		private SameRepositoryCodeSystemPredicate(String repositoryUUID) {
+			this.repositoryUUID = Preconditions.checkNotNull(repositoryUUID, "repository UUID cannot be null");
+		}
+
+		@Override
+		public boolean apply(ICodeSystem input) {
+			return input.getRepositoryUuid().equals(repositoryUUID);
+		}
+	}
+	
+	/**
+	 * Predicate, which selects code systems, that represent the MAIN for its terminology.
+	 * In other words: Predicate, which doesn't let extension code systems through.
+	 * @author endre
+	 */
+	private static final class MainCodeSystemPredicate implements Predicate<ICodeSystem> {
+		
+		@Override
+		public boolean apply(ICodeSystem input) {
+			return BranchPathUtils.isMain(input.getBranchPath());
+		}
+		
+	}
+	
+	/**
+	 * Function to turn {@link ICodeSystem} into it's short name. 
+	 * @author endre
+	 */
+	public static final class CodeSystemToShortNameFunction implements Function<ICodeSystem, String> {
+	
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getShortName();
+		}
+		
+	}
+
+	/**
+	 * Function to turn {@link ICodeSystem} into it's repository Uuid. 
+	 * @author endre
+	 */
+	public static final class CodeSystemToRepositoryUuidFunction implements Function<ICodeSystem, String> {
+		
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getRepositoryUuid();
+		}
+	}
+
+	
+	/**
+	 * Function to turn {@link ICodeSystem} into it's  branch path string. 
+	 * @author endre
+	 */
+	public static final class CodeSystemToBranchPathFunction implements Function<ICodeSystem, String> {
+		
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getBranchPath();
+		}
+	}
+
+
 	
 	private static final LoadingCache<String, ICDOManagedItem<?>> TOOLING_ID_MANAGED_ITEM_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<String, ICDOManagedItem<?>>() {
 		@Override public ICDOManagedItem<?> load(final String toolingId) throws Exception {
@@ -68,10 +174,10 @@ public class CodeSystemUtils {
 	/**
 	 * Comparator for sorting repository UUIDs in an alphabetic order based on the corresponding tooling feature name. 
 	 */
-	public static final Comparator<String> TOOLING_FEATURE_NAME_COMPARATOR = new Comparator<String>() {
-		public int compare(final String leftUuid, final String rightUuid) {
-			final String leftName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(leftUuid));
-			final String rightName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(rightUuid));
+	public static final Comparator<ICodeSystem> TOOLING_FEATURE_NAME_COMPARATOR = new Comparator<ICodeSystem>() {
+		public int compare(final ICodeSystem leftCodeSystem, final ICodeSystem rightCodeSystem) {
+			final String leftName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(leftCodeSystem.getRepositoryUuid()));
+			final String rightName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(rightCodeSystem.getRepositoryUuid()));
 			return leftName.compareToIgnoreCase(rightName);
 		}
 	};
@@ -101,6 +207,59 @@ public class CodeSystemUtils {
 		}
 		
 		return null;
+	}
+
+	/**
+	 * Checks if the branchPath passed-in, corresponds to a version's branch path. If so, it returns the argument wrapped in an {@link Optional}.
+	 * If not, it iterates upward on the branch's parentage, checking if parent's path is a version's branchPath.
+	 * If none of the branchPaths in the parentage correspond to a version branchPath, it returns {@link Optional#absent()}.
+	 * @param activeBranchPath
+	 * @return
+	 */
+	public static Optional<IBranchPath> tryFindVersionBranchPath(final IBranchPath branchPath) {
+		if (BranchPathUtils.isMain(branchPath))
+			return Optional.absent();
+		
+		if(isParsableDate(branchPath.lastSegment())) {
+			return Optional.of(branchPath);
+		}
+		
+		return tryFindVersionBranchPath(branchPath.getParent());
+	}
+	
+	
+
+	private static boolean isParsableDate(String dateString) {
+		try {
+			Dates.parse(dateString);
+			return true;
+		} catch (SnowowlRuntimeException | NullPointerException e) {
+			return false;
+		}
+	}
+	
+	public static ICodeSystem findMatchingCodeSystem(String branchPath, String repositoryUuid) {
+		return findMatchingCodeSystem(BranchPathUtils.createPath(branchPath), repositoryUuid);
+	}
+	
+	
+	public static ICodeSystem findMatchingCodeSystem(IBranchPath branchPath, String repositoryUuid) {
+		
+		// branchPath can be: main, task branch, version/tag branch Path, extension branchPath 
+		Iterable<ICodeSystem> codeSystemsInRepositoryUuid = Iterables.filter(getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap()), sameRepositoryCodeSystemPredicate(repositoryUuid));
+		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepositoryUuid, new CodeSystemToBranchPathFunction());
+
+//		if (branchPathToCodeSystemMap.containsKey(branchPath.getPath()))
+//			return branchPathToCodeSystemMap.get(branchPath.getPath());
+
+		for (IBranchPath path = branchPath; !isMain(path); path = path.getParent()) {
+			if (branchPathToCodeSystemMap.containsKey(path.getPath())) {
+				return branchPathToCodeSystemMap.get(path.getPath());
+			}
+		}
+
+		// falling back to the repositoryUUID's main code system.
+		return Iterables.find(codeSystemsInRepositoryUuid, new MainCodeSystemPredicate()); 
 	}
 	
 	/**
@@ -170,6 +329,30 @@ public class CodeSystemUtils {
 		return getConnection(repositoryUuid).getSnowOwlTerminologyComponentId();
 	}
 	
+	public static Predicate<ICodeSystem> sameRepositoryCodeSystemPredicate(final String repositoryUUID) {
+		return new SameRepositoryCodeSystemPredicate(repositoryUUID);
+	}
+	
+	public static Predicate<ICodeSystem> activeCodeSystemPredicate(final IBranchPathMap branchPathMap, final String repositoryUuid) {
+		return new ActiveCodeSystemPredicate(branchPathMap, repositoryUuid);
+	}
+	
+	public static Predicate<ICodeSystem> mainCodeSystemPredicate() {
+		return new MainCodeSystemPredicate();
+	}	
+	
+	public static Function<ICodeSystem, String> toShortNameFunction() {
+		return new CodeSystemToShortNameFunction();
+	}
+
+	public static Function<ICodeSystem, String> toRepositoryUuidFunction() {
+		return new CodeSystemToRepositoryUuidFunction();
+	}
+
+	public static Function<ICodeSystem, String> toBranchPathFunction() {
+		return new CodeSystemToBranchPathFunction();
+	}
+	
 	/*returns with the connection for the given repository UUID*/
 	private static ICDOConnection getConnection(final String repositoryUuid) {
 		return getConnectionManager().getByUuid(repositoryUuid);
@@ -178,6 +361,16 @@ public class CodeSystemUtils {
 	/*returns with the connection manager service*/
 	private static ICDOConnectionManager getConnectionManager() {
 		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
+	}
+	
+	/*returns with the task manager service*/
+	private static TaskManager getTaskManager() {
+		return ApplicationContext.getInstance().getService(TaskManager.class);
+	}
+	
+	/*returns with the terminology registry service*/
+	private static TerminologyRegistryService getTerminologyRegistryService() {
+		return ApplicationContext.getInstance().getService(TerminologyRegistryService.class);
 	}
 	
 	/*applies the given function on a CDO manager item which application specific tooling ID equals with the argument.
@@ -197,5 +390,4 @@ public class CodeSystemUtils {
 		}
 		
 	}
-	
 }
