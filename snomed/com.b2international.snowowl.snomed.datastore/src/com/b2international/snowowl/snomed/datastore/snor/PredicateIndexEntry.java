@@ -382,7 +382,7 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	 */
 	@JsonIgnore
 	public boolean isMultiple() {
-		return maxCardinality > 1;
+		return maxCardinality == -1;
 	}
 
 	@Override
