@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -211,8 +212,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		} else {
 			try {
 				ObjectMapper mapper = new ObjectMapper();
-				@SuppressWarnings("unchecked")
-				Map<String, String> metadataMap = mapper.readValue(metadataFile, Map.class);
+				final Map<String, String> metadataMap = mapper.readValue(metadataFile, new TypeReference<Map<String, String>>() {});
 				codeSystem = createCodeSystem(metadataMap);
 			} catch (IOException e) {
 				interpreter.println("Unable to parse metadata file: " + e.getMessage());
