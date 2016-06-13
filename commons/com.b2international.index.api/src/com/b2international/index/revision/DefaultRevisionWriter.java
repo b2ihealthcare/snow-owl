@@ -66,7 +66,9 @@ public class DefaultRevisionWriter implements RevisionWriter {
 
 	@Override
 	public void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException {
-		throw new UnsupportedOperationException("TODO implement me");
+		for (Entry<Long, Revision> doc : revisionsByStorageKey.entrySet()) {
+			put(doc.getKey(), doc.getValue());
+		}
 	}
 
 	@Override
