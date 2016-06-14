@@ -174,11 +174,11 @@ public class CodeSystemUtils {
 	/**
 	 * Comparator for sorting repository UUIDs in an alphabetic order based on the corresponding tooling feature name. 
 	 */
-	public static final Comparator<ICodeSystem> TOOLING_FEATURE_NAME_COMPARATOR = new Comparator<ICodeSystem>() {
-		public int compare(final ICodeSystem leftCodeSystem, final ICodeSystem rightCodeSystem) {
-			final String leftName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(leftCodeSystem.getRepositoryUuid()));
-			final String rightName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(rightCodeSystem.getRepositoryUuid()));
-			return leftName.compareToIgnoreCase(rightName);
+	public static final Comparator<String> TOOLING_FEATURE_NAME_COMPARATOR = new Comparator<String>() {
+		public int compare(final String leftUuid, final String rightUuid) {
+		final String leftName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(leftUuid));
+		final String rightName = nullToEmpty(CodeSystemUtils.getSnowOwlToolingName(rightUuid));
+		return leftName.compareToIgnoreCase(rightName);
 		}
 	};
 	
