@@ -22,6 +22,9 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionGetStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionPostStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.whenCreatingVersion;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -33,19 +36,11 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
 
 /**
  * @since 2.0
  */
 public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
-
-	/**
-	 * The context-relative base URL for the administrative controller. 
-	 */
-	private static String ADMIN_API = "/admin";
 
 	@Test
 	public void getNonExistentVersion() {
@@ -72,38 +67,6 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	public void createVersionWithSameNameAsBranch() {
 		givenBranchWithPath(testBranchPath);
 		assertVersionPostStatus(testBranchPath.lastSegment(), "20150202", 409);
-	}
-
-	private void assertVersionGetStatus(final String version, final int status) {
-		assertVersionGetStatus(version, status, "SNOMEDCT");
-	}
-	
-	private void assertVersionGetStatus(final String version, final int status, final String shortName) {
-		givenAuthenticatedRequest(ADMIN_API)
-		.when().get("/codesystems/{shortNameOrOid}/versions/{id}", shortName, version)
-		.then().assertThat().statusCode(status);
-	}
-
-	private void assertVersionPostStatus(final String version, final String effectiveDate, final int status) {
-		whenCreatingVersion(version, effectiveDate)
-		.then().assertThat().statusCode(status);
-	}
-
-	private Response whenCreatingVersion(final String version, final String effectiveDate) {
-		return whenCreatingVersion(version, effectiveDate, "SNOMEDCT");
-	}
-	
-	private Response whenCreatingVersion(final String version, final String effectiveDate, final String shortName) {
-		final Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("version", version)
-				.put("description", version)
-				.put("effectiveDate", effectiveDate)
-				.build();
-
-		return givenAuthenticatedRequest(ADMIN_API)
-				.and().contentType(ContentType.JSON)
-				.and().body(requestBody)
-				.when().post("/codesystems/{shortNameOrOid}/versions", shortName);
 	}
 	
 	@Test
