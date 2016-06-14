@@ -17,17 +17,29 @@ package com.b2international.snowowl.snomed.datastore.snor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.PredicateUtils;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
+import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
+import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
+import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
+import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 
 /**
  * Index document of a MRCM rule.
@@ -65,6 +77,60 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 		}
 	}
 
+	public static Builder builder(AttributeConstraint constraint) {
+		final ConceptSetDefinition domain = constraint.getDomain();
+		final String domainExpression = PredicateUtils.getEscgExpression(domain);
+		GroupRule groupRule = GroupRule.ALL_GROUPS;
+		int minCardinality = -1;
+		int maxCardinality = 0;
+		
+		ConceptModelPredicate predicate = constraint.getPredicate();
+		
+		if (predicate instanceof CardinalityPredicate) {
+			final CardinalityPredicate cardinalityPredicate = (CardinalityPredicate) predicate;
+			predicate = cardinalityPredicate.getPredicate();
+			minCardinality = cardinalityPredicate.getMinCardinality();
+			maxCardinality = cardinalityPredicate.getMaxCardinality();
+			
+			if (cardinalityPredicate.getGroupRule() != null) {
+				groupRule = cardinalityPredicate.getGroupRule();
+			} else {
+				// TODO LOG???
+			}
+		}
+
+		final PredicateIndexEntry.Builder doc;
+		
+		if (predicate instanceof DescriptionPredicate) {
+			doc = PredicateIndexEntry.descriptionBuilder().descriptionType(((DescriptionPredicate) predicate).getTypeId());
+		} else if (predicate instanceof ConcreteDomainElementPredicate) {
+			final ConcreteDomainElementPredicate dataTypePredicate = (ConcreteDomainElementPredicate) predicate;
+			doc = PredicateIndexEntry.dataTypeBuilder()
+					.dataTypeLabel(dataTypePredicate.getLabel())
+					.dataTypeName(dataTypePredicate.getName())
+					.dataType(dataTypePredicate.getType());
+		} else if (predicate instanceof RelationshipPredicate) {
+			final RelationshipPredicate relationshipPredicate = (RelationshipPredicate) predicate;
+			final String characteristicTypeConceptId = relationshipPredicate.getCharacteristicTypeConceptId();
+			final String type = PredicateUtils.getEscgExpression(relationshipPredicate.getAttribute());
+			final String valueType = PredicateUtils.getEscgExpression(relationshipPredicate.getRange());
+			final String characteristicType = Strings.isNullOrEmpty(characteristicTypeConceptId) ? "<" + Concepts.CHARACTERISTIC_TYPE : "<<" + characteristicTypeConceptId;
+
+			doc = PredicateIndexEntry.relationshipBuilder()
+				.relationshipTypeExpression(type)
+				.relationshipValueExpression(valueType)
+				.characteristicTypeExpression(characteristicType)
+				.groupRule(groupRule);
+		} else {
+			throw new IllegalArgumentException("Cannot index constraint " + constraint);
+		}
+		
+		return doc.id(CDOIDUtil.getLong(constraint.cdoID()))
+			.domain(domainExpression)
+			.minCardinality(minCardinality)
+			.maxCardinality(maxCardinality);
+	}
+	
 	public static Builder descriptionBuilder() {
 		return new Builder(PredicateType.DESCRIPTION);
 	}
@@ -244,7 +310,7 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	private PredicateIndexEntry(final String id, final String domain, final PredicateType type, final int minCardinality,
 			final int maxCardinality) {
 		super(id, createLabel(id, type), null);
-		this.domain = checkNotNull(domain, "queryExpression");
+		this.domain = checkNotNull(domain, "domain");
 		this.type = checkNotNull(type, "type");
 		this.minCardinality = minCardinality;
 		this.maxCardinality = maxCardinality;
