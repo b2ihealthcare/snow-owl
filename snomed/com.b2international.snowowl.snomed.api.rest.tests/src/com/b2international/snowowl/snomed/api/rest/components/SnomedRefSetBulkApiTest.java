@@ -24,6 +24,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.updateMemberEffectiveTime;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
@@ -146,7 +147,7 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 		final String secondMemberId = Iterables.get(memberIds, 1);
 		
 		// manually release secondMemberId before force deleting it
-		SnomedRefSetMemberApiTest.updateMemberEffectiveTime(testBranchPath, secondMemberId, "20160201", true);
+		updateMemberEffectiveTime(testBranchPath, secondMemberId, "20160201", true);
 		
 		// create bulk update with one force deletion and one force update
 		final Collection<Map<String, Object>> bulkRequests = newArrayList();
