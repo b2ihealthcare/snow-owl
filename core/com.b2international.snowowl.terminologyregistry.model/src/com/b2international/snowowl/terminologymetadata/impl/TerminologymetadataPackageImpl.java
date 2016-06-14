@@ -285,6 +285,15 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EReference getCodeSystem_ExtensionOf() {
+		return (EReference)codeSystemEClass.getEStructuralFeatures().get(11);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public TerminologymetadataFactory getTerminologymetadataFactory() {
 		return (TerminologymetadataFactory)getEFactoryInstance();
 	}
@@ -328,6 +337,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		createEAttribute(codeSystemEClass, CODE_SYSTEM__REPOSITORY_UUID);
 		createEReference(codeSystemEClass, CODE_SYSTEM__CODE_SYSTEM_VERSIONS);
 		createEAttribute(codeSystemEClass, CODE_SYSTEM__BRANCH_PATH);
+		createEReference(codeSystemEClass, CODE_SYSTEM__EXTENSION_OF);
 	}
 
 	/**
@@ -382,6 +392,7 @@ public class TerminologymetadataPackageImpl extends EPackageImpl implements Term
 		initEAttribute(getCodeSystem_RepositoryUuid(), ecorePackage.getEString(), "repositoryUuid", null, 1, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getCodeSystem_CodeSystemVersions(), this.getCodeSystemVersion(), null, "codeSystemVersions", null, 0, -1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCodeSystem_BranchPath(), ecorePackage.getEString(), "branchPath", null, 1, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getCodeSystem_ExtensionOf(), this.getCodeSystem(), null, "extensionOf", null, 0, 1, CodeSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);

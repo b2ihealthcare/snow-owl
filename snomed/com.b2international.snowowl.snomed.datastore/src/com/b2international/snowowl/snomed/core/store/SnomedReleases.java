@@ -16,44 +16,36 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_CITATION;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LINK;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_OID;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 
-import java.util.Map;
-
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.SnomedReleaseType;
 
 /**
  * @since 4.7
  */
 public class SnomedReleases {
 
-	public static SnomedReleaseBuilder newSnomedRelease() {
-		return new SnomedReleaseBuilder();
+	public static CodeSystem newSnomedInternationalRelease() {
+		return CodeSystem.builder()
+				.name(SNOMED_INT_NAME)
+				.shortName(SNOMED_INT_SHORT_NAME)
+				.oid(SNOMED_INT_OID)
+				.primaryLanguage(SNOMED_INT_LANGUAGE)
+				.organizationLink(SNOMED_INT_LINK)
+				.citation(SNOMED_INT_CITATION)
+				.branchPath(IBranchPath.MAIN_BRANCH)
+				.iconPath(SNOMED_INT_ICON_PATH)
+				.repositoryUuid(REPOSITORY_UUID)
+				.terminologyId(TERMINOLOGY_ID)
+				.build();
 	}
-	
-	public static SnomedReleaseBuilder newSnomedRelease(Map<String, String> valueMap) {
-		return new SnomedReleaseBuilder().init(valueMap);
-	}
-	
-	public static SnomedReleaseBuilder newSnomedInternationalRelease() {
-		return new SnomedReleaseBuilder()
-				.withName(SNOMED_INT_NAME)
-				.withShortName(SNOMED_INT_SHORT_NAME)
-				.withCodeSystemOid(SNOMED_INT_OID)
-				.withBaseCodeSystemOid(SNOMED_INT_OID) // XXX the same intentionally
-				.withLanguage(SNOMED_INT_LANGUAGE)
-				.withMaintainingOrganizationLink(SNOMED_INT_LINK)
-				.withCitation(SNOMED_INT_CITATION)
-				.withType(SnomedReleaseType.INTERNATIONAL)
-				.withBranchPath(IBranchPath.MAIN_BRANCH);
-	}
-	
-	public static SnomedVersionBuilder newSnomedVersion() {
-		return new SnomedVersionBuilder();
-	}
+
 }

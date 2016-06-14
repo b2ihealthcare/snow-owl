@@ -91,20 +91,4 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="concepts" ordered="false"
         upperBound="-1" eType="#//Concept" containment="true" resolveProxies="false"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="SnomedRelease" eSuperTypes="../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.ecore#//CodeSystem">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="baseCodeSystemOID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
-      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
-        <details key="columnLength" value="255"/>
-      </eAnnotations>
-    </eStructuralFeatures>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="releaseType" eType="#//SnomedReleaseType"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="SnomedVersion" eSuperTypes="../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.ecore#//CodeSystemVersion">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modules" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="SnomedReleaseType">
-    <eLiterals name="INTERNATIONAL" literal="INTERNATIONAL"/>
-    <eLiterals name="EXTENSION" value="1" literal="EXTENSION"/>
-  </eClassifiers>
 </ecore:EPackage>

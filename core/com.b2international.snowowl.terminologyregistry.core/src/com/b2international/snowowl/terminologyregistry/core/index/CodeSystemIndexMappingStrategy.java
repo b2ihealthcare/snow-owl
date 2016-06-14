@@ -16,7 +16,9 @@
 package com.b2international.snowowl.terminologyregistry.core.index;
 
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_BRANCH_PATH;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_CITATION;
+import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_EXTENSION_OF;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_ICON_PATH;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_LANGUAGE;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_NAME;
@@ -26,7 +28,6 @@ import static com.b2international.snowowl.terminologyregistry.core.index.Termino
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_STORAGE_KEY;
 import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_TERMINOLOGY_COMPONENT_ID;
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_BRANCH_PATH;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -65,6 +66,8 @@ public class CodeSystemIndexMappingStrategy extends AbstractIndexMappingStrategy
 		Mappings.storageKey().addTo(doc, getStorageKey());
 		addStringFieldIfExists(doc, SYSTEM_REPOSITORY_UUID, codeSystem.getRepositoryUuid());
 		addStringFieldIfExists(doc, SYSTEM_BRANCH_PATH, codeSystem.getBranchPath());
+		addStringFieldIfExists(doc, SYSTEM_EXTENSION_OF,
+				codeSystem.getExtensionOf() == null ? null : codeSystem.getExtensionOf().getShortName());
 		return doc;
 	}
 

@@ -44,5 +44,6 @@
         eType="#//CodeSystemVersion" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="branchPath" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="extensionOf" eType="#//CodeSystem"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -44,7 +44,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -64,10 +63,7 @@ import com.b2international.snowowl.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -75,13 +71,16 @@ import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.EffectiveTimeUnitOrdering;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionBuilder;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -115,7 +114,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private Rf2BasedSnomedTaxonomyBuilder inferredTaxonomyBuilder;
 	private Rf2BasedSnomedTaxonomyBuilder statedTaxonomyBuilder;
 	private Set<String> existingVersions;
-	private List<SnomedVersion> versionsToCreate;
+	private List<CodeSystemVersion> versionsToCreate;
 	
 	public SnomedCompositeImporter(final Logger logger, final SnomedImportContext importContext, final List<Importer> importers, final Ordering<AbstractImportUnit> unitOrdering) {
 		super(logger);
@@ -138,7 +137,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	}
 
 	private void collectExistingVersions() {
-		SnomedReleaseEntry releaseEntry = getSnomedReleaseEntry(importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID());
+		CodeSystemEntry releaseEntry = getCodeSystemEntry(importContext.getCodeSystemShortName(), importContext.getCodeSystemOID());
 		existingVersions = FluentIterable.from(new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.prepareSearchCodeSystemVersion()
 			.setCodeSystemShortName(releaseEntry.getShortName())
@@ -151,7 +150,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			}).toSet();
 	}
 
-	private SnomedReleaseEntry getSnomedReleaseEntry(String shortName, String oid) {
+	private CodeSystemEntry getCodeSystemEntry(String shortName, String oid) {
 		CodeSystemEntry entry;
 		try {
 			entry = new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -169,11 +168,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			} catch (CodeSystemNotFoundException e2) {
 				throw new ImportException(String.format(
 						"Unable to find the specified SNOMED CT release among the registered terminologies. Short name: %s, OID: %s",
-						importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
+						importContext.getCodeSystemShortName(), importContext.getCodeSystemOID()));
 			}
 		}
 		
-		return (SnomedReleaseEntry) entry;
+		return entry;
 	}
 
 	@Override
@@ -318,9 +317,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	private void createNewVersions(SnomedEditingContext snomedEditingContext) {
 		try {
-
-			SnomedRelease snomedRelease = checkNotNull(snomedEditingContext.getSnomedRelease(importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
-			snomedRelease.getCodeSystemVersions().addAll(versionsToCreate);
+			final CodeSystem codeSystem = checkNotNull(snomedEditingContext.lookup(importContext.getCodeSystemShortName(), CodeSystem.class));
+			codeSystem.getCodeSystemVersions().addAll(versionsToCreate);
 			
 			if (snomedEditingContext.isDirty()) {
 				
@@ -329,8 +327,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 					.commit();
 				
-				getLogger().info(String.format("Version tags created: %s", Joiner.on(", ").join(FluentIterable.from(versionsToCreate).transform(new Function<SnomedVersion, String>() {
-					@Override public String apply(SnomedVersion input) {
+				getLogger().info(String.format("Version tags created: %s", Joiner.on(", ").join(FluentIterable.from(versionsToCreate).transform(new Function<CodeSystemVersion, String>() {
+					@Override public String apply(CodeSystemVersion input) {
 						return String.format("[%s]", input.getVersionId());
 					}
 				}))));
@@ -340,7 +338,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		} catch (NullPointerException e) {
 			throw new ImportException(String.format(
 					"Unable to find the specified SNOMED CT release among the registered terminologies. Short name: %s, OID: %s",
-					importContext.getSnomedReleaseShortName(), importContext.getSnomedReleaseOID()));
+					importContext.getCodeSystemShortName(), importContext.getCodeSystemOID()));
 		} catch (CommitException e) {
 			throw new ImportException(String.format("Unable to commit SNOMED CT versions for branch %s", getImportBranchPath().getPath()), e);
 		}
@@ -456,8 +454,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 			if (importContext.isVersionCreationEnabled()) {
 				
-				Set<String> existingEffectiveTimes = Sets.union(FluentIterable.from(versionsToCreate).transform(new Function<SnomedVersion, String>() {
-					@Override public String apply(SnomedVersion input) {
+				Set<String> existingEffectiveTimes = Sets.union(FluentIterable.from(versionsToCreate).transform(new Function<CodeSystemVersion, String>() {
+					@Override public String apply(CodeSystemVersion input) {
 						return EffectiveTimes.format(input.getEffectiveDate(), DateFormats.SHORT);
 					}
 				}).toSet(), existingVersions);
@@ -520,12 +518,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 	}
 	
-	private SnomedVersion createVersion(final String version) {
-
+	private CodeSystemVersion createVersion(final String version) {
 		final Date effectiveDate = EffectiveTimes.parse(version, DateFormats.SHORT);
 		final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 		
-		return SnomedReleases.newSnomedVersion()
+		return new CodeSystemVersionBuilder()
 			.withVersionId(formattedEffectiveDate)
 			.withDescription("SNOMED CT version created by an RF2 import process")
 			.withImportDate(new Date())

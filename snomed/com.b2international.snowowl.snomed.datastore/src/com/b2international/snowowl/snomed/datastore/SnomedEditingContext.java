@@ -21,7 +21,21 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
@@ -84,7 +98,6 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
@@ -120,7 +133,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
@@ -193,51 +205,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
-	}
-	
-	/**
-	 * Tries to find a given {@link SnomedRelease} specified by either it's short name or it's code system OID. Code systems are stored on MAIN. If
-	 * this editing context is not operating on MAIN it will throw {@link IllegalStateException}.
-	 * 
-	 * XXX Remove this method if code system version creation is implemented through REST.
-	 * 
-	 * @param shortName
-	 * @param codeSystemOID
-	 * @return
-	 */
-	public SnomedRelease getSnomedRelease(final String shortName, @Nullable final String codeSystemOID) {
-		
-		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			throw new IllegalStateException(String.format("Snomed releases are maintained on MAIN branch, this editing context uses %s", getBranch()));
-		}
-		
-		Collection<SnomedRelease> existingReleases = FluentIterable.from(getCodeSystems()).filter(SnomedRelease.class).toSet();
-		
-		// try to find the SNOMED release based on the code system OID
-		if (!Strings.isNullOrEmpty(codeSystemOID)) {
-			if (FluentIterable.from(existingReleases).allMatch(new Predicate<SnomedRelease>() {
-				@Override public boolean apply(SnomedRelease input) {
-					return !Strings.isNullOrEmpty(input.getCodeSystemOID());
-				}
-			})) {
-				return FluentIterable.from(existingReleases).firstMatch(new Predicate<SnomedRelease>() {
-					@Override public boolean apply(SnomedRelease input) {
-						return input.getCodeSystemOID().equals(codeSystemOID);
-					}
-				}).orNull();
-			}
-		}
-		
-		// if OID is missing then use code system short name
-		if (!Strings.isNullOrEmpty(shortName)) {
-			return FluentIterable.from(existingReleases).firstMatch(new Predicate<SnomedRelease>() {
-				@Override public boolean apply(SnomedRelease input) {
-					return input.getShortName().equalsIgnoreCase(shortName);
-				}
-			}).orNull();
-		}
-		
-		return null;
 	}
 	
 	private static SnomedClientIndexService getIndexService() {

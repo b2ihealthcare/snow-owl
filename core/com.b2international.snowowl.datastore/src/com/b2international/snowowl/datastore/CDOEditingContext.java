@@ -69,7 +69,9 @@ import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 
@@ -191,7 +193,10 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	public <T extends EObject> T lookup(final String componentId, Class<T> type) {
 		if (Strings.isNullOrEmpty(componentId)) {
 			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
+		} else if (CodeSystem.class.isAssignableFrom(type)) {
+			return (T) getCodeSystem(componentId);
 		}
+		
 		final T component = getComponentLookupService(type).getComponent(componentId, getTransaction());
 		if (null == component) {
 			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
@@ -349,6 +354,21 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	public List<CodeSystem> getCodeSystems() {
 		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
 		return FluentIterable.from(cdoResource.getContents()).filter(CodeSystem.class).toList();
+	}
+	
+	public CodeSystem getCodeSystem(final String uniqueId) {
+		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
+			throw new IllegalStateException(String.format("Snomed releases are maintained on MAIN branch, this editing context uses %s", getBranch()));
+		}
+		
+		final Optional<CodeSystem> optional = FluentIterable.from(getCodeSystems()).firstMatch(new Predicate<CodeSystem>() {
+			@Override
+			public boolean apply(final CodeSystem input) {
+				return input.getShortName().equals(uniqueId) || input.getCodeSystemOID().equals(uniqueId);
+			}
+		});
+
+		return optional.isPresent() ? optional.get() : null;
 	}
 
 	/**
