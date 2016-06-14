@@ -162,7 +162,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 
 		} while (!FINISH_STATES.contains(currentStatus) && currentTime < endTime);
 
-		assertEquals("End state should be CURRENT.", currentStatus, ReviewStatus.CURRENT.toString());
+		assertEquals("End state should be CURRENT.", ReviewStatus.CURRENT.toString(), currentStatus);
 	}
 	
 	@Test
