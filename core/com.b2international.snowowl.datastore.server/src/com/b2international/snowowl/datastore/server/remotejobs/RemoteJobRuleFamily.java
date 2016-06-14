@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.remotejobs;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -62,10 +63,6 @@ public class RemoteJobRuleFamily implements Predicate<Job> {
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RemoteJobKeyFamily [rule=");
-		builder.append(rule);
-		builder.append("]");
-		return builder.toString();
+		return Objects.toStringHelper(this).add("rule", rule).toString();
 	}
 }
