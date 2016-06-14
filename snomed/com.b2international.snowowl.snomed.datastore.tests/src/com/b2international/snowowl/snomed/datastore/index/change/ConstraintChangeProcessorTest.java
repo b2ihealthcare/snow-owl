@@ -60,7 +60,7 @@ public class ConstraintChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final PredicateIndexEntry expected = PredicateIndexEntry.builder(constraint).build();
 		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
-		assertEquals(expected, actual);
+		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getDeletions().size());
 	}
 	

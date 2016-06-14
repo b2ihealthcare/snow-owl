@@ -15,15 +15,24 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
+
+import java.io.IOException;
+
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
+import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * @since 4.7
@@ -33,23 +42,43 @@ public final class Taxonomies {
 	private Taxonomies() {
 	}
 	
-	public static Taxonomy inferred(RevisionSearcher searcher, IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, SnomedStatementBrowser statementBrowser) {
-		return buildTaxonomy(searcher, branchPath, commitChangeSet, conceptIds, statementBrowser, StatementCollectionMode.INFERRED_ISA_ONLY);
+	public static Taxonomy inferred(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds) {
+		return buildTaxonomy(searcher, commitChangeSet, conceptIds, CharacteristicType.INFERRED_RELATIONSHIP);
 	}
 	
-	public static Taxonomy stated(RevisionSearcher searcher, IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, SnomedStatementBrowser statementBrowser) {
-		return buildTaxonomy(searcher, branchPath, commitChangeSet, conceptIds, statementBrowser, StatementCollectionMode.STATED_ISA_ONLY);
+	public static Taxonomy stated(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds) {
+		return buildTaxonomy(searcher, commitChangeSet, conceptIds, CharacteristicType.STATED_RELATIONSHIP);
 	}
 
-	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, IBranchPath branchPath, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds,
-			SnomedStatementBrowser statementBrowser, final StatementCollectionMode mode) {
-		final IsAStatementWithId[] statements = statementBrowser.getActiveStatements(branchPath, mode);
-		final ISnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
-		final ISnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
-		oldTaxonomy.build();
-		new SnomedTaxonomyUpdateRunnable(searcher, branchPath, commitChangeSet, newTaxonomy, mode.getCharacteristicType()).run();
-		final Pair<LongSet, LongSet> diff = newTaxonomy.difference(oldTaxonomy);
-		return new Taxonomy(newTaxonomy, oldTaxonomy, diff);
+	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType) {
+		try {
+			final String characteristicTypeId = characteristicType.getConceptId();
+			final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
+					.selectAll()
+					.where(Expressions.builder()
+							.must(active())
+							.must(characteristicTypeId(characteristicTypeId))
+							.build())
+					.limit(Integer.MAX_VALUE)
+					.build();
+			final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
+			
+			final IsAStatementWithId[] statements = new SnomedIsAStatementWithId[hits.getTotal()];
+			int i = 0;
+			for (SnomedRelationshipIndexEntry hit : hits) {
+				statements[i] = new SnomedIsAStatementWithId(Long.parseLong(hit.getSourceId()), Long.parseLong(hit.getDestinationId()), Long.parseLong(hit.getId()));
+				i++;
+			}
+			
+			final ISnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
+			final ISnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
+			oldTaxonomy.build();
+			new SnomedTaxonomyUpdateRunnable(searcher, commitChangeSet, newTaxonomy, characteristicTypeId).run();
+			final Pair<LongSet, LongSet> diff = newTaxonomy.difference(oldTaxonomy);
+			return new Taxonomy(newTaxonomy, oldTaxonomy, diff);
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 	
 }

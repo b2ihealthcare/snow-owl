@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -29,10 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ExtendedComponent;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -42,6 +37,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
@@ -71,15 +67,13 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	private final ICDOCommitChangeSet commitChangeSet;
 	private final ISnomedTaxonomyBuilder taxonomyBuilder;
 	private final String characteristicTypeId;
-	private final IBranchPath branchPath;
 	private final RevisionSearcher searcher;
 
 	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, CDOTransaction transaction,
 			ISnomedTaxonomyBuilder taxonomyBuilder, 
 			String characteristicTypeId) {
 		
-		this(searcher, BranchPathUtils.createPath(transaction),
-				new CDOCommitChangeSet(transaction, 
+		this(searcher, new CDOCommitChangeSet(transaction, 
 						transaction.getSession().getUserID(), 
 						transaction.getCommitComment(), 
 						transaction.getNewObjects().values(), 
@@ -91,13 +85,12 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 				characteristicTypeId);
 	}
 			
-	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, IBranchPath branchPath, 
+	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, 
 			ICDOCommitChangeSet commitChangeSet, 
 			ISnomedTaxonomyBuilder taxonomyBuilder, 
 			String characteristicTypeId) {
 
 		this.searcher = searcher;
-		this.branchPath = branchPath;
 		this.commitChangeSet = commitChangeSet;
 		this.taxonomyBuilder = taxonomyBuilder;
 		this.characteristicTypeId = characteristicTypeId;
@@ -173,25 +166,27 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 			taxonomyBuilder.addNode(createNode(newConcept));
 		}
 		for (final CDOID conceptCdoId : deletedConcepts) {
-			
-			//consider the same as for relationship
-			//we have to decide if deletion is the 'stronger' modification or not
-			final long cdoId = CDOIDUtils.asLong(conceptCdoId);
-			final ExtendedComponent concept = getTerminologyBrowser().getExtendedComponent(branchPath, cdoId);
-			checkState(concept != null, "No concepts were found with unique storage key: " + cdoId);
-			final String conceptId = concept.getId();
-			
-			//same concept as addition and deletion
-			if (_newConcepts.containsKey(conceptId)) {
-				final Concept newConcept = _newConcepts.get(conceptId);
-				//check whether new concept has more recent (larger CDO ID) or not, ignore deletion
-				if (CDOIDUtils.asLong(newConcept.cdoID()) > cdoId) {
-					continue;
+			try {
+				//consider the same as for relationship
+				//we have to decide if deletion is the 'stronger' modification or not
+				final long cdoId = CDOIDUtils.asLong(conceptCdoId);
+				final SnomedConceptDocument concept = searcher.get(SnomedConceptDocument.class, cdoId);
+				final String conceptId = concept.getId();
+				
+				//same concept as addition and deletion
+				if (_newConcepts.containsKey(conceptId)) {
+					final Concept newConcept = _newConcepts.get(conceptId);
+					//check whether new concept has more recent (larger CDO ID) or not, ignore deletion
+					if (CDOIDUtils.asLong(newConcept.cdoID()) > cdoId) {
+						continue;
+					}
 				}
+				
+				//else delete it
+				taxonomyBuilder.removeNode(createDeletedNode(conceptId));
+			} catch (IOException e) {
+				throw new SnowowlRuntimeException(e);
 			}
-			
-			//else delete it
-			taxonomyBuilder.removeNode(createDeletedNode(concept));
 		}
 		for (final Concept dirtyConcept : dirtyConcepts) {
 			if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
@@ -278,13 +273,13 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		};
 	}
 	
-	private TaxonomyBuilderNode createDeletedNode(final ExtendedComponent concept) {
+	private TaxonomyBuilderNode createDeletedNode(final String id) {
 		return new TaxonomyBuilderNode() {
 			@Override public boolean isCurrent() {
 				throw new UnsupportedOperationException("This method should not be called when removing taxonomy nodes.");
 			}
 			@Override public String getId() {
-				return concept.getId();
+				return id;
 			}
 		};
 	}

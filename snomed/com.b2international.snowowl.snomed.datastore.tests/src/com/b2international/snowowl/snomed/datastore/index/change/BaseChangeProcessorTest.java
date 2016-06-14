@@ -40,11 +40,11 @@ import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.datastore.id.gen.RandomItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -95,15 +95,19 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	}
 	
 	protected final void process(final ChangeSetProcessor processor) {
-		final ICDOCommitChangeSet commitChangeSet = new CDOCommitChangeSet(view, "test", "test", newComponents, dirtyComponents, detachedComponents, revisionDeltas, 1L);
 		index().read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<Void>() {
 			@Override
 			public Void execute(RevisionSearcher index) throws IOException {
-				processor.process(commitChangeSet, index);
+				processor.process(createChangeSet(), index);
 				return null;
 			}
 		});
 	}
+
+	protected final CDOCommitChangeSet createChangeSet() {
+		return new CDOCommitChangeSet(view, "test", "test", newComponents, dirtyComponents, detachedComponents, revisionDeltas, 1L);
+	}
+
 	
 	protected final long nextStorageKey() {
 		return storageKeys.getAndIncrement();
@@ -187,6 +191,33 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		builder.append(VerhoeffCheck.calculateChecksum(builder, false));
 
 		return builder.toString();
+	}
+	
+	protected final Relationship createRandomRelationship() {
+		return createStatedRelationship(generateConceptId(), Concepts.IS_A, generateConceptId());
+	}
+	
+	protected final Relationship createInferredRelationship(String sourceId, String typeId, String destinationId) {
+		return createRelationship(sourceId, typeId, destinationId, Concepts.INFERRED_RELATIONSHIP);
+	}
+	
+	protected final Relationship createStatedRelationship(String sourceId, String typeId, String destinationId) {
+		return createRelationship(sourceId, typeId, destinationId, Concepts.STATED_RELATIONSHIP);
+	}
+	
+	private final Relationship createRelationship(String sourceId, String typeId, String destinationId, String characteristicType) {
+		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
+		withCDOID(relationship, nextStorageKey());
+		relationship.setId(generateRelationshipId());
+		relationship.setActive(true);
+		relationship.setGroup(0);
+		relationship.setModifier(getConcept(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
+		relationship.setModule(module());
+		relationship.setType(getConcept(typeId));
+		relationship.setSource(getConcept(sourceId));
+		relationship.setDestination(getConcept(destinationId));
+		relationship.setCharacteristicType(getConcept(characteristicType));
+		return relationship;
 	}
 
 }

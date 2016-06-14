@@ -69,6 +69,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
@@ -89,12 +90,12 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	private Multimap<String, RefSetMemberChange> memberChanges;
 	private Multimap<String, String> referringPredicates;
 
-	public ConceptChangeProcessor(final IBranchPath branchPath, LongSet allConceptIds, Collection<ConstraintDomain> allConstraintDomains, IconIdUpdater iconId, ParentageUpdater inferred, ParentageUpdater stated, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
+	public ConceptChangeProcessor(final IBranchPath branchPath, LongSet allConceptIds, Collection<ConstraintDomain> allConstraintDomains, Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
 		super("concept changes");
 		this.branchPath = branchPath;
-		this.iconId = iconId;
-		this.inferred = inferred;
-		this.stated = stated;
+		this.iconId = new IconIdUpdater(inferredTaxonomy.getNewTaxonomy(), statedTaxonomy.getNewTaxonomy(), availableImages);
+		this.inferred = new ParentageUpdater(inferredTaxonomy.getNewTaxonomy(), false);
+		this.stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
 		this.allConceptIds = allConceptIds;
 		this.allConstraintDomains = allConstraintDomains;
 		this.statedTaxonomy = statedTaxonomy;
@@ -200,7 +201,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			}
 		}
 
-		final Collection<String> currentDirtyConceptIds = FluentIterable.from(dirtyConcepts).transform(new Function<Concept, String>() {
+		final Collection<String> currentDirtyConceptIds = FluentIterable.from(Iterables.concat(dirtyConcepts, commitChangeSet.getNewComponents(Concept.class))).transform(new Function<Concept, String>() {
 			@Override
 			public String apply(Concept input) {
 				return input.getId();
@@ -211,14 +212,14 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final Set<String> conceptsToBeLoaded = newHashSet();
 		conceptsToBeLoaded.addAll(getAffectedConcepts(commitChangeSet, inferredTaxonomy));
 		conceptsToBeLoaded.addAll(getAffectedConcepts(commitChangeSet, statedTaxonomy));
-		conceptsToBeLoaded.removeAll(currentDirtyConceptIds);
 		
 		// collect inferred taxonomy changes
 		conceptsToBeLoaded.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
 		conceptsToBeLoaded.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getB(), inferredTaxonomy.getOldTaxonomy()));
 		// collect stated taxonomy changes
-		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
-		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), inferredTaxonomy.getOldTaxonomy()));
+		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getA(), statedTaxonomy.getNewTaxonomy()));
+		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), statedTaxonomy.getOldTaxonomy()));
+		conceptsToBeLoaded.removeAll(currentDirtyConceptIds);
 		
 		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
 		for (String id : conceptsToBeLoaded) {

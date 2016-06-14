@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A transfer object representing a SNOMED CT concept.
@@ -350,15 +351,15 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			}
 			
 			if (referringPredicates != null) {
-				entry.setReferringPredicates(referringPredicates);
+				entry.setReferringPredicates(ImmutableSet.copyOf(referringPredicates));
 			}
 			
 			if (referringRefSets != null) {
-				entry.setReferringRefSets(referringRefSets);
+				entry.setReferringRefSets(ImmutableSet.copyOf(referringRefSets));
 			}
 			
 			if (referringMappingRefSets != null) {
-				entry.setReferringMappingRefSets(referringMappingRefSets);
+				entry.setReferringMappingRefSets(ImmutableSet.copyOf(referringMappingRefSets));
 			}
 			
 			return entry;

@@ -50,7 +50,7 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
 		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
-		assertEquals(expected, actual);
+		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -63,7 +63,7 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
 		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
-		assertEquals(expected, actual);
+		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
