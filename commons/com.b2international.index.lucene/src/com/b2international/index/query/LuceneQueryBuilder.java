@@ -151,9 +151,29 @@ public final class LuceneQueryBuilder {
 			visit((PrefixTextPredicate) expression);
 		} else if (expression instanceof FuzzyTextPredicate) {
 			visit((FuzzyTextPredicate) expression);
+		} else if (expression instanceof BoolExpression) {
+			visit((BoolExpression) expression);
+		} else if (expression instanceof BooleanPredicate) {
+			visit((BooleanPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
+	}
+	
+	private void visit(BooleanPredicate predicate) {
+		deque.push(new DequeItem(Fields.boolField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()))));
+	}
+	
+	private void visit(BoolExpression bool) {
+		final BooleanQuery query = new BooleanQuery();
+		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
+		for (Expression must : bool.mustClauses()) {
+			// visit the item and immediately pop the deque item back
+			visit(must);
+			final DequeItem item = deque.pop();
+			query.add(item.toQuery(), Occur.MUST);
+		}
+		deque.push(new DequeItem(query));
 	}
 	
 	private void visit(NestedPredicate predicate) {

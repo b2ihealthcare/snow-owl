@@ -68,7 +68,9 @@ public class Expressions {
 			if (mustClauses.isEmpty() && mustNotClauses.isEmpty() && shouldClauses.isEmpty() && filterClauses.isEmpty()) {
 				return matchAll();
 			} else {
-				throw new UnsupportedOperationException();
+				final BoolExpression be = new BoolExpression(mustClauses, mustNotClauses, shouldClauses, filterClauses);
+				be.setMinShouldMatch(minShouldMatch);
+				return be;
 			}
 		}
 
