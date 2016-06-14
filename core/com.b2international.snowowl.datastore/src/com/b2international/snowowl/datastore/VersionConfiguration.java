@@ -37,10 +37,10 @@ public interface VersionConfiguration {
 	
 	/**
 	 * Returns with the internal state of the configuration as a map where the
-	 * keys are the unique repository IDs and the values are the currently configured {@link ICodeSystemVersion}.
+	 * keys are {@link ICodeSystem}s and the values are the currently configured {@link ICodeSystemVersion}.
 	 * @return the version configuration as a map of repository IDs and the {@link ICodeSystemVersion version}s.
 	 */
-	Map<String, ICodeSystemVersion> getConfiguration();
+	Map<ICodeSystem, ICodeSystemVersion> getConfiguration();
 	
 	/**
 	 * Returns with the configuration as a branch path map.

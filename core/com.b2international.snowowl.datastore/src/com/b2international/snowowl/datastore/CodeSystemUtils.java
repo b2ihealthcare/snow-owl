@@ -151,6 +151,35 @@ public class CodeSystemUtils {
 		}
 	}
 
+	public static final class CodeSystemVersionShortNamePredicate implements Predicate<ICodeSystemVersion> {
+
+		final String expectedCodeSystemShortName;
+		
+		public CodeSystemVersionShortNamePredicate(String shortName) {
+			this.expectedCodeSystemShortName = shortName;
+		}
+		
+		@Override
+		public boolean apply(ICodeSystemVersion input) {
+			return expectedCodeSystemShortName.equals(input.getCodeSystemShortName());
+		}
+		
+	} 
+	
+	public static final class CodeSystemVersionRepositoryUuidPredicate implements Predicate<ICodeSystemVersion> {
+		
+		final String expectedRepositoryUuid;
+		
+		public CodeSystemVersionRepositoryUuidPredicate(String repositoryUuid) {
+			this.expectedRepositoryUuid = repositoryUuid;
+		}
+		
+		@Override
+		public boolean apply(ICodeSystemVersion input) {
+			return expectedRepositoryUuid.equals(input.getRepositoryUuid());
+		}
+		
+	} 
 
 	
 	private static final LoadingCache<String, ICDOManagedItem<?>> TOOLING_ID_MANAGED_ITEM_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<String, ICDOManagedItem<?>>() {
@@ -249,9 +278,6 @@ public class CodeSystemUtils {
 		Iterable<ICodeSystem> codeSystemsInRepositoryUuid = Iterables.filter(getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap()), sameRepositoryCodeSystemPredicate(repositoryUuid));
 		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepositoryUuid, new CodeSystemToBranchPathFunction());
 
-//		if (branchPathToCodeSystemMap.containsKey(branchPath.getPath()))
-//			return branchPathToCodeSystemMap.get(branchPath.getPath());
-
 		for (IBranchPath path = branchPath; !isMain(path); path = path.getParent()) {
 			if (branchPathToCodeSystemMap.containsKey(path.getPath())) {
 				return branchPathToCodeSystemMap.get(path.getPath());
@@ -331,6 +357,14 @@ public class CodeSystemUtils {
 	
 	public static Predicate<ICodeSystem> sameRepositoryCodeSystemPredicate(final String repositoryUUID) {
 		return new SameRepositoryCodeSystemPredicate(repositoryUUID);
+	}
+	
+	public static Predicate<ICodeSystemVersion> codeSystemVersionShortNamePredicate(final String shortName) {
+		return new CodeSystemVersionShortNamePredicate(shortName);
+	}
+	
+	public static Predicate<ICodeSystemVersion> sameRepositoryCodeSystemVersionPredicate(final String repositoryUuid) {
+		return new CodeSystemVersionRepositoryUuidPredicate(repositoryUuid);
 	}
 	
 	public static Predicate<ICodeSystem> activeCodeSystemPredicate(final IBranchPathMap branchPathMap, final String repositoryUuid) {

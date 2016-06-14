@@ -19,6 +19,8 @@ import static com.b2international.commons.status.Statuses.error;
 import static com.b2international.commons.status.Statuses.ok;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.CodeSystemUtils.TOOLING_FEATURE_NAME_COMPARATOR;
+import static com.b2international.snowowl.datastore.CodeSystemUtils.sameRepositoryCodeSystemPredicate;
+import static com.b2international.snowowl.datastore.CodeSystemUtils.sameRepositoryCodeSystemVersionPredicate;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.INITIAL_STATE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.find;
@@ -29,6 +31,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +44,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimaps;
 
 /**
  * Version configuration implementation that gets its initial state from the {@link TaskManager}.
@@ -50,9 +56,9 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 
 	private final IBranchPathMap taskBranchPathMap;
 	private final Map<String, List<ICodeSystemVersion>> allVersions;
-	private final Map<String, ICodeSystemVersion> currentVersions;
+	private final Map<ICodeSystem, ICodeSystemVersion> currentVersions;
 
-	public VersionConfigurationImpl(final String userId) {
+	public VersionConfigurationImpl() {
 		taskBranchPathMap = getTaskBranchPathMap();
 		allVersions = getAllVersions();
 		currentVersions = initCurrentVersions();
@@ -63,19 +69,20 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		final String repositoryUuid = checkNotNull(versionToSet, "versionToSet").getRepositoryUuid();
 		final String versionId = versionToSet.getVersionId();
 		
-		final Map<String, ICodeSystemVersion> copyCurrentVersions = newHashMap(currentVersions);
+		final Map<ICodeSystem, ICodeSystemVersion> copyCurrentVersions = newHashMap(currentVersions);
 		
 		if (isLocked(versionToSet)) {
 			return error("Version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(repositoryUuid) + " cannot be modified.");
 		}
 
 		final ICodeSystemVersion newVersionToSet = tryFindVesion(repositoryUuid, versionId);
+		ICodeSystem matchingCodeSystem = CodeSystemUtils.findMatchingCodeSystem(versionToSet.getParentBranchPath(), repositoryUuid);
 		
 		if (null == newVersionToSet) {
 			return error("Cannot find version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(repositoryUuid) + ".");
 		}
 		
-		copyCurrentVersions.put(repositoryUuid, newVersionToSet);
+		copyCurrentVersions.put(matchingCodeSystem, newVersionToSet);
 		
 		String slaveRepositoryUuid = getSlaveRepositoryUuid(repositoryUuid);
 		while (null != slaveRepositoryUuid) {
@@ -91,7 +98,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 				return error("Dependent version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(repositoryUuid) + " cannot be modified.");
 			}
 			
-			copyCurrentVersions.put(slaveRepositoryUuid, newSlaveVersion);
+			copyCurrentVersions.put(CodeSystemUtils.findMatchingCodeSystem(newSlaveVersion.getParentBranchPath(), slaveRepositoryUuid), newSlaveVersion);
 			
 			slaveRepositoryUuid = getSlaveRepositoryUuid(slaveRepositoryUuid);
 			
@@ -103,11 +110,11 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	}
 
 	@Override
-	public Map<String, ICodeSystemVersion> getConfiguration() {
-		final Map<String, ICodeSystemVersion> copyCurrentVersions = newTreeMap(TOOLING_FEATURE_NAME_COMPARATOR);
+	public Map<ICodeSystem, ICodeSystemVersion> getConfiguration() {
+		final Map<ICodeSystem, ICodeSystemVersion> copyCurrentVersions = newTreeMap(TOOLING_FEATURE_NAME_COMPARATOR);
 		copyCurrentVersions.putAll(currentVersions);
-		for (final Iterator<String> itr = copyCurrentVersions.keySet().iterator(); itr.hasNext(); /**/) {
-			if (isMeta(itr.next())) {
+		for (final Iterator<ICodeSystem> itr = copyCurrentVersions.keySet().iterator(); itr.hasNext(); /**/) {
+			if (isMeta(itr.next().getRepositoryUuid())) {
 				itr.remove();
 			}
 		}
@@ -134,14 +141,18 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	@Override
 	public IBranchPathMap getConfigurationAsBranchPathMap() {
 		
-		final Map<String, IBranchPath> currentBranchPathMap = newHashMap(taskBranchPathMap.asMap(getAllRepositoryUuids()));
+		final Map<String, IBranchPath> currentBranchPathMap = getCurrentBranchPathMap();
 		
-		for (final Entry<String, ICodeSystemVersion> entry : currentVersions.entrySet()) {
+		for (final Entry<ICodeSystem, ICodeSystemVersion> entry : currentVersions.entrySet()) {
 			if (!isLocked(entry.getValue())) {
-				currentBranchPathMap.put(entry.getKey(), BranchPathUtils.createPath(entry.getValue().getPath()));
+				currentBranchPathMap.put(entry.getKey().getRepositoryUuid(), BranchPathUtils.createPath(entry.getValue().getPath()));
 			}
 		}
 		return new UserBranchPathMap(currentBranchPathMap);
+	}
+
+	protected HashMap<String, IBranchPath> getCurrentBranchPathMap() {
+		return newHashMap(taskBranchPathMap.asMap(getAllRepositoryUuids()));
 	}
 
 	@Override
@@ -169,12 +180,10 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	 * @return a mapping between repository UUIDs and all versions.
 	 */
 	protected Map<String, List<ICodeSystemVersion>> getAllVersions() {
-		final Map<String, List<ICodeSystemVersion>> allVersionsFromServer = // 
-				getServiceForClass(TerminologyRegistryService.class).getAllVersion();
+		final Map<String, List<ICodeSystemVersion>> allVersionsFromServer = getTerminologyRegistryService().getAllVersion();
 		//it might happen that server has for example UMLS store but client does not have dependency
 		//hence connection for UMLS.
-		final Collection<String> availableTerminologiesOnClient = 
-				getServiceForClass(ICDOConnectionManager.class).uuidKeySet();
+		final Collection<String> availableTerminologiesOnClient =  getServiceForClass(ICDOConnectionManager.class).uuidKeySet();
 		for (final Iterator<String> itr  = allVersionsFromServer.keySet().iterator(); itr.hasNext(); /**/) {
 			final String repositoryUuid = itr.next();
 			if (!availableTerminologiesOnClient.contains(repositoryUuid)) {
@@ -230,14 +239,24 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		}, null);
 	}
 
-	private Map<String, ICodeSystemVersion> initCurrentVersions() {
-		final Map<String, ICodeSystemVersion> currentVersion = newHashMap();
+	private Map<ICodeSystem, ICodeSystemVersion> initCurrentVersions() {
+		final Map<ICodeSystem, ICodeSystemVersion> currentVersion = newHashMap();
+		
 		for (final String repositoryUuid : allVersions.keySet()) {
+			
+			// this branchPath can be: a task branch; version/tag branch Path; codeSystem branchPath 
 			final IBranchPath branchPath = taskBranchPathMap.getBranchPath(repositoryUuid);
+			
+			final ICodeSystem  codeSystem = CodeSystemUtils.findMatchingCodeSystem(branchPath, repositoryUuid);
 			final ICodeSystemVersion version = CodeSystemUtils.findMatchingVersion(branchPath, allVersions.get(repositoryUuid));
-			currentVersion.put(repositoryUuid, version);
+			currentVersion.put(codeSystem, version);
 		}
 		return currentVersion;
+	}
+	
+	
+	protected TerminologyRegistryService getTerminologyRegistryService() {
+		return getServiceForClass(TerminologyRegistryService.class);
 	}
 
 	private ICDOConnectionManager getConnectionManager() {
