@@ -80,6 +80,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 
 	private Relationship createRelationship() {
 		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
+		withCDOID(relationship, nextStorageKey());
 		relationship.setId(generateRelationshipId());
 		relationship.setActive(true);
 		relationship.setGroup(0);
