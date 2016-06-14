@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index.change;
+package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -36,7 +36,7 @@ import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
-import com.b2international.snowowl.snomed.mrcm.core.ConceptModelUtils;
+import com.b2international.snowowl.snomed.core.mrcm.ConceptModelUtils;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 

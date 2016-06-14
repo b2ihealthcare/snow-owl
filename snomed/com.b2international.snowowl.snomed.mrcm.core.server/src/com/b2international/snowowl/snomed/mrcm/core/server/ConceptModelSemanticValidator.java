@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server;
 
-import static com.b2international.snowowl.snomed.mrcm.core.ConceptModelUtils.getContainerConstraint;
+import static com.b2international.snowowl.snomed.core.mrcm.ConceptModelUtils.getContainerConstraint;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
@@ -29,12 +29,12 @@ import com.b2international.commons.tree.emf.EObjectWalker.EObjectContainmentTree
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
+import com.b2international.snowowl.snomed.core.mrcm.ConceptModelUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
-import com.b2international.snowowl.snomed.mrcm.core.ConceptModelUtils;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 

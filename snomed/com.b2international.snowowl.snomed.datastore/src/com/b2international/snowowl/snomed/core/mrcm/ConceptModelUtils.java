@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.mrcm.core;
+package com.b2international.snowowl.snomed.core.mrcm;
 
 import static com.b2international.snowowl.snomed.mrcm.MrcmPackage.Literals.DESCRIPTION_PREDICATE__TYPE_ID;
 import static com.b2international.snowowl.snomed.mrcm.MrcmPackage.Literals.ENUMERATED_CONCEPT_SET_DEFINITION__CONCEPT_IDS;
