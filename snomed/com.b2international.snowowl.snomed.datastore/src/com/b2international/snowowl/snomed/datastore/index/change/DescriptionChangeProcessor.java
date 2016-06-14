@@ -15,12 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -31,7 +36,10 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Builder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
@@ -53,36 +61,64 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		// delete detached descriptions
 		deleteRevisions(SnomedDescriptionIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION));
 		// (re)index new and dirty descriptions
-		final Iterable<Description> descriptionsToIndex = Iterables.concat(commitChangeSet.getNewComponents(Description.class), commitChangeSet.getDirtyComponents(Description.class));
-		final Iterable<Long> storageKeys = CDOIDUtils.createCdoIdToLong(CDOIDUtils.getIds(descriptionsToIndex));
-		final Map<String, SnomedDescriptionIndexEntry> currentRevisionsById = Maps.uniqueIndex(searcher.get(SnomedDescriptionIndexEntry.class, storageKeys), ComponentUtils.<String>getIdFunction());
+		final Map<String, Description> changedDescriptionsById = FluentIterable.from(Iterables.concat(commitChangeSet.getNewComponents(Description.class), commitChangeSet.getDirtyComponents(Description.class)))
+				.uniqueIndex(new Function<Description, String>() {
+					@Override
+					public String apply(Description input) {
+						return input.getId();
+					}
+				});
 		
-		for (final Description description : descriptionsToIndex) {
+		// load the known descriptions 
+		final Iterable<Long> storageKeys = CDOIDUtils.createCdoIdToLong(CDOIDUtils.getIds(changedDescriptionsById.values()));
+		final Map<String, SnomedDescriptionIndexEntry> currentRevisionsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedDescriptionIndexEntry.class, storageKeys), ComponentUtils.<String>getIdFunction()));
+		
+		// load missing descriptions with only changed acceptability values
+		final Set<String> descriptionsToBeLoaded = newHashSet();
+		for (String descriptionWithAccepatibilityChange : acceptabilityChangesByDescription.keySet()) {
+			if (!changedDescriptionsById.containsKey(descriptionWithAccepatibilityChange)) {
+				descriptionsToBeLoaded.add(descriptionWithAccepatibilityChange);
+			}
+		}
+		
+		// process changes
+		for (final Description description : changedDescriptionsById.values()) {
 			final String descriptionId = description.getId();
-			final SnomedDescriptionIndexEntry currentDoc = currentRevisionsById.get(descriptionId);
+			final long storageKey = CDOIDUtil.getLong(description.cdoID());
 			final Builder doc = SnomedDescriptionIndexEntry.builder(description);
-			
-			final Multimap<Acceptability, String> acceptabilityMap = currentDoc == null ? ImmutableMultimap.<Acceptability, String>of() : ImmutableMap.copyOf(currentDoc.getAcceptabilityMap()).asMultimap().inverse();
-			
-			final Collection<String> preferredLanguageRefSets = newHashSet(acceptabilityMap.get(Acceptability.PREFERRED));
-			final Collection<String> acceptableLanguageRefSets = newHashSet(acceptabilityMap.get(Acceptability.ACCEPTABLE));
-			
-			final Multimap<Acceptability, RefSetMemberChange> multimap = acceptabilityChangesByDescription.get(descriptionId);
-			
-			if (multimap != null) {
-				collectChanges(multimap.get(Acceptability.PREFERRED), preferredLanguageRefSets);
-				collectChanges(multimap.get(Acceptability.ACCEPTABLE), acceptableLanguageRefSets);
-			}
-			
-			for (String preferredLanguageRefSet : preferredLanguageRefSets) {
-				doc.acceptability(preferredLanguageRefSet, Acceptability.PREFERRED);
-			}
-			
-			for (String acceptableLanguageRefSet : acceptableLanguageRefSets) {
-				doc.acceptability(acceptableLanguageRefSet, Acceptability.ACCEPTABLE);
-			}
-			
-			indexRevision(description.cdoID(), doc.build());
+			final SnomedDescriptionIndexEntry currentDoc = currentRevisionsById.get(descriptionId);
+			processChanges(doc, currentDoc, acceptabilityChangesByDescription.get(descriptionId));
+			indexRevision(storageKey, doc.build());
+		}
+		
+		// process cascading acceptability changes in unchanged docs
+		final Query<SnomedDescriptionIndexEntry> descriptionsToBeLoadedQuery = Query.builder(SnomedDescriptionIndexEntry.class).selectAll().where(SnomedDocument.Expressions.ids(descriptionsToBeLoaded)).limit(descriptionsToBeLoaded.size()).build();
+		for (SnomedDescriptionIndexEntry unchangedDescription : searcher.search(descriptionsToBeLoadedQuery)) {
+			final Builder doc = SnomedDescriptionIndexEntry.builder(unchangedDescription);
+			processChanges(doc, unchangedDescription, acceptabilityChangesByDescription.get(unchangedDescription.getId()));
+			indexRevision(unchangedDescription.getStorageKey(), doc.build());
+		}
+		
+	}
+
+	private void processChanges(final Builder doc, final SnomedDescriptionIndexEntry currentRevision, Multimap<Acceptability, RefSetMemberChange> acceptabilityChanges) {
+		final Multimap<Acceptability, String> acceptabilityMap = currentRevision == null ? ImmutableMultimap.<Acceptability, String>of() : ImmutableMap.copyOf(currentRevision.getAcceptabilityMap()).asMultimap().inverse();
+		
+		final Collection<String> preferredLanguageRefSets = newHashSet(acceptabilityMap.get(Acceptability.PREFERRED));
+		final Collection<String> acceptableLanguageRefSets = newHashSet(acceptabilityMap.get(Acceptability.ACCEPTABLE));
+		
+		
+		if (acceptabilityChanges != null) {
+			collectChanges(acceptabilityChanges.get(Acceptability.PREFERRED), preferredLanguageRefSets);
+			collectChanges(acceptabilityChanges.get(Acceptability.ACCEPTABLE), acceptableLanguageRefSets);
+		}
+		
+		for (String preferredLanguageRefSet : preferredLanguageRefSets) {
+			doc.acceptability(preferredLanguageRefSet, Acceptability.PREFERRED);
+		}
+		
+		for (String acceptableLanguageRefSet : acceptableLanguageRefSets) {
+			doc.acceptability(acceptableLanguageRefSet, Acceptability.ACCEPTABLE);
 		}
 	}
 	

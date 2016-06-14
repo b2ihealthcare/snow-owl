@@ -23,6 +23,7 @@ import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.BulkInMemorySnomedIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.InMemorySnomedIdentifierServiceTest;
+import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedPredicateDocumentSerializationTest;
@@ -48,7 +49,9 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 	SnomedRelationshipIndexEntrySerializationTest.class,
 	SnomedDescriptionIndexEntrySerializationTest.class,
 	SnomedPredicateDocumentSerializationTest.class,
-	SnomedRefSetMemberDocumentSerializationTest.class
+	SnomedRefSetMemberDocumentSerializationTest.class,
+	// change proc test cases
+	DescriptionChangeProcessorTest.class
 })
 public class AllSnomedDatastoreTests {
 

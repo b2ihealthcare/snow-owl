@@ -18,7 +18,8 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchText;
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.matchTextFuzzy;
+import static com.b2international.index.query.Expressions.matchTextPrefix;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -98,6 +99,27 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 				.conceptId(description.getConcept().getId())
 				.languageCode(description.getLanguageCode())
 				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+	}
+	
+	/**
+	 * Creates a new {@link Builder} from the given {@link SnomedDescriptionIndexEntry}. The acceptability map is not copied over to the
+	 * {@link Builder} instance, if you need that, manually modify the returned {@link Builder} to represent the desired acceptability state.
+	 * 
+	 * @param doc
+	 * @return
+	 */
+	public static Builder builder(SnomedDescriptionIndexEntry doc) {
+		return builder()
+				.id(doc.getId())
+				.term(doc.getTerm())
+				.moduleId(doc.getModuleId())
+				.released(doc.isReleased())
+				.active(doc.isActive())
+				.typeId(doc.getTypeId())
+				.caseSignificanceId(doc.getCaseSignificanceId())
+				.conceptId(doc.getConceptId())
+				.languageCode(doc.getLanguageCode())
+				.effectiveTime(doc.getEffectiveTime());
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<ISnomedDescription> descriptions) {
