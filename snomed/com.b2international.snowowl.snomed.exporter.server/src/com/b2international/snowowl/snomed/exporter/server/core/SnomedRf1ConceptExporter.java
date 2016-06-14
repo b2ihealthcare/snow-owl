@@ -23,23 +23,26 @@ import static com.google.common.base.Suppliers.memoize;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Set;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TopDocs;
+import javax.swing.text.Document;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -48,9 +51,11 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedReleaseFileHeade
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.FluentIterable;
 
 /**
  * RF1 exporter for SNOMED&nbsp;CT concepts.
@@ -58,11 +63,11 @@ import com.google.common.collect.AbstractIterator;
  */
 public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 
-	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().active().primitive().build();
+	//private static final Set<String> CONCEPT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().active().primitive().build();
 	
-	private static final Set<String> MAP_TARGET_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberMapTargetComponentId().build();
+	//private static final Set<String> MAP_TARGET_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberMapTargetComponentId().build();
 	
-	private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberValueId().build();
+	//private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberValueId().build();
 
 	private final Id2Rf1PropertyMapper mapper;
 	private final SnomedExportConfiguration configuration;
@@ -72,6 +77,31 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 		this.configuration = checkNotNull(configuration, "configuration");
 		this.mapper = checkNotNull(mapper, "mapper");
 		itrSupplier = createSupplier();
+	}
+	
+	private void example() {
+		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+		
+		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
+
+		Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
+		
+		
+		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
+
+			@Override
+			public SnomedConceptDocument execute(RevisionSearcher searcher) throws IOException {
+				
+				Hits<SnomedConceptDocument> snomedConceptDocuments = searcher.search(query);
+				Optional<SnomedConceptDocument> first = FluentIterable.<SnomedConceptDocument>from(snomedConceptDocuments).first();
+				if (first.isPresent()) {
+					return first.get();
+				} else {
+					throw new IllegalArgumentException("Could not find reference set with id: " + exportSetting.getRefSetId());
+				}
+			}
+		});
 	}
 	
 	private Supplier<Iterator<String>> createSupplier() {
@@ -108,7 +138,9 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								manager = indexService.getManager(getBranchPath());
 								searcher = manager.acquire();
 								
-								final Query conceptQuery = SnomedMappings.newQuery().concept().id(conceptId).matchAll();
+								//Replaced: final Query conceptQuery = SnomedMappings.newQuery().concept().id(conceptId).matchAll();
+								final Expression conceptQueryExpression = Expressions.builder().must(SnomedConceptDocument.Expressions.id(conceptId)).build();
+								
 								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), conceptQuery, 1);
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));

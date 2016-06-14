@@ -18,12 +18,10 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Set;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.Query;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -32,29 +30,21 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.Sets;
 
 /**
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
  *
  */
-public class SnomedRefSetExporter extends SnomedCompositeExporter implements SnomedRf2Exporter {
+public class SnomedRefSetExporter extends SnomedCompositeExporter<SnomedRefSetMemberIndexEntry> implements SnomedRf2Exporter {
 
-	protected static final Set<String> COMMON_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.active()
-			.effectiveTime()
-			.module()
-			.memberRefSetId()
-			.memberReferencedComponentId()
-			.memberUuid()
-			.build();
-	
 	private final String refSetId;
 
 	private SnomedRefSetType type;
@@ -66,24 +56,19 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 	}
 
 	@Override
-	public Set<String> getFieldsToLoad() {
-		return COMMON_FIELDS_TO_LOAD;
-	}
-	
-	@Override
-	public String transform(final Document doc) {
+	public String transform(final SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(SnomedMappings.memberUuid().getValue(doc));
+		sb.append(doc.getId());
 		sb.append(HT);
-		sb.append(formatEffectiveTime(SnomedMappings.effectiveTime().getValue(doc)));
+		sb.append(formatEffectiveTime(doc.getEffectiveTime()));
 		sb.append(HT);
-		sb.append(SnomedMappings.active().getValue(doc));
+		sb.append(doc.isActive() ? "1" : "0");
 		sb.append(HT);
-		sb.append(SnomedMappings.module().getValueAsString(doc));
+		sb.append(doc.getModuleId());
 		sb.append(HT);
-		sb.append(SnomedMappings.memberRefSetId().getValueAsString(doc));
+		sb.append(doc.getReferenceSetId());
 		sb.append(HT);
-		sb.append(SnomedMappings.memberReferencedComponentId().getValue(doc));
+		sb.append(doc.getReferencedComponentId());
 		return sb.toString();
 	}
 	
@@ -138,8 +123,8 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 	}
 
 	@Override
-	protected Query getSnapshotQuery() {
-		return SnomedMappings.newQuery().memberRefSetId(getRefSetId()).matchAll();
+	protected Expression getSnapshotQuery() {
+		return Expressions.builder().must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId()))).build();
 	}
 	
 	/**Returns with the reference set identifier concept ID.*/

@@ -35,16 +35,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.apache.lucene.index.IndexCommit;
-
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.server.index.IndexBranchService;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
@@ -63,7 +59,9 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 
 	private final Date deltaExportStartEffectiveTime;
 	private final Date deltaExportEndEffectiveTime;
-
+	
+	private RevisionSearcher revisionSearcher;
+	
 	private final Supplier<Map<IBranchPath, Collection<String>>> versionPathToSegmentNameMappingSupplier = 
 			memoize(new Supplier<Map<IBranchPath, Collection<String>>>() {
 				public Map<IBranchPath, Collection<String>> get() {
@@ -151,5 +149,13 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	
 	private List<ICodeSystemVersion> getAllVersion() {
 		return getServiceForClass(CodeSystemService.class).getAllTagsWithHead(REPOSITORY_UUID);
+	}
+
+	public RevisionSearcher getRevisionSearcher() {
+		return revisionSearcher;
+	}
+
+	public void setRevisionSearcher(RevisionSearcher revisionSearcher) {
+		this.revisionSearcher = revisionSearcher;
 	}
 }

@@ -35,9 +35,9 @@ import java.util.Set;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 
@@ -72,7 +72,9 @@ public class SnomedExportExecutor {
 
 	private SnomedExportConfiguration configuration;
 
-	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, final Set<String> modulesToExport, final String clientNamespace) {
+
+	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, 
+			final Set<String> modulesToExport, final String clientNamespace) {
 		this.snomedExporter = snomedExporter;
 		this.modulesToExport = modulesToExport;
 		this.clientNamespace = clientNamespace;

@@ -18,12 +18,8 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 
-import java.util.Set;
-
-import org.apache.lucene.document.Document;
-
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -31,17 +27,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 
-	private static final Set<String> FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.fields(COMMON_FIELDS_TO_LOAD)
-			.memberMapGroup()
-			.memberMapPriority()
-			.memberMapRule()
-			.memberMapAdvice()
-			.memberMapTargetComponentId()
-			.memberCorrelationId()
-			.memberMapCategoryId()
-			.build();
-	
 	private final boolean extended;
 	
 	public SnomedComplexMapRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, 
@@ -52,29 +37,24 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 	}
 	
 	@Override
-	public Set<String> getFieldsToLoad() {
-		return FIELD_TO_LOAD;
-	}
-
-	@Override
-	public String transform(Document doc) {
+	public String transform(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(SnomedMappings.memberMapGroup().getValueAsString(doc));
+		sb.append(doc.getMapGroup());
 		sb.append(HT);
-		sb.append(SnomedMappings.memberMapPriority().getValueAsString(doc));
+		sb.append(doc.getMapPriority());
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberMapRule().getValue(doc)));
+		sb.append(nullToEmpty(doc.getMapRule()));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberMapAdvice().getValue(doc)));
+		sb.append(nullToEmpty(doc.getMapAdvice()));
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberMapTargetComponentId().getValue(doc)));
+		sb.append(nullToEmpty(doc.getMapTargetComponentId()));
 		sb.append(HT);
-		sb.append(SnomedMappings.memberCorrelationId().getValueAsString(doc));
+		sb.append(doc.getCorrelationId());
 		if (extended) {
 			sb.append(HT);
-			sb.append(nullToEmpty(SnomedMappings.memberMapCategoryId().getValueAsString(doc)));
+			sb.append(nullToEmpty(doc.getMapCategoryId()));
 		}
 		return sb.toString();
 	}

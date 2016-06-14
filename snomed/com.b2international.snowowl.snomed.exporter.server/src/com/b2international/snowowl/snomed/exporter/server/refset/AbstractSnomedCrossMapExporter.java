@@ -41,7 +41,8 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 	private SnomedExportConfiguration configuration;
 	private String refSetId;
 
-	protected AbstractSnomedCrossMapExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
+	protected AbstractSnomedCrossMapExporter(final SnomedExportConfiguration configuration, final String refSetId, 
+			final SnomedMapSetSetting mapSetSetting) {
 		this.refSetId = checkNotNull(refSetId, "refSetId");
 		this.configuration = checkNotNull(configuration, "configuration");
 		this.mapSetSetting = mapSetSetting;
@@ -92,7 +93,7 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 	protected SnomedMapSetSetting getMapSetSetting() {
 		return mapSetSetting;
 	}
-
+	
 	/*returns with the previously configured release time in yyyyMMdd format*/
 	private String getExportTime(final Date date) {
 		return Dates.formatByGmt(date, DateFormats.SHORT);

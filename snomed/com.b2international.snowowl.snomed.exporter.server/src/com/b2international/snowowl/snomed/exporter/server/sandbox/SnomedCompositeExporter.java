@@ -22,6 +22,7 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoB
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.effectiveTime;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.concat;
@@ -30,9 +31,6 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.reverse;
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.lucene.search.BooleanClause.Occur.MUST;
-import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
-import static org.apache.lucene.search.NumericRangeQuery.newLongRange;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -41,10 +39,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-
 import com.b2international.commons.collections.CloseableList;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -52,7 +50,7 @@ import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
@@ -61,9 +59,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 /**
- *
+ * Abstract SNOMED CT composite exporter. The exporter relies on the underlying index store without 
+ * directly accessing it.
  */
-public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
+public abstract class SnomedCompositeExporter<T extends SnomedDocument> implements SnomedIndexExporter<T> {
 
 	private final Iterator<String> itr;
 	private final CloseableList<SnomedSubExporter> closeables;
@@ -93,7 +92,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	}
 
 	@Override
-	public Query getExportQuery(final IBranchPath branchPath) {
+	public Expression getExportQuery(final IBranchPath branchPath) {
 		final ContentSubType contentSubType = configuration.getContentSubType();
 		switch (contentSubType) {
 			case DELTA:
@@ -114,7 +113,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		} else if (this instanceof SnomedRf2Exporter) {
 			return RF2_CORE_RELATIVE_DIRECTORY;
 		} else {
-			return raiseError();
+			 throw createException();
 		}
 	}
 	
@@ -126,7 +125,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		} else if (this instanceof SnomedRf2Exporter) {
 			return SnomedRfFileNameBuilder.buildCoreRf2FileName(getType(), configuration);
 		} else {
-			return raiseError();
+			throw createException();
 		}
 	}
 	
@@ -145,56 +144,53 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		return configuration;
 	}
 	
-	protected Query getDeltaQuery() {
+	protected Expression getDeltaQuery() {
 		
 		final Date startDate = configuration.getDeltaExportStartEffectiveTime();
 		final Date endDate = configuration.getDeltaExportEndEffectiveTime();
 		
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(getSnapshotQuery(), MUST);
+		ExpressionBuilder builder = Expressions.builder();
+		builder.must(getSnapshotQuery());
 
-		//no start no end -> export unpublished ones
+		//no start, no end -> export unpublished ones
 		if (null == startDate && null == endDate) {
-			query.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), MUST);
-			return query;
+			builder.must(effectiveTime(UNSET_EFFECTIVE_TIME));
+			return builder.build();
 		}
-		
-		final String effectiveTimeField = SnomedMappings.effectiveTime().fieldName();
 		
 		//end effective time is specified so we need everything 
 		//where the effective time is less or equal than the given end date one
 		if (null == startDate) {
-			query.add(newLongRange(effectiveTimeField, UNSET_EFFECTIVE_TIME, endDate.getTime(), false, true), MUST);
-			return query;
+			//TODO: replace this condition with exclusive start interval (now it is true, true)
+			builder.must(effectiveTime(UNSET_EFFECTIVE_TIME, endDate.getTime()));
+			return builder.build();
 		}
 		
 		//end date is not set. so effective time can be greater/equals than start
 		//end does not matter but consider unpublished ones.
 		if (null == endDate) {
-			final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
-			effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
-			effectiveTimeQuery.add(newLongRange(effectiveTimeField, startDate.getTime(), null, true, true), SHOULD);
-			query.add(effectiveTimeQuery, MUST);
-			return query;
+			ExpressionBuilder noEndDateExpressionBuilder = Expressions.builder();
+			noEndDateExpressionBuilder.should(effectiveTime(UNSET_EFFECTIVE_TIME));
+			//TODO: no end, this should be part of the builder as 'after', for now, Long.MAX_VALUE
+			noEndDateExpressionBuilder.should(effectiveTime(startDate.getTime(), Long.MAX_VALUE));
+			builder.must(noEndDateExpressionBuilder.build());
+			return builder.build();
 		}
-		
 		//both start and end is specified. create a range
-		query.add(newLongRange(effectiveTimeField, startDate.getTime(), endDate.getTime(), true, true), MUST);
+		builder.must(SnomedDocument.Expressions.effectiveTime(startDate.getTime(), endDate.getTime()));
 		
-		return query;
+		return builder.build();
 	}
 	
-	protected abstract Query getSnapshotQuery();
-	
-	private Query getUnpublishedQuery(final long effectiveTime) {
-		return SnomedMappings.newQuery().effectiveTime(effectiveTime).matchAll();
+	protected Expression getSnapshotQuery() {
+		return Expressions.matchAll();
 	}
-
-	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter) {
+	
+	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter<T> exporter) {
 		return createSubExporter(branchPath, exporter, Collections.<String>emptySet());
 	}
 	
-	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter, final Collection<String> ignoredSegmentNames) {
+	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter<T> exporter, final Collection<String> ignoredSegmentNames) {
 		final SnomedSubExporter subExporter = new SnomedSubExporter(branchPath, exporter, ignoredSegmentNames);
 		closeables.add(subExporter);
 		return subExporter;
@@ -207,8 +203,8 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	/**
 	 * Throws an illegal state exception.
 	 */
-	protected <T> T raiseError() throws IllegalStateException {
-		throw new IllegalStateException(
+	protected RuntimeException createException() {
+		return new IllegalStateException(
 			new StringBuilder("Unknown SNOMED CT release format exporter implementation. Expected either ")
 			.append(SnomedRf1Exporter.class.getName())
 			.append( "or" )
@@ -308,7 +304,5 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	private List<ICodeSystemVersion> getAllVersion() {
 		return getServiceForClass(CodeSystemService.class).getAllTagsWithHead(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
-	
-	
 
 }

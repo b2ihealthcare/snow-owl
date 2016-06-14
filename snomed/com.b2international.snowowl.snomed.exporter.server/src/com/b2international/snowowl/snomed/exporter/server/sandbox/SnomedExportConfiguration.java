@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -31,6 +32,13 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
  */
 public interface SnomedExportConfiguration {
 
+	/**
+	 * Returns the current revision searcher that ensures
+	 * a consistent view on the index store.
+	 * @return
+	 */
+	RevisionSearcher getRevisionSearcher();
+	
 	/**
 	 * Returns with the current branch path of the client who 
 	 * triggered the export. 
@@ -68,4 +76,5 @@ public interface SnomedExportConfiguration {
 	 * @return the effective time label for unpublished components
 	 */
 	String getUnsetEffectiveTimeLabel();
+
 }

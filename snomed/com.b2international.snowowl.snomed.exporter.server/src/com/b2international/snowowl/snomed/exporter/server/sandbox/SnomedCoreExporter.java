@@ -17,24 +17,15 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.apache.lucene.search.Query;
-
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 
 /**
  * Base exporter for SNOMED CT concepts, descriptions and relationships.
  */
-public abstract class SnomedCoreExporter extends SnomedCompositeExporter implements SnomedRf2Exporter {
+public abstract class SnomedCoreExporter<T extends SnomedDocument> extends SnomedCompositeExporter<T> implements SnomedRf2Exporter {
 
 	protected SnomedCoreExporter(final SnomedExportConfiguration configuration) {
 		super(checkNotNull(configuration, "configuration"));
-	}
-
-	protected abstract int getTerminologyComponentType();
-	
-	@Override
-	protected Query getSnapshotQuery() {
-		return SnomedMappings.newQuery().type(getTerminologyComponentType()).matchAll();
 	}
 }

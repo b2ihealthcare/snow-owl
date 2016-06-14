@@ -17,53 +17,34 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_DEFINED;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Set;
-
-import org.apache.lucene.document.Document;
-
-import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
 /**
  * RF2 exporter for SNOMED&nbsp;CT concepts.
  *
  */
-public class SnomedConceptExporter extends SnomedCoreExporter {
+public class SnomedConceptExporter extends SnomedCoreExporter<SnomedConceptDocument> {
 
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.id()
-			.effectiveTime()
-			.active()
-			.module()
-			.primitive()
-			.build();
-	
 	public SnomedConceptExporter(final SnomedExportConfiguration configuration) {
 		super(checkNotNull(configuration, "configuration"));
 	}
 
 	@Override
-	public Set<String> getFieldsToLoad() {
-		return FIELDS_TO_LOAD;
-	}
-	
-	@Override
-	public String transform(final Document doc) {
+	public String transform(final SnomedConceptDocument doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(SnomedMappings.id().getValueAsString(doc));
+		sb.append(doc.getId());
 		sb.append(HT);
-		sb.append(formatEffectiveTime(SnomedMappings.effectiveTime().getValue(doc)));
+		sb.append(formatEffectiveTime(doc.getEffectiveTime()));
 		sb.append(HT);
-		sb.append(SnomedMappings.active().getValue(doc));
+		sb.append(doc.isActive() ? "1" : "0");
 		sb.append(HT);
-		sb.append(SnomedMappings.module().getValueAsString(doc));
+		sb.append(doc.getModuleId());
 		sb.append(HT);
-		sb.append(getDefinitionStatusValue(doc));
+		sb.append(doc.isPrimitive() ? PRIMITIVE : FULLY_DEFINED);
 		return sb.toString();
 	}
 
@@ -75,14 +56,5 @@ public class SnomedConceptExporter extends SnomedCoreExporter {
 	@Override
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.CONCEPT_HEADER;
-	}
-	
-	@Override
-	protected int getTerminologyComponentType() {
-		return CONCEPT_NUMBER;
-	}
-
-	private String getDefinitionStatusValue(final Document doc) {
-		return BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc)) ? PRIMITIVE : FULLY_DEFINED;
 	}
 }

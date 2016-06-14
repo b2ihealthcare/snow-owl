@@ -16,21 +16,28 @@
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Abstract subset RF1 exporter for SNOMED&nbsp;CT simple type and language type reference sets.
@@ -65,7 +72,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	
 	private final String folderName;
 	private String label;
-	private short referencedComponentType;
+	private int referencedComponentType;
 	private SnomedExportConfiguration configuration;
 	private String refSetId;
 
@@ -132,9 +139,24 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 		return folderName;
 	}
 
-	/*returns with the referenced component type for the reference set*/
-	private short getReferencedComponentType(final String refSetId) {
-		return new SnomedRefSetLookupService().getComponent(getBranchPath(), refSetId).getReferencedComponentType();
+	/* returns with the referenced component type for the reference set */
+	private int getReferencedComponentType(final String refSetId) {
+
+		try {
+			RevisionSearcher searcher = getConfiguration().getRevisionSearcher();
+			QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
+			Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(refSetId)).build();
+	
+			Hits<SnomedConceptDocument> snomedConceptDocuments = searcher.search(query);
+			Optional<SnomedConceptDocument> first = FluentIterable.<SnomedConceptDocument> from(snomedConceptDocuments).first();
+			if (first.isPresent()) {
+				return first.get().getReferencedComponentType();
+			} else {
+				throw new IllegalArgumentException("Could not find reference set with id: " + refSetId);
+			}
+		} catch(IOException ex) {
+			throw new IllegalArgumentException(ex);
+		}
 	}
 	
 }

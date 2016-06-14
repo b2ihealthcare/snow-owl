@@ -23,8 +23,12 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.server.core.SnomedRf1ConceptExporter;
 import com.b2international.snowowl.snomed.exporter.server.core.SnomedRf1DescriptionExporter;
@@ -35,7 +39,7 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedConceptE
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedDescriptionExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedInferredRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedStatedRelationshipExporter;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -119,7 +123,7 @@ public class SnomedExporterFacade {
 		}
 		
 		logActivity("Publishing SNOMED CT non-stated relationships into RF2 format.");
-		SnomedExporter relationshipExporter = new SnomedRelationshipExporter(configuration);
+		SnomedExporter relationshipExporter = new SnomedInferredRelationshipExporter(configuration);
 		new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
 		
 		if (monitor.isCanceled()) {
@@ -177,7 +181,7 @@ public class SnomedExporterFacade {
 
 	public void executeRefSetExport(final String workingDirectory, final SnomedExportConfiguration configuration, final String refSetId, 
 			final OMMonitor monitor) throws IOException {
-	
+		
 		final SnomedExporter refSetExporter = SnomedRefSetExporterFactory.getRefSetExporter(refSetId, configuration);
 		
 		if (NoopExporter.INSTANCE == refSetExporter) {

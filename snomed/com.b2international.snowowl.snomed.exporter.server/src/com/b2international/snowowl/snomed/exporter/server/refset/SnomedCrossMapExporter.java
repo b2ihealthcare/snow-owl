@@ -16,33 +16,31 @@
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
 import static com.b2international.snowowl.snomed.exporter.server.SnomedReleaseFileHeaders.RF1_CROSS_MAP_HEADER;
-import static java.util.Collections.emptyList;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TopDocs;
-
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
 
 /**
  * SNOMED&nbsp;CT cross map exporter for complex map and simple map type reference sets.
@@ -55,25 +53,20 @@ import com.google.common.collect.Iterators;
  */
 public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 
-	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.memberReferencedComponentId()
-			.memberMapTargetComponentId()
-			.build();
-	
-	private static final Set<String> COMPLEX_MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.memberReferencedComponentId()
-			.memberMapTargetComponentId()
-			.memberMapPriority()
-			.memberMapGroup()
-			.memberMapRule()
-			.memberMapAdvice()
-			.build();
-	
 	private boolean complex;
 
 	private Iterator<String> itr;
 	
-	public SnomedCrossMapExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
+	private static final String FILE_NAME_PREFIX = "CrossMaps";
+	
+	/**
+	 * 
+	 * @param configuration
+	 * @param refSetId
+	 * @param mapSetSetting
+	 */
+	public SnomedCrossMapExporter(final SnomedExportConfiguration configuration, final String refSetId, 
+			final SnomedMapSetSetting mapSetSetting) {
 		super(configuration, refSetId, mapSetSetting);
 		complex = getMapSetSetting().isComplex();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<MapTargetEntry, String>() {
@@ -91,90 +84,47 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 		});
 	}
 
-	private static final String FILE_NAME_PREFIX = "CrossMaps";
-
 	@Override
 	protected String getFileNameprefix() {
 		return FILE_NAME_PREFIX;
 	}
 
-	@SuppressWarnings("unchecked")
 	private Collection<MapTargetEntry> createResultSet() {
 		
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
+		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+		RevisionIndex revisionIndexService = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 		
-		final Query query = SnomedMappings.newQuery().memberRefSetId(getRefSetId()).matchAll();
-		final int limit = indexService.getHitCount(getBranchPath(), query, null);
-		
-		if (limit > 0) {
-		
-			final TopDocs topDocs = indexService.search(getBranchPath(), query, limit);
-			
-			final MapTargetEntry[] $ = new MapTargetEntry[limit];
-			
-			ReferenceManager<IndexSearcher> manager = null;
-			IndexSearcher searcher = null;
-			
-			try {
+		return revisionIndexService.read(getBranchPath().getPath(), new RevisionIndexRead<Collection<MapTargetEntry>>() {
 
-				manager = indexService.getManager(getBranchPath());
-				searcher = manager.acquire();
-
-				if (null != topDocs && !CompareUtils.isEmpty(topDocs.scoreDocs)) {
-
-					for (int i = 0; i < topDocs.scoreDocs.length; i++) {
-
-						final Document doc = searcher.doc(topDocs.scoreDocs[i].doc, complex ? COMPLEX_MEMBER_FIELD_TO_LOAD : MEMBER_FIELD_TO_LOAD);
-						final MapTargetEntry entry = new MapTargetEntry();
-						entry.mapSource = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
-						entry.mapTarget = SnomedMappings.memberMapTargetComponentId().getValue(doc);
-						
-						if (complex) {
-							
-							entry.rule = SnomedMappings.memberMapRule().getValue(doc);
-							entry.advice = SnomedMappings.memberMapAdvice().getValue(doc);
-							entry.group = SnomedMappings.memberMapGroup().getValueAsString(doc);
-							entry.priority = SnomedMappings.memberMapPriority().getValueAsString(doc); 
-							
-						}
-							
-						
-						$[i] = entry;
-						
-					}
-
-				}
+			@Override
+			public Collection<MapTargetEntry> execute(RevisionSearcher index) throws IOException {
+				QueryBuilder<SnomedRefSetMemberIndexEntry> builder = Query.builder(SnomedRefSetMemberIndexEntry.class);
 				
-				return Arrays.asList($);
+				//we need every target, limit needs to be set as the default is 50 hits
+				Query<SnomedRefSetMemberIndexEntry> query = builder.selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
+				Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
 
-
-			} catch (final IOException e) {
-
-				throw new SnowowlRuntimeException(e);
-
-			} finally {
-
-				if (null != manager && null != searcher) {
-
-					try {
-
-						manager.release(searcher);
-
-					} catch (final IOException e) {
-
-						throw new SnowowlRuntimeException(e);
-
+				Set<MapTargetEntry> mapTargetEntries = Sets.newHashSet();
+				
+				for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : hits) {
+					
+					final MapTargetEntry mapTargetEntry = new MapTargetEntry();
+					mapTargetEntry.mapSource = snomedRefSetMemberIndexEntry.getReferencedComponentId();
+					mapTargetEntry.mapTarget = snomedRefSetMemberIndexEntry.getMapTargetComponentId();
+					
+					if (complex) {
+						mapTargetEntry.rule = snomedRefSetMemberIndexEntry.getMapRule();
+						mapTargetEntry.advice = snomedRefSetMemberIndexEntry.getMapAdvice();
+						
+						//nulls are converted to empty strings when writing it out
+						mapTargetEntry.group = String.valueOf(snomedRefSetMemberIndexEntry.getMapGroup());
+						mapTargetEntry.priority = String.valueOf(snomedRefSetMemberIndexEntry.getMapPriority()); 
 					}
-
+					mapTargetEntries.add(mapTargetEntry);
 				}
-
+				return mapTargetEntries;
 			}
-
-		} else {
-			//empty reference set
-			return emptyList();
-		}
+		});
 		
 	}
 	

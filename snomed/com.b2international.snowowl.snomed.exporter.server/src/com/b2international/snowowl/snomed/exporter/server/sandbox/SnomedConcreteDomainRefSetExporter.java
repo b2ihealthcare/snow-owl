@@ -18,12 +18,8 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 
-import java.util.Set;
-
-import org.apache.lucene.document.Document;
-
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -31,41 +27,25 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 
-	private static final Set<String> FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.fields(COMMON_FIELDS_TO_LOAD)
-			.memberDataTypeLabel()
-			.memberUomId()
-			.memberOperatorId()
-			.memberSerializedValue()
-			.memberCharacteristicTypeId()
-			.build();
-	
 	public SnomedConcreteDomainRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedRefSetType type) {
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
 	}
 	
 	@Override
-	public Set<String> getFieldsToLoad() {
-		return FIELD_TO_LOAD;
-	}
-
-	@Override
-	public String transform(Document doc) {
-		
-		String memberUomId = null != doc.getField(SnomedMappings.memberUomId().fieldName()) ? nullToEmpty(SnomedMappings.memberUomId().getValueAsString(doc)) : "";
+	public String transform(SnomedRefSetMemberIndexEntry doc) {
 		
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(memberUomId);
+		sb.append(doc.getUomComponentId());
 		sb.append(HT);
-		sb.append(SnomedMappings.memberOperatorId().getValueAsString(doc));
+		sb.append(doc.getOperatorComponentId());
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberDataTypeLabel().getValue(doc)));
+		sb.append(nullToEmpty(doc.getAttributeLabel()));
 		sb.append(HT);
-		sb.append(SnomedMappings.memberSerializedValue().getValue(doc));
+		sb.append(doc.getStringField(SnomedRefSetMemberIndexEntry.Fields.DATA_VALUE)); //the direct value
 		sb.append(HT);
-		sb.append(nullToEmpty(SnomedMappings.memberCharacteristicTypeId().getValueAsString(doc)));
+		sb.append(nullToEmpty(doc.getCharacteristicTypeId()));
 		return sb.toString();
 	}
 	

@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import org.apache.lucene.search.BooleanClause.Occur;
-
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
 /**
@@ -25,11 +27,16 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 public class SnomedStatedRelationshipExporter extends AbstractSnomedRelationshipExporter {
 
 	public SnomedStatedRelationshipExporter(final SnomedExportConfiguration configuration) {
-		super(configuration, Occur.MUST);
+		super(configuration);
 	}
 	
 	@Override
 	public ComponentExportType getType() {
 		return ComponentExportType.STATED_RELATIONSHIP;
+	}
+	
+	@Override
+	protected Expression getSnapshotQuery() {
+		return Expressions.builder().must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
 	}
 }

@@ -15,43 +15,30 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.Query;
-
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
 /**
- * Representation of a SNOMED&nbsp;CT exporter working on index directories.
+ * Representation of a SNOMED&nbsp;CT exporter hiding Lucene index store.
  *
  */
-public interface SnomedIndexExporter extends SnomedExporter {
+public interface SnomedIndexExporter<T extends SnomedDocument> extends SnomedExporter {
 
 	/**
-	 * Returns with a set of fields that has to be load for the document.
-	 * <p>Could be {@code null}. If {@code null} then all the fields will be
-	 * loaded.
-	 * @return a set of document field names or {@code null}.
-	 */
-	@Nullable Set<String> getFieldsToLoad();
-	
-	/**
-	 * Returns with the query for the for the branch path argument that
+	 * Returns with the query expression for the for the branch path argument that
 	 * has to be run to get back the documents for the export process.
 	 * @param branchPath the branch path.
-	 * @return the query for the export.
+	 * @return the query expression for the export.
 	 */
-	Query getExportQuery(final IBranchPath branchPath);
+	Expression getExportQuery(final IBranchPath branchPath);
 	
 	/**
-	 * Transforms the document argument into a serialized line of 
+	 * Transforms the SNOMED CT document index representation argument into a serialized line of 
 	 * attributes.
-	 * @param doc the document to transform.
+	 * @param the SNOMED CT document to transform.
 	 * @return a string as a serialized line in the export file.
 	 */
-	String transform(final Document doc);
+	String transform(final T snomedDocument);
 	
 }

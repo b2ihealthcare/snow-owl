@@ -25,5 +25,12 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
  * Common interface for reference set DSV exporters.
  */
 public interface IRefSetDSVExporter {
+	
+	/**
+	 * Executes the DSV export process.
+	 * @param monitor
+	 * @return
+	 * @throws SnowowlServiceException
+	 */
 	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException;
 }
