@@ -180,6 +180,15 @@ public class CodeSystemUtils {
 		}
 		
 	} 
+	
+	public static final class CodeSystemVersionToRepositoryUuidFunction implements Function<ICodeSystemVersion, String> {
+		
+		@Override
+		public String apply(ICodeSystemVersion input) {
+			return input.getRepositoryUuid();
+		}
+		
+	}
 
 	
 	private static final LoadingCache<String, ICDOManagedItem<?>> TOOLING_ID_MANAGED_ITEM_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<String, ICDOManagedItem<?>>() {

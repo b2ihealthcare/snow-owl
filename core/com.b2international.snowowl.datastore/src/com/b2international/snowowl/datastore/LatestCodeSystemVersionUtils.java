@@ -20,6 +20,8 @@ import static com.b2international.snowowl.core.date.EffectiveTimes.UNSET_EFFECTI
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static java.lang.Long.MAX_VALUE;
 
+import com.google.common.base.Predicate;
+
 /**
  * Utility class for the
  */
@@ -46,6 +48,15 @@ public abstract class LatestCodeSystemVersionUtils {
 		
 	}
 	
+	private static class LatestCodeSystemVersionPredicate implements Predicate<ICodeSystemVersion> {
+
+		@Override
+		public boolean apply(ICodeSystemVersion input) {
+			return isLatestVersion(input);
+		}
+		
+	}
+	
 	/**
 	 * Returns {@code true} if the version is a fake {@link ICodeSystemVersion} implementation
 	 * representing the HEAD in the repository.
@@ -54,6 +65,10 @@ public abstract class LatestCodeSystemVersionUtils {
 	 */
 	public static boolean isLatestVersion(final ICodeSystemVersion version) {
 		return MAIN_BRANCH.equals(version.getVersionId());
+	}
+	
+	public static Predicate<ICodeSystemVersion> latestCodeSystemVersionPredicate()  {
+		return new LatestCodeSystemVersionPredicate();
 	}
 
 }
