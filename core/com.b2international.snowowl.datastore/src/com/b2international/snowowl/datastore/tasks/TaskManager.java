@@ -43,7 +43,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.TaskBranchPathMap;
@@ -224,21 +223,19 @@ public class TaskManager {
 	 * @param toolingId the application specific tooling ID. Can be either terminology ID or terminology component ID.
 	 * @param the target version. The unique name of the tag.
 	 */
-	public void setActiveVersionByToolingId(final String toolingId, final String targetVersion) {
+	public void setActiveVersionByToolingId(final String toolingId, final IBranchPath targetBranchPath) {
 		final String repositoryUuid = CodeSystemUtils.getRepositoryUuid(Preconditions.checkNotNull(toolingId, "Tooling ID argument cannot be null."));
-		setActiveVersion(repositoryUuid, Preconditions.checkNotNull(targetVersion, "Target version argument cannot be null."));
+		setActiveVersion(repositoryUuid, Preconditions.checkNotNull(targetBranchPath, "Target branchPath argument cannot be null."));
 	}
 	
 	/**
 	 * Sets the user specific active version in a repository.
 	 * @param repositoryUuid the unique ID of the repository.
-	 * @param targetVersion the target version. The tag name.
+	 * @param iBranchPath the target version. The tag name.
 	 */
-	public void setActiveVersion(final String repositoryUuid, final String targetVersion) {
+	public void setActiveVersion(final String repositoryUuid, final IBranchPath branchPath) {
 
-		final IBranchPath destinationPath = IBranchPath.MAIN_BRANCH.equals(Preconditions.checkNotNull(targetVersion, "Target version argument cannot be null.")) 
-				? BranchPathUtils.createMainPath() 
-				: BranchPathUtils.createPath(BranchPathUtils.createMainPath(), targetVersion);
+		final IBranchPath destinationPath = Preconditions.checkNotNull(branchPath, "Target version branchPath argument cannot be null."); 
 		
 		getUserBranchPathMap().putBranchPath(Preconditions.checkNotNull(repositoryUuid, "Repository UUID argument cannot be null."), destinationPath);
 		
