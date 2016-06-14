@@ -41,6 +41,9 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -157,11 +160,14 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	 * <p>
 	 * The default case will check if the change did not involve releasing the component, and if so, reports a
 	 * conflict; allows the removal otherwise.
+	 * 
+	 * The type of conflict is intentionally {@link ChangedInSourceAndDetachedInTargetConflict}.
 	 */
 	@Override
 	public Object changedInTargetAndDetachedInSource(final CDORevisionDelta targetDelta) {
 
-		final Conflict conflict = checkReleasedId(targetDelta);
+		final Conflict conflict = checkIsReleasedState(targetDelta);
+		
 		if (conflict != null) {
 			return conflict;
 		}
@@ -169,24 +175,31 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		return targetDelta.getID();
 	}
 
-	private Conflict checkReleasedId(final CDORevisionDelta revisionDelta) {
+	private Conflict checkIsReleasedState(final CDORevisionDelta revisionDelta) {
 
 		final EClass eClass = revisionDelta.getEClass();
 
-		if (releasedAttributeMap.containsKey(eClass) && isReleased(revisionDelta, releasedAttributeMap.get(eClass))) {
+		Optional<EClass> releasableClass = FluentIterable.from(releasedAttributeMap.keySet()).firstMatch(new Predicate<EClass>() {
+			@Override public boolean apply(EClass input) {
+				return input.isSuperTypeOf(eClass);
+			}
+		});
+		
+		if (releasableClass.isPresent() && isReleased(revisionDelta, releasedAttributeMap.get(releasableClass.get()))) {
 			return new ChangedInSourceAndDetachedInTargetConflict(revisionDelta);
-		} else {
-			return null;
 		}
+		
+		return null;
 	}
 
 	private boolean isReleased(final CDORevisionDelta revisionDelta, final EAttribute releasedAttribute) {
-		final CDOFeatureDelta releasedFeatureDelta = revisionDelta.getFeatureDelta(releasedAttribute);
 
-		if (!(releasedFeatureDelta instanceof CDOSetFeatureDelta)) {
-			return false;
-		} else {
+		final CDOFeatureDelta releasedFeatureDelta = revisionDelta.getFeatureDelta(releasedAttribute);
+		
+		if (releasedFeatureDelta instanceof CDOSetFeatureDelta) {
 			return (boolean) ((CDOSetFeatureDelta) releasedFeatureDelta).getValue();
 		}
+		
+		return false;
 	}
 }
