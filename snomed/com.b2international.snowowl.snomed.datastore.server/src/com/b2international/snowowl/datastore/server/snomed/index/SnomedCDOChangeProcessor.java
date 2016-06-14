@@ -62,7 +62,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
@@ -72,8 +71,6 @@ import com.b2international.snowowl.snomed.datastore.index.change.RelationshipCha
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
-import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
@@ -101,7 +98,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private final Set<CodeSystemVersion> dirtyCodeSystemVersions = newHashSet();
 	
 	private final IBranchPath branchPath;
-	private final SnomedStatementBrowser statementBrowser;
 	private final ISnomedIdentifierService identifierService;
 	private final RevisionIndex index;
 	
@@ -115,11 +111,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private Multimap<Class<? extends Revision>, Long> deletions;
 
 
-	public SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index, 
-			final SnomedStatementBrowser statementBrowser, final ISnomedIdentifierService identifierService) {
+	public SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index, final ISnomedIdentifierService identifierService) {
 		this.index = index;
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		this.statementBrowser = statementBrowser;
 		this.identifierService = identifierService;
 	}
 	
@@ -257,10 +251,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final Collection<ConstraintDomain> allConstraintDomains = Collections.emptySet();
 		
 		final Collection<ChangeSetProcessor> changeSetProcessors = newHashSet();
-		final ParentageUpdater inferred = new ParentageUpdater(inferredTaxonomy.getNewTaxonomy(), false);
-		final ParentageUpdater stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
-		final IconIdUpdater iconId = new IconIdUpdater(inferredTaxonomy.getNewTaxonomy(), statedTaxonomy.getNewTaxonomy(), SnomedIconProvider.getInstance().getAvailableIconIds());
-		changeSetProcessors.add(new ConceptChangeProcessor(branchPath, allConceptIds, allConstraintDomains , iconId, inferred, stated, statedTaxonomy, inferredTaxonomy));
+		changeSetProcessors.add(new ConceptChangeProcessor(branchPath, allConceptIds, allConstraintDomains, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy));
 		changeSetProcessors.add(new DescriptionChangeProcessor());
 		changeSetProcessors.add(new RelationshipChangeProcessor());
 		changeSetProcessors.add(new RefSetMemberChangeProcessor());
@@ -347,14 +338,14 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final Runnable inferredRunnable = CDOServerUtils.withAccessor(new Runnable() {
 			@Override
 			public void run() {
-				inferredTaxonomy = Taxonomies.inferred(searcher, branchPath, commitChangeSet, conceptIds, statementBrowser);
+				inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, conceptIds);
 			}
 		}, accessor);
 		
 		final Runnable statedRunnable = CDOServerUtils.withAccessor(new Runnable() {
 			@Override
 			public void run() {
-				statedTaxonomy = Taxonomies.stated(searcher, branchPath, commitChangeSet, conceptIds, statementBrowser);
+				statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, conceptIds);
 			}
 		}, accessor);
 		
