@@ -244,10 +244,11 @@ public abstract class SnomedBranchingApiAssert {
 		waitForMergeJob(id).then().assertThat().body("status", equalTo("COMPLETED"));
 	}
 
-	// TODO: Any info in the ApiError to discern failures?
-	public static void assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {
+	public static Response assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
-		waitForMergeJob(id).then().assertThat().body("status", equalTo("FAILED"));
+		Response mergeResponse = waitForMergeJob(id);
+		mergeResponse.then().assertThat().body("status", equalTo("FAILED"));
+		return mergeResponse;
 	}
 	
 	private static Response waitForMergeJob(String id) {
