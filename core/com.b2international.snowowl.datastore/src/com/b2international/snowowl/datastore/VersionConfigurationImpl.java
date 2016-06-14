@@ -75,7 +75,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 			return error("Version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(repositoryUuid) + " cannot be modified.");
 		}
 
-		final ICodeSystemVersion newVersionToSet = tryFindVesion(repositoryUuid, versionId);
+		final ICodeSystemVersion newVersionToSet = tryFindVersion(repositoryUuid, versionId);
 		ICodeSystem matchingCodeSystem = CodeSystemUtils.findMatchingCodeSystem(versionToSet.getParentBranchPath(), repositoryUuid);
 		
 		if (null == newVersionToSet) {
@@ -88,7 +88,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		while (null != slaveRepositoryUuid) {
 			
 			//same version is mandatory in slave repository.
-			ICodeSystemVersion newSlaveVersion = tryFindVesion(slaveRepositoryUuid, versionId);
+			ICodeSystemVersion newSlaveVersion = tryFindVersion(slaveRepositoryUuid, versionId);
 			if (null == newSlaveVersion) {
 				return error("Cannot find dependent version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(slaveRepositoryUuid) + ".");
 			}
@@ -159,7 +159,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	public List<ICodeSystemVersion> getAllVersionsForRepository(final ICodeSystemVersion version) {
 		final String repositoryUuid = checkNotNull(version, "version").getRepositoryUuid();
 		final List<ICodeSystemVersion> allVersionForRepository = newArrayList(allVersions.get(repositoryUuid));
-		final ICodeSystemVersion initVersion = tryFindVesion(repositoryUuid, INITIAL_STATE);
+		final ICodeSystemVersion initVersion = tryFindVersion(repositoryUuid, INITIAL_STATE);
 		if (null != initVersion) {
 			allVersionForRepository.remove(initVersion);
 		}
@@ -231,7 +231,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		return getConnectionManager().isMeta(checkNotNull(repositoryUuid, "repositoryUuid"));
 	}
 
-	private ICodeSystemVersion tryFindVesion(final String repositoryUuid, final String versionId) {
+	private ICodeSystemVersion tryFindVersion(final String repositoryUuid, final String versionId) {
 		return find(allVersions.get(repositoryUuid), new Predicate<ICodeSystemVersion>() {
 			@Override public boolean apply(final ICodeSystemVersion version) {
 				return versionId.equals(version.getVersionId());
