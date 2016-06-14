@@ -19,10 +19,11 @@ import static com.b2international.commons.status.Statuses.error;
 import static com.b2international.commons.status.Statuses.ok;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.CodeSystemUtils.TOOLING_FEATURE_NAME_COMPARATOR;
-import static com.b2international.snowowl.datastore.CodeSystemUtils.sameRepositoryCodeSystemPredicate;
-import static com.b2international.snowowl.datastore.CodeSystemUtils.sameRepositoryCodeSystemVersionPredicate;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.INITIAL_STATE;
+import static com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils.latestCodeSystemVersionPredicate;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -44,9 +45,8 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
  * Version configuration implementation that gets its initial state from the {@link TaskManager}.
@@ -242,7 +242,11 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	private Map<ICodeSystem, ICodeSystemVersion> initCurrentVersions() {
 		final Map<ICodeSystem, ICodeSystemVersion> currentVersion = newHashMap();
 		
-		for (final String repositoryUuid : allVersions.keySet()) {
+		Iterable<ICodeSystemVersion> versions = Iterables.concat(allVersions.values());
+		Iterable<ICodeSystemVersion> fakeRefHeadVersions = Iterables.filter(versions, latestCodeSystemVersionPredicate());
+		Iterable<ICodeSystemVersion> existingVersions = Iterables.filter(versions, not(in(newArrayList(fakeRefHeadVersions))));
+		
+		for (final String repositoryUuid : Sets.newHashSet(Iterables.transform(existingVersions, new CodeSystemUtils.CodeSystemVersionToRepositoryUuidFunction()))) {
 			
 			// this branchPath can be: a task branch; version/tag branch Path; codeSystem branchPath 
 			final IBranchPath branchPath = taskBranchPathMap.getBranchPath(repositoryUuid);
