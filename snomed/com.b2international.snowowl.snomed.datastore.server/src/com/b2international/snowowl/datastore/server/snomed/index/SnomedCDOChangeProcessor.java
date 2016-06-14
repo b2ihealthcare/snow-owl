@@ -60,7 +60,6 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.ConstraintChangeProcessor;
-import com.b2international.snowowl.datastore.server.snomed.index.change.DescriptionChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.RefSetMemberChangeProcessor;
 import com.b2international.snowowl.datastore.server.snomed.index.change.RelationshipChangeProcessor;
 import com.b2international.snowowl.snomed.Concept;
@@ -69,6 +68,7 @@ import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDom
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
