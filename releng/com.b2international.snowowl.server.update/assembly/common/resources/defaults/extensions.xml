@@ -1,0 +1,15 @@
+<com.b2international.snowowl.core.api.preferences.ConfigNode>
+  <key>com.b2international.snowowl.terminologyregistry.core.codeSystems</key>
+  <children>
+    <entry>
+      <string>snomedStore</string>
+      <com.b2international.snowowl.terminologyregistry.core.preferences.PreferredTerminologyExtension>
+        <shortName>SNOMEDCT</shortName>
+        <repositoryUuid>snomedStore</repositoryUuid>
+        <branchPath>MAIN</branchPath>
+        <oid>2.16.840.1.113883.6.96</oid>
+        <iconPath>icons/snomed.png</iconPath>
+      </com.b2international.snowowl.terminologyregistry.core.preferences.PreferredTerminologyExtension>
+    </entry>
+  </children>
+</com.b2international.snowowl.core.api.preferences.ConfigNode>
