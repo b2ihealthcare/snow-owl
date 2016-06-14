@@ -18,9 +18,13 @@ package com.b2international.snowowl.api.impl.codesystem.domain;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  */
+@JsonDeserialize(builder=CodeSystem.Builder.class)
 public class CodeSystem implements ICodeSystem {
 	
 	public static Builder builder() {
@@ -32,30 +36,32 @@ public class CodeSystem implements ICodeSystem {
 				.oid(input.getOid())
 				.name(input.getName())
 				.shortName(input.getShortName())
-				.link(input.getOrgLink())
-				.language(input.getLanguage())
+				.organizationLink(input.getOrgLink())
+				.primaryLanguage(input.getLanguage())
 				.citation(input.getCitation())
 				.branchPath(input.getBranchPath())
 				.iconPath(input.getIconPath())
 				.terminologyId(input.getSnowOwlId())
-				.repositoryId(input.getRepositoryUuid())
+				.repositoryUuid(input.getRepositoryUuid())
 				.extensionOf(input.getExtensionOf());
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder {
 		
 		private String oid;
 		private String name;
 		private String shortName;
-		private String link;
-		private String language;
+		private String organizationLink;
+		private String primaryLanguage;
 		private String citation;
 		private String branchPath;
 		private String iconPath;
 		private String terminologyId;
-		private String repositoryId;
+		private String repositoryUuid;
 		private String extensionOf;
-		
+
+		@JsonCreator
 		private Builder() {}
 		
 		public Builder oid(final String oid) {
@@ -73,13 +79,13 @@ public class CodeSystem implements ICodeSystem {
 			return getSelf();
 		}
 		
-		public Builder link(final String link) {
-			this.link = link;
+		public Builder organizationLink(final String organizationLink) {
+			this.organizationLink = organizationLink;
 			return getSelf();
 		}
 		
-		public Builder language(final String language) {
-			this.language = language;
+		public Builder primaryLanguage(final String primaryLanguage) {
+			this.primaryLanguage = primaryLanguage;
 			return getSelf();
 		}
 		
@@ -103,8 +109,8 @@ public class CodeSystem implements ICodeSystem {
 			return getSelf();
 		}
 		
-		public Builder repositoryId(final String repositoryId) {
-			this.repositoryId = repositoryId;
+		public Builder repositoryUuid(final String repositoryUuid) {
+			this.repositoryUuid = repositoryUuid;
 			return getSelf();
 		}
 		
@@ -118,13 +124,13 @@ public class CodeSystem implements ICodeSystem {
 					oid, 
 					name, 
 					shortName, 
-					link, 
-					language, 
+					organizationLink, 
+					primaryLanguage, 
 					citation, 
 					branchPath, 
 					iconPath, 
 					terminologyId, 
-					repositoryId,
+					repositoryUuid,
 					extensionOf);
 		}
 		
@@ -132,9 +138,6 @@ public class CodeSystem implements ICodeSystem {
 			return this;
 		}
 		
-	}
-	
-	public CodeSystem() {
 	}
 	
 	private CodeSystem(final String oid, final String name, final String shortName, final String link, final String language,

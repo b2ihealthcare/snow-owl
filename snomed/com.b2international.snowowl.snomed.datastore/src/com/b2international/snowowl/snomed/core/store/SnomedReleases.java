@@ -38,12 +38,12 @@ public class SnomedReleases {
 				.name(SNOMED_INT_NAME)
 				.shortName(SNOMED_INT_SHORT_NAME)
 				.oid(SNOMED_INT_OID)
-				.language(SNOMED_INT_LANGUAGE)
-				.link(SNOMED_INT_LINK)
+				.primaryLanguage(SNOMED_INT_LANGUAGE)
+				.organizationLink(SNOMED_INT_LINK)
 				.citation(SNOMED_INT_CITATION)
 				.branchPath(IBranchPath.MAIN_BRANCH)
 				.iconPath(SNOMED_INT_ICON_PATH)
-				.repositoryId(REPOSITORY_UUID)
+				.repositoryUuid(REPOSITORY_UUID)
 				.terminologyId(TERMINOLOGY_ID)
 				.build();
 	}

@@ -95,9 +95,9 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 					.iconPath(in.readUTF())
 					.name(in.readUTF())
 					.oid(in.readUTF())
-					.link(in.readUTF())
-					.language(in.readUTF())
-					.repositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.organizationLink(in.readUTF())
+					.primaryLanguage(in.readUTF())
+					.repositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.shortName(in.readUTF())
 					.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 					.build();

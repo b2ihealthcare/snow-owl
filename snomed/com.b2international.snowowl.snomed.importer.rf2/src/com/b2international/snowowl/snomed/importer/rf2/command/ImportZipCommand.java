@@ -290,10 +290,10 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				.oid(getValue(KEY_CODE_SYSTEM_OID, null, values))
 				.extensionOf(getValue(KEY_EXTENSION_OF, null, values))
 				.iconPath(getValue(KEY_ICON_PATH, SNOMED_INT_ICON_PATH, values))
-				.language(getValue(KEY_LANGUAGE, null, values))
-				.link(getValue(KEY_MAINTAINING_ORGANIZATION_LINK, null, values))
+				.primaryLanguage(getValue(KEY_LANGUAGE, null, values))
+				.organizationLink(getValue(KEY_MAINTAINING_ORGANIZATION_LINK, null, values))
 				.name(getValue(KEY_NAME, null, values))
-				.repositoryId(getValue(KEY_REPOSITORY_UUID, REPOSITORY_UUID, values))
+				.repositoryUuid(getValue(KEY_REPOSITORY_UUID, REPOSITORY_UUID, values))
 				.shortName(getValue(KEY_SHORT_NAME, null, values))
 				.terminologyId(getValue(KEY_TERMINOLOGY_COMPONENT_ID, TERMINOLOGY_ID, values))
 				.build();
