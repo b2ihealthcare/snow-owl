@@ -113,7 +113,6 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
 		assertEquals(1, targetFeatures.size());
 		assertThat(targetFeatures, hasItem("caseSignificance"));
-
 	}
 
 	@Test
@@ -200,6 +199,56 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		assertDescriptionNotExists(testBranchPath, "D100");
 		assertDescriptionExists(testBranchPath.getParent(), "D100");
+	}
+	
+	@Test
+	public void changedInTargetDetachedInSourceMergeConflict() {
+		
+		setup();
+		
+		assertDescriptionCreated(testBranchPath, "D100", ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath, "D100");
+
+		assertBranchCanBeMerged(testBranchPath, "Merge new description into parent branch");
+
+		assertDescriptionExists(testBranchPath, "D100");
+		assertDescriptionExists(testBranchPath.getParent(), "D100");
+		
+		assertDescriptionProperty(testBranchPath, symbolicNameMap.get("D100"), "caseSignificance",
+				CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.name());
+		
+		final Map<?, ?> changesOnBranch = ImmutableMap.builder().put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("commitComment", "Changed case significance on branch").build();
+
+		assertDescriptionCanBeUpdated(testBranchPath, "D100", changesOnBranch);
+		
+		assertDescriptionProperty(testBranchPath, symbolicNameMap.get("D100"), "caseSignificance",
+				CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name());
+	
+		assertDescriptionCanBeDeleted(testBranchPath.getParent(), "D100");
+		
+		assertDescriptionNotExists(testBranchPath.getParent(), "D100");
+		assertDescriptionExists(testBranchPath, "D100");
+		
+		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "merge");
+		
+		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+
+		assertEquals(1, additionalInfos.size());
+
+		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
+
+		assertThat(getProperty(additionalInfo, "sourceType", String.class), nullValue());
+		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Description")));
+		assertThat(getProperty(additionalInfo, "sourceId", String.class), nullValue());
+		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("D100"))));
+
+		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
+		assertTrue(sourceFeatures.isEmpty());
+
+		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
+		assertEquals(1, targetFeatures.size());
+		assertThat(targetFeatures, hasItem("caseSignificance"));
 	}
 
 	private <T> T getProperty(Map<String, Object> additionalInfo, String propertyName, Class<T> type) {
