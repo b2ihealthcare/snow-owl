@@ -62,7 +62,6 @@ public class CodeSystemUtils {
 	 * <li/> whose branch path matches the active branch's path.
 	 * 
 	 * Note: if the active branch is a task branch, this predicate will ignore the last segment (task id part) of the active branch path.
-	 * @author endre
 	 */
 	private static final class ActiveCodeSystemPredicate implements Predicate<ICodeSystem> {
 		
@@ -102,7 +101,6 @@ public class CodeSystemUtils {
 	/**
 	 * Predicate, which selects code systems, that represent the MAIN for its terminology.
 	 * In other words: Predicate, which doesn't let extension code systems through.
-	 * @author endre
 	 */
 	private static final class MainCodeSystemPredicate implements Predicate<ICodeSystem> {
 		
@@ -115,7 +113,6 @@ public class CodeSystemUtils {
 	
 	/**
 	 * Function to turn {@link ICodeSystem} into it's short name. 
-	 * @author endre
 	 */
 	public static final class CodeSystemToShortNameFunction implements Function<ICodeSystem, String> {
 	
@@ -128,7 +125,6 @@ public class CodeSystemUtils {
 
 	/**
 	 * Function to turn {@link ICodeSystem} into it's repository Uuid. 
-	 * @author endre
 	 */
 	public static final class CodeSystemToRepositoryUuidFunction implements Function<ICodeSystem, String> {
 		
@@ -141,7 +137,6 @@ public class CodeSystemUtils {
 	
 	/**
 	 * Function to turn {@link ICodeSystem} into it's  branch path string. 
-	 * @author endre
 	 */
 	public static final class CodeSystemToBranchPathFunction implements Function<ICodeSystem, String> {
 		

@@ -24,7 +24,6 @@ import com.b2international.snowowl.terminologyregistry.core.preferences.Terminol
 
 /**
  * {@link BootstrapFragment} for creating and registering {@link TerminologyExtensionConfiguration} 
- * @author endre
  */
 public class TerminologyExtensionsBootstrapFragment implements BootstrapFragment {
 

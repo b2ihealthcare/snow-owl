@@ -22,7 +22,6 @@ import com.google.common.base.Function;
 
 /**
  * Light weight, {@link Serializable} object for persisting the preferred terminology extension. 
- * @author endre
  */
 public class PreferredTerminologyExtension implements Serializable {
 
