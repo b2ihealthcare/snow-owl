@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.apache.lucene.search.IndexSearcher;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -48,11 +47,20 @@ import org.supercsv.io.CsvBeanReader;
 import org.supercsv.io.CsvListReader;
 import org.supercsv.io.CsvListWriter;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -64,11 +72,9 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
-import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
-import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
 import com.b2international.snowowl.importer.AbstractImportUnit;
 import com.b2international.snowowl.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.importer.ImportAction;
@@ -82,7 +88,8 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.rf2.CsvConstants;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractComponentRow;
 import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ValidatingCellProcessor;
@@ -372,17 +379,39 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	protected final LongValueMap<String> getAvailableComponents() {
-		final SnomedIndexServerService service = ((SnomedIndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class));
-		final IBranchPath branch = BranchPathUtils.createPath(getImportContext().getEditingContext().getTransaction());
-		return service.executeReadTransaction(branch, new IndexRead<LongValueMap<String>>() {
+		final String branch = getImportContext().getEditingContext().getBranch();
+		return getIndex().read(branch, new RevisionIndexRead<LongValueMap<String>>() {
 			@Override
-			public LongValueMap<String> execute(IndexSearcher index) throws IOException {
-				return getAvailableComponents(index);
+			public LongValueMap<String> execute(RevisionSearcher index) throws IOException {
+				final Query<? extends SnomedDocument> query = Query.builder(getType())
+						.selectAll()
+						.where(getAvailableComponentQuery())
+						.limit(Integer.MAX_VALUE)
+						.build();
+				final Hits<? extends SnomedDocument> hits = index.search(query);
+				final int totalHits = hits.getTotal();
+				if (totalHits <= 0) {
+					return PrimitiveMaps.newObjectKeyLongOpenHashMap();
+				} else {
+					final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(totalHits);
+					for (SnomedDocument hit : hits) {
+						result.put(hit.getId(), hit.getEffectiveTime());
+					}
+					return result;
+				}
 			}
 		});
 	}
 	
-	protected abstract LongValueMap<String> getAvailableComponents(IndexSearcher index) throws IOException;
+	protected Expression getAvailableComponentQuery() {
+		return Expressions.matchAll();
+	}
+
+	protected abstract Class<? extends SnomedDocument> getType();
+
+	private RevisionIndex getIndex() {
+		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+	}
 
 	private ImportAction checkHeaders(final String[] expectedHeader, final String[] actualHeader) {
 

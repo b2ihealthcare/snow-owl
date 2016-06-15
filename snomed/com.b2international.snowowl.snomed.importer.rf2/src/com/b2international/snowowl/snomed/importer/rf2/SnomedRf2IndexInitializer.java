@@ -50,6 +50,7 @@ import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.functions.LongToStringFunction;
+import com.b2international.index.Hits;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -65,7 +66,6 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -157,8 +157,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		this.statedTaxonomyBuilder = checkNotNull(statedTaxonomyBuilder, "statedTaxonomyBuilder");
 		this.inferredTaxonomyBuilder = checkNotNull(inferredTaxonomyBuilder, "inferredTaxonomyBuilder");
 		this.importUnits = Collections.unmodifiableList(importUnits);
-		//check services
-		getImportIndexService();
 	}
 
 	@Override
@@ -421,10 +419,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 	}
 
-	private ImportIndexServerService getImportIndexService() {
-		return Preconditions.checkNotNull(ApplicationContext.getInstance().getService(ImportIndexServerService.class), "Import index server service was null.");
-	}
-	
 	private List<ComponentImportUnit> collectImportUnits() {
 		
 		final List<ComponentImportUnit> importUnitsForCurrentEffectiveTime = newArrayList();
@@ -579,7 +573,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			public void handleRecord(final int recordCount, final java.util.List<String> record) { 
 				
 				final String sctId = record.get(0);
-				final long storageKey = getImportIndexService().getComponentCdoId(sctId);
+				final long storageKey = getStorageKey(sctId);
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final String moduleId = record.get(3);
 				final String sourceId = record.get(4);
@@ -623,6 +617,15 @@ public class SnomedRf2IndexInitializer extends Job {
 		});
 	}
 
+	private long getStorageKey(String componentId) {
+		// return the current storageKey for the componentId
+		throw new UnsupportedOperationException();
+	}
+	
+	private long getRefSetStorageKey(String refSetId) {
+		throw new UnsupportedOperationException();
+	}
+
 	private void indexRefSets(final ComponentImportUnit unit) {
 		
 		final ComponentImportType type = unit.getType();
@@ -649,8 +652,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		parseFile(unit.getUnitFile().getAbsolutePath(), columnCount, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final java.util.List<String> record) { 
 				
-				final ImportIndexServerService importIndexService = getImportIndexService();
-				
 				final String refSetId = record.get(4);
 				
 				if (skippedReferenceSets.contains(refSetId)) {
@@ -659,7 +660,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				if (!visitedRefSets.containsKey(refSetId)) {
 					
-					final long storageKey = importIndexService.getRefSetCdoId(refSetId);
+					final long storageKey = getRefSetStorageKey(refSetId);
 					//consider excluded reference sets
 					if (CDOUtils.NO_STORAGE_KEY == storageKey) {
 						skippedReferenceSets.add(refSetId);
@@ -731,7 +732,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				final SnomedRefSet refSet = visitedRefSets.get(refSetId);
 				final String uuid = record.get(0);
-				final long memberCdoId = importIndexService.getMemberCdoId(uuid);
+				final long memberCdoId = getStorageKey(uuid);
 				final SnomedRefSetMember member = new Rf2RefSetMember(record, refSet, memberCdoId);
 				indexRefSetMember(member);
 			}
@@ -789,7 +790,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			public void handleRecord(final int recordCount, final java.util.List<String> record) { 
 				
 				final String descriptionId = record.get(0);
-				final long storageKey = getImportIndexService().getComponentCdoId(descriptionId);
+				final long storageKey = getStorageKey(descriptionId);
 				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				final String moduleId = record.get(3);
 				final String conceptId = record.get(4);
@@ -848,7 +849,8 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 	
 	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) {
-		for (final SnomedConceptDocument concept : ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcepts(branchPath, unvisitedConcepts)) {
+		final Hits<SnomedConceptDocument> hits;
+		for (final SnomedConceptDocument concept : hits) {
 			// can happen as concepts referenced in MRCM rules might not exist at this time
 			final String conceptId = concept.getId();
 			final long conceptStorageKey = concept.getStorageKey();
@@ -922,7 +924,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				final String conceptId = record.get(0);
 				conceptsInImportFile.add(conceptId);
 
-				final long conceptStorageKey = getImportIndexService().getComponentCdoId(conceptId);
+				final long conceptStorageKey = getStorageKey(conceptId);
 				final boolean active = ACTIVE_STATUS.equals(record.get(2)); 
 				final String definitionStatusId = record.get(4);
 				final boolean exhaustive = false;
@@ -971,7 +973,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				.doi(doiData.containsKey(conceptIdLong) ? doiData.get(conceptIdLong) : SnomedConceptDocument.DEFAULT_DOI)
 				.referringRefSets(currentRefSetMemberships)
 				.referringMappingRefSets(currentMappingMemberships)
-				.predicates(conceptIdToPredicateMap.get(Long.valueOf(conceptId)));
+				.referringPredicates(conceptIdToPredicateMap.get(Long.valueOf(conceptId)));
 
 		updateIconId(conceptId, active, builder, true);
 

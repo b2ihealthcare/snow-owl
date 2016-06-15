@@ -73,15 +73,10 @@ import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -103,7 +98,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelatio
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -377,12 +371,11 @@ public final class ImportUtil {
 			postProcess(context);
 			
 			result.getVisitedConcepts().addAll(getVisitedConcepts(context.getVisitedConcepts(), branchPath));
-			result.getVisitedRefSets().addAll(getVisitedRefSets(context.getVisitedRefSets(), branchPath));
 
 			return result;
 		} finally {
 			subMonitor.done();
-			if (!result.getVisitedConcepts().isEmpty() || !result.getVisitedRefSets().isEmpty()) {
+			if (!result.getVisitedConcepts().isEmpty()) {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import successfully finished.");
 			} else {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import finished. No changes could be found.");
@@ -395,55 +388,20 @@ public final class ImportUtil {
 			return Collections.emptyList();
 		}
 
-		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.setLocales(getLocales())
 				.setExpand("pt()")
 				.setComponentIds(getAsStringList(visitedConceptIds))
 				.build(branchPath.getPath())
-				.executeSync(getEventBus());
-		
-//		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
-		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptDocument>() {
-			@Override
-			public SnomedConceptDocument apply(ISnomedConcept concept) {
-				final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
-//				final long storageKey = lookupService.getStorageKey(branchPath, concept.getId());
-				return SnomedConceptDocument.builder(concept)
-						.label(label)
-//						.storageKey(storageKey)
-						.build();
-			}
-		}).toList();
-	}
-	
-	private Collection<SnomedRefSetIndexEntry> getVisitedRefSets(final LongSet visitedRefSetIds, final IBranchPath branchPath) {
-		if (visitedRefSetIds.size() == 0) {
-			return Collections.emptyList();
-		}
-
-		final Collection<SnomedConceptDocument> identifierConcepts = getVisitedConcepts(visitedRefSetIds, branchPath);
-		
-		final SnomedReferenceSets refSets = SnomedRequests.prepareSearchRefSet()
-				.all()
-				.setLocales(getLocales())
-				.setComponentIds(getAsStringList(visitedRefSetIds))
-				.build(branchPath.getPath())
-				.executeSync(getEventBus());
-		
-		final SnomedRefSetLookupService lookupService = new SnomedRefSetLookupService();
-		return FluentIterable.from(refSets.getItems()).transform(new Function<SnomedReferenceSet, SnomedRefSetIndexEntry>() {
-			@Override
-			public SnomedRefSetIndexEntry apply(final SnomedReferenceSet refSet) {
-				final Optional<SnomedConceptDocument> identifierConcept = getIdentifierConcept(identifierConcepts, refSet);
-				final String preferredTerm = identifierConcept.isPresent() ? identifierConcept.get().getLabel() : refSet.getId();
-				final long storageKey = lookupService.getStorageKey(branchPath, refSet.getId());
-				return SnomedRefSetIndexEntry.builder(refSet)
-						.label(preferredTerm)
-						.storageKey(storageKey)
-						.build();
-			}
-		}).toList();
+				.execute(getEventBus())
+				.then(new Function<SnomedConcepts, Collection<SnomedConceptDocument>>() {
+					@Override
+					public Collection<SnomedConceptDocument> apply(SnomedConcepts input) {
+						return SnomedConceptDocument.fromConcepts(input);
+					}
+				})
+				.getSync();
 	}
 	
 	private ImmutableList<String> getAsStringList(final LongSet longIds) {
@@ -464,16 +422,6 @@ public final class ImportUtil {
 
 	private IEventBus getEventBus() {
 		return ApplicationContext.getInstance().getService(IEventBus.class);
-	}
-
-	private Optional<SnomedConceptDocument> getIdentifierConcept(final Collection<SnomedConceptDocument> identifierConcepts,
-			final SnomedReferenceSet refSet) {
-		return FluentIterable.from(identifierConcepts).firstMatch(new Predicate<SnomedConceptDocument>() {
-			@Override
-			public boolean apply(SnomedConceptDocument concept) {
-				return concept.getId().equals(refSet.getId());
-			}
-		});
 	}
 
 	// result is populated with validation errors if the return value is false
