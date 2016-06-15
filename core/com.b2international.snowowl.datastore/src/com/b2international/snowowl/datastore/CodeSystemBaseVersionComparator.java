@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.date.Dates;
  * Comparator for ordering {@link ICodeSystem}s based on their base version,
  * where {@link ICodeSystem} with {@link IBranchPath} {@link IBranchPath#MAIN_BRANCH MAIN} (if present) is considered the biggest element and {@link ICodeSystem} based on the oldest {@link ICodeSystemVersion#getEffectiveDate()} is the smallest element.
  * 
- * @author endre
  */
 public class CodeSystemBaseVersionComparator implements Comparator<ICodeSystem> {
 	

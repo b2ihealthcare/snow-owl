@@ -36,7 +36,7 @@ import com.google.common.collect.Multimaps;
 
 /**
  *	 
- * 	@author endre
+ *	Preference configuration for terminology extension selection.
  */
 public class TerminologyExtensionConfiguration extends PreferenceBase {
 
