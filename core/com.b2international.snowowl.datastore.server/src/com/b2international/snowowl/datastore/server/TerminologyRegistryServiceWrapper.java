@@ -47,8 +47,8 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionEntryBuilder;
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionFactory;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -114,7 +114,8 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 			
 			for (int i = 0; i < topDocs.scoreDocs.length; i++) {
 			
-				versions[i] = CodeSystemVersionFactory.createCodeSystemVersionEntry(searcher.doc(topDocs.scoreDocs[i].doc));
+				final Document doc = searcher.doc(topDocs.scoreDocs[i].doc);
+				versions[i] = new CodeSystemVersionEntryBuilder().build(doc);
 				
 			}
 			
@@ -246,7 +247,8 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 			
 			for (int i = 0; i < topDocs.scoreDocs.length; i++) {
 			
-				$.add(CodeSystemVersionFactory.createCodeSystemVersionEntry(searcher.doc(topDocs.scoreDocs[i].doc)));
+				final Document doc = searcher.doc(topDocs.scoreDocs[i].doc);
+				$.add(new CodeSystemVersionEntryBuilder().build(doc));
 				
 			}
 			
