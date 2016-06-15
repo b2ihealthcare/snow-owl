@@ -250,6 +250,41 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(1, targetFeatures.size());
 		assertThat(targetFeatures, hasItem("caseSignificance"));
 	}
+	
+	@Test
+	public void addedInSourceAndTargetConflict() {
+		
+		assertDescriptionCreated(testBranchPath, "D200", ACCEPTABLE_ACCEPTABILITY_MAP);
+		
+		String descriptionId = symbolicNameMap.get("D200");
+		
+		assertDescriptionExists(testBranchPath, "D200");
+		assertDescriptionNotExists(testBranchPath.getParent(), "D200");
+		
+		assertDescriptionCreatedWithId(testBranchPath.getParent(), "D300", descriptionId, ACCEPTABLE_ACCEPTABILITY_MAP);
+		assertDescriptionExists(testBranchPath.getParent(), "D300");
+
+		assertEquals(descriptionId, symbolicNameMap.get("D300"));
+		
+		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "commit");
+		
+		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+
+		assertEquals(1, additionalInfos.size());
+
+		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
+
+		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Description")));
+		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Description")));
+		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(descriptionId)));
+		assertThat(getProperty(additionalInfo, "targetId", String.class), nullValue());
+
+		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
+		assertTrue(sourceFeatures.isEmpty());
+
+		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
+		assertTrue(targetFeatures.isEmpty());
+	}
 
 	private <T> T getProperty(Map<String, Object> additionalInfo, String propertyName, Class<T> type) {
 		if (additionalInfo.containsKey(propertyName)) {

@@ -28,7 +28,7 @@ public class ConflictMapper {
 	public static final String CHANGED_IN_SOURCE_AND_TARGET_MESSAGE = "%s was changed both in source and target branch.";
 	public static final String CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s was changed in source branch but detached in target branch.";
 	public static final String CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s was changed in target branch but detached in source branch.";
-	public static final String ADDED_IN_SOURCE_AND_TARGET_MESSAGE = "%s and %s uses the same domain key on source and target branch.";
+	public static final String ADDED_IN_SOURCE_AND_TARGET_MESSAGE = "%s with ID '%s' was introduced both on source and target branch.";
 	public static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s on source branch referencing %s which was detached on target branch.";
 
 	public static MergeConflict convert(final Conflict conflict) {
@@ -45,7 +45,6 @@ public class ConflictMapper {
 		}
 		throw new IllegalArgumentException("Unknown conflict type: " + conflict);
 	}
-	
 	
 	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict) {
 		final String id = conflict.getID().toString();
@@ -65,7 +64,7 @@ public class ConflictMapper {
 	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict) {
 		final String sourceId = conflict.getSourceId().toString();
 		final String targetId = conflict.getTargetId().toString();
-		return new MergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_AND_TARGET_MESSAGE, sourceId, targetId));
+		return new MergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_AND_TARGET_MESSAGE, conflict.getType(), sourceId));
 	}
 	
 	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict) {

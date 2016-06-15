@@ -106,10 +106,9 @@ public class SnomedMergeConflictMapper {
 			final CDOTransaction targetTransaction) {
 
 		final String sourceComponentId = getComponentId(sourceTransaction, conflict.getSourceId());
-		final String targetComponentId = getComponentId(targetTransaction, conflict.getTargetId());
 
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, targetComponentId, String.format(
-				ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_MESSAGE, sourceComponentId, targetComponentId));
+		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, null, String.format(
+				ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_MESSAGE, conflict.getType(), sourceComponentId));
 
 		snomedMergeConflict.setSourceType(conflict.getType());
 		snomedMergeConflict.setTargetType(conflict.getType());

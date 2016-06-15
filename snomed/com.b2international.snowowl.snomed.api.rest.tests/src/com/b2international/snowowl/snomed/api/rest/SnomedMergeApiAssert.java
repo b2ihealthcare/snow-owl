@@ -18,11 +18,8 @@ package com.b2international.snowowl.snomed.api.rest;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.createSimpleConceptReferenceSetMember;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Date;
 import java.util.Map;
@@ -75,10 +72,8 @@ public abstract class SnomedMergeApiAssert {
 		SnomedComponentApiAssert.assertComponentNotExists(branchPath, SnomedComponentType.MEMBER, symbolicNameMap.get(symbolicName));
 	}
 	
-	public static void assertDescriptionProperty(final IBranchPath branchPath, final String descriptionId, final String propertyName, final String expectedResults) {
-		givenAuthenticatedRequest(SCT_API)
-			.when().get("{path}/descriptions/{descriptionId}", branchPath.getPath(), descriptionId)
-			.then().assertThat().body(propertyName, equalTo(expectedResults));
+	public static void assertDescriptionProperty(final IBranchPath branchPath, final String descriptionId, final String propertyName, final String expectedResult) {
+		SnomedComponentApiAssert.assertComponentHasProperty(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, propertyName, expectedResult);
 	}
 	
 	// --------------------------------------------------------
@@ -133,6 +128,23 @@ public abstract class SnomedMergeApiAssert {
 				.put("term", "New description at " + creationDate)
 				.put("languageCode", "en")
 				.put("acceptability", acceptabilityMap)
+				.put("commitComment", "New description")
+				.build();
+
+		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.DESCRIPTION, requestBody);
+	}
+	
+	public static void assertDescriptionCreatedWithId(final IBranchPath branchPath, final String symbolicName, final String descriptionId, final Map<?, ?> acceptabilityMap) {
+		final Date creationDate = new Date();
+
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("conceptId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", Concepts.SYNONYM)
+				.put("term", "New description at " + creationDate)
+				.put("languageCode", "en")
+				.put("acceptability", acceptabilityMap)
+				.put("id", descriptionId)
 				.put("commitComment", "New description")
 				.build();
 
