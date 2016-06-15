@@ -18,7 +18,11 @@ package com.b2international.snowowl.snomed.api.rest;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.createSimpleConceptReferenceSetMember;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Date;
 import java.util.Map;
@@ -63,6 +67,20 @@ public abstract class SnomedMergeApiAssert {
 		SnomedComponentApiAssert.assertRelationshipNotExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
+	public static void assertRefSetMemberExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertComponentExists(branchPath, SnomedComponentType.MEMBER, symbolicNameMap.get(symbolicName));
+	}
+	
+	public static void assertRefSetMemberNotExists(final IBranchPath branchPath, final String symbolicName) {
+		SnomedComponentApiAssert.assertComponentNotExists(branchPath, SnomedComponentType.MEMBER, symbolicNameMap.get(symbolicName));
+	}
+	
+	public static void assertDescriptionProperty(final IBranchPath branchPath, final String descriptionId, final String propertyName, final String expectedResults) {
+		givenAuthenticatedRequest(SCT_API)
+			.when().get("{path}/descriptions/{descriptionId}", branchPath.getPath(), descriptionId)
+			.then().assertThat().body(propertyName, equalTo(expectedResults));
+	}
+	
 	// --------------------------------------------------------
 	// Symbolic component creation
 	// --------------------------------------------------------
@@ -142,6 +160,10 @@ public abstract class SnomedMergeApiAssert {
 		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.RELATIONSHIP, requestBody);
 	}
 
+	public static void assertRefsetMemberCreated(final IBranchPath branchPath, final String symbolicName) {
+		symbolicNameMap.put(symbolicName, createSimpleConceptReferenceSetMember(branchPath));
+	}
+	
 	// --------------------------------------------------------
 	// Symbolic component updates
 	// --------------------------------------------------------
@@ -161,7 +183,7 @@ public abstract class SnomedMergeApiAssert {
 	public static void assertDescriptionCanBeUpdated(final IBranchPath branchPath, final String symbolicName, final Map<?, ?> requestBody) {
 		assertComponentCanBeUpdated(branchPath, symbolicName, SnomedComponentType.DESCRIPTION, requestBody);
 	}
-
+	
 	// --------------------------------------------------------
 	// Symbolic component deletion
 	// --------------------------------------------------------
@@ -176,6 +198,10 @@ public abstract class SnomedMergeApiAssert {
 
 	public static void assertDescriptionCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
 		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.DESCRIPTION);
+	}
+	
+	public static void assertRefSetMemberCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
+		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.MEMBER);
 	}
 	
 	private SnomedMergeApiAssert() {}
