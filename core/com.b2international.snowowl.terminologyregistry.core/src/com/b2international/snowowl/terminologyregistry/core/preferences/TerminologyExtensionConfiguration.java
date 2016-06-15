@@ -24,15 +24,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.preferences.ConfigNode;
 import com.b2international.snowowl.core.api.preferences.PreferenceBase;
 import com.b2international.snowowl.core.api.preferences.io.ConfigurationEntrySerializer;
-import com.b2international.snowowl.datastore.CodeSystemUtils;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimaps;
 
 /**
  *	 
@@ -59,28 +54,20 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 			protected ConfigNode<String, PreferredTerminologyExtension> computeDefault() {
 				
 				ConfigNode<String, PreferredTerminologyExtension> configNode = new ConfigNode<String, PreferredTerminologyExtension>(CODE_SYSTEMS_KEY);
-
 				
-				Collection<ICodeSystem> codeSystems = ApplicationContext.getInstance().getService(TerminologyRegistryService.class).getCodeSystems(new UserBranchPathMap());
-				ImmutableListMultimap<String, ICodeSystem> repositoryToCodeSystemMultiMap = Multimaps.index(codeSystems, CodeSystemUtils.toRepositoryUuidFunction());
-				
-				ImmutableMap<String, Collection<ICodeSystem>> repositoryToCodeSystemMap = repositoryToCodeSystemMultiMap.asMap();
-				for (String repositoryUuid : repositoryToCodeSystemMap.keySet()) {
-					
-					Iterable<PreferredTerminologyExtension> collection = FluentIterable.<ICodeSystem> from(repositoryToCodeSystemMap.get(repositoryUuid))
-																					.filter(CodeSystemUtils.mainCodeSystemPredicate())
-																					.transform(new PreferredTerminologyExtension.CodeSystemToPojoFunction());
-					
-					if (Iterables.isEmpty(collection))
-						continue;
-					
-					configNode.addChild(repositoryUuid, Iterables.getOnlyElement(collection));
+				for (ICodeSystem cs : getCodeSystems()) {
+					if (!configNode.hasChild(cs.getRepositoryUuid()) && BranchPathUtils.isMain(cs.getBranchPath()))
+						configNode.addChild(cs.getRepositoryUuid(), new PreferredTerminologyExtension(cs));
 				}
 
 				return configNode;
 			}
 			
 		};
+	}
+
+	private Collection<ICodeSystem> getCodeSystems() {
+		return ApplicationContext.getInstance().getService(TerminologyRegistryService.class).getCodeSystems(new UserBranchPathMap());
 	}
 
 	public ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>> getCodeSystemSerializer() {
