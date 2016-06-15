@@ -45,7 +45,7 @@ public class SnomedMergeConflictMapper {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
 			return from((ChangedInSourceAndTargetConflict) conflict, sourceTransaction, targetTransaction);
 		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
-			return from((ChangedInSourceAndDetachedInTargetConflict) conflict, sourceTransaction);
+			return from((ChangedInSourceAndDetachedInTargetConflict) conflict, sourceTransaction, targetTransaction);
 		} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
 			return from((ChangedInTargetAndDetachedInSourceConflict) conflict, targetTransaction);
 		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
@@ -72,11 +72,14 @@ public class SnomedMergeConflictMapper {
 		return snomedMergeConflict;
 	}
 	
-	public static SnomedMergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
+	public static SnomedMergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
 		
-		final String sourceComponentId = getComponentId(sourceTransaction, conflict.getSourceDelta().getID());
+		CDOID sourceCDOID = conflict.getSourceDelta().getID();
 		
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, null, String.format(ConflictMapper.CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, sourceComponentId));
+		final String sourceComponentId = getComponentId(sourceTransaction, sourceCDOID);
+		final String componentId = sourceComponentId.equals(sourceCDOID.toString()) ? getComponentId(targetTransaction, sourceCDOID) : sourceComponentId;
+		
+		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(componentId, null, String.format(ConflictMapper.CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, componentId));
 		
 		snomedMergeConflict.setSourceType(conflict.getSourceDelta().getEClass().getName());
 		snomedMergeConflict.getChangedSourceFeatures().addAll(transformFeatureDeltas(conflict.getSourceDelta().getFeatureDeltas()));
