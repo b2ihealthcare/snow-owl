@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
+import static com.b2international.snowowl.datastore.ICodeSystem.TO_BRANCH_PATH_FUNCTION;
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Comparator;
@@ -56,33 +57,6 @@ public class CodeSystemUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CodeSystemUtils.class);
 
-	/**
-	 * Predicate for selecting those {@link ICodeSystem}s:
-	 * <li/> that are residing in the repository denoted by the given repositoryUuid
-	 * <li/> whose branch path matches the active branch's path.
-	 * 
-	 * Note: if the active branch is a task branch, this predicate will ignore the last segment (task id part) of the active branch path.
-	 */
-	private static final class ActiveCodeSystemPredicate implements Predicate<ICodeSystem> {
-		
-		private final IBranchPathMap branchPathMap;
-		private final String repositoryUuid;
-
-		private ActiveCodeSystemPredicate(IBranchPathMap branchPathMap, String repositoryUuid) {
-			this.branchPathMap = branchPathMap;
-			this.repositoryUuid = repositoryUuid;
-		}
-
-		@Override
-		public boolean apply(ICodeSystem input) {
-			IBranchPath activeBranchPath = branchPathMap.getBranchPath(repositoryUuid);
-			//ignore last segment if we are on a task branch 
-			if (getServiceForClass(TaskManager.class).hasActiveTask())
-				return activeBranchPath.getParentPath().equals(input.getBranchPath());
-			
-			return activeBranchPath.getPath().equals(input.getBranchPath());
-		}
-	}
 
 	private static final class SameRepositoryCodeSystemPredicate implements Predicate<ICodeSystem> {
 	
@@ -98,53 +72,7 @@ public class CodeSystemUtils {
 		}
 	}
 	
-	/**
-	 * Predicate, which selects code systems, that represent the MAIN for its terminology.
-	 * In other words: Predicate, which doesn't let extension code systems through.
-	 */
-	private static final class MainCodeSystemPredicate implements Predicate<ICodeSystem> {
-		
-		@Override
-		public boolean apply(ICodeSystem input) {
-			return BranchPathUtils.isMain(input.getBranchPath());
-		}
-		
-	}
-	
-	/**
-	 * Function to turn {@link ICodeSystem} into it's short name. 
-	 */
-	public static final class CodeSystemToShortNameFunction implements Function<ICodeSystem, String> {
-	
-		@Override
-		public String apply(ICodeSystem input) {
-			return input.getShortName();
-		}
-		
-	}
 
-	/**
-	 * Function to turn {@link ICodeSystem} into it's repository Uuid. 
-	 */
-	public static final class CodeSystemToRepositoryUuidFunction implements Function<ICodeSystem, String> {
-		
-		@Override
-		public String apply(ICodeSystem input) {
-			return input.getRepositoryUuid();
-		}
-	}
-
-	
-	/**
-	 * Function to turn {@link ICodeSystem} into it's  branch path string. 
-	 */
-	public static final class CodeSystemToBranchPathFunction implements Function<ICodeSystem, String> {
-		
-		@Override
-		public String apply(ICodeSystem input) {
-			return input.getBranchPath();
-		}
-	}
 
 
 	
@@ -242,7 +170,7 @@ public class CodeSystemUtils {
 		
 		// branchPath can be: main, task branch, version/tag branch Path, extension branchPath 
 		Iterable<ICodeSystem> codeSystemsInRepositoryUuid = Iterables.filter(getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap()), sameRepositoryCodeSystemPredicate(repositoryUuid));
-		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepositoryUuid, new CodeSystemToBranchPathFunction());
+		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepositoryUuid, TO_BRANCH_PATH_FUNCTION);
 
 //		if (branchPathToCodeSystemMap.containsKey(branchPath.getPath()))
 //			return branchPathToCodeSystemMap.get(branchPath.getPath());
@@ -254,7 +182,7 @@ public class CodeSystemUtils {
 		}
 
 		// falling back to the repositoryUUID's main code system.
-		return Iterables.find(codeSystemsInRepositoryUuid, new MainCodeSystemPredicate()); 
+		return Iterables.find(codeSystemsInRepositoryUuid, ICodeSystem.IS_MAIN_BRANCH_PATH_PREDICATE); 
 	}
 	
 	/**
@@ -326,26 +254,6 @@ public class CodeSystemUtils {
 	
 	public static Predicate<ICodeSystem> sameRepositoryCodeSystemPredicate(final String repositoryUUID) {
 		return new SameRepositoryCodeSystemPredicate(repositoryUUID);
-	}
-	
-	public static Predicate<ICodeSystem> activeCodeSystemPredicate(final IBranchPathMap branchPathMap, final String repositoryUuid) {
-		return new ActiveCodeSystemPredicate(branchPathMap, repositoryUuid);
-	}
-	
-	public static Predicate<ICodeSystem> mainCodeSystemPredicate() {
-		return new MainCodeSystemPredicate();
-	}	
-	
-	public static Function<ICodeSystem, String> toShortNameFunction() {
-		return new CodeSystemToShortNameFunction();
-	}
-
-	public static Function<ICodeSystem, String> toRepositoryUuidFunction() {
-		return new CodeSystemToRepositoryUuidFunction();
-	}
-
-	public static Function<ICodeSystem, String> toBranchPathFunction() {
-		return new CodeSystemToBranchPathFunction();
 	}
 	
 	/*returns with the connection for the given repository UUID*/

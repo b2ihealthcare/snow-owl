@@ -19,6 +19,10 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+
 /**
  * Serializable representation of a code system.
  */
@@ -96,5 +100,65 @@ public interface ICodeSystem extends Serializable {
 	 * Returns the unique ID of the base Code System.
 	 */
 	String getExtensionOf();
+	
+	
+	/**
+	 * Predicate selecting code systems representing the MAIN of its terminology.
+	 * In other words: Predicate, which doesn't let <code>extension</code> code systems through.
+	 */
+	public static final Predicate<ICodeSystem> IS_MAIN_BRANCH_PATH_PREDICATE = new Predicate<ICodeSystem> () {
+		
+		@Override
+		public boolean apply(ICodeSystem input) {
+			return BranchPathUtils.isMain(input.getBranchPath());
+		}
+		
+	};
+	
+	/**
+	 * Function to turn a {@link ICodeSystem} into it's short name. 
+	 */
+	public static final Function<ICodeSystem, String> TO_SHORTNAME_FUNCTION = new Function<ICodeSystem, String> () {
+	
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getShortName();
+		}
+		
+	};
 
+	/**
+	 * Function to turn a {@link ICodeSystem} into it's repository UUID. 
+	 */
+	public static final Function<ICodeSystem, String> TO_REPOSITORY_UUID_FUNCTION = new Function<ICodeSystem, String> () {
+		
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getRepositoryUuid();
+		}
+	};
+
+	
+	/**
+	 * Function to turn {@link ICodeSystem} into it's  branch path string. 
+	 */
+	public static final Function<ICodeSystem, String> TO_BRANCH_PATH_FUNCTION = new Function<ICodeSystem, String> () {
+		
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getBranchPath();
+		}
+	};
+	
+	/**
+	 * Function to turn {@link ICodeSystem} into it's  {@link IBranchPath}. 
+	 */
+	public static final Function<ICodeSystem, String> TO_IBRANCH_PATH_FUNCTION = new Function<ICodeSystem, String> () {
+		
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getBranchPath();
+		}
+	};
+	
 }
