@@ -27,7 +27,7 @@ public class PrimitiveCollectionModule extends SimpleModule {
 	private static final long serialVersionUID = 19058019506637309L;
 
 	public PrimitiveCollectionModule() {
-		super("FastUtilWrapperDataTypeModule", ModuleVersion.instance.version());
+		super("PrimitiveCollectionModule", ModuleVersion.instance.version());
 	}
 	
 	@Override
