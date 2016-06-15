@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +31,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
@@ -45,13 +45,10 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.Lists;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.google.common.collect.Sets;
 
 /**
@@ -69,10 +66,12 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	private final SnomedEditingContext context;
 	private final Workbook workbook;
 	private final ISnomedComponentService service;
-	private final SnomedConceptLookupService lookupService;
 	
 	private final CellStyle DEFAULT_STYLE;
 	private final CellStyle BOLD_STYLE;
+
+	//the language we support on the server-side
+	private String supportedLanguageRefsetId;
 
 	public SnomedSimpleTypeRefSetExcelExporter(final String userId, final IBranchPath branchPath, final String refSetId, final short referencedComponentType) {
 		super(userId, branchPath);
@@ -82,7 +81,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		this.context = new SnomedEditingContext(branchPath);
 		this.workbook = new XSSFWorkbook();
 		this.service = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
-		this.lookupService = new SnomedConceptLookupService();
+		this.supportedLanguageRefsetId = this.context.getLanguageRefSetId();
 		
 		final Font headerFont = workbook.createFont();
 		headerFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
@@ -138,13 +137,9 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			
 			file = new File(exportFilePath);
 			outputStream = new FileOutputStream(file);
-			
 			exportTerminologyComponents(monitor);
-			
 			workbook.write(outputStream);
-			
 			logExportActivity(MessageFormat.format("Finished exporting {0}s to Excel.", getTerminologyName()));
-			
 		} catch (IOException e) {
 			throw e;
 		} finally {
@@ -167,7 +162,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	protected void exportTerminologyComponents(final OMMonitor monitor) {
 
 		Async async = null;
-		OMMonitor componentsMonitor = null;
+		final OMMonitor componentsMonitor = monitor.fork(15);
 		
 		try {
 			
@@ -186,8 +181,8 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			}
 			
 			async.stop();
-			componentsMonitor = monitor.fork(15);
-			componentsMonitor.begin(browser.getMemberCount(getBranchPath(), refSetId));
+			
+			componentsMonitor.begin(cdoIds.size());
 			
 			if (referencedComponentType == SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER) {
 				cretaDescriptionHeader(sheet);
@@ -202,6 +197,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			for (int i = 0; i <= getColumnNumber(); i++) {
 				sheet.autoSizeColumn(i);
 			}
+
 		} finally {
 			if (null != async) {
 				async.stop();
@@ -322,16 +318,14 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	}
 
 	private String getAcceptablilityId(final Description description) {
-		final Collection<SnomedRefSetMemberIndexEntry> membersForType = memberLookupService.getMembersForType(
-				SnomedTerminologyComponentConstants.DESCRIPTION, 
-				Sets.newHashSet(SnomedRefSetType.LANGUAGE),	Sets.newHashSet(description.getId()));
 		
-		if (membersForType.isEmpty()) {
-			return null;
-		} else {
-			final SnomedRefSetMemberIndexEntry entry = Lists.newArrayList(membersForType).get(0);
-			return entry.getAcceptabilityId();
+		EList<SnomedLanguageRefSetMember> languageRefSetMembers = description.getLanguageRefSetMembers();
+		for (SnomedLanguageRefSetMember snomedLanguageRefSetMember : languageRefSetMembers) {
+			if (snomedLanguageRefSetMember.getRefSetIdentifierId().equals(supportedLanguageRefsetId)) {
+				return snomedLanguageRefSetMember.getAcceptabilityId();
+			}
 		}
+		return null;
 	}
 	
 	private String formatSheetName(final String refSetLabel) {

@@ -79,31 +79,6 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 		itrSupplier = createSupplier();
 	}
 	
-	private void example() {
-		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-		
-		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
-
-		Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
-		
-		
-		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
-
-			@Override
-			public SnomedConceptDocument execute(RevisionSearcher searcher) throws IOException {
-				
-				Hits<SnomedConceptDocument> snomedConceptDocuments = searcher.search(query);
-				Optional<SnomedConceptDocument> first = FluentIterable.<SnomedConceptDocument>from(snomedConceptDocuments).first();
-				if (first.isPresent()) {
-					return first.get();
-				} else {
-					throw new IllegalArgumentException("Could not find reference set with id: " + exportSetting.getRefSetId());
-				}
-			}
-		});
-	}
-	
 	private Supplier<Iterator<String>> createSupplier() {
 		return memoize(new Supplier<Iterator<String>>() {
 			@Override
