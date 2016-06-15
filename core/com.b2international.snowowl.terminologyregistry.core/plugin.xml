@@ -13,10 +13,4 @@
             terminologyId="UNSPECIFIED"><!-- delightfully meta -->
       </serviceConfigJob>
    </extension>
-   <extension
-         point="com.b2international.snowowl.core.bootstrapFragments">
-      <bootstrapFragment
-            class="com.b2international.snowowl.terminologyregistry.core.TerminologyExtensionsBootstrapFragment">
-      </bootstrapFragment>
-   </extension>
 </plugin>
