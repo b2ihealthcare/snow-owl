@@ -36,7 +36,7 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
-import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.snowowl.core.exceptions.ConflictException;
@@ -160,8 +160,6 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	 * <p>
 	 * The default case will check if the change did not involve releasing the component, and if so, reports a
 	 * conflict; allows the removal otherwise.
-	 * 
-	 * The type of conflict is intentionally {@link ChangedInSourceAndDetachedInTargetConflict}.
 	 */
 	@Override
 	public Object changedInTargetAndDetachedInSource(final CDORevisionDelta targetDelta) {
@@ -186,7 +184,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		});
 		
 		if (releasableClass.isPresent() && isReleased(revisionDelta, releasedAttributeMap.get(releasableClass.get()))) {
-			return new ChangedInSourceAndDetachedInTargetConflict(revisionDelta);
+			return new ChangedInTargetAndDetachedInSourceConflict(revisionDelta);
 		}
 		
 		return null;

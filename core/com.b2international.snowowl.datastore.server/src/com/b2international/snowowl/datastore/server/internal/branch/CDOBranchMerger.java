@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
-import java.util.Map;
+import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
@@ -33,14 +37,16 @@ import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 
 	private final ICDOConflictProcessor delegate;
+	private final boolean isRebase;
 
 	/**
 	 * Creates a new instance using the specified repository identifier.
 	 * 
 	 * @param delegate the CDO conflict processor handling terminology-specific merge decisions 
 	 */
-	public CDOBranchMerger(final ICDOConflictProcessor delegate) {
+	public CDOBranchMerger(final ICDOConflictProcessor delegate, final boolean isRebase) {
 		this.delegate = delegate;
+		this.isRebase = isRebase;
 	}
 
 	@Override
@@ -59,9 +65,9 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 	
 	@Override
-	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(EStructuralFeature feature, 
-			CDOFeatureDelta targetFeatureDelta, 
-			CDOFeatureDelta sourceFeatureDelta) {
+	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(final EStructuralFeature feature, 
+			final CDOFeatureDelta targetFeatureDelta, 
+			final CDOFeatureDelta sourceFeatureDelta) {
 
 		return delegate.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
 	}
@@ -71,6 +77,32 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 		delegate.preProcess(getSourceMap(), getTargetMap());
 	}
 
+	@Override
+	public Map<CDOID, Conflict> getConflicts() {
+		// Due to the nature of rebase we need to transform certain conflicts to reflect the source and target branches properly
+		if (isRebase) {
+			final Map<CDOID, Conflict> transformedConflicts = newHashMap();
+			for (final Entry<CDOID, Conflict> entry : super.getConflicts().entrySet()) {
+				final CDOID id = entry.getKey();
+				final Conflict conflict = entry.getValue();
+				if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
+					final ChangedInSourceAndDetachedInTargetConflict inSourceAndDetachedInTargetConflict = (ChangedInSourceAndDetachedInTargetConflict) conflict;
+					transformedConflicts.put(id, new ChangedInTargetAndDetachedInSourceConflict(inSourceAndDetachedInTargetConflict.getSourceDelta()));
+				} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
+					final ChangedInTargetAndDetachedInSourceConflict targetAndDetachedInSourceConflict = (ChangedInTargetAndDetachedInSourceConflict) conflict;
+					transformedConflicts.put(id, new ChangedInSourceAndDetachedInTargetConflict(targetAndDetachedInSourceConflict.getTargetDelta()));
+				} else if (conflict instanceof ChangedInSourceAndTargetConflict) {
+					final ChangedInSourceAndTargetConflict sourceAndTargetConflict = (ChangedInSourceAndTargetConflict) conflict;
+					transformedConflicts.put(id, new ChangedInSourceAndTargetConflict(sourceAndTargetConflict.getTargetDelta(), sourceAndTargetConflict.getSourceDelta()));
+				} else {
+					transformedConflicts.put(id, conflict);
+				}
+			}
+			return transformedConflicts;
+		}
+		return super.getConflicts();
+	}
+	
 	public void postProcess(final CDOTransaction transaction) {
 		delegate.postProcess(transaction);
 	}

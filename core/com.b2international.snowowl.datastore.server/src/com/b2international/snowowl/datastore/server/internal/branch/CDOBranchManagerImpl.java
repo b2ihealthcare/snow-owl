@@ -115,7 +115,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		CDOTransaction newTransaction = null;
 		
 		try {
-			testTransaction = applyChangeSet(branch, onTopOf);
+			testTransaction = applyChangeSet(branch, onTopOf, true);
 			final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
 			postReopen.run();
 			
@@ -143,8 +143,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
     
     @Override
-    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
-        final CDOTransaction dirtyTransaction = applyChangeSet(from, to);
+    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
+        final CDOTransaction dirtyTransaction = applyChangeSet(from, to, isRebase);
         try {
         	if (dryRun) {
             	return to;
@@ -156,11 +156,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		}
     }
     
-    private CDOTransaction applyChangeSet(InternalBranch from, InternalBranch to) {
+    private CDOTransaction applyChangeSet(InternalBranch from, InternalBranch to, boolean isRebase) {
     	final CDOBranch sourceBranch = getCDOBranch(from);
     	final CDOBranch targetBranch = getCDOBranch(to);
     	final ICDOConnection connection = repository.getConnection();
-    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
+    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor(), isRebase);
     	final CDOTransaction targetTransaction = connection.createTransaction(targetBranch);
 
     	try {
