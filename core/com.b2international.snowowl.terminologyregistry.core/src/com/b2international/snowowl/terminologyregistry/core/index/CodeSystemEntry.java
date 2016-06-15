@@ -80,7 +80,7 @@ public class CodeSystemEntry implements Serializable, ICodeSystem {
 				.terminologyId(doc.get(SYSTEM_TERMINOLOGY_COMPONENT_ID))
 				.storageKey(doc.get(SYSTEM_STORAGE_KEY))
 				.repositoryId(doc.get(SYSTEM_REPOSITORY_UUID))
-				.branchPath(doc.get(SYSTEM_BRANCH_PATH))
+				.branchPath(doc.get(SYSTEM_BRANCH_PATH) == null ? "MAIN" : doc.get(SYSTEM_BRANCH_PATH))
 				.extensionOf(doc.get(SYSTEM_EXTENSION_OF));
 	}
 	
