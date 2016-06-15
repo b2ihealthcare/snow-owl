@@ -39,7 +39,7 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 
 	private static final String CODE_SYSTEMS_KEY = "com.b2international.snowowl.terminologyregistry.core.codeSystems";
 	
-	public ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>> codeSystemSerializer;
+	private ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>> codeSystemSerializer;
 	
 	public TerminologyExtensionConfiguration(PreferencesService preferencesService, File defaultsPath) {
 		super(preferencesService, NODE_NAME);
