@@ -148,11 +148,11 @@ public interface ICodeSystem extends Serializable {
 	/**
 	 * Function to turn {@link ICodeSystem} into it's  {@link IBranchPath}. 
 	 */
-	public static final Function<ICodeSystem, String> TO_IBRANCH_PATH_FUNCTION = new Function<ICodeSystem, String> () {
+	public static final Function<ICodeSystem, IBranchPath> TO_IBRANCH_PATH_FUNCTION = new Function<ICodeSystem, IBranchPath> () {
 		
 		@Override
-		public String apply(ICodeSystem input) {
-			return input.getBranchPath();
+		public IBranchPath apply(ICodeSystem input) {
+			return BranchPathUtils.createPath(input.getBranchPath());
 		}
 	};
 	
