@@ -19,11 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map.Entry;
-import java.util.UUID;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
@@ -36,7 +34,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.Iterables;
 
@@ -46,12 +43,7 @@ import com.google.common.collect.Iterables;
 public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 
 	// test subject
-	private DescriptionChangeProcessor processor;
-	
-	@Before
-	public void givenProcessor() {
-		processor = new DescriptionChangeProcessor();
-	}
+	private DescriptionChangeProcessor processor = new DescriptionChangeProcessor();
 	
 	@Test
 	public void addNewDescriptionWithoutLanguageMembers() throws Exception {
@@ -234,18 +226,6 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		description.getLanguageRefSetMembers().add(acceptableMember);
 		description.getLanguageRefSetMembers().add(preferredMember);
 		return description;
-	}
-	
-	private SnomedLanguageRefSetMember createLangMember(final String descriptionId, Acceptability acceptability, final String refSetId) {
-		final SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
-		withCDOID(member, nextStorageKey());
-		member.setAcceptabilityId(acceptability.getConceptId());
-		member.setActive(true);
-		member.setModuleId(Concepts.MODULE_SCT_CORE);
-		member.setReferencedComponentId(descriptionId);
-		member.setRefSet(getStructuralRefSet(refSetId));
-		member.setUuid(UUID.randomUUID().toString());
-		return member;
 	}
 	
 	private Description createDescription(String typeId, String term) {

@@ -15,24 +15,35 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+import org.eclipse.emf.cdo.common.revision.CDORevisionFactory;
+import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.internal.common.revision.CDORevisionImpl;
+import org.eclipse.emf.cdo.internal.common.revision.delta.CDORevisionDeltaImpl;
+import org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 
+import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
@@ -45,20 +56,28 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.id.gen.RandomItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
  */
+@SuppressWarnings("restriction")
 public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 
 	// fixtures
@@ -70,7 +89,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	private Collection<CDOObject> newComponents = newHashSet();
 	private Collection<CDOObject> dirtyComponents = newHashSet();
 	private Map<CDOID, EClass> detachedComponents = newHashMap();
-	private Map<CDOID, CDORevisionDelta> revisionDeltas = Collections.emptyMap();
+	private Map<CDOID, CDORevisionDelta> revisionDeltas = newHashMap();
 	
 	@Override
 	protected final Collection<Class<?>> getTypes() {
@@ -80,6 +99,17 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				SnomedRelationshipIndexEntry.class,
 				SnomedRefSetMemberIndexEntry.class,
 				PredicateIndexEntry.class);
+	}
+	
+	@Override
+	protected void configureMapper(ObjectMapper mapper) {
+		super.configureMapper(mapper);
+		mapper.registerModule(new PrimitiveCollectionModule());
+	}
+	
+	protected final void registerExistingObject(CDOObject object) {
+		when(view.getObject(eq(object.cdoID()))).thenReturn(object);
+		when(view.getObject(eq(object.cdoID()), anyBoolean())).thenReturn(object);
 	}
 	
 	protected final void registerNew(CDOObject object) {
@@ -92,6 +122,21 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	
 	protected final void registerDetached(CDOID storageKey, EClass type) {
 		detachedComponents.put(storageKey, type);
+	}
+	
+	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object newValue) {
+		final CDOSetFeatureDeltaImpl featureDelta = new CDOSetFeatureDeltaImpl(feature, 0, newValue);
+		getRevisionDelta(object).addFeatureDelta(featureDelta);
+	}
+	
+	private final CDORevisionDeltaImpl getRevisionDelta(CDOObject object) {
+		final CDOID storageKey = checkNotNull(object.cdoID());
+		if (!revisionDeltas.containsKey(storageKey)) {
+			final CDORevisionImpl revision = (CDORevisionImpl) CDORevisionFactory.DEFAULT.createRevision(object.eClass());
+//			revision.setBranchPoint(branchPoint);
+			revisionDeltas.put(storageKey, CDORevisionUtil.createDelta(revision));
+		}
+		return (CDORevisionDeltaImpl) revisionDeltas.get(storageKey);
 	}
 	
 	protected final void process(final ChangeSetProcessor processor) {
@@ -124,11 +169,23 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		}
 	}
 
-	protected final SnomedRefSet getRegularRefSet(String id) {
+	protected final SnomedRefSet getMappingRefSet(String id, short referencedComponentType) {
+		if (!refSetsById.containsKey(id)) {
+			final SnomedRefSet refSet = SnomedRefSetFactory.eINSTANCE.createSnomedMappingRefSet();
+			withCDOID(refSet, nextStorageKey());
+			refSet.setIdentifierId(id);
+			refSet.setReferencedComponentType(referencedComponentType);
+			refSetsById.put(id, refSet);
+		}
+		return refSetsById.get(id);		
+	}
+	
+	protected final SnomedRefSet getRegularRefSet(String id, short referencedComponentType) {
 		if (!refSetsById.containsKey(id)) {
 			final SnomedRefSet refSet = SnomedRefSetFactory.eINSTANCE.createSnomedRegularRefSet();
 			withCDOID(refSet, nextStorageKey());
 			refSet.setIdentifierId(id);
+			refSet.setReferencedComponentType(referencedComponentType);
 			refSetsById.put(id, refSet);
 		}
 		return refSetsById.get(id);
@@ -218,6 +275,39 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		relationship.setDestination(getConcept(destinationId));
 		relationship.setCharacteristicType(getConcept(characteristicType));
 		return relationship;
+	}
+	
+	protected SnomedLanguageRefSetMember createLangMember(final String descriptionId, final Acceptability acceptability, final String refSetId) {
+		final SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
+		member.setAcceptabilityId(acceptability.getConceptId());
+		final SnomedRefSet refSet = getStructuralRefSet(refSetId);
+		refSet.setType(SnomedRefSetType.LANGUAGE);
+		return createMember(member, descriptionId, refSet);
+	}
+	
+	protected SnomedRefSetMember createSimpleMember(final String referencedComponentId, final String refSetId) {
+		final SnomedRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedRefSetMember();
+		final SnomedRefSet refSet = getRegularRefSet(refSetId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId));
+		refSet.setType(SnomedRefSetType.SIMPLE);
+		return createMember(member, referencedComponentId, refSet);
+	}
+	
+	protected SnomedRefSetMember createSimpleMapMember(final String referencedComponentId, final String mapTarget, final String refSetId) {
+		final SnomedSimpleMapRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedSimpleMapRefSetMember();
+		member.setMapTargetComponentId(mapTarget);
+		final SnomedRefSet refSet = getMappingRefSet(refSetId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId));
+		refSet.setType(SnomedRefSetType.SIMPLE_MAP);
+		return createMember(member, referencedComponentId, refSet);
+	}
+	
+	private <T extends SnomedRefSetMember> T createMember(final T member, final String referencedComponentId, final SnomedRefSet refSet) {
+		withCDOID(member, nextStorageKey());
+		member.setActive(true);
+		member.setModuleId(Concepts.MODULE_SCT_CORE);
+		member.setReferencedComponentId(referencedComponentId);
+		member.setRefSet(refSet);
+		member.setUuid(UUID.randomUUID().toString());
+		return member;
 	}
 
 }

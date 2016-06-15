@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
@@ -32,13 +31,8 @@ import com.google.common.collect.Iterables;
  */
 public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	
-	private RelationshipChangeProcessor processor;
+	private RelationshipChangeProcessor processor = new RelationshipChangeProcessor();
 
-	@Before
-	public void givenProcessor() {
-		processor = new RelationshipChangeProcessor();
-	}
-	
 	@Test
 	public void newRelationship() throws Exception {
 		final Relationship relationship = createRandomRelationship();

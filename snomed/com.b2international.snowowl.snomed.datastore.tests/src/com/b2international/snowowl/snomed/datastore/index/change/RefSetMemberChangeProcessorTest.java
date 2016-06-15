@@ -17,14 +17,10 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.UUID;
-
-import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.Iterables;
@@ -34,16 +30,11 @@ import com.google.common.collect.Iterables;
  */
 public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	
-	private RefSetMemberChangeProcessor processor;
+	private RefSetMemberChangeProcessor processor = new RefSetMemberChangeProcessor();
 
-	@Before
-	public void givenProcessor() {
-		processor = new RefSetMemberChangeProcessor();
-	}
-	
 	@Test
 	public void newMember() throws Exception {
-		final SnomedRefSetMember member = createSimpleMember();
+		final SnomedRefSetMember member = createSimpleMember(generateConceptId(), generateConceptId());
 		registerNew(member);
 		
 		process(processor);
@@ -56,7 +47,7 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void changedMember() throws Exception {
-		final SnomedRefSetMember member = createSimpleMember();
+		final SnomedRefSetMember member = createSimpleMember(generateConceptId(), generateConceptId());
 		registerDirty(member);
 		
 		process(processor);
@@ -88,15 +79,4 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		assertEquals(2, processor.getDeletions().size());
 	}
 
-	private SnomedRefSetMember createSimpleMember() {
-		final SnomedRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedRefSetMember();
-		withCDOID(member, nextStorageKey());
-		member.setActive(true);
-		member.setModuleId(module().getId());
-		member.setReferencedComponentId(generateConceptId());
-		member.setRefSet(getRegularRefSet(generateConceptId()));
-		member.setUuid(UUID.randomUUID().toString());
-		return member;
-	}
-	
 }

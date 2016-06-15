@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -40,12 +44,14 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.commons.collect.LongSets;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -53,10 +59,9 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
@@ -68,6 +73,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -76,9 +82,8 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.3
  */
-public class ConceptChangeProcessor extends ChangeSetProcessorBase {
+public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	
-	private final IBranchPath branchPath;
 	private final IconIdUpdater iconId;
 	private final ParentageUpdater inferred;
 	private final ParentageUpdater stated;
@@ -87,12 +92,11 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	private final Taxonomy statedTaxonomy;
 	private final Taxonomy inferredTaxonomy;
 	
-	private Multimap<String, RefSetMemberChange> memberChanges;
+	private Multimap<String, RefSetMemberChange> referringRefSets;
 	private Multimap<String, String> referringPredicates;
 
-	public ConceptChangeProcessor(final IBranchPath branchPath, LongSet allConceptIds, Collection<ConstraintDomain> allConstraintDomains, Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
+	public ConceptChangeProcessor(LongSet allConceptIds, Collection<ConstraintDomain> allConstraintDomains, Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
 		super("concept changes");
-		this.branchPath = branchPath;
 		this.iconId = new IconIdUpdater(inferredTaxonomy.getNewTaxonomy(), statedTaxonomy.getNewTaxonomy(), availableImages);
 		this.inferred = new ParentageUpdater(inferredTaxonomy.getNewTaxonomy(), false);
 		this.stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
@@ -107,30 +111,33 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// process concept deletions first
 		deleteRevisions(SnomedConceptDocument.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT));
 		// collect member changes
-		this.memberChanges = new ConceptReferringMemberChangeProcessor().process(commitChangeSet, searcher);
-		this.referringPredicates = new ComponentReferringPredicateChangeProcessor(allConceptIds, allConstraintDomains).process(commitChangeSet, searcher);
+		this.referringRefSets = HashMultimap.create(new ConceptReferringMemberChangeProcessor().process(commitChangeSet, searcher));
+		this.referringPredicates = HashMultimap.create(new ComponentReferringPredicateChangeProcessor(allConceptIds, allConstraintDomains).process(commitChangeSet, searcher));
 
-		// collect new reference sets
-		final Map<String, SnomedRefSet> newRefSetsById = FluentIterable.from(commitChangeSet.getNewComponents()).filter(SnomedRefSet.class).uniqueIndex(new Function<SnomedRefSet, String>() {
-			@Override
-			public String apply(SnomedRefSet input) {
-				return input.getIdentifierId();
-			}
-		});
+		// collect new and dirty reference sets
+		final Map<String, SnomedRefSet> newAndDirtyRefSetsById = newHashMap(FluentIterable.from(Iterables.concat(commitChangeSet.getNewComponents(), commitChangeSet.getDirtyComponents()))
+				.filter(SnomedRefSet.class)
+				.uniqueIndex(new Function<SnomedRefSet, String>() {
+					@Override
+					public String apply(SnomedRefSet input) {
+						return input.getIdentifierId();
+					}
+				}));
 		
 		// index new concepts
 		for (final Concept concept : commitChangeSet.getNewComponents(Concept.class)) {
 			final String id = concept.getId();
 			final Builder doc = SnomedConceptDocument.builder().id(id);
 			update(doc, concept, null);
-			if (newRefSetsById.containsKey(id)) {
-				doc.refSet(newRefSetsById.get(id));
+			SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
+			if (refSet != null) {
+				doc.refSet(refSet);
 			}
 			indexRevision(concept.cdoID(), doc.build());
 		}
 		
 		// collect dirty concepts for reindex
-		final Iterable<Concept> dirtyConcepts = collectDirtyConcepts(commitChangeSet);
+		final Iterable<Concept> dirtyConcepts = collectDirtyConcepts(searcher, commitChangeSet);
 		
 		// fetch dirty concept documents
 		final Set<Long> dirtyConceptStorageKeys = newHashSet(FluentIterable.from(CDOIDUtils.getIds(dirtyConcepts)).transform(CDOIDUtils.CDO_ID_TO_LONG_FUNCTION));
@@ -142,11 +149,15 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			final SnomedConceptDocument currentDoc = currentConceptDocumentsById.get(id);
 			final Builder doc = SnomedConceptDocument.builder(currentDoc);
 			update(doc, concept, currentDoc);
-			if (newRefSetsById.containsKey(id)) {
-				doc.refSet(newRefSetsById.get(id));
+			SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
+			if (refSet != null) {
+				doc.refSet(refSet);
 			}
 			indexRevision(concept.cdoID(), doc.build());
 		}
+		
+		// TODO reindex remaining new/changed reference sets
+		// TODO process deleted reference sets
 	}
 	
 	/*Updates already existing concept document with changes from concept and other sources*/
@@ -159,7 +170,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.moduleId(concept.getModule().getId())
 			.exhaustive(concept.isExhaustive())
 			.primitive(concept.isPrimitive())
-			.referringPredicates(referringPredicates.get(id))
+			.referringPredicates(referringPredicates.removeAll(id))
 	//		.relevant() // TODO register change type
 			;
 		
@@ -169,10 +180,10 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		final Collection<String> currentReferringRefSets = currentVersion == null ? Collections.<String>emptySet() : currentVersion.getReferringRefSets();
 		final Collection<String> currentReferringMappingRefSets = currentVersion == null ? Collections.<String>emptySet() : currentVersion.getReferringMappingRefSets();
-		new ReferenceSetMembershipUpdater(memberChanges.get(id), currentReferringRefSets, currentReferringMappingRefSets).update(doc);
+		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets).update(doc);
 	}
 
-	private Iterable<Concept> collectDirtyConcepts(final ICDOCommitChangeSet commitChangeSet) {
+	private Iterable<Concept> collectDirtyConcepts(final RevisionSearcher searcher, final ICDOCommitChangeSet commitChangeSet) throws IOException {
 		// collect relevant concept changes
 		final Set<Concept> dirtyConcepts = newHashSet(FluentIterable.from(commitChangeSet.getDirtyComponents(Concept.class)).filter(new Predicate<Concept>() {
 			@Override
@@ -190,7 +201,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		for (final Relationship relationship : commitChangeSet.getDirtyComponents(Relationship.class)) {
 			dirtyConcepts.add(relationship.getSource());
 		}
-		// collection preferred language member's description's concept for compare change
+		// collect preferred language member's description's concept for compare change
 		// do we need this??? why not query all changed revision and all other required docs for compare
 		for (SnomedLanguageRefSetMember member : commitChangeSet.getNewComponents(SnomedLanguageRefSetMember.class)) {
 			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(member.getAcceptabilityId()) && member.eContainer() instanceof Description) {
@@ -210,8 +221,10 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		// collect dirty concepts due to change in hierarchy
 		final Set<String> conceptsToBeLoaded = newHashSet();
-		conceptsToBeLoaded.addAll(getAffectedConcepts(commitChangeSet, inferredTaxonomy));
-		conceptsToBeLoaded.addAll(getAffectedConcepts(commitChangeSet, statedTaxonomy));
+		conceptsToBeLoaded.addAll(referringPredicates.keySet());
+		conceptsToBeLoaded.addAll(referringRefSets.keySet());
+		conceptsToBeLoaded.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
+		conceptsToBeLoaded.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));
 		
 		// collect inferred taxonomy changes
 		conceptsToBeLoaded.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
@@ -221,10 +234,17 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), statedTaxonomy.getOldTaxonomy()));
 		conceptsToBeLoaded.removeAll(currentDirtyConceptIds);
 		
-		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
-		for (String id : conceptsToBeLoaded) {
-			// TODO performance issue here with lookupservice
-			dirtyConcepts.add(lookupService.getComponent(id, commitChangeSet.getView()));
+		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
+				.selectAll()
+				.where(SnomedConceptDocument.Expressions.ids(conceptsToBeLoaded))
+				.limit(conceptsToBeLoaded.size())
+				.build();
+		final Hits<SnomedConceptDocument> hits = searcher.search(query);
+		
+		for (SnomedConceptDocument hit : hits) {
+			final Concept concept = CDOUtils.getObjectIfExists(commitChangeSet.getView(), hit.getStorageKey());
+			checkNotNull(concept, "Concept should not be null");
+			dirtyConcepts.add(concept);
 		}
 		
 		return dirtyConcepts;
@@ -242,7 +262,7 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		return ids;
 	}
 
-	private Collection<String> getAffectedConcepts(ICDOCommitChangeSet commitChangeSet, Taxonomy taxonomy) {
+	private Collection<String> getAffectedConcepts(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, Taxonomy taxonomy) throws IOException {
 		final Set<String> iconIdUpdates = newHashSet();
 		final ISnomedTaxonomyBuilder newTaxonomy = taxonomy.getNewTaxonomy();
 		final ISnomedTaxonomyBuilder oldTaxonomy = taxonomy.getOldTaxonomy();
@@ -259,13 +279,14 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		// process detached/inactivated relationships
 		final LongIterator detachedIt = diff.getB().iterator();
+		final Map<String, String> oldSourceConceptIconIds = getSourceConceptIconIds(searcher, oldTaxonomy, diff.getB());
 		while (detachedIt.hasNext()) {
 			final String relationshipId = Long.toString(detachedIt.next());
 			final String sourceNodeId = oldTaxonomy.getSourceNodeId(relationshipId);
 			// if concept still exists a relationship became inactive or deleted
 			if (newTaxonomy.containsNode(sourceNodeId)) {
 				final LongSet allAncestorNodeIds = newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
-				final String oldIconId = SnomedIconProvider.getInstance().getIconId(sourceNodeId, branchPath);
+				final String oldIconId = oldSourceConceptIconIds.get(sourceNodeId);
 				if (!allAncestorNodeIds.contains(Long.parseLong(oldIconId))) {
 					iconIdUpdates.add(sourceNodeId);
 					// add all descendants
@@ -277,15 +298,35 @@ public class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			}
 		}
 		
-		FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(new Function<Concept, String>() {
+		return FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(new Function<Concept, String>() {
 			@Override
 			public String apply(Concept input) {
 				return input.getId();
 			}
 		}).copyInto(iconIdUpdates);
-		return iconIdUpdates;
 	}
 	
+	private Map<String, String> getSourceConceptIconIds(RevisionSearcher searcher, ISnomedTaxonomyBuilder oldTaxonomy, LongSet detachedRelationshipIds) throws IOException {
+		final LongIterator it = detachedRelationshipIds.iterator();
+		final Collection<String> sourceNodeIds = newHashSetWithExpectedSize(detachedRelationshipIds.size());
+		while (it.hasNext()) {
+			final String relationshipId = Long.toString(it.next());
+			sourceNodeIds.add(oldTaxonomy.getSourceNodeId(relationshipId)); 
+		}
+		
+		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
+				.selectAll()
+				.where(SnomedDocument.Expressions.ids(sourceNodeIds))
+				.limit(sourceNodeIds.size())
+				.build();
+		final Hits<SnomedConceptDocument> hits = searcher.search(query);
+		final Map<String, String> iconsByIds = newHashMapWithExpectedSize(hits.getTotal());
+		for (SnomedConceptDocument hit : hits) {
+			iconsByIds.put(hit.getId(), hit.getIconId());
+		}
+		return iconsByIds;
+ 	}
+
 	/**
 	 * @since 4.3
 	 */

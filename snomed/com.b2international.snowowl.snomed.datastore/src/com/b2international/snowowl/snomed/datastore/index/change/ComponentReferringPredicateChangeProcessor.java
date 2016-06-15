@@ -47,12 +47,12 @@ import com.google.common.collect.Sets;
 /**
  * @since 4.7
  */
-public class ComponentReferringPredicateChangeProcessor {
+final class ComponentReferringPredicateChangeProcessor {
 	
 	private final LongSet allConceptIds;
 	private final Collection<ConstraintDomain> allConstraintDomains;
 	
-	public ComponentReferringPredicateChangeProcessor(final LongSet allConceptIds, final Collection<ConstraintDomain> allConstraintDomains) {
+	ComponentReferringPredicateChangeProcessor(final LongSet allConceptIds, final Collection<ConstraintDomain> allConstraintDomains) {
 		this.allConceptIds = allConceptIds;
 		this.allConstraintDomains = allConstraintDomains;
 	}

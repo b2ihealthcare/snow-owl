@@ -38,7 +38,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.3
  */
-public final class ConceptReferringMemberChangeProcessor {
+final class ConceptReferringMemberChangeProcessor {
 
 	private static final Predicate<SnomedRefSetMember> REFERRING_CONCEPT_MEMBER = new Predicate<SnomedRefSetMember>() {
 		@Override

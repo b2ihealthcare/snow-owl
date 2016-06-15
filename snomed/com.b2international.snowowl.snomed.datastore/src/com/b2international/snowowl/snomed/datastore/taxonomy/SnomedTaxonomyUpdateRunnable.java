@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -36,7 +35,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
@@ -114,7 +112,7 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		
 		final Iterable<Concept> newConcepts = commitChangeSet.getNewComponents(Concept.class);
 		final Iterable<Concept> dirtyConcepts = commitChangeSet.getDirtyComponents(Concept.class);
-		final Iterable<CDOID> deletedConcepts = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
+		final Iterable<CDOID> deletedConceptStorageKeys = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
 		final Iterable<Relationship> newRelationships = commitChangeSet.getNewComponents(Relationship.class);
 		final Iterable<Relationship> dirtyRelationships = commitChangeSet.getDirtyComponents(Relationship.class);
 		final Iterable<CDOID> deletedRelationships = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
@@ -165,29 +163,29 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		for (final Concept newConcept : newConcepts) {
 			taxonomyBuilder.addNode(createNode(newConcept));
 		}
-		for (final CDOID conceptCdoId : deletedConcepts) {
-			try {
+		
+		try {
+			final Iterable<SnomedConceptDocument> deletedConcepts = searcher.get(SnomedConceptDocument.class, CDOIDUtils.createCdoIdToLong(deletedConceptStorageKeys));
+			for (final SnomedConceptDocument concept : deletedConcepts) {
 				//consider the same as for relationship
 				//we have to decide if deletion is the 'stronger' modification or not
-				final long cdoId = CDOIDUtils.asLong(conceptCdoId);
-				final SnomedConceptDocument concept = searcher.get(SnomedConceptDocument.class, cdoId);
 				final String conceptId = concept.getId();
 				
 				//same concept as addition and deletion
 				if (_newConcepts.containsKey(conceptId)) {
 					final Concept newConcept = _newConcepts.get(conceptId);
 					//check whether new concept has more recent (larger CDO ID) or not, ignore deletion
-					if (CDOIDUtils.asLong(newConcept.cdoID()) > cdoId) {
+					if (CDOIDUtils.asLong(newConcept.cdoID()) > concept.getStorageKey()) {
 						continue;
 					}
 				}
-				
 				//else delete it
 				taxonomyBuilder.removeNode(createDeletedNode(conceptId));
-			} catch (IOException e) {
-				throw new SnowowlRuntimeException(e);
 			}
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
 		}
+		
 		for (final Concept dirtyConcept : dirtyConcepts) {
 			if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
 				//nothing can be dirty and new at the same time
@@ -200,11 +198,6 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		}
 		LOGGER.info("Rebuilding taxonomic information based on the changes.");
 		taxonomyBuilder.build();
-	}
-	
-	/*returns with the terminology browser service. always represents the previous state of the SNOMED CT ontology*/
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
 	}
 	
 	/*creates a taxonomy edge instance based on the given SNOMED CT relationship*/

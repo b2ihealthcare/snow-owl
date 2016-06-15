@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 import java.util.UUID;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
@@ -42,13 +41,8 @@ import com.google.common.collect.Iterables;
  */
 public class ConstraintChangeProcessorTest extends BaseChangeProcessorTest {
 
-	private ConstraintChangeProcessor processor;
+	private ConstraintChangeProcessor processor = new ConstraintChangeProcessor();
 
-	@Before
-	public void givenProcessor() {
-		processor = new ConstraintChangeProcessor();
-	}
-	
 	@Test
 	public void newDescriptionConstraint() throws Exception {
 		final AttributeConstraint constraint = createDescriptionConstraint();
