@@ -246,7 +246,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		Iterable<ICodeSystemVersion> fakeRefHeadVersions = Iterables.filter(versions, latestCodeSystemVersionPredicate());
 		Iterable<ICodeSystemVersion> existingVersions = Iterables.filter(versions, not(in(newArrayList(fakeRefHeadVersions))));
 		
-		for (final String repositoryUuid : Sets.newHashSet(Iterables.transform(existingVersions, new CodeSystemUtils.CodeSystemVersionToRepositoryUuidFunction()))) {
+		for (final String repositoryUuid : Sets.newHashSet(Iterables.transform(existingVersions, ICodeSystemVersion.TO_REPOSITORY_UUID_FUNC))) {
 			
 			// this branchPath can be: a task branch; version/tag branch Path; codeSystem branchPath 
 			final IBranchPath branchPath = taskBranchPathMap.getBranchPath(repositoryUuid);
