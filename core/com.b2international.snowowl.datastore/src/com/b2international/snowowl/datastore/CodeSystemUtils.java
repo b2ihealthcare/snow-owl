@@ -33,14 +33,11 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOManagedItem;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
@@ -132,34 +129,7 @@ public class CodeSystemUtils {
 		return null;
 	}
 
-	/**
-	 * Checks if the branchPath passed-in, corresponds to a version's branch path. If so, it returns the argument wrapped in an {@link Optional}.
-	 * If not, it iterates upward on the branch's parentage, checking if parent's path is a version's branchPath.
-	 * If none of the branchPaths in the parentage correspond to a version branchPath, it returns {@link Optional#absent()}.
-	 * @param activeBranchPath
-	 * @return
-	 */
-	public static Optional<IBranchPath> tryFindVersionBranchPath(final IBranchPath branchPath) {
-		if (BranchPathUtils.isMain(branchPath))
-			return Optional.absent();
-		
-		if(isParsableDate(branchPath.lastSegment())) {
-			return Optional.of(branchPath);
-		}
-		
-		return tryFindVersionBranchPath(branchPath.getParent());
-	}
-	
-	
 
-	private static boolean isParsableDate(String dateString) {
-		try {
-			Dates.parse(dateString);
-			return true;
-		} catch (SnowowlRuntimeException | NullPointerException e) {
-			return false;
-		}
-	}
 	
 	public static ICodeSystem findMatchingCodeSystem(String branchPath, String repositoryUuid) {
 		return findMatchingCodeSystem(BranchPathUtils.createPath(branchPath), repositoryUuid);
@@ -171,9 +141,6 @@ public class CodeSystemUtils {
 		// branchPath can be: main, task branch, version/tag branch Path, extension branchPath 
 		Iterable<ICodeSystem> codeSystemsInRepositoryUuid = Iterables.filter(getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap()), sameRepositoryCodeSystemPredicate(repositoryUuid));
 		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepositoryUuid, TO_BRANCH_PATH_FUNCTION);
-
-//		if (branchPathToCodeSystemMap.containsKey(branchPath.getPath()))
-//			return branchPathToCodeSystemMap.get(branchPath.getPath());
 
 		for (IBranchPath path = branchPath; !isMain(path); path = path.getParent()) {
 			if (branchPathToCodeSystemMap.containsKey(path.getPath())) {
