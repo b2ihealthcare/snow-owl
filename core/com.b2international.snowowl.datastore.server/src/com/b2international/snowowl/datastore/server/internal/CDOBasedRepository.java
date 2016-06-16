@@ -20,6 +20,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -36,6 +37,8 @@ import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
@@ -43,6 +46,8 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.index.IndexTransactionProvider;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.EditingContextFactory;
+import com.b2international.snowowl.datastore.server.EditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
@@ -60,6 +65,10 @@ import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemIndexMappingStrategy;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Provider;
 
@@ -67,6 +76,8 @@ import com.google.inject.Provider;
  * @since 4.1
  */
 public final class CDOBasedRepository implements InternalRepository, RepositoryContextProvider {
+	
+	private static final String REINDEX_KEY = "snowowl.reindex";
 
 	private final String repositoryId;
 	private final Environment env;
@@ -83,6 +94,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		
 		initializeBranchingSupport(mergeMaxResults);
 		initializeRequestSupport(numberOfWorkers);
+		reindex();
 	}
 
 	@Override
@@ -217,6 +229,32 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 				.resolve(Paths.get("indexes", name, repositoryId))
 				.toFile();
 		return new IndexStore<>(dir, mapper, type);
+	}
+	
+	private void reindex() {
+		final boolean reindex = Boolean.parseBoolean(System.getProperty(REINDEX_KEY, "false"));
+		if (reindex) {
+			reindexCodeSystems();
+		}
+	}
+	
+	private void reindexCodeSystems() {
+		final EditingContextFactoryProvider contextFactoryProvider = env.service(EditingContextFactoryProvider.class);
+		final EditingContextFactory contextFactory = contextFactoryProvider.get(repositoryId);
+		
+		try (final CDOEditingContext editingContext = contextFactory.createEditingContext(BranchPathUtils.createMainPath())) {
+			final List<CodeSystem> codeSystems = editingContext.getCodeSystems();
+			
+			for (final CodeSystem codeSystem : codeSystems) {
+				getIndexUpdater().index(BranchPathUtils.createMainPath(), new CodeSystemIndexMappingStrategy(codeSystem));
+				
+				for (final CodeSystemVersion codeSystemVersion : codeSystem.getCodeSystemVersions()) {
+					getIndexUpdater().index(BranchPathUtils.createMainPath(), new CodeSystemVersionIndexMappingStrategy(codeSystemVersion));
+				}
+			}
+			
+			getIndexUpdater().commit(BranchPathUtils.createMainPath());
+		}
 	}
 	
 }
