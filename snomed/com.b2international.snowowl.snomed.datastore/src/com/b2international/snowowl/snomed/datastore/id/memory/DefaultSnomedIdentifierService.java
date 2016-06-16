@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Provider;
 
 /**
  * {@link Store} based implementation of the identifier service.
@@ -60,17 +61,17 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierService.class);
 
-	private final Index store;
+	private final Provider<Index> store;
 	private final ItemIdGenerationStrategy generationStrategy;
 
 	/*
 	 * Tests only
 	 */
-	DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy) {
+	DefaultSnomedIdentifierService(final Provider<Index> store, final ItemIdGenerationStrategy generationStrategy) {
 		this(store, generationStrategy, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
 	}
 	
-	public DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy,
+	public DefaultSnomedIdentifierService(final Provider<Index> store, final ItemIdGenerationStrategy generationStrategy,
 			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
 		super(reservationService, config);
 		this.store = store;
@@ -90,7 +91,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public Collection<SctId> getSctIds() {
-		return store.read(new IndexRead<Collection<SctId>>() {
+		return store.get().read(new IndexRead<Collection<SctId>>() {
 			@Override
 			public Collection<SctId> execute(Searcher index) throws IOException {
 				return ImmutableList.copyOf(index.search(Query.builder(SctId.class).selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build()));
@@ -158,7 +159,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final SctId sctId = getSctId(componentId);
 		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
 			LOGGER.debug(String.format("Releasing component ID %s.", componentId));
-			store.write(new IndexWrite<Void>() {
+			store.get().write(new IndexWrite<Void>() {
 				@Override
 				public Void execute(Writer index) throws IOException {
 					index.remove(SctId.class, componentId);
@@ -395,7 +396,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private void putSctIds(final Map<String, SctId> ids) {
-		store.write(new IndexWrite<Void>() {
+		store.get().write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
 				index.putAll(ids);
@@ -406,7 +407,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private void removeSctIds(final Set<String> ids) {
-		store.write(new IndexWrite<Void>() {
+		store.get().write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
 				index.removeAll(ImmutableMap.<Class<?>, Set<String>>of(SctId.class, ids));
@@ -417,7 +418,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private SctId getFromStore(final String componentId) {
-		return store.read(new IndexRead<SctId>() {
+		return store.get().read(new IndexRead<SctId>() {
 			@Override
 			public SctId execute(Searcher index) throws IOException {
 				return index.get(SctId.class, componentId);

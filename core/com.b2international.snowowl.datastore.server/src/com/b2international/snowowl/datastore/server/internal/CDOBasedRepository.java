@@ -24,6 +24,7 @@ import java.util.Map;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 
+import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
@@ -38,7 +39,6 @@ import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -58,7 +58,10 @@ import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProvide
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImpl;
+import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.EventBusUtil;
@@ -87,6 +90,9 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		this.env = env;
 		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
 		
+		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
+		mapper.registerModule(new PrimitiveCollectionModule());
+		initIndex(mapper);
 		initializeBranchingSupport(mergeMaxResults);
 		initializeRequestSupport(numberOfWorkers);
 	}
@@ -197,9 +203,6 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 
 	private void initializeBranchingSupport(int mergeMaxResults) {
-		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		initIndex(mapper);
-		
 		registry.put(BranchManager.class, new CDOBranchManagerImpl(this));
 		
 		final ReviewConfiguration reviewConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
@@ -213,8 +216,9 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 
 	private void initIndex(final ObjectMapper mapper) {
-		final Collection<Class<?>> types = ImmutableSet.of(Branch.class, Review.class, ConceptChanges.class);
-		final Map<String, Object> settings = ImmutableMap.<String, Object>of(IndexClientFactory.DIRECTORY, env.getDataDirectory());
+		final Collection<Class<?>> types = ImmutableSet.of(CDOMainBranchImpl.class, CDOBranchImpl.class, Review.class, ConceptChanges.class, InternalBranch.class);
+		final Map<String, Object> settings = ImmutableMap.<String, Object>of(IndexClientFactory.DIRECTORY, 
+				env.getDataDirectory() + "/indexes");
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);
 		final Index index = new DefaultIndex(indexClient);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, new RevisionBranchProvider() {
