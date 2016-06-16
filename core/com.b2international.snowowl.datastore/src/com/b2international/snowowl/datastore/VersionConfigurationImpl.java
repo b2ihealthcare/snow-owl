@@ -44,6 +44,7 @@ import org.eclipse.core.runtime.IStatus;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -252,8 +253,13 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 			final IBranchPath branchPath = taskBranchPathMap.getBranchPath(repositoryUuid);
 			
 			final ICodeSystem  codeSystem = CodeSystemUtils.findMatchingCodeSystem(branchPath, repositoryUuid);
-			final ICodeSystemVersion version = CodeSystemUtils.findMatchingVersion(branchPath, allVersions.get(repositoryUuid));
-			currentVersion.put(codeSystem, version);
+			final ICodeSystemVersion version = CodeSystemUtils.findMatchingVersion(branchPath, Iterables.filter(allVersions.get(repositoryUuid), new Predicate<ICodeSystemVersion>() {
+				@Override
+				public boolean apply(ICodeSystemVersion input) {
+					return Objects.equal(input.getCodeSystemShortName(), codeSystem.getShortName());
+				}
+			}));
+			currentVersion.put(codeSystem, version != null ? version : LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid));
 		}
 		return currentVersion;
 	}
