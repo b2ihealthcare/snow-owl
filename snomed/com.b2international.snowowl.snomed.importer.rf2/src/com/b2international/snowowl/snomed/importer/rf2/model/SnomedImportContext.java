@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -69,6 +70,12 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 
 	private final LongSet visitedConcepts = PrimitiveSets.newLongOpenHashSet();
 	private final LongSet visitedRefSets = PrimitiveSets.newLongOpenHashSet();
+
+	private final RevisionIndex index;
+
+	public SnomedImportContext(RevisionIndex index) {
+		this.index = index;
+	}
 
 	@Override
 	public void close() throws Exception {
@@ -232,9 +239,9 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	public void setEditingContext(final SnomedEditingContext editingContext) {
 		this.editingContext = checkNotNull(editingContext, "Editing context argument may not be null.");
 
-		componentLookup = new ComponentLookup<Component>(editingContext, Component.class);
-		refSetLookup = new ComponentLookup<SnomedRefSet>(editingContext, SnomedRefSet.class);
-		refSetMemberLookup = new RefSetMemberLookup<SnomedRefSetMember>(editingContext);
+		componentLookup = new ComponentLookup<Component>(index, editingContext, Component.class);
+		refSetLookup = new ComponentLookup<SnomedRefSet>(index, editingContext, SnomedRefSet.class);
+		refSetMemberLookup = new RefSetMemberLookup<SnomedRefSetMember>(index, editingContext);
 	}
 
 	/**

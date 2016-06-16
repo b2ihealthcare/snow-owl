@@ -66,9 +66,6 @@ import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -102,16 +99,23 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private final List<Importer> importers;
 	private final Ordering<AbstractImportUnit> unitOrdering;
 	private final SnomedImportContext importContext; //will be used when tagging version (Snow Owl 3.1)
+	private final RepositoryState repositoryState;
+	
 	private Rf2BasedSnomedTaxonomyBuilder inferredTaxonomyBuilder;
 	private Rf2BasedSnomedTaxonomyBuilder statedTaxonomyBuilder;
 	
-	public SnomedCompositeImporter(final Logger logger, final SnomedImportContext importContext, final List<Importer> importers, final Ordering<AbstractImportUnit> unitOrdering) {
+	public SnomedCompositeImporter(final Logger logger,
+			final RepositoryState repositoryState,
+			final SnomedImportContext importContext,
+			final List<Importer> importers, 
+			final Ordering<AbstractImportUnit> unitOrdering) {
 		super(logger);
+		this.repositoryState = repositoryState;
 		this.importContext = Preconditions.checkNotNull(importContext, "Import context argument cannot be null.");
 		this.importers = ImmutableList.copyOf(checkNotNull(importers, "importers"));
 		this.unitOrdering = checkNotNull(unitOrdering, "unitOrdering");
 	}
-
+	
 	@Override
 	public void preImport(final SubMonitor subMonitor) {
 		
@@ -279,7 +283,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		if (null == inferredTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
-			inferredTaxonomyBuilder = buildTaxonomy(branchPath, StatementCollectionMode.INFERRED_ISA_ONLY);
+			inferredTaxonomyBuilder = buildTaxonomy(Concepts.INFERRED_RELATIONSHIP);
 		}
 		
 		inferredTaxonomyBuilder.applyNodeChanges(conceptFilePath);
@@ -288,7 +292,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		if (null == statedTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
-			statedTaxonomyBuilder = buildTaxonomy(branchPath, StatementCollectionMode.STATED_ISA_ONLY);
+			statedTaxonomyBuilder = buildTaxonomy(Concepts.STATED_RELATIONSHIP);
 		}
 		
 		statedTaxonomyBuilder.applyNodeChanges(conceptFilePath);
@@ -301,12 +305,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		initializeIndex(branchPath, lastUnitEffectiveTimeKey, units);
 	}
 
-	private Rf2BasedSnomedTaxonomyBuilder buildTaxonomy(final IBranchPath branchPath, final StatementCollectionMode mode) {
-		final ApplicationContext context = ApplicationContext.getInstance();
-		final LongCollection conceptIds = context.getService(SnomedTerminologyBrowser.class).getAllConceptIds(branchPath);
-		final IsAStatementWithId[] statements = context.getService(SnomedStatementBrowser.class).getActiveStatements(branchPath, mode);
-		final SnomedTaxonomyBuilder baseBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-		return Rf2BasedSnomedTaxonomyBuilder.newInstance(baseBuilder, mode.getCharacteristicType());
+	private Rf2BasedSnomedTaxonomyBuilder buildTaxonomy(final String characteristicType) {
+		final LongCollection conceptIds = repositoryState.getConceptIds();
+		final IsAStatementWithId[] statements = Concepts.INFERRED_RELATIONSHIP.equals(characteristicType) ? repositoryState.getInferredStatements() : repositoryState.getStatedStatements();
+		return Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
 	}
 
 	private RevisionIndex getIndex() {

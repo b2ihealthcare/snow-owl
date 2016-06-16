@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
@@ -37,9 +36,8 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
 		final ApplicationContext context = ApplicationContext.getInstance();
 		final RevisionIndex index = context.getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-		final SnomedStatementBrowser statementBrowser = context.getService(SnomedStatementBrowser.class);
 		final ISnomedIdentifierService identifierService = context.getService(ISnomedIdentifierService.class);
-		return new SnomedCDOChangeProcessor(branchPath, index, statementBrowser, identifierService);
+		return new SnomedCDOChangeProcessor(branchPath, index, identifierService);
 	}
 
 	@Override

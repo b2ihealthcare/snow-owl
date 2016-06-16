@@ -26,9 +26,7 @@ import com.b2international.commons.tree.NoopTreeVisitor;
 import com.b2international.commons.tree.emf.EObjectTreeNode;
 import com.b2international.commons.tree.emf.EObjectWalker;
 import com.b2international.commons.tree.emf.EObjectWalker.EObjectContainmentTreeNodeProvider;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
 import com.b2international.snowowl.snomed.core.mrcm.ConceptModelUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
@@ -84,12 +82,6 @@ public class ConceptModelSemanticValidator {
 				return true;
 			}
 			
-			if (ApplicationContext.getInstance().exists(ImportIndexServerService.class)) {
-				final ImportIndexServerService importService = ApplicationContext.getInstance().getService(ImportIndexServerService.class);
-				if (importService != null && importService.componentExists(value)) {
-					return true;
-				}
-			}
 		}
 
 		// XXX: feature values can be optional (eg. relationship predicate, characteristic type)

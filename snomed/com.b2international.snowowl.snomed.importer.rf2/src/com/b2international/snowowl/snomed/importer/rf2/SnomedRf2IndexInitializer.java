@@ -51,6 +51,7 @@ import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -83,6 +84,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
@@ -848,8 +850,13 @@ public class SnomedRf2IndexInitializer extends Job {
 		});
 	}
 	
-	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) {
-		final Hits<SnomedConceptDocument> hits;
+	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) throws IOException {
+		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
+				.selectAll()
+				.where(SnomedDocument.Expressions.ids(unvisitedConcepts))
+				.limit(unvisitedConcepts.size())
+				.build();
+		final Hits<SnomedConceptDocument> hits = writer.searcher().search(query);
 		for (final SnomedConceptDocument concept : hits) {
 			// can happen as concepts referenced in MRCM rules might not exist at this time
 			final String conceptId = concept.getId();
@@ -930,6 +937,12 @@ public class SnomedRf2IndexInitializer extends Job {
 				final boolean exhaustive = false;
 				final String moduleId = record.get(3);
 				
+				SnomedConceptDocument currentRevision;
+				try {
+					currentRevision = writer.searcher().get(SnomedConceptDocument.class, conceptStorageKey);
+				} catch (IOException e) {
+					throw new SnowowlRuntimeException(e);
+				}
 				final Collection<String> refSetIds = currentRevision.getReferringRefSets();
 				final Collection<String> updatedRefSetIds = getCurrentRefSetMemberships(refSetIds, refSetMemberChanges.get(conceptId));
 				

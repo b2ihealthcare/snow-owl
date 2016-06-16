@@ -26,6 +26,7 @@ import java.io.Serializable;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -191,4 +192,16 @@ public abstract class SnomedDocument extends RevisionDocument implements ICompon
 				.add("active", active)
 				.add("effectiveTime", effectiveTime);
 	}
+	
+	public static final Class<? extends SnomedDocument> getType(ComponentCategory componentCategory) {
+		switch (componentCategory) {
+		case CONCEPT: return SnomedConceptDocument.class;
+		case DESCRIPTION: return SnomedDescriptionIndexEntry.class;
+		case RELATIONSHIP: return SnomedRelationshipIndexEntry.class;
+		case SET_MEMBER:
+		case MAP_MEMBER: return SnomedRefSetMemberIndexEntry.class;
+		default: throw new UnsupportedOperationException("Unsupported component category: " + componentCategory);
+		}
+	}
+	
 }

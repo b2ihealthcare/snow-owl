@@ -251,7 +251,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final Collection<ConstraintDomain> allConstraintDomains = Collections.emptySet();
 		
 		final Collection<ChangeSetProcessor> changeSetProcessors = newHashSet();
-		changeSetProcessors.add(new ConceptChangeProcessor(branchPath, allConceptIds, allConstraintDomains, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy));
+		changeSetProcessors.add(new ConceptChangeProcessor(allConceptIds, allConstraintDomains, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy));
 		changeSetProcessors.add(new DescriptionChangeProcessor());
 		changeSetProcessors.add(new RelationshipChangeProcessor());
 		changeSetProcessors.add(new RefSetMemberChangeProcessor());
