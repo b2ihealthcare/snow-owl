@@ -16,159 +16,82 @@
 package com.b2international.snowowl.snomed.exporter.server.core;
 
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Suppliers.memoize;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Set;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TopDocs;
-
-import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedReleaseFileHeaders;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.collect.AbstractIterator;
 
 /**
- * RF1 exporter for relationships.
- *
+ * RF1 exporter for SNOMED&nbsp;CT relationships.
  */
-public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
-
-	private static final Set<String> RELATIONSHIP_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.relationshipCharacteristicType()
-			.relationshipType()
-			.relationshipSource()
-			.relationshipDestination()
-			.relationshipGroup()
-			.build();
+public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1Exporter<SnomedRelationshipIndexEntry> {
 	
-	private final Id2Rf1PropertyMapper mapper;
-	private final SnomedExportConfiguration configuration;
-	private final Supplier<Iterator<String>> itrSupplier;
-
-	public SnomedRf1RelationshipExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper) {
-		this.configuration = checkNotNull(configuration, "configuration");
-		this.mapper = checkNotNull(mapper, "mapper");
-		itrSupplier = createSupplier();
+	/**
+	 * Line in the Relationship RF1 file
+	 */
+	class Rf1Relationship {
+		
+		public String id;
+		public String sourceId;
+		public String typeId;
+		public String destinationId;
+		public String characteristicTypeId;
+		public String refinability = Concepts.OPTIONAL_REFINABLE;
+		public String group;
+		
+		@Override
+		public String toString() {
+			
+			return new StringBuilder(valueOfOrEmptyString(id))
+					.append(HT)
+					.append(valueOfOrEmptyString(sourceId))
+					.append(HT)
+					.append(valueOfOrEmptyString(typeId))
+					.append(HT)
+					.append(valueOfOrEmptyString(destinationId))
+					.append(HT)
+					.append(mapper.getRelationshipType(valueOfOrEmptyString(characteristicTypeId)))
+					.append(HT)
+					.append(mapper.getRefinabilityType(valueOfOrEmptyString(refinability)))
+					.append(HT)
+					.append(valueOfOrEmptyString(group)) 
+					.toString();
+		}
 	}
 	
-	private Supplier<Iterator<String>> createSupplier() {
-		return memoize(new Supplier<Iterator<String>>() {
-			@Override
-			public Iterator<String> get() {
-				return new AbstractIterator<String>() {
-					
-					private final Iterator<IdStorageKeyPair> idIterator = getServiceForClass(ISnomedComponentService.class)
-							.getAllComponentIdStorageKeys(getBranchPath(), SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER).iterator();
-					
-					@SuppressWarnings("rawtypes")
-					private final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
-					private Object[] _values;
-					
-					@SuppressWarnings("unchecked")
-					@Override
-					protected String computeNext() {
-						
-						while (idIterator.hasNext()) {
-							
-							final String relationshipId = idIterator.next().getId();
-							_values = new Object[7];
-							
-							ReferenceManager<IndexSearcher> manager = null;
-							IndexSearcher searcher = null;
-							
-							try {
-								
-								manager = indexService.getManager(getBranchPath());
-								searcher = manager.acquire();
-								
-								
-								final Query relationshipQuery = SnomedMappings.newQuery().relationship().id(relationshipId).matchAll();
-								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), relationshipQuery, 1);
-								
-								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));
-								
-								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, RELATIONSHIP_FILEDS_TO_LOAD);
-								
-								_values[0] = relationshipId;
-								_values[1] = SnomedMappings.relationshipSource().getValueAsString(doc);
-								_values[2] = SnomedMappings.relationshipType().getValueAsString(doc);
-								_values[3] = SnomedMappings.relationshipDestination().getValueAsString(doc);
-								_values[4] = SnomedMappings.relationshipCharacteristicType().getValueAsString(doc);
-								_values[5] = Concepts.OPTIONAL_REFINABLE;
-								_values[6] = SnomedMappings.relationshipGroup().getValueAsString(doc);
-								
-								return new StringBuilder(valueOfOrEmptyString(_values[0])) //ID
-									.append(HT)
-									.append(valueOfOrEmptyString(_values[1])) //source
-									.append(HT)
-									.append(valueOfOrEmptyString(_values[2])) //type
-									.append(HT)
-									.append(valueOfOrEmptyString(_values[3])) //destination
-									.append(HT)
-									.append(mapper.getRelationshipType(valueOfOrEmptyString(_values[4]))) //characteristic type
-									.append(HT)
-									.append(mapper.getRefinabilityType(valueOfOrEmptyString(_values[5]))) //refinability
-									.append(HT)
-									.append(valueOfOrEmptyString(_values[6])) //group
-									.toString();
-								
-							} catch (final IOException e) {
-								
-								throw new SnowowlRuntimeException(e);
-								
-							} finally {
-								
-								if (null != manager && null != searcher) {
-									
-									try {
-										
-										manager.release(searcher);
-										
-									} catch (final IOException e) {
-										
-										throw new SnowowlRuntimeException(e);
-										
-									}
-									
-								}
-							
-							}
-							
-						}
-						return endOfData();
-					}
-					
-					private IBranchPath getBranchPath() {
-						return configuration.getCurrentBranchPath();
-					}
-					
-				};
-			}
-		});
+	/**
+	 * Constructor
+	 * @param configuration export configuration
+	 * @param mapper RF2->RF1 mapper
+	 */
+	public SnomedRf1RelationshipExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper) {
+		super(SnomedRelationshipIndexEntry.class, configuration, mapper);
+	}
+	
+	/**
+	 * @param snomedConceptDocument
+	 * @return
+	 * @throws IOException 
+	 */
+	@Override
+	protected String convertToRF1(SnomedRelationshipIndexEntry revisionDocument) throws IOException {
+		
+		Rf1Relationship relationship = new Rf1Relationship();
+		
+		relationship.id = revisionDocument.getId();
+		relationship.sourceId = revisionDocument.getSourceId();
+		relationship.typeId = revisionDocument.getTypeId();
+		relationship.destinationId = revisionDocument.getDestinationId();
+		relationship.characteristicTypeId = revisionDocument.getCharacteristicTypeId();
+		relationship.group = String.valueOf(revisionDocument.getGroup());
+		
+		return relationship.toString();
 	}
 	
 	@Override
@@ -192,33 +115,7 @@ public class SnomedRf1RelationshipExporter implements SnomedRf1Exporter {
 	}
 
 	@Override
-	public boolean hasNext() {
-		return itrSupplier.get().hasNext();
-	}
-
-	@Override
-	public String next() {
-		return itrSupplier.get().next();
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		return itrSupplier.get();
-	}
-
-	@Override
-	public void close() throws Exception {
-		//intentionally ignored
-	}
-	
-	@Override
 	public SnomedExportConfiguration getConfiguration() {
 		return configuration;
 	}
-	
 }
