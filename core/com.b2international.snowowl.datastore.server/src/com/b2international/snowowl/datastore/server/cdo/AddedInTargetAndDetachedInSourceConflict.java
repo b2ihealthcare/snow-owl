@@ -21,6 +21,9 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 /**
+ * Reported when a component is added on the target branch, but it references a component (either directly or indirectly) which was detached on the
+ * source branch.
+ * 
  * @since 4.7
  */
 public class AddedInTargetAndDetachedInSourceConflict extends Conflict {
@@ -32,16 +35,16 @@ public class AddedInTargetAndDetachedInSourceConflict extends Conflict {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
 	}
-	
+
 	@Override
 	public CDOID getID() {
-		return null;
+		return sourceId;
 	}
-	
+
 	public CDOID getSourceId() {
 		return sourceId;
 	}
-	
+
 	public CDOID getTargetId() {
 		return targetId;
 	}

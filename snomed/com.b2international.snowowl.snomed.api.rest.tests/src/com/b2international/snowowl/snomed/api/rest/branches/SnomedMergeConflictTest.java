@@ -273,12 +273,12 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
 
-		assertEquals(1, additionalInfos.size());
+		assertEquals(2, additionalInfos.size());
 
-		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
+		Map<String, Object> additionalInfo = Iterables.getFirst(additionalInfos.values(), null);
 
 		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Description")));
-		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Description")));
+		assertThat(getProperty(additionalInfo, "targetType", String.class), nullValue());
 		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(descriptionId)));
 		assertThat(getProperty(additionalInfo, "targetId", String.class), nullValue());
 
@@ -288,7 +288,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
 		assertTrue(targetFeatures.isEmpty());
 	}
-
+	
 	@Test
 	public void addedInTargetDetachedInSourceMergeConflict() {
 		
@@ -316,11 +316,51 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(1, additionalInfos.size());
 
 		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
-
+		
 		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Concept")));
 		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Relationship")));
 		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("C1"))));
 		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("R1"))));
+
+		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
+		assertTrue(sourceFeatures.isEmpty());
+
+		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
+		assertTrue(targetFeatures.isEmpty());
+	}
+	
+	@Test
+	public void addedInSourceDetachedInTargetMergeConflict() {
+		
+		setup();
+		
+		assertConceptCreated(testBranchPath, "C1");
+
+		assertBranchCanBeMerged(testBranchPath, "commit");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		assertRelationshipCreated(testBranchPath.getParent(), "R1", Concepts.ROOT_CONCEPT, MORPHOLOGIC_ABNORMALITY, symbolicNameMap.get("C1"));
+		
+		assertRelationshipExists(testBranchPath.getParent(), "R1");
+		assertRelationshipNotExists(testBranchPath, "R1");
+		
+		assertConceptCanBeDeleted(testBranchPath, "C1");
+		assertConceptNotExists(testBranchPath, "C1");
+		
+		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "merge");
+		
+		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+
+		assertEquals(1, additionalInfos.size());
+
+		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
+
+		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Relationship")));
+		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Concept")));
+		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("R1"))));
+		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("C1"))));
 
 		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
 		assertTrue(sourceFeatures.isEmpty());

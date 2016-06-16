@@ -30,8 +30,8 @@ public class ConflictMapper {
 	public static final String CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s was changed in source branch but detached in target branch.";
 	public static final String CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s was changed in target branch but detached in source branch.";
 	public static final String ADDED_IN_SOURCE_AND_TARGET_MESSAGE = "%s with ID '%s' was introduced both on source and target branch.";
-	public static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s with ID '%s' on source branch referencing %s with ID '%s' which was detached on target branch.";
-	public static final String ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s with ID '%s' on target branch referencing %s with ID '%s' which was detached on source branch.";
+	public static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s with ID '%s' added on source branch referencing %s with ID '%s' which was detached on target branch.";
+	public static final String ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s with ID '%s' added on target branch referencing %s with ID '%s' which was detached on source branch.";
 
 	public static MergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
@@ -104,9 +104,6 @@ public class ConflictMapper {
 		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
 			final AddedInTargetAndDetachedInSourceConflict oldConflict = (AddedInTargetAndDetachedInSourceConflict) conflict;
 			return new AddedInSourceAndDetachedInTargetConflict(oldConflict.getTargetId(), oldConflict.getSourceId());
-		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
-			final AddedInSourceAndTargetConflict oldConflict = (AddedInSourceAndTargetConflict) conflict;
-			return new AddedInSourceAndTargetConflict(oldConflict.getTargetId(), oldConflict.getSourceId(), oldConflict.getMessage());
 		}
 		return conflict;
 	}
