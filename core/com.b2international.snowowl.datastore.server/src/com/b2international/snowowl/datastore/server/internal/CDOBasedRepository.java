@@ -17,9 +17,11 @@ package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
@@ -36,9 +38,12 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchProvider;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ClassLoaderProvider;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -50,6 +55,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -69,7 +75,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provider;
 
 /**
@@ -77,19 +82,21 @@ import com.google.inject.Provider;
  */
 public final class CDOBasedRepository implements InternalRepository, RepositoryContextProvider, ServiceProvider {
 
+	private final String toolingId;
 	private final String repositoryId;
 	private final Environment env;
 	private final IEventBus handlers;
 	
 	private final Map<Class<?>, Object> registry = newHashMap();
 
-	CDOBasedRepository(String repositoryId, int numberOfWorkers, int mergeMaxResults, Environment env) {
+	CDOBasedRepository(String repositoryId, String toolingId, int numberOfWorkers, int mergeMaxResults, Environment env) {
 		checkArgument(numberOfWorkers > 0, "At least one worker thread must be specified");
 		
 		this.repositoryId = repositoryId;
+		this.toolingId = toolingId;
 		this.env = env;
 		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
-		
+
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		mapper.registerModule(new PrimitiveCollectionModule());
 		initIndex(mapper);
@@ -171,7 +178,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 	
 	private void initializeRequestSupport(int numberOfWorkers) {
-		final ClassLoaderProvider classLoaderProvider = env.service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId);
+		final ClassLoaderProvider classLoaderProvider = getClassLoaderProvider();
 		for (int i = 0; i < numberOfWorkers; i++) {
 			handlers().registerHandler(address(), new ApiRequestHandler(this, classLoaderProvider));
 		}
@@ -182,6 +189,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		}
 		// register RepositoryContextProvider
 		registry.put(RepositoryContextProvider.class, this);
+	}
+
+	private ClassLoaderProvider getClassLoaderProvider() {
+		return env.service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId);
 	}
 	
 	@Override
@@ -216,7 +227,13 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 
 	private void initIndex(final ObjectMapper mapper) {
-		final Collection<Class<?>> types = ImmutableSet.of(CDOMainBranchImpl.class, CDOBranchImpl.class, Review.class, ConceptChanges.class, InternalBranch.class);
+		final Collection<Class<?>> types = newHashSet();
+		types.add(CDOMainBranchImpl.class);
+		types.add(CDOBranchImpl.class);
+		types.add(Review.class);
+		types.add(ConceptChanges.class);
+		types.add(InternalBranch.class);
+		types.addAll(getComponentDocuments());
 		final Map<String, Object> settings = ImmutableMap.<String, Object>of(IndexClientFactory.DIRECTORY, 
 				env.getDataDirectory() + "/indexes");
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);
@@ -224,7 +241,13 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, new RevisionBranchProvider() {
 			@Override
 			public RevisionBranch getBranch(String branchPath) {
-				throw new UnsupportedOperationException("TODO implement");
+				final Branch branch = service(BranchManager.class).getBranch(branchPath);
+				final Branch parent = branch.parent();
+				if (parent == branch) {
+					return new RevisionBranch(null, branch.path(), branch.baseTimestamp(), branch.headTimestamp());
+				} else {
+					throw new UnsupportedOperationException("Deep branching is not implemented yet");
+				}
 			}
 		});
 		// register index and revision index access, the underlying index is the same
@@ -235,6 +258,29 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		
 	}
 	
+	private Collection<Class<? extends RevisionDocument>> getComponentDocuments() {
+		final Collection<String> terminologyComponentIds = CoreTerminologyBroker.getInstance().getAllRegisteredTerminologyComponentsForTerminology(toolingId);
+		final Set<String> terminologyComponentRepresentations = newHashSet();
+		for (String terminologyComponentId : terminologyComponentIds) {
+			terminologyComponentRepresentations.addAll(CoreTerminologyBroker.getInstance().getClassesForComponentId(terminologyComponentId));
+		}
+		
+		final ClassLoader classLoader = getClassLoaderProvider().getClassLoader();
+		final Set<Class<? extends RevisionDocument>> documentTypes = newHashSet();
+		for (String representationClass : terminologyComponentRepresentations) {
+			try {
+				final Class<?> type = classLoader.loadClass(representationClass);
+				if (RevisionDocument.class.isAssignableFrom(type)) {
+					documentTypes.add((Class<? extends RevisionDocument>) type);
+				}
+			} catch (ClassNotFoundException e) {
+				throw new SnowowlRuntimeException(e);
+			}
+		}
+		
+		return documentTypes;
+	}
+
 	// TODO call repository dispose from manager
 	public void dispose() {
 		getIndex().admin().close();
