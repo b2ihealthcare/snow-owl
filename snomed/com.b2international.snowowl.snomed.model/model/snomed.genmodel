@@ -4,15 +4,11 @@
     modelDirectory="/com.b2international.snowowl.snomed.model/src" modelPluginID="com.b2international.snowowl.snomed.model"
     modelName="Snomed" rootExtendsInterface="org.eclipse.emf.cdo.CDOObject" rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl"
     reflectiveDelegation="true" importerID="org.eclipse.emf.importer.ecore" featureDelegation="Reflective"
-    complianceLevel="6.0" copyrightFields="false" usedGenPackages="../../com.b2international.snowowl.snomed.refset.model/model/snomedrefset.genmodel#//snomedrefset ../../com.b2international.snowowl.terminologyregistry.model/model/terminologymetadata.genmodel#//terminologymetadata">
+    complianceLevel="6.0" copyrightFields="false" usedGenPackages="../../com.b2international.snowowl.snomed.refset.model/model/snomedrefset.genmodel#//snomedrefset">
   <foreignModel>snomed.ecore</foreignModel>
   <modelPluginVariables>CDO=org.eclipse.emf.cdo</modelPluginVariables>
   <genPackages prefix="Snomed" basePackage="com.b2international.snowowl" disposableProviderFactory="true"
       ecorePackage="snomed.ecore#/">
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="snomed.ecore#//SnomedReleaseType">
-      <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/INTERNATIONAL"/>
-      <genEnumLiterals ecoreEnumLiteral="snomed.ecore#//SnomedReleaseType/EXTENSION"/>
-    </genEnums>
     <genClasses ecoreClass="snomed.ecore#//Component">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//Component/id"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//Component/active"/>
@@ -56,13 +52,6 @@
     </genClasses>
     <genClasses ecoreClass="snomed.ecore#//Concepts">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference snomed.ecore#//Concepts/concepts"/>
-    </genClasses>
-    <genClasses ecoreClass="snomed.ecore#//SnomedRelease">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//SnomedRelease/baseCodeSystemOID"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//SnomedRelease/releaseType"/>
-    </genClasses>
-    <genClasses ecoreClass="snomed.ecore#//SnomedVersion">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomed.ecore#//SnomedVersion/modules"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

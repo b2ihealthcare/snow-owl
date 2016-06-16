@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import java.util.Map;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -24,10 +22,10 @@ import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundExce
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 
 /**
  * @since 4.7
@@ -46,7 +44,7 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
-	private Map<String, String> additionalProperties;
+	private String extensionOf;
 
 	CodeSystemCreateRequest() {
 	}
@@ -90,15 +88,15 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 	void setTerminologyId(final String terminologyId) {
 		this.terminologyId = terminologyId;
 	}
-	
-	void setAdditionalProperties(final Map<String, String> additionalProperties) {
-		this.additionalProperties = additionalProperties;
+
+	void setExtensionOf(final String extensionOf) {
+		this.extensionOf = extensionOf;
 	}
 	
 	@Override
 	public String execute(final TransactionContext context) {
 		checkCodeSystem(context);
-
+		
 		final CodeSystem codeSystem = createCodeSystem(context);
 		context.add(codeSystem);
 
@@ -112,6 +110,10 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 		
 		if (getCodeSystem(shortName, context) != null) {
 			throw new AlreadyExistsException("Code system", shortName);
+		}
+		
+		if (extensionOf != null && getCodeSystem(extensionOf, context) == null) {
+			throw new BadRequestException("Couldn't find base Code System with unique ID %s.", extensionOf);
 		}
 		
 		final Branch branch = RepositoryRequests
@@ -137,8 +139,8 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 	}
 
 	private CodeSystem createCodeSystem(final TransactionContext context) {
-		final CodeSystemBuilder<?> builder = context.service(CodeSystemBuilder.class);
-		return builder.withBranchPath(branchPath)
+		return new CodeSystemBuilder()
+				.withBranchPath(branchPath)
 				.withCitation(citation)
 				.withCodeSystemOid(oid)
 				.withIconPath(iconPath)
@@ -148,7 +150,7 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 				.withRepositoryUuid(repositoryUuid)
 				.withShortName(shortName)
 				.withTerminologyComponentId(terminologyId)
-				.withAdditionalProperties(additionalProperties)
+				.withExtensionOf(extensionOf == null ? null : context.lookup(extensionOf, CodeSystem.class))
 				.build();
 	}
 

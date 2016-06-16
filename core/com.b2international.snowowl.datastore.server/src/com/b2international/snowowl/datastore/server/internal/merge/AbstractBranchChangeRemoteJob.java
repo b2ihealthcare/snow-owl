@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.server.remotejobs.BranchExclusiveRule;
 
 /**
  * @since 4.6
@@ -63,10 +64,9 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		
 		setSystem(true);
 		
-		// TODO: Make reasoner remote job rule conflicting and add it as additional items below 
 		setRule(MultiRule.combine(
-				new BranchChangeRemoteJobKey(repository.id(), sourcePath), 
-				new BranchChangeRemoteJobKey(repository.id(), targetPath)));
+				new BranchExclusiveRule(repository.id(), BranchPathUtils.createPath(sourcePath)), 
+				new BranchExclusiveRule(repository.id(), BranchPathUtils.createPath(targetPath))));
 	}
 	
 	@Override

@@ -39,9 +39,7 @@ Where the `snomed_ct_international.json` release descriptor file is:
   "shortName": "SNOMEDCT",
   "language": "ENG",
   "codeSystemOID": "2.16.840.1.113883.6.96",
-  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
   "maintainingOrganizationLink": "http://www.ihtsdo.org",
-  "releaseType": "INTERNATIONAL",
   "citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care."
 }
 ----
@@ -73,9 +71,8 @@ Where the `snomed_ct_extension.json` release descriptor file is:
   "shortName": "SNOMEDCT_B2i",
   "language": "ENG",
   "codeSystemOID": "2.16.840.1.113883.6.961",
-  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
+  "extensionOf": "SNOMEDCT",
   "maintainingOrganizationLink": "http://www.b2i.sg",
-  "releaseType": "EXTENSION",
   "citation": "This is an example SNOMED CT extension by B2i Healthcare."
 }
 ----
@@ -104,11 +101,11 @@ POST /snowowl/snomed-ct/v2/imports
   "createVersions": true,
   "type": "FULL",
   "branchPath": "MAIN",
-  "snomedReleaseShortName": ""
+  "codeSystemShortName": ""
 }
 ....
 
-Note: For backward compatibility, missing or empty _snomedReleaseShortName_ result in a SNOMED CT International Release entry in the terminology registry, no explicit operation is required.
+Note: For backward compatibility, missing or empty _codeSystemShortName_ result in a SNOMED CT International Release entry in the terminology registry, no explicit operation is required.
 
 Import the International archive:
 ....
@@ -134,7 +131,7 @@ To check the branch created (_MAIN/2016-01-31/Extension_branch_):
 GET /snowowl/snomed-ct/v2/branches
 ....
 
-Create new Snomed Release for the extension. The extension will initially be based on the _2016-01-13_ International release:
+Create new Code System for the extension. The extension will initially be based on the _2016-01-31_ International release:
 ....
 POST /snowowl/admin/codesystems
 {
@@ -148,10 +145,7 @@ POST /snowowl/admin/codesystems
 	"terminologyId": "com.b2international.snowowl.terminology.snomed",
 	"repositoryUuid": "snomedStore",
 	"branchPath": "MAIN/2016-01-31/Extension_branch",
-	"additionalProperties": {
-		"baseCodeSystemOID": "2.16.840.1.113883.6.96",
-		"snomedReleaseType": "EXTENSION"
-	}
+	"extensionOf": "SNOMEDCT"
 }
 ....
 
@@ -167,7 +161,7 @@ POST /snowowl/snomed-ct/v2/imports
   "createVersions": true,
   "type": "DELTA",
   "branchPath": "MAIN/2016-01-31/Extension_branch",
-  "snomedReleaseShortName": "SNOMEDCT_B2i"
+  "codeSystemShortName": "SNOMEDCT_B2i"
 }
 ....
 

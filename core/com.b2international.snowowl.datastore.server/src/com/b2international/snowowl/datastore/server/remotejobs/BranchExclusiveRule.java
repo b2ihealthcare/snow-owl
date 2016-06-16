@@ -26,14 +26,14 @@ import com.b2international.snowowl.core.api.IBranchPath;
 /**
  * 
  */
-public abstract class RemoteJobKey implements ISchedulingRule, Serializable {
+public class BranchExclusiveRule implements ISchedulingRule, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private final String repositoryId;
 	private final IBranchPath branchPath;
 	
-	public RemoteJobKey(final String repositoryId, final IBranchPath branchPath) {
+	public BranchExclusiveRule(final String repositoryId, final IBranchPath branchPath) {
 		checkNotNull(repositoryId, "repositoryId");
 		checkNotNull(branchPath, "branchPath");
 		this.repositoryId = repositoryId;
@@ -64,17 +64,16 @@ public abstract class RemoteJobKey implements ISchedulingRule, Serializable {
 		if (this == obj) { return true; }
 		if (obj == null) { return false; }
 		
-		// TODO: See whether an instanceof check can be used here
-		if (getClass() != obj.getClass()) { return false; } 
+		if (!(obj instanceof BranchExclusiveRule)) { return false; } 
 		
-		final RemoteJobKey other = (RemoteJobKey) obj;
+		final BranchExclusiveRule other = (BranchExclusiveRule) obj;
 		return repositoryId.equals(other.repositoryId) && branchPath.equals(other.branchPath);
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("RemoteJobKey [repositoryId=");
+		builder.append("BranchExclusiveRule [repositoryId=");
 		builder.append(repositoryId);
 		builder.append(", branchPath=");
 		builder.append(branchPath);

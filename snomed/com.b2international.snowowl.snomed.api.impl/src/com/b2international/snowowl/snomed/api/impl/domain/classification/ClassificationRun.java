@@ -28,6 +28,8 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 	private ClassificationStatus status;
 	private Date creationDate;
 	private Date completionDate;
+	private Date saveDate;
+	private Boolean inferredRelationshipChangesFound;
 	private Boolean redundantStatedRelationshipsFound;
 	private Boolean equivalentConceptsFound;
 
@@ -50,7 +52,17 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 	public Date getCompletionDate() {
 		return completionDate;
 	}
+	
+	@Override
+	public Date getSaveDate() {
+		return saveDate;
+	}
 
+	@Override
+	public Boolean getInferredRelationshipChangesFound() {
+		return inferredRelationshipChangesFound;
+	}
+	
 	public Boolean getRedundantStatedRelationshipsFound() {
 		return redundantStatedRelationshipsFound;
 	}
@@ -75,6 +87,14 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 		this.completionDate = completionDate;
 	}
 
+	public void setSaveDate(final Date saveDate) {
+		this.saveDate = saveDate;
+	}
+	
+	public void setInferredRelationshipChangesFound(Boolean relationshipChangesFound) {
+		this.inferredRelationshipChangesFound = relationshipChangesFound;
+	}
+	
 	public void setRedundantStatedRelationshipsFound(Boolean redundantStatedRelationshipsFound) {
 		this.redundantStatedRelationshipsFound = redundantStatedRelationshipsFound;
 	}
@@ -94,6 +114,10 @@ public class ClassificationRun extends ClassificationInput implements IClassific
 		builder.append(creationDate);
 		builder.append(", completionDate=");
 		builder.append(completionDate);
+		builder.append(", saveDate=");
+		builder.append(saveDate);
+		builder.append(", relationshipChangesFound=");
+		builder.append(inferredRelationshipChangesFound);
 		builder.append(", redundantStatedRelationshipsFound=");
 		builder.append(redundantStatedRelationshipsFound);
 		builder.append(", equivalentConceptsFound=");

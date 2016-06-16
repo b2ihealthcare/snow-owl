@@ -251,13 +251,22 @@ public interface TerminologymetadataPackage extends EPackage {
 	int CODE_SYSTEM__BRANCH_PATH = 10;
 
 	/**
+	 * The feature id for the '<em><b>Extension Of</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CODE_SYSTEM__EXTENSION_OF = 11;
+
+	/**
 	 * The number of structural features of the '<em>Code System</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CODE_SYSTEM_FEATURE_COUNT = 11;
+	int CODE_SYSTEM_FEATURE_COUNT = 12;
 
 
 	/**
@@ -468,6 +477,17 @@ public interface TerminologymetadataPackage extends EPackage {
 	EAttribute getCodeSystem_BranchPath();
 
 	/**
+	 * Returns the meta object for the reference '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf <em>Extension Of</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Extension Of</em>'.
+	 * @see com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf()
+	 * @see #getCodeSystem()
+	 * @generated
+	 */
+	EReference getCodeSystem_ExtensionOf();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -644,6 +664,14 @@ public interface TerminologymetadataPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute CODE_SYSTEM__BRANCH_PATH = eINSTANCE.getCodeSystem_BranchPath();
+
+		/**
+		 * The meta object literal for the '<em><b>Extension Of</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference CODE_SYSTEM__EXTENSION_OF = eINSTANCE.getCodeSystem_ExtensionOf();
 
 	}
 

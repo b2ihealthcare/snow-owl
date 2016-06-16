@@ -63,7 +63,7 @@ import com.b2international.snowowl.datastore.version.IPublishOperationConfigurat
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataFactory;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionBuilder;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -366,15 +366,14 @@ public abstract class PublishManager implements IPublishManager {
 		LOGGER.info("Terminology metadata change processing successfully finished.");
 	}
 	
-	protected CodeSystemVersion createCodeSystemVersion() {
-		final CodeSystemVersion codeSystemVersion = TerminologymetadataFactory.eINSTANCE.createCodeSystemVersion();
-		codeSystemVersion.setEffectiveDate(getEffectiveTime());
-		codeSystemVersion.setImportDate(new Date());
-		codeSystemVersion.setVersionId(getVersionName());
-		codeSystemVersion.setParentBranchPath(getConfiguration().getParentBranchPath());
-		codeSystemVersion.setDescription(getCodeSystemVersionDescription());
-		
-		return codeSystemVersion;
+	private CodeSystemVersion createCodeSystemVersion() {
+		return new CodeSystemVersionBuilder()
+				.withDescription(getCodeSystemVersionDescription())
+				.withEffectiveDate(getEffectiveTime())
+				.withImportDate(new Date())
+				.withParentBranchPath(getConfiguration().getParentBranchPath())
+				.withVersionId(getVersionName())
+				.build();
 	}
 	
 	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {

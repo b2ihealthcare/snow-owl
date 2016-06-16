@@ -45,8 +45,8 @@ import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.core.MetadataMixin;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.ConceptChangesMixin;
@@ -60,6 +60,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
 import com.b2international.snowowl.snomed.api.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -198,8 +199,11 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public IRemoteJobManager jobManager() {
-		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IRemoteJobManager.class);
+	public Integer maxReasonerRuns() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance()
+				.getServiceChecked(SnowOwlConfiguration.class)
+				.getModuleConfig(SnomedCoreConfiguration.class)
+				.getMaxReasonerRuns();
 	}
 	
 	@Override

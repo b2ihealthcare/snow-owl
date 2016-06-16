@@ -29,10 +29,11 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.ConsoleProgressMonitor;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.store.SnomedReleases;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -87,19 +88,21 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 				importConfiguration.excludeRefSet(in.readString());
 			}
 			
-			//Ecore object cannot be serialized directly
-			SnomedRelease snomedRelease = SnomedReleases.newSnomedRelease()
-				.withBaseCodeSystemOid(in.readString())
-				.withBranchPath(in.readString())
-				.withCitation(in.readUTF())
-				.withCodeSystemOid(in.readString())
-				.withLanguage(in.readString())
-				.withMaintainingOrganizationLink(in.readString())
-				.withName(in.readUTF())
-				.withShortName(in.readString())
-				.withType(in.readString()).build();
+			final CodeSystem codeSystem = CodeSystem.builder()
+					.branchPath(in.readUTF())
+					.citation(in.readUTF())
+					.extensionOf(in.readUTF())
+					.iconPath(in.readUTF())
+					.name(in.readUTF())
+					.oid(in.readUTF())
+					.organizationLink(in.readUTF())
+					.primaryLanguage(in.readUTF())
+					.repositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.shortName(in.readUTF())
+					.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+					.build();
 			
-			importConfiguration.setSnomedRelease(snomedRelease);
+			importConfiguration.setCodeSystem(codeSystem);
 			
 			monitor.worked();
 			

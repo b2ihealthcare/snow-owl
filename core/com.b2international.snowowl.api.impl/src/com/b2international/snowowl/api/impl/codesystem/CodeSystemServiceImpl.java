@@ -41,18 +41,7 @@ public class CodeSystemServiceImpl implements ICodeSystemService {
 
 		@Override
 		public ICodeSystem apply(final com.b2international.snowowl.datastore.ICodeSystem input) {
-			final CodeSystem result = new CodeSystem();
-			result.setCitation(input.getCitation());
-			result.setName(input.getName());
-			result.setOid(input.getOid());
-			result.setOrganizationLink(input.getOrgLink());
-			result.setPrimaryLanguage(input.getLanguage());
-			result.setShortName(input.getShortName());
-			result.setIconPath(input.getIconPath());
-			result.setTerminologyId(input.getSnowOwlId());
-			result.setRepositoryUuid(input.getRepositoryUuid());
-			result.setBranchPath(input.getBranchPath());
-			return result;
+			return CodeSystem.builder(input).build();
 		}
 	};
 

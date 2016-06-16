@@ -32,6 +32,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -39,11 +40,9 @@ import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundExce
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
@@ -51,12 +50,11 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.core.store.SnomedReleaseBuilder;
 import com.b2international.snowowl.snomed.core.store.SnomedReleases;
-import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntry;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -147,22 +145,35 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					+ "branch does not exist. Please perform a branch creation first.");
 		}
 		
-		final String snomedReleaseShortName = configuration.getSnomedReleaseShortName();
-		final SnomedReleaseEntry snomedReleaseEntry = (SnomedReleaseEntry) getCodeSystem(snomedReleaseShortName);
-		if (snomedReleaseEntry == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(snomedReleaseShortName)) {
-			throw new BadRequestException("Importing a release of SNOMED CT from an archive "
-					+ "is prohibited when the given Snomed Release is not available. "
-					+ "Please perform either a new Snomed Release creation before "
-					+ "import or use INT Snomed Release.");
+		final String codeSystemShortName = configuration.getCodeSystemShortName();
+		final CodeSystemEntry codeSystemEntry = getCodeSystem(codeSystemShortName);
+		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(codeSystemShortName)) {
+			throw new BadRequestException("Importing a release of SNOMED CT from an archive is prohibited "
+					+ "when SNOMED CT extension with short name %s does not exist. Please create it before "
+					+ "importing content with this configuration, or use SNOMEDCT for importing the "
+					+ "International Release; in this case the corresponding code system will be created automatically.", 
+					codeSystemShortName);
 		}
 		
 		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
 		
-		final SnomedRelease snomedRelease;
-		if (snomedReleaseEntry == null) {
-			snomedRelease = SnomedReleases.newSnomedInternationalRelease().build();
+		final CodeSystem codeSystem;
+		if (codeSystemEntry == null) {
+			codeSystem = SnomedReleases.newSnomedInternationalRelease();
 		} else {
-			snomedRelease = new SnomedReleaseBuilder().init(snomedReleaseEntry).build();
+			codeSystem = CodeSystem.builder()
+					.name(codeSystemEntry.getName())
+					.shortName(codeSystemEntry.getShortName())
+					.oid(codeSystemEntry.getOid())
+					.primaryLanguage(codeSystemEntry.getLanguage())
+					.organizationLink(codeSystemEntry.getOrgLink())
+					.citation(codeSystemEntry.getCitation())
+					.branchPath(codeSystemEntry.getBranchPath())
+					.iconPath(codeSystemEntry.getIconPath())
+					.repositoryUuid(codeSystemEntry.getRepositoryUuid())
+					.terminologyId(codeSystemEntry.getSnowOwlId())
+					.extensionOf(codeSystemEntry.getExtensionOf())
+					.build();
 		}
 		
 		new Thread(new Runnable() {
@@ -170,7 +181,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			public void run() {
 				try {
 					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
-					final SnomedImportResult result = doImport(configuration, archiveFile, snomedRelease);
+					final SnomedImportResult result = doImport(configuration, archiveFile, codeSystem);
 					((SnomedImportConfiguration) configuration).setStatus(convertStatus(result.getValidationDefects())); 
 				} catch (final Exception e) {
 					LOG.error("Error during the import of " + archiveFile, e);
@@ -191,10 +202,10 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	}
 
 	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile,
-			final SnomedRelease snomedRelease) throws Exception {
+			final CodeSystem codeSystem) throws Exception {
 		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
 		return new ImportUtil().doImport(
-				snomedRelease,
+				codeSystem,
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
 				branch,
 				archiveFile,

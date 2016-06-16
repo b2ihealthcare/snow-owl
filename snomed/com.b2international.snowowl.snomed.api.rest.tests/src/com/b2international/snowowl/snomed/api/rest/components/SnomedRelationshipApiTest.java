@@ -181,7 +181,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
 		
 		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("group", 299)
+				.put("group", -5)
 				.put("commitComment", "Changed group on relationship")
 				.build();
 		

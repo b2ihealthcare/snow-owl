@@ -71,24 +71,6 @@ public interface SnomedFactory extends EFactory {
 	Concepts createConcepts();
 
 	/**
-	 * Returns a new object of class '<em>Release</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Release</em>'.
-	 * @generated
-	 */
-	SnomedRelease createSnomedRelease();
-
-	/**
-	 * Returns a new object of class '<em>Version</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Version</em>'.
-	 * @generated
-	 */
-	SnomedVersion createSnomedVersion();
-
-	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

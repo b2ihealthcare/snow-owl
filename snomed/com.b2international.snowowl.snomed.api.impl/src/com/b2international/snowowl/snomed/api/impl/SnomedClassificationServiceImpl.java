@@ -49,7 +49,6 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobChangedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEventBusHandler;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEventSwitch;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobRemovedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
@@ -89,8 +88,6 @@ import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasoner
 public class SnomedClassificationServiceImpl implements ISnomedClassificationService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedClassificationServiceImpl.class);
-	
-	private static final int MAX_INDEXED_RESULTS = 1000;
 	
 	private final class PersistenceCompletionHandler implements IHandler<IMessage> {
 
@@ -159,16 +156,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 					}
 				}
 
-				@Override
-				protected void caseRemoved(final RemoteJobRemovedEvent event) {
-
-					try {
-						indexService.deleteClassificationData(event.getId());
-					} catch (final IOException e) {
-						LOG.error("Caught IOException while deleting classification data.", e);
-					}					
-				}
-
 			}.doSwitch(message.body(AbstractRemoteJobEvent.class));
 		}
 	}
@@ -225,15 +212,20 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	
 	@Resource
 	private IEventBus bus;
+	
+	@Resource
+	private int maxReasonerRuns;
 
 	@PostConstruct
 	protected void init() {
+		LOG.info("Initializing classification service; keeping indexed data for {} recent run(s).", maxReasonerRuns); 
+		
 		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
 		indexService = new ClassificationRunIndex(dir);
 		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(indexService);
 
 		try {
-			indexService.trimIndex(MAX_INDEXED_RESULTS);
+			indexService.trimIndex(maxReasonerRuns);
 			indexService.invalidateClassificationRuns();
 		} catch (final IOException e) {
 			LOG.error("Failed to run housekeeping tasks for the classification index.", e);
@@ -260,6 +252,8 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 			indexService.dispose();
 			indexService = null;
 		}
+		
+		LOG.info("Classification service shut down.");
 	}
 
 	private static SnomedReasonerService getReasonerService() {
@@ -422,10 +416,13 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 	private ISnomedBrowserRelationship findRelationship(List<ISnomedBrowserRelationship> relationships, IRelationshipChange relationshipChange) {
 		for (ISnomedBrowserRelationship relationship : relationships) {
-			if (relationship.getType().getConceptId().equals(relationshipChange.getTypeId())
+			if (relationship.isActive()
 					&& relationship.getSourceId().equals(relationshipChange.getSourceId())
+					&& relationship.getType().getConceptId().equals(relationshipChange.getTypeId())
 					&& relationship.getTarget().getConceptId().equals(relationshipChange.getDestinationId())
-					&& relationship.getGroupId() == relationshipChange.getGroup()) {
+					&& relationship.getGroupId() == relationshipChange.getGroup()
+					&& relationship.getCharacteristicType().equals(CharacteristicType.INFERRED_RELATIONSHIP)
+					&& relationship.getModifier().equals(relationshipChange.getModifier())) {					
 				return relationship;
 			}
 		}
@@ -477,6 +474,12 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		// Check if it exists
 		getClassificationRun(branchPath, classificationId, userId);
 		getRemoteJobManager().cancelRemoteJob(UUID.fromString(classificationId));
+		
+		try {
+			indexService.deleteClassificationData(classificationId);
+		} catch (final IOException e) {
+			LOG.error("Caught IOException while deleting classification data for ID {}.", classificationId, e);
+		}					
 	}
 
 	private StorageRef createStorageRef(final String branchPath) {

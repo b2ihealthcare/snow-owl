@@ -77,40 +77,8 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 			case SnomedPackage.CONCEPT: return (EObject)createConcept();
 			case SnomedPackage.RELATIONSHIP: return (EObject)createRelationship();
 			case SnomedPackage.CONCEPTS: return (EObject)createConcepts();
-			case SnomedPackage.SNOMED_RELEASE: return (EObject)createSnomedRelease();
-			case SnomedPackage.SNOMED_VERSION: return (EObject)createSnomedVersion();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
-		}
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public Object createFromString(EDataType eDataType, String initialValue) {
-		switch (eDataType.getClassifierID()) {
-			case SnomedPackage.SNOMED_RELEASE_TYPE:
-				return createSnomedReleaseTypeFromString(eDataType, initialValue);
-			default:
-				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
-		}
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public String convertToString(EDataType eDataType, Object instanceValue) {
-		switch (eDataType.getClassifierID()) {
-			case SnomedPackage.SNOMED_RELEASE_TYPE:
-				return convertSnomedReleaseTypeToString(eDataType, instanceValue);
-			default:
-				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
 	}
 
@@ -152,46 +120,6 @@ public class SnomedFactoryImpl extends EFactoryImpl implements SnomedFactory {
 	public Concepts createConcepts() {
 		ConceptsImpl concepts = new ConceptsImpl();
 		return concepts;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public SnomedRelease createSnomedRelease() {
-		SnomedReleaseImpl snomedRelease = new SnomedReleaseImpl();
-		return snomedRelease;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public SnomedVersion createSnomedVersion() {
-		SnomedVersionImpl snomedVersion = new SnomedVersionImpl();
-		return snomedVersion;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public SnomedReleaseType createSnomedReleaseTypeFromString(EDataType eDataType, String initialValue) {
-		SnomedReleaseType result = SnomedReleaseType.get(initialValue);
-		if (result == null) throw new IllegalArgumentException("The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
-		return result;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public String convertSnomedReleaseTypeToString(EDataType eDataType, Object instanceValue) {
-		return instanceValue == null ? null : instanceValue.toString();
 	}
 
 	/**
