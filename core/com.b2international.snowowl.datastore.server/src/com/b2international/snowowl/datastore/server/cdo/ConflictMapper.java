@@ -33,7 +33,7 @@ public class ConflictMapper {
 	public static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s with ID '%s' added on source branch referencing %s with ID '%s' which was detached on target branch.";
 	public static final String ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s with ID '%s' added on target branch referencing %s with ID '%s' which was detached on source branch.";
 
-	public static MergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public static GenericMergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
 			return from((ChangedInSourceAndTargetConflict) conflict);
 		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
@@ -50,42 +50,42 @@ public class ConflictMapper {
 		throw new IllegalArgumentException("Unknown conflict type: " + conflict);
 	}
 	
-	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict) {
+	public static GenericMergeConflict from(final ChangedInSourceAndTargetConflict conflict) {
 		final String id = conflict.getID().toString();
-		return new MergeConflict(id, id, String.format(CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, id));
+		return new GenericMergeConflict(id, id, String.format(CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, id));
 	}
 	
-	public static MergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict) {
+	public static GenericMergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict) {
 		final String id = conflict.getID().toString();
-		return new MergeConflict(id, null, String.format(CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, id));
+		return new GenericMergeConflict(id, null, String.format(CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, id));
 	}
 	
-	public static MergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict) {
+	public static GenericMergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict) {
 		final String id = conflict.getID().toString();
-		return new MergeConflict(null, id, String.format(CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, id));
+		return new GenericMergeConflict(null, id, String.format(CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, id));
 	}
 	
-	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction) {
+	public static GenericMergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction) {
 		final String sourceId = conflict.getSourceId().toString();
 		final String targetId = conflict.getTargetId().toString();
 		final String type = sourceTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName();
-		return new MergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_AND_TARGET_MESSAGE, type, sourceId));
+		return new GenericMergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_AND_TARGET_MESSAGE, type, sourceId));
 	}
 	
-	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
+	public static GenericMergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
 		final String sourceId = conflict.getSourceId().toString();
 		final String targetId = conflict.getTargetId().toString();
 		final String sourceType = sourceTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName();
 		final String targetType = sourceTransaction.getObject(conflict.getTargetId()).getClass().getSimpleName();
-		return new MergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, sourceType, sourceId, targetType, targetId));
+		return new GenericMergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, sourceType, sourceId, targetType, targetId));
 	}
 	
-	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction targetTransaction) {
+	public static GenericMergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction targetTransaction) {
 		final String sourceId = conflict.getSourceId().toString();
 		final String targetId = conflict.getTargetId().toString();
 		final String sourceType = targetTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName();
 		final String targetType = targetTransaction.getObject(conflict.getTargetId()).getClass().getSimpleName();
-		return new MergeConflict(sourceId, targetId, String.format(ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, targetType, targetId, sourceType, sourceId));
+		return new GenericMergeConflict(sourceId, targetId, String.format(ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, targetType, targetId, sourceType, sourceId));
 	}
 	
 	public static Conflict invert(final Conflict conflict) {

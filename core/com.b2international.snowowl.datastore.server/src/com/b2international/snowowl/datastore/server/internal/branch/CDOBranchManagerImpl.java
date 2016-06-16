@@ -18,8 +18,8 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Deque;
-import java.util.Map;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
@@ -170,10 +171,10 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     		return targetTransaction;
     	} catch (CDOMerger.ConflictException e) {
     		CDOTransaction sourceTransaction = connection.createTransaction(sourceBranch);
-    		Map<String, Object> conflictMap = merger.handleCDOConflicts(sourceTransaction, targetTransaction);
+    		Collection<MergeConflict> conflicts = merger.handleCDOConflicts(sourceTransaction, targetTransaction);
     		LifecycleUtil.deactivate(targetTransaction);
     		LifecycleUtil.deactivate(sourceTransaction);
-			throw new MergeConflictException(conflictMap, String.format("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path()));
+			throw new MergeConflictException(conflicts, String.format("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path()));
     	}
     }
     

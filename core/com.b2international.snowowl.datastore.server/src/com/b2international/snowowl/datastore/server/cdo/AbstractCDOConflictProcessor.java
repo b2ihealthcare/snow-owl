@@ -16,12 +16,11 @@
 package com.b2international.snowowl.datastore.server.cdo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -40,7 +39,9 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSour
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -105,15 +106,15 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 
 	@Override
-	public Map<String, Object> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
+	public Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
-			final Map<String, Object> results = newHashMap();
-			for (final Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
-				results.put(entry.getKey().toString(), ConflictMapper.convert(entry.getValue(), sourceTransaction, targetTransaction));
-			}
-			return results;
+			return FluentIterable.from(conflicts.values()).transform(new Function<Conflict, MergeConflict>() {
+				@Override public MergeConflict apply(Conflict input) {
+					return ConflictMapper.convert(input, sourceTransaction, targetTransaction);
+				}
+			}).toList();
 		}
-		return Collections.<String, Object>emptyMap();
+		return Collections.emptySet();
 	}
 	
 	@Override

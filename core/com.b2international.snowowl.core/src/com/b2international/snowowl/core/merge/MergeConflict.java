@@ -15,41 +15,9 @@
  */
 package com.b2international.snowowl.core.merge;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.UUID;
-
-import com.b2international.snowowl.core.exceptions.ApiError;
-
 /**
- * @since 4.6
+ * @since 4.7
  */
-public interface Merge {
+public interface MergeConflict {
 
-	public enum Status {
-		SCHEDULED,
-		IN_PROGRESS,
-		COMPLETED,
-		HAS_CONFLICT,
-		FAILED, 
-		CANCEL_REQUESTED;
-	}
-	
-	UUID getId();
-	
-	String getSource();
-
-	String getTarget();
-
-	Status getStatus();
-	
-	Date getScheduledDate();
-	
-	Date getStartDate();
-	
-	Date getEndDate();
-	
-	ApiError getApiError();
-	
-	Collection<MergeConflict> getConflicts();
 }

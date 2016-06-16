@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.cdo;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -25,6 +26,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.snowowl.core.merge.MergeConflict;
 
 /**
  * Handles conflicting changes when synchronizing branches.
@@ -119,5 +121,5 @@ public interface ICDOConflictProcessor {
 	 * @param conflicts
 	 * @return
 	 */
-	Map<String, Object> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts);
+	Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts);
 }

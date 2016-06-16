@@ -19,12 +19,13 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.google.common.base.Objects;
 
 /**
  * @since 4.7
  */
-public class MergeConflict implements Serializable {
+public class GenericMergeConflict implements MergeConflict, Serializable {
 
 	private static final long serialVersionUID = 5238168089442966388L;
 
@@ -32,7 +33,7 @@ public class MergeConflict implements Serializable {
 	private String sourceId = null;
 	private final String message;
 	
-	public MergeConflict(@Nullable final String sourceId, @Nullable final String targetId, final String message) {
+	public GenericMergeConflict(@Nullable final String sourceId, @Nullable final String targetId, final String message) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
 		this.message = message;

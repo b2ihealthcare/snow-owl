@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.api.rest;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.Merge;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.jayway.restassured.http.ContentType;
@@ -42,7 +44,7 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedBranchingApiAssert {
 
-	private static final Set<String> FINISH_STATES = ImmutableSet.of("COMPLETED", "FAILED");
+	private static final Set<String> FINISH_STATES = ImmutableSet.of(Merge.Status.COMPLETED.name(), Merge.Status.FAILED.name(), Merge.Status.HAS_CONFLICT.name());
 
 	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
 
@@ -247,7 +249,7 @@ public abstract class SnomedBranchingApiAssert {
 	public static Response assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
 		Response mergeResponse = waitForMergeJob(id);
-		mergeResponse.then().assertThat().body("status", equalTo("FAILED"));
+		mergeResponse.then().assertThat().body("status", anyOf(equalTo("FAILED"), equalTo("HAS_CONFLICT"))); // TODO split this condition
 		return mergeResponse;
 	}
 	

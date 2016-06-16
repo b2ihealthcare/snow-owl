@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.core.exceptions.ApiException;
+import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 
@@ -73,6 +74,8 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		try {
 			applyChanges();
 			merge.completed();
+		} catch (MergeConflictException e) {
+			merge.failedWithConflicts(e.getConflicts(), e.toApiError());
 		} catch (ApiException e) {
 			merge.failed(e.toApiError());
 		} catch (RuntimeException e) {

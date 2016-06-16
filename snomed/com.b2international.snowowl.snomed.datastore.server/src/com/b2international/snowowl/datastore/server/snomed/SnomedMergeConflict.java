@@ -20,14 +20,14 @@ import java.util.Collections;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.datastore.server.cdo.MergeConflict;
+import com.b2international.snowowl.datastore.server.cdo.GenericMergeConflict;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
  * @since 4.7
  */
-public class SnomedMergeConflict extends MergeConflict {
+public class SnomedMergeConflict extends GenericMergeConflict {
 
 	private static final long serialVersionUID = 417129467147870910L;
 

@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -41,6 +40,7 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
@@ -188,13 +188,13 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 
 	@Override
-	public Map<String, Object> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
+	public Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
-			Map<String, Object> results = newHashMap();
-			for (Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
-				results.put(entry.getKey().toString(), SnomedMergeConflictMapper.convert(entry.getValue(), sourceTransaction, targetTransaction));
-			}
-			return results;
+			return FluentIterable.from(conflicts.values()).transform(new Function<Conflict, MergeConflict>() {
+				@Override public MergeConflict apply(Conflict input) {
+					return SnomedMergeConflictMapper.convert(input, sourceTransaction, targetTransaction);
+				}
+			}).toList();
 		}
 		return super.handleCDOConflicts(sourceTransaction, targetTransaction, conflicts);
 	}
@@ -231,7 +231,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		
 		Map<String, Object> result = ImmutableMap.<String, Object>copyOf(conflictingItems.build().asMap());
 		if (!result.isEmpty()) {
-			throw new MergeConflictException(result, "Conflicts detected on %s concept(s) while post-processing changes.", result.size());
+			// TODO XXX
+			throw new MergeConflictException(Collections.<MergeConflict>emptySet(), result, "Conflicts detected on %s concept(s) while post-processing changes.", result.size());
 		}
 	}
 

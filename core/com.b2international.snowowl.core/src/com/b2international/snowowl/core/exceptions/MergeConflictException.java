@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.core.exceptions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.google.common.base.Objects;
 
 /**
@@ -27,10 +30,16 @@ public class MergeConflictException extends ConflictException {
 	private static final long serialVersionUID = -2143620528072069325L;
 
 	private final Map<String, Object> details;
+	private final Collection<MergeConflict> conflicts;
 
-	public MergeConflictException(final Map<String, Object> details, final String message, final Object... args) {
+	public MergeConflictException(final Collection<MergeConflict> conflicts, final String message, final Object... args) {
+		this(conflicts, Collections.<String, Object>emptyMap(), message, args);
+	}
+	
+	public MergeConflictException(final Collection<MergeConflict> conflicts, final Map<String, Object> details, final String message, final Object... args) {
 		super(message, args);
 		this.details = details;
+		this.conflicts = conflicts;
 	}
 
 	@Override
@@ -38,6 +47,10 @@ public class MergeConflictException extends ConflictException {
 		return details;
 	}
 
+	public Collection<MergeConflict> getConflicts() {
+		return conflicts;
+	}
+	
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this).add("details", details).toString();
