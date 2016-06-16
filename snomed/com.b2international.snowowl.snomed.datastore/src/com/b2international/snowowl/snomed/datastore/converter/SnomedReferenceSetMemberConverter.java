@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -220,34 +219,39 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 			case COMPLEX_MAP:
 				props.put(SnomedRf2Headers.FIELD_MAP_GROUP, entry.getMapGroup());
 				props.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, entry.getMapPriority());
-				props.put(SnomedRf2Headers.FIELD_MAP_RULE, entry.getMapRule() != null ? entry.getMapRule() : "");
-				props.put(SnomedRf2Headers.FIELD_MAP_ADVICE, entry.getMapAdvice() != null ? entry.getMapAdvice() : "");
+				props.put(SnomedRf2Headers.FIELD_MAP_RULE, entry.getMapRule());
+				props.put(SnomedRf2Headers.FIELD_MAP_ADVICE, entry.getMapAdvice());
 				props.put(SnomedRf2Headers.FIELD_CORRELATION_ID, entry.getCorrelationId());
 			case SIMPLE_MAP:
-				props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
-				props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
-				break;
+					props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
+					props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
+					break;
 			case CONCRETE_DATA_TYPE:
 				props.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, entry.getAttributeLabel());
 				props.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, entry.getCharacteristicTypeId());
-				props.put(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
+				props.put(SnomedRf2Headers.FIELD_VALUE, entry.getSerializedValue());
 				props.put(SnomedRf2Headers.FIELD_UNIT_ID, entry.getUomComponentId());
 				props.put(SnomedRf2Headers.FIELD_OPERATOR_ID, entry.getOperatorComponentId());
-				props.put(SnomedMappings.memberDataTypeOrdinal().fieldName(), entry.getRefSetPackageDataType().ordinal());
 				break;
 			case LANGUAGE:
 				props.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, entry.getAcceptabilityId());
 				break;
 			case DESCRIPTION_TYPE:
-				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, entry.getDescriptionFormat());
+				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, entry.getDescriptionFormatId());
 				props.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, entry.getDescriptionLength());
 				break;
-			// TODO module dependency refset
-			default:
+			case MODULE_DEPENDENCY:
+				props.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, entry.getSourceEffectiveTime());
+				props.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, entry.getTargetEffectiveTime());
 				break;
+			case SIMPLE:
+				// No additional fields on simple type reference set member
+				break;
+			default:
+				throw new IllegalStateException("Unexpected type '" + entry.getRefSetType() + "'.");
 		}
-		member.setProperties(props.build());
 		
+		member.setProperties(props.build());
 		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
 		return member;
 	}

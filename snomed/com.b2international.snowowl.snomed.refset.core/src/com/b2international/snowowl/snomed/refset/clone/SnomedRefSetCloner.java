@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.SignedBytes;
 
 /**
  * Clones the members of a given {@link SnomedRefSet reference set}.
@@ -94,8 +95,8 @@ public class SnomedRefSetCloner {
 				SnomedRefSetMemberIndexEntry complexMapRefSetMemberIndexEntry = (SnomedRefSetMemberIndexEntry) originalMemberIndexEntry;
 				newComplexMapRefSetMember.setCorrelationId(complexMapRefSetMemberIndexEntry.getCorrelationId());
 				newComplexMapRefSetMember.setMapAdvice(complexMapRefSetMemberIndexEntry.getMapAdvice());
-				newComplexMapRefSetMember.setMapGroup((byte) complexMapRefSetMemberIndexEntry.getMapGroup());
-				newComplexMapRefSetMember.setMapPriority((byte) complexMapRefSetMemberIndexEntry.getMapPriority());
+				newComplexMapRefSetMember.setMapGroup(SignedBytes.checkedCast(complexMapRefSetMemberIndexEntry.getMapGroup()));
+				newComplexMapRefSetMember.setMapPriority(SignedBytes.checkedCast(complexMapRefSetMemberIndexEntry.getMapPriority()));
 				newComplexMapRefSetMember.setMapRule(complexMapRefSetMemberIndexEntry.getMapRule());
 				newRefSetMember = newComplexMapRefSetMember;
 				break;
