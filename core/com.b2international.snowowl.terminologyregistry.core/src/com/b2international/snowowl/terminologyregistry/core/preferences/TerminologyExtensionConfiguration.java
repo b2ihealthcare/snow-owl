@@ -39,7 +39,7 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 
 	private static final String CODE_SYSTEMS_KEY = "com.b2international.snowowl.terminologyregistry.core.codeSystems";
 	
-	private ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>> codeSystemSerializer;
+	private ConfigurationEntrySerializer<ConfigNode<String, String>> codeSystemSerializer;
 	
 	public TerminologyExtensionConfiguration(PreferencesService preferencesService, File defaultsPath) {
 		super(preferencesService, NODE_NAME);
@@ -48,16 +48,16 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 
 	private void init(File defaultsPath) {
 		
-		codeSystemSerializer = new ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>>(preferences, CODE_SYSTEMS_KEY, new File(defaultsPath, "extensions.xml")) {
+		codeSystemSerializer = new ConfigurationEntrySerializer<ConfigNode<String, String>>(preferences, CODE_SYSTEMS_KEY, new File(defaultsPath, "extensions.xml")) {
 			
 			@Override
-			protected ConfigNode<String, PreferredTerminologyExtension> computeDefault() {
+			protected ConfigNode<String, String> computeDefault() {
 				
-				ConfigNode<String, PreferredTerminologyExtension> configNode = new ConfigNode<String, PreferredTerminologyExtension>(CODE_SYSTEMS_KEY);
+				ConfigNode<String, String> configNode = new ConfigNode<String, String>(CODE_SYSTEMS_KEY);
 				
 				for (ICodeSystem cs : getCodeSystems()) {
 					if (!configNode.hasChild(cs.getRepositoryUuid()) && BranchPathUtils.isMain(cs.getBranchPath()))
-						configNode.addChild(cs.getRepositoryUuid(), new PreferredTerminologyExtension(cs));
+						configNode.addChild(cs.getRepositoryUuid(), cs.getShortName());
 				}
 
 				return configNode;
@@ -70,7 +70,7 @@ public class TerminologyExtensionConfiguration extends PreferenceBase {
 		return ApplicationContext.getInstance().getService(TerminologyRegistryService.class).getCodeSystems(new UserBranchPathMap());
 	}
 
-	public ConfigurationEntrySerializer<ConfigNode<String, PreferredTerminologyExtension>> getCodeSystemSerializer() {
+	public ConfigurationEntrySerializer<ConfigNode<String, String>> getCodeSystemSerializer() {
 		return codeSystemSerializer;
 	}
 }
