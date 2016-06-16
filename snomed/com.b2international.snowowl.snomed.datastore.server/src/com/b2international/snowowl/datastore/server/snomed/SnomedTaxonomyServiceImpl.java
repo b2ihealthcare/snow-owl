@@ -223,22 +223,6 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 	}
 
 	@Override
-	public int getDepth(final IBranchPath branchPath, final String conceptId) {
-		if (isEmpty(conceptId)) {
-			return 0;
-		}
-		return getTaxonomy(branchPath).getDepth(conceptId);
-	}
-
-	@Override
-	public int getHeight(final IBranchPath branchPath, final String conceptId) {
-		if (isEmpty(conceptId)) {
-			return 0;
-		}
-		return getTaxonomy(branchPath).getHeight(conceptId);
-	}
-
-	@Override
 	public boolean isLeaf(final IBranchPath branchPath, final String conceptId) {
 		if (isEmpty(conceptId)) {
 			return false;

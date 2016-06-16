@@ -132,11 +132,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	@Override
-	public int getDepth(final String conceptId) {
-		return delegate.getDepth(conceptId);
-	}
-
-	@Override
 	public boolean isLeaf(final String conceptId) {
 		return delegate.isLeaf(conceptId);
 	}

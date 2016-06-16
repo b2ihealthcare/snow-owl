@@ -199,15 +199,6 @@ public interface SnomedTaxonomy {
 	boolean hasInboundRelationshipOfType(final String conceptId, final String typeId);
 	
 	/**
-	 * Returns with the depth of the current concept from the taxonomy.
-	 * The depth of a node is the number of edges from the node to the tree's root node.
-	 * <br>A root node will have a depth of 0.
-	 * @param conceptId the concept ID of the focus concept/node.
-	 * @return the height of the node in the taxonomy.
-	 */
-	int getDepth(final String conceptId);
-	
-	/**
 	 * Returns with {@code true} if the concept given with the unique concept ID argument is 
 	 * a leaf node. In other words, it does not have any active descendants. Otherwise {@code false}.
 	 * @param conceptId the ID of the concept to check.
