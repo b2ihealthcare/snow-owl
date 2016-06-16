@@ -191,7 +191,7 @@ public abstract class SnomedCompositeExporter<T extends SnomedDocument> implemen
 	}
 	
 	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter<T> exporter, final Collection<String> ignoredSegmentNames) {
-		final SnomedSubExporter subExporter = new SnomedSubExporter(branchPath, exporter, ignoredSegmentNames);
+		final SnomedSubExporter subExporter = new SnomedSubExporter(branchPath, exporter);//, ignoredSegmentNames);
 		closeables.add(subExporter);
 		return subExporter;
 	}
@@ -255,7 +255,7 @@ public abstract class SnomedCompositeExporter<T extends SnomedDocument> implemen
 				//gather all branch paths for all versions
 				final List<IBranchPath> allVersionsBranchPaths = newArrayList(branchPathWithEffectiveTimeMap.keySet());
 
-				//let's figure out are we on task, version or MAIN. let's find the closest branch path
+				//let's figure out if are we on task, version or MAIN. let's find the closest branch path
 				int closestBranchPathIndex = -1;
 				final Iterator<IBranchPath> bottomToTopIterator = bottomToTopIterator(currentBranchPath);
 				while (bottomToTopIterator.hasNext()) {
@@ -268,31 +268,33 @@ public abstract class SnomedCompositeExporter<T extends SnomedDocument> implemen
 				
 				checkState(closestBranchPathIndex > -1, "Cannot find closest version or MAIN for branch path '" + currentBranchPath + "'.");
 				
-				//now add the BASE of all previous versions (exclude the one that is the closest with current branch)
+				//now add the BASE of all previous versions (exclude the one that is the closest to current branch)
 				for (int i = closestBranchPathIndex + 1; i < allVersionsBranchPaths.size(); i++) {
 					branchPaths.add(convertIntoBasePath(allVersionsBranchPaths.get(i)));
 				}
 				
-				//start with the oldest one than traverse to the current one from bottom to top
+				//start with the oldest one then traverse to the current one from bottom to top
 				reverse(branchPaths);
 				
-				return concat(Iterators.transform(branchPaths.iterator(), new Function<IBranchPath, SnomedSubExporter>() {
+				Iterator<String> subExportersIterator = concat(Iterators.transform(branchPaths.iterator(), new Function<IBranchPath, SnomedSubExporter>() {
 					@Override public SnomedSubExporter apply(final IBranchPath branchPath) {
 						
 						final List<IBranchPath> branchPaths = newArrayList(branchPathWithEffectiveTimeMap.keySet());
 						reverse(branchPaths);
 						
-						final Collection<String> ignoredSegmentNames = newHashSet();
-						for (final IBranchPath path : branchPaths) {
-							if (createPath(path).equals(createPath(branchPath))) {
-								break;
-							}
-							ignoredSegmentNames.addAll(configuration.getVersionPathToSegmentNameMappings().get(path));
-						}
+						//final Collection<String> ignoredSegmentNames = newHashSet();
+//						for (final IBranchPath path : branchPaths) {
+//							if (createPath(path).equals(createPath(branchPath))) {
+//								break;
+//							}
+//							//ignoredSegmentNames.addAll(configuration.getVersionPathToSegmentNameMappings().get(path));
+//						}
 						
-						return createSubExporter(branchPath, SnomedCompositeExporter.this, ignoredSegmentNames);
+						return createSubExporter(branchPath, SnomedCompositeExporter.this); //, ignoredSegmentNames);
 					}
 				}));
+				
+				return subExportersIterator;
 			
 			default:
 				throw new IllegalArgumentException("Implementation error. Unknown content subtype: " + contentSubType);

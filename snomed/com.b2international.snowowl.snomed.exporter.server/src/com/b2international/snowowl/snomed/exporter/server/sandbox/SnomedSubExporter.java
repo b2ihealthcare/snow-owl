@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -35,8 +36,13 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.util.Bits;
 
+import com.b2international.index.Hits;
 import com.b2international.index.lucene.DocIdCollector;
 import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -48,29 +54,32 @@ import com.google.common.collect.AbstractIterator;
 /**
  *
  */
-public class SnomedSubExporter extends AbstractIterator<String> implements Iterator<String>, AutoCloseable {
+public class SnomedSubExporter implements Iterator<String>, AutoCloseable {
 
-	private final Supplier<DocIdsIterator> itr;
-	private final Supplier<ReferenceManager<IndexSearcher>> manager;
-	private final Supplier<IndexSearcher> searcher;
+
+	//private final Supplier<DocIdsIterator> itr;
+	//private final Supplier<ReferenceManager<IndexSearcher>> manager;
+	//private final Supplier<IndexSearcher> searcher;
 	private final SnomedIndexExporter exporter;
 	private final IBranchPath branchPath;
-	private final Collection<String> ignoredSegmentNames;
+	//private final Collection<String> ignoredSegmentNames;
 
-	protected SnomedSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter, final Collection<String> ignoredSegmentNames) {
+	protected SnomedSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter) { //, final Collection<String> ignoredSegmentNames) {
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.exporter = checkNotNull(exporter, "exporter");
-		itr = createDocIdIterator();
-		manager = createReferenceManager();
-		searcher = createIndexSearcher();
-		this.ignoredSegmentNames = isEmpty(ignoredSegmentNames) 
-			? Collections.<String>emptySet() 
-			: copyOf(ignoredSegmentNames);
+		//itr = createDocIdIterator();
+		//manager = createReferenceManager();
+		//searcher = createIndexSearcher();
+//		this.ignoredSegmentNames = isEmpty(ignoredSegmentNames) 
+//			? Collections.<String>emptySet() 
+//			: copyOf(ignoredSegmentNames);
 	}
+	
+	
 
 	@Override
 	public void close() throws IOException {
-		manager.get().release(searcher.get());
+		//manager.get().release(searcher.get());
 	}
 
 	@Override
@@ -127,33 +136,33 @@ public class SnomedSubExporter extends AbstractIterator<String> implements Itera
 		});
 	}
 
-	private Supplier<IndexSearcher> createIndexSearcher() {
-		return memoize(new Supplier<IndexSearcher>() {
-			@Override public IndexSearcher get() {
-				try {
-					return manager.get().acquire();
-				} catch (final IOException e) {
-					throw new SnowowlRuntimeException("Failed to acquire index searcher.", e);
-				}
-			}
-		});
-	}
+//	private Supplier<IndexSearcher> createIndexSearcher() {
+//		return memoize(new Supplier<IndexSearcher>() {
+//			@Override public IndexSearcher get() {
+//				try {
+//					return manager.get().acquire();
+//				} catch (final IOException e) {
+//					throw new SnowowlRuntimeException("Failed to acquire index searcher.", e);
+//				}
+//			}
+//		});
+//	}
 
-	private Supplier<ReferenceManager<IndexSearcher>> createReferenceManager() {
-		return memoize(new Supplier<ReferenceManager<IndexSearcher>>() {
-			@SuppressWarnings("unchecked")
-			@Override public ReferenceManager<IndexSearcher> get() {
-				return getIndexServerService().getManager(branchPath);
-			}
-		});
-	}
+//	private Supplier<ReferenceManager<IndexSearcher>> createReferenceManager() {
+//		return memoize(new Supplier<ReferenceManager<IndexSearcher>>() {
+//			@SuppressWarnings("unchecked")
+//			@Override public ReferenceManager<IndexSearcher> get() {
+//				return getIndexServerService().getManager(branchPath);
+//			}
+//		});
+//	}
 	
-	private Document tryGetDocument(final int docId) {
-		try {
-			return searcher.get().doc(docId, exporter.getFieldsToLoad());
-		} catch (final IOException e) {
-			throw new SnowowlRuntimeException("Failed to load document.", e);
-		}
-	}
+//	private Document tryGetDocument(final int docId) {
+//		try {
+//			return searcher.get().doc(docId, exporter.getFieldsToLoad());
+//		} catch (final IOException e) {
+//			throw new SnowowlRuntimeException("Failed to load document.", e);
+//		}
+//	}
 
 }

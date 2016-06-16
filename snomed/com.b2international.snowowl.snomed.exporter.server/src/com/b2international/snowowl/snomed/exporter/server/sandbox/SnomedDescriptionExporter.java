@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -28,7 +26,7 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 public class SnomedDescriptionExporter extends SnomedCoreExporter<SnomedDescriptionIndexEntry> {
 
 	public SnomedDescriptionExporter(final SnomedExportConfiguration configuration) {
-		super(checkNotNull(configuration, "configuration"));
+		super(configuration, SnomedDescriptionIndexEntry.class);
 	}
 
 	@Override

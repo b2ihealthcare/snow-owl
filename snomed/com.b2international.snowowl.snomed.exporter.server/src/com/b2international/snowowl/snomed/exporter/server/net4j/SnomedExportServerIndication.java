@@ -34,8 +34,9 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.commons.FileUtils;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.Index;
+import com.b2international.index.IndexRead;
+import com.b2international.index.Searcher;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
@@ -197,11 +198,13 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				
 				//obtain the index service here to ensure a consistent view of the data during the export process
 				RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-				RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-				file = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<File>() {
+				Index index = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(Index.class);
+				
+				
+				file = index.read(new IndexRead<File>() {
 
 					@Override
-					public File execute(RevisionSearcher searcher) throws IOException {
+					public File execute(Searcher searcher) throws IOException {
 						return doExport(searcher, monitor);
 					}
 				}); 
@@ -278,10 +281,10 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 	}
 	
-	private File doExport(RevisionSearcher indexSearcher, final OMMonitor monitor) {
+	private File doExport(Searcher searcher, final OMMonitor monitor) {
 		
 		//a bit of a hack, we set the searcher as part of the configuration here
-		configuration.setRevisionSearcher(indexSearcher);
+		configuration.setSearcher(searcher);
 		
 		try {
 			SnomedExporterFacade exporter = new SnomedExporterFacade(

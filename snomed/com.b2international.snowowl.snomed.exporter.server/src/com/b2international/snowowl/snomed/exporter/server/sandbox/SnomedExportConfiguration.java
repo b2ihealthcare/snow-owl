@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.b2international.index.Searcher;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -38,6 +37,13 @@ public interface SnomedExportConfiguration {
 	 * @return
 	 */
 	RevisionSearcher getRevisionSearcher();
+	
+	/**
+	 * Returns the current searcher that ensures
+	 * a consistent view on the index store.
+	 * @return
+	 */
+	Searcher getSearcher();
 	
 	/**
 	 * Returns with the current branch path of the client who 
@@ -69,7 +75,7 @@ public interface SnomedExportConfiguration {
 	 * Returns with a mapping between the branch path for each available version and the index segment names for the versions. 
 	 * @return a mapping between branch paths and index segment names.
 	 */
-	Map<IBranchPath, Collection<String>> getVersionPathToSegmentNameMappings();
+	//Map<IBranchPath, Collection<String>> getVersionPathToSegmentNameMappings();
 
 	/**
 	 * Returns the label to use when a component does not have an effective time assigned. Defaults to {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL}. 
