@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.google.common.collect.ImmutableMap;
@@ -252,7 +253,9 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void addedInSourceAndTargetConflict() {
+	public void addedInSourceAndTargetMergeConflict() {
+		
+		setup();
 		
 		assertDescriptionCreated(testBranchPath, "D200", ACCEPTABLE_ACCEPTABILITY_MAP);
 		
@@ -286,6 +289,46 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertTrue(targetFeatures.isEmpty());
 	}
 
+	@Test
+	public void addedInTargetDetachedInSourceMergeConflict() {
+		
+		setup();
+		
+		assertConceptCreated(testBranchPath, "C1");
+
+		assertBranchCanBeMerged(testBranchPath, "commit");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		assertRelationshipCreated(testBranchPath, "R1", Concepts.ROOT_CONCEPT, MORPHOLOGIC_ABNORMALITY, symbolicNameMap.get("C1"));
+		
+		assertRelationshipExists(testBranchPath, "R1");
+		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
+		
+		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
+		assertConceptNotExists(testBranchPath.getParent(), "C1");
+		
+		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "merge");
+		
+		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+
+		assertEquals(1, additionalInfos.size());
+
+		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
+
+		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Concept")));
+		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Relationship")));
+		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("C1"))));
+		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("R1"))));
+
+		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
+		assertTrue(sourceFeatures.isEmpty());
+
+		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
+		assertTrue(targetFeatures.isEmpty());
+	}
+	
 	private <T> T getProperty(Map<String, Object> additionalInfo, String propertyName, Class<T> type) {
 		if (additionalInfo.containsKey(propertyName)) {
 			Object property = additionalInfo.get(propertyName);

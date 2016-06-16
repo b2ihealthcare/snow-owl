@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
@@ -28,7 +25,10 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
+import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 /**
  * An extension of CDO's {@link ManyValued many-valued} merger implementation, that delegates to a terminology-specific
@@ -81,24 +81,11 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	public Map<CDOID, Conflict> getConflicts() {
 		// Due to the nature of rebase we need to transform certain conflicts to reflect the source and target branches properly
 		if (isRebase) {
-			final Map<CDOID, Conflict> transformedConflicts = newHashMap();
-			for (final Entry<CDOID, Conflict> entry : super.getConflicts().entrySet()) {
-				final CDOID id = entry.getKey();
-				final Conflict conflict = entry.getValue();
-				if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
-					final ChangedInSourceAndDetachedInTargetConflict inSourceAndDetachedInTargetConflict = (ChangedInSourceAndDetachedInTargetConflict) conflict;
-					transformedConflicts.put(id, new ChangedInTargetAndDetachedInSourceConflict(inSourceAndDetachedInTargetConflict.getSourceDelta()));
-				} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
-					final ChangedInTargetAndDetachedInSourceConflict targetAndDetachedInSourceConflict = (ChangedInTargetAndDetachedInSourceConflict) conflict;
-					transformedConflicts.put(id, new ChangedInSourceAndDetachedInTargetConflict(targetAndDetachedInSourceConflict.getTargetDelta()));
-				} else if (conflict instanceof ChangedInSourceAndTargetConflict) {
-					final ChangedInSourceAndTargetConflict sourceAndTargetConflict = (ChangedInSourceAndTargetConflict) conflict;
-					transformedConflicts.put(id, new ChangedInSourceAndTargetConflict(sourceAndTargetConflict.getTargetDelta(), sourceAndTargetConflict.getSourceDelta()));
-				} else {
-					transformedConflicts.put(id, conflict);
+			return Maps.transformValues(super.getConflicts(), new Function<Conflict, Conflict>() {
+				@Override public Conflict apply(Conflict input) {
+					return ConflictMapper.invert(input);
 				}
-			}
-			return transformedConflicts;
+			});
 		}
 		return super.getConflicts();
 	}
@@ -108,6 +95,9 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 	
 	public Map<String, Object> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+		if (isRebase) {
+			return delegate.handleCDOConflicts(targetTransaction, sourceTransaction, getConflicts());
+		}
 		return delegate.handleCDOConflicts(sourceTransaction, targetTransaction, getConflicts());
 	}
 }

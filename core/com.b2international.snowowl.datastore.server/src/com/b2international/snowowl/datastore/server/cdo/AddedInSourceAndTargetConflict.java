@@ -28,13 +28,11 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 	private final CDOID sourceId;
 	private final CDOID targetId;
 	private final String message;
-	private final String type;
 
-	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String type, final String message, Object...args) {
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
-		this.type = type;
-		this.message = String.format(message, args);
+		this.message = message;
 	}
 
 	@Override
@@ -54,10 +52,6 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 		return targetId;
 	}
 	
-	public String getType() {
-		return type;
-	}
-
 	@Override
 	public String toString() {
 		return MessageFormat.format("AddedInSourceAndTarget[source={0}, target={1}]", sourceId, targetId);

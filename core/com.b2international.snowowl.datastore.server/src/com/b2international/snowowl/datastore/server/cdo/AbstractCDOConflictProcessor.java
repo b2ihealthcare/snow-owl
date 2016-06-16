@@ -115,7 +115,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		if (!conflicts.isEmpty()) {
 			final Map<String, Object> results = newHashMap();
 			for (final Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
-				results.put(entry.getKey().toString(), ConflictMapper.convert(entry.getValue()));
+				results.put(entry.getKey().toString(), ConflictMapper.convert(entry.getValue(), sourceTransaction, targetTransaction));
 			}
 			return results;
 		}

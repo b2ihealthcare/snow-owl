@@ -171,7 +171,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 
 	@Override
-	public Map<String, Object> handleCDOConflicts(CDOTransaction sourceTransaction, CDOTransaction targetTransaction, Map<CDOID, Conflict> conflicts) {
+	public Map<String, Object> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
 			Map<String, Object> results = newHashMap();
 			for (Entry<CDOID, Conflict> entry : conflicts.entrySet()) {
@@ -244,8 +244,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		
 		if (null != conflictingNewInTarget) {
 			final String sourceType = sourceRevision.getEClass().getName();
-			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget, sourceType,
-					"Two SNOMED CT %ss are using the same '%s' identifier.", sourceType, newComponentIdInSource);
+			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget, String.format(
+					"Two SNOMED CT %ss are using the same '%s' identifier.", sourceType, newComponentIdInSource));
 		} else {
 			return null;
 		}
@@ -283,7 +283,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		for (final EStructuralFeature feature : featuresToCheck) {
 			final CDOID targetId = (CDOID) internalSourceRevision.getValue(feature);
 			if (detachedTargetIds.contains(targetId)) {
-				return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId, internalSourceRevision.getEClass().getName());
+				return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId);
 			}
 		}
 
@@ -380,17 +380,18 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 							membersToRemove.add(newLanguageRefSetMember);
 							continue label;
 						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-							conflictingItems.put(concept.getId(), new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), 
-									conceptDescriptionMember.cdoID(), conceptDescriptionMember.eClass().getName(),
-									"Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s",
-									description.getId(), conceptDescription.getId()));
+							conflictingItems.put(
+									concept.getId(),
+									new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID(), String
+											.format("Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s", description.getId(),
+													conceptDescription.getId())));
 						}
 					} else {
 						if (description.equals(conceptDescription)) {
-							conflictingItems.put(concept.getId(), new AddedInSourceAndTargetConflict(
-									newLanguageRefSetMember.cdoID(), 
-									conceptDescriptionMember.cdoID(), conceptDescriptionMember.eClass().getName(),
-									"Different acceptability selected for the same description, %s", description.getId()));
+							conflictingItems.put(
+									concept.getId(),
+									new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID(), String
+											.format("Different acceptability selected for the same description, %s", description.getId())));
 						}
 					}
 				}

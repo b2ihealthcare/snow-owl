@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,35 +21,33 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 /**
- * Reported when a component is added on the source branch, but it references a component (either directly or
- * indirectly) which was detached on the target branch.
+ * @since 4.7
  */
-public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
+public class AddedInTargetAndDetachedInSourceConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
 
-	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId) {
+	public AddedInTargetAndDetachedInSourceConflict(final CDOID sourceId, final CDOID targetId) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
 	}
-
+	
 	@Override
 	public CDOID getID() {
-		return sourceId;
+		return null;
 	}
-
+	
 	public CDOID getSourceId() {
 		return sourceId;
 	}
-
+	
 	public CDOID getTargetId() {
 		return targetId;
 	}
 
 	@Override
-	public String toString()
-	{
-		return MessageFormat.format("AddedInSourceAndDetachedInTarget[source={0}, target={1}]", sourceId, targetId);
+	public String toString() {
+		return MessageFormat.format("AddedInTargetAndDetachedInSource[source={0}, target={1}]", sourceId, targetId);
 	}
 }

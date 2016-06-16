@@ -34,6 +34,9 @@ import com.google.common.collect.ImmutableMap;
  */
 public abstract class SnomedMergeApiAssert {
 	
+	public static final String ASSOCIATED_MORPHOLOGY = "116676008";
+	public static final String MORPHOLOGIC_ABNORMALITY = "49755003";
+	
 	public static final Map<String, String> symbolicNameMap = newHashMap();
 
 	// --------------------------------------------------------
@@ -157,14 +160,26 @@ public abstract class SnomedMergeApiAssert {
 
 	public static void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName) {
 		// destination - Morphologic abnormality
-		assertRelationshipCreated(branchPath, symbolicName, Concepts.ROOT_CONCEPT, "49755003");
+		assertRelationshipCreated(branchPath, symbolicName, Concepts.ROOT_CONCEPT, MORPHOLOGIC_ABNORMALITY);
 	}
 	
 	public static void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName, final String sourceId, final String destinationId) {
 		final Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("sourceId", sourceId)
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("typeId", "116676008") // Associated morphology
+				.put("typeId", ASSOCIATED_MORPHOLOGY)
+				.put("destinationId", destinationId)
+				.put("commitComment", "New relationship")
+				.build();
+
+		assertComponentCreated(branchPath, symbolicName, SnomedComponentType.RELATIONSHIP, requestBody);
+	}
+	
+	public static void assertRelationshipCreated(final IBranchPath branchPath, final String symbolicName, final String sourceId, final String destinationId, final String typeId) {
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("sourceId", sourceId)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", typeId)
 				.put("destinationId", destinationId)
 				.put("commitComment", "New relationship")
 				.build();
