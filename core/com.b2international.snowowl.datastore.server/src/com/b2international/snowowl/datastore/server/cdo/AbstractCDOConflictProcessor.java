@@ -79,7 +79,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The default case will allow the add by returning {@code newInSource} (a {@link CDORevision}).
+	 * The default case will allow the add by returning {@code sourceRevision} (a {@link CDORevision}).
 	 */
 	@Override
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
@@ -89,16 +89,10 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The default case will check if {@link #addedInSource(CDORevision, Map)} would return a {@link Conflict} in the
-	 * same case, and if so, adds the identifier to the set of objects to unlink later; the addition is allowed
-	 * otherwise by returning {@code targetRevision} (a {@link CDORevision}).
+	 * The default case will allow the add by returning {@code targetRevision} (a {@link CDORevision}).
 	 */
 	@Override
 	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
-		if (addedInSource(targetRevision, sourceMap) instanceof Conflict) {
-			idsToUnlink.add(targetRevision.getID());
-		}
-
 		return targetRevision;
 	}
 

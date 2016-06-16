@@ -45,6 +45,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
+import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.snowowl.datastore.server.cdo.GenericConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
@@ -118,8 +119,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	private Map<String, CDOID> newComponentIdsInTarget;
 	private Set<CDOID> detachedTargetIds;
 
-	private Map<CDOID, Object> targetMap;
-
 	public SnomedCDOConflictProcessor() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, RELEASED_ATTRIBUTE_MAP);
 	}
@@ -136,20 +135,38 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	 */
 	@Override
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
-		// FIXME
-		Conflict conflict = checkDuplicateComponentIds(sourceRevision, targetMap == this.targetMap ? newComponentIdsInTarget : newComponentIdsInSource);
+
+		Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget);
 		
 		if (conflict != null) {
 			return conflict;
 		}
 
-		conflict = checkDetachedReferences(sourceRevision, targetMap == this.targetMap ? detachedTargetIds : detachedSourceIds);
+		conflict = checkDetachedReferences(sourceRevision, detachedTargetIds, true);
 		
 		if (conflict != null) {
 			return conflict;
 		}
 		
 		return super.addedInSource(sourceRevision, targetMap);
+	}
+	
+	@Override
+	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
+		
+		Conflict conflict = checkDuplicateComponentIds(targetRevision, newComponentIdsInSource);
+		
+		if (conflict != null) {
+			return conflict;
+		}
+
+		conflict = checkDetachedReferences(targetRevision, detachedSourceIds, false);
+		
+		if (conflict != null) {
+			return conflict;
+		}
+		
+		return super.addedInTarget(targetRevision, sourceMap);
 	}
 	
 	@Override
@@ -184,8 +201,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	
 	@Override
 	public void preProcess(final Map<CDOID, Object> sourceMap, final Map<CDOID, Object> targetMap) {
-		this.targetMap = targetMap;
-		
 		newComponentIdsInSource = extractNewComponentIds(sourceMap);
 		detachedSourceIds = getDetachedIdsInTarget(sourceMap);
 		newComponentIdsInTarget = extractNewComponentIds(targetMap);
@@ -233,22 +248,19 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 	}
 
-	private Conflict checkDuplicateComponentIds(final CDORevision sourceRevision, final Map<String, CDOID> newComponentIdsMap) {
+	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap) {
 
-		if (!isComponent(sourceRevision)) {
-			return null;
+		if (isComponent(revision)) {
+			final String newComponentId = getComponentId((InternalCDORevision) revision);
+			final CDOID conflictingNewId = newComponentIdsMap.get(newComponentId);
+			
+			if (null != conflictingNewId) {
+				return new AddedInSourceAndTargetConflict(revision.getID(), conflictingNewId, String.format(
+						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId));
+			}
 		}
-
-		final String newComponentIdInSource = getComponentId((InternalCDORevision) sourceRevision);
-		final CDOID conflictingNewInTarget = newComponentIdsMap.get(newComponentIdInSource);
 		
-		if (null != conflictingNewInTarget) {
-			final String sourceType = sourceRevision.getEClass().getName();
-			return new AddedInSourceAndTargetConflict(sourceRevision.getID(), conflictingNewInTarget, String.format(
-					"Two SNOMED CT %ss are using the same '%s' identifier.", sourceType, newComponentIdInSource));
-		} else {
-			return null;
-		}
+		return null;
 	}
 
 	private boolean isComponent(final CDORevision revision) {
@@ -263,28 +275,24 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return (String) revision.getValue(SnomedPackage.Literals.COMPONENT__ID);
 	}
 
-	private Conflict checkDetachedReferences(final CDORevision sourceRevision, final Set<CDOID> detachedIds) {
-		final InternalCDORevision internalSourceRevision = (InternalCDORevision) sourceRevision;
-		final EClass eClass = internalSourceRevision.getEClass();
-
-		final Conflict conflict;
-
-		if (isComponent(eClass)) {
-			conflict = checkDetachedComponentReferences(internalSourceRevision, detachedIds, DETACHED_FEATURE_MAP.get(eClass));
-		} else {
-			conflict = null;
-		}
-
-		return conflict;
-	}
-
-	private Conflict checkDetachedComponentReferences(final InternalCDORevision internalSourceRevision, final Set<CDOID> detachedTargetIds, final Collection<EStructuralFeature> featuresToCheck) {
-
-		for (final EStructuralFeature feature : featuresToCheck) {
-			final CDOID targetId = (CDOID) internalSourceRevision.getValue(feature);
-			if (detachedTargetIds.contains(targetId)) {
-				return new AddedInSourceAndDetachedInTargetConflict(internalSourceRevision.getID(), targetId);
+	private Conflict checkDetachedReferences(final CDORevision revision, final Set<CDOID> detachedIds, final boolean addedInSource) {
+		
+		if (isComponent(revision)) {
+			
+			Collection<EStructuralFeature> featuresToCheck = DETACHED_FEATURE_MAP.get(revision.getEClass());
+			InternalCDORevision internalCDORevision = (InternalCDORevision) revision;
+			
+			for (final EStructuralFeature feature : featuresToCheck) {
+				final CDOID targetId = (CDOID) internalCDORevision.getValue(feature);
+				if (detachedIds.contains(targetId)) {
+					if (addedInSource) {
+						return new AddedInSourceAndDetachedInTargetConflict(internalCDORevision.getID(), targetId);
+					} else {
+						return new AddedInTargetAndDetachedInSourceConflict(targetId, internalCDORevision.getID());
+					}
+				}
 			}
+			
 		}
 
 		return null;
