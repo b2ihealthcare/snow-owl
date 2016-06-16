@@ -139,11 +139,6 @@ public class SnomedClientTaxonomyServiceImpl extends ActiveBranchPathAwareServic
 	}
 
 	@Override
-	public int getDepth(final String conceptId) {
-		return delegate.getDepth(getBranchPath(), conceptId);
-	}
-
-	@Override
 	public boolean isLeaf(final String conceptId) {
 		return delegate.isLeaf(getBranchPath(), conceptId);
 	}

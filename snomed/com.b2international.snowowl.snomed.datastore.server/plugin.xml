@@ -4,26 +4,6 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerServiceConfigJob"
-            id="com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedServerTerminologyBrowserConfigJob"
-            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedServerTerminologyBrowserConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedServerStatementBrowserConfigJob"
-            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedServerStatementBrowserConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedServerPredicateBrowserConfigJob"
-            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedServerPredicateBrowserConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.snomed.jobs.SearchProfileServerConfigJob"
             id="com.b2international.snowowl.datastore.server.snomed.jobs.SearchProfileServerConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
@@ -31,11 +11,6 @@
      <serviceConfigJob
            class="com.b2international.snowowl.datastore.server.snomed.jobs.EscgQueryEvaluatorServiceConfigJob"
            id="com.b2international.snowowl.datastore.server.snomed.jobs.EscgQueryEvaluatorServiceConfigJob"
-           terminologyId="com.b2international.snowowl.terminology.snomed">
-     </serviceConfigJob>
-     <serviceConfigJob
-           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedComponentServiceConfigJob"
-           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedComponentServiceConfigJob"
            terminologyId="com.b2international.snowowl.terminology.snomed">
      </serviceConfigJob>
      <serviceConfigJob
@@ -56,11 +31,6 @@
      <serviceConfigJob
            class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedTaxonomyServiceConfigJob"
            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedTaxonomyServiceConfigJob"
-           terminologyId="com.b2international.snowowl.terminology.snomed">
-     </serviceConfigJob>
-     <serviceConfigJob
-           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedStatedServerTerminologyBrowserConfigJob"
-           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedStatedServerTerminologyBrowserConfigJob"
            terminologyId="com.b2international.snowowl.terminology.snomed">
      </serviceConfigJob>
      <serviceConfigJob

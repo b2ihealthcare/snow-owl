@@ -40,8 +40,8 @@ import com.google.inject.Provider;
  */
 public final class SnomedStatedClientTerminologyBrowser extends BaseSnomedClientTerminologyBrowser {
 
-	public SnomedStatedClientTerminologyBrowser(final SnomedStatedTerminologyBrowser wrappedBrowser, final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
-		super(wrappedBrowser, bus, languageSetting);
+	public SnomedStatedClientTerminologyBrowser(final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
+		super(bus, languageSetting);
 	}
 	
 	@Override

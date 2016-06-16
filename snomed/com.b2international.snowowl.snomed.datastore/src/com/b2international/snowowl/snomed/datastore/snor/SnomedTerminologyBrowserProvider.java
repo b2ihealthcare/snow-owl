@@ -40,7 +40,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -248,8 +247,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	private SnomedTerminologyBrowserProvider(final Concept concept, final Set<String> parentIds) {
-		super(ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class), 
-				ApplicationContext.getInstance().getServiceChecked(IEventBus.class),
+		super(ApplicationContext.getInstance().getServiceChecked(IEventBus.class),
 				SnowOwlApplication.INSTANCE.getEnviroment().provider(LanguageSetting.class));
 		this.concept = Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
 		this.parentIds = Preconditions.checkNotNull(parentIds, "Parent concept ID cannot be null.");

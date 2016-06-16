@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,11 +30,11 @@ import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.EmptyTerminologyBrowser;
 import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
+import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
-import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.TreeContentProvider;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.browser.ActiveBranchClientTerminologyBrowser;
+import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
@@ -51,13 +52,12 @@ import com.google.inject.Provider;
 /**
  * @since 4.6
  */
-public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchClientTerminologyBrowser<SnomedConceptDocument, String> implements TreeContentProvider<SnomedConceptDocument> {
+public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchPathAwareService implements IClientTerminologyBrowser<SnomedConceptDocument, String>, TreeContentProvider<SnomedConceptDocument> {
 
 	private final IEventBus bus;
 	private final Provider<LanguageSetting> languageSetting;
 
-	protected BaseSnomedClientTerminologyBrowser(ITerminologyBrowser<SnomedConceptDocument, String> wrappedBrowser, IEventBus bus, Provider<LanguageSetting> languageSetting) {
-		super(wrappedBrowser);
+	protected BaseSnomedClientTerminologyBrowser(IEventBus bus, Provider<LanguageSetting> languageSetting) {
 		this.bus = bus;
 		this.languageSetting = languageSetting;
 	}
@@ -75,11 +75,6 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 	@Override
 	protected final EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;
-	}
-	
-	@Override
-	public Collection<SnomedConceptDocument> getSuperTypes(SnomedConceptDocument concept) {
-		return getSuperTypesById(concept.getId());
 	}
 	
 	@Override
@@ -166,6 +161,116 @@ public abstract class BaseSnomedClientTerminologyBrowser extends ActiveBranchCli
 				.build(getBranchPath().getPath())
 				.executeSync(getBus());
 		return SnomedConceptDocument.fromConcepts(concepts);
+	}
+	
+	/**
+	 * Returns {@code true} if the SNOMED&nbsp;CT concept exists with the given unique ID.
+	 * @param conceptId the unique ID of the concept.
+	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
+	 */
+	@Override
+	public boolean exists(final String conceptId) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public Map<String, Boolean> exist(Collection<String> componentIds) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public boolean isTerminologyAvailable() {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getSuperTypeCount(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getSuperTypeCountById(String id) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getSubTypeCountById(String id) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getAllSubTypeCount(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getAllSuperTypeCount(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getAllSubTypeCountById(String id) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getAllSuperTypeCountById(String id) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public Collection<String> getSuperTypeIds(String conceptId) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public Collection<SnomedConceptDocument> getAllSuperTypesById(String id) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public Collection<SnomedConceptDocument> getAllSuperTypes(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public Collection<SnomedConceptDocument> getSuperTypes(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public Collection<SnomedConceptDocument> getAllSubTypesById(String id) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public boolean isSuperTypeOf(SnomedConceptDocument superType, SnomedConceptDocument subType) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public boolean isSuperTypeOfById(String superTypeId, String subTypeId) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public List<SnomedConceptDocument> getSubTypesAsList(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public int getSubTypeCount(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public SnomedConceptDocument getTopLevelConcept(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
+	public Collection<SnomedConceptDocument> getSubTypes(SnomedConceptDocument concept) {
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 	
 }

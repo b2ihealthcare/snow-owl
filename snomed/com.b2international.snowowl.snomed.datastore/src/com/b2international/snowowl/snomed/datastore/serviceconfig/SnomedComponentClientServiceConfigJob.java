@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.serviceconfig;
 
-import com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.services.ClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 
 /**
  * Configuration job to initialize and register the SNOMED&nbsp;CT component service on the client side.
@@ -28,35 +29,19 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
  * family.
  * 
  */
-public class SnomedComponentClientServiceConfigJob extends ClientServiceConfigJob<ISnomedComponentService, IClientSnomedComponentService> {
+public class SnomedComponentClientServiceConfigJob extends ServiceConfigJob {
 
 	private static final String JOB_NAME = "ESCG query evaluator client service configuration...";
 	
 	public SnomedComponentClientServiceConfigJob() {
 		super(JOB_NAME, SnomedDatastoreActivator.PLUGIN_ID);
 	}
+
+	@Override
+	protected boolean initService() throws SnowowlServiceException {
+		final IClientSnomedComponentService service = new ClientSnomedComponentService();
+		ApplicationContext.getInstance().registerService(IClientSnomedComponentService.class, service);
+		return false;
+	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#getBranchAwareClass()
-	 */
-	@Override
-	protected Class<ISnomedComponentService> getServiceClass() {
-		return ISnomedComponentService.class;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#getTrackingClass()
-	 */
-	@Override
-	protected Class<IClientSnomedComponentService> getTrackingClass() {
-		return IClientSnomedComponentService.class;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#createTrackingService(java.lang.Object)
-	 */
-	@Override
-	protected IClientSnomedComponentService createTrackingService(final ISnomedComponentService branchAwareService) {
-		return new ClientSnomedComponentService(branchAwareService);
-	}
 }

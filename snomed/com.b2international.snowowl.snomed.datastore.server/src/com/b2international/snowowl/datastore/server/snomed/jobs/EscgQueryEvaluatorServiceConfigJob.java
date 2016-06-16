@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.jobs;
 
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.server.snomed.escg.EscgQueryEvaluatorService;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
 import com.b2international.snowowl.dsl.escg.service.DslEscgCoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 
@@ -53,7 +49,6 @@ public class EscgQueryEvaluatorServiceConfigJob extends AbstractServerServiceCon
 	 */
 	@Override
 	protected EscgQueryEvaluatorService createServiceImplementation() throws SnowowlServiceException {
-		final Repository repository = getEnvironment().service(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID);
-		return new EscgQueryEvaluatorService(getEnvironment().service(EscgRewriter.class), repository.provider(RevisionIndex.class));
+		return new EscgQueryEvaluatorService(getEnvironment().service(EscgRewriter.class));
 	}
 }

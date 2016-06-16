@@ -23,31 +23,37 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
-import com.google.inject.Provider;
 
 public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService {
 
 	private final EscgRewriter rewriter;
-	private final Provider<RevisionIndex> index;
 
-	public EscgQueryEvaluatorService(EscgRewriter rewriter, Provider<RevisionIndex> index) {
+	public EscgQueryEvaluatorService(EscgRewriter rewriter) {
 		this.rewriter = rewriter;
-		this.index = index;
 	}
 	
 	@Override
 	public LongCollection evaluateConceptIds(final IBranchPath branchPath, final String queryExpression) {
 		checkNotNull(queryExpression, "ESCG query expression wrapper argument cannot be null.");
-		return index.get().read(branchPath.getPath(), new RevisionIndexRead<LongCollection>() {
+		return getIndex().read(branchPath.getPath(), new RevisionIndexRead<LongCollection>() {
 					@Override
 					public LongCollection execute(RevisionSearcher index) throws IOException {
 						final ConceptIdQueryEvaluator2 delegate = new ConceptIdQueryEvaluator2(index);
 						return delegate.evaluate(rewriter.parseRewrite(queryExpression));
 					}
 				});
+	}
+
+	private RevisionIndex getIndex() {
+		return ApplicationContext.getInstance().getService(RepositoryManager.class)
+				.get(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.service(RevisionIndex.class);
 	}
 }

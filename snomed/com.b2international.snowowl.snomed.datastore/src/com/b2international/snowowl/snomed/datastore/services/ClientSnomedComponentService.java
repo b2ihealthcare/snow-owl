@@ -37,10 +37,9 @@ import com.google.common.collect.Multimap;
 @Client
 public class ClientSnomedComponentService extends ActiveBranchPathAwareService implements IClientSnomedComponentService {
 
-	private final ISnomedComponentService wrappedService;
+	private ISnomedComponentService wrappedService;
 
-	public ClientSnomedComponentService(final ISnomedComponentService wrappedService) {
-		this.wrappedService = wrappedService;
+	public ClientSnomedComponentService() {
 	}
 
 	@Override

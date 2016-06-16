@@ -15,17 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore.serviceconfig;
 
-import com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedStatedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedStatedTerminologyBrowser;
 
 /**
  * Client-side service config job for Stated SNOMED CT terminology browser
  */
-public class SnomedStatedClientTerminologyBrowserConfigJob extends ClientServiceConfigJob<SnomedStatedTerminologyBrowser, SnomedStatedClientTerminologyBrowser> {
+public class SnomedStatedClientTerminologyBrowserConfigJob extends ServiceConfigJob {
 
 	private static final String NAME = "SNOMED CT stated client terminology browser configuration...";
 
@@ -34,20 +35,12 @@ public class SnomedStatedClientTerminologyBrowserConfigJob extends ClientService
 	}
 
 	@Override
-	protected Class<SnomedStatedTerminologyBrowser> getServiceClass() {
-		return SnomedStatedTerminologyBrowser.class;
-	}
-
-	@Override
-	protected Class<SnomedStatedClientTerminologyBrowser> getTrackingClass() {
-		return SnomedStatedClientTerminologyBrowser.class;
-	}
-
-	@Override
-	protected SnomedStatedClientTerminologyBrowser createTrackingService(SnomedStatedTerminologyBrowser branchAwareService) {
-		return new SnomedStatedClientTerminologyBrowser(branchAwareService, 
+	protected boolean initService() throws SnowowlServiceException {
+		final SnomedStatedClientTerminologyBrowser browser = new SnomedStatedClientTerminologyBrowser(
 				getEnvironment().service(IEventBus.class),
 				getEnvironment().provider(LanguageSetting.class));
+		ApplicationContext.getInstance().registerService(SnomedStatedClientTerminologyBrowser.class, browser);
+		return true;
 	}
-
+	
 }

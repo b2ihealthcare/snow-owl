@@ -44,8 +44,8 @@ import com.google.inject.Provider;
 @Client
 public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyBrowser {
 	
-	public SnomedClientTerminologyBrowser(final SnomedTerminologyBrowser wrappedBrowser, final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
-		super(wrappedBrowser, bus, languageSetting);
+	public SnomedClientTerminologyBrowser(final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
+		super(bus, languageSetting);
 	}
 	
 	@Override
@@ -153,7 +153,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a set of concept IDs of all active descendant concepts.
 	 */
 	public LongSet getAllSubTypeIds(final long conceptId) {
-		return getWrappedBrowser().getAllSubTypeIds(getBranchPath(), conceptId);
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a set of concept IDs of the active direct ancestor concepts.
 	 */
 	public LongSet getSuperTypeIds(final long conceptId) {
-		return getWrappedBrowser().getSuperTypeIds(getBranchPath(), conceptId);
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a set of concept IDs of all active ancestor concepts.
 	 */
 	public LongSet getAllSuperTypeIds(final long conceptId) {
-		return getWrappedBrowser().getAllSuperTypeIds(getBranchPath(), conceptId);
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 
 	/**
@@ -181,17 +181,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return a map of concept IDs and storage keys.
 	 */
 	public LongKeyLongMap getConceptIdToStorageKeyMap(final IBranchPath branchPath) {
-		return getWrappedBrowser().getConceptIdToStorageKeyMap(getBranchPath());
-	}
-
-	/**
-	 * Returns {@code true} if the SNOMED&nbsp;CT concept exists with the given unique ID.
-	 * @param conceptId the unique ID of the concept.
-	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
-	 */
-	@Override
-	public boolean exists(final String conceptId) {
-		return getWrappedBrowser().exists(getBranchPath(), conceptId);
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 
 	/**
@@ -201,12 +191,7 @@ public class SnomedClientTerminologyBrowser extends BaseSnomedClientTerminologyB
 	 * @return the sub types with additional child flag
 	 */
 	public Collection<IComponentWithChildFlag<String>> getSubTypesWithChildInformation(final SnomedConceptDocument concept) {
-		return getWrappedBrowser().getSubTypesWithChildFlag(getBranchPath(), concept);
-	}
-	
-	@Override
-	public SnomedTerminologyBrowser getWrappedBrowser() {
-		return (SnomedTerminologyBrowser) super.getWrappedBrowser();
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 	
 }
