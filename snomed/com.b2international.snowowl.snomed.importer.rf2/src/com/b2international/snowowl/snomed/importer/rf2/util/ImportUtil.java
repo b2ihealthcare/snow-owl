@@ -289,7 +289,7 @@ public final class ImportUtil {
 		final IBranchPath branchPath = BranchPathUtils.createPath(configuration.getBranchPath());
 		LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import started from RF2 release format.");
 		
-		final RepositoryState repositoryState = getIndex().read(context.getEditingContext().getBranch(), new RevisionIndexRead<RepositoryState>() {
+		final RepositoryState repositoryState = getIndex().read(configuration.getBranchPath(), new RevisionIndexRead<RepositoryState>() {
 			@Override
 			public RepositoryState execute(RevisionSearcher searcher) throws IOException {
 				return loadRepositoryState(searcher);
