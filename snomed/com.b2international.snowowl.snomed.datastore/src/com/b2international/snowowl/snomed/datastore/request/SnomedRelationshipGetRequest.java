@@ -15,37 +15,33 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.view.CDOView;
-
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.request.GetRequest;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.request.RevisionGetRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * @since 4.5
  */
-final class SnomedRelationshipGetRequest extends GetRequest<ISnomedRelationship> {
+final class SnomedRelationshipGetRequest extends RevisionGetRequest<ISnomedRelationship> {
 
 	protected SnomedRelationshipGetRequest() {
 		super(ComponentCategory.RELATIONSHIP);
 	}
 
 	@Override
-	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
-		return new SnomedRelationshipLookupService();
-	}
-
-	@Override
 	protected ISnomedRelationship process(BranchContext context, IComponent<String> component, Options expand) {
 		return SnomedConverters.newRelationshipConverter(context, expand, locales()).convert((SnomedRelationshipIndexEntry) component);
+	}
+	
+	@Override
+	protected Class<? extends RevisionDocument> getType() {
+		return SnomedRelationshipIndexEntry.class;
 	}
 	
 	@Override

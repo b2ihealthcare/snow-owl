@@ -20,11 +20,11 @@ import com.b2international.snowowl.core.domain.BranchContext;
 /**
  * @since 4.5
  */
-public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
+public abstract class RevisionGetRequestBuilder<B extends RevisionGetRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
 
 	private String componentId;
 
-	protected GetRequestBuilder(String repositoryId) {
+	protected RevisionGetRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
 	
@@ -35,11 +35,11 @@ public abstract class GetRequestBuilder<B extends GetRequestBuilder<B, R>, R> ex
 
 	@Override
 	protected final BaseResourceRequest<BranchContext, R> create() {
-		final GetRequest<R> req = createGet();
+		final RevisionGetRequest<R> req = createGet();
 		req.setComponentId(componentId);
 		return req;
 	}
 	
-	protected abstract GetRequest<R> createGet();
+	protected abstract RevisionGetRequest<R> createGet();
 	
 }

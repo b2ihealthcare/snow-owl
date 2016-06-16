@@ -17,34 +17,39 @@ package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.view.CDOView;
+import java.io.IOException;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.options.Options;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.ILookupService;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.5
  * @param <R>
  *            - the return type of the GET request
  */
-public abstract class GetRequest<R> extends BaseResourceRequest<BranchContext, R> {
+public abstract class RevisionGetRequest<R> extends BaseResourceRequest<BranchContext, R> {
 
 	private final String category;
 	
 	@NotEmpty
 	private String componentId;
 	
-	protected GetRequest(ComponentCategory category) {
+	protected RevisionGetRequest(ComponentCategory category) {
 		this(category.getDisplayName());
 	}
 	
-	protected GetRequest(String category) {
+	protected RevisionGetRequest(String category) {
 		this.category = checkNotNull(category, "category");
 	}
 	
@@ -54,18 +59,28 @@ public abstract class GetRequest<R> extends BaseResourceRequest<BranchContext, R
 	
 	@Override
 	public final R execute(BranchContext context) {
-		final IComponent<String> component = getLookupService().getComponent(context.branch().branchPath(), componentId);
-		if (component == null) {
-			throw new ComponentNotFoundException(category, componentId);
-		} else {
-			return process(context, component, expand());
+		final Query<? extends RevisionDocument> query = Query.builder(getType())
+				.selectAll()
+				.where(RevisionDocument.Expressions.id(componentId))
+				.limit(1)
+				.build();
+		try {
+			Hits<? extends RevisionDocument> hits = context.service(RevisionSearcher.class).search(query);
+			final RevisionDocument hit = Iterables.getOnlyElement(hits, null);
+			if (hit == null) {
+				throw new ComponentNotFoundException(category, componentId);
+			} else {
+				return process(context, hit, expand());
+			}
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 
+	protected abstract Class<? extends RevisionDocument> getType();
+
 	protected abstract R process(BranchContext context, IComponent<String> component, Options expand);
 
-	protected abstract ILookupService<String, ? extends CDOObject, CDOView> getLookupService();
-	
 	@Override
 	public final String toString() {
 		return String.format("{type:'%s', componentId:'%s', expand:%s, locales:%s}", 
