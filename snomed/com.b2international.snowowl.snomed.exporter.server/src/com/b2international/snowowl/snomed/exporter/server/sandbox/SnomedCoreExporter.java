@@ -98,19 +98,19 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> extends Snome
 				for (Long commitTime : commitTimes) {
 					commitExpression = Expressions.or(commitExpression, Expressions.exactMatch(Revision.COMMIT_TIMESTAMP, commitTime));
 				}
-				commitTimeConditionBuilder.must(commitExpression);
+				
 				//conditionally add unpublished concepts as well (from everywhere? or the last branch?)
+				if (getConfiguration().includeUnpublished()) {
+					Expression unpublishedExpression = Expressions.builder()
+							.must(Expressions.exactMatch(Revision.BRANCH_PATH, getConfiguration().getCurrentBranchPath().getPath()))
+							.must(SnomedDocument.Expressions.unreleased()).build();
+					commitExpression = Expressions.or(commitExpression, unpublishedExpression);
+					
+				}
+				commitTimeConditionBuilder.must(commitExpression);
 				Query<T> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(PAGE_SIZE).offset(currentOffset).build();
 				//here are the results to export
 				conceptHits = searcher.search(query);
-				
-				//filtered to branch
-//				Expression condition = Expressions.builder().must(Expressions.exactMatch(Revision.BRANCH_PATH, getConfiguration().getCurrentBranchPath().getPath()))
-//				.must(Expressions.matchRange(Revision.COMMIT_TIMESTAMP, from, to)) //both end inclusive
-//				.must(Expressions.)
-//				
-//				Query<T> query = builder.selectAll().where(Expressions.matchAll()).limit(PAGE_SIZE).offset(currentOffset).build();
-//				conceptHits = searcher.search(query);
 				
 				//to avoid getting the size every time
 				if (totalSize == -1) {

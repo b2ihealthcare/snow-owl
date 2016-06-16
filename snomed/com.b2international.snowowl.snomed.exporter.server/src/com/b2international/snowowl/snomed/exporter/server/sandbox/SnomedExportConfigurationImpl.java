@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
  */
 public class SnomedExportConfigurationImpl implements SnomedExportConfiguration {
 
-	private static final String SEGMENT_INFO_EXTENSION = ".si";
+	//private static final String SEGMENT_INFO_EXTENSION = ".si";
 	
 	private final IBranchPath currentBranchPath;
 	private final ContentSubType contentSubType;
@@ -42,6 +42,8 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	
 	private RevisionSearcher revisionSearcher;
 	private Searcher searcher;
+
+	private boolean includeUnpublished;
 
 	
 //	private final Supplier<Map<IBranchPath, Collection<String>>> versionPathToSegmentNameMappingSupplier = 
@@ -143,5 +145,15 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 
 	public void setSearcher(Searcher searcher) {
 		this.searcher = searcher;
+	}
+
+	@Override
+	public boolean includeUnpublished() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	public void setIncludeUnpublished(boolean includeUnpublished) {
+		this.includeUnpublished = includeUnpublished;
 	}
 }

@@ -82,5 +82,11 @@ public interface SnomedExportConfiguration {
 	 * @return the effective time label for unpublished components
 	 */
 	String getUnsetEffectiveTimeLabel();
+	
+	/**
+	 * Returns true if unpublished artefacts should be part of the export
+	 * @return
+	 */
+	boolean includeUnpublished();
 
 }
