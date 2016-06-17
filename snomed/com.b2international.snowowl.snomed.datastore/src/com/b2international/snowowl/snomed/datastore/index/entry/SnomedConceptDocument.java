@@ -28,6 +28,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.ITreeComponent;
@@ -46,7 +47,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * A transfer object representing a SNOMED CT concept.
@@ -328,39 +328,31 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					refSetStorageKey,
 					structural);
 			
-			entry.setDoi(doi);
+			entry.doi = doi;
 			entry.setBranchPath(branchPath);
 			entry.setCommitTimestamp(commitTimestamp);
 			entry.setStorageKey(storageKey);
 			entry.setReplacedIns(replacedIns);
 			
 			if (parents != null) {
-				entry.setParents(parents);
+				entry.parents = parents;
 			}
 			
 			if (statedParents != null) {
-				entry.setStatedParents(statedParents);
+				entry.statedParents = statedParents;
 			}
 			
 			if (ancestors != null) {
-				entry.setAncestors(ancestors);
+				entry.ancestors = ancestors;
 			}
 			
 			if (statedAncestors != null) {
-				entry.setStatedAncestors(statedAncestors);
+				entry.statedAncestors = statedAncestors;
 			}
 			
-			if (referringPredicates != null) {
-				entry.setReferringPredicates(ImmutableSet.copyOf(referringPredicates));
-			}
-			
-			if (referringRefSets != null) {
-				entry.setReferringRefSets(ImmutableSet.copyOf(referringRefSets));
-			}
-			
-			if (referringMappingRefSets != null) {
-				entry.setReferringMappingRefSets(ImmutableSet.copyOf(referringMappingRefSets));
-			}
+			entry.referringPredicates = Collections3.toImmutableSet(referringPredicates);
+			entry.referringRefSets = Collections3.toImmutableSet(referringRefSets);
+			entry.referringMappingRefSets = Collections3.toImmutableSet(referringMappingRefSets);
 			
 			return entry;
 		}
@@ -420,10 +412,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}).toList();
 	}
 	
-	private void setReferringPredicates(Collection<String> componentReferringPredicates) {
-		this.referringPredicates = componentReferringPredicates;
-	}
-	
 	public Collection<String> getReferringPredicates() {
 		return referringPredicates;
 	}
@@ -436,26 +424,14 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return doi;
 	}
 	
-	void setDoi(float doi) {
-		this.doi = doi;
-	}
-	
 	public Collection<String> getReferringRefSets() {
 		return referringRefSets;
-	}
-	
-	void setReferringRefSets(Collection<String> referringRefSets) {
-		this.referringRefSets = referringRefSets;
 	}
 	
 	public Collection<String> getReferringMappingRefSets() {
 		return referringMappingRefSets;
 	}
 	
-	void setReferringMappingRefSets(Collection<String> referringMappingRefSets) {
-		this.referringMappingRefSets = referringMappingRefSets;
-	}
-
 	/**
 	 * @return {@code true} if the concept definition status is 900000000000074008 (primitive), {@code false} otherwise
 	 */
@@ -470,14 +446,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return exhaustive;
 	}
 	
-	private void setParents(LongSet parents) {
-		this.parents = parents;
-	}
-	
-	private void setStatedParents(LongSet statedParents) {
-		this.statedParents = statedParents;
-	}
-	
 	@Override
 	public LongSet getParents() {
 		return parents;
@@ -485,14 +453,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	
 	public LongSet getStatedParents() {
 		return statedParents;
-	}
-	
-	private void setAncestors(LongSet ancestors) {
-		this.ancestors = ancestors;
-	}
-	
-	private void setStatedAncestors(LongSet statedAncestors) {
-		this.statedAncestors = statedAncestors;
 	}
 	
 	@Override
