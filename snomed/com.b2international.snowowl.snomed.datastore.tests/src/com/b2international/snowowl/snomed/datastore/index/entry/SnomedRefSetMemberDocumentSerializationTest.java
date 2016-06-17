@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -70,7 +70,27 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referencedComponentId(Concepts.ROOT_CONCEPT)
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
-				.additionalField(Fields.MAP_TARGET, "A01")
+				.field(Fields.MAP_TARGET, "A01")
+				.build();
+			
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexLanguageMember() throws Exception {
+		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.released(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
+				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
+				.field(Fields.ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);

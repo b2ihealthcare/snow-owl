@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -120,13 +119,13 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 
 		final RelationshipGroupWidgetModel groupModel = conceptWidgetModel.getRelationshipGroupContainerModel().getFirstMatching(GroupFlag.GROUPED);
 		for (final SnomedRefSetMemberIndexEntry entry : getConcreteDataTypes(ImmutableSet.copyOf(relationshipIds))) {
-			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
+			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeName(), entry.getDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
-			if (entry.getUomComponentId() != null) {
-				widgetBean.setSelectedUom(entry.getUomComponentId());
+			if (entry.getUnitId() != null) {
+				widgetBean.setSelectedUom(entry.getUnitId());
 			}
-			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
-			widgetBean.setSelectedLabel(entry.getAttributeLabel());
+			widgetBean.setSelectedValue(entry.getValue());
+			widgetBean.setSelectedLabel(entry.getAttributeName());
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 		}
@@ -145,10 +144,10 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 				Lists.transform(dataTypeModel.getChildren(), new UncheckedCastFunction<WidgetModel, DataTypeWidgetModel>(DataTypeWidgetModel.class)));
 		
 		for (final SnomedRefSetMemberIndexEntry entry : getConcreteDataTypes(Collections.singleton(conceptId))) {
-			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
+			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeName(), entry.getDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
-			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
-			widgetBean.setSelectedLabel(entry.getAttributeLabel());
+			widgetBean.setSelectedValue(entry.getValue());
+			widgetBean.setSelectedLabel(entry.getAttributeName());
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 			unusedModels.remove(matchingModel);

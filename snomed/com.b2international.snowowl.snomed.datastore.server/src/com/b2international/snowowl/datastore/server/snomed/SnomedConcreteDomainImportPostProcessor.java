@@ -157,7 +157,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 		
 		final SnomedConcreteDataTypeRefSet refSet = SnomedComponents.newConcreteDomainReferenceSet()
 			.withIdentifierConceptId(referenceSetId)
-			.withDataType(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.inverse().get(referenceSetId))
+			.withDataType(SnomedRefSetUtil.getConcreteDomainRefSetMap().inverse().get(referenceSetId))
 			.build(context);
 		
 		context.getEditingContext().getRefSetEditingContext().add(refSet);
