@@ -23,6 +23,7 @@ import java.util.Collections;
 import com.b2international.index.WithId;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.google.common.collect.ImmutableList;
 
 
@@ -89,45 +90,34 @@ public abstract class Revision implements WithId {
 	}
 
 	public static Expression branchFilter(RevisionBranch branch) {
-		return Expressions.andNot(branchRevisionFilter(branch), replacedInFilter(branch));
+		return Expressions.builder()
+				.must(branchRevisionFilter(branch))
+				.mustNot(replacedInFilter(branch))
+				.build();
 	}
 
-	private static Expression replacedInFilter(RevisionBranch branch) {
+	public static Expression replacedInFilter(RevisionBranch branch) {
 		return Expressions.nestedMatch("replacedIns", createBranchSegmentFilter(branch, new ReplacedSegmentFilterBuilder()));
 	}
 
-	private static Expression branchRevisionFilter(RevisionBranch branch) {
+	public static Expression branchRevisionFilter(RevisionBranch branch) {
 		return createBranchSegmentFilter(branch, new RevisionSegmentFilterBuilder());
 	}
 
 	private static Expression createBranchSegmentFilter(RevisionBranch branch, SegmentFilterBuilder builder) {
-//		final String[] segments = branch.path().split(RevisionBranch.SEPARATOR);
-//		if (branch.path().equals(anObject)) {
-//			final OrFilterBuilder or = orFilter();
-//			String prev = "";
-//			for (int i = 0; i < segments.length; i++) {
-//				final String segment = segments[i];
-//				// we need the current segment + prevSegment to make it full path and the next one to restrict head timestamp on current based on base of the next one
-//				String current = "";
-//				String next = null;
-//				if (!RevisionBranch.MAIN_PATH.equals(segment)) {
-//					current = prev.concat(RevisionBranch.SEPARATOR);
-//				}
-//				// if not the last segment, compute next one
-//				current = current.concat(segment);
-//				if (!segments[segments.length - 1].equals(segment)) {
-//					if (!current.endsWith(RevisionBranch.SEPARATOR)) {
-//						next = current.concat(RevisionBranch.SEPARATOR);
-//					}
-//					next = next.concat(segments[i+1]);
-//				}
-//				or.add(builder.createSegmentFilter(current, next));
-//				prev = current;
-//			}
-//			return or;
-//		} else {
-		return builder.createSegmentFilter(branch, null);
-//		}
+		if (branch.parent() != null) {
+			final ExpressionBuilder or = Expressions.builder();
+			// navigate up the branch hierarchy and add should clauses to the expression tree
+			// revisions can match any branch segment but must match at least one path
+			RevisionBranch child = null;
+			for (RevisionBranch currentParent = branch; currentParent.parent() != null; currentParent = currentParent.parent()) {
+				or.should(builder.createSegmentFilter(currentParent, child));
+				child = currentParent;
+			}
+			return or.build();
+		} else {
+			return builder.createSegmentFilter(branch, null);
+		}
 	}
 
 	private static interface SegmentFilterBuilder {

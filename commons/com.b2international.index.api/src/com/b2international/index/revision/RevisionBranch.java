@@ -23,7 +23,6 @@ import java.util.Objects;
 public class RevisionBranch {
 	
 	public static final String MAIN_PATH = "MAIN";
-	public static final String SEPARATOR = "/";
 	
 	private final RevisionBranch parent;
 	private final String path;
