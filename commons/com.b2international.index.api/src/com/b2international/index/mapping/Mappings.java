@@ -16,6 +16,7 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.Map;
@@ -30,7 +31,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class Mappings {
 
-	private final Map<Class<?>, DocumentMapping> mappingsByType; 
+	private final Map<Class<?>, DocumentMapping> mappingsByType = newHashMap(); 
 	
 	public Mappings(Class<?>...types) {
 		this(ImmutableSet.copyOf(types));
@@ -41,9 +42,8 @@ public final class Mappings {
 		final Builder<Class<?>, DocumentMapping> builder = ImmutableMap.builder();
 		for (Class<?> type : ImmutableSet.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
-			builder.put(type, new DocumentMapping(type));
+			getMapping(type);
 		}
-		mappingsByType = builder.build();
 	}
 	
 	public Collection<DocumentMapping> getMappings() {
@@ -51,7 +51,9 @@ public final class Mappings {
 	}
 	
 	public DocumentMapping getMapping(Class<?> type) {
-		checkArgument(mappingsByType.containsKey(type), "No mapping for type: %s", type);
+		if (!mappingsByType.containsKey(type)) {
+			mappingsByType.put(type, new DocumentMapping(type));
+		}
 		return mappingsByType.get(type);
 	}
 

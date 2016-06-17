@@ -228,12 +228,12 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 
 	private void initIndex(final ObjectMapper mapper) {
 		final Collection<Class<?>> types = newHashSet();
+		// register the known types others will get registered dynamically
 		types.add(CDOMainBranchImpl.class);
 		types.add(CDOBranchImpl.class);
 		types.add(Review.class);
 		types.add(ConceptChanges.class);
 		types.add(InternalBranch.class);
-		types.addAll(getComponentDocuments());
 		final Map<String, Object> settings = ImmutableMap.<String, Object>of(IndexClientFactory.DIRECTORY, 
 				env.getDataDirectory() + "/indexes");
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);
@@ -258,29 +258,6 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		
 	}
 	
-	private Collection<Class<? extends RevisionDocument>> getComponentDocuments() {
-		final Collection<String> terminologyComponentIds = CoreTerminologyBroker.getInstance().getAllRegisteredTerminologyComponentsForTerminology(toolingId);
-		final Set<String> terminologyComponentRepresentations = newHashSet();
-		for (String terminologyComponentId : terminologyComponentIds) {
-			terminologyComponentRepresentations.addAll(CoreTerminologyBroker.getInstance().getClassesForComponentId(terminologyComponentId));
-		}
-		
-		final ClassLoader classLoader = getClassLoaderProvider().getClassLoader();
-		final Set<Class<? extends RevisionDocument>> documentTypes = newHashSet();
-		for (String representationClass : terminologyComponentRepresentations) {
-			try {
-				final Class<?> type = classLoader.loadClass(representationClass);
-				if (RevisionDocument.class.isAssignableFrom(type)) {
-					documentTypes.add((Class<? extends RevisionDocument>) type);
-				}
-			} catch (ClassNotFoundException e) {
-				throw new SnowowlRuntimeException(e);
-			}
-		}
-		
-		return documentTypes;
-	}
-
 	// TODO call repository dispose from manager
 	public void dispose() {
 		getIndex().admin().close();
