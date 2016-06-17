@@ -15,7 +15,6 @@
  */
 package com.b2international.index.lucene;
 
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
@@ -46,7 +45,7 @@ public class BooleanIndexField extends IndexFieldBase<Boolean> {
 
 	@Override
 	protected IndexableField toField(Boolean value) {
-		return new StringField(fieldName(), convertToString(value), Store.YES);
+		return new StringField(fieldName(), convertToString(value), isStored());
 	}
 
 	@Override
