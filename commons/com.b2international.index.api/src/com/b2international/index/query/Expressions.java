@@ -89,18 +89,6 @@ public class Expressions {
 		return new PrefixPredicate(field, prefix);
 	}
 	
-	public static Expression and(Expression left, Expression right) {
-		return new And(left, right);
-	}
-	
-	public static Expression andNot(Expression left, Expression right) {
-		return new AndNot(left, right);
-	}
-	
-	public static Expression or(Expression left, Expression right) {
-		return new Or(left, right);
-	}
-
 	public static Expression exactMatch(String field, String value) {
 		return new StringPredicate(field, value);
 	}

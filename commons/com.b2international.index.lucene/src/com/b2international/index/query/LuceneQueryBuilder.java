@@ -111,7 +111,7 @@ public final class LuceneQueryBuilder {
 	public org.apache.lucene.search.Query build(Expression expression) {
 		checkNotNull(expression, "expression");
 		// always filter by type
-		traversePostOrder(Expressions.and(mapping.matchType(), expression));
+		traversePostOrder(Expressions.builder().must(mapping.matchType()).must(expression).build());
 		if (deque.size() == 1) {
 			return deque.pop().toQuery();
 		} else {

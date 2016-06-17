@@ -124,9 +124,10 @@ public class ReviewManagerImpl implements ReviewManager {
 					final Iterable<Review> affectedReviews = index.searcher().search(
 							Query.builder(Review.class)
 							.selectAll()
-							.where(Expressions.or(
-									Expressions.exactMatch(SOURCE_PATH_FIELD, path), 
-									Expressions.exactMatch(TARGET_PATH_FIELD, path))
+							.where(Expressions.builder()
+									.must(Expressions.exactMatch(SOURCE_PATH_FIELD, path))
+									.must(Expressions.exactMatch(TARGET_PATH_FIELD, path))
+									.build()
 							).build());
 					
 					for (final Review affectedReview : affectedReviews) {
@@ -152,13 +153,12 @@ public class ReviewManagerImpl implements ReviewManager {
 					public Void execute(Writer index) throws IOException {
 						final Iterable<Review> affectedReviews = index.searcher().search(Query.builder(Review.class)
 								.selectAll()
-								.where(Expressions.or(
-										Expressions.or(
-												Expressions.or(
-														buildQuery(ReviewStatus.FAILED, now - keepOtherMillis),
-														buildQuery(ReviewStatus.STALE, now - keepOtherMillis)),
-												buildQuery(ReviewStatus.PENDING, now - keepOtherMillis)),
-										buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis)))
+								.where(Expressions.builder()
+										.should(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis))
+										.should(buildQuery(ReviewStatus.STALE, now - keepOtherMillis))
+										.should(buildQuery(ReviewStatus.PENDING, now - keepOtherMillis))
+										.should(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis))
+										.build())
 								.limit(Integer.MAX_VALUE)
 								.build());
 						
@@ -183,7 +183,10 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 
 		private Expression buildQuery(ReviewStatus status, long beforeTimestamp) {
-			return Expressions.and(Expressions.exactMatch(STATUS_FIELD, status.toString()), Expressions.matchRange(LAST_UPDATED_FIELD, null, ISO8601Utils.format(new Date(beforeTimestamp))));
+			return Expressions.builder()
+					.must(Expressions.exactMatch(STATUS_FIELD, status.toString()))
+					.must(Expressions.matchRange(LAST_UPDATED_FIELD, null, ISO8601Utils.format(new Date(beforeTimestamp))))
+					.build();
 		}
 	}
 

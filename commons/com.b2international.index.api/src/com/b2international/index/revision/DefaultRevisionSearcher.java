@@ -46,7 +46,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	
 	@Override
 	public <T extends Revision> Iterable<T> get(Class<T> type, Iterable<Long> storageKeys) throws IOException {
-		final Query<T> query = Query.builder(type).selectAll().where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).build();
+		final Query<T> query = Query.builder(type).selectAll().where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).limit(Iterables.size(storageKeys)).build();
 		return search(query);
 	}
 
@@ -56,7 +56,10 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
 			query = Query.builder(query.getType())
 					.select(query.getSelect())
-					.where(Expressions.and(query.getWhere(), Revision.branchFilter(branch)))
+					.where(Expressions.builder()
+							.must(query.getWhere())
+							.must(Revision.branchFilter(branch))
+							.build())
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.offset(query.getOffset()).build();
@@ -65,7 +68,10 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 			// run a query on the parent documents with nested match on the children
 			query = Query.builder(query.getType(), query.getParentType())
 					.select(query.getSelect())
-					.where(Expressions.and(query.getWhere(), Expressions.hasParent(query.getParentType(), Revision.branchFilter(branch))))
+					.where(Expressions.builder()
+							.must(query.getWhere())
+							.must(Expressions.hasParent(query.getParentType(), Revision.branchFilter(branch)))
+							.build())
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.offset(query.getOffset())

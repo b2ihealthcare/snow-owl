@@ -22,7 +22,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
@@ -39,9 +38,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchProvider;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ClassLoaderProvider;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.branch.Branch;
@@ -56,7 +53,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -205,8 +201,13 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 
 	@Override
-	public <T> Provider<T> provider(Class<T> type) {
-		return env.provider(type);
+	public <T> Provider<T> provider(final Class<T> type) {
+		return new Provider<T>() {
+			@Override
+			public T get() {
+				return service(type);
+			}
+		};
 	}
 	
 	@Override
@@ -239,15 +240,22 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 				env.getDataDirectory() + "/indexes");
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);
 		final Index index = new DefaultIndex(indexClient);
+		final Provider<BranchManager> branchManager = provider(BranchManager.class);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, new RevisionBranchProvider() {
 			@Override
 			public RevisionBranch getBranch(String branchPath) {
-				final Branch branch = service(BranchManager.class).getBranch(branchPath);
+				final Branch branch = branchManager.get().getBranch(branchPath);
+				return createRevisionBranch(branch, null);
+			}
+
+			private RevisionBranch createRevisionBranch(Branch branch, Branch childRestriction) {
 				final Branch parent = branch.parent();
+				final long headTimestamp = childRestriction == null ? branch.headTimestamp() : childRestriction.baseTimestamp(); 
+				// we are at the top
 				if (parent == branch) {
-					return new RevisionBranch(null, branch.path(), branch.baseTimestamp(), branch.headTimestamp());
+					return new RevisionBranch(null, branch.path(), branch.baseTimestamp(), headTimestamp);
 				} else {
-					throw new UnsupportedOperationException("Deep branching is not implemented yet");
+					return new RevisionBranch(createRevisionBranch(parent, branch), branch.path(), branch.baseTimestamp(), headTimestamp);
 				}
 			}
 		});

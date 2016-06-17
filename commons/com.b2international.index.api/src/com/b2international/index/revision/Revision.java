@@ -110,7 +110,7 @@ public abstract class Revision implements WithId {
 			// navigate up the branch hierarchy and add should clauses to the expression tree
 			// revisions can match any branch segment but must match at least one path
 			RevisionBranch child = null;
-			for (RevisionBranch currentParent = branch; currentParent.parent() != null; currentParent = currentParent.parent()) {
+			for (RevisionBranch currentParent = branch; currentParent != null; currentParent = currentParent.parent()) {
 				or.should(builder.createSegmentFilter(currentParent, child));
 				child = currentParent;
 			}
@@ -132,7 +132,10 @@ public abstract class Revision implements WithId {
 		public Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
 			final Expression currentBranchFilter = Expressions.exactMatch(Revision.BRANCH_PATH, parent.path());
 			final Expression commitTimestampFilter = child == null ? timestampFilter(parent) : timestampFilter(parent, child);
-			return Expressions.and(currentBranchFilter, commitTimestampFilter);
+			return Expressions.builder()
+					.must(currentBranchFilter)
+					.must(commitTimestampFilter)
+					.build();
 		}
 		
 		/*restricts given branchPath's HEAD to baseTimestamp of child*/
@@ -156,7 +159,10 @@ public abstract class Revision implements WithId {
 		public Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
 			final long maxHead = child != null ? child.baseTimestamp() : Long.MAX_VALUE;
 			final long head = Math.min(maxHead, parent.headTimestamp());
-			return Expressions.and(Expressions.exactMatch(Revision.BRANCH_PATH, parent.path()), Expressions.matchRange(Revision.COMMIT_TIMESTAMP, 0L, head));
+			return Expressions.builder()
+					.must(Expressions.exactMatch(Revision.BRANCH_PATH, parent.path()))
+					.must(Expressions.matchRange(Revision.COMMIT_TIMESTAMP, 0L, head))
+					.build();
 		}
 		
 	}
