@@ -681,7 +681,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	public Long getTargetEffectiveTime() {
 		return targetEffectiveTime;
 	}
-
+	
+	public short getReferencedComponentType() {
+		return referencedComponentType;
+	}
+	
 	// model helper methods
 	
 	@JsonIgnore
@@ -703,7 +707,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	 * @return the {@code String} terminology component identifier of the component referenced in this member
 	 */
 	@JsonIgnore
-	public String getReferencedComponentType() {
+	public String getReferencedComponentTypeAsString() {
 		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
 	}
 

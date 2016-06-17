@@ -213,7 +213,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		}
 		member.setProperties(props.build());
 		
-		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
+		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentTypeAsString());
 		return member;
 	}
 	

@@ -27,6 +27,7 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
@@ -49,6 +50,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 			.released(false)
 			.moduleId(Concepts.MODULE_SCT_CORE)
 			.referencedComponentId(Concepts.ROOT_CONCEPT)
+			.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 			.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 			.referenceSetType(SnomedRefSetType.ASSOCIATION)
 			.build();
@@ -56,6 +58,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 	
@@ -68,6 +71,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.released(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
 				.field(Fields.MAP_TARGET, "A01")
@@ -76,6 +80,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 	
@@ -87,7 +92,9 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 				.released(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
+				// TODO use description ID in test case
 				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
 				.field(Fields.ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
@@ -96,6 +103,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 	
