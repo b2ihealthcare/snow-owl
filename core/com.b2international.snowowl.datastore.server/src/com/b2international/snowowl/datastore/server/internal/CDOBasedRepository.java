@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -257,10 +258,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		index.admin().create();
 		
 	}
-	
-	// TODO call repository dispose from manager
-	public void dispose() {
+
+	@Override
+	public void close() throws IOException {
 		getIndex().admin().close();
 	}
-
+	
 }
