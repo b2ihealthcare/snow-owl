@@ -133,7 +133,7 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		
 		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
 
-		Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
+		final Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
 		
 		
 		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {

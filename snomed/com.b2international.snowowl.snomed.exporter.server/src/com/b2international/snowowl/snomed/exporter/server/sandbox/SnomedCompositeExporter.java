@@ -65,13 +65,13 @@ import com.google.common.collect.Iterators;
 public abstract class SnomedCompositeExporter<T extends SnomedDocument> implements SnomedIndexExporter<T> {
 
 	private final Iterator<String> itr;
-	private final CloseableList<SnomedSubExporter> closeables;
+	//private final CloseableList<SnomedSubExporter> closeables;
 	private final SnomedExportConfiguration configuration;
 	private final Map<IBranchPath, Long> branchPathWithEffectiveTimeMap;
 
 	public SnomedCompositeExporter(final SnomedExportConfiguration configuration) {
 		this.configuration = checkNotNull(configuration, "configuration");
-		closeables = new CloseableList<SnomedSubExporter>();
+		//closeables = new CloseableList<SnomedSubExporter>();
 		branchPathWithEffectiveTimeMap = createBranchPathMap();
 		itr = createSubExporters(this.configuration);
 	}
@@ -131,7 +131,7 @@ public abstract class SnomedCompositeExporter<T extends SnomedDocument> implemen
 	
 	@Override
 	public void close() throws Exception {
-		closeables.close();
+		//closeables.close();
 	}
 	
 	@Override
@@ -186,15 +186,15 @@ public abstract class SnomedCompositeExporter<T extends SnomedDocument> implemen
 		return Expressions.matchAll();
 	}
 	
-	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter<T> exporter) {
-		return createSubExporter(branchPath, exporter, Collections.<String>emptySet());
-	}
+//	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter<T> exporter) {
+//		return createSubExporter(branchPath, exporter, Collections.<String>emptySet());
+//	}
 	
-	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter<T> exporter, final Collection<String> ignoredSegmentNames) {
-		final SnomedSubExporter subExporter = new SnomedSubExporter(branchPath, exporter);//, ignoredSegmentNames);
-		closeables.add(subExporter);
-		return subExporter;
-	}
+//	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter<T> exporter, final Collection<String> ignoredSegmentNames) {
+//		final SnomedSubExporter subExporter = new SnomedSubExporter(branchPath, exporter);//, ignoredSegmentNames);
+//		closeables.add(subExporter);
+//		return subExporter;
+//	}
 	
 	protected final String formatEffectiveTime(final Long effectiveTime) {
 		return EffectiveTimes.format(effectiveTime, DateFormats.SHORT, configuration.getUnsetEffectiveTimeLabel());

@@ -210,7 +210,7 @@ public class SnomedRefSetExporterFactory {
 		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 		
 		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
-		Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(refSetId)).build();
+		final Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(refSetId)).build();
 		
 		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
 

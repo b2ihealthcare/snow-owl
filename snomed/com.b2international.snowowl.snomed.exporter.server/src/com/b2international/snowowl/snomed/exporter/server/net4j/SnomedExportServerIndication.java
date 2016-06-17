@@ -183,7 +183,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	}
 
 	@Override
-	protected void responding(ExtendedDataOutputStream out, OMMonitor monitor) throws Exception {
+	protected void responding(ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
 
 		File file = null;
 		
