@@ -89,6 +89,7 @@ public class RefSetMemberLookup {
 				final Query<SnomedRefSetMemberIndexEntry> query = Query.builder(SnomedRefSetMemberIndexEntry.class)
 						.selectAll()
 						.where(SnomedRefSetMemberIndexEntry.Expressions.id(uuid))
+						.limit(2)
 						.build();
 				final Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
 				return hits.getTotal() > 1 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;

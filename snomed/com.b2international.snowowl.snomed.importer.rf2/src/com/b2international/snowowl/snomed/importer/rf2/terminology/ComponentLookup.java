@@ -115,7 +115,7 @@ public class ComponentLookup<C extends CDOObject> {
 			@Override
 			public Long execute(RevisionSearcher index) throws IOException {
 				final Class<? extends SnomedDocument> type = SnomedDocument.getType(componentCategory);
-				final Query<? extends SnomedDocument> query = Query.builder(type).selectAll().where(SnomedDocument.Expressions.id(componentId)).limit(1).build();
+				final Query<? extends SnomedDocument> query = Query.builder(type).selectAll().where(SnomedDocument.Expressions.id(componentId)).limit(2).build();
 				final Hits<? extends SnomedDocument> hits = index.search(query);
 				if (SnomedRefSet.class.isAssignableFrom(clazz)) {
 					return hits.getTotal() > 1 ? ClassUtils.checkAndCast(Iterables.getOnlyElement(hits), SnomedConceptDocument.class).getRefSetStorageKey() : CDOUtils.NO_STORAGE_KEY;
