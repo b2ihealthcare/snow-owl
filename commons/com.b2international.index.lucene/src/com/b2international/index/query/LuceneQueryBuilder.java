@@ -177,6 +177,23 @@ public final class LuceneQueryBuilder {
 			final DequeItem item = deque.pop();
 			query.add(item.toQuery(), Occur.MUST);
 		}
+		
+		for (Expression mustNot : bool.mustNotClauses()) {
+			visit(mustNot);
+			final DequeItem item = deque.pop();
+			query.add(item.toQuery(), Occur.MUST_NOT);
+		}
+		
+		for (Expression should : bool.shouldClauses()) {
+			visit(should);
+			final DequeItem item = deque.pop();
+			query.add(item.toQuery(), Occur.SHOULD);
+		}
+		
+		if (!bool.shouldClauses().isEmpty()) {
+			query.setMinimumNumberShouldMatch(query.getMinimumNumberShouldMatch());
+		}
+		
 		deque.push(new DequeItem(query));
 	}
 	
