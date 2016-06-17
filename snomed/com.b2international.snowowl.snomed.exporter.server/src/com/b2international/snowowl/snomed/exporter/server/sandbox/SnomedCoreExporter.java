@@ -92,12 +92,9 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> extends Snome
 				
 				QueryBuilder<T> builder = Query.builder(clazz);
 				ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
-				Expression commitExpression = Expressions.matchNone();
 				
 				//Select * from table where commitTimes in(,,,)
-				for (Long commitTime : commitTimes) {
-					commitExpression = Expressions.or(commitExpression, Expressions.exactMatch(Revision.COMMIT_TIMESTAMP, commitTime));
-				}
+				Expression commitExpression = Expressions.matchAnyLong(Revision.COMMIT_TIMESTAMP, commitTimes);
 				
 				//conditionally add unpublished concepts as well (from everywhere? or the last branch?)
 				if (getConfiguration().includeUnpublished()) {
