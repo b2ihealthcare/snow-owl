@@ -252,7 +252,7 @@ public final class SnomedValidationContext {
 
 	/*package*/ boolean isComponentExists(String componentId, ComponentCategory componentCategory) {
 		if (componentStatus.containsKey(componentId)) {
-			return componentStatus.get(componentId);
+			return true;
 		} else {
 			try {
 				return existsInStore(componentId, componentCategory);

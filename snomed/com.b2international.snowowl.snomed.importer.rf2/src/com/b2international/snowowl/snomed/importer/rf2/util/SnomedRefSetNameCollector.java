@@ -140,7 +140,7 @@ public class SnomedRefSetNameCollector {
 		}
 
 		// Step 3: Mine the terminology browser for more labels (if registered)
-		fillLabelsFromTeminologyBrowser(unlabeledRefSetIds);
+//		fillLabelsFromTeminologyBrowser(unlabeledRefSetIds);
 		
 		// Step 4: There may be some reference sets for which we couldn't get a label; initialize these with boilerplate text
 		fillGeneralLabels(unlabeledRefSetIds);
@@ -308,27 +308,21 @@ public class SnomedRefSetNameCollector {
 		return null;
 	}
 
-	private void fillLabelsFromTeminologyBrowser(Set<String> unlabeledRefSetIds) {
-		
-		final SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		
-		if (terminologyBrowser != null) {
-			
-			Iterator<String> unlabeledRefSetIdIterator = unlabeledRefSetIds.iterator();
-			
-			while (unlabeledRefSetIdIterator.hasNext()) {
-				
-				String refSetId = unlabeledRefSetIdIterator.next();
-				SnomedConceptDocument refsetConcept = terminologyBrowser.getConcept(refSetId);
-				
-				if (refsetConcept != null) {
-					String refSetLabel = refsetConcept.getLabel();
-					availableLabels.put(refSetId, refSetLabel);
-					unlabeledRefSetIdIterator.remove();
-				}
-			}
-		}
-	}
+//	private void fillLabelsFromTeminologyBrowser(Set<String> unlabeledRefSetIds) {
+//		Iterator<String> unlabeledRefSetIdIterator = unlabeledRefSetIds.iterator();
+//		
+//		while (unlabeledRefSetIdIterator.hasNext()) {
+//			
+//			String refSetId = unlabeledRefSetIdIterator.next();
+//			SnomedConceptDocument refsetConcept = terminologyBrowser.getConcept(refSetId);
+//			
+//			if (refsetConcept != null) {
+//				String refSetLabel = refsetConcept.getLabel();
+//				availableLabels.put(refSetId, refSetLabel);
+//				unlabeledRefSetIdIterator.remove();
+//			}
+//		}
+//	}
 
 	private void fillGeneralLabels(Set<String> unlabeledRefSetIds) {
 		
@@ -380,7 +374,7 @@ public class SnomedRefSetNameCollector {
 		}
 
 		// Step 2: Mine the terminology browser for more labels (if registered)
-		fillLabelsFromTeminologyBrowser(unlabeledRefSetIds);
+//		fillLabelsFromTeminologyBrowser(unlabeledRefSetIds);
 		
 		// Step 3: There may be some reference sets for which we couldn't get a label; initialize these with boilerplate text
 		fillGeneralLabels(unlabeledRefSetIds);

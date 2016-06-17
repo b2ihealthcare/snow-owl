@@ -37,7 +37,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.ComponentLook
 import com.b2international.snowowl.snomed.importer.rf2.util.EffectiveTimeBaseTransactionAggregatorSupplier;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Supplier;
 
 /**
@@ -49,7 +48,7 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 
 	private ComponentLookup<Component> componentLookup;
 	private ComponentLookup<SnomedRefSet> refSetLookup;
-	private RefSetMemberLookup<SnomedRefSetMember> refSetMemberLookup;
+	private RefSetMemberLookup refSetMemberLookup;
 
 	private String userId;
 	private String commitMessage;
@@ -198,7 +197,7 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	 * 
 	 * @return the reference set member lookup map
 	 */
-	public RefSetMemberLookup<SnomedRefSetMember> getRefSetMemberLookup() {
+	public RefSetMemberLookup getRefSetMemberLookup() {
 		return refSetMemberLookup;
 	}
 
@@ -241,7 +240,7 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 
 		componentLookup = new ComponentLookup<Component>(index, editingContext, Component.class);
 		refSetLookup = new ComponentLookup<SnomedRefSet>(index, editingContext, SnomedRefSet.class);
-		refSetMemberLookup = new RefSetMemberLookup<SnomedRefSetMember>(index, editingContext);
+		refSetMemberLookup = new RefSetMemberLookup(index, editingContext);
 	}
 
 	/**

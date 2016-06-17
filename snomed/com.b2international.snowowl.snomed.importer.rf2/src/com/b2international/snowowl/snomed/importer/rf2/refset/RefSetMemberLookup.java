@@ -38,18 +38,11 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 
-/**
- * Maps UUIDs to CDO storage keys in a compact in-memory map.
- * 
- * 
- * @param <M> the reference set member type (must be a subtype of
- * {@link SnomedRefSetMember})
- */
-public class RefSetMemberLookup<M extends SnomedRefSetMember> {
+public class RefSetMemberLookup {
 
 	private static final int EXPECTED_MEMBERS_SIZE = 50000;
 
-	private final Map<UUID, M> newMembers = Maps.newHashMap();
+	private final Map<UUID, SnomedRefSetMember> newMembers = Maps.newHashMap();
 	private UuidLongMap memberIdMap = new UuidLongMap(EXPECTED_MEMBERS_SIZE);
 	private final CDOEditingContext editingContext;
 	private final RevisionIndex index;
@@ -60,13 +53,13 @@ public class RefSetMemberLookup<M extends SnomedRefSetMember> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public M getMember(final UUID memberId) {
+	public <M extends SnomedRefSetMember> M getMember(final UUID memberId) {
 		final long storageKey = memberIdMap.get(memberId);
 		
 		if (storageKey > CDOUtils.NO_STORAGE_KEY) {
 			return (M) editingContext.lookup(storageKey);
 		} else {
-			final M m = newMembers.get(memberId);
+			final SnomedRefSetMember m = newMembers.get(memberId);
 			
 			if (null == m) {
 				
@@ -85,11 +78,11 @@ public class RefSetMemberLookup<M extends SnomedRefSetMember> {
 				
 			}
 			
-			return m;
+			return (M) m;
 		}
 	}
 
-	private long getStorageKey(final String uuid) {
+	public long getStorageKey(final String uuid) {
 		return index.read(editingContext.getBranch(), new RevisionIndexRead<Long>() {
 			@Override
 			public Long execute(RevisionSearcher index) throws IOException {
@@ -116,13 +109,13 @@ public class RefSetMemberLookup<M extends SnomedRefSetMember> {
 
 	public void registerNewMembers() {
 		// Consume each element while it is being registered
-		for (final Iterator<M> itr = Iterators.consumingIterator(newMembers.values().iterator()); itr.hasNext();) {
-			final M newMember = itr.next();
+		for (final Iterator<SnomedRefSetMember> itr = Iterators.consumingIterator(newMembers.values().iterator()); itr.hasNext();) {
+			final SnomedRefSetMember newMember = itr.next();
 			registerMemberStorageKey(UUID.fromString(newMember.getUuid()), CDOIDUtil.getLong(newMember.cdoID()));
 		}
 	}
 
-	public void addNewMember(final M member) {
+	public void addNewMember(final SnomedRefSetMember member) {
 		newMembers.put(UUID.fromString(member.getUuid()), member);
 	}
 	

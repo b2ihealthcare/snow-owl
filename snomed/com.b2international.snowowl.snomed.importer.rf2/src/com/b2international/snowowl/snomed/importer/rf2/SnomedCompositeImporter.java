@@ -302,7 +302,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		final Set<String> synonymAndDescendants = LongSets.toStringSet(inferredTaxonomyBuilder.getAllDescendantNodeIds(Concepts.SYNONYM));
 		synonymAndDescendants.add(Concepts.SYNONYM);
 		
-		initializeIndex(branchPath, lastUnitEffectiveTimeKey, units);
+		initializeIndex(importContext, lastUnitEffectiveTimeKey, units);
 	}
 
 	private Rf2BasedSnomedTaxonomyBuilder buildTaxonomy(final String characteristicType) {
@@ -315,11 +315,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 	}
 	
-	private void initializeIndex(final IBranchPath branchPath, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		getIndex().write(branchPath.getPath(), importContext.getCommitTime(), new RevisionIndexWrite<Void>() {
+	private void initializeIndex(final SnomedImportContext context, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
+		getIndex().write(context.getEditingContext().getBranch(), importContext.getCommitTime(), new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(RevisionWriter index) throws IOException {
-				final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(index, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId(), inferredTaxonomyBuilder, statedTaxonomyBuilder);
+				final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(index, context, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId(), inferredTaxonomyBuilder, statedTaxonomyBuilder);
 				snomedRf2IndexInitializer.run(new NullProgressMonitor());
 				return null;
 			}

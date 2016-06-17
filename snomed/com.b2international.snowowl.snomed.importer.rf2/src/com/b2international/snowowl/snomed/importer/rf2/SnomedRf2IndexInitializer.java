@@ -43,18 +43,15 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongKeyFloatMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.functions.LongToStringFunction;
-import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionWriter;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -66,6 +63,7 @@ import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;
@@ -77,25 +75,21 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetIconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetParentageUpdater;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
+import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -108,6 +102,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -125,6 +120,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	private final List<ComponentImportUnit> importUnits;
 	private final IBranchPath branchPath;
 	private final RevisionWriter writer;
+	private final SnomedImportContext context;
 
 	private Multimap<Long, String> conceptIdToPredicateMap;
 	private Map<String, String> nonFsnIdToConceptIdMap;
@@ -151,9 +147,16 @@ public class SnomedRf2IndexInitializer extends Job {
 	private ISnomedTaxonomyBuilder inferredTaxonomyBuilder;
 	private ISnomedTaxonomyBuilder statedTaxonomyBuilder;
 
-	public SnomedRf2IndexInitializer(final RevisionWriter writer, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> importUnits, final String languageRefSetId, ISnomedTaxonomyBuilder inferredTaxonomyBuilder, ISnomedTaxonomyBuilder statedTaxonomyBuilder) {
+	public SnomedRf2IndexInitializer(final RevisionWriter writer,
+			final SnomedImportContext context,
+			final String lastUnitEffectiveTimeKey, 
+			final List<ComponentImportUnit> importUnits, 
+			final String languageRefSetId, 
+			final ISnomedTaxonomyBuilder inferredTaxonomyBuilder, 
+			final ISnomedTaxonomyBuilder statedTaxonomyBuilder) {
 		super("SNOMED CT RF2 based index initializer...");
 		this.writer = writer;
+		this.context = context;
 		this.branchPath = BranchPathUtils.createPath(writer.branch());
 		this.effectiveTimeKey = lastUnitEffectiveTimeKey;
 		this.statedTaxonomyBuilder = checkNotNull(statedTaxonomyBuilder, "statedTaxonomyBuilder");
@@ -361,22 +364,22 @@ public class SnomedRf2IndexInitializer extends Job {
 							acceptableMemberChanges.put(descriptionId, negativeChange);
 						}
 						
-						String conceptId = nonFsnIdToConceptIdMap.get(descriptionId);
-						if (StringUtils.isEmpty(conceptId)) {
-							// FIXME: This lookup can be avoided if the description is an FSN in the current RF2 file, and did not exist previously 
-							 final String[] descriptionProperties = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getDescriptionProperties(branchPath, descriptionId);
-							 if (descriptionProperties != null) {
-								 final String typeId = descriptionProperties[1];
-								 if (!Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId)) { 
-									 conceptId = descriptionProperties[0];
-								 }
-							 }
-						}
-						
-						if (!StringUtils.isEmpty(conceptId)) {
-							// Collect the concept for needing an "important change" compare unique key update (a potential PT change is sensed)
-							conceptsWithCompareUniqueKeyChanges.add(conceptId);
-						}
+//						String conceptId = nonFsnIdToConceptIdMap.get(descriptionId);
+//						if (StringUtils.isEmpty(conceptId)) {
+//							// FIXME: This lookup can be avoided if the description is an FSN in the current RF2 file, and did not exist previously 
+//							 final String[] descriptionProperties = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getDescriptionProperties(branchPath, descriptionId);
+//							 if (descriptionProperties != null) {
+//								 final String typeId = descriptionProperties[1];
+//								 if (!Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId)) { 
+//									 conceptId = descriptionProperties[0];
+//								 }
+//							 }
+//						}
+//						
+//						if (!StringUtils.isEmpty(conceptId)) {
+//							// Collect the concept for needing an "important change" compare unique key update (a potential PT change is sensed)
+//							conceptsWithCompareUniqueKeyChanges.add(conceptId);
+//						}
 						
 					} else {
 						
@@ -620,12 +623,15 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 
 	private long getStorageKey(String componentId) {
-		// return the current storageKey for the componentId
-		throw new UnsupportedOperationException();
+		return context.getComponentLookup().getComponentStorageKey(componentId);
+	}
+	
+	private long getMemberStorageKey(String uuid) {
+		return context.getRefSetMemberLookup().getStorageKey(uuid);
 	}
 	
 	private long getRefSetStorageKey(String refSetId) {
-		throw new UnsupportedOperationException();
+		return context.getRefSetLookup().getComponentStorageKey(refSetId);
 	}
 
 	private void indexRefSets(final ComponentImportUnit unit) {
@@ -673,7 +679,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					final short refComponentType = getRefSetComponentType(record.get(5), refSetType);
 					final SnomedRefSet refSet = new Rf2RefSet(storageKey, refSetId, refSetType, refComponentType);
 					
-					final SnomedConceptDocument identifierConcept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, refSetId);
+					final SnomedConceptDocument identifierConcept = Iterables.getOnlyElement(getCurrentRevisionsById(SnomedConceptDocument.class, Collections.singleton(refSetId)), null);
 					if (null == identifierConcept) {
 						//might happen that a reference set is an unknown one, hence its identifier concept
 						//is being created in this effective time cycle. check concept in CDO
@@ -681,7 +687,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						CDOUtils.apply(new CDOTransactionFunction<String>(connection, branchPath) {
 							@Override
 							protected String apply(final CDOTransaction view) {
-								final Concept concept = new SnomedConceptLookupService().getComponent(refSetId, view);
+								final Concept concept = CDOUtils.getObjectIfExists(view, getStorageKey(refSetId));
 								// we have to index its descriptions, relationships and the concept itself
 								identifierConceptIdsForNewRefSets.put(refSetId, refSetType);								
 								
@@ -734,7 +740,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				final SnomedRefSet refSet = visitedRefSets.get(refSetId);
 				final String uuid = record.get(0);
-				final long memberCdoId = getStorageKey(uuid);
+				final long memberCdoId = getMemberStorageKey(uuid);
 				final SnomedRefSetMember member = new Rf2RefSetMember(record, refSet, memberCdoId);
 				indexRefSetMember(member);
 			}
@@ -808,7 +814,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					conceptsWithCompareUniqueKeyChanges.add(conceptId);
 				}
 				
-				final SnomedDescriptionIndexEntry description = new SnomedDescriptionLookupService().getComponent(branchPath, descriptionId);
+				final SnomedDescriptionIndexEntry description = getCurrentRevision(SnomedDescriptionIndexEntry.class, storageKey);
 				final Multimap<Acceptability, String> invertedAcceptabilityMap;
 				
 				if (description != null) {
@@ -851,13 +857,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 	
 	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) throws IOException {
-		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(SnomedDocument.Expressions.ids(unvisitedConcepts))
-				.limit(unvisitedConcepts.size())
-				.build();
-		final Hits<SnomedConceptDocument> hits = writer.searcher().search(query);
-		for (final SnomedConceptDocument concept : hits) {
+		for (final SnomedConceptDocument concept : getCurrentRevisionsById(SnomedConceptDocument.class, unvisitedConcepts)) {
 			// can happen as concepts referenced in MRCM rules might not exist at this time
 			final String conceptId = concept.getId();
 			final long conceptStorageKey = concept.getStorageKey();
@@ -884,42 +884,50 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 	}
 	
-	private void indexUnvisitedDescriptions(final Set<String> unvisitedDescriptions) {
-		// TODO fetch description in one query
-		for (final String descriptionIdString : unvisitedDescriptions) {
-			final SnomedDescriptionIndexEntry description = new SnomedDescriptionLookupService().getComponent(branchPath, descriptionIdString);
-			if (description != null) {
-				
-				final Multimap<Acceptability, String> invertedAcceptabilityMap = ImmutableMap.copyOf(description.getAcceptabilityMap()).asMultimap().inverse();
-				
-				final Collection<String> preferredRefSetIds = invertedAcceptabilityMap.get(Acceptability.PREFERRED);
-				final Collection<String> updatedPreferredRefSetIds = getCurrentRefSetMemberships(preferredRefSetIds, preferredMemberChanges.get(descriptionIdString));
-				
-				final Collection<String> acceptableRefSetIds = invertedAcceptabilityMap.get(Acceptability.ACCEPTABLE);
-				final Collection<String> updatedAcceptableRefSetIds = getCurrentRefSetMemberships(acceptableRefSetIds, acceptableMemberChanges.get(descriptionIdString));
-				
-				final SnomedDescriptionIndexEntry.Builder doc = SnomedDescriptionIndexEntry.builder()
-						.id(description.getId())
-						.active(description.isActive())
-						.effectiveTime(description.getEffectiveTime())
-						.released(description.isReleased())
-						.moduleId(description.getModuleId())
-						.conceptId(description.getConceptId())
-						.term(description.getTerm())
-						.languageCode(description.getLanguageCode())
-						.typeId(description.getTypeId())
-						.caseSignificanceId(description.getCaseSignificanceId());
-				
-				for (String preferredRefSetId : updatedPreferredRefSetIds) {
-					doc.acceptability(preferredRefSetId, Acceptability.PREFERRED);
-				}
-				
-				for (String acceptableRefSetId : updatedAcceptableRefSetIds) {
-					doc.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
-				}
-				
-				indexDocument(description.getStorageKey(), doc.build());
+	private <T extends RevisionDocument> Iterable<T> getCurrentRevisionsById(Class<T> type, Set<String> ids) {
+		final Query<T> query = Query.builder(type)
+				.selectAll()
+				.where(RevisionDocument.Expressions.ids(ids))
+				.limit(ids.size())
+				.build();
+		try {
+			return writer.searcher().search(query);
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
+
+	private void indexUnvisitedDescriptions(final Set<String> unvisitedDescriptions) throws IOException {
+		for (final SnomedDescriptionIndexEntry description : getCurrentRevisionsById(SnomedDescriptionIndexEntry.class, unvisitedDescriptions)) {
+			final Multimap<Acceptability, String> invertedAcceptabilityMap = ImmutableMap.copyOf(description.getAcceptabilityMap()).asMultimap().inverse();
+			
+			final Collection<String> preferredRefSetIds = invertedAcceptabilityMap.get(Acceptability.PREFERRED);
+			final Collection<String> updatedPreferredRefSetIds = getCurrentRefSetMemberships(preferredRefSetIds, preferredMemberChanges.get(description.getId()));
+			
+			final Collection<String> acceptableRefSetIds = invertedAcceptabilityMap.get(Acceptability.ACCEPTABLE);
+			final Collection<String> updatedAcceptableRefSetIds = getCurrentRefSetMemberships(acceptableRefSetIds, acceptableMemberChanges.get(description.getId()));
+			
+			final SnomedDescriptionIndexEntry.Builder doc = SnomedDescriptionIndexEntry.builder()
+					.id(description.getId())
+					.active(description.isActive())
+					.effectiveTime(description.getEffectiveTime())
+					.released(description.isReleased())
+					.moduleId(description.getModuleId())
+					.conceptId(description.getConceptId())
+					.term(description.getTerm())
+					.languageCode(description.getLanguageCode())
+					.typeId(description.getTypeId())
+					.caseSignificanceId(description.getCaseSignificanceId());
+			
+			for (String preferredRefSetId : updatedPreferredRefSetIds) {
+				doc.acceptability(preferredRefSetId, Acceptability.PREFERRED);
 			}
+			
+			for (String acceptableRefSetId : updatedAcceptableRefSetIds) {
+				doc.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
+			}
+			
+			indexDocument(description.getStorageKey(), doc.build());
 		}
 	}
 	
@@ -937,16 +945,11 @@ public class SnomedRf2IndexInitializer extends Job {
 				final boolean exhaustive = false;
 				final String moduleId = record.get(3);
 				
-				SnomedConceptDocument currentRevision;
-				try {
-					currentRevision = writer.searcher().get(SnomedConceptDocument.class, conceptStorageKey);
-				} catch (IOException e) {
-					throw new SnowowlRuntimeException(e);
-				}
-				final Collection<String> refSetIds = currentRevision.getReferringRefSets();
+				final SnomedConceptDocument currentRevision = getCurrentRevision(SnomedConceptDocument.class, conceptStorageKey);
+				final Collection<String> refSetIds = currentRevision == null ? Collections.<String>emptySet() : currentRevision.getReferringRefSets();
 				final Collection<String> updatedRefSetIds = getCurrentRefSetMemberships(refSetIds, refSetMemberChanges.get(conceptId));
 				
-				final Collection<String> mappingRefSetIds = currentRevision.getReferringMappingRefSets();
+				final Collection<String> mappingRefSetIds = currentRevision == null ? Collections.<String>emptySet() : currentRevision.getReferringMappingRefSets();
 				final Collection<String> updatedMappingRefSetIds = getCurrentRefSetMemberships(mappingRefSetIds, mappingRefSetMemberChanges.get(conceptId));
 				
 				final long effectiveTime = getEffectiveTime(record);
@@ -966,7 +969,16 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				indexDocument(conceptStorageKey, doc.build());
 			}
+
 		});
+	}
+	
+	private <T extends RevisionDocument> T getCurrentRevision(final Class<T> type, final long conceptStorageKey) {
+		try {
+			return writer.searcher().get(type, conceptStorageKey);
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 	
 	private SnomedConceptDocument.Builder createConceptDocument(final Multimap<Long, String> conceptIdToPredicateMap, final String conceptId, final boolean active,

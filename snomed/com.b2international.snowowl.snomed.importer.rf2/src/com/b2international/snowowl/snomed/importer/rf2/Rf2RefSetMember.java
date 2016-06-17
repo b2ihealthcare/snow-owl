@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.importer.rf2;
 import java.util.Date;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EClass;
+
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -25,6 +27,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Strings;
 
 /**
@@ -34,11 +37,35 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 
 	private List<String> record;
 	private SnomedRefSet refSet;
+	private EClass eClass;
 
 	public Rf2RefSetMember(List<String> rf2Row, SnomedRefSet refSet, long storageKey) {
 		super(storageKey);
 		this.record = rf2Row;
 		this.refSet = refSet;
+		this.eClass = getMemberClass(refSet);
+	}
+	
+	private static EClass getMemberClass(SnomedRefSet refSet) {
+		switch (refSet.getType()) {
+		case ASSOCIATION: return SnomedRefSetPackage.Literals.SNOMED_ASSOCIATION_REF_SET_MEMBER;
+		case EXTENDED_MAP:
+		case COMPLEX_MAP: return SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER;
+		case ATTRIBUTE_VALUE: return SnomedRefSetPackage.Literals.SNOMED_ATTRIBUTE_VALUE_REF_SET_MEMBER;
+		case CONCRETE_DATA_TYPE: return SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER;
+		case DESCRIPTION_TYPE: return SnomedRefSetPackage.Literals.SNOMED_DESCRIPTION_TYPE_REF_SET_MEMBER;
+		case LANGUAGE: return SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER;
+		case MODULE_DEPENDENCY: return SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER;
+		case QUERY: return SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER;
+		case SIMPLE: return SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER;
+		case SIMPLE_MAP: return SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER;
+		default: throw new UnsupportedOperationException("Unknown refset: " + refSet.getType());
+		}
+	}
+
+	@Override
+	public EClass eClass() {
+		return eClass;
 	}
 	
 	@Override
