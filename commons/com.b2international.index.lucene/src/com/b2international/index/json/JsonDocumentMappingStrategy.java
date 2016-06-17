@@ -90,6 +90,8 @@ public class JsonDocumentMappingStrategy {
 				Fields.searchOnlyFloatField(name).addTo(doc, node.floatValue());
 			} else if (fieldType == Integer.class || fieldType == int.class) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
+			} else if (fieldType == Short.class || fieldType == short.class) {
+				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
 			}
 			break;
 		default:
