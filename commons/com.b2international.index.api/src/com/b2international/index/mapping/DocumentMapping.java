@@ -38,12 +38,15 @@ import com.google.common.collect.ImmutableList;
  */
 public final class DocumentMapping {
 
+	// type path delimiter to differentiate between same nested types in different contexts
+	private static final String DELIMITER = ".";
+	
 	public static final String _ID = "_id";
 	public static final String _UID = "_uid";
 	public static final String _TYPE = "_type";
 	
 	private final Class<?> type;
-	private final String typeName;
+	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
 	private final DocumentMapping parent;
@@ -55,7 +58,8 @@ public final class DocumentMapping {
 	DocumentMapping(DocumentMapping parent, Class<?> type) {
 		this.parent = parent;
 		this.type = type;
-		this.typeName = getType(type);
+		final String typeAsString = getType(type);
+		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
 		this.fieldMap = FluentIterable.from(Reflections.getFields(type))
 			.filter(new Predicate<Field>() {
 				@Override
@@ -140,15 +144,15 @@ public final class DocumentMapping {
 	}
 	
 	public String typeAsString() {
-		return typeName;
+		return typeAsString;
 	}
 	
 	public Expression matchType() {
-		return Expressions.exactMatch(_TYPE, typeName);
+		return Expressions.exactMatch(_TYPE, typeAsString);
 	}
 	
 	public String toUid(String key) {
-		return String.format("%s#%s", typeName, key);
+		return String.format("%s#%s", typeAsString, key);
 	}
 	
 	@Override
