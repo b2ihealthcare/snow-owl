@@ -200,13 +200,13 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setIconId(entry.getIconId());
 		member.setReferenceSetId(entry.getReferenceSetId());
 		member.setType(entry.getReferenceSetType());
-		member.setProperties(entry.getAdditionalProperties());
+		member.setProperties(entry.getAdditionalFields());
 		
 		// convert ID to resources where possible
 		final Builder<String, Object> props = ImmutableMap.builder();
 		switch (entry.getReferenceSetType()) {
 			case ASSOCIATION:
-				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponentId()));
+				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponent()));
 				break;
 			default:
 				break;

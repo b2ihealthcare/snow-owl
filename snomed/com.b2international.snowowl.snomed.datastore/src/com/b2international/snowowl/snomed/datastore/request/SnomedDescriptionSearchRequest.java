@@ -15,37 +15,24 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.io.IOException;
 import java.util.List;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
-import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
-import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.dsl.query.RValue;
-import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 4.5
@@ -117,35 +104,36 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		
-		final Sort sort;
-		
 		if (containsKey(OptionKey.TERM)) {
-			if (!containsKey(OptionKey.USE_FUZZY)) {
-				addDescriptionTermQuery(queryBuilder);
-			} else {
-				addFuzzyQuery(queryBuilder);
-			}
-			
-			sort = Sort.RELEVANCE;
-		} else {
-			sort = Sort.INDEXORDER;
+//			if (!containsKey(OptionKey.USE_FUZZY)) {
+//				addDescriptionTermQuery(queryBuilder);
+//			} else {
+//				addFuzzyQuery(queryBuilder);
+//			}
+//			
+//			sort = Sort.RELEVANCE;
 		}
 
-		final List<Filter> filters = newArrayList();
-		final List<Integer> ops = newArrayList();
+//		final List<Filter> filters = newArrayList();
+//		final List<Integer> ops = newArrayList();
 		
 		// Add (presumably) most selective filters first
-		addComponentIdFilter(filters, ops);
-		addConceptIdsFilter(filters, ops);
-		addLanguageFilter(filters, ops);
-		addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, (LongIndexField) SnomedMappings.descriptionConcept());
-		addEscgFilter(context, filters, ops, OptionKey.TYPE, (LongIndexField) SnomedMappings.descriptionType());
-		addLocaleFilter(context, filters, ops, languageRefSetId); 
+//		addComponentIdFilter(filters, ops);
+//		addConceptIdsFilter(filters, ops);
+//		addLanguageFilter(filters, ops);
+//		addEscgFilter(context, filters, ops, OptionKey.CONCEPT_ESCG, (LongIndexField) SnomedMappings.descriptionConcept());
+//		addEscgFilter(context, filters, ops, OptionKey.TYPE, (LongIndexField) SnomedMappings.descriptionType());
+//		addLocaleFilter(context, filters, ops, languageRefSetId); 
 		
-		final Query query = createFilteredQuery(queryBuilder.matchAll(), filters, ops);
+//		final Query query = createFilteredQuery(queryBuilder.matchAll(), filters, ops);
 		
 		// TODO: control score tracking
-		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(query);
+		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(Query.builder(SnomedDescriptionIndexEntry.class)
+				.selectAll()
+				.where(queryBuilder.build())
+				.offset(offset)
+				.limit(limit)
+				.build());
 		if (limit < 1 || hits.getTotal() < 1) {
 			return new SnomedDescriptions(offset, limit, hits.getTotal());
 		} else {
@@ -153,23 +141,21 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 	}
 	
-	private void addDescriptionTermQuery(final SnomedQueryBuilder queryBuilder) {
+	private void addDescriptionTermQuery(final ExpressionBuilder queryBuilder) {
 		final String searchTerm = getString(OptionKey.TERM);
 		
-		final SnomedQueryBuilder qb = SnomedMappings.newQuery();
-		qb.and(createTermDisjunctionQuery(searchTerm));
+		final ExpressionBuilder qb = Expressions.builder();
+		qb.should(createTermDisjunctionQuery(searchTerm));
 		
 		if (containsKey(OptionKey.PARSED_TERM)) {
-			qb.and(createParsedTermQuery(searchTerm));
+			qb.should(createParsedTermQuery(searchTerm));
 		}
 		
 		if (isComponentId(searchTerm, ComponentCategory.DESCRIPTION)) {
-			final TermQuery idQuery = SnomedMappings.id().toQuery(Long.valueOf(searchTerm));
-			idQuery.setBoost(1000f);
-			qb.and(idQuery);
+			qb.should(Expressions.boost(SnomedDescriptionIndexEntry.Expressions.id(searchTerm), 1000f));
 		}
 		
-		queryBuilder.and(qb.matchAny());
+		queryBuilder.must(qb.build());
 	}
 	
 	private boolean isComponentId(String value, ComponentCategory type) {
@@ -180,34 +166,36 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 	}
 
-	private Query createTermDisjunctionQuery(final String searchTerm) {
-		final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
-		
-		final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
-		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
-		
-		final QueryBuilder bookendTermQueryBuilder = new QueryBuilder(bookendAnalyzer);
-		final QueryBuilder nonBookendTermQueryBuilder = new QueryBuilder(nonBookendAnalyzer);
-		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, bookendTermQueryBuilder));
-		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, nonBookendTermQueryBuilder));
-		
-		final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
-		termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
-		
-		return termDisjunctionQuery;
+	private Expression createTermDisjunctionQuery(final String searchTerm) {
+		throw new UnsupportedOperationException("Support dismax queries");
+//		final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
+//		
+//		final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
+//		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
+//		
+//		final QueryBuilder bookendTermQueryBuilder = new QueryBuilder(bookendAnalyzer);
+//		final QueryBuilder nonBookendTermQueryBuilder = new QueryBuilder(nonBookendAnalyzer);
+//		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, bookendTermQueryBuilder));
+//		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, nonBookendTermQueryBuilder));
+//		
+//		final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
+//		termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
+//		
+//		return termDisjunctionQuery;
 	}
 
-	private Query createParsedTermQuery(final String searchTerm) {
-		final ComponentTermAnalyzer analyzer = new ComponentTermAnalyzer(true, true);
-		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, SnomedMappings.descriptionTerm().fieldName(), analyzer);
-		parser.setDefaultOperator(Operator.AND);
-		parser.setAllowLeadingWildcard(true);
-		
-		try {
-			return parser.parse(escape(searchTerm));
-		} catch (ParseException e) {
-			throw new IllegalQueryParameterException(e.getMessage());
-		}		
+	private Expression createParsedTermQuery(final String searchTerm) {
+		throw new UnsupportedOperationException("TODO support parsed term queries");
+//		final ComponentTermAnalyzer analyzer = new ComponentTermAnalyzer(true, true);
+//		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, SnomedMappings.descriptionTerm().fieldName(), analyzer);
+//		parser.setDefaultOperator(Operator.AND);
+//		parser.setAllowLeadingWildcard(true);
+//		
+//		try {
+//			return parser.parse(escape(searchTerm));
+//		} catch (ParseException e) {
+//			throw new IllegalQueryParameterException(e.getMessage());
+//		}		
 	}
 	
 	// copied from IndexQueryBuilder
@@ -259,126 +247,102 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		return sb.toString();
 	}
 
-	private void addFuzzyQuery(final SnomedQueryBuilder queryBuilder) {
-		final Splitter tokenSplitter = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).omitEmptyStrings();
-		final BooleanQuery bq = new BooleanQuery();
-		int tokenCount = 0;
-
-		final String term = getString(OptionKey.TERM).toLowerCase();
-		for (final String token : tokenSplitter.split(term)) {
-			final FuzzyQuery fuzzyQuery = new FuzzyQuery(new Term(SnomedMappings.descriptionTerm().fieldName(), token),
-					LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
-			bq.add(fuzzyQuery, Occur.SHOULD);
-			++tokenCount;
-		}
-
-		final int minShouldMatch = Math.max(1, tokenCount - 2);
-		bq.setMinimumNumberShouldMatch(minShouldMatch);
-
-		queryBuilder.and(bq);
+	private void addFuzzyQuery(final ExpressionBuilder queryBuilder) {
+		throw new UnsupportedOperationException("TODO support fuzzy queries");
+//		final Splitter tokenSplitter = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).omitEmptyStrings();
+//		final ExpressionBuilder fuzzyQuery = Expressions.builder();
+//		int tokenCount = 0;
+//
+//		final String term = getString(OptionKey.TERM).toLowerCase();
+//		for (final String token : tokenSplitter.split(term)) {
+//			fuzzyQuery.should(SnomedDescriptionIndexEntry.Expressions.fuzzyTerm(token));
+//			++tokenCount;
+//		}
+//
+//		final int minShouldMatch = Math.max(1, tokenCount - 2);
+//		fuzzyQuery.setMinimumNumberShouldMatch(minShouldMatch);
+//
+//		queryBuilder.must(fuzzyQuery.build());
 	}
 
-	private Query createExactMatchQuery(final String searchTerm, final QueryBuilder termQueryBuilder) {
-		return termQueryBuilder.createPhraseQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm);
-	}
+//	private Expression createExactMatchQuery(final String searchTerm, final ExpressionBuilder termQueryBuilder) {
+//		return termQueryBuilder.createPhraseQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm);
+//	}
 
-	private Query createAllTermsPresentQuery(final String searchTerm, final QueryBuilder termQueryBuilder) {
-		return termQueryBuilder.createBooleanQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm, Occur.MUST);
-	}
+//	private Query createAllTermsPresentQuery(final String searchTerm, final ExpressionBuilder termQueryBuilder) {
+//		return termQueryBuilder.createBooleanQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm, Occur.MUST);
+//	}
 
-	@Deprecated
-	private Query createAllTermPrefixesPresentFromBeginningQueryOld(List<String> prefixes) {
-		final List<SpanQuery> clauses = newArrayList();
-		clauses.add(new SpanTermQuery(SnomedMappings.descriptionTerm().toTerm(Character.toString(BookendTokenFilter.LEADING_MARKER))));
-		
+	private Expression createAllTermPrefixesPresentQuery(List<String> prefixes) {
+		final ExpressionBuilder query = Expressions.builder();
+
 		for (String prefix : prefixes) {
-			clauses.add(new SpanMultiTermQueryWrapper<>(new PrefixQuery(SnomedMappings.descriptionTerm().toTerm(prefix))));
+			query.must(SnomedDescriptionIndexEntry.Expressions.termPrefix(prefix));
 		}
-		
-		return new SpanFirstQuery(new SpanNearQuery(Iterables.toArray(clauses, SpanQuery.class), 0, true), prefixes.size() + 1);
+
+		return query.build();
 	}
+
+//	private void addComponentIdFilter(final List<Filter> filters, final List<Integer> ops) {
+//		if (!componentIds().isEmpty()) {
+//			addFilterClause(filters, createComponentIdFilter());
+//			ops.add(ChainedFilter.AND);
+//		}
+//	}
+
+//	private void addConceptIdsFilter(List<Filter> filters, List<Integer> ops) {
+//		if (containsKey(OptionKey.CONCEPT_ID)) {
+//			addFilterClause(filters, SnomedMappings.descriptionConcept().createTermsFilter(getCollection(OptionKey.CONCEPT_ID, Long.class)));
+//			ops.add(ChainedFilter.AND);
+//		}
+//	}
+
+//	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, Function<LongSet, Expression> expressionProvider) {
+//		if (containsKey(key)) {
+//			try {
+//				final String escg = getString(key);
+//				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
+//				final LongSet conceptIds = new ConceptIdQueryEvaluator2(context.service(RevisionSearcher.class)).evaluate(expression);
+//				final Expression conceptFilter = expressionProvider.apply(conceptIds);
+//				addFilterClause(filters, conceptFilter);
+//				ops.add(ChainedFilter.AND);
+//			} catch (SyntaxErrorException e) {
+//				throw new IllegalQueryParameterException(e.getMessage());
+//			}
+//		}
+//	}
 	
-	@Deprecated
-	private Query createAllTermPrefixesPresentFromBeginningQuery(List<String> prefixes) {
-		final MultiPhrasePrefixQuery query = new MultiPhrasePrefixQuery();
-		query.setMaxExpansions(2000);
-		query.add(SnomedMappings.descriptionTerm().toTerm(Character.toString(BookendTokenFilter.LEADING_MARKER)));
-		for (String prefix : prefixes) {
-			query.add(SnomedMappings.descriptionTerm().toTerm(prefix));
-		}
-		return query;
-	}
+//	private void addLanguageFilter(List<Filter> filters, List<Integer> ops) {
+//		if (containsKey(OptionKey.LANGUAGE)) {
+//			addFilterClause(filters, SnomedMappings.descriptionLanguageCode().createTermsFilter(getCollection(OptionKey.LANGUAGE, String.class)));
+//			ops.add(ChainedFilter.AND);
+//		}
+//	}
 
-	private Query createAllTermPrefixesPresentQuery(List<String> prefixes) {
-		final BooleanQuery query = new BooleanQuery(true);
-
-		for (String prefix : prefixes) {
-			query.add(new PrefixQuery(SnomedMappings.descriptionTerm().toTerm(prefix)), Occur.MUST);
-		}
-
-		return query;
-	}
-
-	private void addComponentIdFilter(final List<Filter> filters, final List<Integer> ops) {
-		if (!componentIds().isEmpty()) {
-			addFilterClause(filters, createComponentIdFilter());
-			ops.add(ChainedFilter.AND);
-		}
-	}
-
-	private void addConceptIdsFilter(List<Filter> filters, List<Integer> ops) {
-		if (containsKey(OptionKey.CONCEPT_ID)) {
-			addFilterClause(filters, SnomedMappings.descriptionConcept().createTermsFilter(getCollection(OptionKey.CONCEPT_ID, Long.class)));
-			ops.add(ChainedFilter.AND);
-		}
-	}
-
-	private void addEscgFilter(BranchContext context, final List<Filter> filters, final List<Integer> ops, OptionKey key, LongIndexField field) {
-		if (containsKey(key)) {
-			try {
-				final String escg = getString(key);
-				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
-				final LongSet conceptIds = new ConceptIdQueryEvaluator2(context.service(RevisionSearcher.class)).evaluate(expression);
-				Filter conceptFilter = field.createTermsFilter(conceptIds);
-				addFilterClause(filters, conceptFilter);
-				ops.add(ChainedFilter.AND);
-			} catch (SyntaxErrorException e) {
-				throw new IllegalQueryParameterException(e.getMessage());
-			}
-		}
-	}
-	
-	private void addLanguageFilter(List<Filter> filters, List<Integer> ops) {
-		if (containsKey(OptionKey.LANGUAGE)) {
-			addFilterClause(filters, SnomedMappings.descriptionLanguageCode().createTermsFilter(getCollection(OptionKey.LANGUAGE, String.class)));
-			ops.add(ChainedFilter.AND);
-		}
-	}
-
-	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, Long positiveRefSetId) {
-		for (Long languageRefSetId : languageRefSetIds()) {
-			if (containsKey(OptionKey.ACCEPTABILITY)) {
-				final Filter filter = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
-						SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
-						SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
-				
-				addFilterClause(filters, filter);
-			} else {
-				final BooleanFilter booleanFilter = new BooleanFilter();
-				addFilterClause(booleanFilter, SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
-				addFilterClause(booleanFilter, SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);					
-				
-				addFilterClause(filters, booleanFilter);
-			}
-
-			if (languageRefSetId.equals(positiveRefSetId)) {
-				ops.add(ChainedFilter.AND);
-				break;
-			} else {
-				ops.add(ChainedFilter.ANDNOT);
-			}
-		}
-	}
+//	private void addLocaleFilter(BranchContext context, List<Filter> filters, List<Integer> ops, Long positiveRefSetId) {
+//		for (Long languageRefSetId : languageRefSetIds()) {
+//			if (containsKey(OptionKey.ACCEPTABILITY)) {
+//				final Filter filter = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
+//						SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId) :
+//						SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId);
+//				
+//				addFilterClause(filters, filter);
+//			} else {
+//				final BooleanFilter booleanFilter = new BooleanFilter();
+//				addFilterClause(booleanFilter, SnomedMappings.descriptionPreferredReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);
+//				addFilterClause(booleanFilter, SnomedMappings.descriptionAcceptableReferenceSetId().toTermFilter(languageRefSetId), Occur.SHOULD);					
+//				
+//				addFilterClause(filters, booleanFilter);
+//			}
+//
+//			if (languageRefSetId.equals(positiveRefSetId)) {
+//				ops.add(ChainedFilter.AND);
+//				break;
+//			} else {
+//				ops.add(ChainedFilter.ANDNOT);
+//			}
+//		}
+//	}
 
 	@Override
 	protected Class<SnomedDescriptions> getReturnType() {

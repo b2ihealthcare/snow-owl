@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
@@ -65,11 +65,11 @@ public class Reservations {
 	/**
 	 * Creates a {@link Reservation} instance to reserve all SNOMED CT Identifiers when generating new IDs.
 	 * 
-	 * @param browser - the browser to use as source when querying for ID conflict
+	 * @param bus - the current bus to send reservation check requests
 	 * @return
 	 */
-	public static Reservation uniqueInStore(Provider<SnomedTerminologyBrowser> browser) {
-		return new UniqueInStoreReservation(browser);
+	public static Reservation uniqueInStore(Provider<IEventBus> bus) {
+		return new UniqueInStoreReservation(bus);
 	}
 
 }

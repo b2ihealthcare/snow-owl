@@ -99,37 +99,38 @@ public class SnomedModuleDependencyRefSetService {
 	
 
 	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(id, "ID argument cannot be null.");
-		final BooleanQuery sourceModuleQuery = new BooleanQuery(true);
-		sourceModuleQuery.add(SnomedMappings.newQuery().module(id).matchAll(), Occur.MUST);
-		sourceModuleQuery.add(SnomedMappings.newQuery().memberSourceEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
-		
-		final BooleanQuery targetModuleQuery = new BooleanQuery(true);
-		targetModuleQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(id).matchAll(), Occur.MUST);
-		targetModuleQuery.add(SnomedMappings.newQuery().memberTargetEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
-		
-		final Query moduleQuery = SnomedMappings.newQuery().and(sourceModuleQuery).and(targetModuleQuery).matchAny();
-		final Query query = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE).and(moduleQuery).matchAll();
-		
-		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-		service.search(branchPath, query, collector);
-		
-		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
-
-		try {
-			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-			
-			while (iterator.next()) {
-				final int docID = iterator.getDocID();
-				final Document doc = service.document(branchPath, docID, SnomedMappings.fieldsToLoad().storageKey().build());
-				storageKeys.add(Mappings.storageKey().getValue(doc));
-			}
-		} catch (final IOException e) {
-			throw new IndexException("Error while querying module dependency reference set members.", e);
-		}
-
-		return storageKeys;		
+		throw new UnsupportedOperationException("TODO reimplement me");
+//		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
+//		Preconditions.checkNotNull(id, "ID argument cannot be null.");
+//		final BooleanQuery sourceModuleQuery = new BooleanQuery(true);
+//		sourceModuleQuery.add(SnomedMappings.newQuery().module(id).matchAll(), Occur.MUST);
+//		sourceModuleQuery.add(SnomedMappings.newQuery().memberSourceEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
+//		
+//		final BooleanQuery targetModuleQuery = new BooleanQuery(true);
+//		targetModuleQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(id).matchAll(), Occur.MUST);
+//		targetModuleQuery.add(SnomedMappings.newQuery().memberTargetEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
+//		
+//		final Query moduleQuery = SnomedMappings.newQuery().and(sourceModuleQuery).and(targetModuleQuery).matchAny();
+//		final Query query = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE).and(moduleQuery).matchAll();
+//		
+//		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
+//		service.search(branchPath, query, collector);
+//		
+//		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
+//
+//		try {
+//			final DocIdsIterator iterator = collector.getDocIDs().iterator();
+//			
+//			while (iterator.next()) {
+//				final int docID = iterator.getDocID();
+//				final Document doc = service.document(branchPath, docID, SnomedMappings.fieldsToLoad().storageKey().build());
+//				storageKeys.add(Mappings.storageKey().getValue(doc));
+//			}
+//		} catch (final IOException e) {
+//			throw new IndexException("Error while querying module dependency reference set members.", e);
+//		}
+//
+//		return storageKeys;		
 	}
 
 	/*
