@@ -174,7 +174,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.parents(input.getParents())
 				.ancestors(input.getAncestors())
 				.statedParents(input.getStatedParents())
-				.statedAncestors(input.getStatedAncestors());
+				.statedAncestors(input.getStatedAncestors())
+				.refSetStorageKey(input.getRefSetStorageKey())
+				.referencedComponentType(input.getReferencedComponentType())
+				.refSetType(input.getRefSetType());
 		
 		return builder;
 	}
