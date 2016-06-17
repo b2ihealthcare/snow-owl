@@ -16,6 +16,7 @@
 package com.b2international.index.json;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
@@ -87,7 +88,7 @@ public class JsonDocumentSearcher implements Searcher {
 		final int totalHits = totalHitCollector.getTotalHits();
 		
 		if (query.getLimit() < 1 || totalHits < 1) {
-			return Hits.empty();
+			return new Hits<>(Collections.<T>emptyList(), query.getOffset(), query.getLimit(), totalHits);
 		}
 		
 		final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(query, totalHits), Sort.INDEXORDER, true, false);
