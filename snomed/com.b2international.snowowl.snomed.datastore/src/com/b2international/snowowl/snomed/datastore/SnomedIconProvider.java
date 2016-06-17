@@ -33,7 +33,7 @@ import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.ComponentIconProvider;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -108,12 +108,12 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			return getIconComponentId(String.valueOf(source), branchPath);
 		} else if (source instanceof String) {
 			return getIconComponentId((String) source, branchPath);
-		} else if (source instanceof AbstractIndexEntry) {
+		} else if (source instanceof RevisionDocument) {
 			// SNOMED Description entry sometimes contains false iconId (probably a bug in the indexing), so using the type
 			if (source instanceof SnomedDescriptionIndexEntry) {
 				return getIconComponentId(((SnomedDescriptionIndexEntry) source).getTypeId(), branchPath);
 			}
-			return ((AbstractIndexEntry) source).getIconId();
+			return ((RevisionDocument) source).getIconId();
 		} else if (source instanceof IComponent<?>) {
 			return ((IComponent<?>) source).getId() == null ? null : getIconId(((IComponent<?>) source).getId(), branchPath);
 		} else if (source instanceof Concept) {
@@ -153,8 +153,8 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			resolved = getExactFile((String)source);
 		} else if (source instanceof Long) {
 			resolved = getExactFile(String.valueOf(source));
-		} else if (source instanceof AbstractIndexEntry) {
-			resolved = getExactFile(((AbstractIndexEntry) source).getIconId());
+		} else if (source instanceof RevisionDocument) {
+			resolved = getExactFile(((RevisionDocument) source).getIconId());
 		}
 		return resolved;
 	}
@@ -255,14 +255,8 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			return getTerminologyBrowser().getConcept(branchPath, componentId);
 		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
 			return new SnomedDescriptionLookupService().getComponent(branchPath, componentId);
-		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-			return getStatementBrowser().getStatement(branchPath, componentId);
 		}
 		throw new IllegalArgumentException("Unsupported component type '" + tcv + "' for ID: " + componentId);
-	}
-
-	private SnomedStatementBrowser getStatementBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
 	}
 
 	/** @return the File pointing at the icon .png for the specified concept */
