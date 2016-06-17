@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerS
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +33,9 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -62,19 +66,17 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerChangeProcessor.class);
 
 	private final IBranchPath branchPath;
+	private final RevisionIndex index;
 
 	private final List<OWLOntologyChange> changes = newArrayList();
 
 	private OWLOntology ontology;
 
-	public SnomedReasonerChangeProcessor(final IBranchPath branchPath) {
+	public SnomedReasonerChangeProcessor(final IBranchPath branchPath, RevisionIndex index) {
 		this.branchPath = branchPath;
+		this.index = index;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#process(com.b2international.snowowl.datastore.ICDOCommitChangeSet)
-	 */
 	@Override
 	public void process(final ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
 
@@ -82,28 +84,32 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 		ontology = ontologyService.getOntologyIfExists(branchPath);
 
 		if (!CONSTRAINED_HEAP && null != ontology) {
-
-			LOGGER.info(">>> Processing OWL ontology changes");
-			final Stopwatch changeProcessorStopwatch = Stopwatch.createStarted();
-
-			final InitialReasonerTaxonomyBuilder oldReasonerTaxonomy = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
-			final DeltaReasonerTaxonomyBuilder newReasonerTaxonomy = new DeltaReasonerTaxonomyBuilder(oldReasonerTaxonomy, Type.REASONER, commitChangeSet);
-			
-			for (final LongIterator itr = newReasonerTaxonomy.getConceptIdsToRemove().iterator(); itr.hasNext(); /* empty */) {
-				final long conceptId = itr.next();
-				final ConceptDefinition definitionToRemove = createConceptDefinitionToRemove(oldReasonerTaxonomy, newReasonerTaxonomy, conceptId);
-				changes.addAll(definitionToRemove.remove(ontology));
-			}
-			
-			for (final LongIterator itr = newReasonerTaxonomy.getConceptIdsToAdd().iterator(); itr.hasNext(); /* empty */) {
-				final long conceptId = itr.next();
-				final ConceptDefinition definitionToAdd = createConceptDefinitionToAdd(oldReasonerTaxonomy, newReasonerTaxonomy, conceptId);
-				changes.addAll(definitionToAdd.add(ontology));
-			}
-
-			changeProcessorStopwatch.stop();
-			LOGGER.info(MessageFormat.format("<<< Processing OWL ontology changes [{0}]", changeProcessorStopwatch));
-			
+			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
+				@Override
+				public Void execute(RevisionSearcher index) throws IOException {
+					LOGGER.info(">>> Processing OWL ontology changes");
+					final Stopwatch changeProcessorStopwatch = Stopwatch.createStarted();
+					
+					final InitialReasonerTaxonomyBuilder oldReasonerTaxonomy = new InitialReasonerTaxonomyBuilder(index, Type.REASONER);
+					final DeltaReasonerTaxonomyBuilder newReasonerTaxonomy = new DeltaReasonerTaxonomyBuilder(oldReasonerTaxonomy, Type.REASONER, commitChangeSet);
+					
+					for (final LongIterator itr = newReasonerTaxonomy.getConceptIdsToRemove().iterator(); itr.hasNext(); /* empty */) {
+						final long conceptId = itr.next();
+						final ConceptDefinition definitionToRemove = createConceptDefinitionToRemove(oldReasonerTaxonomy, newReasonerTaxonomy, conceptId);
+						changes.addAll(definitionToRemove.remove(ontology));
+					}
+					
+					for (final LongIterator itr = newReasonerTaxonomy.getConceptIdsToAdd().iterator(); itr.hasNext(); /* empty */) {
+						final long conceptId = itr.next();
+						final ConceptDefinition definitionToAdd = createConceptDefinitionToAdd(oldReasonerTaxonomy, newReasonerTaxonomy, conceptId);
+						changes.addAll(definitionToAdd.add(ontology));
+					}
+					
+					changeProcessorStopwatch.stop();
+					LOGGER.info(MessageFormat.format("<<< Processing OWL ontology changes [{0}]", changeProcessorStopwatch));
+					return null;
+				}
+			});
 		}
 
 	}
