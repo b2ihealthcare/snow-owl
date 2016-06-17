@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -31,6 +32,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.7
@@ -53,11 +55,14 @@ public class DefaultRevisionWriter implements RevisionWriter {
 
 	@Override
 	public void put(long storageKey, Revision object) throws IOException {
-		if (revisionUpdates.containsKey(object.getClass())) {
-			revisionUpdates.get(object.getClass()).add(storageKey);
-		} else {
-			revisionUpdates.put(object.getClass(), newHashSet(storageKey));
+		if (!revisionUpdates.containsKey(object.getClass())) {
+			revisionUpdates.put(object.getClass(), Sets.<Long>newHashSet());
 		}
+		final Collection<Long> revisionsToUpdate = revisionUpdates.get(object.getClass());
+		// prevent duplicated revisions
+		checkArgument(!revisionsToUpdate.contains(storageKey), "duplicate revision %s", storageKey);
+		revisionsToUpdate.add(storageKey);
+		
 		object.setBranchPath(branchPath);
 		object.setCommitTimestamp(commitTimestamp);
 		object.setStorageKey(storageKey);
