@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -78,6 +79,7 @@ import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -107,8 +109,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/**Represents the change set.*/
 	private ICDOCommitChangeSet commitChangeSet;
 
-	private Map<Long, Revision> mappings;
-	private Multimap<Class<? extends Revision>, Long> deletions;
+	private Map<Long, Revision> mappings = newHashMap();
+	private Multimap<Class<? extends Revision>, Long> deletions = HashMultimap.create();
 
 
 	public SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index, final ISnomedIdentifierService identifierService) {
@@ -233,8 +235,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				.where(Expressions.matchAll())
 				.limit(Integer.MAX_VALUE)
 				.build();
-		final Set<Long> deletedConceptStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT)));
 		final Hits<SnomedConceptDocument> existingConcepts = searcher.search(allConceptsQuery);
+		final Set<Long> deletedConceptStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT)));
 		final LongSet allConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(existingConcepts.getTotal() - deletedConceptStorageKeys.size());
 		// add all current ids, except the deleted ones
 		for (SnomedConceptDocument existingConcept : existingConcepts) {
