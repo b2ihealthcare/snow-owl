@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
+import com.google.inject.util.Providers;
 
 /**
  * @since 4.7
@@ -63,7 +64,7 @@ public class DefaultSnomedIdentifierServiceTest {
 				return itemIds.next();
 			}
 		};
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, itemIdGenerationStrategy);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(Providers.of(store), itemIdGenerationStrategy);
 		final String first = identifiers.generate("", ComponentCategory.CONCEPT);
 		assertThat(first).contains("1000");
 		final String second = identifiers.generate("", ComponentCategory.CONCEPT);
