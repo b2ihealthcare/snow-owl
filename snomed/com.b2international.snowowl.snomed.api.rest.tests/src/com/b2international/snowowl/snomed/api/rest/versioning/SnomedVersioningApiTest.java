@@ -25,7 +25,10 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -41,6 +44,8 @@ import com.jayway.restassured.response.Response;
  * @since 2.0
  */
 public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
+	
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
 	/**
 	 * The context-relative base URL for the administrative controller. 
@@ -64,14 +69,15 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createVersion() {
-		assertVersionPostStatus("sct-v2", "20150130", 201);
+		assertVersionPostStatus("sct-v2", dateFormat.format(new Date()), 201);
 		assertVersionGetStatus("sct-v2", 200);
 	}
 
 	@Test
 	public void createVersionWithSameNameAsBranch() {
+		final Date tomorrow = new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
 		givenBranchWithPath(testBranchPath);
-		assertVersionPostStatus(testBranchPath.lastSegment(), "20150202", 409);
+		assertVersionPostStatus(testBranchPath.lastSegment(), dateFormat.format(tomorrow), 409);
 	}
 
 	private void assertVersionGetStatus(final String version, final int status) {
@@ -124,7 +130,8 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
 			.then().body("released", equalTo(false));
 		
-		whenCreatingVersion("v1", "20150130", shortName)
+		final String versionDate = dateFormat.format(new Date());
+		whenCreatingVersion("v1", versionDate, shortName)
 			.then().assertThat().statusCode(201);
 		
 		assertVersionGetStatus("v1", 200, shortName);
@@ -137,7 +144,7 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
 			.then().body("released", equalTo(true))
-			.and().body("effectiveTime", equalTo("20150130"));
+			.and().body("effectiveTime", equalTo(versionDate));
 	}
 	
 	@Test
@@ -159,7 +166,8 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
 			.then().body("released", equalTo(false));
 		
-		whenCreatingVersion("v1", "20150130", shortName)
+		final String versionDate = dateFormat.format(new Date());
+		whenCreatingVersion("v1", versionDate, shortName)
 			.then().assertThat().statusCode(201);
 		
 		assertVersionGetStatus("v1", 200, shortName);
@@ -171,7 +179,7 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
 			.then().body("released", equalTo(true))
-			.and().body("effectiveTime", equalTo("20150130"));
+			.and().body("effectiveTime", equalTo(versionDate));
 	}
 	
 }
