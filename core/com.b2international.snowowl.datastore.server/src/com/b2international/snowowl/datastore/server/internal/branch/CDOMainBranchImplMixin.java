@@ -41,4 +41,7 @@ public abstract class CDOMainBranchImplMixin implements MetadataHolderMixin {
 	@JsonIgnore
 	public abstract BranchManagerImpl getBranchManager();
 	
+	@JsonProperty
+	public abstract int cdoBranchId();
+	
 }

@@ -99,7 +99,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     private Branch getBranch(Integer branchId) {
-    	return getBranchFromStore(Query.builder(InternalBranch.class).selectAll().where(Expressions.exactMatch(CDO_BRANCH_ID, branchId.toString())));
+    	return getBranchFromStore(Query.builder(InternalBranch.class).selectAll().where(Expressions.match(CDO_BRANCH_ID, branchId)));
     }
     
     private CDOBranch loadCDOBranch(Integer branchId) {

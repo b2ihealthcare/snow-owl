@@ -22,13 +22,15 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
  */
 public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBasedBranch {
 
+	private int cdoBranchId = CDOBranch.MAIN_BRANCH_ID;
+	
 	CDOMainBranchImpl(long baseTimestamp, long headTimestamp) {
 		super(baseTimestamp, headTimestamp);
 	}
 	
 	@Override
 	public int cdoBranchId() {
-		return CDOBranch.MAIN_BRANCH_ID;
+		return cdoBranchId;
 	}
 	
 	@Override

@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 4.1
@@ -69,6 +70,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		this.branchManager = checkNotNull(branchManager, "branchManager");
 	}
 	
+    @JsonIgnore
 	BranchManagerImpl getBranchManager() {
 		return this.branchManager;
 	}

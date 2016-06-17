@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 /**
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
  */
 public class ReviewImpl implements Review {
 
+	@JsonIgnore
 	private ReviewManagerImpl reviewManager;
 
 	private final String id;
