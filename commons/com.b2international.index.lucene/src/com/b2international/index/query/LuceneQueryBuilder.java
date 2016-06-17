@@ -147,6 +147,8 @@ public final class LuceneQueryBuilder {
 			visit((StringSetPredicate) expression);
 		} else if (expression instanceof LongSetPredicate) {
 			visit((LongSetPredicate) expression);
+		} else if (expression instanceof IntPredicate) {
+			visit((IntPredicate) expression);
 		} else if (expression instanceof IntSetPredicate) {
 			visit((IntSetPredicate) expression);
 		} else if (expression instanceof PrefixTextPredicate) {
@@ -271,6 +273,11 @@ public final class LuceneQueryBuilder {
 	
 	private void visit(PrefixPredicate predicate) {
 		final Filter filter = new PrefixFilter(new Term(predicate.getField(), predicate.getArgument()));
+		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(IntPredicate predicate) {
+		final Filter filter = Fields.intField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
 		deque.push(new DequeItem(filter));
 	}
 	
