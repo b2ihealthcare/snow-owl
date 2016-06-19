@@ -316,14 +316,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	}
 	
 	private void initializeIndex(final SnomedImportContext context, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		getIndex().write(context.getEditingContext().getBranch(), importContext.getCommitTime(), new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(RevisionWriter index) throws IOException {
-				final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(index, context, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId(), inferredTaxonomyBuilder, statedTaxonomyBuilder);
-				snomedRf2IndexInitializer.run(new NullProgressMonitor());
-				return null;
-			}
-		});
+		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(getIndex(), context, lastUnitEffectiveTimeKey, units, importContext.getLanguageRefSetId(), inferredTaxonomyBuilder, statedTaxonomyBuilder);
+		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 
 	private void updateCodeSystemMetadata(final String lastUnitEffectiveTimeKey, final boolean shouldCreateVersionAndTag) {

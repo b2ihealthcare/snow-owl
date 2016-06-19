@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -51,6 +53,8 @@ import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -119,8 +123,8 @@ public class SnomedRf2IndexInitializer extends Job {
 	private final String effectiveTimeKey;
 	private final List<ComponentImportUnit> importUnits;
 	private final IBranchPath branchPath;
-	private final RevisionWriter writer;
 	private final SnomedImportContext context;
+	private final RevisionIndex index;
 
 	private Multimap<Long, String> conceptIdToPredicateMap;
 	private Map<String, String> nonFsnIdToConceptIdMap;
@@ -146,8 +150,9 @@ public class SnomedRf2IndexInitializer extends Job {
 
 	private ISnomedTaxonomyBuilder inferredTaxonomyBuilder;
 	private ISnomedTaxonomyBuilder statedTaxonomyBuilder;
+	private boolean loggedReferenceSetImport = false;
 
-	public SnomedRf2IndexInitializer(final RevisionWriter writer,
+	public SnomedRf2IndexInitializer(final RevisionIndex index,
 			final SnomedImportContext context,
 			final String lastUnitEffectiveTimeKey, 
 			final List<ComponentImportUnit> importUnits, 
@@ -155,9 +160,9 @@ public class SnomedRf2IndexInitializer extends Job {
 			final ISnomedTaxonomyBuilder inferredTaxonomyBuilder, 
 			final ISnomedTaxonomyBuilder statedTaxonomyBuilder) {
 		super("SNOMED CT RF2 based index initializer...");
-		this.writer = writer;
+		this.index = index;
 		this.context = context;
-		this.branchPath = BranchPathUtils.createPath(writer.branch());
+		this.branchPath = BranchPathUtils.createPath(context.getEditingContext().getBranch());
 		this.effectiveTimeKey = lastUnitEffectiveTimeKey;
 		this.statedTaxonomyBuilder = checkNotNull(statedTaxonomyBuilder, "statedTaxonomyBuilder");
 		this.inferredTaxonomyBuilder = checkNotNull(inferredTaxonomyBuilder, "inferredTaxonomyBuilder");
@@ -440,57 +445,37 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	private void doImport(final Iterable<ComponentImportUnit> units, final IProgressMonitor delegateMonitor) throws IOException {
 		
-		boolean loggedReferenceSetImport = false;
-		
 		for (final ComponentImportUnit unit : units) {
-			
-			try {
-	
-				final String absolutePath = unit.getUnitFile().getAbsolutePath();
-				switch (unit.getType()) {
-	
-					case CONCEPT:
-						LOGGER.info("Indexing concepts...");
-						indexConcepts(absolutePath);
-						writer.commit();
-						LOGGER.info("Concepts have been successfully indexed.");
-						break;
-					case DESCRIPTION:
-					case TEXT_DEFINITION:
-						LOGGER.info("Indexing descriptions...");
-						indexDescriptions(absolutePath);
-						writer.commit();
-						LOGGER.info("Descriptions have been successfully indexed.");
-						break;
-					case RELATIONSHIP:
-					case STATED_RELATIONSHIP:
-						LOGGER.info("Indexing relationships...");
-						indexRelationships(absolutePath);
-						writer.commit();
-						LOGGER.info("Relationships have been successfully indexed.");
-						break;
-					case TERMINOLOGY_REGISTRY:
-						//do nothing
-						break;
-					default:
-						if (!loggedReferenceSetImport) {
-							LOGGER.info("Indexing reference sets and their members...");
-							loggedReferenceSetImport = true;
-						}
-						indexRefSets(unit);
-						writer.commit();
-						break;
+			index.write(context.getEditingContext().getBranch(), context.getCommitTime(), new RevisionIndexWrite<Void>() {
+				@Override
+				public Void execute(RevisionWriter index) throws IOException {
+					try {
+						indexUnit(index, unit);
+						index.commit();
+						return null;
+					} finally {
+						delegateMonitor.worked(1);
+					}
 				}
-				
-			} finally {
-				delegateMonitor.worked(1);
-			}
+			});
 		}
 
 		LOGGER.info("Reference sets and their members have been successfully indexed.");
 		LOGGER.info("Indexing phase successfully finished.");
 		LOGGER.info("Post-processing phase [3 of 3]...");
 		
+		index.write(context.getEditingContext().getBranch(), context.getCommitTime(), new RevisionIndexWrite<Void>() {
+			@Override
+			public Void execute(RevisionWriter index) throws IOException {
+				postProcess(index);
+				return null;
+			}
+		});
+		
+		LOGGER.info("Post-processing phase successfully finished.");
+	}
+
+	private void postProcess(RevisionWriter writer) throws IOException {
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("Concepts needing reference set membership updates: " + conceptsWithMembershipChanges.size());
 			LOGGER.trace("Concepts needing taxonomy updates: " + conceptsWithTaxonomyChanges.size());
@@ -533,7 +518,7 @@ public class SnomedRf2IndexInitializer extends Job {
 
 		if (!unvisitedConcepts.isEmpty()) {
 			LOGGER.info("Reindexing unvisited concepts...");
-			indexUnvisitedConcepts(unvisitedConcepts, conceptsWithCompareUniqueKeyChanges);
+			indexUnvisitedConcepts(writer, unvisitedConcepts, conceptsWithCompareUniqueKeyChanges);
 			LOGGER.info("Unvisited concepts have been successfully reindexed.");
 		} else {
 			LOGGER.info("No unvisited concepts have been found.");
@@ -548,7 +533,7 @@ public class SnomedRf2IndexInitializer extends Job {
 
 		if (!unvisitedDescriptions.isEmpty()) {
 			LOGGER.info("Reindexing unvisited descriptions...");
-			indexUnvisitedDescriptions(unvisitedDescriptions);
+			indexUnvisitedDescriptions(writer, unvisitedDescriptions);
 			LOGGER.info("Unvisited descriptions have been successfully reindexed.");
 		} else {
 			LOGGER.info("No unvisited descriptions have been found.");
@@ -557,8 +542,40 @@ public class SnomedRf2IndexInitializer extends Job {
 		if (!unvisitedConcepts.isEmpty() || !unvisitedDescriptions.isEmpty()) {
 			writer.commit();
 		}
-		
-		LOGGER.info("Post-processing phase successfully finished.");
+	}
+
+	private void indexUnit(RevisionWriter writer, ComponentImportUnit unit) {
+		final String absolutePath = unit.getUnitFile().getAbsolutePath();
+		switch (unit.getType()) {
+
+			case CONCEPT:
+				LOGGER.info("Indexing concepts...");
+				indexConcepts(writer, absolutePath);
+				LOGGER.info("Concepts have been successfully indexed.");
+				break;
+			case DESCRIPTION:
+			case TEXT_DEFINITION:
+				LOGGER.info("Indexing descriptions...");
+				indexDescriptions(writer, absolutePath);
+				LOGGER.info("Descriptions have been successfully indexed.");
+				break;
+			case RELATIONSHIP:
+			case STATED_RELATIONSHIP:
+				LOGGER.info("Indexing relationships...");
+				indexRelationships(writer, absolutePath);
+				LOGGER.info("Relationships have been successfully indexed.");
+				break;
+			case TERMINOLOGY_REGISTRY:
+				//do nothing
+				break;
+			default:
+				if (!loggedReferenceSetImport ) {
+					LOGGER.info("Indexing reference sets and their members...");
+					loggedReferenceSetImport = true;
+				}
+				indexRefSets(writer, unit);
+				break;
+		}
 	}
 
 	private Set<String> getAllDescendants(final Set<String> union) {
@@ -571,7 +588,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		return LongSets.toStringSet($);
 	}
 
-	private void indexRelationships(final String absolutePath) {
+	private void indexRelationships(final RevisionWriter writer, final String absolutePath) {
 		
 		parseFile(absolutePath, 10, new RecordParserCallback<String>() {
 			@Override
@@ -617,7 +634,7 @@ public class SnomedRf2IndexInitializer extends Job {
 						.unionGroup(unionGroup)
 						.modifierId(modifierId)
 						.build();
-				indexDocument(storageKey, entry);
+				indexDocument(writer, storageKey, entry);
 			}
 		});
 	}
@@ -627,14 +644,14 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 	
 	private long getMemberStorageKey(String uuid) {
-		return context.getRefSetMemberLookup().getStorageKey(uuid);
+		return context.getRefSetMemberLookup().getStorageKey(UUID.fromString(uuid));
 	}
 	
 	private long getRefSetStorageKey(String refSetId) {
 		return context.getRefSetLookup().getComponentStorageKey(refSetId);
 	}
 
-	private void indexRefSets(final ComponentImportUnit unit) {
+	private void indexRefSets(final RevisionWriter writer, final ComponentImportUnit unit) {
 		
 		final ComponentImportType type = unit.getType();
 		int columnCount = Integer.MIN_VALUE;
@@ -679,7 +696,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					final short refComponentType = getRefSetComponentType(record.get(5), refSetType);
 					final SnomedRefSet refSet = new Rf2RefSet(storageKey, refSetId, refSetType, refComponentType);
 					
-					final SnomedConceptDocument identifierConcept = Iterables.getOnlyElement(getCurrentRevisionsById(SnomedConceptDocument.class, Collections.singleton(refSetId)), null);
+					final SnomedConceptDocument identifierConcept = Iterables.getOnlyElement(getCurrentRevisionsById(writer, SnomedConceptDocument.class, Collections.singleton(refSetId)), null);
 					if (null == identifierConcept) {
 						//might happen that a reference set is an unknown one, hence its identifier concept
 						//is being created in this effective time cycle. check concept in CDO
@@ -712,18 +729,18 @@ public class SnomedRf2IndexInitializer extends Job {
 										EffectiveTimes.getEffectiveTime(concept.getEffectiveTime()));
 								conceptDocument.refSet(refSet);
 								
-								indexDocument(conceptStorageKey, conceptDocument.build());
+								indexDocument(writer, conceptStorageKey, conceptDocument.build());
 								
 								for (final Description description : concept.getDescriptions()) {
 									final SnomedDescriptionIndexEntry descriptionEntry = SnomedDescriptionIndexEntry.builder(description).build();
-									indexDocument(CDOIDUtil.getLong(description.cdoID()), descriptionEntry);
+									indexDocument(writer, CDOIDUtil.getLong(description.cdoID()), descriptionEntry);
 									for (final SnomedLanguageRefSetMember languageRefSetMember : description.getLanguageRefSetMembers()) {
-										indexRefSetMember(languageRefSetMember);
+										indexRefSetMember(writer, languageRefSetMember);
 									}
 								}
 								
 								for (final Relationship relationship : concept.getOutboundRelationships()) {
-									indexDocument(CDOIDUtil.getLong(relationship.cdoID()), SnomedRelationshipIndexEntry.builder(relationship).build());
+									indexDocument(writer, CDOIDUtil.getLong(relationship.cdoID()), SnomedRelationshipIndexEntry.builder(relationship).build());
 								}
 								
 								return conceptModuleId;
@@ -732,7 +749,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					} else {
 						// TODO add compare key
 						final SnomedConceptDocument updatedConcept = SnomedConceptDocument.builder(identifierConcept).refSet(refSet).build();
-						indexDocument(identifierConcept.getStorageKey(), updatedConcept);
+						indexDocument(writer, identifierConcept.getStorageKey(), updatedConcept);
 					}
 					
 					visitedRefSets.put(refSetId, refSet);
@@ -742,7 +759,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				final String uuid = record.get(0);
 				final long memberCdoId = getMemberStorageKey(uuid);
 				final SnomedRefSetMember member = new Rf2RefSetMember(record, refSet, memberCdoId);
-				indexRefSetMember(member);
+				indexRefSetMember(writer, member);
 			}
 
 			private short getRefSetComponentType(final String representativeComponentId, final SnomedRefSetType refSetType) {
@@ -775,12 +792,16 @@ public class SnomedRf2IndexInitializer extends Job {
 		});
 	}
 	
-	private void indexRefSetMember(final SnomedRefSetMember member) {
-		indexDocument(CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+	private void indexRefSetMember(final RevisionWriter writer, final SnomedRefSetMember member) {
+		indexDocument(writer, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
 	}
 	
-	private void indexDocument(final long storageKey, final Revision revision) {
+	private void indexDocument(final RevisionWriter writer, final long storageKey, final Revision revision) {
 		try {
+			if (storageKey <= 0) {
+				System.err.println("");
+			}
+			checkArgument(storageKey > 0, "StorageKey must be greater than zero, %s", revision);
 			writer.put(storageKey, revision);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
@@ -792,7 +813,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, availableImages, identifierConceptIdsForNewRefSets).update(conceptId, active, doc);		
 	}
 
-	private void indexDescriptions(final String absolutePath) {
+	private void indexDescriptions(final RevisionWriter writer, final String absolutePath) {
 		parseFile(absolutePath, 9, new RecordParserCallback<String>() {
 			@Override
 			public void handleRecord(final int recordCount, final java.util.List<String> record) { 
@@ -814,7 +835,7 @@ public class SnomedRf2IndexInitializer extends Job {
 					conceptsWithCompareUniqueKeyChanges.add(conceptId);
 				}
 				
-				final SnomedDescriptionIndexEntry description = getCurrentRevision(SnomedDescriptionIndexEntry.class, storageKey);
+				final SnomedDescriptionIndexEntry description = getCurrentRevision(writer, SnomedDescriptionIndexEntry.class, storageKey);
 				final Multimap<Acceptability, String> invertedAcceptabilityMap;
 				
 				if (description != null) {
@@ -850,14 +871,16 @@ public class SnomedRf2IndexInitializer extends Job {
 					descriptionEntry.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
 				}
 				
-				indexDocument(storageKey, descriptionEntry.build());
+				indexDocument(writer, storageKey, descriptionEntry.build());
 				descriptionsInImportFile.add(descriptionId);
 			}
 		});
 	}
 	
-	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) throws IOException {
-		for (final SnomedConceptDocument concept : getCurrentRevisionsById(SnomedConceptDocument.class, unvisitedConcepts)) {
+	private void indexUnvisitedConcepts(final RevisionWriter writer, 
+			final Set<String> unvisitedConcepts, 
+			final Set<String> dirtyConceptsForCompareReindex) throws IOException {
+		for (final SnomedConceptDocument concept : getCurrentRevisionsById(writer, SnomedConceptDocument.class, unvisitedConcepts)) {
 			// can happen as concepts referenced in MRCM rules might not exist at this time
 			final String conceptId = concept.getId();
 			final long conceptStorageKey = concept.getStorageKey();
@@ -880,11 +903,11 @@ public class SnomedRf2IndexInitializer extends Job {
 					updatedMappingRefSetIds,
 					concept.getEffectiveTime());
 			
-			indexDocument(conceptStorageKey, doc.build());
+			indexDocument(writer, conceptStorageKey, doc.build());
 		}
 	}
 	
-	private <T extends RevisionDocument> Iterable<T> getCurrentRevisionsById(Class<T> type, Set<String> ids) {
+	private <T extends RevisionDocument> Iterable<T> getCurrentRevisionsById(RevisionWriter writer, Class<T> type, Set<String> ids) {
 		final Query<T> query = Query.builder(type)
 				.selectAll()
 				.where(RevisionDocument.Expressions.ids(ids))
@@ -897,8 +920,8 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 	}
 
-	private void indexUnvisitedDescriptions(final Set<String> unvisitedDescriptions) throws IOException {
-		for (final SnomedDescriptionIndexEntry description : getCurrentRevisionsById(SnomedDescriptionIndexEntry.class, unvisitedDescriptions)) {
+	private void indexUnvisitedDescriptions(final RevisionWriter writer, final Set<String> unvisitedDescriptions) throws IOException {
+		for (final SnomedDescriptionIndexEntry description : getCurrentRevisionsById(writer, SnomedDescriptionIndexEntry.class, unvisitedDescriptions)) {
 			final Multimap<Acceptability, String> invertedAcceptabilityMap = ImmutableMap.copyOf(description.getAcceptabilityMap()).asMultimap().inverse();
 			
 			final Collection<String> preferredRefSetIds = invertedAcceptabilityMap.get(Acceptability.PREFERRED);
@@ -927,11 +950,11 @@ public class SnomedRf2IndexInitializer extends Job {
 				doc.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
 			}
 			
-			indexDocument(description.getStorageKey(), doc.build());
+			indexDocument(writer, description.getStorageKey(), doc.build());
 		}
 	}
 	
-	private void indexConcepts(final String absolutePath) {
+	private void indexConcepts(final RevisionWriter writer, final String absolutePath) {
 		parseFile(absolutePath, 5, new RecordParserCallback<String>() {
 
 			@Override
@@ -945,7 +968,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				final boolean exhaustive = false;
 				final String moduleId = record.get(3);
 				
-				final SnomedConceptDocument currentRevision = getCurrentRevision(SnomedConceptDocument.class, conceptStorageKey);
+				final SnomedConceptDocument currentRevision = getCurrentRevision(writer, SnomedConceptDocument.class, conceptStorageKey);
 				final Collection<String> refSetIds = currentRevision == null ? Collections.<String>emptySet() : currentRevision.getReferringRefSets();
 				final Collection<String> updatedRefSetIds = getCurrentRefSetMemberships(refSetIds, refSetMemberChanges.get(conceptId));
 				
@@ -967,13 +990,13 @@ public class SnomedRf2IndexInitializer extends Job {
 						updatedMappingRefSetIds,
 						effectiveTime);
 				
-				indexDocument(conceptStorageKey, doc.build());
+				indexDocument(writer, conceptStorageKey, doc.build());
 			}
 
 		});
 	}
 	
-	private <T extends RevisionDocument> T getCurrentRevision(final Class<T> type, final long conceptStorageKey) {
+	private <T extends RevisionDocument> T getCurrentRevision(final RevisionWriter writer, final Class<T> type, final long conceptStorageKey) {
 		try {
 			return writer.searcher().get(type, conceptStorageKey);
 		} catch (IOException e) {
