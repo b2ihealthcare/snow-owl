@@ -118,9 +118,9 @@ public class ComponentLookup<C extends CDOObject> {
 				final Query<? extends SnomedDocument> query = Query.builder(type).selectAll().where(SnomedDocument.Expressions.id(componentId)).limit(2).build();
 				final Hits<? extends SnomedDocument> hits = index.search(query);
 				if (SnomedRefSet.class.isAssignableFrom(clazz)) {
-					return hits.getTotal() > 1 ? ClassUtils.checkAndCast(Iterables.getOnlyElement(hits), SnomedConceptDocument.class).getRefSetStorageKey() : CDOUtils.NO_STORAGE_KEY;
+					return hits.getTotal() > 0 ? ClassUtils.checkAndCast(Iterables.getOnlyElement(hits), SnomedConceptDocument.class).getRefSetStorageKey() : CDOUtils.NO_STORAGE_KEY;
 				} else {
-					return hits.getTotal() > 1 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
+					return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
 				}
 			}
 		});

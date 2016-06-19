@@ -78,7 +78,7 @@ public class RefSetMemberLookup {
 							.limit(2)
 							.build();
 					final Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
-					return hits.getTotal() > 1 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
+					return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
 				}
 			});
 			if (storageKey > CDOUtils.NO_STORAGE_KEY) {
