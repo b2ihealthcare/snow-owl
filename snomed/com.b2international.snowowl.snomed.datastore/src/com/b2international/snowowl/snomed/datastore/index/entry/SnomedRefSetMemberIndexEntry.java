@@ -727,7 +727,44 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	@JsonIgnore
 	public Map<String, Object> getAdditionalFields() {
 		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+		// ASSOCIATION refset members
+		putIfPresent(builder, Fields.TARGET_COMPONENT, getTargetComponent());
+		// ATTRIBUTE_VALUE refset members 
+		putIfPresent(builder, Fields.VALUE_ID, getValueId());
+		// CONCRETE DOMAIN reference set members
+		putIfPresent(builder, Fields.DATA_TYPE, getDataType());
+		putIfPresent(builder, Fields.ATTRIBUTE_NAME, getAttributeName());
+		putIfPresent(builder, Fields.DATA_VALUE, getValue());
+		putIfPresent(builder, Fields.OPERATOR_ID, getOperatorId());
+		putIfPresent(builder, Fields.CHARACTERISTIC_TYPE_ID, getCharacteristicTypeId());
+		putIfPresent(builder, Fields.UNIT_ID, getUnitId());
+		// DESCRIPTION
+		putIfPresent(builder, Fields.DESCRIPTION_LENGTH, getDescriptionLength());
+		putIfPresent(builder, Fields.DESCRIPTION_FORMAT, getDescriptionFormat());
+		// LANGUAGE
+		putIfPresent(builder, Fields.ACCEPTABILITY_ID, getAcceptabilityId());
+		// MODULE
+		putIfPresent(builder, Fields.SOURCE_EFFECTIVE_TIME, getSourceEffectiveTime());
+		putIfPresent(builder, Fields.TARGET_EFFECTIVE_TIME, getTargetEffectiveTime());
+		// SIMPLE MAP reference set members
+		putIfPresent(builder, Fields.MAP_TARGET, getMapTarget());
+		putIfPresent(builder, Fields.MAP_TARGET_DESCRIPTION, getMapTargetDescription());
+		// COMPLEX MAP
+		putIfPresent(builder, Fields.MAP_CATEGORY_ID, getMapCategoryId());
+		putIfPresent(builder, Fields.CORRELATION_ID, getCorrelationId());
+		putIfPresent(builder, Fields.MAP_ADVICE, getMapAdvice());
+		putIfPresent(builder, Fields.MAP_RULE, getMapRule());
+		putIfPresent(builder, Fields.MAP_GROUP, getMapGroup());
+		putIfPresent(builder, Fields.MAP_PRIORITY, getMapPriority());
+		// QUERY
+		putIfPresent(builder, Fields.QUERY, getQuery());
 		return builder.build();
+	}
+	
+	private static void putIfPresent(ImmutableMap.Builder<String, Object> builder, String key, Object value) {
+		if (key != null && value != null) {
+			builder.put(key, value);
+		}
 	}
 	
 }
