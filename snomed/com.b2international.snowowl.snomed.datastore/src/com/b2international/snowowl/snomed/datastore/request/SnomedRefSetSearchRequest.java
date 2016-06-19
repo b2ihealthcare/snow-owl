@@ -58,6 +58,9 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		
 		if (containsKey(OptionKey.TYPE)) {
 			queryBuilder.must(refSetTypes(getCollection(OptionKey.TYPE, SnomedRefSetType.class)));
+		} else {
+			// always add type filter, so only concept docs with refset props will be returned
+			queryBuilder.must(Expressions.prefixMatch(SnomedConceptDocument.Fields.REFSET_TYPE, ""));
 		}
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
