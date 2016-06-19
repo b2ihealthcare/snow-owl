@@ -54,47 +54,38 @@ public class RefSetMemberLookup {
 
 	@SuppressWarnings("unchecked")
 	public <M extends SnomedRefSetMember> M getMember(final UUID memberId) {
-		final long storageKey = memberIdMap.get(memberId);
-		
-		if (storageKey > CDOUtils.NO_STORAGE_KEY) {
-			return (M) editingContext.lookup(storageKey);
+		if (newMembers.containsKey(memberId)) {
+			return (M) newMembers.get(memberId);
 		} else {
-			final SnomedRefSetMember m = newMembers.get(memberId);
-			
-			if (null == m) {
-				
-				final long _storageKey = getStorageKey(memberId.toString());
-				
-				if (_storageKey > 0L) {
-				
-					registerMemberStorageKey(memberId, _storageKey);
-					return getMember(memberId); //should be fine for the second attempt
-					
-				} else {
-					
-					return null;
-					
-				}
-				
+			final long storageKey = getStorageKey(memberId);
+			if (storageKey > CDOUtils.NO_STORAGE_KEY) {
+				return (M) editingContext.lookup(storageKey);
+			} else {
+				return null;
 			}
-			
-			return (M) m;
-		}
+		} 
 	}
 
-	public long getStorageKey(final String uuid) {
-		return index.read(editingContext.getBranch(), new RevisionIndexRead<Long>() {
-			@Override
-			public Long execute(RevisionSearcher index) throws IOException {
-				final Query<SnomedRefSetMemberIndexEntry> query = Query.builder(SnomedRefSetMemberIndexEntry.class)
-						.selectAll()
-						.where(SnomedRefSetMemberIndexEntry.Expressions.id(uuid))
-						.limit(2)
-						.build();
-				final Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
-				return hits.getTotal() > 1 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
+	public long getStorageKey(final UUID uuid) {
+		long storageKey = memberIdMap.get(uuid);
+		if (storageKey < 0) {
+			storageKey = index.read(editingContext.getBranch(), new RevisionIndexRead<Long>() {
+				@Override
+				public Long execute(RevisionSearcher index) throws IOException {
+					final Query<SnomedRefSetMemberIndexEntry> query = Query.builder(SnomedRefSetMemberIndexEntry.class)
+							.selectAll()
+							.where(SnomedRefSetMemberIndexEntry.Expressions.id(uuid.toString()))
+							.limit(2)
+							.build();
+					final Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
+					return hits.getTotal() > 1 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
+				}
+			});
+			if (storageKey > CDOUtils.NO_STORAGE_KEY) {
+				memberIdMap.put(uuid, storageKey);
 			}
-		});
+		}
+		return storageKey;
 	}
 
 	public void registerMemberStorageKey(final UUID memberId, final long storageKey) {
