@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 4.7
@@ -108,13 +109,25 @@ public class SnomedMergeConflictMapper {
 	public static SnomedMergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction,
 			final CDOTransaction targetTransaction) {
 
-		final String sourceComponentId = getComponentIdWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
-		final String type = getTypeWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
+		SnomedMergeConflict snomedMergeConflict;
 		
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, null, String.format(
-				ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_MESSAGE, type, sourceComponentId));
-
-		snomedMergeConflict.setSourceType(type);
+		if (conflict.isAddedInSource()) {
+			final String sourceComponentId = getComponentIdWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
+			final String type = getTypeWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
+			
+			snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, null, String.format(
+					ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE, type, sourceComponentId));
+			
+			snomedMergeConflict.setSourceType(type);
+		} else {
+			String targetComponentId = getComponentIdWithFallback(targetTransaction, sourceTransaction, conflict.getTargetId());
+			String type = getTypeWithFallback(targetTransaction, sourceTransaction, conflict.getTargetId());
+			
+			snomedMergeConflict = new SnomedMergeConflict(null, targetComponentId, String.format(
+					ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE, type, targetComponentId));
+			
+			snomedMergeConflict.setTargetType(type);
+		}
 
 		return snomedMergeConflict;
 	}
@@ -156,7 +169,7 @@ public class SnomedMergeConflictMapper {
 			@Override public String apply(final CDOFeatureDelta input) {
 				return input.getFeature().getName();
 			}
-		}).toList();
+		}).toSortedList(Ordering.natural());
 	}
 
 	private static String getComponentId(final CDOTransaction transaction, final CDOID id) {

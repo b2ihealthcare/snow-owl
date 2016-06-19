@@ -28,11 +28,17 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 	private final CDOID sourceId;
 	private final CDOID targetId;
 	private final String message;
+	private final boolean addedInSource;
 
 	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message) {
+		this(sourceId, targetId, message, true);
+	}
+	
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message, final boolean addedInSource) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
 		this.message = message;
+		this.addedInSource = addedInSource;
 	}
 
 	@Override
@@ -50,6 +56,10 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 
 	public CDOID getTargetId() {
 		return targetId;
+	}
+	
+	public boolean isAddedInSource() {
+		return addedInSource;
 	}
 	
 	@Override

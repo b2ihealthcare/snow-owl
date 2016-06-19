@@ -136,7 +136,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	@Override
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
 
-		Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget);
+		Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget, true);
 		
 		if (conflict != null) {
 			return conflict;
@@ -154,7 +154,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	@Override
 	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
 		
-		Conflict conflict = checkDuplicateComponentIds(targetRevision, newComponentIdsInSource);
+		Conflict conflict = checkDuplicateComponentIds(targetRevision, newComponentIdsInSource, false);
 		
 		if (conflict != null) {
 			return conflict;
@@ -249,18 +249,18 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 	}
 
-	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap) {
+	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap, boolean addedInSource) {
 
 		if (isComponent(revision)) {
 			final String newComponentId = getComponentId((InternalCDORevision) revision);
 			final CDOID conflictingNewId = newComponentIdsMap.get(newComponentId);
-			
+
 			if (null != conflictingNewId) {
 				return new AddedInSourceAndTargetConflict(revision.getID(), conflictingNewId, String.format(
-						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId));
+						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId), addedInSource);
 			}
 		}
-		
+
 		return null;
 	}
 

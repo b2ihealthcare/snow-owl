@@ -18,24 +18,19 @@ package com.b2international.snowowl.snomed.api.rest.branches;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFailsWithConflict;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.updateMemberEffectiveTime;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Collections.emptyList;
-import static org.hamcrest.CoreMatchers.allOf;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +41,11 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.jayway.restassured.response.Response;
 
 /**
@@ -94,26 +89,23 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		assertDescriptionCanBeUpdated(testBranchPath, "D100", changesOnBranch);
 
-		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "commit");
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "commit");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
 
-		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
-
-		assertEquals(1, additionalInfos.size());
-
-		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
-
-		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Description")));
-		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Description")));
-		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("D100"))));
-		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("D100"))));
-
-		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
-		assertEquals(1, sourceFeatures.size());
-		assertThat(sourceFeatures, hasItem("caseSignificance"));
-
-		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
-		assertEquals(1, targetFeatures.size());
-		assertThat(targetFeatures, hasItem("caseSignificance"));
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("sourceType", "Description")
+				.put("sourceId", symbolicNameMap.get("D100"))
+				.put("targetType", "Description")
+				.put("targetId", symbolicNameMap.get("D100"))
+				.put("message", String.format(ConflictMapper.CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, symbolicNameMap.get("D100")))
+				.put("changedSourceFeatures", singletonList("caseSignificance"))
+				.put("changedTargetFeatures", singletonList("caseSignificance"))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 
 	@Test
@@ -146,25 +138,20 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertRefSetMemberExists(testBranchPath.getParent(), "M1");
 		assertRefSetMemberNotExists(testBranchPath, "M1");
 
-		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "commit");
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "commit");
 
-		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
 
-		assertEquals(1, additionalInfos.size());
-
-		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
-
-		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("SnomedRefSetMember")));
-		assertThat(getProperty(additionalInfo, "targetType", String.class), nullValue());
-		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("M1"))));
-		assertThat(getProperty(additionalInfo, "targetId", String.class), nullValue());
-
-		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
-		assertEquals(2, sourceFeatures.size());
-		assertThat(sourceFeatures, allOf(hasItem("released"), hasItem("effectiveTime")));
-
-		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
-		assertTrue(targetFeatures.isEmpty());
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("sourceType", "SnomedRefSetMember")
+				.put("sourceId", symbolicNameMap.get("M1"))
+				.put("message", String.format(ConflictMapper.CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, symbolicNameMap.get("M1")))
+				.put("changedSourceFeatures", newArrayList("effectiveTime", "released"))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 
 	@Test
@@ -231,25 +218,20 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertDescriptionNotExists(testBranchPath.getParent(), "D100");
 		assertDescriptionExists(testBranchPath, "D100");
 		
-		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "merge");
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "merge");
 		
-		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
 
-		assertEquals(1, additionalInfos.size());
-
-		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
-
-		assertThat(getProperty(additionalInfo, "sourceType", String.class), nullValue());
-		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Description")));
-		assertThat(getProperty(additionalInfo, "sourceId", String.class), nullValue());
-		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("D100"))));
-
-		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
-		assertTrue(sourceFeatures.isEmpty());
-
-		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
-		assertEquals(1, targetFeatures.size());
-		assertThat(targetFeatures, hasItem("caseSignificance"));
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("targetId", symbolicNameMap.get("D100"))
+				.put("targetType", "Description")
+				.put("message", String.format(ConflictMapper.CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, symbolicNameMap.get("D100")))
+				.put("changedTargetFeatures", singletonList("caseSignificance"))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 	
 	@Test
@@ -269,24 +251,27 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		assertEquals(descriptionId, symbolicNameMap.get("D300"));
 		
-		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "commit");
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "commit");
 		
-		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(2, conflicts.size());
 
-		assertEquals(2, additionalInfos.size());
-
-		Map<String, Object> additionalInfo = Iterables.getFirst(additionalInfos.values(), null);
-
-		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Description")));
-		assertThat(getProperty(additionalInfo, "targetType", String.class), nullValue());
-		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(descriptionId)));
-		assertThat(getProperty(additionalInfo, "targetId", String.class), nullValue());
-
-		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
-		assertTrue(sourceFeatures.isEmpty());
-
-		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
-		assertTrue(targetFeatures.isEmpty());
+		ImmutableMap<String, Object> conflict1 = ImmutableMap.<String, Object>builder()
+				.put("sourceType", "Description")
+				.put("sourceId", descriptionId)
+				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE, "Description", descriptionId))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict1));
+		
+		ImmutableMap<String, Object> conflict2 = ImmutableMap.<String, Object>builder()
+				.put("targetType", "Description")
+				.put("targetId", descriptionId)
+				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE, "Description", descriptionId))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict2));
 	}
 	
 	@Test
@@ -309,24 +294,21 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
 		assertConceptNotExists(testBranchPath.getParent(), "C1");
 		
-		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "merge");
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "merge");
 		
-		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
-
-		assertEquals(1, additionalInfos.size());
-
-		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
-		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Concept")));
-		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Relationship")));
-		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("C1"))));
-		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("R1"))));
+		assertEquals(1, conflicts.size());
 
-		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
-		assertTrue(sourceFeatures.isEmpty());
-
-		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
-		assertTrue(targetFeatures.isEmpty());
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("sourceType", "Concept")
+				.put("sourceId", symbolicNameMap.get("C1"))
+				.put("targetType", "Relationship")
+				.put("targetId", symbolicNameMap.get("R1"))
+				.put("message", String.format(ConflictMapper.ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 	
 	@Test
@@ -349,50 +331,21 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertConceptCanBeDeleted(testBranchPath, "C1");
 		assertConceptNotExists(testBranchPath, "C1");
 		
-		Response mergeResponse = assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "merge");
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "merge");
 		
-		Map<String, Map<String, Object>> additionalInfos = mergeResponse.then().extract().path("apiError.additionalInfo");
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
 
-		assertEquals(1, additionalInfos.size());
-
-		Map<String, Object> additionalInfo = Iterables.getOnlyElement(additionalInfos.values());
-
-		assertThat(getProperty(additionalInfo, "sourceType", String.class), allOf(notNullValue(), is("Relationship")));
-		assertThat(getProperty(additionalInfo, "targetType", String.class), allOf(notNullValue(), is("Concept")));
-		assertThat(getProperty(additionalInfo, "sourceId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("R1"))));
-		assertThat(getProperty(additionalInfo, "targetId", String.class), allOf(notNullValue(), is(symbolicNameMap.get("C1"))));
-
-		Collection<String> sourceFeatures = getMultiValueProperty(additionalInfo, "changedSourceFeatures", String.class);
-		assertTrue(sourceFeatures.isEmpty());
-
-		Collection<String> targetFeatures = getMultiValueProperty(additionalInfo, "changedTargetFeatures", String.class);
-		assertTrue(targetFeatures.isEmpty());
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("sourceType", "Relationship")
+				.put("sourceId", symbolicNameMap.get("R1"))
+				.put("targetType", "Concept")
+				.put("targetId", symbolicNameMap.get("C1"))
+				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 	
-	private <T> T getProperty(Map<String, Object> additionalInfo, String propertyName, Class<T> type) {
-		if (additionalInfo.containsKey(propertyName)) {
-			Object property = additionalInfo.get(propertyName);
-			if (type.isInstance(property)) {
-				return type.cast(property);
-			}
-		}
-		return null;
-	}
-
-	private <T> Collection<T> getMultiValueProperty(Map<String, Object> additionalInfo, String propertyName, Class<T> type) {
-		if (additionalInfo.containsKey(propertyName)) {
-			List<T> results = newArrayList();
-			Object property = additionalInfo.get(propertyName);
-			if (property instanceof Collection) {
-				Collection<?> collection = (Collection<?>) property;
-				for (Object object : collection) {
-					if (type.isInstance(object)) {
-						results.add(type.cast(object));
-					}
-				}
-			}
-			return results;
-		}
-		return emptyList();
-	}
 }

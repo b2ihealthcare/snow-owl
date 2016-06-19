@@ -249,7 +249,14 @@ public abstract class SnomedBranchingApiAssert {
 	public static Response assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
 		Response mergeResponse = waitForMergeJob(id);
-		mergeResponse.then().assertThat().body("status", anyOf(equalTo("FAILED"), equalTo("HAS_CONFLICT"))); // TODO split this condition
+		mergeResponse.then().assertThat().body("status", anyOf(equalTo("FAILED"), equalTo("HAS_CONFLICT")));
+		return mergeResponse;
+	}
+	
+	public static Response assertMergeJobFailsWithConflict(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
+		Response mergeResponse = waitForMergeJob(id);
+		mergeResponse.then().assertThat().body("status", equalTo(Merge.Status.HAS_CONFLICT.name()));
 		return mergeResponse;
 	}
 	

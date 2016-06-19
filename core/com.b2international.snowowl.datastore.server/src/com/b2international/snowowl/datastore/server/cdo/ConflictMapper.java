@@ -29,7 +29,8 @@ public class ConflictMapper {
 	public static final String CHANGED_IN_SOURCE_AND_TARGET_MESSAGE = "%s was changed both in source and target branch.";
 	public static final String CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s was changed in source branch but detached in target branch.";
 	public static final String CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s was changed in target branch but detached in source branch.";
-	public static final String ADDED_IN_SOURCE_AND_TARGET_MESSAGE = "%s with ID '%s' was introduced both on source and target branch.";
+	public static final String ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE = "%s with ID '%s' was introduced on source branch and has ID conflict on target branch.";
+	public static final String ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE = "%s with ID '%s' was introduced on target branch and has ID conflict on source branch.";
 	public static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s with ID '%s' added on source branch referencing %s with ID '%s' which was detached on target branch.";
 	public static final String ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s with ID '%s' added on target branch referencing %s with ID '%s' which was detached on source branch.";
 
@@ -68,8 +69,9 @@ public class ConflictMapper {
 	public static GenericMergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction) {
 		final String sourceId = conflict.getSourceId().toString();
 		final String targetId = conflict.getTargetId().toString();
-		final String type = sourceTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName();
-		return new GenericMergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_AND_TARGET_MESSAGE, type, sourceId));
+		final String type = sourceTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName(); // FIXME
+		return new GenericMergeConflict(sourceId, targetId, String.format(conflict.isAddedInSource() ? ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE
+				: ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE, type, sourceId));
 	}
 	
 	public static GenericMergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {

@@ -66,5 +66,59 @@ public class SnomedMergeConflict extends GenericMergeConflict {
 	public void setTargetType(final String targetClass) {
 		this.targetType = targetClass;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((changedSourceFeatures == null) ? 0 : changedSourceFeatures.hashCode());
+		result = prime * result + ((changedTargetFeatures == null) ? 0 : changedTargetFeatures.hashCode());
+		result = prime * result + ((sourceType == null) ? 0 : sourceType.hashCode());
+		result = prime * result + ((targetType == null) ? 0 : targetType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		SnomedMergeConflict other = (SnomedMergeConflict) obj;
+		if (changedSourceFeatures == null) {
+			if (other.changedSourceFeatures != null) {
+				return false;
+			}
+		} else if (!changedSourceFeatures.equals(other.changedSourceFeatures)) {
+			return false;
+		}
+		if (changedTargetFeatures == null) {
+			if (other.changedTargetFeatures != null) {
+				return false;
+			}
+		} else if (!changedTargetFeatures.equals(other.changedTargetFeatures)) {
+			return false;
+		}
+		if (sourceType == null) {
+			if (other.sourceType != null) {
+				return false;
+			}
+		} else if (!sourceType.equals(other.sourceType)) {
+			return false;
+		}
+		if (targetType == null) {
+			if (other.targetType != null) {
+				return false;
+			}
+		} else if (!targetType.equals(other.targetType)) {
+			return false;
+		}
+		return true;
+	}
 	
 }
