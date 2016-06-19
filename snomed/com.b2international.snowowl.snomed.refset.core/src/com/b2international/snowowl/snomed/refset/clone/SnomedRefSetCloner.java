@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
@@ -98,12 +99,11 @@ public class SnomedRefSetCloner {
 				String mapTargetComponentType = (String) originalMember.getProperties().get(SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_TYPE);
 				specialFieldPair = ComponentIdentifierPair.<String>createWithUncheckedComponentId(mapTargetComponentType, mapTargetId);
 				SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(identifierPair, specialFieldPair, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
-				SnomedRefSetMemberIndexEntry complexMapRefSetMemberIndexEntry = (SnomedRefSetMemberIndexEntry) originalMember;
-				newComplexMapRefSetMember.setCorrelationId(complexMapRefSetMemberIndexEntry.getCorrelationId());
-				newComplexMapRefSetMember.setMapAdvice(complexMapRefSetMemberIndexEntry.getMapAdvice());
-				newComplexMapRefSetMember.setMapGroup(complexMapRefSetMemberIndexEntry.getMapGroup().byteValue());
-				newComplexMapRefSetMember.setMapPriority(complexMapRefSetMemberIndexEntry.getMapPriority().byteValue());
-				newComplexMapRefSetMember.setMapRule(complexMapRefSetMemberIndexEntry.getMapRule());
+				newComplexMapRefSetMember.setCorrelationId((String) originalMember.getProperties().get(Fields.CORRELATION_ID));
+				newComplexMapRefSetMember.setMapAdvice((String) originalMember.getProperties().get(Fields.MAP_ADVICE));
+				newComplexMapRefSetMember.setMapGroup(((Integer) originalMember.getProperties().get(Fields.MAP_GROUP)).byteValue());
+				newComplexMapRefSetMember.setMapPriority(((Integer)originalMember.getProperties().get(Fields.MAP_PRIORITY)).byteValue());
+				newComplexMapRefSetMember.setMapRule((String) originalMember.getProperties().get(Fields.MAP_RULE));
 				newRefSetMember = newComplexMapRefSetMember;
 				break;
 			case SIMPLE_MAP:
