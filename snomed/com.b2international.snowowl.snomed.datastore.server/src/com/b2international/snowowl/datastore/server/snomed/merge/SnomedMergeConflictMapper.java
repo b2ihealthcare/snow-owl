@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed;
+package com.b2international.snowowl.datastore.server.snomed.merge;
 
 import java.util.List;
 
@@ -31,7 +31,6 @@ import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetached
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
-import com.b2international.snowowl.datastore.server.snomed.merge.SnomedCDOMergeConflict;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
