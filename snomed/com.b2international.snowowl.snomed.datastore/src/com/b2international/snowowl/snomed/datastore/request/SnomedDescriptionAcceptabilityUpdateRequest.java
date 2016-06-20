@@ -22,15 +22,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -65,7 +67,7 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 		if (null == newAcceptabilityMap) {
 			return;
 		}
-		final Set<String> synonymAndDescendantIds = context.service(ISnomedComponentService.class).getSynonymAndDescendantIds(context.branch().branchPath());
+		final Set<String> synonymAndDescendantIds = getSynonymAndDescendantIds(context);
 
 		final Map<String, Acceptability> languageMembersToCreate = newHashMap(newAcceptabilityMap);
 		final List<SnomedLanguageRefSetMember> languageMembers = ImmutableList.copyOf(description.getLanguageRefSetMembers());
@@ -101,6 +103,11 @@ public final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseReque
 				}
 			}
 		}
+	}
+	
+	private Set<String> getSynonymAndDescendantIds(TransactionContext context) {
+		final SnomedConcepts concepts = SnomedRequests.prepareGetSynonyms().build().execute(context);
+		return FluentIterable.from(concepts).transform(IComponent.ID_FUNCTION).toSet();
 	}
 	
 	private void updateOtherPreferredDescriptions(final List<Description> descriptions, final Description preferredDescription, final String languageRefSetId, 
