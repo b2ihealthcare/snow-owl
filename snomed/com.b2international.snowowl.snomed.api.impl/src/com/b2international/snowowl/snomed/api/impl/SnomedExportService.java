@@ -107,7 +107,7 @@ public class SnomedExportService implements ISnomedExportService {
 		
 		model.setDeltaExportStartEffectiveTime(configuration.getDeltaExportStartEffectiveTime());
 		model.setDeltaExportEndEffectiveTime(configuration.getDeltaExportEndEffectiveTime());
-		model.setDeltaExport(ContentSubType.DELTA.equals(contentSubType));
+		model.setIncludeUnpublised(configuration.includeUnpublised());
 		
 		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
 		

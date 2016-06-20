@@ -65,4 +65,10 @@ public interface ISnomedExportConfiguration extends ISnomedRF2Configuration {
 	 * @return a collection of module identifiers
 	 */
 	Collection<String> getModuleIds();
+
+	/**
+	 * Returns true if the unpublished components are exported
+	 * @return
+	 */
+	boolean includeUnpublised();
 }

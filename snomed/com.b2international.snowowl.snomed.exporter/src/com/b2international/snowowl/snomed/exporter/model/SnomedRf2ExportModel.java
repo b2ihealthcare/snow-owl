@@ -259,7 +259,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		return includeUnpublised;
 	}
 
-	public void setincludeUnpublised(boolean includeUnpublised) {
+	public void setIncludeUnpublised(boolean includeUnpublised) {
 		this.includeUnpublised = includeUnpublised;
 	}
 

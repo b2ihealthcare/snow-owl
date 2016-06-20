@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
+import javax.swing.text.html.InlineView;
+
 import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
@@ -36,12 +38,14 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	private Date deltaExportStartEffectiveTime;
 	private Date deltaExportEndEffectiveTime;
 	private String transientEffectiveTime;
+	private boolean includeUnpublised;
 
 	public SnomedExportConfiguration(Rf2ReleaseType type, 
 			String branchPath, 
 			String namespaceId, Collection<String> moduleIds,
 			Date deltaExportStartEffectiveTime, Date deltaExportEndEffectiveTime, 
-			String transientEffectiveTime) {
+			String transientEffectiveTime,
+			final boolean includeUnpublished) {
 		this.type = checkNotNull(type, "type");
 		this.namespaceId = checkNotNull(namespaceId, "namespaceId");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
@@ -49,6 +53,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
 		this.transientEffectiveTime = transientEffectiveTime;
+		this.includeUnpublised = includeUnpublished;
 	}
 	
 	@Override
@@ -84,5 +89,10 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	@Override
 	public String getTransientEffectiveTime() {
 		return transientEffectiveTime;
+	}
+
+	@Override
+	public boolean includeUnpublised() {
+		return includeUnpublised;
 	}
 }
