@@ -159,6 +159,15 @@ public interface ICodeSystemVersion extends Serializable {
 		}
 	};
 	
+	/**Convenient method for transforming a {@link ICodeSystemVersion} into it's parent's
+	 *{@link IBranchPath} instance with the {@link BranchPathUtils#createVersionPath(String)} method. */
+	Function<ICodeSystemVersion, IBranchPath> TO_PARENT_BRANCH_PATH_FUNC = new Function<ICodeSystemVersion, IBranchPath>() {
+		public IBranchPath apply(final ICodeSystemVersion version) {
+			return BranchPathUtils.createPath(version.getParentBranchPath());
+		}
+	};
+	
+	
 	
 	/**Function for extracting the {@link ICodeSystemVersion#getRepositoryUuid()} of the {@link ICodeSystemVersion code system version}.*/
 	Function<ICodeSystemVersion, String> TO_REPOSITORY_UUID_FUNC = new Function<ICodeSystemVersion, String>() {

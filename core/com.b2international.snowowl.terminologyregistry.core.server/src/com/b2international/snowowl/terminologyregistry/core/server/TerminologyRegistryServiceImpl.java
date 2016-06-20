@@ -46,7 +46,9 @@ import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 
 
 /**
@@ -176,11 +178,19 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 		forEach(getServiceForClass(ICDOConnectionManager.class).uuidKeySet(), new Procedure<String>() {
 			protected void doApply(final String repositoryUuid) {
 				final InternalTerminologyRegistryService registryService = InternalTerminologyRegistryServiceRegistry.INSTANCE.getService(repositoryUuid);
-				List<ICodeSystemVersion> existingVersion = newArrayList(registryService.getCodeSystemVersionsFromRepositoryWithInitVersion(createMainPath(), repositoryUuid));
-				existingVersion = newArrayList(getServiceForClass(CodeSystemService.class).decorateWithPatchedFlag(repositoryUuid, existingVersion));
-				sort(existingVersion, reverseOrder(ICodeSystemVersion.VERSION_IMPORT_DATE_COMPARATOR));
-				existingVersion.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid));
-				versions.put(repositoryUuid, existingVersion);
+				List<ICodeSystemVersion> existingVersions = newArrayList(registryService.getCodeSystemVersionsFromRepositoryWithInitVersion(createMainPath(), repositoryUuid));
+				existingVersions = newArrayList(getServiceForClass(CodeSystemService.class).decorateWithPatchedFlag(repositoryUuid, existingVersions));
+				sort(existingVersions, reverseOrder(ICodeSystemVersion.VERSION_IMPORT_DATE_COMPARATOR));
+				
+				
+				ImmutableSet<IBranchPath> codeSystemBranchPathSet = Multimaps.index(existingVersions, ICodeSystemVersion.TO_PARENT_BRANCH_PATH_FUNC).keySet();
+				
+				for (IBranchPath codeSystemBranchPath : codeSystemBranchPathSet) {
+					final String targetBranchPath = codeSystemBranchPath.getPath();
+					existingVersions.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, targetBranchPath));
+				}
+				
+				versions.put(repositoryUuid, existingVersions);
 			}
 		});
 		

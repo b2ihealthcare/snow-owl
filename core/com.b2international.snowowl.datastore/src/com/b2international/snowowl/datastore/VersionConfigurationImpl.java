@@ -259,7 +259,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 					return Objects.equal(input.getCodeSystemShortName(), codeSystem.getShortName());
 				}
 			}));
-			currentVersion.put(codeSystem, version != null ? version : LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid));
+			currentVersion.put(codeSystem, version != null ? version : LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, codeSystem.getBranchPath()));
 		}
 		return currentVersion;
 	}

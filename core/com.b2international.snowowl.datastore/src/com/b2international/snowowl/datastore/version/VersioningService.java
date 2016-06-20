@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,7 +86,11 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 /**
@@ -119,6 +124,9 @@ public class VersioningService implements IVersioningService {
 	
 	/**Creates a new versioning service for the given tooling feature.*/
 	public VersioningService(final String toolingId, final String... otherToolingIds) {
+		
+		
+		
 		configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
 		existingVersions = initExistingVersions(configuration.getToolingIds());
 		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
@@ -300,8 +308,15 @@ public class VersioningService implements IVersioningService {
 	}
 
 	private List<ICodeSystemVersion> getAllVersionsWithHead(final String toolingId) {
+		String repositoryUuid = getRepositoryUuid(toolingId);
 		final List<ICodeSystemVersion> allTagsWithHead = newArrayList(existingVersions.get(toolingId));
-		allTagsWithHead.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(getRepositoryUuid(toolingId)));
+		
+
+		// creating HEAD CSV refs.
+		Set<IBranchPath> codeSystemBranchPaths = Multimaps.index(allTagsWithHead, ICodeSystemVersion.TO_PARENT_BRANCH_PATH_FUNC).keySet();
+		for (IBranchPath csBranchPath : codeSystemBranchPaths) {
+			allTagsWithHead.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, csBranchPath.getPath()));
+		}
 		return allTagsWithHead;
 	}
 	
