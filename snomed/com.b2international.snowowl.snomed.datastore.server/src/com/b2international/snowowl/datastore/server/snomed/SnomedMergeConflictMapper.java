@@ -31,6 +31,7 @@ import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetached
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
+import com.b2international.snowowl.datastore.server.snomed.merge.SnomedCDOMergeConflict;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
