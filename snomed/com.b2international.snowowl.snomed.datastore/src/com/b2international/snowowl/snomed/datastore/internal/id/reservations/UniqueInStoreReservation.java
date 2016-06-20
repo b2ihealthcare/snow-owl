@@ -17,12 +17,15 @@ package com.b2international.snowowl.snomed.datastore.internal.id.reservations;
 
 import java.util.Collections;
 
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
 import com.google.inject.Provider;
 
 /**
@@ -40,7 +43,20 @@ public class UniqueInStoreReservation implements Reservation {
 	
 	@Override
 	public boolean includes(SnomedIdentifier identifier) {
-		return SnomedRequests.prepareSearchConcept()
+		final SnomedSearchRequestBuilder<?, ? extends PageableCollectionResource<?>> req;
+		switch (identifier.getComponentCategory()) {
+		case CONCEPT:
+			req = SnomedRequests.prepareSearchConcept();
+			break;
+		case DESCRIPTION:
+			req = SnomedRequests.prepareSearchDescription();
+			break;
+		case RELATIONSHIP:
+			req = SnomedRequests.prepareSearchRelationship();
+			break;
+		default: throw new NotImplementedException();
+		}
+		return req
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(identifier.toString()))
 				.build(BranchPathUtils.createMainPath().getPath())
