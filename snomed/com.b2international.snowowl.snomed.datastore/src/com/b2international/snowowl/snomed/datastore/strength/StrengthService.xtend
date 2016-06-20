@@ -48,7 +48,7 @@ class StrengthService implements IStrengthService {
 	override getStrengths(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		if (!entries.empty) {
 			val result = <StrengthEntry>newArrayList()
-			val map = Multimaps.index(entries)[removeStrengthSuffixes(it.attributeLabel)]
+			val map = Multimaps.index(entries)[removeStrengthSuffixes(it.attributeName)]
 			map.asMap.forEach[ name, cds |
 				if (cds.simpleType) {
 					result += name.createSimpleStrength(cds)
@@ -73,24 +73,24 @@ class StrengthService implements IStrengthService {
 	
 	def private isSimpleType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		entries.size == 1 && 
-		entries.head.attributeLabel.endsWith(CD_NUMERATOR_VALUE)
+		entries.head.attributeName.endsWith(CD_NUMERATOR_VALUE)
 	}
 	
 	def private isSimpleRangeType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		Range.closed(1,2).contains(entries.size) && 
-		entries.forall[attributeLabel.endsWithMinLabel || attributeLabel.endsWithMaxLabel]
+		entries.forall[attributeName.endsWithMinLabel || attributeName.endsWithMaxLabel]
 	}
 	
 	def private isRatioType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		Range.closed(2,3).contains(entries.size) && 
-		entries.exists[attributeLabel.endsWith(CD_NUMERATOR_VALUE)] && 
-		entries.exists[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]
+		entries.exists[attributeName.endsWith(CD_NUMERATOR_VALUE)] && 
+		entries.exists[attributeName.endsWith(CD_DENOMINATOR_VALUE)]
 	}
 	
 	def private isRatioRangeType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		Range.closed(2,4).contains(entries.size) && 
-		entries.exists[attributeLabel.endsWithMinLabel || attributeLabel.endsWithMaxLabel] && 
-		entries.exists[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]
+		entries.exists[attributeName.endsWithMinLabel || attributeName.endsWithMaxLabel] && 
+		entries.exists[attributeName.endsWith(CD_DENOMINATOR_VALUE)]
 	}
 	
 	def private endsWithMinLabel(String it) {
@@ -103,43 +103,43 @@ class StrengthService implements IStrengthService {
 	
 	def private StrengthEntry createSimpleStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
 		val numeratorEntry = entries.head
-		return new StrengthEntry(name, numeratorEntry.value, numeratorEntry.uomComponentId.toLong)
+		return new StrengthEntry(name, numeratorEntry.valueAs, numeratorEntry.unitId.toLong)
 	}
 	
 	def private StrengthEntry createSimpleRangeStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
-		val numeratorMinEntry = entries.findFirst[attributeLabel.endsWithMinLabel]
-		val numeratorMaxEntry = entries.findFirst[attributeLabel.endsWithMaxLabel]
-		val numeratorUnit = if (numeratorMinEntry != null) numeratorMinEntry.uomComponentId.toLong else numeratorMaxEntry.uomComponentId.toLong 
-		return new StrengthEntry(name, numeratorMinEntry?.value, numeratorMaxEntry?.value, numeratorUnit) 
+		val numeratorMinEntry = entries.findFirst[attributeName.endsWithMinLabel]
+		val numeratorMaxEntry = entries.findFirst[attributeName.endsWithMaxLabel]
+		val numeratorUnit = if (numeratorMinEntry != null) numeratorMinEntry.unitId.toLong else numeratorMaxEntry.unitId.toLong 
+		return new StrengthEntry(name, numeratorMinEntry?.valueAs, numeratorMaxEntry?.valueAs, numeratorUnit) 
 	}
 	
 	def private StrengthEntry createRatioStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
-		val numeratorEntry = entries.findFirst[attributeLabel.endsWith(CD_NUMERATOR_VALUE)]
-		val denominatorEntry = entries.findFirst[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]
-		val delimiterEntry = entries.findFirst[attributeLabel.endsWith(CD_DELIMITER)]
+		val numeratorEntry = entries.findFirst[attributeName.endsWith(CD_NUMERATOR_VALUE)]
+		val denominatorEntry = entries.findFirst[attributeName.endsWith(CD_DENOMINATOR_VALUE)]
+		val delimiterEntry = entries.findFirst[attributeName.endsWith(CD_DELIMITER)]
 		
-		val isDefaultUnit = isDefaultUnit(numeratorEntry.uomComponentId, denominatorEntry.uomComponentId)
+		val isDefaultUnit = isDefaultUnit(numeratorEntry.unitId, denominatorEntry.unitId)
 		
-		val numeratorUnit = if (isDefaultUnit) -1L else numeratorEntry.uomComponentId.toLong
-		val denominatorUnit = if (isDefaultUnit) -1L else denominatorEntry.uomComponentId.toLong
+		val numeratorUnit = if (isDefaultUnit) -1L else numeratorEntry.unitId.toLong
+		val denominatorUnit = if (isDefaultUnit) -1L else denominatorEntry.unitId.toLong
 		
 		val delimiter = if (delimiterEntry != null) getDelimiterFor(delimiterEntry.value) ?: StrengthEntryDelimiter.SLASH else StrengthEntryDelimiter.SLASH
 		
-		return new StrengthEntry(name, numeratorEntry.value, numeratorUnit, delimiter, denominatorEntry.value, denominatorUnit)
+		return new StrengthEntry(name, numeratorEntry.valueAs, numeratorUnit, delimiter, denominatorEntry.valueAs, denominatorUnit)
 	}
 	
 	def private StrengthEntry createRatioRangeStrength(String name, Collection<SnomedRefSetMemberIndexEntry> entries) {
-		val numeratorMinEntry = entries.findFirst[attributeLabel.endsWithMinLabel]
-		val numeratorMaxEntry = entries.findFirst[attributeLabel.endsWithMaxLabel]
-		val denominatorEntry = entries.findFirst[attributeLabel.endsWith(CD_DENOMINATOR_VALUE)]
-		val delimiterEntry = entries.findFirst[attributeLabel.endsWith(CD_DELIMITER)]
+		val numeratorMinEntry = entries.findFirst[attributeName.endsWithMinLabel]
+		val numeratorMaxEntry = entries.findFirst[attributeName.endsWithMaxLabel]
+		val denominatorEntry = entries.findFirst[attributeName.endsWith(CD_DENOMINATOR_VALUE)]
+		val delimiterEntry = entries.findFirst[attributeName.endsWith(CD_DELIMITER)]
 		
-		val numeratorUnit = if (numeratorMinEntry != null) numeratorMinEntry.uomComponentId.toLong else numeratorMaxEntry.uomComponentId.toLong
-		val denominatorUnit = denominatorEntry.uomComponentId.toLong
+		val numeratorUnit = if (numeratorMinEntry != null) numeratorMinEntry.unitId.toLong else numeratorMaxEntry.unitId.toLong
+		val denominatorUnit = denominatorEntry.unitId.toLong
 		
 		val delimiter = if (delimiterEntry != null)  getDelimiterFor(delimiterEntry.value) ?: StrengthEntryDelimiter.SLASH else StrengthEntryDelimiter.SLASH
 		
-		return new StrengthEntry(name, numeratorMinEntry?.value, numeratorMaxEntry?.value, numeratorUnit, delimiter, denominatorEntry.value, denominatorUnit)
+		return new StrengthEntry(name, numeratorMinEntry?.valueAs, numeratorMaxEntry?.valueAs, numeratorUnit, delimiter, denominatorEntry.valueAs, denominatorUnit)
 	}
 	
 	def private isDefaultUnit(String numeratorUnit, String denominatorUnit) {

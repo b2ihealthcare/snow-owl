@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.index.compat.Highlighting;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
@@ -56,8 +57,8 @@ public class MissingSnomedComponentQuickSearchContentProvider extends AbstractQu
 						Concepts.ROOT_CONCEPT, 
 						queryExpression, 
 						false,
-						getMatchRegions(queryExpression, queryExpression),
-						getSuffixes(queryExpression, queryExpression));
+						Highlighting.getMatchRegions(queryExpression, queryExpression),
+						Highlighting.getSuffixes(queryExpression, queryExpression));
 				
 				return new QuickSearchContentResult(1, ImmutableList.of(singleResult));
 			}

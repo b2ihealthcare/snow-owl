@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -37,8 +38,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
@@ -54,15 +64,15 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
@@ -78,6 +88,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.inject.Provider;
 
 /**
  * An {@link ICDOConflictProcessor} implementation handling conflicts specific to the SNOMED CT terminology model.
@@ -103,10 +114,17 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOConflictProcessor.class);
 
+	private final RevisionIndex index;
+	private final Provider<IEventBus> bus;
+
 	public SnomedCDOConflictProcessor() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, RELEASED_ATTRIBUTE_MAP);
+		this.bus = SnowOwlApplication.INSTANCE.getEnviroment().provider(IEventBus.class);
+		this.index = ApplicationContext.getServiceForClass(RepositoryManager.class)
+				.get(getRepositoryUuid())
+				.service(RevisionIndex.class);
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -267,7 +285,17 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 	private void postProcessLanguageRefSetMembers(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
+		final Set<String> synonymAndDescendantIds = SnomedRequests.prepareGetSynonyms()
+				.build(branchPath.getPath())
+				.execute(bus.get())
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
+		
 		final Set<SnomedLanguageRefSetMember> membersToRemove = newHashSet();
 		
 		label:
@@ -348,22 +376,50 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 	}
 	
-	private void postProcessTaxonomy(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
+	private void postProcessTaxonomy(final CDOTransaction transaction, final ImmutableMultimap.Builder<String, Object> conflictingItems) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
 		final ApplicationContext context = ApplicationContext.getInstance();
 		final LongCollection conceptIds = context.getService(SnomedTerminologyBrowser.class).getAllConceptIds(branchPath);
-		
-		for (StatementCollectionMode mode : ImmutableList.of(StatementCollectionMode.STATED_ISA_ONLY, StatementCollectionMode.INFERRED_ISA_ONLY)) {
-			try {
-				final IsAStatementWithId[] statements = context.getService(SnomedStatementBrowser.class).getActiveStatements(branchPath, mode);
-				final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-				new SnomedTaxonomyUpdateRunnable(transaction, taxonomyBuilder, mode.getCharacteristicType()).run();
-			} catch (IncompleteTaxonomyException e) {
-				for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
-					conflictingItems.put(Long.toString(invalidRelationship.getMissingConceptId()), invalidRelationship);
-				}	
-			}
+
+		for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
+			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
+				@Override
+				public Void execute(RevisionSearcher index) throws IOException {
+					try {
+						final IsAStatementWithId[] statements = getActiveStatements(index, characteristicTypeId);
+						final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
+						new SnomedTaxonomyUpdateRunnable(index, transaction, taxonomyBuilder, characteristicTypeId).run();
+					} catch (IncompleteTaxonomyException e) {
+						for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
+							conflictingItems.put(Long.toString(invalidRelationship.getMissingConceptId()), invalidRelationship);
+						}
+					}
+					return null;
+				}
+			});
 		}
+	}
+
+	private IsAStatementWithId[] getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
+				.selectAll()
+				.where(Expressions.builder()
+						.must(SnomedRelationshipIndexEntry.Expressions.active())
+						.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+						.build())
+				.limit(Integer.MAX_VALUE)
+				.build();
+		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
+		final IsAStatementWithId[] statements = new SnomedIsAStatementWithId[hits.getTotal()];
+		int i = 0; 
+		for (SnomedRelationshipIndexEntry relationship : hits) {
+			final long relationshipId = Long.parseLong(relationship.getId());
+			final long sourceId = Long.parseLong(relationship.getSourceId());
+			final long destinationId = Long.parseLong(relationship.getDestinationId());
+			statements[i] = new SnomedIsAStatementWithId(sourceId, destinationId, relationshipId);
+			i++;
+		}
+		return statements;
 	}
 
 	@Override
