@@ -15,6 +15,14 @@
  */
 package com.b2international.snowowl.datastore.server.cdo;
 
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.CHANGED_IN_SOURCE_AND_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE;
+
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndTargetConflict;
@@ -25,14 +33,6 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
  * @since 4.7
  */
 public class ConflictMapper {
-
-	public static final String CHANGED_IN_SOURCE_AND_TARGET_MESSAGE = "%s was changed both in source and target branch.";
-	public static final String CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s was changed in source branch but detached in target branch.";
-	public static final String CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s was changed in target branch but detached in source branch.";
-	public static final String ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE = "%s with ID '%s' was introduced on source branch and has ID conflict on target branch.";
-	public static final String ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE = "%s with ID '%s' was introduced on target branch and has ID conflict on source branch.";
-	public static final String ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE = "%s with ID '%s' added on source branch referencing %s with ID '%s' which was detached on target branch.";
-	public static final String ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE = "%s with ID '%s' added on target branch referencing %s with ID '%s' which was detached on source branch.";
 
 	public static GenericCDOMergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
@@ -109,4 +109,6 @@ public class ConflictMapper {
 		}
 		return conflict;
 	}
+	
+	private ConflictMapper() { /* prevent instantiation */ }
 }

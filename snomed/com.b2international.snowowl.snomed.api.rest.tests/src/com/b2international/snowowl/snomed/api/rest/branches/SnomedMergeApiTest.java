@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
+import com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -260,7 +260,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 				.put("sourceId", symbolicNameMap.get("D1"))
 				.put("targetType", "Concept")
 				.put("targetId", conceptId)
-				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Description", symbolicNameMap.get("D1"), "Concept", conceptId))
+				.put("message", String.format(GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Description", symbolicNameMap.get("D1"), "Concept", conceptId))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict));
@@ -299,7 +299,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 				.put("sourceId", symbolicNameMap.get("R"))
 				.put("targetType", "Concept")
 				.put("targetId", conceptId)
-				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R"), "Concept", conceptId))
+				.put("message", String.format(GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R"), "Concept", conceptId))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict));

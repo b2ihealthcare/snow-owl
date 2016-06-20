@@ -15,6 +15,13 @@
  */
 package com.b2international.snowowl.snomed.api.rest.branches;
 
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.CHANGED_IN_SOURCE_AND_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE;
+import static com.b2international.snowowl.datastore.server.cdo.GenericCDOMergeConflictMessages.CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
@@ -41,7 +48,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -100,7 +106,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 				.put("sourceId", symbolicNameMap.get("D100"))
 				.put("targetType", "Description")
 				.put("targetId", symbolicNameMap.get("D100"))
-				.put("message", String.format(ConflictMapper.CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, symbolicNameMap.get("D100")))
+				.put("message", String.format(CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, symbolicNameMap.get("D100")))
 				.put("changedSourceFeatures", singletonList("caseSignificance"))
 				.put("changedTargetFeatures", singletonList("caseSignificance"))
 				.build();
@@ -147,7 +153,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
 				.put("sourceType", "SnomedRefSetMember")
 				.put("sourceId", symbolicNameMap.get("M1"))
-				.put("message", String.format(ConflictMapper.CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, symbolicNameMap.get("M1")))
+				.put("message", String.format(CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, symbolicNameMap.get("M1")))
 				.put("changedSourceFeatures", newArrayList("effectiveTime", "released"))
 				.build();
 		
@@ -227,7 +233,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
 				.put("targetId", symbolicNameMap.get("D100"))
 				.put("targetType", "Description")
-				.put("message", String.format(ConflictMapper.CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, symbolicNameMap.get("D100")))
+				.put("message", String.format(CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, symbolicNameMap.get("D100")))
 				.put("changedTargetFeatures", singletonList("caseSignificance"))
 				.build();
 		
@@ -260,7 +266,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		ImmutableMap<String, Object> conflict1 = ImmutableMap.<String, Object>builder()
 				.put("sourceType", "Description")
 				.put("sourceId", descriptionId)
-				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE, "Description", descriptionId))
+				.put("message", String.format(ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE, "Description", descriptionId))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict1));
@@ -268,7 +274,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		ImmutableMap<String, Object> conflict2 = ImmutableMap.<String, Object>builder()
 				.put("targetType", "Description")
 				.put("targetId", descriptionId)
-				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE, "Description", descriptionId))
+				.put("message", String.format(ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE, "Description", descriptionId))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict2));
@@ -305,7 +311,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 				.put("sourceId", symbolicNameMap.get("C1"))
 				.put("targetType", "Relationship")
 				.put("targetId", symbolicNameMap.get("R1"))
-				.put("message", String.format(ConflictMapper.ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
+				.put("message", String.format(ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict));
@@ -342,7 +348,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 				.put("sourceId", symbolicNameMap.get("R1"))
 				.put("targetType", "Concept")
 				.put("targetId", symbolicNameMap.get("C1"))
-				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
+				.put("message", String.format(ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict));
