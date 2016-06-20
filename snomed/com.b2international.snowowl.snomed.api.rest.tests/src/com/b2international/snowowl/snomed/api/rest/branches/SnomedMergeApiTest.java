@@ -20,16 +20,22 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFailsWithConflict;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -39,6 +45,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableMap;
+import com.jayway.restassured.response.Response;
 
 /**
  * @since 2.0
@@ -242,7 +249,22 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptCanBeDeleted(b2, "C");
 		assertConceptNotExists(b2, "C");
 
-		assertMergeJobFails(b1, b2, "Merge b1 to b2");
+		Response mergeResponse = assertMergeJobFailsWithConflict(b1, b2, "Merge b1 to b2");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("sourceType", "Description")
+				.put("sourceId", symbolicNameMap.get("D1"))
+				.put("targetType", "Concept")
+				.put("targetId", conceptId)
+				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Description", symbolicNameMap.get("D1"), "Concept", conceptId))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
+		
 		assertDescriptionNotExists(b2, "D1");
 	}
 	
@@ -266,7 +288,22 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptCanBeDeleted(b2, "C");
 		assertConceptNotExists(b2, "C");
 		
-		assertMergeJobFails(b1, b2, "Merge b1 to b2");
+		Response mergeResponse = assertMergeJobFails(b1, b2, "Merge b1 to b2");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("sourceType", "Relationship")
+				.put("sourceId", symbolicNameMap.get("R"))
+				.put("targetType", "Concept")
+				.put("targetId", conceptId)
+				.put("message", String.format(ConflictMapper.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R"), "Concept", conceptId))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
+		
 		assertRelationshipNotExists(b2, "R");
 	}
 
