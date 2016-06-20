@@ -16,6 +16,7 @@
 package com.b2international.index.json;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
@@ -33,7 +34,7 @@ class DocSourceCollector extends Collector {
 	private final int limit;
 	
 	private final String[] ids;
-	private final BytesRef[] sources;
+	private final byte[][] sources;
 
 	private BinaryDocValues idValues;
 	private BinaryDocValues sourceValues;
@@ -43,7 +44,7 @@ class DocSourceCollector extends Collector {
 		this.offset = offset;
 		this.limit = limit;
 		this.ids = new String[limit];
-		this.sources = new BytesRef[limit];
+		this.sources = new byte[limit][];
 	}
 
 	@Override
@@ -73,7 +74,9 @@ class DocSourceCollector extends Collector {
 			throw new CollectionTerminatedException();
 		}
 		ids[currentItem] = idValues.get(doc).utf8ToString();
-		sources[currentItem] = sourceValues.get(doc);
+		
+		final BytesRef source = sourceValues.get(doc);
+		sources[currentItem] = Arrays.copyOfRange(source.bytes, source.offset, source.length);
 		currentItem++;
 	}
 	
@@ -82,7 +85,7 @@ class DocSourceCollector extends Collector {
 		// XXX no scoring support here
 	}
 
-	public BytesRef[] getSources() {
+	public byte[][] getSources() {
 		return sources;
 	}
 	

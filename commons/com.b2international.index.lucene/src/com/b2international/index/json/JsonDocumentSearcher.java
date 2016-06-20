@@ -106,7 +106,7 @@ public class JsonDocumentSearcher implements Searcher {
 			// use collector to collect _id and _source values as fast as possible
 			final DocSourceCollector collector = new DocSourceCollector(offset, numDocsToRetrieve(query, totalHits));
 			searcher.search(lq, collector);
-			final BytesRef[] sources = collector.getSources();
+			final byte[][] sources = collector.getSources();
 			final String[] ids = collector.getIds();
 			
 			if (sources.length < 1) {
@@ -115,7 +115,7 @@ public class JsonDocumentSearcher implements Searcher {
 			
 			final ImmutableList.Builder<T> matches = ImmutableList.builder();
 			for (int i = offset; i < sources.length; i++) {
-				final T t = reader.readValue(sources[i].bytes);
+				final T t = reader.readValue(sources[i]);
 				if (t instanceof WithId) {
 					((WithId) t).set_id(ids[i]);
 				}
@@ -141,6 +141,7 @@ public class JsonDocumentSearcher implements Searcher {
 				
 				final BytesRef source = leaf.reader().getBinaryDocValues("_source").get(relativeDocId);
 				final T readValue = reader.readValue(source.bytes);
+				matches.add(readValue);
 				
 				if (readValue instanceof WithId) {
 					final BytesRef _id = leaf.reader().getBinaryDocValues(JsonDocumentMapping._id().fieldName()).get(relativeDocId);
