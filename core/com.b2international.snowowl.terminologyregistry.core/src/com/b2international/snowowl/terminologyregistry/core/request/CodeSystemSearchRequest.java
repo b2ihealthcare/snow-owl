@@ -38,7 +38,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.request.SearchRequest;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemEntryBuilder;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 import com.google.common.collect.Lists;
 
 /**
@@ -78,7 +78,7 @@ final class CodeSystemSearchRequest extends SearchRequest<CodeSystems> {
 
 			for (final ScoreDoc scoreDoc : scoreDocs) {
 				final Document doc = searcher.doc(scoreDoc.doc);
-				codeSystems.add(context.service(CodeSystemEntryBuilder.class).build(doc));
+				codeSystems.add(CodeSystemEntry.builder(doc).build());
 			}
 
 			return new CodeSystems(codeSystems);
