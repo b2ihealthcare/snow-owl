@@ -134,7 +134,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 
 	/*returns with the referenced component type for the reference set*/
 	private short getReferencedComponentType(final String refSetId) {
-		return new SnomedRefSetLookupService().getComponent(getBranchPath(), refSetId).getReferencedComponentType();
+		return (short) new SnomedRefSetLookupService().getComponent(getBranchPath(), refSetId).getReferencedComponentType();
 	}
 	
 }
