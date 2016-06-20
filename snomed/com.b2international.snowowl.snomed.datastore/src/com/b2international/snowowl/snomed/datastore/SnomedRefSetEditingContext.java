@@ -820,8 +820,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		// persistent component. check for referring members in index
 		} else {
 			
-			final IClientSnomedComponentService componentService = ApplicationContext.getInstance().getService(IClientSnomedComponentService.class);
-			
 			LongSet ids;
 			if (additionalTypes.length < 1) {
 				ids = componentService.getAllReferringMembersStorageKey(id, getReferringMemberTypes(component));

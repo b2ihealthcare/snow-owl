@@ -57,15 +57,16 @@ public class ConcreteDomainService implements IConcreteDomainService {
 
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId) {
-		final Set<String> ids = newHashSet(conceptId);
-		final Collection<SnomedRelationshipIndexEntry> sourceRelationships = statementBrowser.getActiveOutboundStatementsById(conceptId);
-		final String[] activeSourceIds = Iterables.toArray(Iterables.transform(sourceRelationships, new Function<SnomedRelationshipIndexEntry, String>() {
-			@Override public String apply(final SnomedRelationshipIndexEntry relationship) {
-				return relationship.getId();
-			}
-		}), String.class);
-		ids.addAll(Arrays.asList(activeSourceIds));
-		return getConcreteDomains(ids);
+		throw new UnsupportedOperationException();
+//		final Set<String> ids = newHashSet(conceptId);
+//		final Collection<SnomedRelationshipIndexEntry> sourceRelationships = statementBrowser.getActiveOutboundStatementsById(conceptId);
+//		final String[] activeSourceIds = Iterables.toArray(Iterables.transform(sourceRelationships, new Function<SnomedRelationshipIndexEntry, String>() {
+//			@Override public String apply(final SnomedRelationshipIndexEntry relationship) {
+//				return relationship.getId();
+//			}
+//		}), String.class);
+//		ids.addAll(Arrays.asList(activeSourceIds));
+//		return getConcreteDomains(ids);
 	}
 
 	private Collection<SnomedRefSetMemberIndexEntry> getConcreteDomains(final Set<String> ids) {
@@ -120,18 +121,19 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	
 	@Override
 	public Map<String, Boolean> getAllManufacturedConcreteDomains() {
-		final Multimap<String, Boolean> concreteDomainsForName = // 
-				getServiceForClass(IClientSnomedComponentService.class).<Boolean>getAllConcreteDomainsForName(IS_MANUFACTURED);
-		//we blindly ignore multiple values for the same concrete domains per components
-		final Map<String, Boolean> results = newHashMapWithExpectedSize(concreteDomainsForName.size());
-		for (final String componentId : concreteDomainsForName.keys()) {
-			final Collection<Boolean> values = concreteDomainsForName.get(componentId);
-			if (!isEmpty(values)) {
-				results.put(componentId, get(values, 0));
-			}
-		}
-		
-		return results;
+		throw new UnsupportedOperationException();
+//		final Multimap<String, Boolean> concreteDomainsForName = // 
+//				getServiceForClass(IClientSnomedComponentService.class).<Boolean>getAllConcreteDomainsForName(IS_MANUFACTURED);
+//		//we blindly ignore multiple values for the same concrete domains per components
+//		final Map<String, Boolean> results = newHashMapWithExpectedSize(concreteDomainsForName.size());
+//		for (final String componentId : concreteDomainsForName.keys()) {
+//			final Collection<Boolean> values = concreteDomainsForName.get(componentId);
+//			if (!isEmpty(values)) {
+//				results.put(componentId, get(values, 0));
+//			}
+//		}
+//		
+//		return results;
 	}
 
 }

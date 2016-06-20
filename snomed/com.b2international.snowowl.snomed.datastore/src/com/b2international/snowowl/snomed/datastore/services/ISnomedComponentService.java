@@ -45,12 +45,6 @@ import com.google.common.collect.Multimap;
 public interface ISnomedComponentService {
 	
 	/**
-	 * Warms the underlying cache.
-	 * @param branchPath
-	 */
-	void warmCache(IBranchPath branchPath);
-
-	/**
 	 * Returns with the available concrete domain data type labels for a specified concrete domain data type.
 	 * @param branchPath
 	 * @param dataType the data type. E.g.: {@code BOOLEAN} or {@code DECIMAL}.
@@ -58,13 +52,6 @@ public interface ISnomedComponentService {
 	 */
 	Set<String> getAvailableDataTypeLabels(IBranchPath branchPath, final DataType dataType);
 
-	/**
-	 * Returns with a set of SNOMED&nbsp;CT concept IDs containing the 'Synonym' concept (ID:&nbsp;900000000000013009) and all descendant IDs.
-	 * @param branchPath
-	 * @return the 'Synonym' concept and all descendant IDs.
-	 */
-	Set<String> getSynonymAndDescendantIds(IBranchPath branchPath);
-	
 	/**
 	 * This method returns with an array of the owner SNOMED&nbsp;CT concept ID description type concept ID and the term of the description specified 
 	 * by its unique description ID. If either the concept ID, type ID or the term cannot be specified, this method returns with {@code null}.
@@ -76,22 +63,6 @@ public interface ISnomedComponentService {
 	 * @return an array of SNOMED&nbsp;CT concept ID, description type ID and the term of the description.
 	 */
 	@Nullable String[] getDescriptionProperties(final IBranchPath branchPath, final String descriptionId);
-	
-	/**
-	 * Collects the following information from all descriptions in the index (in order of appearance in the array):
-	 * <ul>
-	 * <li>Description ID.</li>
-	 * <li>Associated concept ID.</li>
-	 * <li>Description type ID.</li>
-	 * <li>Description label.</li>
-	 * <li>Description storage key.</li>
-	 * </ul>
-	 * Collected data is returned as an array of arrays of the above form. If no  descriptions can be found in the index, the
-	 * method returns {@code null}.
-	 * @param branchPath the branch path to collect information from (may not be {@code null})
-	 * @return an array of description properties, or {@code null}
-	 */
-	@Nullable String[][] getAllDescriptionProperties(final IBranchPath branchPath);
 	
 	/**
 	 * Returns with a collection of {@link IdStorageKeyPair#getId() component ID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
@@ -124,17 +95,6 @@ public interface ISnomedComponentService {
 	LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType);
 	
 	/**
-	 * Returns with a map of SNOMED&nbsp;CT concept IDs and the associated terms of the descriptions given as the description type IDs from
-	 * a reference set.
-	 * @param branchPath branch path.
-	 * @param refSetId the reference set ID.
-	 * @param descriptionTypeId the description type IDs. Optional, if omitted the PT of the concept will be returned as the term.
-	 * @return a map of concept IDs and the associated description terms from a given type of descriptions.
-	 */
-	@Deprecated
-	Map<String, String> getReferencedConceptTerms(final IBranchPath branchPath, final String refSetId, final String... descriptionTypeId);
-	
-	/**
 	 * Returns with a collection of {@link SnomedRefSetMemberFragment reference set member}s contained by the given reference set. 
 	 * @param branchPath the branch path.
 	 * @param refSetId the reference set identifier concept ID.
@@ -156,15 +116,6 @@ public interface ISnomedComponentService {
 	 * @return a map of concept and module concept IDs.
 	 */
 	LongKeyLongMap getConceptModuleMapping(final IBranchPath branchPath);
-	
-	/**
-	 * Returns with a multimap or SNOMED&nbsp;CT component IDs and the associated concrete domain values for the 
-	 * concrete domain given with the (camel case) concrete domain name argument.
-	 * @param branchPath the branch path.
-	 * @param concreteDomainName the unique, camel case concrete domain name. 
-	 * @return a multimap of component IDs and the associated concrete domain values.
-	 */
-	<V> Multimap<String, V> getAllConcreteDomainsForName(final IBranchPath branchPath, final String concreteDomainName);
 	
 	/**
 	 * @param branchPath
@@ -202,14 +153,6 @@ public interface ISnomedComponentService {
 	 * @return a collection of concept storage keys to inactivate.
 	 */
 	LongSet getSelfAndAllSubtypeStorageKeysForInactivation(final IBranchPath branchPath, final String... focusConceptIds);
-	
-	/**
-	 * Returns with a set of all core SNOMED&nbsp;CT component IDs. The returning set 
-	 * includes the IDs of the retired components.
-	 * @param branchPath the branch path for the component visibility.
-	 * @return a set of all core component IDs.
-	 */
-	LongSet getAllCoreComponentIds(final IBranchPath branchPath);
 	
 	/**
 	 * Serializable representation of a component ID and storage key pair.

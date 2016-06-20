@@ -23,6 +23,7 @@ import com.b2international.snowowl.datastore.request.Reviews;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -171,5 +172,13 @@ public abstract class SnomedRequests {
 
 	public static SnomedRepositoryBulkReadRequestBuilder prepareBulkRead() {
 		return new SnomedRepositoryBulkReadRequestBuilder(REPOSITORY_ID);
+	}
+
+	/**
+	 * Returns all SYNONYM concept ids including all subtypes of {@value Concepts#SYNONYM}.
+	 * @return
+	 */
+	public static SnomedConceptSearchRequestBuilder prepareGetSynonyms() {
+		return prepareSearchConcept().all().filterByActive(true).filterByAncestor("<<"+Concepts.SYNONYM);
 	}
 }

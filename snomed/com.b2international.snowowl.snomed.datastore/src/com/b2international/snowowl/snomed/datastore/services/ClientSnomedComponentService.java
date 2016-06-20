@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
@@ -29,7 +28,6 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.Multimap;
 
 /**
  * Client side SNOMED CT component service implementation.
@@ -43,18 +41,8 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	}
 
 	@Override
-	public void warmCache() {
-		wrappedService.warmCache(getBranchPath());
-	}
-
-	@Override
 	public Set<String> getAvailableDataTypeLabels(final DataType dataType) {
 		return wrappedService.getAvailableDataTypeLabels(getBranchPath(), dataType);
-	}
-
-	@Override
-	public Set<String> getSynonymAndDescendantIds() {
-		return wrappedService.getSynonymAndDescendantIds(getBranchPath());
 	}
 
 	@Override
@@ -62,17 +50,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 		return wrappedService.getAllReferringMembersStorageKey(getBranchPath(), componentId, types);
 	}
 
-	@Override
-	@Deprecated
-	public Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId) {
-		return wrappedService.getReferencedConceptTerms(getBranchPath(), refSetId, descriptionTypeId);
-	}
-	
-	@Override
-	public <V> Multimap<String, V> getAllConcreteDomainsForName(final String concreteDomainName) {
-		return wrappedService.getAllConcreteDomainsForName(getBranchPath(), concreteDomainName);
-	}
-	
 	@Override
 	public Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules() {
 		return wrappedService.getExistingModules(getBranchPath());

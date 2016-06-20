@@ -28,7 +28,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -37,8 +37,9 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -109,10 +110,9 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 
 	private void convertDescriptions(TransactionContext context, final String conceptId) {
-		final IBranchPath branchPath = context.branch().branchPath();
 		final Set<String> requiredDescriptionTypes = newHashSet(Concepts.FULLY_SPECIFIED_NAME, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 		final Multiset<String> preferredLanguageRefSetIds = HashMultiset.create();
-		final Set<String> synonymAndDescendantIds = context.service(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
+		final Set<String> synonymAndDescendantIds = getSynonymAndDescendantIds(context);
 
 		for (final SnomedDescriptionCreateRequest descriptionRequest : descriptions) {
 
@@ -149,6 +149,11 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		}
 	}
 	
+	private Set<String> getSynonymAndDescendantIds(TransactionContext context) {
+		final SnomedConcepts concepts = SnomedRequests.prepareGetSynonyms().build().execute(context);
+		return FluentIterable.from(concepts).transform(IComponent.ID_FUNCTION).toSet();
+	}
+
 	// TODO: Add support for multiple relationship creation requests
 	private void convertRelationships(final TransactionContext context, String conceptId) {
 		try {

@@ -17,25 +17,18 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.Multimap;
 
 /**
  * Interface for retrieving information about SNOMED&nbsp;CT core components on the client side.
  * 
  */
 public interface IClientSnomedComponentService {
-
-	/**
-	 * Warms the underlying cache.
-	 */
-	void warmCache();
 
 	/**
 	 * Returns with the available concrete domain data type labels for a specified concrete domain data type.
@@ -45,12 +38,6 @@ public interface IClientSnomedComponentService {
 	Set<String> getAvailableDataTypeLabels(final DataType dataType);
 
 	/**
-	 * Returns with a set of SNOMED&nbsp;CT concept IDs containing the 'Synonym' concept (ID:&nbsp;900000000000013009) and all descendant IDs.
-	 * @return the 'Synonym' concept and all descendant IDs.
-	 */
-	Set<String> getSynonymAndDescendantIds();
-	
-	/**
 	 * Returns with a collection of reference set member storage keys (CDO IDs) where a component given its unique {@code componentId}
 	 * is either the referenced component or depending on the {@link SnomedRefSetType type} is the target component.
 	 * <br>(e.g.: map target for simple map reference set member, value in case of attribute value type, etc.)  
@@ -59,24 +46,6 @@ public interface IClientSnomedComponentService {
 	 * @return a collection of reference set member storage keys.
 	 */
 	LongSet getAllReferringMembersStorageKey(final String componentId, final EnumSet<SnomedRefSetType> types);
-	
-	/**
-	 * Returns with a map of SNOMED&nbsp;CT concept IDs and the associated terms of the descriptions given as the description type IDs from
-	 * a reference set.
-	 * @param refSetId the reference set ID.
-	 * @param descriptionTypeId the description type IDs. Optional, if omitted the PT of the concept will be returned as the term.
-	 * @return a map of concept IDs and the associated description terms from a given type of descriptions.
-	 */
-	@Deprecated
-	Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId);
-	
-	/**
-	 * Returns with a multimap or SNOMED&nbsp;CT component IDs and the associated concrete domain values for the 
-	 * concrete domain given with the (camel case) concrete domain name argument.
-	 * @param concreteDomainName the unique, camel case concrete domain name. 
-	 * @return a multimap of component IDs and the associated concrete domain values.
-	 */
-	<V> Multimap<String, V> getAllConcreteDomainsForName(final String concreteDomainName);
 	
 	/**
 	 * Returns with all existing {@link SnomedModuleDependencyRefSetMemberFragment module dependency reference set member}s from the underling ontology.
