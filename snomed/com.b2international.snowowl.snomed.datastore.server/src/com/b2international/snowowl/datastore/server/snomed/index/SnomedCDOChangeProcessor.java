@@ -99,20 +99,20 @@ import com.b2international.snowowl.datastore.server.snomed.index.collector.Compo
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.SnomedRelease;
-import com.b2international.snowowl.snomed.SnomedVersion;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedReleaseIndexMappingStrategy;
-import com.b2international.snowowl.snomed.datastore.index.SnomedVersionIndexMappingStrategy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder.Factory;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemIndexMappingStrategy;
+import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -142,10 +142,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOChangeProcessor.class);
 	
-	private final Set<SnomedRelease> newCodeSystems = newHashSet();
-	private final Set<SnomedVersion> newCodeSystemVersions = newHashSet();
-	private final Set<SnomedRelease> dirtyCodeSystems = newHashSet();
-	private final Set<SnomedVersion> dirtyCodeSystemVersions = newHashSet();
+	private final Set<CodeSystem> newCodeSystems = newHashSet();
+	private final Set<CodeSystem> dirtyCodeSystems = newHashSet();
+	private final Set<CodeSystemVersion> newCodeSystemVersions = newHashSet();
+	private final Set<CodeSystemVersion> dirtyCodeSystemVersions = newHashSet();
 	
 	//the collection of the new artefacts in a minimalistic form. Used for logging.
 	private final Set<ComponentIdAndLabel> newConceptLogEntries = Collections.synchronizedSet(Sets.<ComponentIdAndLabel>newHashSet());
@@ -208,17 +208,17 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	public void process(final ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
 		this.commitChangeSet = checkNotNull(commitChangeSet, "CDO commit change set argument cannot be null.");
 		for (final CDOObject newObject : commitChangeSet.getNewComponents()) {
-			if (SnomedPackage.eINSTANCE.getSnomedRelease().isSuperTypeOf(newObject.eClass())) {
-				newCodeSystems.add((SnomedRelease) newObject);
-			} else if (SnomedPackage.eINSTANCE.getSnomedVersion().isSuperTypeOf(newObject.eClass())) {
-				newCodeSystemVersions.add((SnomedVersion) newObject);
+			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(newObject.eClass())) {
+				newCodeSystems.add((CodeSystem) newObject);
+			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(newObject.eClass())) {
+				newCodeSystemVersions.add((CodeSystemVersion) newObject);
 			}
 		}
 		
 		for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
-			if (SnomedPackage.eINSTANCE.getSnomedRelease().isSuperTypeOf(dirtyObject.eClass())) {
-				dirtyCodeSystems.add((SnomedRelease) dirtyObject);
-			} else if (SnomedPackage.eINSTANCE.getSnomedVersion().isSuperTypeOf(dirtyObject.eClass())) {
+			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(dirtyObject.eClass())) {
+				dirtyCodeSystems.add((CodeSystem) dirtyObject);
+			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(dirtyObject.eClass())) {
 				checkAndSetCodeSystemLastUpdateTime(dirtyObject);
 			}
 		}
@@ -327,20 +327,20 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		prepareTaxonomyBuilders();
 		
 		// TODO refactor code system update into updaters
-		for (final SnomedRelease newCodeSystem : newCodeSystems) {
-			index.index(branchPath, new SnomedReleaseIndexMappingStrategy(newCodeSystem));
+		for (final CodeSystem newCodeSystem : newCodeSystems) {
+			index.index(branchPath, new CodeSystemIndexMappingStrategy(newCodeSystem));
 		}
 		
-		for (final SnomedVersion newCodeSystemVersion : newCodeSystemVersions) {
-			index.index(branchPath, new SnomedVersionIndexMappingStrategy(newCodeSystemVersion));
+		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
+			index.index(branchPath, new CodeSystemVersionIndexMappingStrategy(newCodeSystemVersion));
 		}
 		
-		for (final SnomedRelease newCodeSystem : dirtyCodeSystems) {
-			index.index(branchPath, new SnomedReleaseIndexMappingStrategy(newCodeSystem));
+		for (final CodeSystem newCodeSystem : dirtyCodeSystems) {
+			index.index(branchPath, new CodeSystemIndexMappingStrategy(newCodeSystem));
 		}
 		
-		for (final SnomedVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
-			index.index(branchPath, new SnomedVersionIndexMappingStrategy(dirtyCodeSystemVersion));
+		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
+			index.index(branchPath, new CodeSystemVersionIndexMappingStrategy(dirtyCodeSystemVersion));
 		}
 
 		// execute component/use case  base change processors
@@ -613,12 +613,12 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	
 	@SuppressWarnings("restriction")
 	private void checkAndSetCodeSystemLastUpdateTime(final CDOObject component) {
-		final SnomedVersion snomedVersion = (SnomedVersion) component;
+		final CodeSystemVersion version = (CodeSystemVersion) component;
 		final CDOFeatureDelta lastUpdateFeatureDelta = commitChangeSet.getRevisionDeltas().get(component.cdoID()).getFeatureDelta(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_LastUpdateDate());
 		if (lastUpdateFeatureDelta instanceof org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl) {
 			((org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl) lastUpdateFeatureDelta).setValue(new Date(commitChangeSet.getTimestamp()));
 			((InternalCDORevision) component.cdoRevision()).set(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_LastUpdateDate(), CDOStore.NO_INDEX, new Date(commitChangeSet.getTimestamp()));
-			dirtyCodeSystemVersions.add(snomedVersion);
+			dirtyCodeSystemVersions.add(version);
 		}		
 	}
 

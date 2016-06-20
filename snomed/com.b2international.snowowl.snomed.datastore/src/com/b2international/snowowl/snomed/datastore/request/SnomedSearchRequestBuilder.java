@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -48,6 +49,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	
 	public final B filterByExtendedLocales(List<ExtendedLocale> locales) {
 		final List<Long> languageRefSetIds = newArrayList();
+		final List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
 		for (ExtendedLocale extendedLocale : locales) {
 			final String languageRefSetId;
 			
@@ -58,10 +60,14 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 			}
 			
 			if (languageRefSetId == null) {
-				throw new BadRequestException("Don't know how to convert extended locale " + extendedLocale.toString() + " to a language reference set identifier.");
+				unconvertableLocales.add(extendedLocale);
 			} else {
 				languageRefSetIds.add(Long.valueOf(languageRefSetId));
 			}
+		}
+		
+		if (languageRefSetIds.isEmpty() && !unconvertableLocales.isEmpty()) {
+			throw new BadRequestException("Don't know how to convert extended locale " + unconvertableLocales.get(0).toString() + " to a language reference set identifier.");
 		}
 		
 		return filterByLanguageRefSetIds(languageRefSetIds).setLocales(locales);

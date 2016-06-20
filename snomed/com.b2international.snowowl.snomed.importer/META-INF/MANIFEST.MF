@@ -12,4 +12,5 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
  com.b2international.snowowl.dependencies
 Export-Package: com.b2international.snowowl.snomed.importer.net4j,com.
  b2international.snowowl.snomed.importer.release
-Import-Package: org.slf4j;version="1.7.2"
+Import-Package: com.b2international.snowowl.api.impl.codesystem.domain,
+ org.slf4j;version="1.7.2"

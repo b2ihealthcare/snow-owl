@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import java.util.Map;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
@@ -36,7 +34,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 	private String repositoryUuid;
 	private String shortName;
 	private String terminologyId;
-	private Map<String, String> additionalProperties;
+	private String extensionOf;
 
 	CodeSystemCreateRequestBuilder(final String repositoryId) {
 		super(repositoryId);
@@ -91,9 +89,9 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 		this.terminologyId = terminologyId;
 		return getSelf();
 	}
-	
-	public CodeSystemCreateRequestBuilder setAdditionaProperties(final Map<String, String> additionalProperties) {
-		this.additionalProperties = additionalProperties;
+
+	public CodeSystemCreateRequestBuilder setExtensionOf(final String extensionOf) {
+		this.extensionOf = extensionOf;
 		return getSelf();
 	}
 
@@ -110,7 +108,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 		req.setRepositoryUuid(repositoryUuid);
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
-		req.setAdditionalProperties(additionalProperties);
+		req.setExtensionOf(extensionOf);
 
 		return req;
 	}

@@ -37,6 +37,7 @@ public class SnomedCoreConfiguration {
 	public static final String DEFAULT_LANGUAGE = "en-gb"; //$NON-NLS-1$
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
+	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	public static final String DEFAULT_NAMESPACE = ""; //$NON-NLS-1$
 	public static final String DEFAULT_MODULE = Concepts.MODULE_SCT_CORE;
 	
@@ -47,6 +48,10 @@ public class SnomedCoreConfiguration {
 	@Min(1)
 	@Max(100)
 	private int maxReasonerResults = DEFAULT_MAXIMUM_REASONER_RESULTS;
+	
+	@Min(1)
+	@Max(1_000_000)
+	private int maxReasonerRuns = DEFAULT_MAXIMUM_REASONER_RUNS;
 	
 	@NotEmpty
 	private String defaultReasoner = DEFAULT_REASONER;
@@ -91,7 +96,7 @@ public class SnomedCoreConfiguration {
 	private boolean inferredEditingEnabled = false;
 		
 	/**
-	 * @return the maxReasonerCount
+	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */
 	@JsonProperty
 	public int getMaxReasonerCount() {
@@ -107,7 +112,8 @@ public class SnomedCoreConfiguration {
 	}
 	
 	/**
-	 * @return the maxReasonerResults
+	 * @return the number of inferred taxonomies that should be kept in memory. The user can only choose to save
+	 *         the results of the classification run if the corresponding inferred taxonomy is still present.
 	 */
 	@JsonProperty
 	public int getMaxReasonerResults() {
@@ -120,6 +126,21 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public void setMaxReasonerResults(int maxReasonerResults) {
 		this.maxReasonerResults = maxReasonerResults;
+	}
+	
+	/**
+	 * @return the number of classification run details to preserve. Details include inferred and redundant 
+	 *         relationships, the list of equivalent concepts found during classification, and job metadata
+	 *         (creation, start and end times, final state, requesting user). 
+	 */
+	@JsonProperty
+	public int getMaxReasonerRuns() {
+		return maxReasonerRuns;
+	}
+	
+	@JsonProperty
+	public void setMaxReasonerRuns(int maxReasonerRuns) {
+		this.maxReasonerRuns = maxReasonerRuns;
 	}
 	
 	/**

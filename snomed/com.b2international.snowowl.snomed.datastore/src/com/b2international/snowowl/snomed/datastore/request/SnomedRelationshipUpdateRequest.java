@@ -41,11 +41,11 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRelationshipUpdateRequest.class);
 
 	@Min(0)
-	@Max(Byte.MAX_VALUE)
+	@Max(Integer.MAX_VALUE)
 	private Integer group;
 	
 	@Min(0)
-	@Max(Byte.MAX_VALUE)
+	@Max(Integer.MAX_VALUE)
 	private Integer unionGroup;
 	
 	private CharacteristicType characteristicType;
@@ -109,6 +109,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 		if (!releasedRelationship.getModuleId().equals(relationship.getModule().getId())) return true;
 		if (!releasedRelationship.getValueId().equals(relationship.getDestination().getId())) return true;
 		if (releasedRelationship.getGroup() != relationship.getGroup()) return true;
+		if (releasedRelationship.getUnionGroup() != relationship.getUnionGroup()) return true;
 		if (!releasedRelationship.getAttributeId().equals(relationship.getType().getId())) return true;
 		if (!releasedRelationship.getCharacteristicType().getConceptId().equals(relationship.getCharacteristicType().getId())) return true;
 		if (!releasedRelationship.getModifierId().equals(relationship.getModifier().getId())) return true;

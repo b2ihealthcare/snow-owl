@@ -499,22 +499,4 @@
             class="com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierBootstrap">
       </bootstrapFragment>
    </extension>
-   <extension
-         point="com.b2international.snowowl.terminologyregistry.core.codeSystemBuilder">
-      <codeSystemBuilder
-            class="com.b2international.snowowl.snomed.core.store.SnomedReleaseBuilder">
-      </codeSystemBuilder>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.terminologyregistry.core.codeSystemEntryBuilder">
-      <codeSystemEntryBuilder
-            class="com.b2international.snowowl.snomed.datastore.index.SnomedReleaseEntryBuilder">
-      </codeSystemEntryBuilder>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.terminologyregistry.core.codeSystemVersionEntryBuilder">
-      <codeSystemVersionEntryBuilder
-            class="com.b2international.snowowl.snomed.datastore.index.SnomedVersionEntryBuilder">
-      </codeSystemVersionEntryBuilder>
-   </extension>
 </plugin>

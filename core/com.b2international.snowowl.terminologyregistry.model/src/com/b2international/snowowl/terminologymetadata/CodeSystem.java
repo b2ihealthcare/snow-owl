@@ -26,6 +26,7 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getShortName <em>Short Name</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemOID <em>Code System OID</em>}</li>
@@ -38,8 +39,8 @@ import org.eclipse.emf.common.util.EList;
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getRepositoryUuid <em>Repository Uuid</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getCodeSystemVersions <em>Code System Versions</em>}</li>
  *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getBranchPath <em>Branch Path</em>}</li>
+ *   <li>{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf <em>Extension Of</em>}</li>
  * </ul>
- * </p>
  *
  * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem()
  * @model
@@ -327,5 +328,31 @@ public interface CodeSystem extends CDOObject {
 	 * @generated
 	 */
 	void setBranchPath(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Extension Of</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Extension Of</em>' containment reference isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Extension Of</em>' reference.
+	 * @see #setExtensionOf(CodeSystem)
+	 * @see com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage#getCodeSystem_ExtensionOf()
+	 * @model
+	 * @generated
+	 */
+	CodeSystem getExtensionOf();
+
+	/**
+	 * Sets the value of the '{@link com.b2international.snowowl.terminologymetadata.CodeSystem#getExtensionOf <em>Extension Of</em>}' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Extension Of</em>' reference.
+	 * @see #getExtensionOf()
+	 * @generated
+	 */
+	void setExtensionOf(CodeSystem value);
 
 } // CodeSystem

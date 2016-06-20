@@ -46,10 +46,6 @@ import com.google.common.primitives.Ints;
  */
 public abstract class SearchRequest<B> extends BaseResourceRequest<BranchContext, B> {
 
-	enum OptionKey {
-		EXPAND
-	}
-	
 	@Min(0)
 	private int offset;
 	

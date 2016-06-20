@@ -13,18 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.classification;
+package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.remotejobs.RemoteJobKey;
+import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 
 /**
  */
-public class ReasonerRemoteJobKey extends RemoteJobKey {
+public class ClassificationRunRestUpdate {
 
-	private static final long serialVersionUID = 1L;
+	private ClassificationStatus status;
 
-	public ReasonerRemoteJobKey(final String repositoryId, final IBranchPath branchPath) {
-		super(repositoryId, branchPath);
+	public ClassificationStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(final ClassificationStatus status) {
+		this.status = status;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("ClassificationRestRun [status=");
+		builder.append(status);
+		builder.append("]");
+		return builder.toString();
 	}
 }

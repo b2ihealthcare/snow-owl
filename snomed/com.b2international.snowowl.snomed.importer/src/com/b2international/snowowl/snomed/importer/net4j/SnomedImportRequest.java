@@ -27,7 +27,7 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.snowowl.snomed.SnomedRelease;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 
@@ -70,17 +70,16 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 				out.writeString(excludedId);
 			}
 			
-			//Ecore object cannot be serialized directly
-			SnomedRelease snomedRelease = importConfiguration.getSnomedRelease();
-			out.writeString(snomedRelease.getBaseCodeSystemOID());
-			out.writeString(snomedRelease.getBranchPath());
-			out.writeUTF(snomedRelease.getCitation());
-			out.writeString(snomedRelease.getCodeSystemOID());
-			out.writeString(snomedRelease.getLanguage());
-			out.writeString(snomedRelease.getMaintainingOrganizationLink());
-			out.writeUTF(snomedRelease.getName());
-			out.writeString(snomedRelease.getShortName());
-			out.writeString(snomedRelease.getReleaseType().getLiteral());
+			final CodeSystem codeSystem = importConfiguration.getCodeSystem();
+			out.writeUTF(codeSystem.getBranchPath());
+			out.writeUTF(codeSystem.getCitation());
+			out.writeUTF(codeSystem.getExtensionOf());
+			out.writeUTF(codeSystem.getIconPath());
+			out.writeUTF(codeSystem.getName());
+			out.writeUTF(codeSystem.getOid());
+			out.writeUTF(codeSystem.getOrganizationLink());
+			out.writeUTF(codeSystem.getPrimaryLanguage());
+			out.writeUTF(codeSystem.getShortName());
 			
 			monitor.worked();
 			

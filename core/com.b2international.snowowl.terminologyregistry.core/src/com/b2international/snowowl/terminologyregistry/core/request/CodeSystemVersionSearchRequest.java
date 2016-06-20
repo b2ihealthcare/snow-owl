@@ -35,6 +35,7 @@ import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.request.SearchRequest;
@@ -78,7 +79,8 @@ final class CodeSystemVersionSearchRequest extends SearchRequest<CodeSystemVersi
 
 			for (final ScoreDoc scoreDoc : scoreDocs) {
 				final Document doc = searcher.doc(scoreDoc.doc);
-				versions.add(context.service(CodeSystemVersionEntryBuilder.class).build(doc));
+				final CodeSystemVersionEntry version = new CodeSystemVersionEntryBuilder().build(doc);
+				versions.add(version);
 			}
 
 			return new CodeSystemVersions(versions);

@@ -69,8 +69,8 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	private final LongSet visitedConcepts = PrimitiveSets.newLongOpenHashSet();
 	private final LongSet visitedRefSets = PrimitiveSets.newLongOpenHashSet();
 
-	private String snomedReleaseShortName;
-	private String snomedReleaseOID;
+	private String codeSystemShortName;
+	private String codeSystemOID;
 
 	@Override
 	public void close() throws Exception {
@@ -419,28 +419,28 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	/**
 	 * @return the snomedReleaseShortName
 	 */
-	public String getSnomedReleaseShortName() {
-		return snomedReleaseShortName;
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
 	}
 
 	/**
-	 * @param snomedReleaseShortName the snomedReleaseShortName to set
+	 * @param codeSystemShortName the snomedReleaseShortName to set
 	 */
-	public void setSnomedReleaseShortName(String snomedReleaseShortName) {
-		this.snomedReleaseShortName = snomedReleaseShortName;
+	public void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
 	}
 
 	/**
 	 * @return the snomedReleaseOID
 	 */
-	public String getSnomedReleaseOID() {
-		return snomedReleaseOID;
+	public String getCodeSystemOID() {
+		return codeSystemOID;
 	}
 
 	/**
-	 * @param snomedReleaseOID the snomedReleaseOID to set
+	 * @param codeSystemOID the snomedReleaseOID to set
 	 */
-	public void setSnomedReleaseOID(String snomedReleaseOID) {
-		this.snomedReleaseOID = snomedReleaseOID;
+	public void setCodeSystemOID(String codeSystemOID) {
+		this.codeSystemOID = codeSystemOID;
 	}
 }

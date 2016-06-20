@@ -30,7 +30,6 @@ import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -116,12 +115,6 @@ public class CodeSystemRequestTest {
 	}
 	
 	private void createCodeSystem(final String shortName, final String oid) {
-		final ImmutableMap<String, String> additionalProperties = ImmutableMap.<String, String>builder()
-			.put("baseCodeSystemOID", "")
-			.put("releaseType", "INT")
-			.build();
-		
-		
 		requests.prepareNewCodeSystem()
 			.setShortName(shortName)
 			.setOid(oid)
@@ -133,7 +126,6 @@ public class CodeSystemRequestTest {
 			.setRepositoryUuid(REPOSITORY_ID)
 			.setTerminologyId("concept")
 			.setLink("www.ihtsdo.org")
-			.setAdditionaProperties(additionalProperties)
 			.build("system", BRANCH, String.format("New code system %s", shortName))
 			.executeSync(bus);
 	}

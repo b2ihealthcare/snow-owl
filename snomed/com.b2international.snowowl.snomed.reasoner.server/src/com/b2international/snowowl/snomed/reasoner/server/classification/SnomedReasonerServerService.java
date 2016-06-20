@@ -60,6 +60,7 @@ import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.datastore.server.remotejobs.BranchExclusiveRule;
 import com.b2international.snowowl.datastore.server.remotejobs.RemoteJobResultRegistry;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
@@ -179,10 +180,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private final RemoteJobResultRegistry<ReasonerTaxonomy> taxonomyResultRegistry;
 	
-	public SnomedReasonerServerService(final int maximumReasonerCount, final int maximumReasonerResultsToKeep) {
+	public SnomedReasonerServerService(final int maximumReasonerCount, final int maximumTaxonomiesToKeep) {
 		super(maximumReasonerCount);
-		this.taxonomyResultRegistry = new RemoteJobResultRegistry<ReasonerTaxonomy>(maximumReasonerResultsToKeep);
-		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumReasonerResultsToKeep);
+		this.taxonomyResultRegistry = new RemoteJobResultRegistry<ReasonerTaxonomy>(maximumTaxonomiesToKeep);
+		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} saveable taxonomies to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
 	}
 
 	public void registerListeners() {
@@ -269,7 +270,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		final UUID classificationId = classificationRequest.getClassificationId();
 		
 		final ReasonerRemoteJob remoteJob = new ReasonerRemoteJob(this, classificationRequest);
-		remoteJob.setRule(new ReasonerRemoteJobKey(SnomedDatastoreActivator.REPOSITORY_UUID, snomedBranchPath));
+		remoteJob.setRule(new BranchExclusiveRule(SnomedDatastoreActivator.REPOSITORY_UUID, snomedBranchPath));
 		RemoteJobUtils.configureProperties(remoteJob, userId, SnomedReasonerService.USER_COMMAND_ID, classificationId);
 		remoteJob.schedule();
 	}
@@ -522,7 +523,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		sb.append(branchPath.getPath());
 		
 		final Job remoteJob = new PersistChangesRemoteJob(sb.toString(), taxonomy, branchPath, userId);
-		remoteJob.setRule(new ReasonerRemoteJobKey(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath));
+		remoteJob.setRule(new BranchExclusiveRule(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath));
 		RemoteJobUtils.configureProperties(remoteJob, userId, null, persistenceId);
 		
 		remoteJob.addJobChangeListener(new JobChangeAdapter() {

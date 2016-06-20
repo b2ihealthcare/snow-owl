@@ -15,62 +15,54 @@
  */
 package com.b2international.snowowl.datastore.server.remotejobs;
 
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
 /**
  */
-public class RemoteJobKeyFamily implements Predicate<Job> {
+public class RemoteJobRuleFamily implements Predicate<Job> {
 
-	private final RemoteJobKey key;
+	private final ISchedulingRule rule;
 
-	public static Predicate<Job> create(final RemoteJobKey key) {
-		return Predicates.and(RemoteJobFamily.INSTANCE, new RemoteJobKeyFamily(key));
+	public static Predicate<Job> create(final ISchedulingRule rule) {
+		return Predicates.and(RemoteJobFamily.INSTANCE, new RemoteJobRuleFamily(rule));
 	}
-	
-	private RemoteJobKeyFamily(final RemoteJobKey key) {
-		Preconditions.checkNotNull(key, "Remote job key may not be null.");
-		this.key = key;
+
+	private RemoteJobRuleFamily(final ISchedulingRule rule) {
+		Preconditions.checkNotNull(rule, "Scheduling rule may not be null.");
+		this.rule = rule;
 	}
-	
-	public RemoteJobKey getKey() {
-		return key;
+
+	public ISchedulingRule getRule() {
+		return rule;
 	}
 
 	@Override
 	public boolean apply(final Job input) {
-		return key.equals(input.getRule());
+		return rule.equals(input.getRule());
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 + key.hashCode();
+		return 31 + rule.hashCode();
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof RemoteJobKeyFamily)) {
-			return false;
-		}
-		final RemoteJobKeyFamily other = (RemoteJobKeyFamily) obj;
-		return key.equals(other.key);
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof RemoteJobRuleFamily)) { return false; }
+		final RemoteJobRuleFamily other = (RemoteJobRuleFamily) obj;
+		return rule.equals(other.rule);
 	}
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("RemoteJobKeyFamily [key=");
-		builder.append(key);
-		builder.append("]");
-		return builder.toString();
+		return Objects.toStringHelper(this).add("rule", rule).toString();
 	}
 }

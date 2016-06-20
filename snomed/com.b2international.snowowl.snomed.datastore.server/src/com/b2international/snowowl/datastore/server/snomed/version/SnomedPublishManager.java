@@ -19,7 +19,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 
 import java.util.Collection;
-import java.util.Date;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -35,9 +34,7 @@ import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.SnomedRelease;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
@@ -48,6 +45,7 @@ import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentSer
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Predicate;
@@ -165,38 +163,26 @@ public class SnomedPublishManager extends PublishManager {
 	}
 	
 	@Override
-	protected CodeSystemVersion createCodeSystemVersion() {
-		return SnomedReleases.newSnomedVersion()
-				.withVersionId(getVersionName())
-				.withDescription(getCodeSystemVersionDescription())
-				.withImportDate(new Date())
-				.withEffectiveDate(getEffectiveTime())
-				.withParentBranchPath(getConfiguration().getParentBranchPath())
-				// TODO modules?
-				.build();
-	}
-
-	@Override
 	protected void addCodeSystemVersion(final CodeSystemVersion codeSystemVersion) {
 		final String shortName = getConfiguration().getCodeSystemShortName();
 		if (getEditingContext().getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			final SnomedRelease snomedRelease = ((SnomedEditingContext) getEditingContext()).getSnomedRelease(shortName, null);
+			final CodeSystem codeSystem = getEditingContext().lookup(shortName, CodeSystem.class);
 			
-			if (snomedRelease == null) {
+			if (codeSystem == null) {
 				throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", shortName));
 			} else {
-				snomedRelease.getCodeSystemVersions().add(codeSystemVersion);
+				codeSystem.getCodeSystemVersions().add(codeSystemVersion);
 			}
 		} else {
 			try (final SnomedEditingContext ec = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
-				final SnomedRelease snomedRelease = ec.getSnomedRelease(shortName, null);
-				if (snomedRelease == null) {
+				final CodeSystem codeSystem = ec.lookup(shortName, CodeSystem.class);
+				if (codeSystem == null) {
 					throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", shortName));
 				} else {
-					snomedRelease.getCodeSystemVersions().add(codeSystemVersion);
+					codeSystem.getCodeSystemVersions().add(codeSystemVersion);
 					
 					final String commitComment = String.format("New Snomed Version %s was added to Snomed Release %s.",
-							codeSystemVersion.getVersionId(), snomedRelease.getShortName());
+							codeSystemVersion.getVersionId(), codeSystem.getShortName());
 					CDOServerUtils.commit(ec, getConfiguration().getUserId(), commitComment, null);
 				}
 			} catch (Exception e) {
