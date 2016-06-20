@@ -36,7 +36,7 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
  */
 public class SnomedConceptExporter extends SnomedCoreExporter<SnomedConceptDocument> {
 
-	public SnomedConceptExporter(final SnomedExportConfiguration configuration) {
+	public SnomedConceptExporter(final SnomedExportContext configuration) {
 		super(checkNotNull(configuration, "configuration"), SnomedConceptDocument.class);
 	}
 	

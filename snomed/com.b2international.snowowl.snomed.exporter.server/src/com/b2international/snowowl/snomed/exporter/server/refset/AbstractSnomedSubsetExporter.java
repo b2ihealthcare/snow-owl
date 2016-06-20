@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
@@ -73,10 +73,10 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	private final String folderName;
 	private String label;
 	private int referencedComponentType;
-	private SnomedExportConfiguration configuration;
+	private SnomedExportContext configuration;
 	private String refSetId;
 
-	protected AbstractSnomedSubsetExporter(final SnomedExportConfiguration configuration, final String refSetId) {
+	protected AbstractSnomedSubsetExporter(final SnomedExportContext configuration, final String refSetId) {
 		this.configuration = configuration;
 		this.refSetId = refSetId;
 		referencedComponentType = getReferencedComponentType(refSetId);
@@ -97,7 +97,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	}
 	
 	@Override
-	public SnomedExportConfiguration getConfiguration() {
+	public SnomedExportContext getExportContext() {
 		return configuration;
 	}
 	
@@ -143,7 +143,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	private int getReferencedComponentType(final String refSetId) {
 
 		try {
-			RevisionSearcher searcher = getConfiguration().getRevisionSearcher();
+			RevisionSearcher searcher = getExportContext().getRevisionSearcher();
 			QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
 			Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(refSetId)).build();
 	

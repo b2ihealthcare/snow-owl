@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -26,7 +28,7 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
  */
 public class SnomedStatedRelationshipExporter extends AbstractSnomedRelationshipExporter {
 
-	public SnomedStatedRelationshipExporter(final SnomedExportConfiguration configuration) {
+	public SnomedStatedRelationshipExporter(final SnomedExportContext configuration) {
 		super(configuration);
 	}
 	
@@ -36,7 +38,12 @@ public class SnomedStatedRelationshipExporter extends AbstractSnomedRelationship
 	}
 	
 	@Override
-	protected Expression getSnapshotQuery() {
-		return Expressions.builder().must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
+	protected Query<SnomedRelationshipIndexEntry> getSnapshotQuery() {
+		
+		QueryBuilder<SnomedRelationshipIndexEntry> builder = Query.builder(SnomedRelationshipIndexEntry.class);
+		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
+		commitTimeConditionBuilder.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
+		Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
+		return query;
 	}
 }

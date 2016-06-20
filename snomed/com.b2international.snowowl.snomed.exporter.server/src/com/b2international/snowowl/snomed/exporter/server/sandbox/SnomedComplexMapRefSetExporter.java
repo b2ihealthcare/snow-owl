@@ -29,7 +29,7 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 
 	private final boolean extended;
 	
-	public SnomedComplexMapRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, 
+	public SnomedComplexMapRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
 			final SnomedRefSetType type, final boolean extended) {
 		
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));

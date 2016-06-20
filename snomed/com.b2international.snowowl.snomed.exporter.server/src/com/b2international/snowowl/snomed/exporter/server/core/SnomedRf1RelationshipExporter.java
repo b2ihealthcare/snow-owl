@@ -24,8 +24,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedReleaseFileHeaders;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 
 /**
  * RF1 exporter for SNOMED&nbsp;CT relationships.
@@ -70,7 +69,7 @@ public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1Exporter<Sno
 	 * @param configuration export configuration
 	 * @param mapper RF2->RF1 mapper
 	 */
-	public SnomedRf1RelationshipExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper) {
+	public SnomedRf1RelationshipExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper) {
 		super(SnomedRelationshipIndexEntry.class, configuration, mapper);
 	}
 	
@@ -95,16 +94,6 @@ public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1Exporter<Sno
 	}
 	
 	@Override
-	public String getRelativeDirectory() {
-		return RF1_CORE_RELATIVE_DIRECTORY;
-	}
-
-	@Override
-	public String getFileName() {
-		return SnomedRfFileNameBuilder.buildCoreRf1FileName(getType(), configuration);
-	}
-
-	@Override
 	public ComponentExportType getType() {
 		return ComponentExportType.RELATIONSHIP;
 	}
@@ -114,8 +103,4 @@ public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1Exporter<Sno
 		return SnomedReleaseFileHeaders.RF1_RELATIONSHIP_HEADER;
 	}
 
-	@Override
-	public SnomedExportConfiguration getConfiguration() {
-		return configuration;
-	}
 }

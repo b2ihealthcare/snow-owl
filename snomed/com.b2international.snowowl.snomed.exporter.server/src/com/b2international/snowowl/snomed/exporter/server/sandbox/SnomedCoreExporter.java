@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.eclipse.emf.common.util.EList;
@@ -33,11 +34,15 @@ import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.CodeSystemService;
+import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Function;
@@ -48,7 +53,7 @@ import com.google.common.collect.Collections2;
  * Export is executed based on the requested branchpath where only artefacts visible
  * from the branchpath are exported.
  */
-public abstract class SnomedCoreExporter<T extends SnomedDocument> extends SnomedCompositeExporter<T> implements SnomedRf2Exporter {
+public abstract class SnomedCoreExporter<T extends SnomedDocument> implements SnomedRf2Exporter {
 
 	//never been queried
 	private int totalSize = -1;
@@ -57,17 +62,19 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> extends Snome
 	private int currentIndex;
 	private Hits<T> conceptHits;
 	private Class<T> clazz;
+	private SnomedExportContext exportContext;
 
 	private SnomedEditingContext editingContext;
 
+	//scroll page size for the query
 	private final static int PAGE_SIZE = 100;
 
 	private Collection<Long> commitTimes;
 	
-	protected SnomedCoreExporter(final SnomedExportConfiguration configuration, final Class<T> clazz) {
-		super(checkNotNull(configuration, "configuration"));
+	protected SnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz) {
+		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.clazz = checkNotNull(clazz, "clazz");
-		IBranchPath currentBranchPath = getConfiguration().getCurrentBranchPath();
+		IBranchPath currentBranchPath = getExportContext().getCurrentBranchPath();
 		ApplicationContext.getServiceForClass(CodeSystemService.class).getAllTagsWithHead(SnomedDatastoreActivator.REPOSITORY_UUID);
 		editingContext = new SnomedEditingContext(currentBranchPath);
 		CodeSystemVersionGroup codeSystemVersionGroup = editingContext.getCodeSystemVersionGroup();
@@ -82,32 +89,35 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> extends Snome
 	}
 	
 	@Override
+	public Iterator<String> iterator() {
+		return this;
+	}
+	
+	@Override
 	public boolean hasNext() {
 		
 		if (totalSize == -1 || (currentIndex >= conceptHits.getHits().size()) && currentOffset < totalSize ) {
 			try {
-				
 				//traverse back from the current branchpath and find all the concepts that have the commit times from the versions visible from the branch path
-				Searcher searcher = getConfiguration().getSearcher();
-				
-				QueryBuilder<T> builder = Query.builder(clazz);
-				ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
-				
-				//Select * from table where commitTimes in(,,,)
-				Expression commitExpression = Expressions.matchAnyLong(Revision.COMMIT_TIMESTAMP, commitTimes);
-				
-				//conditionally add unpublished concepts as well (from everywhere? or the last branch?)
-				if (getConfiguration().includeUnpublished()) {
-					Expression unpublishedExpression = Expressions.builder()
-							.must(Expressions.exactMatch(Revision.BRANCH_PATH, getConfiguration().getCurrentBranchPath().getPath()))
-							.must(SnomedDocument.Expressions.unreleased()).build();
-					commitExpression = Expressions.or(commitExpression, unpublishedExpression);
-					
+				final ContentSubType contentSubType = getExportContext().getContentSubType();
+				final Query<T> exportQuery;
+				switch (contentSubType) {
+					case DELTA:
+						exportQuery = getDeltaQuery();
+						break;
+					case SNAPSHOT:
+						exportQuery = getSnapshotQuery();
+						break;
+					case FULL:
+						exportQuery = getFullQuery();
+						break;
+					default:
+						throw new IllegalArgumentException("Implementation error. Unknown content subtype: " + contentSubType);
 				}
-				commitTimeConditionBuilder.must(commitExpression);
-				Query<T> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(PAGE_SIZE).offset(currentOffset).build();
+				
 				//here are the results to export
-				conceptHits = searcher.search(query);
+				Searcher searcher = getExportContext().getSearcher();
+				conceptHits = searcher.search(exportQuery);
 				
 				//to avoid getting the size every time
 				if (totalSize == -1) {
@@ -122,6 +132,49 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> extends Snome
 		return conceptHits != null && conceptHits.getHits().size() > 0 && currentIndex < conceptHits.getHits().size();
 	}
 	
+	/**
+	 * Returns the query expression for the snapshort export
+	 * @return
+	 */
+	protected Query<T> getSnapshotQuery() {
+		return null;
+	}
+	
+	/**
+	 * Returns the query expression for the delta export
+	 * @return
+	 */
+	protected Query<T> getDeltaQuery() {
+		return null;
+	}
+	
+	/**
+	 * @returns the query for the full export
+	 */
+	protected Query<T> getFullQuery() {
+		QueryBuilder<T> builder = Query.builder(clazz);
+		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
+		
+		//Select * from table where commitTimes in(,,,)
+		Expression commitExpression = Expressions.matchAnyLong(Revision.COMMIT_TIMESTAMP, commitTimes);
+		
+		//conditionally add unpublished concepts as well (from everywhere? or the last branch?)
+		if (getExportContext().includeUnpublished()) {
+			Expression unpublishedExpression = Expressions.builder()
+					.must(Expressions.exactMatch(Revision.BRANCH_PATH, getExportContext().getCurrentBranchPath().getPath()))
+					.must(SnomedDocument.Expressions.unreleased()).build();
+			commitExpression = Expressions.or(commitExpression, unpublishedExpression);
+			
+		}
+		commitTimeConditionBuilder.must(commitExpression);
+		Query<T> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(PAGE_SIZE).offset(currentOffset).build();
+		return query;
+	}
+	
+	protected final String formatEffectiveTime(final Long effectiveTime) {
+		return EffectiveTimes.format(effectiveTime, DateFormats.SHORT, exportContext.getUnsetEffectiveTimeLabel());
+	}
+
 	@Override
 	public String next() {
 		
@@ -133,12 +186,44 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> extends Snome
 		return transform(revisionIndexEntry);
 	}
 	
+	@Override
+	public int getPageSize() {
+		return PAGE_SIZE;
+	}
+	
+	@Override
+	public int getCurrentOffset() {
+		return currentOffset;
+	}
+	
+	/**
+	 * Transforms the SNOMED CT document index representation argument into a serialized line of 
+	 * attributes.
+	 * @param the SNOMED CT document to transform.
+	 * @return a string as a serialized line in the export file.
+	 */
+	public abstract String transform(final T snomedDocument);
+	
+	@Override
+	public SnomedExportContext getExportContext() {
+		return exportContext;
+	}
+	
+	@Override
+	public String getRelativeDirectory() {
+		return RF2_CORE_RELATIVE_DIRECTORY;
+	}
+	
+	@Override
+	public String getFileName() {
+		return SnomedRfFileNameBuilder.buildCoreRf2FileName(getType(), exportContext);
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedCompositeExporter#close()
 	 */
 	@Override
 	public void close() throws Exception {
 		editingContext.close();
-		super.close();
 	}
 }

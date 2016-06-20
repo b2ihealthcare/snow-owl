@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server;
 
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
 
 /**
@@ -27,6 +27,20 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter
  */
 public interface SnomedRf2Exporter extends SnomedExporter {
 
-	SnomedExportConfiguration getConfiguration();
+	/**
+	 * Returns the export context used by the export process
+	 */
+	SnomedExportContext getExportContext();
 	
+	/**
+	 * Returns the scroll size for the query.
+	 * @return paging size
+	 */
+	int getPageSize();
+	
+	/**
+	 * Returns the current offset of the paged query.
+	 * @return current offset
+	 */
+	int getCurrentOffset();
 }

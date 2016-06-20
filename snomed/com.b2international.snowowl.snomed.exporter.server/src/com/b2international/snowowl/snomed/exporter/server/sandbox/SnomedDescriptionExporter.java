@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
  */
 public class SnomedDescriptionExporter extends SnomedCoreExporter<SnomedDescriptionIndexEntry> {
 
-	public SnomedDescriptionExporter(final SnomedExportConfiguration configuration) {
+	public SnomedDescriptionExporter(final SnomedExportContext configuration) {
 		super(configuration, SnomedDescriptionIndexEntry.class);
 	}
 

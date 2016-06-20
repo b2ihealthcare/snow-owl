@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 public class SnomedLanguageRefSetExporter extends SnomedRefSetExporter {
 
-	public SnomedLanguageRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedRefSetType type) {
+	public SnomedLanguageRefSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedRefSetType type) {
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
 	}
 	

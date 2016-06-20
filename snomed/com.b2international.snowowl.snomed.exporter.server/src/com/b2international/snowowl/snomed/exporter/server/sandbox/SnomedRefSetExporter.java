@@ -20,8 +20,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -43,14 +45,14 @@ import com.google.common.collect.Sets;
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
  *
  */
-public class SnomedRefSetExporter extends SnomedCompositeExporter<SnomedRefSetMemberIndexEntry> implements SnomedRf2Exporter {
+public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberIndexEntry> implements SnomedRf2Exporter {
 
 	private final String refSetId;
 
 	private SnomedRefSetType type;
 
-	public SnomedRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedRefSetType type) {
-		super(configuration);
+	public SnomedRefSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedRefSetType type) {
+		super(configuration, SnomedRefSetMemberIndexEntry.class);
 		this.refSetId = checkNotNull(refSetId, "refSetId");
 		this.type = checkNotNull(type, "type");
 	}
@@ -107,7 +109,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter<SnomedRefSetMe
 	@Override
 	public String getFileName() {
 		final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
-		final IBranchPath branchPath = getConfiguration().getCurrentBranchPath();
+		final IBranchPath branchPath = getExportContext().getCurrentBranchPath();
 		final String refSetName = getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, refSetId);
 		return CDOUtils.apply(new CDOTransactionFunction<String>(connection, branchPath) {
 			@Override
@@ -119,12 +121,17 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter<SnomedRefSetMe
 	}
 	
 	protected String buildRefSetFileName(final String refSetName, final SnomedRefSet refSet) {
-		return SnomedRfFileNameBuilder.buildRefSetFileName(getConfiguration(), refSetName, refSet);
+		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), refSetName, refSet);
 	}
 
 	@Override
-	protected Expression getSnapshotQuery() {
-		return Expressions.builder().must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId()))).build();
+	protected Query<SnomedRefSetMemberIndexEntry> getSnapshotQuery() {
+		
+		QueryBuilder<SnomedRefSetMemberIndexEntry> builder = Query.builder(SnomedRefSetMemberIndexEntry.class);
+		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
+		commitTimeConditionBuilder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId()))).build();
+		Query<SnomedRefSetMemberIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
+		return query;
 	}
 	
 	/**Returns with the reference set identifier concept ID.*/

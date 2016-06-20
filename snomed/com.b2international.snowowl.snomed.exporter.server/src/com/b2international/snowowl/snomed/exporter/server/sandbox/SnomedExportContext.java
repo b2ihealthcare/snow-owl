@@ -26,10 +26,10 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 
 /**
- * Wraps several configuration attributes for the SNOMED&nbsp;CT 
+ * Wraps the export context for the SNOMED&nbsp;CT 
  * export process.
  */
-public interface SnomedExportConfiguration {
+public interface SnomedExportContext {
 
 	/**
 	 * Returns the current revision searcher that ensures
@@ -44,6 +44,11 @@ public interface SnomedExportConfiguration {
 	 * @return
 	 */
 	Searcher getSearcher();
+	
+	/**
+	 * Sets the searcher for this context
+	 */
+	void setSearcher(Searcher searcher);
 	
 	/**
 	 * Returns with the current branch path of the client who 
@@ -71,12 +76,6 @@ public interface SnomedExportConfiguration {
 	 */
 	@Nullable Date getDeltaExportEndEffectiveTime();
 	
-	/**
-	 * Returns with a mapping between the branch path for each available version and the index segment names for the versions. 
-	 * @return a mapping between branch paths and index segment names.
-	 */
-	//Map<IBranchPath, Collection<String>> getVersionPathToSegmentNameMappings();
-
 	/**
 	 * Returns the label to use when a component does not have an effective time assigned. Defaults to {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL}. 
 	 * @return the effective time label for unpublished components

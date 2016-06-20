@@ -27,9 +27,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 
 /**
- * Export configuration for the SNOMED CT export process.
+ * Export context for the SNOMED CT export process.
  */
-public class SnomedExportConfigurationImpl implements SnomedExportConfiguration {
+public class SnomedExportContextImpl implements SnomedExportContext {
 
 	//private static final String SEGMENT_INFO_EXTENSION = ".si";
 	
@@ -46,59 +46,19 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	private boolean includeUnpublished;
 
 	
-//	private final Supplier<Map<IBranchPath, Collection<String>>> versionPathToSegmentNameMappingSupplier = 
-//			memoize(new Supplier<Map<IBranchPath, Collection<String>>>() {
-//				public Map<IBranchPath, Collection<String>> get() {
-//					
-//					//try to collect all segment file names for each individual version
-//					final IndexServerService<?> indexService = (IndexServerService<?>) getServiceForClass(SnomedIndexService.class);
-//					final IndexBranchService branchService = indexService.getBranchService(createMainPath());
-//					
-//					final List<IBranchPath> versionPaths = newArrayList();
-//					for (final ICodeSystemVersion version : getAllVersion()) {
-//						versionPaths.add(createVersionPath(version.getVersionId()));
-//					}
-//					versionPaths.add(createMainPath());
-//					
-//					final Map<IBranchPath, Collection<String>> branchPathToSegmentNamesMapping = newLinkedHashMap();
-//					for (final IBranchPath branchPath : versionPaths) {
-//						try {
-//							final IndexCommit commit = branchService.getIndexCommit(branchPath);
-//							if (null == commit) {
-//								branchPathToSegmentNamesMapping.put(branchPath, Collections.<String>emptySet());
-//							} else {
-//								
-//								final Collection<String> segmentNames = FluentIterable.from(commit.getFileNames())
-//										.filter(new Predicate<String>() { @Override public boolean apply(final String fileName) {
-//											return fileName.endsWith(SEGMENT_INFO_EXTENSION);
-//										}})
-//										.transform(new Function<String, String>() { @Override public String apply(final String fileName) {
-//											return fileName.replace(SEGMENT_INFO_EXTENSION, EMPTY_STRING);
-//										}})
-//										.toSet();
-//								
-//								branchPathToSegmentNamesMapping.put(branchPath, segmentNames);
-//							}
-//						} catch (final IOException e) {
-//							throw new SnowowlRuntimeException("Error while initializing SNOMED CT full export.", e);
-//						}
-//					}
-//					
-//					return unmodifiableMap(branchPathToSegmentNamesMapping);
-//				}
-//		});
-
-	public SnomedExportConfigurationImpl(final IBranchPath currentBranchPath,
+	public SnomedExportContextImpl(final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
 			@Nullable final Date deltaExportStartEffectiveTime, 
-			@Nullable final Date deltaExportEndEffectiveTime) {
+			@Nullable final Date deltaExportEndEffectiveTime,
+			final boolean includeUnpublished) {
 
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
+		this.includeUnpublished = includeUnpublished;
 	}
 
 	@Override
@@ -126,11 +86,6 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 		return deltaExportEndEffectiveTime;
 	}
 	
-//	@Override
-//	public Map<IBranchPath, Collection<String>> getVersionPathToSegmentNameMappings() {
-//		return versionPathToSegmentNameMappingSupplier.get();
-//	}
-	
 	public RevisionSearcher getRevisionSearcher() {
 		return revisionSearcher;
 	}
@@ -149,8 +104,7 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 
 	@Override
 	public boolean includeUnpublished() {
-		// TODO Auto-generated method stub
-		return false;
+		return includeUnpublished;
 	}
 	
 	public void setIncludeUnpublished(boolean includeUnpublished) {

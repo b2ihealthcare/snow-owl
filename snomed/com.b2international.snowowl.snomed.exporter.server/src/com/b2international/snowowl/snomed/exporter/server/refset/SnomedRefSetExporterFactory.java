@@ -49,7 +49,7 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedAttribut
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedComplexMapRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedConcreteDomainRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedDescriptionTypeRefSetExporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedLanguageRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedModuleDependencyRefSetExporter;
@@ -100,7 +100,7 @@ public class SnomedRefSetExporterFactory {
 	 *             cannot be determined, or the resolved reference set is not
 	 *             exportable
 	 */
-	public static SnomedExporter getRefSetExporter(final String refSetId, final SnomedExportConfiguration configuration) {
+	public static SnomedExporter getRefSetExporter(final String refSetId, final SnomedExportContext configuration) {
 		
 		CDOView cdoView = null;
 		try {
@@ -149,7 +149,7 @@ public class SnomedRefSetExporterFactory {
 	
 	private static final Iterable<SnomedExporter> NULL_EXPORTERS = Collections.<SnomedExporter>singleton(NoopExporter.INSTANCE);
 	
-	public static Iterable<SnomedExporter> getSubsetExporter(final String refSetId, final SnomedExportConfiguration configuration) {
+	public static Iterable<SnomedExporter> getSubsetExporter(final String refSetId, final SnomedExportContext configuration) {
 		CDOView view = null;
 		try {
 			view = createView(configuration.getCurrentBranchPath());
@@ -172,7 +172,7 @@ public class SnomedRefSetExporterFactory {
 		}
 	}
 	
-	public static Iterable<SnomedExporter> getCrossMapExporter(final String refSetId, final SnomedExportConfiguration configuration, 
+	public static Iterable<SnomedExporter> getCrossMapExporter(final String refSetId, final SnomedExportContext configuration, 
 			final SnomedMapSetSetting mapSetSetting) {
 		
 		if (Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId) || Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId))

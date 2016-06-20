@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedReleaseFileHeaders;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
@@ -85,14 +85,14 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRf1DescriptionExporter.class);
 	
-	private SnomedExportConfiguration configuration;
+	private SnomedExportContext configuration;
 	private Id2Rf1PropertyMapper mapper;
 	private String preferredLanguageId;
 	private final Set<String> undefinedDescriptionTypeIds = Sets.newHashSet();
 	private boolean includeExtendedDescriptionTypes;
 	
 	
-	public SnomedRf1DescriptionExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper, final boolean includeExtendedDescriptionTypes) {
+	public SnomedRf1DescriptionExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, final boolean includeExtendedDescriptionTypes) {
 		super(SnomedDescriptionIndexEntry.class, configuration, mapper);
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
 		this.preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
@@ -118,7 +118,7 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 			description.typeId = getDescriptionType(document.getTypeId());
 		}
 		
-		RevisionSearcher revisionSearcher = getConfiguration().getRevisionSearcher();
+		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 		QueryBuilder<SnomedRefSetMemberIndexEntry> refsetMemberQueryBuilder = Query.builder(SnomedRefSetMemberIndexEntry.class);
 		
 		//inactivation status
@@ -153,11 +153,6 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 	}
 	
 	@Override
-	public String getRelativeDirectory() {
-		return RF1_CORE_RELATIVE_DIRECTORY;
-	}
-
-	@Override
 	public String getFileName() {
 		return SnomedRfFileNameBuilder.buildCoreRf1FileName(getType(), configuration);
 	}
@@ -170,12 +165,6 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 	@Override
 	public String[] getColumnHeaders() {
 		return SnomedReleaseFileHeaders.RF1_DESCRIPTION_HEADER;
-	}
-
-
-	@Override
-	public SnomedExportConfiguration getConfiguration() {
-		return configuration;
 	}
 
 	/*returns with a number indicating the status of a description for RF1 publication.*/

@@ -31,7 +31,7 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 
 	private final boolean includeMapTargetDescription;
 	
-	public SnomedSimpleMapRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, 
+	public SnomedSimpleMapRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
 			final SnomedRefSetType type, final boolean includeMapTargetDescription) {
 		
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
@@ -40,7 +40,7 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 	
 	@Override
 	protected String buildRefSetFileName(final String refSetName, final SnomedRefSet refSet) {
-		return SnomedRfFileNameBuilder.buildRefSetFileName(getConfiguration(), refSetName, refSet, includeMapTargetDescription);
+		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), refSetName, refSet, includeMapTargetDescription);
 	}
 
 	@Override

@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 
 /**
  * SNOMED&nbsp;CT subset exporter for language and simple type reference sets.
@@ -40,7 +40,7 @@ public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 
 	private Iterator<String> itr;
 	
-	public SnomedSubsetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedSubsetMemberExporter memberExporter) {
+	public SnomedSubsetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedSubsetMemberExporter memberExporter) {
 		super(configuration,refSetId);
 		
 		itr = singletonList(new StringBuilder()

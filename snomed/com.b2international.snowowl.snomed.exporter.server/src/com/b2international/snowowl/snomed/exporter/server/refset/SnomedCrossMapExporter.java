@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -65,7 +65,7 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 	 * @param refSetId
 	 * @param mapSetSetting
 	 */
-	public SnomedCrossMapExporter(final SnomedExportConfiguration configuration, final String refSetId, 
+	public SnomedCrossMapExporter(final SnomedExportContext configuration, final String refSetId, 
 			final SnomedMapSetSetting mapSetSetting) {
 		super(configuration, refSetId, mapSetSetting);
 		complex = getMapSetSetting().isComplex();

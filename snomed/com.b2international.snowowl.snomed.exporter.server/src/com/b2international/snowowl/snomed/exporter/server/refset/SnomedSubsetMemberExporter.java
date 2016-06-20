@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -67,7 +67,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 
 	private Iterator<String> itr;
 
-	public SnomedSubsetMemberExporter(final SnomedExportConfiguration configuration, final String refSetId) {
+	public SnomedSubsetMemberExporter(final SnomedExportContext configuration, final String refSetId) {
 		super(configuration, refSetId);
 		mapper = new Id2Rf1PropertyMapper();
 		languageType = isLanguageType(refSetId);
@@ -82,7 +82,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 
 	private Collection<ReferencedComponentIdStatus> createResultSet() {
 
-		RevisionSearcher searcher = getConfiguration().getRevisionSearcher();
+		RevisionSearcher searcher = getExportContext().getRevisionSearcher();
 
 		LongKeyLongMap descriptionIdTypeMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 

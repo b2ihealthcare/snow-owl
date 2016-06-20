@@ -36,7 +36,7 @@ import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
@@ -70,7 +70,7 @@ public class SnomedExportExecutor {
 	});
 	private final Collection<String> visitedIdWithEffectiveTime;
 
-	private SnomedExportConfiguration configuration;
+	private SnomedExportContext configuration;
 
 
 	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, 
@@ -78,7 +78,7 @@ public class SnomedExportExecutor {
 		this.snomedExporter = snomedExporter;
 		this.modulesToExport = modulesToExport;
 		this.clientNamespace = clientNamespace;
-		configuration = this.snomedExporter.getConfiguration();
+		configuration = this.snomedExporter.getExportContext();
 		visitedIdWithEffectiveTime = newHashSet();
 		
 		baseReleaseDir = new File(workingDirectory + File.separatorChar + RELEASE_BASE_DIRECTORY + clientNamespace);

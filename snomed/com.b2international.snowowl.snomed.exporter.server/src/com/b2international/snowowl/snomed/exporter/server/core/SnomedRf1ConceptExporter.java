@@ -36,8 +36,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedReleaseFileHeaders;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
@@ -81,7 +80,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 	 * @param configuration export configuration
 	 * @param mapper RF2->RF1 mapper
 	 */
-	public SnomedRf1ConceptExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper) {
+	public SnomedRf1ConceptExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper) {
 		super(SnomedConceptDocument.class, configuration, mapper);
 	}
 	
@@ -99,7 +98,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		concept.status = revisionDocument.isActive() ? "1" : "0";
 		concept.definitionStatus = revisionDocument.isPrimitive() ? "1" : "0";
 		
-		RevisionSearcher revisionSearcher = getConfiguration().getRevisionSearcher();
+		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 		QueryBuilder<SnomedRefSetMemberIndexEntry> refsetMemberQueryBuilder = Query.builder(SnomedRefSetMemberIndexEntry.class);
 
 		final LanguageSetting languageSetting = ApplicationContext.getInstance().getService(LanguageSetting.class);
@@ -109,7 +108,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		ISnomedConcept snomedConcept = SnomedRequests.prepareGetConcept()
 			.setComponentId(revisionDocument.getId())
 			.setLocales(languageSetting.getLanguagePreference())
-			.setExpand("fsn()").build(getConfiguration().getCurrentBranchPath().getPath()).executeSync(eventBus);
+			.setExpand("fsn()").build(getExportContext().getCurrentBranchPath().getPath()).executeSync(eventBus);
 		
 		concept.fsn = snomedConcept.getFsn().getTerm();
 		
@@ -160,16 +159,6 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 	}
 	
 	@Override
-	public String getRelativeDirectory() {
-		return RF1_CORE_RELATIVE_DIRECTORY;
-	}
-
-	@Override
-	public String getFileName() {
-		return SnomedRfFileNameBuilder.buildCoreRf1FileName(getType(), configuration);
-	}
-
-	@Override
 	public ComponentExportType getType() {
 		return ComponentExportType.CONCEPT;
 	}
@@ -177,11 +166,6 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 	@Override
 	public String[] getColumnHeaders() {
 		return SnomedReleaseFileHeaders.RF1_CONCEPT_HEADER;
-	}
-
-	@Override
-	public SnomedExportConfiguration getConfiguration() {
-		return configuration;
 	}
 
 	/*returns with a number indicating the status of a concept for RF1 publication.*/

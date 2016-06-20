@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -58,7 +58,7 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 	private boolean complex;
 	private Iterator<String> itr;
 
-	public SnomedCrossMapTargetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
+	public SnomedCrossMapTargetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
 		super(configuration, refSetId, mapSetSetting);
 		complex = getMapSetSetting().isComplex();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<MapTargetEntry, String>() {
@@ -77,7 +77,7 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 
 	private Collection<MapTargetEntry> createResultSet() {
 
-		RevisionSearcher revisionSearcher = getConfiguration().getRevisionSearcher();
+		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 
 		try {
 			QueryBuilder<SnomedRefSetMemberIndexEntry> builder = Query.builder(SnomedRefSetMemberIndexEntry.class);

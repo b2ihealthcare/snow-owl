@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 
 /**
  * Abstract map set RF1 exporter for SNOMED&nbsp;CT simple map type and complex map type reference sets.
@@ -38,10 +38,10 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 	
 	private final SnomedMapSetSetting mapSetSetting;
 	private final String label;
-	private SnomedExportConfiguration configuration;
+	private SnomedExportContext configuration;
 	private String refSetId;
 
-	protected AbstractSnomedCrossMapExporter(final SnomedExportConfiguration configuration, final String refSetId, 
+	protected AbstractSnomedCrossMapExporter(final SnomedExportContext configuration, final String refSetId, 
 			final SnomedMapSetSetting mapSetSetting) {
 		this.refSetId = checkNotNull(refSetId, "refSetId");
 		this.configuration = checkNotNull(configuration, "configuration");
@@ -75,7 +75,7 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 	}
 	
 	@Override
-	public SnomedExportConfiguration getConfiguration() {
+	public SnomedExportContext getExportContext() {
 		return configuration;
 	}
 	

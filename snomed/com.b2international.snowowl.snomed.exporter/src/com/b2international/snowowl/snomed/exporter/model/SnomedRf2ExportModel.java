@@ -64,7 +64,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private boolean refSetsToExport;
 	private boolean exportToRf1;
 	private boolean extendedDescriptionTypesForRf1;
-	private boolean deltaExport;
+	private boolean includeUnpublised;
 
 	private Date deltaExportStartEffectiveTime;
 	private Date deltaExportEndEffectiveTime;
@@ -255,12 +255,12 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
 	}
 
-	public boolean isDeltaExport() {
-		return deltaExport;
+	public boolean includeUnpublised() {
+		return includeUnpublised;
 	}
 
-	public void setDeltaExport(boolean isDeltaExport) {
-		this.deltaExport = isDeltaExport;
+	public void setincludeUnpublised(boolean includeUnpublised) {
+		this.includeUnpublised = includeUnpublised;
 	}
 
 	public void setNamespace(String namespace) {

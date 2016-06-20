@@ -24,7 +24,7 @@ import java.util.Iterator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 
 /**
  * SNOMED&nbsp;CT cross map set exporter for complex map and simple map type reference sets.
@@ -40,7 +40,7 @@ public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter im
 	private static final String FILE_NAME_PREFIX = "CrossMapSets";
 	private Iterator<String> itr;
 
-	public SnomedCrossMapSetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
+	public SnomedCrossMapSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
 		super(configuration, refSetId, mapSetSetting);
 		itr = createResultSet().iterator();
 	}

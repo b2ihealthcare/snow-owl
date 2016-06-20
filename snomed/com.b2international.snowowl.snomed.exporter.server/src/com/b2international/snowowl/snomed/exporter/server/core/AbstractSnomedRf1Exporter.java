@@ -29,7 +29,8 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 
 /**
  * Abstract iterator for RF1 format exports.
@@ -37,7 +38,7 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportCo
  */
 public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implements SnomedRf1Exporter {
 	
-	protected SnomedExportConfiguration configuration;
+	protected SnomedExportContext exportContext;
 	protected Id2Rf1PropertyMapper mapper;
 	
 	//never been queried
@@ -55,9 +56,9 @@ public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implem
 	 * @param id2Rf1PropertyMapper 
 	 * @param snomedExportConfiguration 
 	 */
-	public AbstractSnomedRf1Exporter(Class<T> clazz, SnomedExportConfiguration snomedExportConfiguration, Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
+	public AbstractSnomedRf1Exporter(Class<T> clazz, SnomedExportContext snomedExportConfiguration, Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
 		this.clazz = clazz;
-		this.configuration = checkNotNull(configuration, "configuration");
+		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.mapper = checkNotNull(mapper, "mapper");
 	}
 	
@@ -66,7 +67,7 @@ public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implem
 		
 		if (totalSize == -1 || (currentIndex >= conceptHits.getHits().size()) && currentOffset < totalSize ) {
 			try {
-				RevisionSearcher revisionSearcher = getConfiguration().getRevisionSearcher();
+				RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 				QueryBuilder<T> builder = Query.builder(clazz);
 				Query<T> query = builder.selectAll().where(Expressions.matchAll()).limit(PAGE_SIZE).offset(currentOffset).build();
 				conceptHits = revisionSearcher.search(query);
@@ -110,6 +111,21 @@ public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implem
 	@Override
 	public Iterator<String> iterator() {
 		return this;
+	}
+	
+	@Override
+	public SnomedExportContext getExportContext() {
+		return exportContext;
+	}
+	
+	@Override
+	public String getRelativeDirectory() {
+		return RF1_CORE_RELATIVE_DIRECTORY;
+	}
+	
+	@Override
+	public String getFileName() {
+		return SnomedRfFileNameBuilder.buildCoreRf1FileName(getType(), exportContext);
 	}
 	
 	@Override

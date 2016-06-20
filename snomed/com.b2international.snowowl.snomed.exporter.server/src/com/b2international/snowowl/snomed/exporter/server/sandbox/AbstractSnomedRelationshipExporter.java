@@ -23,7 +23,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  */
 public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExporter<SnomedRelationshipIndexEntry> {
 
-	protected AbstractSnomedRelationshipExporter(final SnomedExportConfiguration configuration) {
+	protected AbstractSnomedRelationshipExporter(final SnomedExportContext configuration) {
 		super(configuration, SnomedRelationshipIndexEntry.class);
 	}
 
