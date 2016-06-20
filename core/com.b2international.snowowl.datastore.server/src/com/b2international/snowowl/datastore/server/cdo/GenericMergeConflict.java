@@ -69,6 +69,7 @@ public class GenericMergeConflict implements MergeConflict, Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((message == null) ? 0 : message.hashCode());
 		result = prime * result + ((sourceId == null) ? 0 : sourceId.hashCode());
 		result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
 		return result;
@@ -86,6 +87,13 @@ public class GenericMergeConflict implements MergeConflict, Serializable {
 			return false;
 		}
 		GenericMergeConflict other = (GenericMergeConflict) obj;
+		if (message == null) {
+			if (other.message != null) {
+				return false;
+			}
+		} else if (!message.equals(other.message)) {
+			return false;
+		}
 		if (sourceId == null) {
 			if (other.sourceId != null) {
 				return false;
