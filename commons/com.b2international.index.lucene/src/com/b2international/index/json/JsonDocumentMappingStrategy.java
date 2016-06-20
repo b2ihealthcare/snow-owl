@@ -26,6 +26,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.collections.floats.FloatCollection;
+import com.b2international.collections.ints.IntCollection;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -88,11 +91,11 @@ public class JsonDocumentMappingStrategy {
 			break;
 		case NUMBER:
 			Class<?> fieldType = mapping.getField(name).getType();
-			if (fieldType == Long.class || fieldType == long.class) {
+			if (fieldType == Long.class || fieldType == long.class || LongCollection.class.isAssignableFrom(fieldType)) {
 				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
-			} else if (fieldType == Float.class || fieldType == float.class) {
+			} else if (fieldType == Float.class || fieldType == float.class || FloatCollection.class.isAssignableFrom(fieldType)) {
 				Fields.searchOnlyFloatField(name).addTo(doc, node.floatValue());
-			} else if (fieldType == Integer.class || fieldType == int.class) {
+			} else if (fieldType == Integer.class || fieldType == int.class || IntCollection.class.isAssignableFrom(fieldType)) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
 			} else if (fieldType == Short.class || fieldType == short.class) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
