@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,48 +33,21 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
-import com.b2international.snowowl.datastore.server.cdo.GenericConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.datastore.utils.ComponentUtils2;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
-import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdateRunnable;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -221,22 +191,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 	
 	@Override
-	public void postProcess(CDOTransaction transaction) {
-		super.postProcess(transaction);
-		
-		final ImmutableMultimap.Builder<String, Object> conflictingItems = ImmutableMultimap.builder();
-		postProcessLanguageRefSetMembers(transaction, conflictingItems);
-		postProcessTaxonomy(transaction, conflictingItems);
-		postProcessRefSetMembers(transaction, conflictingItems);
-		
-		Map<String, Object> result = ImmutableMap.<String, Object>copyOf(conflictingItems.build().asMap());
-		if (!result.isEmpty()) {
-			// TODO XXX
-			throw new MergeConflictException(Collections.<MergeConflict>emptySet(), result, "Conflicts detected on %s concept(s) while post-processing changes.", result.size());
-		}
-	}
-
-	@Override
 	protected void unlinkObject(final CDOObject object) {
 	
 		if (object instanceof Relationship) {
@@ -298,135 +252,5 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 		return null;
 	}
-
-	private void postProcessRefSetMembers(CDOTransaction transaction, Builder<String, Object> conflictingItems) {
-		final Set<String> detachedMemberIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, SnomedRefSetMember.class)).transform(new Function<SnomedRefSetMember, String>() {
-			@Override
-			public String apply(SnomedRefSetMember input) {
-				return input.getUuid();
-			}
-		}).toSet();
-		final Set<String> detachedCoreComponentIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, Component.class)).transform(new Function<Component, String>() {
-			@Override
-			public String apply(Component input) {
-				return input.getId();
-			}
-		}).toSet();
-		if (!detachedCoreComponentIds.isEmpty()) {
-			final SnomedReferenceSetMembers membersReferencingDetachedComponents = SnomedRequests
-					.prepareSearchMember()
-					.filterByReferencedComponent(detachedCoreComponentIds)
-					.setLimit(detachedCoreComponentIds.size())
-					.build(BranchPathUtils.createPath(transaction).getPath())
-					.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
-			
-			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
-				if (!detachedMemberIds.contains(member.getId())) {
-					conflictingItems.put(member.getReferencedComponent().getId(), new GenericConflict("Member '%s' is referencing detached component '%s'", member.getId(), member.getReferencedComponent().getId())); 
-				}
-			}
-		}
-	}
-
-	private void postProcessLanguageRefSetMembers(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
-		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
-		final Set<SnomedLanguageRefSetMember> membersToRemove = newHashSet();
-		
-		label:
-		for (CDOObject newObject : transaction.getNewObjects().values()) {
-			
-			if (!(newObject instanceof SnomedLanguageRefSetMember)) {
-				continue;
-			}
-			
-			SnomedLanguageRefSetMember newLanguageRefSetMember = (SnomedLanguageRefSetMember) newObject;
-			
-			if (!newLanguageRefSetMember.isActive()) {
-				continue;
-			}
-			
-			Description description = (Description) newObject.eContainer();
-			
-			if (!description.isActive()) {
-				continue;
-			}
-			
-			String acceptabilityId = newLanguageRefSetMember.getAcceptabilityId();
-			String typeId = description.getType().getId();
-			String languageRefSetId = newLanguageRefSetMember.getRefSetIdentifierId(); 
-			
-			Concept concept = description.getConcept();
-			
-			for (Description conceptDescription : concept.getDescriptions()) {
-				
-				if (!conceptDescription.isActive()) {
-					continue;
-				}
-				
-				String conceptDescriptionTypeId = conceptDescription.getType().getId();
-				
-				if (!typeId.equals(conceptDescriptionTypeId) && !(synonymAndDescendantIds.contains(typeId) && synonymAndDescendantIds.contains(conceptDescriptionTypeId))) {
-					continue;
-				}
-				
-				for (SnomedLanguageRefSetMember conceptDescriptionMember : conceptDescription.getLanguageRefSetMembers()) {
-					
-					if (!conceptDescriptionMember.isActive()) {
-						continue;
-					}
-					
-					if (!languageRefSetId.equals(conceptDescriptionMember.getRefSetIdentifierId())) {
-						continue;
-					}
-					
-					if (conceptDescriptionMember.equals(newLanguageRefSetMember)) {
-						continue;
-					}
-					
-					if (acceptabilityId.equals(conceptDescriptionMember.getAcceptabilityId())) {
-						if (description.equals(conceptDescription)) {
-							membersToRemove.add(newLanguageRefSetMember);
-							continue label;
-						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-							conflictingItems.put(
-									concept.getId(),
-									new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID(), String
-											.format("Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s", description.getId(),
-													conceptDescription.getId())));
-						}
-					} else {
-						if (description.equals(conceptDescription)) {
-							conflictingItems.put(
-									concept.getId(),
-									new AddedInSourceAndTargetConflict(newLanguageRefSetMember.cdoID(), conceptDescriptionMember.cdoID(), String
-											.format("Different acceptability selected for the same description, %s", description.getId())));
-						}
-					}
-				}
-			}
-		}
-		
-		for (SnomedLanguageRefSetMember memberToRemove : membersToRemove) {
-			unlinkObject(memberToRemove);
-		}
-	}
 	
-	private void postProcessTaxonomy(CDOTransaction transaction, ImmutableMultimap.Builder<String, Object> conflictingItems) {
-		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		final ApplicationContext context = ApplicationContext.getInstance();
-		final LongCollection conceptIds = context.getService(SnomedTerminologyBrowser.class).getAllConceptIds(branchPath);
-		
-		for (StatementCollectionMode mode : ImmutableList.of(StatementCollectionMode.STATED_ISA_ONLY, StatementCollectionMode.INFERRED_ISA_ONLY)) {
-			try {
-				final IsAStatementWithId[] statements = context.getService(SnomedStatementBrowser.class).getActiveStatements(branchPath, mode);
-				final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-				new SnomedTaxonomyUpdateRunnable(transaction, taxonomyBuilder, mode.getCharacteristicType()).run();
-			} catch (IncompleteTaxonomyException e) {
-				for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
-					conflictingItems.put(Long.toString(invalidRelationship.getMissingConceptId()), invalidRelationship);
-				}	
-			}
-		}
-	}
 }

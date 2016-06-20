@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,7 +39,9 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
+import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.google.common.base.Function;
@@ -59,6 +62,8 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	private final String repositoryUuid;
 	private final Map<EClass, EAttribute> releasedAttributeMap;
 	private final Set<CDOID> idsToUnlink = newHashSet();
+	
+	private final IMergeConflictRuleProvider conflictRuleProvider;
 
 	protected AbstractCDOConflictProcessor(final String repositoryUuid) {
 		this(repositoryUuid, EMPTY_MAP);
@@ -70,8 +75,10 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 
 		this.repositoryUuid = repositoryUuid;
 		this.releasedAttributeMap = releasedAttributeMap;
+		
+		conflictRuleProvider = initializeConflictRuleProvider(repositoryUuid);
 	}
-
+	
 	@Override
 	public final String getRepositoryUuid() {
 		return repositoryUuid;
@@ -123,11 +130,24 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	
 	@Override
 	public void postProcess(final CDOTransaction transaction) throws ConflictException {
+		
 		for (final CDOID idToUnlink : idsToUnlink) {
 			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
 			if (objectIfExists != null) {
 				unlinkObject(objectIfExists);
 			}
+		}
+		
+		List<MergeConflict> conflicts = FluentIterable.from(conflictRuleProvider.getRules())
+				.transformAndConcat(new Function<IMergeConflictRule, Collection<MergeConflict>>() {
+					@Override
+					public Collection<MergeConflict> apply(IMergeConflictRule input) {
+						return input.validate(transaction);
+					}
+				}).toList();
+
+		if (!conflicts.isEmpty()) {
+			throw new MergeConflictException(conflicts, "Domain specific conflicts detected while post-processing merge changes.");
 		}
 	}
 
@@ -194,5 +214,18 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		}
 		
 		return false;
+	}
+
+	private IMergeConflictRuleProvider initializeConflictRuleProvider(final String repositoryUuid) {
+		
+		Collection<IMergeConflictRuleProvider> ruleProviders = Extensions.getExtensions(IMergeConflictRuleProvider.EXTENSION_ID, IMergeConflictRuleProvider.class);
+		Optional<IMergeConflictRuleProvider> ruleProvider = FluentIterable.from(ruleProviders).firstMatch(new Predicate<IMergeConflictRuleProvider>() {
+			@Override
+			public boolean apply(IMergeConflictRuleProvider ruleProvider) {
+				return ruleProvider.getRepositoryUUID().equals(repositoryUuid);
+			}
+		});
+		
+		return ruleProvider.isPresent() ? ruleProvider.get() : new IMergeConflictRuleProvider.NullImpl(repositoryUuid);
 	}
 }
