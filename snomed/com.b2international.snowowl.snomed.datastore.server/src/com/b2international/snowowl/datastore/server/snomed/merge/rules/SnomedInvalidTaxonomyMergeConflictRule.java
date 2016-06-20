@@ -28,7 +28,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.merge.SnomedCDOMergeConflict;
+import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMessages;
+import com.b2international.snowowl.datastore.server.snomed.merge.SnomedRelationshipMergeConflict;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -60,9 +62,17 @@ public class SnomedInvalidTaxonomyMergeConflictRule implements IMergeConflictRul
 				new SnomedTaxonomyUpdateRunnable(transaction, taxonomyBuilder, mode.getCharacteristicType()).run();
 			} catch (IncompleteTaxonomyException e) {
 				for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
-					conflicts.add(new SnomedCDOMergeConflict(String.valueOf(invalidRelationship.getMissingConceptId()), null, 
-							String.format("Relationship with ID '%s' has a missing %s with ID '%s'", 
-									invalidRelationship.getRelationshipId(), invalidRelationship.getMissingConcept(), invalidRelationship.getMissingConceptId())));
+					
+					String relationshipId = String.valueOf(invalidRelationship.getRelationshipId());
+					String sourceId = String.valueOf(invalidRelationship.getSourceId());
+					String destinationId = String.valueOf(invalidRelationship.getDestinationId());
+					
+					String message = String.format(SnomedMergeConflictMessages.ISA_RELATIONSHIP_WITH_INACTIVE_SOURCE_OR_DESTINATION, 
+							relationshipId, sourceId, Concepts.IS_A, destinationId, invalidRelationship.getMissingConcept().name().toLowerCase());
+
+					SnomedRelationshipMergeConflict conflict = new SnomedRelationshipMergeConflict(relationshipId, sourceId, Concepts.IS_A, destinationId, message);
+					
+					conflicts.add(conflict);
 				}	
 			}
 		}
