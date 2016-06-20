@@ -22,6 +22,7 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
@@ -33,7 +34,6 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
@@ -45,7 +45,8 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 	@Override
 	public Description getComponent(final String descriptionId, final CDOView view) {
 
-		final long descriptionStorageKey = getComponentService().getDescriptionStorageKey(BranchPathUtils.createPath(view), descriptionId);
+		final IBranchPath branchPath = BranchPathUtils.createPath(view);
+		final long descriptionStorageKey = getStorageKey(branchPath, descriptionId);
 		CDOObject cdoObject = null;
 
 		notFoundDescriptionLoop: 
@@ -80,25 +81,26 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 
 	@Override
 	public SnomedDescriptionIndexEntry getComponent(final IBranchPath branchPath, final String id) {
-		return SnomedRequests.prepareGetDescription()
-				.setComponentId(id)
-				.build(branchPath.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<ISnomedDescription, SnomedDescriptionIndexEntry>() {
-					@Override
-					public SnomedDescriptionIndexEntry apply(ISnomedDescription input) {
-						return SnomedDescriptionIndexEntry.builder(input).build();
-					}
-				}).getSync();
+		try {
+			return SnomedRequests.prepareGetDescription()
+					.setComponentId(id)
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(new Function<ISnomedDescription, SnomedDescriptionIndexEntry>() {
+						@Override
+						public SnomedDescriptionIndexEntry apply(ISnomedDescription input) {
+							return SnomedDescriptionIndexEntry.builder(input).build();
+						}
+					}).getSync();
+		} catch (NotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		return getComponentService().getDescriptionStorageKey(branchPath, id);
-	}
-
-	private ISnomedComponentService getComponentService() {
-		return ApplicationContext.getInstance().getService(ISnomedComponentService.class);
+		final SnomedDescriptionIndexEntry component = getComponent(branchPath, id);
+		return component != null ? component.getStorageKey() : CDOUtils.NO_STORAGE_KEY;
 	}
 
 	@Override

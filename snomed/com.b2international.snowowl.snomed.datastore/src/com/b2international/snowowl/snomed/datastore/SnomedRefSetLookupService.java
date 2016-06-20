@@ -100,12 +100,13 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 
 	@Override
 	public SnomedConceptDocument getComponent(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException();
+		return new SnomedConceptLookupService().getComponent(branchPath, id);
 	}
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException(); //getRefSetBrowser().getStorageKey(branchPath, id);
+		final SnomedConceptDocument component = getComponent(branchPath, id);
+		return component != null ? component.getRefSetStorageKey() : CDOUtils.NO_STORAGE_KEY;
 	}
 
 	@Override
