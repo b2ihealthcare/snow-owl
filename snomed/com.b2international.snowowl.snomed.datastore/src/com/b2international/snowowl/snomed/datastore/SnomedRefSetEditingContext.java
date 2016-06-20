@@ -46,14 +46,17 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
@@ -74,6 +77,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -549,13 +554,16 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		final String relationshipId = referencedComponentPair.getComponentId();
 		
 		// Try to retrieve from the lightweight store first
-		final SnomedRelationshipIndexEntry relationshipMini = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getStatement(relationshipId);
+		final ISnomedRelationship relationshipMini = Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
+				.setLimit(1)
+				.setComponentIds(Collections.singleton(relationshipId))
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync(), null);
 		
 		if (null == relationshipMini) {
-			
 			// Retrieve from CDO if it does not exist in local lightweight store
-			final ILookupService<String, Relationship, CDOView> lookupService = CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.RELATIONSHIP);
-			Relationship relationship = lookupService.getComponent(relationshipId, transaction);
+			Relationship relationship = getSnomedEditingContext().lookup(relationshipId, Relationship.class);
 			
 			// If not persisted yet, try to get it from the transaction
 			if (null == relationship) {
