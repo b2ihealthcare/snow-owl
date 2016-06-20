@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
+import org.apache.lucene.util.BytesRef;
 
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
@@ -48,7 +50,9 @@ public class JsonDocumentMappingStrategy {
 		JsonDocumentMapping._type().addTo(doc, mapping.typeAsString());
 		JsonDocumentMapping._uid().addTo(doc, uid);
 		// TODO create byte fields
-		doc.add(new StoredField("_source", mapper.writeValueAsBytes(object)));
+		final byte[] source = mapper.writeValueAsBytes(object);
+		doc.add(new StoredField("_source", source));
+		doc.add(new BinaryDocValuesField("_source", new BytesRef(source)));
 		final ObjectNode node = mapper.valueToTree(object);
 		// add all other fields
 		final Iterator<Entry<String, JsonNode>> fields = node.fields();

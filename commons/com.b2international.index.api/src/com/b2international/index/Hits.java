@@ -57,8 +57,8 @@ public final class Hits<T> implements Iterable<T> {
 		return total;
 	}
 
-	public static <T> Hits<T> empty() {
-		return new Hits<>(Collections.<T>emptyList(), 0, 0, 0);
+	public static <T> Hits<T> empty(int offset, int limit) {
+		return new Hits<>(Collections.<T>emptyList(), offset, limit, 0);
 	}
 	
 }
