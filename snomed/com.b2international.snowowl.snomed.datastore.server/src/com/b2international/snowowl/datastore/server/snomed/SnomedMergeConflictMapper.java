@@ -43,7 +43,7 @@ import com.google.common.collect.Ordering;
  */
 public class SnomedMergeConflictMapper {
 
-	public static SnomedMergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public static SnomedCDOMergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
 			return from((ChangedInSourceAndTargetConflict) conflict, sourceTransaction, targetTransaction);
 		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
@@ -60,13 +60,13 @@ public class SnomedMergeConflictMapper {
 		throw new IllegalArgumentException("Unknown conflict type: " + conflict);
 	}
 
-	public static SnomedMergeConflict from(final ChangedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction,
+	public static SnomedCDOMergeConflict from(final ChangedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction,
 			final CDOTransaction targetTransaction) {
 
 		final String sourceComponentId = getComponentId(sourceTransaction, conflict.getSourceDelta().getID());
 		final String targetComponentId = getComponentId(targetTransaction, conflict.getTargetDelta().getID());
 
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, targetComponentId, String.format(
+		final SnomedCDOMergeConflict snomedMergeConflict = new SnomedCDOMergeConflict(sourceComponentId, targetComponentId, String.format(
 				ConflictMapper.CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, sourceComponentId));
 
 		snomedMergeConflict.setSourceType(conflict.getSourceDelta().getEClass().getName());
@@ -78,12 +78,12 @@ public class SnomedMergeConflictMapper {
 		return snomedMergeConflict;
 	}
 
-	public static SnomedMergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction,
+	public static SnomedCDOMergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction,
 			final CDOTransaction targetTransaction) {
 
 		final String componentId = getComponentIdWithFallback(sourceTransaction, targetTransaction, conflict.getSourceDelta().getID());
 
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(componentId, null, String.format(
+		final SnomedCDOMergeConflict snomedMergeConflict = new SnomedCDOMergeConflict(componentId, null, String.format(
 				ConflictMapper.CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, componentId));
 
 		snomedMergeConflict.setSourceType(conflict.getSourceDelta().getEClass().getName());
@@ -92,12 +92,12 @@ public class SnomedMergeConflictMapper {
 		return snomedMergeConflict;
 	}
 
-	public static SnomedMergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction sourceTransaction,
+	public static SnomedCDOMergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction sourceTransaction,
 			final CDOTransaction targetTransaction) {
 
 		final String targetComponentId = getComponentIdWithFallback(targetTransaction, sourceTransaction, conflict.getTargetDelta().getID());
 
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(null, targetComponentId, String.format(
+		final SnomedCDOMergeConflict snomedMergeConflict = new SnomedCDOMergeConflict(null, targetComponentId, String.format(
 				ConflictMapper.CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, targetComponentId));
 
 		snomedMergeConflict.setTargetType(conflict.getTargetDelta().getEClass().getName());
@@ -106,16 +106,16 @@ public class SnomedMergeConflictMapper {
 		return snomedMergeConflict;
 	}
 
-	public static SnomedMergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction,
+	public static SnomedCDOMergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction,
 			final CDOTransaction targetTransaction) {
 
-		SnomedMergeConflict snomedMergeConflict;
+		SnomedCDOMergeConflict snomedMergeConflict;
 		
 		if (conflict.isAddedInSource()) {
 			final String sourceComponentId = getComponentIdWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
 			final String type = getTypeWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
 			
-			snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, null, String.format(
+			snomedMergeConflict = new SnomedCDOMergeConflict(sourceComponentId, null, String.format(
 					ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE, type, sourceComponentId));
 			
 			snomedMergeConflict.setSourceType(type);
@@ -123,7 +123,7 @@ public class SnomedMergeConflictMapper {
 			String targetComponentId = getComponentIdWithFallback(targetTransaction, sourceTransaction, conflict.getTargetId());
 			String type = getTypeWithFallback(targetTransaction, sourceTransaction, conflict.getTargetId());
 			
-			snomedMergeConflict = new SnomedMergeConflict(null, targetComponentId, String.format(
+			snomedMergeConflict = new SnomedCDOMergeConflict(null, targetComponentId, String.format(
 					ConflictMapper.ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE, type, targetComponentId));
 			
 			snomedMergeConflict.setTargetType(type);
@@ -132,7 +132,7 @@ public class SnomedMergeConflictMapper {
 		return snomedMergeConflict;
 	}
 
-	public static SnomedMergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction,
+	public static SnomedCDOMergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction,
 			final CDOTransaction targetTransaction) {
 
 		final String sourceComponentId = getComponentIdWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
@@ -140,7 +140,7 @@ public class SnomedMergeConflictMapper {
 		final String sourceType = getTypeWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
 		final String targetType = getTypeWithFallback(targetTransaction, sourceTransaction, conflict.getTargetId());
 
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, targetComponentId, 
+		final SnomedCDOMergeConflict snomedMergeConflict = new SnomedCDOMergeConflict(sourceComponentId, targetComponentId, 
 				String.format(ConflictMapper.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, sourceType, sourceComponentId, targetType, targetComponentId));
 
 		snomedMergeConflict.setSourceType(sourceType);
@@ -149,13 +149,13 @@ public class SnomedMergeConflictMapper {
 		return snomedMergeConflict;
 	}
 	
-	public static SnomedMergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public static SnomedCDOMergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
 		final String sourceComponentId = getComponentIdWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
 		final String targetComponentId = getComponentIdWithFallback(targetTransaction, sourceTransaction, conflict.getTargetId());
 		final String sourceType = getTypeWithFallback(sourceTransaction, targetTransaction, conflict.getSourceId());
 		final String targetType = getTypeWithFallback(targetTransaction, sourceTransaction, conflict.getTargetId());
 
-		final SnomedMergeConflict snomedMergeConflict = new SnomedMergeConflict(sourceComponentId, targetComponentId, 
+		final SnomedCDOMergeConflict snomedMergeConflict = new SnomedCDOMergeConflict(sourceComponentId, targetComponentId, 
 				String.format(ConflictMapper.ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, targetType, targetComponentId, sourceType, sourceComponentId));
 
 		snomedMergeConflict.setSourceType(sourceType);

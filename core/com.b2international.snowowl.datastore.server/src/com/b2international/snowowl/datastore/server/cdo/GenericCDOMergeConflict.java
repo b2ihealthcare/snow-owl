@@ -25,7 +25,7 @@ import com.google.common.base.Objects;
 /**
  * @since 4.7
  */
-public class GenericMergeConflict implements MergeConflict, Serializable {
+public class GenericCDOMergeConflict implements MergeConflict, Serializable {
 
 	private static final long serialVersionUID = 5238168089442966388L;
 
@@ -33,7 +33,7 @@ public class GenericMergeConflict implements MergeConflict, Serializable {
 	private String sourceId = null;
 	private final String message;
 	
-	public GenericMergeConflict(@Nullable final String sourceId, @Nullable final String targetId, final String message) {
+	public GenericCDOMergeConflict(@Nullable final String sourceId, @Nullable final String targetId, final String message) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
 		this.message = message;
@@ -86,7 +86,7 @@ public class GenericMergeConflict implements MergeConflict, Serializable {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		GenericMergeConflict other = (GenericMergeConflict) obj;
+		GenericCDOMergeConflict other = (GenericCDOMergeConflict) obj;
 		if (message == null) {
 			if (other.message != null) {
 				return false;

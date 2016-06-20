@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.SnomedMergeConflict;
+import com.b2international.snowowl.datastore.server.snomed.SnomedCDOMergeConflict;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
@@ -72,7 +72,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule implements IMerg
 			
 			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
 				if (!detachedMemberIds.contains(member.getId())) {
-					conflicts.add(new SnomedMergeConflict(member.getId(), member.getReferencedComponent().getId(), String.format("Member '%s' is referencing detached component '%s'", member.getId(), member.getReferencedComponent().getId())));
+					conflicts.add(new SnomedCDOMergeConflict(member.getId(), member.getReferencedComponent().getId(), String.format("Member '%s' is referencing detached component '%s'", member.getId(), member.getReferencedComponent().getId())));
 				}
 			}
 		}

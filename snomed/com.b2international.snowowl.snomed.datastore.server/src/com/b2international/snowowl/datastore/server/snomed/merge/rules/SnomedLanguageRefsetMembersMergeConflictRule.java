@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.SnomedMergeConflict;
+import com.b2international.snowowl.datastore.server.snomed.SnomedCDOMergeConflict;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -109,13 +109,13 @@ public class SnomedLanguageRefsetMembersMergeConflictRule implements IMergeConfl
 							membersToRemove.add(newLanguageRefSetMember);
 							continue label;
 						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-							conflicts.add(new SnomedMergeConflict(newLanguageRefSetMember.getUuid(), conceptDescriptionMember.getUuid(), String
+							conflicts.add(new SnomedCDOMergeConflict(newLanguageRefSetMember.getUuid(), conceptDescriptionMember.getUuid(), String
 									.format("Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s", description.getId(),
 											conceptDescription.getId())));
 						}
 					} else {
 						if (description.equals(conceptDescription)) {
-							conflicts.add(new SnomedMergeConflict(newLanguageRefSetMember.getUuid(), conceptDescriptionMember.getUuid(), String
+							conflicts.add(new SnomedCDOMergeConflict(newLanguageRefSetMember.getUuid(), conceptDescriptionMember.getUuid(), String
 									.format("Different acceptability selected for the same description, %s", description.getId())));
 						}
 					}
