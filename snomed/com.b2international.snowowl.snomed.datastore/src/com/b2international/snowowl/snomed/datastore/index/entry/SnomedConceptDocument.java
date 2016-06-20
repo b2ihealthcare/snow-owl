@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyInt;
+import static com.b2international.index.query.Expressions.matchAnyLong;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +29,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.ITreeComponent;
@@ -69,19 +70,19 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}
 
 		public static Expression parents(Collection<String> parentIds) {
-			return matchAny(Fields.PARENTS, parentIds);
+			return matchAnyLong(Fields.PARENTS, StringToLongFunction.copyOf(parentIds));
 		}
 
 		public static Expression ancestors(Collection<String> ancestorIds) {
-			return matchAny(Fields.ANCESTORS, ancestorIds);
+			return matchAnyLong(Fields.ANCESTORS, StringToLongFunction.copyOf(ancestorIds));
 		}
 
 		public static Expression statedParents(Collection<String> statedParentIds) {
-			return matchAny(Fields.STATED_PARENTS, statedParentIds);
+			return matchAnyLong(Fields.STATED_PARENTS, StringToLongFunction.copyOf(statedParentIds));
 		}
 		
 		public static Expression statedAncestors(Collection<String> statedAncestorIds) {
-			return matchAny(Fields.STATED_ANCESTORS, statedAncestorIds);
+			return matchAnyLong(Fields.STATED_ANCESTORS, StringToLongFunction.copyOf(statedAncestorIds));
 		}
 		
 		public static Expression primitive() {
