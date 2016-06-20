@@ -26,7 +26,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +37,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -236,15 +236,25 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			
 			try {
 				
+				final ExpressionBuilder expression = Expressions.builder();
+				expression.must(active());
+				if (stated) {
+					if (direct) {
+						expression.must(statedParents(conceptIds));
+					} else {
+						expression.must(statedAncestors(conceptIds));
+					}
+				} else {
+					if (direct) {
+						expression.must(parents(conceptIds));
+					} else {
+						expression.must(ancestors(conceptIds));
+					}
+				}
+				
 				final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
 						.selectAll()
-						.where(Expressions.builder()
-								.must(active())
-								.must(parents(!stated ? conceptIds : Collections.<String>emptySet()))
-								.must(ancestors(!stated && !direct ? conceptIds : Collections.<String>emptySet()))
-								.must(statedParents(stated ? conceptIds : Collections.<String>emptySet()))
-								.must(statedAncestors(stated && !direct ? conceptIds : Collections.<String>emptySet()))
-								.build())
+						.where(expression.build())
 						.limit(Integer.MAX_VALUE)
 						.build();
 				
@@ -354,14 +364,18 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				final long[] parentIds = stated ? concept.getStatedParentIds() : concept.getParentIds();
 				if (parentIds != null) {
 					for (long parent : parentIds) {
-						ancestorsByDescendant.put(concept.getId(), toString.apply(parent));
+						if (SnomedConceptDocument.ROOT_ID != parent) {
+							ancestorsByDescendant.put(concept.getId(), toString.apply(parent));
+						}
 					}
 				}
 				if (!direct) {
 					final long[] ancestorIds = stated ? concept.getStatedAncestorIds() : concept.getAncestorIds();
 					if (ancestorIds != null) {
 						for (long ancestor : ancestorIds) {
-							ancestorsByDescendant.put(concept.getId(), toString.apply(ancestor));
+							if (SnomedConceptDocument.ROOT_ID != ancestor) {
+								ancestorsByDescendant.put(concept.getId(), toString.apply(ancestor));
+							}
 						}
 					}
 				}
