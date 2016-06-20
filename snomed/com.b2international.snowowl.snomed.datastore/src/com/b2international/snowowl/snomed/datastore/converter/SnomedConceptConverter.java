@@ -239,15 +239,13 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				final ExpressionBuilder expression = Expressions.builder();
 				expression.must(active());
 				if (stated) {
-					if (direct) {
-						expression.must(statedParents(conceptIds));
-					} else {
+					expression.must(statedParents(conceptIds));
+					if (!direct) {
 						expression.must(statedAncestors(conceptIds));
 					}
 				} else {
-					if (direct) {
-						expression.must(parents(conceptIds));
-					} else {
+					expression.must(parents(conceptIds));
+					if (!direct) {
 						expression.must(ancestors(conceptIds));
 					}
 				}
@@ -303,9 +301,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				final Collection<String> componentIds = newHashSet(descendantsByAncestor.values());
 				
 				if (limit > 0 && !componentIds.isEmpty()) {
-					// remove any already known concept definition
-					componentIds.removeAll(conceptIds);
-					
+					// query descendants again
 					final SnomedConcepts descendants = SnomedRequests.prepareSearchConcept()
 							.all()
 							.filterByActive(true)
@@ -316,7 +312,6 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 					
 					final Map<String, ISnomedConcept> descendantsById = newHashMap();
 					descendantsById.putAll(Maps.uniqueIndex(descendants, ID_FUNCTION));
-					descendantsById.putAll(Maps.uniqueIndex(results, ID_FUNCTION));
 					for (ISnomedConcept concept : results) {
 						final Collection<String> descendantIds = descendantsByAncestor.get(concept.getId());
 						final List<ISnomedConcept> currentDescendants = FluentIterable.from(descendantIds).skip(offset).limit(limit).transform(Functions.forMap(descendantsById)).toList();
@@ -387,9 +382,6 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 			final Collection<String> componentIds = newHashSet(ancestorsByDescendant.values());
 			
 			if (limit > 0 && !componentIds.isEmpty()) {
-				// remove any already known concept definitions
-				componentIds.removeAll(conceptIds);
-				
 				final SnomedConcepts ancestors = SnomedRequests.prepareSearchConcept()
 						.all()
 						.filterByActive(true)
@@ -400,7 +392,6 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				
 				final Map<String, ISnomedConcept> ancestorsById = newHashMap();
 				ancestorsById.putAll(Maps.uniqueIndex(ancestors, ID_FUNCTION));
-				ancestorsById.putAll(Maps.uniqueIndex(results, ID_FUNCTION));
 				for (ISnomedConcept concept : results) {
 					final Collection<String> ancestorIds = ancestorsByDescendant.get(concept.getId());
 					final List<ISnomedConcept> conceptAncestors = FluentIterable.from(ancestorIds).skip(offset).limit(limit).transform(Functions.forMap(ancestorsById)).toList();
