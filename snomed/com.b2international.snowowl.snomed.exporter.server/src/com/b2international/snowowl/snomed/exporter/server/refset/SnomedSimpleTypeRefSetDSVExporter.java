@@ -142,12 +142,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	}
 
 	/**
-	 * Stores the synonym and it's descendants type IDs for the preferred term queries.
-	 */
-	private static final Set<String> SYNONYM_AND_DESCENDANTS = ApplicationContext.getInstance().getService(IClientSnomedComponentService.class)
-			.getSynonymAndDescendantIds();
-
-	/**
 	 * Directory of the temporary file on the server side.
 	 */
 	private static String TEMPORARY_WORKING_DIRECTORY;

@@ -94,6 +94,11 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 	}
 	
 	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public boolean hasNext() {
 		
 		if (totalSize == -1 || (currentIndex >= conceptHits.getHits().size()) && currentOffset < totalSize ) {

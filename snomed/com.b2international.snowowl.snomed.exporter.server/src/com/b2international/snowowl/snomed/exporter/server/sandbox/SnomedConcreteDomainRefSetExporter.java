@@ -37,13 +37,13 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(doc.getUomComponentId());
+		sb.append(doc.getUnitId());
 		sb.append(HT);
-		sb.append(doc.getOperatorComponentId());
+		sb.append(doc.getOperatorId());
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getAttributeLabel()));
+		sb.append(nullToEmpty(doc.getAttributeName()));
 		sb.append(HT);
-		sb.append(doc.getStringField(SnomedRefSetMemberIndexEntry.Fields.DATA_VALUE)); //the direct value
+		sb.append(doc.getValue()); //the direct value
 		sb.append(HT);
 		sb.append(nullToEmpty(doc.getCharacteristicTypeId()));
 		return sb.toString();

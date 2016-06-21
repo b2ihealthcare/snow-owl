@@ -49,7 +49,7 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(HT);
 		sb.append(nullToEmpty(doc.getMapAdvice()));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getMapTargetComponentId()));
+		sb.append(nullToEmpty(doc.getMapTarget()));
 		sb.append(HT);
 		sb.append(doc.getCorrelationId());
 		if (extended) {

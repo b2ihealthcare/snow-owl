@@ -65,7 +65,7 @@ public class SnomedUnpublishedDescriptionExporter extends SnomedDescriptionExpor
 		Expression unpublishedExpression = Expressions.builder()
 				.must(Expressions.exactMatch(Revision.BRANCH_PATH, getExportContext().getCurrentBranchPath().getPath()))
 				.must(SnomedDocument.Expressions.unreleased()).build();
-		commitExpression = Expressions.or(commitExpression, unpublishedExpression);
+		commitExpression = Expressions.builder().should(commitExpression).should(unpublishedExpression).build();
 			
 		commitTimeConditionBuilder.must(commitExpression);
 		Query<SnomedDescriptionIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();

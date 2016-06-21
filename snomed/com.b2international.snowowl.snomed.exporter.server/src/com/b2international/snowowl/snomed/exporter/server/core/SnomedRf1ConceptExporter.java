@@ -140,7 +140,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		
 		//there should be only one max
 		for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
-			concept.ctv3 = snomedRefSetMemberIndexEntry.getTargetComponentId();
+			concept.ctv3 = snomedRefSetMemberIndexEntry.getTargetComponent();
 		}
 		
 		condition = Expressions.builder()
@@ -153,7 +153,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		
 		//there should be only one max
 		for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
-			concept.snomedRt = snomedRefSetMemberIndexEntry.getTargetComponentId();
+			concept.snomedRt = snomedRefSetMemberIndexEntry.getTargetComponent();
 		}
 		return concept.toString();
 	}

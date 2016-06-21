@@ -48,7 +48,7 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(doc.getMapTargetComponentId());
+		sb.append(doc.getMapTarget());
 		if (includeMapTargetDescription) {
 			sb.append(HT);
 			sb.append(nullToEmpty(doc.getMapTargetDescription()));

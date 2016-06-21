@@ -65,7 +65,7 @@ public class SnomedUnpublishedRelationshipExporter extends SnomedStatedRelations
 		Expression unpublishedExpression = Expressions.builder()
 				.must(Expressions.exactMatch(Revision.BRANCH_PATH, getExportContext().getCurrentBranchPath().getPath()))
 				.must(SnomedDocument.Expressions.unreleased()).build();
-		commitExpression = Expressions.or(commitExpression, unpublishedExpression);
+		commitExpression = Expressions.builder().should(commitExpression).should(unpublishedExpression).build();
 			
 		commitTimeConditionBuilder.must(commitExpression);
 		Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();

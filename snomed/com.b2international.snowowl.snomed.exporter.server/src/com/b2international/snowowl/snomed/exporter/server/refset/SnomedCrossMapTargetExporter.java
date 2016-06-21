@@ -93,7 +93,7 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 
 				final MapTargetEntry mapTargetEntry = new MapTargetEntry();
 				mapTargetEntry.uuid = snomedRefSetMemberIndexEntry.getId();
-				mapTargetEntry.mapTarget = snomedRefSetMemberIndexEntry.getMapTargetComponentId();
+				mapTargetEntry.mapTarget = snomedRefSetMemberIndexEntry.getMapTarget();
 
 				if (complex) {
 					mapTargetEntry.rule = snomedRefSetMemberIndexEntry.getMapRule();

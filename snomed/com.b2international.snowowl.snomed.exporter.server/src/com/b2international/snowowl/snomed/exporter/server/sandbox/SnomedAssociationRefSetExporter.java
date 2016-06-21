@@ -35,7 +35,7 @@ public class SnomedAssociationRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(doc.getTargetComponentId());
+		sb.append(doc.getTargetComponent());
 		return sb.toString();
 	}
 	

@@ -110,7 +110,7 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 					
 					final MapTargetEntry mapTargetEntry = new MapTargetEntry();
 					mapTargetEntry.mapSource = snomedRefSetMemberIndexEntry.getReferencedComponentId();
-					mapTargetEntry.mapTarget = snomedRefSetMemberIndexEntry.getMapTargetComponentId();
+					mapTargetEntry.mapTarget = snomedRefSetMemberIndexEntry.getMapTarget();
 					
 					if (complex) {
 						mapTargetEntry.rule = snomedRefSetMemberIndexEntry.getMapRule();
