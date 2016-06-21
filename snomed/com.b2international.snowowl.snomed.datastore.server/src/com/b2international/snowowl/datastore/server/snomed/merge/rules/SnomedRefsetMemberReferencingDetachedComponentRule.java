@@ -21,15 +21,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.cdo.AbstractMergeConflictRule;
+import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -42,10 +43,10 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 4.7
  */
-public class SnomedRefsetMemberReferencingDetachedComponentRule extends AbstractMergeConflictRule {
+public class SnomedRefsetMemberReferencingDetachedComponentRule implements IMergeConflictRule {
 
 	@Override
-	public Collection<MergeConflict> validate(CDOBranch sourceBranch, CDOTransaction transaction) {
+	public Collection<MergeConflict> validate(CDOTransaction transaction) {
 		
 		final Set<String> detachedMemberIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, SnomedRefSetMember.class)).transform(new Function<SnomedRefSetMember, String>() {
 			@Override
@@ -69,7 +70,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 					.filterByReferencedComponent(detachedCoreComponentIds)
 					.setLimit(detachedCoreComponentIds.size())
 					.build(BranchPathUtils.createPath(transaction).getPath())
-					.executeSync(getEventBus());
+					.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
 			
 			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
 				if (!detachedMemberIds.contains(member.getId())) {

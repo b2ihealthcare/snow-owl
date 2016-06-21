@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
@@ -33,7 +32,7 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.cdo.AbstractMergeConflictRule;
+import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -44,10 +43,10 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 4.7
  */
-public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractMergeConflictRule {
+public class SnomedLanguageRefsetMembersMergeConflictRule implements IMergeConflictRule {
 
 	@Override
-	public Collection<MergeConflict> validate(CDOBranch sourceBranch, CDOTransaction transaction) {
+	public Collection<MergeConflict> validate(CDOTransaction transaction) {
 
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
 		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(

@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.cdo;
 
 import java.util.Collection;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.snowowl.core.merge.MergeConflict;
@@ -35,6 +34,6 @@ public interface IMergeConflictRule {
 	 * @param transaction
 	 * @return
 	 */
-	Collection<MergeConflict> validate(CDOBranch sourceBranch, CDOTransaction targetTransaction);
+	Collection<MergeConflict> validate(CDOTransaction transaction);
 	
 }
