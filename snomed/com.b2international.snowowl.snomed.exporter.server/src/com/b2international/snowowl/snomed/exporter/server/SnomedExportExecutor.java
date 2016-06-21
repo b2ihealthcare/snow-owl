@@ -89,8 +89,8 @@ public class SnomedExportExecutor {
 		this.temporaryWorkingDirectory = workingDirectory;
 	}
 	
-	public void execute() throws IOException {
-		releaseFilePath = write();
+	public void execute(boolean writeHeader) throws IOException {
+		releaseFilePath = write(writeHeader);
 	}
 
 	public File getTemporaryFile() {
@@ -106,7 +106,7 @@ public class SnomedExportExecutor {
 		}
 	}
 	
-	private File write() throws IOException {
+	private File write(boolean writeHeader) throws IOException {
 		final File releaseFileRelativePath = new File(
 				temporaryWorkingDirectory + 
 				File.separatorChar + 
@@ -131,7 +131,9 @@ public class SnomedExportExecutor {
 			randomAccessFile = new RandomAccessFile(releaseFileRelativePath, "rw");
 			fileChannel = randomAccessFile.getChannel();
 			
-			writeFileHeader(fileChannel, snomedExporter.getColumnHeaders());
+			if (writeHeader) {
+				writeFileHeader(fileChannel, snomedExporter.getColumnHeaders());
+			}
 			
 			for (final String line : snomedExporter) {
 				if (snomedExporter instanceof SnomedRf2Exporter && !isToExport(line)) {

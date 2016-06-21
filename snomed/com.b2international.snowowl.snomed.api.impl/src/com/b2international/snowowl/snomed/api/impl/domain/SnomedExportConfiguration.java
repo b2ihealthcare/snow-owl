@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
-import javax.swing.text.html.InlineView;
-
 import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 

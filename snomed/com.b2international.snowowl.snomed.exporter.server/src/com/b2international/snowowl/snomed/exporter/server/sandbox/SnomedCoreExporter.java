@@ -133,7 +133,7 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 	}
 	
 	/**
-	 * Returns the query expression for the snapshort export
+	 * Returns the query expression for the snapshot export
 	 * @return
 	 */
 	protected Query<T> getSnapshotQuery() {
@@ -157,15 +157,6 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 		
 		//Select * from table where commitTimes in(,,,)
 		Expression commitExpression = Expressions.matchAnyLong(Revision.COMMIT_TIMESTAMP, commitTimes);
-		
-		//conditionally add unpublished concepts as well (from everywhere? or the last branch?)
-		if (getExportContext().includeUnpublished()) {
-			Expression unpublishedExpression = Expressions.builder()
-					.must(Expressions.exactMatch(Revision.BRANCH_PATH, getExportContext().getCurrentBranchPath().getPath()))
-					.must(SnomedDocument.Expressions.unreleased()).build();
-			commitExpression = Expressions.or(commitExpression, unpublishedExpression);
-			
-		}
 		commitTimeConditionBuilder.must(commitExpression);
 		Query<T> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(PAGE_SIZE).offset(currentOffset).build();
 		return query;

@@ -64,6 +64,9 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportCo
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedInferredRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedStatedRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedUnpublishedConceptExporter;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedUnpublishedDescriptionExporter;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedUnpublishedRelationshipExporter;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -332,6 +335,11 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				}
 			}
 			
+			if (exportContext.includeUnpublished()) {
+				LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT export for unpublished components...");
+				exportUnpublished(TEMPORARY_WORKING_DIRECTORY, exportContext, monitor);
+			}
+			
 			LogUtils.logExportActivity(LOGGER, userId, branchPath, "Archiving SNOMED CT publication...");
 
 			File root = new File(TEMPORARY_WORKING_DIRECTORY);
@@ -359,7 +367,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		return null;
 	}
 	
-	private void executeCoreExport(final String workingDirectory, final SnomedExportContext configuration, final OMMonitor monitor) throws IOException {
+	private void executeCoreExport(final String workingDirectory, final SnomedExportContext context, final OMMonitor monitor) throws IOException {
 
 		if (monitor.isCanceled()) {
 			return;
@@ -368,8 +376,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT concepts into RF2 format.");
-		SnomedExporter conceptExporter = new SnomedConceptExporter(configuration);
-		new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		SnomedExporter conceptExporter = new SnomedConceptExporter(context);
+		new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 		
 		if (monitor.isCanceled()) {
 			return;
@@ -378,8 +386,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT description into RF2 format.");
-		SnomedExporter descriptionExporter = new SnomedDescriptionExporter(configuration);
-		new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		SnomedExporter descriptionExporter = new SnomedDescriptionExporter(context);
+		new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 		
 		if (monitor.isCanceled()) {
 			return;
@@ -388,8 +396,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT non-stated relationships into RF2 format.");
-		SnomedExporter relationshipExporter = new SnomedInferredRelationshipExporter(configuration);
-		new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		SnomedExporter relationshipExporter = new SnomedInferredRelationshipExporter(context);
+		new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 		
 		if (monitor.isCanceled()) {
 			return;
@@ -398,16 +406,16 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT stated relationships into RF2 format.");
-		SnomedExporter statedRelationshipExporter = new SnomedStatedRelationshipExporter(configuration);
-		new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		SnomedExporter statedRelationshipExporter = new SnomedStatedRelationshipExporter(context);
+		new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 		
 		if (includeRf1) {
 			
 			final Id2Rf1PropertyMapper mapper = new Id2Rf1PropertyMapper();
 			
 			logActivity("Publishing SNOMED CT concepts into RF1 format.");
-			conceptExporter = new SnomedRf1ConceptExporter(configuration, mapper);
-			new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			conceptExporter = new SnomedRf1ConceptExporter(context, mapper);
+			new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 			
 			if (monitor.isCanceled()) {
 				return;
@@ -416,9 +424,9 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Publishing SNOMED CT descriptions into RF1 format.");
-			descriptionExporter = new SnomedRf1DescriptionExporter(configuration, mapper, includeExtendedDescriptionTypes);
+			descriptionExporter = new SnomedRf1DescriptionExporter(context, mapper, includeExtendedDescriptionTypes);
 			final SnomedExportExecutor exportExecutor = new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, clientNamespace);
-			exportExecutor.execute();
+			exportExecutor.execute(true);
 			
 			if (includeExtendedDescriptionTypes) {
 				exportExecutor.writeExtendedDescriptionTypeExplanation();
@@ -431,8 +439,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Publishing SNOMED CT relationships into RF1 format.");
-			relationshipExporter = new SnomedRf1RelationshipExporter(configuration, mapper);
-			new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			relationshipExporter = new SnomedRf1RelationshipExporter(context, mapper);
+			new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 			
 			if (monitor.isCanceled()) {
 				return;
@@ -442,6 +450,41 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 	}
 	
+	private void exportUnpublished(final String workingDirectory, final SnomedExportContext context, final OMMonitor monitor) throws IOException {
+		
+		logActivity("Publishing SNOMED CT unpublished concepts into RF2 format.");
+		SnomedExporter unpublishedConceptExporter = new SnomedUnpublishedConceptExporter(context);
+		new SnomedExportExecutor(unpublishedConceptExporter, workingDirectory, modulesToExport, clientNamespace).execute(false);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT unpublished descriptions into RF2 format.");
+		SnomedExporter unpublishedDescriptionExporter = new SnomedUnpublishedDescriptionExporter(context);
+		new SnomedExportExecutor(unpublishedDescriptionExporter, workingDirectory, modulesToExport, clientNamespace).execute(false);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT unpublished relationships into RF2 format.");
+		SnomedExporter unpublishedRelationshipExporter = new SnomedUnpublishedRelationshipExporter(context);
+		new SnomedExportExecutor(unpublishedRelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute(false);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		//TODO: execute exporters for unpublished refsets and RF1s as well
+	}
+
 	private void executeRefSetExport(final String workingDirectory, final SnomedExportContext configuration, final String refSetId, 
 			final OMMonitor monitor) throws IOException {
 		
@@ -452,7 +495,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT reference set into RF2 format. Reference set identifier concept ID: " + refSetId);
-		new SnomedExportExecutor(refSetExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		new SnomedExportExecutor(refSetExporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 
 		//RF1 export
 		if (includeRf1) {
@@ -464,7 +507,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 						logActivity("Publishing SNOMED CT reference set into RF1 format. Reference set identifier concept ID: " + refSetId);
 						alreadyLogged = true;
 					}
-					new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, clientNamespace).execute();
+					new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 				}
 			}
 			//RF1 map set exporter.
@@ -477,7 +520,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 							logActivity("Publishing SNOMED CT reference set into RF1 format. Reference set identifier concept ID: " + refSetId);
 							alreadyLogged = true;
 						}
-						new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, clientNamespace).execute();
+						new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, clientNamespace).execute(true);
 					}
 				}
 			}

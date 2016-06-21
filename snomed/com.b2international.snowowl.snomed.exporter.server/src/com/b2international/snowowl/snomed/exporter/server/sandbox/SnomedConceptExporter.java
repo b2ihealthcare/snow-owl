@@ -19,13 +19,6 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.IOException;
-import java.util.NoSuchElementException;
-
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
