@@ -93,6 +93,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
+		addComponentIdFilter(queryBuilder);
 		
 		if (!referenceSetIds.isEmpty()) {
 			// if only one refset ID is defined, check if it's an ESCG expression and expand it, otherwise use as is
