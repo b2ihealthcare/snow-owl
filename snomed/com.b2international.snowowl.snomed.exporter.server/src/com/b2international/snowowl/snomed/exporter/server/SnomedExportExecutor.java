@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -32,12 +31,18 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Set;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 
@@ -65,7 +70,22 @@ public class SnomedExportExecutor {
 	private final String clientNamespace;
 	private final Supplier<LongKeyLongMap> conceptIdToModuleIdSupplier = memoize(new Supplier<LongKeyLongMap>() {
 		public LongKeyLongMap get() {
-			return getServiceForClass(ISnomedComponentService.class).getConceptModuleMapping(configuration.getCurrentBranchPath());
+			final String branch = configuration.getCurrentBranchPath().getPath();
+			return SnomedRequests.prepareSearchConcept()
+					.all()
+					.build(branch)
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(new Function<SnomedConcepts, LongKeyLongMap>() {
+						@Override
+						public LongKeyLongMap apply(SnomedConcepts input) {
+							final LongKeyLongMap result = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(input.getTotal());
+							for (ISnomedConcept concept : input) {
+								result.put(Long.parseLong(concept.getId()), Long.parseLong(concept.getModuleId()));
+							}
+							return result;
+						}
+					})
+					.getSync();
 		}
 	});
 	private final Collection<String> visitedIdWithEffectiveTime;

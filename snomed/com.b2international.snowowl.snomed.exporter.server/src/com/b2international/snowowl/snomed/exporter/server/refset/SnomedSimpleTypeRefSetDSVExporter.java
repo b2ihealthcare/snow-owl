@@ -44,6 +44,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -51,18 +52,22 @@ import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.DatatypeSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -165,6 +170,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private Map<String, Integer> exportItemMaxOccurences;
 	private Collection<String> headerList;
 	private Collection<String> metaHeaderList;
+	private final Set<String> synonymAndDescendants;
 
 	/**
 	 * Creates a new instance with the export parameters. Called by the SnomedSimpleTypeRefSetDSVExportServerIndication.
@@ -190,6 +196,16 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		groupedOnlyItems = Lists.newArrayList();
 		// set up the database connection
 		connection = ApplicationContext.getInstance().getService(ICDORepositoryManager.class).get(SnomedPackage.eINSTANCE).getConnection();
+		synonymAndDescendants = SnomedRequests.prepareGetSynonyms()
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 	}
 
 	/**
@@ -825,7 +841,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 		int i = 1;
 
-		final PreparedStatement preferredTermStatement = connection.prepareStatement(SnomedRefSetExporterQueries.buildPreferredTermQuery(SYNONYM_AND_DESCENDANTS.size()));
+		final PreparedStatement preferredTermStatement = connection.prepareStatement(SnomedRefSetExporterQueries.buildPreferredTermQuery(synonymAndDescendants.size()));
 		preferredTermStatement.setString(i++, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 
 		preferredTermStatement.setInt(i++, branchId);
@@ -845,7 +861,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		final CDOBranch branch = cdoConnection.getSession().getBranchManager().getBranch(branchId);
 		final CDOBranchPoint branchPoint = branch.getHead();
 		
-		for (final String typeId : SYNONYM_AND_DESCENDANTS) {
+		for (final String typeId : synonymAndDescendants) {
 			
 			final int j = i++;
 			
