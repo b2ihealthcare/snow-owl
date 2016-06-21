@@ -73,12 +73,12 @@ public interface VersionConfiguration {
 	boolean isDirty();
 	
 	/**
-	 * Returns with all versions from a repository where the argument belongs to.
+	 * Returns with all {@link ICodeSystemVersion}s from the provided {@link ICodeSystem code system}.
 	 * <br>Version representing the {@link ICodeSystemVersion#INITIAL_STATE 'init'} state will be excluded 
 	 * from the returning list. 
-	 * @param version the version to check. 
-	 * @return all versions in the repository.
+	 * @param codeSystem 
+	 * @return all versions in the codeSystem.
 	 */
-	List<ICodeSystemVersion> getAllVersionsForRepository(final ICodeSystemVersion version);
+	List<ICodeSystemVersion> getAllVersionsForCodeSystem(final ICodeSystem codeSystem);
 	
 }

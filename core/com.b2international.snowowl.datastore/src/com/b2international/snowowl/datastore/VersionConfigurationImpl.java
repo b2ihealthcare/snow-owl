@@ -24,7 +24,7 @@ import static com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Iterables.find;
+import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
@@ -45,7 +45,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -56,7 +58,7 @@ import com.google.common.collect.Sets;
 public class VersionConfigurationImpl implements VersionConfiguration {
 
 	private final IBranchPathMap taskBranchPathMap;
-	private final Map<String, List<ICodeSystemVersion>> allVersions;
+	private final Map<ICodeSystem, List<ICodeSystemVersion>> allVersions;
 	private final Map<ICodeSystem, ICodeSystemVersion> currentVersions;
 
 	public VersionConfigurationImpl() {
@@ -76,25 +78,28 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 			return error("Version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(repositoryUuid) + " cannot be modified.");
 		}
 
-		final ICodeSystemVersion newVersionToSet = tryFindVersion(repositoryUuid, versionId);
-		ICodeSystem matchingCodeSystem = CodeSystemUtils.findMatchingCodeSystem(versionToSet.getParentBranchPath(), repositoryUuid);
-		
-		if (null == newVersionToSet) {
+		Optional<ICodeSystemVersion>  existingVersionOptional = tryFindVersion(versionToSet);
+
+		if (!existingVersionOptional.isPresent()) {
 			return error("Cannot find version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(repositoryUuid) + ".");
 		}
 		
-		copyCurrentVersions.put(matchingCodeSystem, newVersionToSet);
+		ICodeSystem matchingCodeSystem = CodeSystemUtils.findMatchingCodeSystem(versionToSet.getParentBranchPath(), repositoryUuid);
+		
+		
+		copyCurrentVersions.put(matchingCodeSystem, existingVersionOptional.get());
 		
 		String slaveRepositoryUuid = getSlaveRepositoryUuid(repositoryUuid);
 		while (null != slaveRepositoryUuid) {
 			
 			//same version is mandatory in slave repository.
-			ICodeSystemVersion newSlaveVersion = tryFindVersion(slaveRepositoryUuid, versionId);
-			if (null == newSlaveVersion) {
+			Optional<ICodeSystemVersion> newSlaveVersionOptional = tryFindVersion(slaveRepositoryUuid, versionToSet.getCodeSystemShortName(), versionId);
+			if (!newSlaveVersionOptional.isPresent()) {
 				return error("Cannot find dependent version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(slaveRepositoryUuid) + ".");
 			}
 			
 				
+			ICodeSystemVersion newSlaveVersion = newSlaveVersionOptional.get();
 			if (isLocked(newSlaveVersion)) {
 				return error("Dependent version " + toVersionString(versionId) + " for " + getToolingFeatureNameForRepository(repositoryUuid) + " cannot be modified.");
 			}
@@ -108,6 +113,19 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		currentVersions.putAll(copyCurrentVersions);
 		
 		return ok();
+	}
+
+	protected Optional<ICodeSystemVersion> tryFindVersion(final String repositoryUuid, final String codeSystemShortName, final String versionId) {
+		return FluentIterable.<ICodeSystemVersion> from(concat(allVersions.values()))
+				.filter(new CVSRepositoryUuidPredicate(repositoryUuid))
+				.filter(new CSVShortNamePredicate(codeSystemShortName))
+				.filter(new CSVVersionIdPredicate(versionId)).first();
+	}
+	protected Optional<ICodeSystemVersion> tryFindVersion(final ICodeSystemVersion versionToSet) {
+		final String repositoryUuid = versionToSet.getRepositoryUuid();
+		final String codeSystemShortName = versionToSet.getCodeSystemShortName();
+		final String versionId = versionToSet.getVersionId();
+		return tryFindVersion(repositoryUuid, codeSystemShortName, versionId);
 	}
 
 	@Override
@@ -130,8 +148,14 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	
 	@Override
 	public boolean isSingleton(final ICodeSystemVersion version) {
-		final String repositoryUuid = checkNotNull(version, "version").getRepositoryUuid();
-		return allVersions.get(repositoryUuid).size() <= 1;
+		for (Entry<ICodeSystem, List<ICodeSystemVersion>> entry : allVersions.entrySet()) {
+			List<ICodeSystemVersion> versions = entry.getValue();
+			if (versions.contains(version)) {
+				return versions.size() <= 1;
+			}
+		}
+		
+		throw new IllegalArgumentException("Unable to find containing Code system for version: " + version.getPath()); 
 	}
 
 	@Override
@@ -157,13 +181,9 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	}
 
 	@Override
-	public List<ICodeSystemVersion> getAllVersionsForRepository(final ICodeSystemVersion version) {
-		final String repositoryUuid = checkNotNull(version, "version").getRepositoryUuid();
-		final List<ICodeSystemVersion> allVersionForRepository = newArrayList(allVersions.get(repositoryUuid));
-		final ICodeSystemVersion initVersion = tryFindVersion(repositoryUuid, INITIAL_STATE);
-		if (null != initVersion) {
-			allVersionForRepository.remove(initVersion);
-		}
+	public List<ICodeSystemVersion> getAllVersionsForCodeSystem(final ICodeSystem codeSystem) {
+		final List<ICodeSystemVersion> allVersionForRepository = newArrayList(allVersions.get(codeSystem));
+		Iterables.removeIf(allVersionForRepository, new CSVVersionIdPredicate(INITIAL_STATE));
 		return unmodifiableList(allVersionForRepository);
 	}
 	
@@ -180,17 +200,18 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	 * and the values are the available code system versions.
 	 * @return a mapping between repository UUIDs and all versions.
 	 */
-	protected Map<String, List<ICodeSystemVersion>> getAllVersions() {
-		final Map<String, List<ICodeSystemVersion>> allVersionsFromServer = getTerminologyRegistryService().getAllVersion();
+	protected Map<ICodeSystem, List<ICodeSystemVersion>> getAllVersions() {
+		final Map<ICodeSystem, List<ICodeSystemVersion>> allVersionsFromServer = getTerminologyRegistryService().getAllVersion();
 		//it might happen that server has for example UMLS store but client does not have dependency
 		//hence connection for UMLS.
-		final Collection<String> availableTerminologiesOnClient =  getServiceForClass(ICDOConnectionManager.class).uuidKeySet();
-		for (final Iterator<String> itr  = allVersionsFromServer.keySet().iterator(); itr.hasNext(); /**/) {
-			final String repositoryUuid = itr.next();
-			if (!availableTerminologiesOnClient.contains(repositoryUuid)) {
+		final Collection<String> availableTerminologyRepositoriesOnClient =  getServiceForClass(ICDOConnectionManager.class).uuidKeySet();
+		for (final Iterator<ICodeSystem> itr  = allVersionsFromServer.keySet().iterator(); itr.hasNext(); /**/) {
+			final ICodeSystem codeSystem = itr.next();
+			if (!availableTerminologyRepositoriesOnClient.contains(codeSystem.getRepositoryUuid())) {
 				itr.remove();
 			}
 		}
+		
 		return allVersionsFromServer;
 	}
 
@@ -232,14 +253,6 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		return getConnectionManager().isMeta(checkNotNull(repositoryUuid, "repositoryUuid"));
 	}
 
-	private ICodeSystemVersion tryFindVersion(final String repositoryUuid, final String versionId) {
-		return find(allVersions.get(repositoryUuid), new Predicate<ICodeSystemVersion>() {
-			@Override public boolean apply(final ICodeSystemVersion version) {
-				return versionId.equals(version.getVersionId());
-			}
-		}, null);
-	}
-
 	private Map<ICodeSystem, ICodeSystemVersion> initCurrentVersions() {
 		final Map<ICodeSystem, ICodeSystemVersion> currentVersion = newHashMap();
 		
@@ -249,19 +262,20 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		
 		for (final String repositoryUuid : Sets.newHashSet(Iterables.transform(existingVersions, ICodeSystemVersion.TO_REPOSITORY_UUID_FUNC))) {
 			
-			// this branchPath can be: a task branch; version/tag branch Path; codeSystem branchPath 
+			// this branchPath can be: a task branchPath; version/tag branchPath; codeSystem branchPath 
 			final IBranchPath branchPath = taskBranchPathMap.getBranchPath(repositoryUuid);
 			
 			final ICodeSystem  codeSystem = CodeSystemUtils.findMatchingCodeSystem(branchPath, repositoryUuid);
-			final ICodeSystemVersion version = CodeSystemUtils.findMatchingVersion(branchPath, Iterables.filter(allVersions.get(repositoryUuid), new Predicate<ICodeSystemVersion>() {
-				@Override
-				public boolean apply(ICodeSystemVersion input) {
-					return Objects.equal(input.getCodeSystemShortName(), codeSystem.getShortName());
-				}
-			}));
-			currentVersion.put(codeSystem, version != null ? version : LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, codeSystem.getBranchPath()));
+			final ICodeSystemVersion version = findMatchingCodeSystemVersion(branchPath, codeSystem);
+			currentVersion.put(codeSystem, version != null ? version : LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(codeSystem));
 		}
 		return currentVersion;
+	}
+
+	private ICodeSystemVersion findMatchingCodeSystemVersion(final IBranchPath branchPath, final ICodeSystem codeSystem) {
+		if (Objects.equal(branchPath.getPath(), codeSystem.getBranchPath()))
+			return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(codeSystem);
+		return CodeSystemUtils.findMatchingVersion(branchPath, allVersions.get(codeSystem));
 	}
 	
 	
@@ -285,4 +299,50 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		return BranchPathUtils.createPath(IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + versionString);
 	}
 
+	
+	private static class CVSRepositoryUuidPredicate implements Predicate<ICodeSystemVersion> {
+
+		private final String respositoryUuid;
+		
+		public CVSRepositoryUuidPredicate(String repositoryUuid) {
+			this.respositoryUuid = repositoryUuid;
+		}
+
+		@Override
+		public boolean apply(ICodeSystemVersion input) {
+			return Objects.equal(input.getRepositoryUuid(), respositoryUuid);
+		}
+		
+	} 
+	
+	private static class CSVVersionIdPredicate implements Predicate<ICodeSystemVersion> {
+		
+		private final String versionId;
+		
+		public CSVVersionIdPredicate(String versionId) {
+			this.versionId = versionId;
+		}
+		
+		@Override
+		public boolean apply(ICodeSystemVersion input) {
+			return Objects.equal(input.getVersionId(), versionId);
+		}
+		
+	}
+	
+	
+	private static class CSVShortNamePredicate implements Predicate<ICodeSystemVersion> {
+		
+		private final String codeSystemShortName;
+		
+		public CSVShortNamePredicate(String codeSystemShortName) {
+			this.codeSystemShortName = codeSystemShortName;
+		}
+		
+		@Override
+		public boolean apply(ICodeSystemVersion input) {
+			return Objects.equal(input.getCodeSystemShortName(), codeSystemShortName);
+		}
+		
+	}
 }
