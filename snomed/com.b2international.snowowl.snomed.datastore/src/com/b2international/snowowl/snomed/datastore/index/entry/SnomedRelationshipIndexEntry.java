@@ -27,6 +27,7 @@ import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -53,6 +54,7 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 
 	public static Builder builder(final ISnomedRelationship input) {
 		final Builder builder = builder()
+				.storageKey(input.getStorageKey())
 				.id(input.getId())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
@@ -76,6 +78,7 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 	
 	public static Builder builder(Relationship relationship) {
 		return builder()
+				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
 				.id(relationship.getId())
 				.active(relationship.isActive())
 				.sourceId(relationship.getSource().getId())

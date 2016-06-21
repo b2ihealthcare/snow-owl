@@ -33,6 +33,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -112,6 +113,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static Builder builder(final SnomedRefSetMemberIndexEntry source) {
 		return builder()
+				.storageKey(source.getStorageKey())
 				.active(source.isActive())
 				.effectiveTime(source.getEffectiveTime())
 				.id(source.getId())
@@ -129,6 +131,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		final Object mapTargetComponentType = input.getProperties().get(Fields.MAP_TARGET_TYPE);
 		
 		final Builder builder = builder()
+				.storageKey(input.getStorageKey())
 				.active(input.isActive())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.id(input.getId())
@@ -156,6 +159,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static Builder builder(SnomedRefSetMember refSetMember) {
 		final Builder builder = SnomedRefSetMemberIndexEntry.builder()
+				.storageKey(CDOIDUtils.asLong(refSetMember.cdoID()))
 				.id(refSetMember.getUuid()) 
 				.moduleId(refSetMember.getModuleId())
 				.active(refSetMember.isActive())

@@ -163,6 +163,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	
 	public static Builder builder(final SnomedConceptDocument input) {
 		final Builder builder = builder()
+				.storageKey(input.getStorageKey())
 				.id(input.getId())
 //				.score(input.getScore())
 				.moduleId(input.getModuleId())
@@ -185,6 +186,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	
 	public static Builder builder(ISnomedConcept input) {
 		final Builder builder = builder()
+				.storageKey(input.getStorageKey())
 				.id(input.getId())
 				.moduleId(input.getModuleId())
 				.active(input.isActive())

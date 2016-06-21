@@ -33,6 +33,7 @@ import java.util.Set;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -60,6 +61,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 	
 	public static Builder builder(final ISnomedDescription input) {
 		final Builder builder = builder()
+				.storageKey(input.getStorageKey())
 				.id(input.getId())
 				.term(input.getTerm()) 
 				.moduleId(input.getModuleId())
@@ -89,6 +91,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 	
 	public static Builder builder(Description description) {
 		return builder()
+				.storageKey(CDOIDUtils.asLong(description.cdoID()))
 				.id(description.getId()) 
 				.term(description.getTerm())
 				.moduleId(description.getModule().getId())
@@ -110,6 +113,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 	 */
 	public static Builder builder(SnomedDescriptionIndexEntry doc) {
 		return builder()
+				.storageKey(doc.getStorageKey())
 				.id(doc.getId())
 				.term(doc.getTerm())
 				.moduleId(doc.getModuleId())

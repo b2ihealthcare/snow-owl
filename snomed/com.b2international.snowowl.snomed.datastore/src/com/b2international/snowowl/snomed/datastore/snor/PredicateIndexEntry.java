@@ -171,6 +171,7 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 		}
 
 		public Builder id(long storageKey) {
+			storageKey(storageKey);
 			return id(Long.toString(storageKey));
 		}
 

@@ -86,6 +86,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	@Override
 	protected SnomedConcept toResource(final SnomedConceptDocument input) {
 		final SnomedConcept result = new SnomedConcept();
+		result.setStorageKey(input.getStorageKey());
 		result.setActive(input.isActive());
 		result.setDefinitionStatus(toDefinitionStatus(input.isPrimitive()));
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));

@@ -80,8 +80,8 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
@@ -94,7 +94,6 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -106,7 +105,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
@@ -1082,9 +1080,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
 			
-			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<SnomedRelationshipIndexEntry, Long>() {
+			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<ISnomedRelationship, Long>() {
 				@Override
-				public Long apply(SnomedRelationshipIndexEntry input) {
+				public Long apply(ISnomedRelationship input) {
 					return input.getStorageKey();
 				}
 			}).toSet());
@@ -1271,26 +1269,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 
 	public final List<Relationship> getInboundRelationships(String conceptId) {
-		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
+		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<ISnomedRelationship, Relationship>() {
 			@Override
-			public Relationship apply(SnomedRelationshipIndexEntry input) {
-				return lookup(input.getId(), Relationship.class);
+			public Relationship apply(ISnomedRelationship input) {
+				return (Relationship) lookup(input.getStorageKey());
 			}
 		}).toList();
 	}
 
-	private Iterable<SnomedRelationshipIndexEntry> getInboundRelationshipsFromIndex(String conceptId) {
+	private Iterable<ISnomedRelationship> getInboundRelationshipsFromIndex(String conceptId) {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByDestination(conceptId)
 				.build(getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<SnomedRelationships, Iterable<SnomedRelationshipIndexEntry>>() {
-					@Override
-					public Iterable<SnomedRelationshipIndexEntry> apply(SnomedRelationships input) {
-						return SnomedRelationshipIndexEntry.fromRelationships(input);
-					}
-				}).getSync();
+				.getSync();
 	}
 
 	private Iterable<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {

@@ -76,6 +76,14 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		protected String branchPath;
 		protected long commitTimestamp;
 		protected Collection<ReplacedIn> replacedIns = Collections.emptyList();
+
+		/**
+		 * @deprecated - see reason at {@link com.b2international.snowowl.core.domain.IComponent#getStorageKey()} why this should be removed
+		 */
+		public final B storageKey(long storageKey) {
+			this.storageKey = storageKey;
+			return getSelf();
+		} 
 		
 		public B id(final String id) {
 			this.id = id;
@@ -132,7 +140,7 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	
 	@Override
 	public final int hashCode() {
-		return Objects.hashCode(getId());
+		return Objects.hashCode(_id());
 	}
 
 	@Override
@@ -141,7 +149,7 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		if (obj == null) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 		final RevisionDocument other = (RevisionDocument) obj;
-		return Objects.equal(getId(), other.getId());
+		return Objects.equal(_id(), other._id());
 	}
 
 	/**
