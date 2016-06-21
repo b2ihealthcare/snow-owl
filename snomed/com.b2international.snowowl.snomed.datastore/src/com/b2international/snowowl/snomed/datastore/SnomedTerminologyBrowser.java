@@ -61,22 +61,6 @@ public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConc
 	LongSet getAllSuperTypeIds(final IBranchPath branchPath, final long conceptId);
 	
 	/**
-	 * Returns with a 2D array of IDs and storage keys of all the active SNOMED&nbsp;CT concepts from the ontology.
-	 * <p>The first dimension is the concept ID the second dimension is the storage key (CDO ID).
-	 * @param branchPath the branch path.
-	 * @return a 2D array of concept IDs and storage keys.
-	 */
-	long[][] getAllActiveConceptIdsStorageKeys(final IBranchPath branchPath);
-	
-	/**
-	 * Returns with a 2D array of IDs and storage keys of all SNOMED&nbsp;CT concepts from the ontology.
-	 * <p>The first dimension is the concept ID the second dimension is the storage key (CDO ID).
-	 * @param branchPath the branch path.
-	 * @return a 2D array of concept IDs and storage keys.
-	 */
-	long[][] getAllConceptIdsStorageKeys(final IBranchPath branchPath);
-	
-	/**
 	 * Maps all active SNOMED&nbsp;CT concept identifiers to their corresponding storage keys in the ontology.
 	 * <p>Map keys are concept IDs, values are concept storage keys (CDO ID).
 	 * @param branchPath the branch path.

@@ -17,14 +17,11 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -33,7 +30,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
@@ -74,17 +70,6 @@ public interface ISnomedComponentService {
 	Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId);
 
 	/**
-	 * Returns with a collection of reference set member storage keys (CDO IDs) where a component given its unique {@code componentId}
-	 * is either the referenced component or depending on the {@link SnomedRefSetType type} is the target component.
-	 * <br>(e.g.: map target for simple map reference set member, value in case of attribute value type, etc.)  
-	 * @param branchPath the branch path.
-	 * @param componentId the component ID.
-	 * @param types the set of the SNOMED CT reference set {@link SnomedRefSetType types}.
-	 * @return a collection of reference set member storage keys.
-	 */
-	LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final EnumSet<SnomedRefSetType> types);
-	
-	/**
 	 * Returns with a collection of the reference set member's referenced component storage keys.  
 	 * 
 	 * @param branchPath the branch path.
@@ -111,13 +96,6 @@ public interface ISnomedComponentService {
 	LongSet getAllUnpublishedComponentStorageKeys(final IBranchPath branchPath);
 
 	/**
-	 * Returns with the mapping between all concepts' ID and their corresponding module concept IDs.
-	 * @param branchPath the branch path.
-	 * @return a map of concept and module concept IDs.
-	 */
-	LongKeyLongMap getConceptModuleMapping(final IBranchPath branchPath);
-	
-	/**
 	 * @param branchPath
 	 * @return
 	 */
@@ -136,14 +114,6 @@ public interface ISnomedComponentService {
 	 * @return a collection of existing module dependency reference set members.
 	 */
 	Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules(final IBranchPath branchPath);
-	
-	/**
-	 * Returns with a map containing every module of the Module Dependency reference set and the latest effective time for the module.
-	 * The provided date could be <code>null</code>.
-	 * @param branchPath the branch path.
-	 * @return a map where the key is the module ID and the value is the module's latest effective time
-	 */
-	Map<String, Date> getExistingModulesWithEffectiveTime(IBranchPath branchPath);
 	
 	/**
 	 * Returns with a set of concept storage keys that have to be inactivated when retiring the concept concepts

@@ -318,84 +318,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public LongSet getAllReferringMembersStorageKey(final IBranchPath branchPath, final String componentId, final EnumSet<SnomedRefSetType> types) {
-		
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(componentId, "SNOMED CT component ID argument cannot be null.");
-		checkArgument(!types.isEmpty(), "At least one reference set type must be specified.");
-	
-		final SnomedQueryBuilder typeQuery = SnomedMappings.newQuery();
-		
-		for (final SnomedRefSetType type : types) {
-			typeQuery.memberRefSetType(type);
-		}
-		
-		final SnomedQueryBuilder idQuery = SnomedMappings.newQuery();
-		idQuery.memberReferencedComponentId(componentId);
-		
-		for (final SnomedRefSetType type : types) {
-			final String field = SnomedRefSetUtil.getSpecialComponentIdIndexField(type);
-			if (!StringUtils.isEmpty(field)) {
-				idQuery.field(field, componentId);
-			}
-		}
-		
-		final Query query = SnomedMappings.newQuery()
-				.and(typeQuery.matchAny()) // at least one of the type queries have to match
-				.and(idQuery.matchAny()) // at least one of the ID queries have to match
-				.matchAll();
-		
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
-		
-		final int maxDoc = indexService.maxDoc(branchPath);
-		final DocIdCollector collector = DocIdCollector.create(maxDoc);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-			
-			indexService.search(branchPath, query, collector);
-			
-			final int hitCount = collector.getDocIDs().size();
-			
-			if (0 == hitCount) {
-				
-				return LongCollections.emptySet();
-				
-			}
-			
-			final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(hitCount);
-
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), Mappings.fieldsToLoad().storageKey().build());
-				$.add(Mappings.storageKey().getValue(doc));
-			}
-			
-			return $;
-			
-		} catch (final IOException e) {
-			LOGGER.error("Error while getting storage keys for components.");
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-		}
-	}
-	
-	@Override
 	public Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId) {
 		
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -528,48 +450,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 
 	@Override
-	public LongKeyLongMap getConceptModuleMapping(final IBranchPath branchPath) {
-		
-		checkNotNull(branchPath, "branchPath");
-
-		final int maxDoc = getIndexServerService().maxDoc(branchPath);
-		
-		final DocIdCollector collector = DocIdCollector.create(maxDoc);
-		getIndexServerService().search(branchPath, SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).matchAll(), collector);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			manager = getIndexServerService().getManager(branchPath);
-			searcher = manager.acquire();
-			final LongKeyLongMap ids = PrimitiveMaps.newLongKeyLongOpenHashMap();
-
-			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), COMPONENT_ID_MODULE_FIELDS_TO_LOAD);
-				ids.put(SnomedMappings.id().getValue(doc), SnomedMappings.module().getValue(doc));
-			}
-			
-			return ids;
-			
-		} catch (final IOException e) {
-			
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e1) {
-					e.addSuppressed(e1);
-				}
-			}
-			
-			throw new SnowowlRuntimeException("Error while creating concept to module mapping.", e);
-		}
-		
-	}
-	
-	@Override
 	public Collection<SnomedRefSetMemberFragment> getRefSetMemberFragments(final IBranchPath branchPath, final String refSetId) {
 		
 		checkNotNull(branchPath, "branchPath");
@@ -666,31 +546,30 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		return modules;
 	}
 	
-	@Override
-	public Map<String, Date> getExistingModulesWithEffectiveTime(final IBranchPath branchPath) {
-		final ImmutableSet<SnomedModuleDependencyRefSetMemberFragment> existingModules = ImmutableSet.copyOf(getExistingModules(branchPath));
-
-		final Set<String> existingModuleIds = newHashSet();
-		for (final SnomedModuleDependencyRefSetMemberFragment fragment : existingModules) {
-			existingModuleIds.add(fragment.getModuleId());
-			existingModuleIds.add(fragment.getReferencedComponentId());
-		}
-
-		final Map<String, Date> modules = newHashMap();
-
-		for (final String moduleId : existingModuleIds) {
-			Date date = null;
-			for (final SnomedModuleDependencyRefSetMemberFragment fragment : existingModules) {
-				if (null != fragment.getSourceEffectiveTime() && fragment.getModuleId().equals(moduleId)) {
-					date = date == null ? fragment.getSourceEffectiveTime() : fragment.getSourceEffectiveTime().compareTo(date) > 0 ? fragment.getSourceEffectiveTime() : date;
-				} else if (null != fragment.getTargetEffectiveTime() && fragment.getReferencedComponentId().equals(moduleId)) {
-					date = date == null ? fragment.getTargetEffectiveTime() : fragment.getTargetEffectiveTime().compareTo(date) > 0 ? fragment.getTargetEffectiveTime() : date;
-				}
-			}
-			modules.put(moduleId, date);
-		}
-		return modules;
-	}
+//	private Map<String, Date> getExistingModulesWithEffectiveTime(final IBranchPath branchPath) {
+//		final ImmutableSet<SnomedModuleDependencyRefSetMemberFragment> existingModules = ImmutableSet.copyOf(getExistingModules(branchPath));
+//
+//		final Set<String> existingModuleIds = newHashSet();
+//		for (final SnomedModuleDependencyRefSetMemberFragment fragment : existingModules) {
+//			existingModuleIds.add(fragment.getModuleId());
+//			existingModuleIds.add(fragment.getReferencedComponentId());
+//		}
+//
+//		final Map<String, Date> modules = newHashMap();
+//
+//		for (final String moduleId : existingModuleIds) {
+//			Date date = null;
+//			for (final SnomedModuleDependencyRefSetMemberFragment fragment : existingModules) {
+//				if (null != fragment.getSourceEffectiveTime() && fragment.getModuleId().equals(moduleId)) {
+//					date = date == null ? fragment.getSourceEffectiveTime() : fragment.getSourceEffectiveTime().compareTo(date) > 0 ? fragment.getSourceEffectiveTime() : date;
+//				} else if (null != fragment.getTargetEffectiveTime() && fragment.getReferencedComponentId().equals(moduleId)) {
+//					date = date == null ? fragment.getTargetEffectiveTime() : fragment.getTargetEffectiveTime().compareTo(date) > 0 ? fragment.getTargetEffectiveTime() : date;
+//				}
+//			}
+//			modules.put(moduleId, date);
+//		}
+//		return modules;
+//	}
 	
 	@Override
 	public LongSet getSelfAndAllSubtypeStorageKeysForInactivation(final IBranchPath branchPath, final String... focusConceptIds) {

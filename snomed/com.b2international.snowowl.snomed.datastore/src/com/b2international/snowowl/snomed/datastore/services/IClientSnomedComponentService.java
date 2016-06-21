@@ -16,13 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Set;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * Interface for retrieving information about SNOMED&nbsp;CT core components on the client side.
@@ -37,16 +34,6 @@ public interface IClientSnomedComponentService {
 	 */
 	Set<String> getAvailableDataTypeLabels(final DataType dataType);
 
-	/**
-	 * Returns with a collection of reference set member storage keys (CDO IDs) where a component given its unique {@code componentId}
-	 * is either the referenced component or depending on the {@link SnomedRefSetType type} is the target component.
-	 * <br>(e.g.: map target for simple map reference set member, value in case of attribute value type, etc.)  
-	 * @param componentId the component ID.
-	 * @param types the set of the SNOMED CT reference set {@link SnomedRefSetType types}.
-	 * @return a collection of reference set member storage keys.
-	 */
-	LongSet getAllReferringMembersStorageKey(final String componentId, final EnumSet<SnomedRefSetType> types);
-	
 	/**
 	 * Returns with all existing {@link SnomedModuleDependencyRefSetMemberFragment module dependency reference set member}s from the underling ontology.
 	 * @return a collection of existing module dependency reference set members.

@@ -72,106 +72,6 @@ import com.google.common.collect.Multimaps;
 public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser {
 
 	@Override
-	public boolean isTerminologyAvailable(IBranchPath branchPath) {
-		return exists(branchPath, Concepts.ROOT_CONCEPT);
-	}
-	
-	@Override
-	public Collection<SnomedConceptDocument> getSuperTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
-		throw new UnsupportedOperationException();
-//		Preconditions.checkNotNull(conceptId, "Concept ID argument cannot be null.");
-//		
-//		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(conceptId), 1);
-//		
-//		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-//			return -1L;
-//		}
-//		
-//		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().storageKey().build());
-//		return Mappings.storageKey().getValue(doc);
-	}
-	
-	@Override
-	public List<SnomedConceptDocument> getSubTypesAsList(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Collection<SnomedConceptDocument> getSubTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Collection<SnomedConceptDocument> getAllSubTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public Collection<SnomedConceptDocument> getAllSubTypesById(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Collection<SnomedConceptDocument> getAllSuperTypes(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Collection<SnomedConceptDocument> getAllSuperTypesById(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public int getAllSubTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int getAllSubTypeCountById(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public int getSubTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int getAllSuperTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public int getAllSuperTypeCountById(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public int getSuperTypeCount(final IBranchPath branchPath, final SnomedConceptDocument concept) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public int getSuperTypeCountById(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public boolean isSuperTypeOf(final IBranchPath branchPath, final SnomedConceptDocument superType, final SnomedConceptDocument subType) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public boolean isSuperTypeOfById(final IBranchPath branchPath, final String superTypeId, final String subTypeId) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
 	public SnomedConceptDocument getTopLevelConcept(final IBranchPath branchPath, final SnomedConceptDocument concept) {
 		checkNotNull(concept, "Concept must not be null.");
 		final Collection<SnomedConceptDocument> allSuperTypes = getAllSuperTypes(branchPath, concept);
@@ -318,30 +218,7 @@ public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser 
 		}
 	}
 	
-	@Override
-	public long[][] getAllConceptIdsStorageKeys(final IBranchPath branchPath) {
-		final ReferenceManager<IndexSearcher> manager = service.getManager(branchPath);
-		IndexSearcher searcher = null;
-		try {
-			searcher = manager.acquire();
-			final ConceptIdStorageKeyCollector collector = new ConceptIdStorageKeyCollector();
-			service.search(branchPath, SnomedMappings.newQuery().concept().matchAll(), collector);
-			return collector.getIds();
-		} catch (final IOException e) {
-			throw new IndexException(e);
-		} finally {
-			if (null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					throw new IndexException(e);
-				}
-			}
-		}
-	}
-	
-	@Override
-	public long[][] getAllActiveConceptIdsStorageKeys(final IBranchPath branchPath) {
+	private long[][] getAllActiveConceptIdsStorageKeys(final IBranchPath branchPath) {
 		final ReferenceManager<IndexSearcher> manager = service.getManager(branchPath);
 		IndexSearcher searcher = null;
 		try {
@@ -362,43 +239,6 @@ public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser 
 		}
 	}
 
-//	@Override
-//	protected Set<String> getExtendedComponentFieldsToLoad() {
-//		return SnomedMappings.fieldsToLoad().fields(super.getExtendedComponentFieldsToLoad()).memberUuid().memberReferencedComponentId().memberReferencedComponentType().build();
-//	}
-//	
-//	@Override
-//	protected ExtendedComponent convertDocToExtendedComponent(IBranchPath branchPath, Document doc) {
-//		// if type field is null, then we are processing a reference set _member_
-//		final String iconId = doc.get(Mappings.iconId().fieldName());
-//		final List<Integer> types = Mappings.type().getValues(doc);
-//		final String id;
-//		
-//		if (types.isEmpty()) {
-//			id = Long.toString(SnomedMappings.memberReferencedComponentId().getValue(doc));
-//		} else {
-//			id = Long.toString(SnomedMappings.id().getValue(doc));
-//		}
-//		
-//		final short terminologyComponentId;
-//		
-//		if (types.isEmpty()) {
-//			terminologyComponentId = SnomedMappings.memberReferencedComponentType().getShortValue(doc);
-//		} else if (types.size() == 1) {
-//			// core SNOMED CT Component only
-//			terminologyComponentId = types.get(0).shortValue();
-//		} else {
-//			// concept + refset
-//			terminologyComponentId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-//		}
-//		
-//		if (types.isEmpty()) {
-//			return new ExtendedComponentImpl(SnomedMappings.memberUuid().getValue(doc), id, iconId, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER);
-//		} else {
-//			return new ExtendedComponentImpl(id, id, iconId, terminologyComponentId);
-//		}
-//	}
-
 	@Override
 	public LongKeyLongMap getConceptIdToStorageKeyMap(final IBranchPath branchPath) {
 		final long[][] idPairs = getAllActiveConceptIdsStorageKeys(branchPath);
@@ -415,11 +255,6 @@ public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser 
 		return $;
 	}
 	
-//	@Override
-//	protected Query getRootConceptsQuery() {
-//		return SnomedMappings.newQuery().parent(SnomedMappings.ROOT_ID).active().matchAll();
-//	}
-
 	@Override
 	public Collection<String> getSuperTypeIds(final IBranchPath branchPath, final String componentId) {
 		checkNotNull(componentId, "Component ID argument cannot be null.");
@@ -434,86 +269,6 @@ public class SnomedServerTerminologyBrowser implements SnomedTerminologyBrowser 
 		return SnomedMappings.parent().getValuesAsStringList(doc);
 	}
 
-	@Override
-	public boolean isUniqueId(final IBranchPath branchPath, final String componentId) {
-		checkNotNull(componentId, "SNOMED CT core component ID argument cannot be null.");
-		if (SnomedTerminologyComponentConstants.isCoreComponentId(componentId)) {
-			return service.getHitCount(branchPath, SnomedMappings.newQuery().id(componentId).matchAll(), null) == 0;
-		}
-		return false;
-	}
-	
-//	@Override
-//	public int getDepth(final IBranchPath branchPath, final String conceptId) {
-//		checkNotNull(conceptId, "conceptId");
-//		
-//		final long conceptIdL = Long.parseLong(conceptId);
-//		final LongSet allSuperTypeIds = getAllSuperTypeIds(branchPath, conceptIdL);
-//		if (CompareUtils.isEmpty(allSuperTypeIds)) {
-//			return 0;
-//		}
-//		
-//		final Multimap<Long, Long> parentageMap = Multimaps.synchronizedMultimap(HashMultimap.<Long, Long>create());
-//		parentageMap.putAll(conceptIdL, toSet(allSuperTypeIds));
-//		parallelForEach(allSuperTypeIds, new LongSets.LongCollectionProcedure() {
-//			@Override
-//			public void apply(long conceptId) {
-//				final LongSet superTypeIds = getSuperTypeIds(branchPath, conceptId);
-//				parentageMap.putAll(conceptId, toSet(superTypeIds));
-//			}
-//		});
-//		
-//		return GraphUtils.getLongestPath(parentageMap).size() - 1;
-//		
-//	}
-	
-//	@Override
-//	public int getHeight(final IBranchPath branchPath, final String conceptId) {
-//		checkNotNull(conceptId, "conceptId");
-//		
-//		final Query query = getAllSubTypesQuery(conceptId);
-//
-//		final AtomicReference<IndexSearcher> searcher = new AtomicReference<IndexSearcher>();
-//		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-//		service.search(branchPath, query, collector);
-//
-//		ReferenceManager<IndexSearcher> manager = null;
-//
-//		try {
-//
-//			final Multimap<Long, Long> parentageMap = Multimaps.synchronizedMultimap(HashMultimap.<Long, Long>create());
-//			manager = service.getManager(branchPath);
-//			searcher.set(manager.acquire());
-//			IndexUtils.parallelForEachDocId(collector.getDocIDs(), new IndexUtils.DocIdProcedure() {
-//				@Override
-//				public void apply(final int docId) throws IOException {
-//					final Document doc = searcher.get().doc(docId, SnomedMappings.fieldsToLoad().id().parent().build());
-//					final long id = SnomedMappings.id().getValue(doc);
-//					parentageMap.putAll(id, SnomedMappings.parent().getValues(doc));
-//				}
-//			});
-//			
-//			return GraphUtils.getLongestPath(parentageMap).size();
-//			
-//		} catch (final IOException e) {
-//			throw new IndexException("Error while getting height of node '" + conceptId + "'.", e);
-//		} finally {
-//			if (null != manager && null != searcher.get()) {
-//				try {
-//					manager.release(searcher.get());
-//				} catch (final IOException e) {
-//					try {
-//						manager.release(searcher.get());
-//					} catch (final IOException e1) {
-//						e.addSuppressed(e1);
-//					}
-//					throw new IndexException("Error while releasing index searcher.", e);
-//				}
-//			}
-//		}
-//		
-//	}
-	
 	@Override
 	public Collection<SnomedConceptDocument> getSuperTypesById(final IBranchPath branchPath, final String id) {
 		final Builder<SnomedConceptDocument> builder = ImmutableList.builder();

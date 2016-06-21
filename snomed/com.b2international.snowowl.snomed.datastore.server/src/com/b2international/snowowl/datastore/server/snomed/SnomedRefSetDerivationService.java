@@ -212,6 +212,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 	
 	private SnomedRelationships getEdgesBetween(String branch, Collection<String> componentIds) {
 		return SnomedRequests.prepareSearchRelationship()
+				.all()
 				.filterByActive(true)
 				.filterBySource(componentIds)
 				.filterByDestination(componentIds)

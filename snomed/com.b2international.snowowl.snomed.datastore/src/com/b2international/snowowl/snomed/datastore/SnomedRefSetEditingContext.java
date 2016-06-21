@@ -25,26 +25,26 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.ILookupService;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
@@ -54,10 +54,12 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -78,6 +80,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -780,7 +783,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return deletionPlan;
 	}
 
-	protected List<SnomedRefSetMember> getReferringMembers(final Component component, final SnomedRefSetType... additionalTypes) {
+	protected List<SnomedRefSetMember> getReferringMembers(final Component component) {
 		
 		checkNotNull(component, "Component argument cannot be null.");
 		
@@ -789,65 +792,72 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			return Collections.emptyList();
 		}
 		
-		final List<SnomedRefSetMember> $ = Lists.newArrayList();
+		final List<SnomedRefSetMember> referringMembers = Lists.newArrayList();
 
 		final String id = checkNotNull(component.getId(), "Component ID was null for component. [" + component + "]");
 		
 		// process new referring members from the transaction.
 		if (CDOState.NEW.equals(component.cdoState())) {
-			
 			final Iterable<SnomedRefSetMember> newMembers = ComponentUtils2.getNewObjects(transaction, SnomedRefSetMember.class);
 			
 			for (final SnomedRefSetMember member : newMembers) {
-				
 				// member is referencing to the investigated component. mark for deletion.
 				if (id.equals(member.getReferencedComponentId())) {
-					
-					$.add(member);
-					
+					referringMembers.add(member);
 				}
 				
 				final String specialFieldId = getSpecialFieldId(member);
-				
 				if (id.equals(specialFieldId)) {
-					
-					$.add(member);
-					
+					referringMembers.add(member);
 				}
-				
 			}
-			
 		// persistent component. check for referring members in index
 		} else {
-			
-			LongSet ids;
-			if (additionalTypes.length < 1) {
-				ids = componentService.getAllReferringMembersStorageKey(id, getReferringMemberTypes(component));
-			} else {
-				EnumSet<SnomedRefSetType> types = EnumSet.<SnomedRefSetType>noneOf(SnomedRefSetType.class);
-				for (SnomedRefSetType type : additionalTypes) {
-					types.add(type);
-				}
-				ids = componentService.getAllReferringMembersStorageKey(id, types);
+			for (SnomedReferenceSetMember member : getAllReferringMembersStorageKey(id, getReferringMemberTypes(component))) {
+				referringMembers.add(getSnomedEditingContext().lookup(member.getId(), SnomedRefSetMember.class));
 			}
-			
-			for (final LongIterator itr = ids.iterator(); itr.hasNext(); /* */) {
-				
-				final CDOObject object = CDOUtils.getObjectIfExists(transaction, itr.next());
-				
-				if (object instanceof SnomedRefSetMember) {
-					
-					$.add((SnomedRefSetMember) object);
-					
-				}
-				
-			}
-			
 		}
 		
-		return $;
+		return referringMembers;
 	}
 	
+	private SnomedReferenceSetMembers getAllReferringMembersStorageKey(String id, EnumSet<SnomedRefSetType> types) {
+		// construct bulk requests with many sub queries to search for any member that references the given ID in any RF2 member component field
+		return SnomedRequests.prepareBulkRead()
+				.setBody(BulkRequest.<BranchContext>create()
+						.add(getReferringMembers(id, types))
+						.add(getReferringMembersByProps(id, types, Fields.ACCEPTABILITY_ID))
+						.add(getReferringMembersByProps(id, types, Fields.CHARACTERISTIC_TYPE_ID))
+						.add(getReferringMembersByProps(id, types, Fields.CORRELATION_ID))
+						.add(getReferringMembersByProps(id, types, Fields.DESCRIPTION_FORMAT))
+						.add(getReferringMembersByProps(id, types, Fields.MAP_CATEGORY_ID))
+						.add(getReferringMembersByProps(id, types, Fields.OPERATOR_ID))
+						.add(getReferringMembersByProps(id, types, Fields.TARGET_COMPONENT))
+						.add(getReferringMembersByProps(id, types, Fields.UNIT_ID))
+						.add(getReferringMembersByProps(id, types, Fields.VALUE_ID))
+						)
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<BulkResponse, SnomedReferenceSetMembers>() {
+					@Override
+					public SnomedReferenceSetMembers apply(BulkResponse input) {
+						final List<SnomedReferenceSetMember> items = ImmutableList.copyOf(Iterables.concat(input.getResponses(SnomedReferenceSetMembers.class)));
+						return new SnomedReferenceSetMembers(items, 0, items.size(), items.size());
+					}
+				})
+				.getSync();
+	}
+
+	private SnomedRefSetMemberSearchRequestBuilder getReferringMembers(String id, EnumSet<SnomedRefSetType> types) {
+		return SnomedRequests.prepareSearchMember().all().filterByRefSetType(types).filterByReferencedComponent(id);
+	}
+	
+	private SnomedRefSetMemberSearchRequestBuilder getReferringMembersByProps(String id, EnumSet<SnomedRefSetType> types, final String propField) {
+		return SnomedRequests.prepareSearchMember().all().filterByRefSetType(types).filterByProps(OptionsBuilder.newBuilder()
+				.put(propField, id)
+				.build());
+	}
+
 	private EnumSet<SnomedRefSetType> getReferringMemberTypes(final Component component) {
 		if (component instanceof Concept) {
 			return CONCEPT_REFERRING_MEMBER_TYPES;

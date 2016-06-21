@@ -16,18 +16,15 @@
 package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * Client side SNOMED CT component service implementation.
@@ -43,11 +40,6 @@ public class ClientSnomedComponentService extends ActiveBranchPathAwareService i
 	@Override
 	public Set<String> getAvailableDataTypeLabels(final DataType dataType) {
 		return wrappedService.getAvailableDataTypeLabels(getBranchPath(), dataType);
-	}
-
-	@Override
-	public LongSet getAllReferringMembersStorageKey(final String componentId, final EnumSet<SnomedRefSetType> types) {
-		return wrappedService.getAllReferringMembersStorageKey(getBranchPath(), componentId, types);
 	}
 
 	@Override

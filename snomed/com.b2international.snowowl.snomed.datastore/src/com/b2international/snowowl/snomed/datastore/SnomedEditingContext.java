@@ -1248,20 +1248,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// a released refset member cannot be deleted. however, since a released refset member can
 		// only contain released concepts, we would not have made it this far if anyway
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(concept));
+		final List<SnomedRefSetMember> referringMembers = refSetEditingContext.getReferringMembers(concept);
+		deletionPlan.markForDeletion(referringMembers);
 		
 		//	concept deletion may affect (other) concept descriptions because the concept is being deleted is a member of description type reference set
-		List<SnomedRefSetMember> descriptionTypeRefSetMembers = refSetEditingContext.getReferringMembers(concept, SnomedRefSetType.DESCRIPTION_TYPE);
-		for (SnomedRefSetMember member : descriptionTypeRefSetMembers) {
-			for (SnomedDescriptionIndexEntry entry : getRelatedDescriptions(member.getReferencedComponentId())) {
-				final Description description = lookup(entry.getId(), Description.class);
-				if (null == description) {
-					throw new SnowowlRuntimeException("Description does not exist in store with ID: " + entry.getId());
+		for (SnomedRefSetMember member : referringMembers) {
+			if (com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE.equals(member.getRefSetIdentifierId())) {
+				for (SnomedDescriptionIndexEntry entry : getRelatedDescriptions(member.getReferencedComponentId())) {
+					final Description description = lookup(entry.getId(), Description.class);
+					if (null == description) {
+						throw new SnowowlRuntimeException("Description does not exist in store with ID: " + entry.getId());
+					}
+					deletionPlan.addDirtyDescription(description);
 				}
-				deletionPlan.addDirtyDescription(description);
 			}
 		}
-		deletionPlan.markForDeletion(descriptionTypeRefSetMembers);
 		
 		deletionPlan.markForDeletion(concept);
 		deletionPlan.markForDeletion(concept.getOutboundRelationships());
