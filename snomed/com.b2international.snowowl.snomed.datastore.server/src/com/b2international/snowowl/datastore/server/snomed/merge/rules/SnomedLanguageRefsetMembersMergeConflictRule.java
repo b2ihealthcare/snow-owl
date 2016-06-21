@@ -29,14 +29,16 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.merge.SnomedCDOMergeConflict;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -109,14 +111,21 @@ public class SnomedLanguageRefsetMembersMergeConflictRule implements IMergeConfl
 							membersToRemove.add(newLanguageRefSetMember);
 							continue label;
 						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-							conflicts.add(new SnomedCDOMergeConflict(newLanguageRefSetMember.getUuid(), conceptDescriptionMember.getUuid(), String
-									.format("Two SNOMED CT Descriptions selected as preferred terms. %s <-> %s", description.getId(),
-											conceptDescription.getId())));
+							conflicts.add(MergeConflictImpl.builder()
+											.withArtefactId(newLanguageRefSetMember.getUuid())
+											.withArtefactType(newLanguageRefSetMember.eClass().getName())
+											.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("acceptability", newLanguageRefSetMember.getAcceptabilityId())))
+											.withType(ConflictType.CONFLICTING_CHANGE)
+											.build());
 						}
 					} else {
 						if (description.equals(conceptDescription)) {
-							conflicts.add(new SnomedCDOMergeConflict(newLanguageRefSetMember.getUuid(), conceptDescriptionMember.getUuid(), String
-									.format("Different acceptability selected for the same description, %s", description.getId())));
+							conflicts.add(MergeConflictImpl.builder()
+								.withArtefactId(conceptDescription.getId())
+								.withArtefactType("Description")
+								.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of(newLanguageRefSetMember.getUuid(), newLanguageRefSetMember.getAcceptabilityId())))
+								.withType(ConflictType.CONFLICTING_CHANGE)
+								.build());
 						}
 					}
 				}

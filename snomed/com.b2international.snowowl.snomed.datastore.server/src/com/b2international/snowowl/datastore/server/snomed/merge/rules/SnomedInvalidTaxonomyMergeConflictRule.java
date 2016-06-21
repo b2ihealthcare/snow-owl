@@ -16,9 +16,11 @@
 package com.b2international.snowowl.datastore.server.snomed.merge.rules;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
@@ -26,17 +28,17 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMessages;
-import com.b2international.snowowl.datastore.server.snomed.merge.SnomedRelationshipMergeConflict;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
+import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdateRunnable;
 import com.google.common.collect.ImmutableList;
@@ -67,12 +69,20 @@ public class SnomedInvalidTaxonomyMergeConflictRule implements IMergeConflictRul
 					String sourceId = String.valueOf(invalidRelationship.getSourceId());
 					String destinationId = String.valueOf(invalidRelationship.getDestinationId());
 					
-					String message = String.format(SnomedMergeConflictMessages.ISA_RELATIONSHIP_WITH_INACTIVE_SOURCE_OR_DESTINATION, 
-							relationshipId, sourceId, Concepts.IS_A, destinationId, invalidRelationship.getMissingConcept().name().toLowerCase());
-
-					SnomedRelationshipMergeConflict conflict = new SnomedRelationshipMergeConflict(relationshipId, sourceId, Concepts.IS_A, destinationId, message);
+					Map<String, String> attributeMap = newHashMap();
 					
-					conflicts.add(conflict);
+					if (invalidRelationship.getMissingConcept() == MissingConcept.SOURCE) {
+						attributeMap.put("source", sourceId);
+					} else {
+						attributeMap.put("destination", destinationId);
+					}
+					
+					conflicts.add(MergeConflictImpl.builder()
+						.withArtefactId(relationshipId)
+						.withArtefactType("Relationship")
+						.withConflictingAttributes(MergeConflictImpl.buildAttributeList(attributeMap))
+						.withType(ConflictType.HAS_MISSING_REFERENCE)
+						.build());
 				}	
 			}
 		}

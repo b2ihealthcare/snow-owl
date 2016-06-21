@@ -25,9 +25,10 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.merge.SnomedCDOMergeConflict;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
@@ -37,6 +38,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -72,7 +74,13 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule implements IMerg
 			
 			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
 				if (!detachedMemberIds.contains(member.getId())) {
-					conflicts.add(new SnomedCDOMergeConflict(member.getId(), member.getReferencedComponent().getId(), String.format("Member '%s' is referencing detached component '%s'", member.getId(), member.getReferencedComponent().getId())));
+					conflicts.add(MergeConflictImpl.builder()
+						.withArtefactId(member.getId())
+						.withArtefactType(member.getClass().getSimpleName())
+						.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("referenced component", member.getReferencedComponent().getId())))
+						.withType(ConflictType.HAS_MISSING_REFERENCE)
+						.build());
+					
 				}
 			}
 		}

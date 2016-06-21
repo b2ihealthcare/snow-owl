@@ -15,9 +15,31 @@
  */
 package com.b2international.snowowl.core.merge;
 
+import java.util.List;
+
 /**
  * @since 4.7
  */
 public interface MergeConflict {
 
+	public enum ConflictType {
+		CONFLICTING_CHANGE,
+		DELETED_WHILE_CHANGED,
+		CHANGED_WHILE_DELETED,
+		HAS_MISSING_REFERENCE,
+		CAUSES_MISSING_REFERENCE,
+		HAS_INACTIVE_REFERENCE,
+		CAUSES_INACTIVE_REFERENCE
+	}
+	
+	String getArtefactId();
+	
+	String getArtefactType();
+	
+	List<String> getConflictingAttributes();
+	
+	ConflictType getType();
+	
+	String getMessage();
+	
 }
