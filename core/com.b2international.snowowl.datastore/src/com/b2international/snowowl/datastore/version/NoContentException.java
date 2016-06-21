@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.version;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.datastore.ICodeSystem;
+
 /**
  * Exception has to be thrown when one tries to create a new version for a terminology 
  * where the content is not available.
@@ -25,8 +27,8 @@ public class NoContentException extends VersioningException {
 
 	private static final long serialVersionUID = -8869284586196262498L;
 	
-	public NoContentException(final String repositoryUuid) {
-		super(checkNotNull(repositoryUuid, "repositoryUuid"));
+	public NoContentException(final ICodeSystem activeCodeSystem) {
+		super(checkNotNull(activeCodeSystem, "activeCodeSystem"));
 	}
 
 }

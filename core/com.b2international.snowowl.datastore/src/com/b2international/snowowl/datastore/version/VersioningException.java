@@ -17,24 +17,30 @@ package com.b2international.snowowl.datastore.version;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.datastore.ICodeSystem;
+
 /**
  * Exception indicating an error for the version operation.
  */
 public class VersioningException extends Exception {
 
 	private static final long serialVersionUID = 7803362752957857254L;
-	
-	private String repositoryUuid;
-	
-	public VersioningException(final String repositoryUuid) {
-		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
-	}
-	
-	/**
-	 * Returns with the UUID of the repository where the current exception was thrown.
-	 */
-	public String getRepositoryUuid() {
-		return repositoryUuid;
+
+	private final ICodeSystem codeSystem;
+
+	public VersioningException(ICodeSystem codeSystem) {
+		this.codeSystem = checkNotNull(codeSystem, "codeSystem");
 	}
 
+	/**
+	 * Returns with the UUID of the repository where the current exception was
+	 * thrown.
+	 */
+	public String getRepositoryUuid() {
+		return codeSystem.getRepositoryUuid();
+	}
+
+	public ICodeSystem getCodeSystem() {
+		return codeSystem;
+	}
 }

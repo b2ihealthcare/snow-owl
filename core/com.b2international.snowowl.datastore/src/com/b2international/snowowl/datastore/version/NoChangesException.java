@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.version;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.datastore.ICodeSystem;
+
 /**
  * Exception indicating that new version cannot be created because no changes has been 
  * made since the most recent version. 
@@ -25,7 +27,7 @@ public class NoChangesException extends VersioningException {
 
 	private static final long serialVersionUID = -7289995983517709382L;
 
-	public NoChangesException(final String repositoryUuid) {
-		super(checkNotNull(repositoryUuid, "repositoryUuid"));
+	public NoChangesException(final ICodeSystem codeSystem) {
+		super(checkNotNull(codeSystem, "codeSystem"));
 	}
 }
