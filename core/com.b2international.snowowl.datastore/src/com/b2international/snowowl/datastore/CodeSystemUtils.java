@@ -38,6 +38,8 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOManagedItem;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
@@ -68,9 +70,6 @@ public class CodeSystemUtils {
 		}
 	}
 	
-
-
-
 	
 	private static final LoadingCache<String, ICDOManagedItem<?>> TOOLING_ID_MANAGED_ITEM_CACHE = CacheBuilder.newBuilder().build(new CacheLoader<String, ICDOManagedItem<?>>() {
 		@Override public ICDOManagedItem<?> load(final String toolingId) throws Exception {
@@ -107,14 +106,27 @@ public class CodeSystemUtils {
 	 * @param versions an iterable of code system version.
 	 * @return the matching code system version, or {@code null} if not found.
 	 */
-	@Nullable public static ICodeSystemVersion findMatchingVersion(IBranchPath branchPath, final Iterable<? extends ICodeSystemVersion> versions) {
+	@Nullable public static ICodeSystemVersion findMatchingVersion(final IBranchPath branchPath, final Iterable<? extends ICodeSystemVersion> versions) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(versions, "Versions argument cannot be null.");
 		
-		while (NullBranchPath.INSTANCE != branchPath) {
+		
+		Optional<? extends ICodeSystemVersion> exactBranchPathMatchOptional = Iterables.tryFind(versions, new Predicate<ICodeSystemVersion>() {
+			@Override
+			public boolean apply(ICodeSystemVersion input) {
+				return Objects.equal(input.getPath(), branchPath.getPath());
+			}
+		});
+		
+		if (exactBranchPathMatchOptional.isPresent())
+			return exactBranchPathMatchOptional.get();
+		
+		IBranchPath interatingBranchPath = branchPath;
+		
+		while (NullBranchPath.INSTANCE != interatingBranchPath) {
 			
-			final String versionIdForRepository = branchPath.lastSegment();
+			final String versionIdForRepository = interatingBranchPath.lastSegment();
 			
 			for (final ICodeSystemVersion candidate : versions) {
 				if (candidate.getVersionId().equals(versionIdForRepository)) {
@@ -122,7 +134,7 @@ public class CodeSystemUtils {
 				}
 			}
 			
-			branchPath = branchPath.getParent();
+			interatingBranchPath = interatingBranchPath.getParent();
 		}
 		
 		return null;
@@ -138,8 +150,8 @@ public class CodeSystemUtils {
 	public static ICodeSystem findMatchingCodeSystem(IBranchPath branchPath, String repositoryUuid) {
 		
 		// branchPath can be: main, task branch, version/tag branch Path, extension branchPath 
-		Iterable<ICodeSystem> codeSystemsInRepositoryUuid = Iterables.filter(getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap()), sameRepositoryCodeSystemPredicate(repositoryUuid));
-		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepositoryUuid, TO_BRANCH_PATH_FUNCTION);
+		Iterable<ICodeSystem> codeSystemsInRepository = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), repositoryUuid);
+		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepository, TO_BRANCH_PATH_FUNCTION);
 
 		for (IBranchPath path = branchPath; !isMain(path); path = path.getParent()) {
 			if (branchPathToCodeSystemMap.containsKey(path.getPath())) {
@@ -148,7 +160,7 @@ public class CodeSystemUtils {
 		}
 
 		// falling back to the repositoryUUID's main code system.
-		return Iterables.find(codeSystemsInRepositoryUuid, ICodeSystem.IS_MAIN_BRANCH_PATH_PREDICATE); 
+		return Iterables.find(codeSystemsInRepository, ICodeSystem.IS_MAIN_BRANCH_PATH_PREDICATE); 
 	}
 	
 	/**
