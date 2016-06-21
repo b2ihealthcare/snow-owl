@@ -111,7 +111,7 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 			transaction.merge(taskBranch.getHead(), taskBranch.getBase(), branchMerger);
 
 			LOGGER.info(MessageFormat.format("Unlinking components in ''{0}''...", connection.getRepositoryName()));
-			branchMerger.postProcess(transaction);
+			branchMerger.postProcess(taskBranch, transaction);
 
 			if (transaction.isDirty()) {
 				transactions.add(transaction);

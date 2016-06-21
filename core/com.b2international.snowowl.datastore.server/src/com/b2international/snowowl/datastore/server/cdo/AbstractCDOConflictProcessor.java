@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -129,7 +130,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 	
 	@Override
-	public void postProcess(final CDOTransaction transaction) throws ConflictException {
+	public void postProcess(final CDOBranch sourceBranch, final CDOTransaction transaction) throws ConflictException {
 		
 		for (final CDOID idToUnlink : idsToUnlink) {
 			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
@@ -142,7 +143,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 				.transformAndConcat(new Function<IMergeConflictRule, Collection<MergeConflict>>() {
 					@Override
 					public Collection<MergeConflict> apply(IMergeConflictRule input) {
-						return input.validate(transaction);
+						return input.validate(sourceBranch, transaction);
 					}
 				}).toList();
 
