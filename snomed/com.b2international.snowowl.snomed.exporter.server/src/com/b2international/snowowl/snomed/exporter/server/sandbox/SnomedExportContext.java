@@ -15,22 +15,41 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import com.b2international.index.Searcher;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 
 /**
- * Wraps several configuration attributes for the SNOMED&nbsp;CT 
+ * Wraps the export context for the SNOMED&nbsp;CT 
  * export process.
  */
-public interface SnomedExportConfiguration {
+public interface SnomedExportContext {
 
+	/**
+	 * Returns the current revision searcher that ensures
+	 * a consistent view on the index store.
+	 * @return
+	 */
+	RevisionSearcher getRevisionSearcher();
+	
+	/**
+	 * Returns the current searcher that ensures
+	 * a consistent view on the index store.
+	 * @return
+	 */
+	Searcher getSearcher();
+	
+	/**
+	 * Sets the searcher for this context
+	 */
+	void setSearcher(Searcher searcher);
+	
 	/**
 	 * Returns with the current branch path of the client who 
 	 * triggered the export. 
@@ -58,14 +77,15 @@ public interface SnomedExportConfiguration {
 	@Nullable Date getDeltaExportEndEffectiveTime();
 	
 	/**
-	 * Returns with a mapping between the branch path for each available version and the index segment names for the versions. 
-	 * @return a mapping between branch paths and index segment names.
-	 */
-	Map<IBranchPath, Collection<String>> getVersionPathToSegmentNameMappings();
-
-	/**
 	 * Returns the label to use when a component does not have an effective time assigned. Defaults to {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL}. 
 	 * @return the effective time label for unpublished components
 	 */
 	String getUnsetEffectiveTimeLabel();
+	
+	/**
+	 * Returns true if unpublished artefacts should be part of the export
+	 * @return
+	 */
+	boolean includeUnpublished();
+
 }

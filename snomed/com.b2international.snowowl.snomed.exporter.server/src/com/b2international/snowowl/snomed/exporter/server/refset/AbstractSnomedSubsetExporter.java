@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -65,11 +65,11 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	
 	private final String folderName;
 	private String label;
-	private short referencedComponentType;
-	private SnomedExportConfiguration configuration;
+	private int referencedComponentType;
+	private SnomedExportContext configuration;
 	private String refSetId;
 
-	protected AbstractSnomedSubsetExporter(final SnomedExportConfiguration configuration, final String refSetId) {
+	protected AbstractSnomedSubsetExporter(final SnomedExportContext configuration, final String refSetId) {
 		this.configuration = configuration;
 		this.refSetId = refSetId;
 		referencedComponentType = getReferencedComponentType(refSetId);
@@ -90,7 +90,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	}
 	
 	@Override
-	public SnomedExportConfiguration getConfiguration() {
+	public SnomedExportContext getExportContext() {
 		return configuration;
 	}
 	

@@ -16,221 +16,142 @@
 package com.b2international.snowowl.snomed.exporter.server.core;
 
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Suppliers.memoize;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.search.TopDocs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.BooleanUtils;
-import com.b2international.commons.CompareUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedReleaseFileHeaders;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Sets;
 
 /**
  * RF1 exporter for SNOMED&nbsp;CT descriptions.
- *
  */
-public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
-
+public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<SnomedDescriptionIndexEntry>  {
+	
+	/**
+	 * Line in the Description RF1 file
+	 */
+	class Rf1Description {
+		
+		public String id;
+		public String status;
+		public String conceptId;
+		public String term;
+		public String capitalStatus;
+		public String typeId;
+		private static final String LANGUAGE_CODE = "en";
+		
+		@Override
+		public String toString() {
+			
+			return new StringBuilder(id)
+					.append(HT)
+					.append(getDescriptionStatus(valueOfOrEmptyString(status)))
+					.append(HT)
+					.append(valueOfOrEmptyString(conceptId))
+					.append(HT)
+					.append(valueOfOrEmptyString(term))
+					.append(HT)
+					.append(mapper.getInitialCapitalStatus(valueOfOrEmptyString(capitalStatus))) //initial capital status
+					.append(HT)
+					.append(typeId) //type
+					.append(HT)
+					.append(LANGUAGE_CODE) //language code
+					.append(HT)
+					.toString();
+		}
+	}
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRf1DescriptionExporter.class);
 	
-	private static final String LANGUAGE_CODE = "en";
-	
-	private static final Set<String> DESCRIPTION_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.active()
-			.descriptionTerm()
-			.descriptionConcept()
-			.descriptionType()
-			.descriptionCaseSignificance()
-			.build();
-	
-	private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.memberValueId()
-			.build();
-	
-	private final static Query INACTIVATION_QUERY = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).matchAll();
-	private static final Query PREFERRED_MEMBER_QUERY = SnomedMappings.newQuery().memberAcceptabilityId(Long.valueOf(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)).matchAll();
-	
-	private final Id2Rf1PropertyMapper mapper;
-	private final SnomedExportConfiguration configuration;
-	private final boolean includeExtendedDescriptionTypes;
-	private final Supplier<Iterator<String>> itrSupplier;
-	private final Set<String> undefinedDescriptionTypeIds = Sets.newHashSet();
+	private SnomedExportContext configuration;
+	private Id2Rf1PropertyMapper mapper;
 	private String preferredLanguageId;
-	private Query languageRefSetQuery;
+	private final Set<String> undefinedDescriptionTypeIds = Sets.newHashSet();
+	private boolean includeExtendedDescriptionTypes;
 	
-	public SnomedRf1DescriptionExporter(final SnomedExportConfiguration configuration, final Id2Rf1PropertyMapper mapper, final boolean includeExtendedDescriptionTypes) {
-		this.configuration = checkNotNull(configuration, "configuration");
-		this.mapper = checkNotNull(mapper, "mapper");
+	
+	public SnomedRf1DescriptionExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, final boolean includeExtendedDescriptionTypes) {
+		super(SnomedDescriptionIndexEntry.class, configuration, mapper);
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
-		preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
-		languageRefSetQuery = SnomedMappings.newQuery().memberRefSetId(preferredLanguageId).matchAll();
-		itrSupplier = createSupplier();
+		this.preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
 	}
 	
-	private Supplier<Iterator<String>> createSupplier() {
-		return memoize(new Supplier<Iterator<String>>() {
-			@Override
-			public Iterator<String> get() {
-				return new AbstractIterator<String>() {
-					
-					private final Iterator<IdStorageKeyPair> idIterator = getServiceForClass(ISnomedComponentService.class)
-							.getAllComponentIdStorageKeys(getBranchPath(), DESCRIPTION_NUMBER).iterator();
-					
-					@SuppressWarnings("rawtypes")
-					private final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
-					private Object[] _values;
-					
-					@SuppressWarnings("unchecked")
-					@Override
-					protected String computeNext() {
+	/**
+	 * @param descriptionIndexEntry
+	 * @return
+	 * @throws IOException 
+	 */
+	protected String convertToRF1(SnomedDescriptionIndexEntry document) throws IOException {
+		
+		Rf1Description description = new Rf1Description();
+		
+		description.id = document.getId();
+		description.status = document.isActive() ? "1" : "0";
+		description.conceptId = document.getConceptId();
+		description.term = document.getTerm();
+		description.capitalStatus = document.getCaseSignificanceId();
+		if (includeExtendedDescriptionTypes) {
+			description.typeId = getExtendedDescriptionType(document.getTypeId());
+		} else {
+			description.typeId = getDescriptionType(document.getTypeId());
+		}
+		
+		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
+		QueryBuilder<SnomedRefSetMemberIndexEntry> refsetMemberQueryBuilder = Query.builder(SnomedRefSetMemberIndexEntry.class);
+		
+		//inactivation status
+		if (!document.isActive()) {
+			
+			Expression condition = Expressions.builder()
+					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(document.getId())))
+					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
+					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
+			
+			Query<SnomedRefSetMemberIndexEntry> query = refsetMemberQueryBuilder.selectAll().where(condition).build();
 						
-						while (idIterator.hasNext()) {
-							
-							final String descriptionId = idIterator.next().getId();
-							
-							_values = new Object[6];
-							
-							ReferenceManager<IndexSearcher> manager = null;
-							IndexSearcher searcher = null;
-							
-							try {
-								
-								manager = indexService.getManager(getBranchPath());
-								searcher = manager.acquire();
-								
-								
-								final Query descriptionQuery = SnomedMappings.newQuery().type(DESCRIPTION_NUMBER).id(descriptionId).matchAll();
-								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), descriptionQuery, 1);
-								
-								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));
-								
-								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, DESCRIPTION_FILEDS_TO_LOAD);
-								
-								_values[0] = descriptionId;
-								_values[1] = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)) ? "1" : "0";
-								_values[2] = SnomedMappings.descriptionConcept().getValueAsString(doc);
-								_values[3] = SnomedMappings.descriptionTerm().getValue(doc);
-								_values[4] = SnomedMappings.descriptionCaseSignificance().getValueAsString(doc);
-								_values[5] = SnomedMappings.descriptionType().getValueAsString(doc);
-								
-								if ("0".equals(String.valueOf(_values[1]))) {
-									final Query inactivationQuery = SnomedMappings.newQuery().memberReferencedComponentId(descriptionId).and(INACTIVATION_QUERY).matchAll();
-									final TopDocs inactivationTopDocs = indexService.search(getBranchPath(), inactivationQuery, 1);
-									
-									if (null != inactivationTopDocs && !CompareUtils.isEmpty(inactivationTopDocs.scoreDocs)) {
-										_values[1] = SnomedMappings.memberValueId().getValue(searcher.doc(inactivationTopDocs.scoreDocs[0].doc, INACTIVATION_ID_FIELD_TO_LOAD));
-									} 
-									
-								}
-								
-								final String descriptionTypeId = mapper.getDescriptionType(String.valueOf(_values[5]));
-								final String typeId;
-								
-								boolean preferredTerm;
-								
-								//FSN cannot be preferred
-								if (Concepts.FULLY_SPECIFIED_NAME.equals(_values[5])) {
-									preferredTerm = false;
-								} else {
-									final Query preferredQuery = SnomedMappings.newQuery().memberReferencedComponentId(descriptionId).and(languageRefSetQuery).and(PREFERRED_MEMBER_QUERY).matchAll();
-									preferredTerm = indexService.getHitCount(getBranchPath(), preferredQuery, null) > 0;
-								}
-								
-								if (includeExtendedDescriptionTypes && null == descriptionTypeId && !preferredTerm) {
-									typeId = getDescriptionType(String.valueOf(_values[5]));
-								} else {
-									typeId = preferredTerm ? "1" : null == descriptionTypeId ? "0" : descriptionTypeId;
-								}
-								
-								return new StringBuilder(descriptionId) //ID
-									.append(HT)
-									.append(getDescriptionStatus(valueOfOrEmptyString(_values[1]))) //status
-									.append(HT)
-									.append(valueOfOrEmptyString(_values[2])) //concept id
-									.append(HT)
-									.append(valueOfOrEmptyString(_values[3])) //term
-									.append(HT)
-									.append(mapper.getInitialCapitalStatus(valueOfOrEmptyString(_values[4]))) //initial capital status
-									.append(HT)
-									.append(typeId) //type
-									.append(HT)
-									.append(LANGUAGE_CODE) //language code
-									.append(HT)
-									.toString();
-								
-							} catch (final IOException e) {
-								
-								throw new SnowowlRuntimeException(e);
-								
-							} finally {
-								
-								if (null != manager && null != searcher) {
-									
-									try {
-										
-										manager.release(searcher);
-										
-									} catch (final IOException e) {
-										
-										throw new SnowowlRuntimeException(e);
-										
-									}
-									
-								}
-							
-							}
-							
-						}
-						
-						return endOfData();
-					}
-					
-					private IBranchPath getBranchPath() {
-						return configuration.getCurrentBranchPath();
-					}
-					
-				};
+			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
+			
+			//there should be only one max
+			for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
+				description.status = snomedRefSetMemberIndexEntry.getValueId();
 			}
-		});
+		}
+		
+		//handle preferred terms separately, overriding the initial value
+		Map<String, Acceptability> acceptabilityMap = document.getAcceptabilityMap();
+		Acceptability acceptability = acceptabilityMap.get(preferredLanguageId);
+		if (Acceptability.PREFERRED == acceptability) {
+			if (!document.getTypeId().equals(Concepts.FULLY_SPECIFIED_NAME) && (!document.getTypeId().equals(Concepts.TEXT_DEFINITION))) {
+				
+				//preferred term constant
+				description.typeId = "1";
+			} 
+		}
+		return description.toString();
 	}
 	
-	@Override
-	public String getRelativeDirectory() {
-		return RF1_CORE_RELATIVE_DIRECTORY;
-	}
-
 	@Override
 	public String getFileName() {
 		return SnomedRfFileNameBuilder.buildCoreRf1FileName(getType(), configuration);
@@ -246,38 +167,36 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 		return SnomedReleaseFileHeaders.RF1_DESCRIPTION_HEADER;
 	}
 
-	@Override
-	public boolean hasNext() {
-		return itrSupplier.get().hasNext();
-	}
-
-	@Override
-	public String next() {
-		return itrSupplier.get().next();
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		return itrSupplier.get();
-	}
-
-	@Override
-	public void close() throws IOException {
-		//intentionally ignored
-	}
-	
-	@Override
-	public SnomedExportConfiguration getConfiguration() {
-		return configuration;
+	/*returns with a number indicating the status of a description for RF1 publication.*/
+	private String getDescriptionStatus(final String stringValue) {
+		if ("1".equals(stringValue)) { //magic mapping between rf1 and rf2 status
+			return "0";
+		} else if ("0".equals(stringValue)) {
+			return "1";
+		} else {
+			return Preconditions.checkNotNull(mapper.getDescriptionStatusProperty(stringValue));
+		}
 	}
 	
 	private String getDescriptionType(final String descriptionType) {
-		if (descriptionType.equals(Concepts.FULL_NAME)) {
+		
+		if (descriptionType.equals(Concepts.FULLY_SPECIFIED_NAME)) {
+			return "3";
+		} else if (descriptionType.equals(Concepts.SYNONYM)) {
+			return "2";
+		} 
+		// Report undefined type IDs only once
+		if (undefinedDescriptionTypeIds.add(descriptionType)) {
+			LOGGER.warn("Description type ID '" + descriptionType + "' not mapped to RF1, exporting as synonym.");
+		}
+		return "2";
+	}
+
+	private String getExtendedDescriptionType(final String descriptionType) {
+		
+		if (descriptionType.equals(Concepts.FULLY_SPECIFIED_NAME)) {
+			return "3";
+		} else if (descriptionType.equals(Concepts.FULL_NAME)) {
 			return "4";
 		} else if (descriptionType.equals(Concepts.ABBREVIATION)) {
 			return "5";
@@ -295,26 +214,14 @@ public class SnomedRf1DescriptionExporter implements SnomedRf1Exporter {
 			return "11";
 		} else if (descriptionType.equals(Concepts.PRODUCT_TERM_PLURAL)) {
 			return "12";
-		} 
+		} else if (descriptionType.equals(Concepts.SYNONYM)) {
+			return "2";
+		}
 		
 		// Report undefined type IDs only once
 		if (undefinedDescriptionTypeIds.add(descriptionType)) {
 			LOGGER.warn("Description type ID '" + descriptionType + "' not mapped to RF1, exporting as synonym.");
 		}
-		
-		return "2";
+		return "2"; //everything else is like synonym
 	}
-	
-	/*returns with a number indicating the status of a description for RF1 publication.*/
-	private String getDescriptionStatus(final String stringValue) {
-		if ("1".equals(stringValue)) { //magic mapping between rf1 and rf2 status
-			return "0";
-		} else if ("0".equals(stringValue)) {
-			return "1";
-		} else {
-			return Preconditions.checkNotNull(mapper.getDescriptionStatusProperty(stringValue));
-		}
-		
-	}
-	
 }

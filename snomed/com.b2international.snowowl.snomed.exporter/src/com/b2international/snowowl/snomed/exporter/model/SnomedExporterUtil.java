@@ -16,13 +16,27 @@
 package com.b2international.snowowl.snomed.exporter.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.MapSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 public final class SnomedExporterUtil {
@@ -49,7 +63,33 @@ public final class SnomedExporterUtil {
 
 	/*returns true if a map set setting should be created for the RF1 publication process*/
 	private static boolean shouldCreateMapSetSetting(final String refSetId) {
-		return isConceptType(refSetId) && !(!isMapping(getType(refSetId)) || isStructuralRefSet(refSetId));
+		
+		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+		
+		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
+
+		Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(refSetId)).build();
+		
+		//TODO: is this always main?
+		SnomedConceptDocument refsetConcept = revisionIndex.read(BranchPathUtils.createMainPath().getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
+
+			@Override
+			public SnomedConceptDocument execute(RevisionSearcher searcher) throws IOException {
+				
+				Hits<SnomedConceptDocument> snomedConceptDocuments = searcher.search(query);
+				Optional<SnomedConceptDocument> first = FluentIterable.<SnomedConceptDocument>from(snomedConceptDocuments).first();
+				if (first.isPresent()) {
+					return first.get();
+				} else {
+					throw new IllegalArgumentException("Could not find reference set with id: " + refSetId);
+				}
+			}
+		});
+		
+		
+		
+		return isConceptType(refSetId) && !(!isMapping(refsetConcept.getRefSetType()) || isStructuralRefSet(refSetId));
 	}
 
 	/*returns true if the passed in reference set identifier concept ID is either CTV3 simple map ID or SNOMED RT simple map reference set ID*/

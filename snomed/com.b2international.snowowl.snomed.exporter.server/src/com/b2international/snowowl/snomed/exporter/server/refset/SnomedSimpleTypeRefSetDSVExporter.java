@@ -178,7 +178,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * @param exportSetting
 	 */
 
-	public SnomedSimpleTypeRefSetDSVExporter(SnomedRefSetDSVExportModel exportSetting) {
+	public SnomedSimpleTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
 
 		this.refSetId = exportSetting.getRefSetId();
 		this.descriptionIdExpected = exportSetting.isDescriptionIdExpected();

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
-import static com.b2international.commons.StringUtils.isEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -24,13 +23,22 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
+import com.b2international.commons.StringUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -44,7 +52,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -54,6 +62,7 @@ import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExport
 import com.b2international.snowowl.snomed.exporter.model.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -68,7 +77,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private static String LINE_SEPARATOR;
 	
 	private final SnomedRefSetDSVExportModel exportSetting;
-	private final IBranchPath branchPath; 
+	private final IBranchPath branchPath;
+	private RevisionIndex revisionIndexService; 
 
 	public MapTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
 		this.exportSetting = exportSetting;
@@ -77,6 +87,9 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		TEMPORARY_WORKING_DIRECTORY = exportSetting.getExportPath();
 		DELIMITER = exportSetting.getDelimiter();
 		LINE_SEPARATOR = System.getProperty("line.separator");
+		
+		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+		revisionIndexService = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 	}
 
 	@Override
@@ -244,16 +257,37 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case CORRELATION:
 				return labelMap.get(member.getCorrelationId());
 			case SDD_CLASS:
-				final List<SnomedRelationshipIndexEntry> relationships = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class)
-						.getOutboundStatementsById(member.getReferencedComponentId());
-				for (final SnomedRelationshipIndexEntry relationship : relationships) {
-					if (Concepts.HAS_SDD_CLASS.equals(relationship.getTypeId())) {
-						return getConceptLabel(relationship.getDestinationId());
+				
+				return revisionIndexService.read(branchPath.getPath(), new RevisionIndexRead<String>() {
+
+					@Override
+					public String execute(RevisionSearcher searcher) throws IOException {
+						
+						QueryBuilder<SnomedRelationshipIndexEntry> builder = Query.builder(SnomedRelationshipIndexEntry.class);
+						
+						//we need every target, limit needs to be set as the default is 50 hits
+						ExpressionBuilder condition = Expressions.builder()
+								.must(SnomedRelationshipIndexEntry.Expressions.sourceId(member.getReferencedComponentId()))
+								.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.HAS_SDD_CLASS));
+						
+						Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(condition.build()).limit(1).build();
+						
+						
+						Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
+						FluentIterable.<SnomedRelationshipIndexEntry>from(hits).first();
+						for (SnomedRelationshipIndexEntry snomedRelationshipIndexEntry : hits) {
+							return getConceptLabel(snomedRelationshipIndexEntry.getDestinationId());
+						}
+						return "";
 					}
-				}
+				});
 			case MAP_CATEGORY:
 				final String mapCategoryId = member.getMapCategoryId();
-				return isEmpty(mapCategoryId) ? nullToEmpty(mapCategoryId) : labelMap.get(mapCategoryId);
+				if (StringUtils.isEmpty(mapCategoryId)) {
+					return nullToEmpty(mapCategoryId); 
+				} else {
+					return labelMap.get(mapCategoryId);
+				}
 			case MAP_TARGET_DESCRIPTION:
 				return nullToEmpty(member.getMapTargetDescription());
 			default:

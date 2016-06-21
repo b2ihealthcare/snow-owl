@@ -31,6 +31,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -701,6 +702,26 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	@JsonIgnore
 	public InactivationIndicator getInactivationIndicator() {
 		return InactivationIndicator.getByConceptId(getValueId());
+	}
+	
+	@JsonIgnore
+	public Long getSourceEffectiveTime() {
+		return getLongField(Fields.SOURCE_EFFECTIVE_TIME);
+	}
+	
+	@JsonIgnore
+	public String getSourceEffectiveTimeAsString() {
+		return EffectiveTimes.format(getSourceEffectiveTime(), DateFormats.SHORT);
+	}
+	
+	@JsonIgnore
+	public Long getTargetEffectiveTime() {
+		return getLongField(Fields.TARGET_EFFECTIVE_TIME);
+	}
+	
+	@JsonIgnore
+	public String getTargetEffectiveTimeAsString() {
+		return EffectiveTimes.format(getTargetEffectiveTime(), DateFormats.SHORT);
 	}
 	
 	/**

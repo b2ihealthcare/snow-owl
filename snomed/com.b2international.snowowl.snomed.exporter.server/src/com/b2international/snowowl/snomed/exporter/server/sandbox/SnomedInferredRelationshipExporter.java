@@ -24,25 +24,24 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
 /**
- * RF2 exporter for SNOMED CT stated relationships only.
+ * RF2 exporter for all SNOMED CT relationships except stated ones.
  */
-public class SnomedStatedRelationshipExporter extends AbstractSnomedRelationshipExporter {
+public class SnomedInferredRelationshipExporter extends AbstractSnomedRelationshipExporter {
 
-	public SnomedStatedRelationshipExporter(final SnomedExportContext configuration) {
+	public SnomedInferredRelationshipExporter(final SnomedExportContext configuration) {
 		super(configuration);
 	}
 	
 	@Override
 	public ComponentExportType getType() {
-		return ComponentExportType.STATED_RELATIONSHIP;
+		return ComponentExportType.RELATIONSHIP;
 	}
 	
 	@Override
 	protected Query<SnomedRelationshipIndexEntry> getSnapshotQuery() {
-		
 		QueryBuilder<SnomedRelationshipIndexEntry> builder = Query.builder(SnomedRelationshipIndexEntry.class);
 		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
-		commitTimeConditionBuilder.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
+		commitTimeConditionBuilder.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
 		Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
 		return query;
 	}

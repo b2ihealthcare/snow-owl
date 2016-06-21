@@ -69,7 +69,7 @@ public enum NoopExporter implements SnomedExporter {
 	}
 
 	@Override
-	public SnomedExportConfiguration getConfiguration() {
+	public SnomedExportContext getExportContext() {
 		throw new UnsupportedOperationException("Implementation error.");
 	}
 	

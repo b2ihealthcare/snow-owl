@@ -17,12 +17,8 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Set;
-
-import org.apache.lucene.document.Document;
-
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -30,23 +26,16 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 public class SnomedLanguageRefSetExporter extends SnomedRefSetExporter {
 
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().fields(COMMON_FIELDS_TO_LOAD).memberAcceptabilityId().build();
-	
-	public SnomedLanguageRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedRefSetType type) {
+	public SnomedLanguageRefSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedRefSetType type) {
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
 	}
 	
 	@Override
-	public Set<String> getFieldsToLoad() {
-		return FIELDS_TO_LOAD;
-	}
-
-	@Override
-	public String transform(Document doc) {
+	public String transform(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(SnomedMappings.memberAcceptabilityId().getValueAsString(doc));
+		sb.append(doc.getAcceptabilityId());
 		return sb.toString();
 	}
 	

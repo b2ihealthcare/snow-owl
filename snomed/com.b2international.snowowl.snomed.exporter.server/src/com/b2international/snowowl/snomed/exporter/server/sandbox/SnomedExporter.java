@@ -60,6 +60,6 @@ public interface SnomedExporter extends Iterator<String>, Iterable<String>, Auto
 	
 	String[] getColumnHeaders();
 	
-	SnomedExportConfiguration getConfiguration();
+	SnomedExportContext getExportContext();
 	
 }

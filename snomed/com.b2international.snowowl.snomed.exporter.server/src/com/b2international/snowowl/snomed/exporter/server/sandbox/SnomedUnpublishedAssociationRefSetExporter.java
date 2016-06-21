@@ -18,31 +18,19 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED CT module dependency reference set exporter.
+ * SNOMED CT association reference set exporter for unpublished members.
  */
-public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
+public class SnomedUnpublishedAssociationRefSetExporter extends SnomedAssociationRefSetExporter {
 
-	public SnomedModuleDependencyRefSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedRefSetType type) {
+	public SnomedUnpublishedAssociationRefSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedRefSetType type) {
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
 	}
 	
 	@Override
-	public String transform(SnomedRefSetMemberIndexEntry doc) {
-		final StringBuilder sb = new StringBuilder();
-		sb.append(super.transform(doc));
-		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getSourceEffectiveTime())); 
-		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getTargetEffectiveTime()));
-		return sb.toString();
-	}
-	
-	@Override
 	public String[] getColumnHeaders() {
-		return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
+		return SnomedRf2Headers.ASSOCIATION_TYPE_HEADER;
 	}
 }

@@ -15,35 +15,61 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
 /**
- * RF2 exporter for SNOMED CT stated relationships only.
+ * Exporter for unpublished concepts
  */
-public class SnomedStatedRelationshipExporter extends AbstractSnomedRelationshipExporter {
+public class SnomedUnpublishedRelationshipExporter extends SnomedStatedRelationshipExporter {
 
-	public SnomedStatedRelationshipExporter(final SnomedExportContext configuration) {
+	/**
+	 * @param configuration
+	 */
+	public SnomedUnpublishedRelationshipExporter(SnomedExportContext configuration) {
 		super(configuration);
 	}
 	
-	@Override
-	public ComponentExportType getType() {
-		return ComponentExportType.STATED_RELATIONSHIP;
+	/**
+	 * Returns the query expression for the snapshot export
+	 * @return
+	 */
+	protected Query<SnomedRelationshipIndexEntry> getSnapshotQuery() {
+		return null;
 	}
 	
-	@Override
-	protected Query<SnomedRelationshipIndexEntry> getSnapshotQuery() {
-		
+	/**
+	 * Returns the query expression for the delta export
+	 * @return
+	 */
+	protected Query<SnomedRelationshipIndexEntry> getDeltaQuery() {
+		return null;
+	}
+	
+	/**
+	 * @returns the query for the full export
+	 */
+	protected Query<SnomedRelationshipIndexEntry> getFullQuery() {
 		QueryBuilder<SnomedRelationshipIndexEntry> builder = Query.builder(SnomedRelationshipIndexEntry.class);
 		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
-		commitTimeConditionBuilder.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
+		
+		//Select * from table where commitTimes in(,,,)
+		Expression commitExpression = Expressions.matchAll();
+		
+		Expression unpublishedExpression = Expressions.builder()
+				.must(Expressions.exactMatch(Revision.BRANCH_PATH, getExportContext().getCurrentBranchPath().getPath()))
+				.must(SnomedDocument.Expressions.unreleased()).build();
+		commitExpression = Expressions.or(commitExpression, unpublishedExpression);
+			
+		commitTimeConditionBuilder.must(commitExpression);
 		Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
 		return query;
 	}
+
 }

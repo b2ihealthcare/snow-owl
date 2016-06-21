@@ -44,6 +44,8 @@ public class SnomedExportRestConfiguration {
 	private Date deltaStartEffectiveTime;
 	private Date deltaEndEffectiveTime;
 	private String transientEffectiveTime;
+	
+	private boolean includeUnpublished;
 
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -138,5 +140,21 @@ public class SnomedExportRestConfiguration {
 
 	public void setTransientEffectiveTime(String transientEffectiveTime) {
 		this.transientEffectiveTime = transientEffectiveTime;
+	}
+	
+	/**
+	 * Sets whether the unpublished artefacts should be exported
+	 * @param includeUnpublished
+	 */
+	public void setIncludeUnpublished(boolean includeUnpublished) {
+		this.includeUnpublished = includeUnpublished;
+	}
+	
+	/**
+	 * Returns true if the 
+	 * @return
+	 */
+	public boolean includeUnpublished() {
+		return includeUnpublished;
 	}
 }

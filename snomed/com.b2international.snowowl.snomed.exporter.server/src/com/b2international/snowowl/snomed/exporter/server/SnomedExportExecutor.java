@@ -35,9 +35,9 @@ import java.util.Set;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 
@@ -70,13 +70,15 @@ public class SnomedExportExecutor {
 	});
 	private final Collection<String> visitedIdWithEffectiveTime;
 
-	private SnomedExportConfiguration configuration;
+	private SnomedExportContext configuration;
 
-	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, final Set<String> modulesToExport, final String clientNamespace) {
+
+	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, 
+			final Set<String> modulesToExport, final String clientNamespace) {
 		this.snomedExporter = snomedExporter;
 		this.modulesToExport = modulesToExport;
 		this.clientNamespace = clientNamespace;
-		configuration = this.snomedExporter.getConfiguration();
+		configuration = this.snomedExporter.getExportContext();
 		visitedIdWithEffectiveTime = newHashSet();
 		
 		baseReleaseDir = new File(workingDirectory + File.separatorChar + RELEASE_BASE_DIRECTORY + clientNamespace);
@@ -87,8 +89,8 @@ public class SnomedExportExecutor {
 		this.temporaryWorkingDirectory = workingDirectory;
 	}
 	
-	public void execute() throws IOException {
-		releaseFilePath = write();
+	public void execute(boolean writeHeader) throws IOException {
+		releaseFilePath = write(writeHeader);
 	}
 
 	public File getTemporaryFile() {
@@ -104,7 +106,7 @@ public class SnomedExportExecutor {
 		}
 	}
 	
-	private File write() throws IOException {
+	private File write(boolean writeHeader) throws IOException {
 		final File releaseFileRelativePath = new File(
 				temporaryWorkingDirectory + 
 				File.separatorChar + 
@@ -129,7 +131,9 @@ public class SnomedExportExecutor {
 			randomAccessFile = new RandomAccessFile(releaseFileRelativePath, "rw");
 			fileChannel = randomAccessFile.getChannel();
 			
-			writeFileHeader(fileChannel, snomedExporter.getColumnHeaders());
+			if (writeHeader) {
+				writeFileHeader(fileChannel, snomedExporter.getColumnHeaders());
+			}
 			
 			for (final String line : snomedExporter) {
 				if (snomedExporter instanceof SnomedRf2Exporter && !isToExport(line)) {
