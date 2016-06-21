@@ -30,13 +30,16 @@ import static java.util.Collections.sort;
 import static java.util.Collections.synchronizedMap;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
@@ -46,9 +49,11 @@ import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -171,8 +176,8 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	}
 	
 	@Override
-	public Map<String, List<ICodeSystemVersion>> getAllVersion() {
-		final Map<String, List<ICodeSystemVersion>> versions = newConcurrentMap();
+	public Map<ICodeSystem, List<ICodeSystemVersion>> getAllVersion() {
+		final Map<ICodeSystem, List<ICodeSystemVersion>> versions = newConcurrentMap();
 		forEach(getServiceForClass(ICDOConnectionManager.class).uuidKeySet(), new Procedure<String>() {
 			protected void doApply(final String repositoryUuid) {
 				final InternalTerminologyRegistryService registryService = InternalTerminologyRegistryServiceRegistry.INSTANCE.getService(repositoryUuid);
@@ -181,14 +186,26 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 				sort(existingVersions, reverseOrder(ICodeSystemVersion.VERSION_IMPORT_DATE_COMPARATOR));
 				
 				
-				ImmutableSet<IBranchPath> codeSystemBranchPathSet = Multimaps.index(existingVersions, ICodeSystemVersion.TO_PARENT_BRANCH_PATH_FUNC).keySet();
 				
-				for (IBranchPath codeSystemBranchPath : codeSystemBranchPathSet) {
-					final String targetBranchPath = codeSystemBranchPath.getPath();
-					existingVersions.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, targetBranchPath));
+				Map<ICodeSystem, Collection<ICodeSystemVersion>> codeSystemToVersionsMap = Multimaps.index(existingVersions, new Function<ICodeSystemVersion, ICodeSystem>() {
+					@Override
+					public ICodeSystem apply(ICodeSystemVersion input) {
+						return checkNotNull(registryService.getCodeSystemByShortName(BranchPathUtils.createMainPath(), input.getCodeSystemShortName()), "Code system could not be found: " + input.getCodeSystemShortName());
+					}
+				}).asMap();
+
+				
+				HashMap<ICodeSystem, List<ICodeSystemVersion>> mutableMap = Maps.newHashMap();
+				for (Entry<ICodeSystem, Collection<ICodeSystemVersion>> entry : codeSystemToVersionsMap.entrySet()) {
+					mutableMap.put(entry.getKey(), Lists.newArrayList(entry.getValue()));
 				}
 				
-				versions.put(repositoryUuid, existingVersions);
+				
+				for (ICodeSystem codeSystem : Sets.newHashSet(codeSystemToVersionsMap.keySet())) {
+					mutableMap.get(codeSystem).add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, codeSystem.getBranchPath()));
+				}
+				
+				versions.putAll(mutableMap);
 			}
 		});
 		

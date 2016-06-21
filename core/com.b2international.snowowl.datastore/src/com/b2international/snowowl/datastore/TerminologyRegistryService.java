@@ -58,12 +58,11 @@ public interface TerminologyRegistryService {
 	
 	/**
 	 * Returns with all versions for each repository which are visible from the HEAD of the MAIN branch. 
-	 * Includes the {@link ICodeSystemVersion#INITIAL_STATE 'init'} version as well. Does not contain the 'MAIN' latest 
-	 * entry version.
+	 * Includes the {@link ICodeSystemVersion#INITIAL_STATE 'init'} version , and it <b>does</b> contain the <b>'HEAD'</b> version as well.
 	 * @return a mapping between the repository UUIDs and the values are all available versions for
 	 * the repository.
 	 */
-	Map<String, List<ICodeSystemVersion>> getAllVersion();
+	Map<ICodeSystem, List<ICodeSystemVersion>> getAllVersion();
 	
 	/**
 	 * Returns with all versions for the given repository which are visible from the HEAD of the MAIN branch. 
