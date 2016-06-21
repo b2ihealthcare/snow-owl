@@ -295,29 +295,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public String[] getDescriptionProperties(final IBranchPath branchPath, final String descriptionId) {
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		checkNotNull(descriptionId, "SNOMED CT description ID argument cannot be null.");
-		
-		//if not a valid relationship ID
-		if (SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER != 
-				SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(descriptionId)) {
-			return null;
-		}
-		final TopDocs topDocs = getIndexServerService().search(branchPath, SnomedMappings.newQuery().type(DESCRIPTION_NUMBER).id(descriptionId).matchAll(), 1);
-		if (IndexUtils.isEmpty(topDocs)) {
-			return null;
-		}
-		final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
-		final Document doc = getIndexServerService().document(branchPath, scoreDoc.doc, DESCRIPTION_FIELDS_TO_LOAD);
-		
-		final String label = SnomedMappings.descriptionTerm().getValue(doc);
-		final String conceptId = SnomedMappings.descriptionConcept().getValueAsString(doc);
-		final String typeId = SnomedMappings.descriptionType().getValueAsString(doc);
-		return new String[] { conceptId, typeId, label };
-	}
-	
-	@Override
 	public Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId) {
 		
 		checkNotNull(branchPath, "Branch path argument cannot be null.");

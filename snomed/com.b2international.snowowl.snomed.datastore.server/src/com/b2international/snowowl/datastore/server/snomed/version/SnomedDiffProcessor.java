@@ -68,6 +68,8 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -557,8 +559,8 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			return createIgnoredDelta();
 		}
 		
-		final String[] descriptionProperties = getReferencedDescriptionProperties(member);
-		final String descriptionTypeId = descriptionProperties[1];
+		final SnomedDescriptionIndexEntry description = getReferencedDescriptionProperties(member);
+		final String descriptionTypeId = description.getTypeId();
 		
 		if (isFsn(descriptionTypeId)) {
 			return createIgnoredDelta();
@@ -568,7 +570,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			return createIgnoredDelta();
 		}
 		
-		final String conceptId = descriptionProperties[0];
+		final String conceptId = description.getConceptId();
 		
 		final String oldPt = getConceptLabel(getBranchPath(sourceView), conceptId);
 		final String newPt = getConceptLabel(getBranchPath(targetView), conceptId);
@@ -599,8 +601,8 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		return FULLY_SPECIFIED_NAME.equals(descriptionTypeId);
 	}
 
-	private String[] getReferencedDescriptionProperties(final SnomedLanguageRefSetMember member) {
-		return getComponentService().getDescriptionProperties(getBranchPath(member), member.getReferencedComponentId());
+	private SnomedDescriptionIndexEntry getReferencedDescriptionProperties(final SnomedLanguageRefSetMember member) {
+		return new SnomedDescriptionLookupService().getComponent(getBranchPath(member), member.getReferencedComponentId());
 	}
 
 	private boolean couldBePreferredTerm(final SnomedLanguageRefSetMember member, final String descriptionTypeId) {

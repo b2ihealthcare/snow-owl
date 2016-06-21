@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -48,18 +46,6 @@ public interface ISnomedComponentService {
 	 */
 	Set<String> getAvailableDataTypeLabels(IBranchPath branchPath, final DataType dataType);
 
-	/**
-	 * This method returns with an array of the owner SNOMED&nbsp;CT concept ID description type concept ID and the term of the description specified 
-	 * by its unique description ID. If either the concept ID, type ID or the term cannot be specified, this method returns with {@code null}.
-	 * <p>Clients can make sure, if the returning array can be referenced, then both IDs and the term is available as well.
-	 * <p>This method will return with {@code null} if the given ID is *NOT* a valid SNOMED&nbsp;CT description ID.
-	 * <p>This method also returns with {@code null} if no description can be found in the store with the given ID on the specified branch.
-	 * @param branchPath the branch path.
-	 * @param descriptionId the unique ID of the SNOMED&nbsp;CT description.
-	 * @return an array of SNOMED&nbsp;CT concept ID, description type ID and the term of the description.
-	 */
-	@Nullable String[] getDescriptionProperties(final IBranchPath branchPath, final String descriptionId);
-	
 	/**
 	 * Returns with a collection of {@link IdStorageKeyPair#getId() component ID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
 	 * for all components in the SNOMED&nbsp;CT ontology on a specified {@link IBranchPath branch}. Retired members are included in the result set.
