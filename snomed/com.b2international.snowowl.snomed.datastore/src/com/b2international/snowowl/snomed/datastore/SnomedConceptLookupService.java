@@ -89,7 +89,6 @@ public class SnomedConceptLookupService extends AbstractLookupService<String, Co
 		try {
 			return SnomedRequests.prepareGetConcept()
 					.setComponentId(conceptId)
-					.setExpand("pt()")
 					.build(branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(new Function<ISnomedConcept, SnomedConceptDocument>() {
