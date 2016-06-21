@@ -55,6 +55,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 
 	@Override
 	public void put(long storageKey, Revision object) throws IOException {
+		checkArgument(storageKey > 0, "StorageKey cannot be negative or zero");
 		if (!revisionUpdates.containsKey(object.getClass())) {
 			revisionUpdates.put(object.getClass(), Sets.<Long>newHashSet());
 		}
