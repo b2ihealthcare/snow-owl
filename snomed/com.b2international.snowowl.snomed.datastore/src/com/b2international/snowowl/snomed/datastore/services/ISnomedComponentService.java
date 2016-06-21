@@ -24,7 +24,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -64,14 +63,6 @@ public interface ISnomedComponentService {
 	 * @return a collection of component storage keys.
 	 */
 	LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType);
-	
-	/**
-	 * Returns with a collection of {@link SnomedRefSetMemberFragment reference set member}s contained by the given reference set. 
-	 * @param branchPath the branch path.
-	 * @param refSetId the reference set identifier concept ID.
-	 * @return a collection of reference set members from a given reference set.
-	 */
-	Collection<SnomedRefSetMemberFragment> getRefSetMemberFragments(final IBranchPath branchPath, final String refSetId);
 	
 	/**
 	 * Returns with the storage keys of all unpublished concepts, descriptions and relationships from the ontology.

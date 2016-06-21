@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.snomed.version;
 import static com.b2international.commons.StringUtils.capitalizeFirstLetter;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.commons.StringUtils.lowerCaseFirstLetter;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.index.diff.NodeDelta.NULL_IMPL;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
@@ -71,7 +70,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -680,10 +678,6 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		} else {
 			throw new IllegalArgumentException("Unknown component type of: " + component);
 		}
-	}
-	
-	private ISnomedComponentService getComponentService() {
-		return getServiceForClass(ISnomedComponentService.class);
 	}
 	
 	private IBranchPath getBranchPath(final CDOView view) {

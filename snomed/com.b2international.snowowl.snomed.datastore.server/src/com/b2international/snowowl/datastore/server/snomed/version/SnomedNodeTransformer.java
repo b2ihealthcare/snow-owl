@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
@@ -169,8 +170,8 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 
 	private Collection<NodeDelta> compareRefSetByMembers(final IBranchPath sourcePath, final IBranchPath targetPath, final NodeDiff diff) {
 		
-		final Set<SnomedRefSetMemberFragment> sourceMembers = toSet(getRefSetMembers(sourcePath, diff.getId()));
-		final Set<SnomedRefSetMemberFragment> targetMembers = toSet(getRefSetMembers(targetPath, diff.getId()));
+		final Set<SnomedRefSetMemberIndexEntry> sourceMembers = toSet(getRefSetMembers(sourcePath, diff.getId()));
+		final Set<SnomedRefSetMemberIndexEntry> targetMembers = toSet(getRefSetMembers(targetPath, diff.getId()));
 		
 		final SetDifference<SnomedRefSetMemberFragment> difference = compare(sourceMembers, targetMembers, SnomedRefSetMemberFragment.EQUIVALENCE);
 		
@@ -209,8 +210,19 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 		return createDeltaForUpdate(memberLabel, featureChange, REFSET_MEMBER_NUMBER);
 	}
 	
-	private Collection<SnomedRefSetMemberFragment> getRefSetMembers(final IBranchPath sourcePath, final String refSetId) {
-		return getComponentService().getRefSetMemberFragments(sourcePath, refSetId);
+	private Collection<SnomedRefSetMemberIndexEntry> getRefSetMembers(final IBranchPath branch, final String refSetId) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByRefSet(refSetId)
+				.build(refSetId)
+				.execute(getBus())
+				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedRefSetMemberIndexEntry>>() {
+					@Override
+					public Collection<SnomedRefSetMemberIndexEntry> apply(SnomedReferenceSetMembers input) {
+						return SnomedRefSetMemberIndexEntry.from(input);
+					}
+				})
+				.getSync();
 	}
 
 	private Collection<NodeDelta> createDeltaForDeletedComponent(final CDOView sourceView, final CDOView targetView, final NodeDiff diff) {
