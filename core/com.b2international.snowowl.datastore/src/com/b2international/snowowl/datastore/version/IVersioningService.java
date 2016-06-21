@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IStatus;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 
 
@@ -33,8 +34,8 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
  */
 public interface IVersioningService {
 	
-	/**Returns with a collection of already existing versions for a given tooling feature.*/
-	Collection<ICodeSystemVersion> getExistingVersions(final String toolingId);
+	/**Returns with a collection of already existing versions for a given code system.*/
+	Collection<ICodeSystemVersion> getExistingVersions(final ICodeSystem codeSystem);
 	
 	/**Configures and applies the given version on the service.*/
 	IStatus configureNewVersionId(final String versionId, final boolean ignoreValidation);

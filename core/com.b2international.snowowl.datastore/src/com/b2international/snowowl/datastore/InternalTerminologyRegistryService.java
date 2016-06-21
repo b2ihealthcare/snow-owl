@@ -50,11 +50,7 @@ public interface InternalTerminologyRegistryService {
 	/**Returns with the code system from a given branch identified by its unique code system OID argument.*/
 	ICodeSystem getCodeSystemByOid(final IBranchPath branchPath, final String codeSystemOid);
 	
-	/**Returns with the mappings between the available application specific terminology component IDs and the associated {@link ICodeSystem code system}s.
-	 *<br>Mapping is one to one.*/
-	Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap(final IBranchPath branchPath);
-	
-	/**Returns with the mappings between the available application specific terminology component IDs and the associated {@link ICodeSystem code system}s.
+	/**Returns with the mappings between the available application specific terminology component IDs (aka.: tooling IDs)  and the associated {@link ICodeSystem code system}s.
 	 *<br>Mapping is one to many.
 	 *<p>Consider local terminology concepts where application specific is the same but code system could be multiple.*/
 	Map<String, Collection<ICodeSystem>> getTerminologyComponentIdWithMultipleCodeSystemsMap(final IBranchPath branchPath);
