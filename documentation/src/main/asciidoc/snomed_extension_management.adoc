@@ -180,3 +180,76 @@ POST /snowowl/admin/codesystems/SNOMEDCT_B2i/versions
   "effectiveDate": "20160601"
 }
 ....
+
+=== Upgrading extension content
+There is no command line command available for upgrading, the functionality is only accessible via the REST interface:
+
+Import the new International DELTA archive to the MAIN branch in two steps:
+
+First create the import configuration.
+....
+POST /snowowl/snomed-ct/v2/imports
+{
+  "createVersions": true,
+  "type": "DELTA",
+  "branchPath": "MAIN",
+  "codeSystemShortName": "SNOMEDCT"
+}
+....
+Then upload the archive to start the import.
+....
+POST /snowowl/snomed-ct/v2/imports/{importId}/archive
+....
+
+After the import process, create a new branch for extension:
+....
+POST /snowowl/snomed-ct/v2/branches
+{
+  "metadata": {},
+  "parent": "MAIN/2016-07-31",
+  "name": "Extension_branch"
+}
+....
+
+Then copy over the entire content onto the target extension branch. (If the merge fails because of conflicts, fix the errors and then try again)
+....
+POST /snowowl/snomed-ct/v2/merges
+{
+  "source": "MAIN/2016-01-31/Extension_bracnh",
+  "target": "MAIN/2016-07-31/Extension_branch",
+  "commitComment": "Upgrade extension content."
+}
+....
+
+Finally update the branch path of the extension Code System to point to the target extension branch.
+....
+PUT /snowowl/admin/codesystems/SNOMEDCT_B2i
+{
+  "repositoryUuid": "snomedStore",
+  "branchPath": "MAIN/2016-07-31/Extension_branch"
+}
+....
+
+=== Downgrading extension content
+There is no command line command available for downgrading, the functionality is only accessible via the REST interface:
+
+Copy over the current extension content onto the target extension branch. (If the merge fails because of conflicts, fix the errors and then try again) 
+
+If no new content was added to the current branch since the merge, you can skip this step.
+....
+POST /snowowl/snomed-ct/v2/merges
+{
+  "source": "MAIN/2016-07-31/Extension_bracnh",
+  "target": "MAIN/2016-01-31/Extension_branch",
+  "commitComment": "Downgrade extension content."
+}
+....
+
+Then update the branch path of the extension Code System to point to the target extension branch.
+....
+PUT /snowowl/admin/codesystems/SNOMEDCT_B2i
+{
+  "repositoryUuid": "snomedStore",
+  "branchPath": "MAIN/2016-01-31/Extension_branch"
+}
+....
