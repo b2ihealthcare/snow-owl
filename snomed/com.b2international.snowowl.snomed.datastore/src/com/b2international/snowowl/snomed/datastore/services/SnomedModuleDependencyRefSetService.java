@@ -99,7 +99,8 @@ public class SnomedModuleDependencyRefSetService {
 	
 
 	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId) {
-		throw new UnsupportedOperationException("TODO reimplement me");
+		System.err.println("SnomedModuleDependencyRefSetService.getPublishedModuleDependencyMembers() -> TODO reimplement me");
+		return PrimitiveSets.newLongOpenHashSet();
 //		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 //		Preconditions.checkNotNull(id, "ID argument cannot be null.");
 //		final BooleanQuery sourceModuleQuery = new BooleanQuery(true);
