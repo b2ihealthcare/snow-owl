@@ -16,26 +16,14 @@
 package com.b2international.snowowl.snomed.api.impl.traceability;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
@@ -44,13 +32,15 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
@@ -58,12 +48,9 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.users.SpecialUserStore;
+import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.server.AbstractCDOChangeProcessor;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
@@ -86,8 +73,9 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -104,17 +92,9 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Change processor implementation that produces a log entry for committed transactions.
  */
-public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcessor<SnomedDocument, CDOObject> {
+public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("traceability");
-
-	// Track primary terminology components and reference set members relevant to acceptability and inactivation 
-	private static final Collection<EClass> TRACKED_ECLASSES = ImmutableSet.of(SnomedPackage.Literals.CONCEPT,
-			SnomedPackage.Literals.DESCRIPTION,
-			SnomedPackage.Literals.RELATIONSHIP,
-			SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER,
-			SnomedRefSetPackage.Literals.SNOMED_ASSOCIATION_REF_SET_MEMBER,
-			SnomedRefSetPackage.Literals.SNOMED_ATTRIBUTE_VALUE_REF_SET_MEMBER);
 
 	private static final Set<String> TRACKED_REFERENCE_SET_IDS = ImmutableSet.of(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
 			Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
@@ -128,12 +108,6 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 			Concepts.REFSET_SIMILAR_TO_ASSOCIATION,
 			Concepts.REFSET_WAS_A_ASSOCIATION);
 
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad()
-			.id()
-			.descriptionConcept()
-			.relationshipSource()
-			.build();
-	
 	private static final ObjectWriter WRITER;
 
 	private static final Set<EStructuralFeature> IGNORED_FEATURES = ImmutableSet.<EStructuralFeature>of(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS,
@@ -154,14 +128,20 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 	private TraceabilityEntry entry;
 
 	private final boolean collectSystemChanges;
+	private final RevisionIndex index;
+	private final IBranchPath branchPath;
 
-	public SnomedTraceabilityChangeProcessor(final IIndexUpdater<SnomedDocument> indexUpdater, final IBranchPath branchPath, final boolean collectSystemChanges) {
-		super(indexUpdater, branchPath, TRACKED_ECLASSES);
+	private ICDOCommitChangeSet commitChangeSet;
+
+	public SnomedTraceabilityChangeProcessor(final RevisionIndex index, final IBranchPath branchPath, final boolean collectSystemChanges) {
+		this.branchPath = branchPath;
+		this.index = index;
 		this.collectSystemChanges = collectSystemChanges;
 	}
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
+		this.commitChangeSet = commitChangeSet;
 		this.entry = new TraceabilityEntry(commitChangeSet);
 		
 		// No other details required for "System user" commits
@@ -169,61 +149,32 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 			return;
 		}
 		
-		super.process(commitChangeSet);
+		for (CDOObject newComponent : commitChangeSet.getNewComponents()) {
+			processAddition(newComponent);
+		}
+		
+		for (CDOObject dirtyComponent : commitChangeSet.getDirtyComponents()) {
+			processUpdate(dirtyComponent);
+		}
+		
+		final Set<Long> detachedConceptStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT)));
+		final Set<Long> detachedDescriptionStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION)));
+		final Set<Long> detachedRelationshipStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP)));
 
-		if (detachedComponents.isEmpty()) {
-			return;
-		}
-		
-		final Set<Long> detachedStorageKeys = newHashSetWithExpectedSize(detachedComponents.size());
-		for (Entry<CDOID, EClass> entry : detachedComponents) {
-			final long storageKey = CDOIDUtil.getLong(entry.getKey());
-			final EClass eClass = entry.getValue();
-			
-			if (SnomedPackage.Literals.CONCEPT.equals(eClass) || SnomedPackage.Literals.DESCRIPTION.equals(eClass) || SnomedPackage.Literals.RELATIONSHIP.equals(eClass)) {
-				detachedStorageKeys.add(storageKey);
-			}
-		}
-		
-		if (detachedStorageKeys.isEmpty()) {
-			return;
-		}
-		
-		((IndexServerService<?>) indexService).executeReadTransaction(branchPath, new IndexRead<Void>() {
+		index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 			@Override
-			public Void execute(IndexSearcher index) throws IOException {
+			public Void execute(RevisionSearcher searcher) throws IOException {
 				
-				final Query componentTypeQuery = SnomedMappings.newQuery()
-						.concept()
-						.description()
-						.relationship()
-						.matchAny();
-				
-				final Filter storageKeyFilter = Mappings.storageKey().createTermsFilter(detachedStorageKeys); 
-				
-				// XXX: wrapping into FilteredQuery because we don't want to retrieve all components if storageKeyFilter is null for some reason
-				final TopDocs topDocs = index.search(new FilteredQuery(componentTypeQuery, storageKeyFilter), null, detachedComponents.size(), Sort.INDEXORDER, false, false);
-				if (IndexUtils.isEmpty(topDocs)) {
-					return null;
+				for (SnomedConceptDocument detachedConcept : searcher.get(SnomedConceptDocument.class, detachedConceptStorageKeys)) {
+					entry.registerChange(detachedConcept.getId(), new TraceabilityChange(SnomedPackage.Literals.CONCEPT, detachedConcept.getId(), ChangeType.DELETE));
 				}
 				
-				for (int i = 0; i < topDocs.scoreDocs.length; i++) {
-					final Document document = index.doc(topDocs.scoreDocs[i].doc, FIELDS_TO_LOAD);
-					final String detachedComponentId = SnomedMappings.id().getValueAsString(document);
-					
-					String conceptId = document.get(SnomedMappings.relationshipSource().fieldName()); 
-					if (conceptId != null) {
-						entry.registerChange(conceptId, new TraceabilityChange(SnomedPackage.Literals.RELATIONSHIP, detachedComponentId, ChangeType.DELETE));
-						continue;
-					} 
-					
-					conceptId = document.get(SnomedMappings.descriptionConcept().fieldName());
-					if (conceptId != null) {
-						entry.registerChange(conceptId, new TraceabilityChange(SnomedPackage.Literals.DESCRIPTION, detachedComponentId, ChangeType.DELETE));
-						continue;
-					}
-					
-					entry.registerChange(detachedComponentId, new TraceabilityChange(SnomedPackage.Literals.CONCEPT, detachedComponentId, ChangeType.DELETE));
+				for (SnomedDescriptionIndexEntry detachedDescription : searcher.get(SnomedDescriptionIndexEntry.class, detachedDescriptionStorageKeys)) {
+					entry.registerChange(detachedDescription.getConceptId(), new TraceabilityChange(SnomedPackage.Literals.DESCRIPTION, detachedDescription.getId(), ChangeType.DELETE));
+				}
+				
+				for (SnomedRelationshipIndexEntry detachedRelationship : searcher.get(SnomedRelationshipIndexEntry.class, detachedRelationshipStorageKeys)) {
+					entry.registerChange(detachedRelationship.getSourceId(), new TraceabilityChange(SnomedPackage.Literals.RELATIONSHIP, detachedRelationship.getId(), ChangeType.DELETE));
 				}
 				
 				return null;
@@ -237,7 +188,7 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 	
 	@Override
 	public boolean hadChangesToProcess() {
-		return super.hadChangesToProcess() || isSystemCommit();
+		return !entry.getChanges().isEmpty() || isSystemCommit();
 	}
 	
 	@Override
@@ -245,8 +196,7 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 		return entry.getUserId();
 	}
 	
-	@Override
-	protected void processAddition(CDOObject newComponent) {
+	private void processAddition(CDOObject newComponent) {
 		final EClass eClass = newComponent.eClass();
 
 		if (SnomedPackage.Literals.CONCEPT.equals(eClass)) {
@@ -263,8 +213,7 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 		// Reference set members are logged through their container core component change
 	}
 	
-	@Override
-	protected void processUpdate(CDOObject dirtyComponent) {
+	private void processUpdate(CDOObject dirtyComponent) {
 		final EClass eClass = dirtyComponent.eClass();
 		final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(dirtyComponent.cdoID());
 
@@ -358,8 +307,6 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 		} catch (IOException e) {
 			throw SnowowlRuntimeException.wrap(e);
 		}
-	
-		super.afterCommit();
 	}
 
 	private Set<String> collectNonLeafs(final ImmutableSet<String> conceptIds, final String branch, final IEventBus bus, String characteristicTypeId) {
@@ -451,17 +398,6 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 	}
 
 	@Override
-	protected void processDeletion(Entry<CDOID, EClass> detachedComponent) {
-		// Handled separately
-	}
-	
-	@Override
-	public void reset() {
-		entry = null;
-		super.reset();
-	}
-
-	@Override
 	public String getChangeDescription() {
 		return String.format("Traceability logged for %d concept(s).", entry.getChanges().size());
 	}
@@ -469,5 +405,24 @@ public class SnomedTraceabilityChangeProcessor extends AbstractCDOChangeProcesso
 	@Override
 	public String getName() {
 		return "SNOMED CT Traceability";
+	}
+
+	@Override
+	public void commit() throws SnowowlServiceException {
+	}
+
+	@Override
+	public void prepareCommit() throws SnowowlServiceException {
+	}
+
+	@Override
+	public void rollback() throws SnowowlServiceException {
+		this.entry = null;
+		this.commitChangeSet = null;
+	}
+
+	@Override
+	public IBranchPath getBranchPath() {
+		return branchPath;
 	}
 }

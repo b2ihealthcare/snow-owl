@@ -25,29 +25,27 @@ import static com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingCo
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext.createRelationshipTypePair;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
-import static java.lang.Long.parseLong;
 import static java.text.MessageFormat.format;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.util.CommitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.derivation.SnomedRefSetDerivationModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRefSetDerivationService;
@@ -80,11 +78,11 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 					deriveDescriptions(refSetName, conceptIds, editingContext, branchPath);
 					break;
 				case RELATIONSHIP:
-					deriveRelationships(refSetName, conceptIds, editingContext, branchPath);
+					deriveRelationships(refSetName, conceptIds, editingContext);
 					break;
 				case DUO:
 					deriveDescriptions(refSetName, conceptIds, editingContext, branchPath);
-					deriveRelationships(refSetName, conceptIds, editingContext, branchPath);
+					deriveRelationships(refSetName, conceptIds, editingContext);
 					break;
 			}
 			
@@ -121,7 +119,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 				case TRIO:
 					deriveConcepts(refSetName, conceptIds, editingContext);
 					deriveDescriptions(refSetName, conceptIds, editingContext, branchPath);
-					deriveRelationships(refSetName, conceptIds, editingContext, branchPath);
+					deriveRelationships(refSetName, conceptIds, editingContext);
 					break;
 				}
 			
@@ -195,40 +193,33 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 	 * Creates a new simple type reference set where the referenced component type is relationship and the members are relationships between the
 	 * derived reference set member's. 
 	 */
-	private void deriveRelationships(final String refSetName, final Collection<String> componentIds, final SnomedRefSetEditingContext context, final IBranchPath branchPath) throws SnowowlServiceException {
+	private void deriveRelationships(final String refSetName, final Collection<String> componentIds, final SnomedRefSetEditingContext context) throws SnowowlServiceException {
 
 		final Set<SnomedRefSetMember> members = newHashSet();
 		final String moduleId = getModuleId(context);
 
 		final SnomedRegularRefSet refSet = context.createSnomedSimpleTypeRefSet(format("{0} - relationships", refSetName), RELATIONSHIP);
-		final LongKeyMap activeStatements = getServiceForClass(SnomedStatementBrowser.class).getAllActiveStatements(branchPath);
-
-		for (final String conceptId : componentIds) {
-
-			final Object object = activeStatements.get(parseLong(conceptId));
-
-			if (object instanceof List) {
-
-				@SuppressWarnings("unchecked")
-				final List<StatementFragment> fragments = (List<StatementFragment>) object;
-
-				for (final StatementFragment fragment : fragments) {
-
-					if (componentIds.contains(Long.toString(fragment.getDestinationId()))) {
-
-						final String relationshipId = Long.toString(fragment.getStatementId());
-						members.add(context.createSimpleTypeRefSetMember(
-								createRelationshipTypePair(relationshipId), 
-								moduleId, 
-								refSet));
-					}
-				}
-			}
+		
+		for (ISnomedRelationship relationship : getEdgesBetween(context.getBranch(), componentIds)) {
+			members.add(context.createSimpleTypeRefSetMember(
+					createRelationshipTypePair(relationship.getId()), 
+					moduleId, 
+					refSet));
 		}
-
+		
 		refSet.getMembers().addAll(members);
 	}
 	
+	private SnomedRelationships getEdgesBetween(String branch, Collection<String> componentIds) {
+		return SnomedRequests.prepareSearchRelationship()
+				.filterByActive(true)
+				.filterBySource(componentIds)
+				.filterByDestination(componentIds)
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+	}
+
 	/*
 	 * Collects the component IDs from the reference set.
 	 */
