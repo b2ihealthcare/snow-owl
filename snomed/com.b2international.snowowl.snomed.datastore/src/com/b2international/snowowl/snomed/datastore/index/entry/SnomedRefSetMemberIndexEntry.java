@@ -705,18 +705,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 	
 	@JsonIgnore
-	public Long getSourceEffectiveTime() {
-		return getLongField(Fields.SOURCE_EFFECTIVE_TIME);
-	}
-	
-	@JsonIgnore
 	public String getSourceEffectiveTimeAsString() {
 		return EffectiveTimes.format(getSourceEffectiveTime(), DateFormats.SHORT);
-	}
-	
-	@JsonIgnore
-	public Long getTargetEffectiveTime() {
-		return getLongField(Fields.TARGET_EFFECTIVE_TIME);
 	}
 	
 	@JsonIgnore
