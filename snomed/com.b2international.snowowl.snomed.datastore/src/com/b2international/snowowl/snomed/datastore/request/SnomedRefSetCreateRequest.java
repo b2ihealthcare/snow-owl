@@ -18,14 +18,15 @@ package com.b2international.snowowl.snomed.datastore.request;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 
@@ -74,9 +75,25 @@ final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, St
 	private void checkParent(TransactionContext context) {
 		final String refSetTypeRootParent = SnomedRefSetUtil.getConceptId(type);
 		final String desiredParent = conceptReq.getParentId();
-		if (!refSetTypeRootParent.equals(desiredParent) && !context.service(SnomedTerminologyBrowser.class).isSuperTypeOfById(context.branch().branchPath(), refSetTypeRootParent, desiredParent)) {
+		if (!refSetTypeRootParent.equals(desiredParent) && !isSuperTypeOfById(context, refSetTypeRootParent, desiredParent)) {
 			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept. Cannot create as subtype of '%s'.", type, refSetTypeRootParent, desiredParent);
 		}
+	}
+
+	private boolean isSuperTypeOfById(TransactionContext context, String superTypeId, String subTypeId) {
+		final ISnomedConcept subTypeConcept = SnomedRequests.prepareGetConcept().setComponentId(subTypeId).build().execute(context);
+		final long superTypeIdLong = Long.parseLong(superTypeId);
+		if (subTypeConcept.getParentIds() != null) {
+			if (PrimitiveSets.newLongOpenHashSet(subTypeConcept.getParentIds()).contains(superTypeIdLong)) {
+				return true;
+			}
+		}
+		if (subTypeConcept.getAncestorIds() != null) {
+			if (PrimitiveSets.newLongOpenHashSet(subTypeConcept.getAncestorIds()).contains(superTypeIdLong)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
