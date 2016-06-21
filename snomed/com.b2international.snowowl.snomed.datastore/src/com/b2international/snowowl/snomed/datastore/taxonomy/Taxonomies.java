@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 
 import java.io.IOException;
 
@@ -29,6 +30,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
@@ -57,6 +59,7 @@ public final class Taxonomies {
 					.selectAll()
 					.where(Expressions.builder()
 							.must(active())
+							.must(typeId(Concepts.IS_A))
 							.must(characteristicTypeId(characteristicTypeId))
 							.build())
 					.limit(Integer.MAX_VALUE)
