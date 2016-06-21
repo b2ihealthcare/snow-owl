@@ -103,6 +103,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
+		addComponentIdFilter(queryBuilder);
 		
 		if (containsKey(OptionKey.TERM)) {
 //			if (!containsKey(OptionKey.USE_FUZZY)) {
