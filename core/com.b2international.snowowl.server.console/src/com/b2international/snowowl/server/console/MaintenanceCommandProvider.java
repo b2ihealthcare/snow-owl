@@ -24,7 +24,6 @@ import java.util.Set;
 import org.eclipse.emf.cdo.common.CDOCommonRepository.State;
 import org.eclipse.emf.cdo.internal.server.syncing.RepositorySynchronizer;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.session.CDOSessionConfiguration;
 import org.eclipse.emf.cdo.session.CDOSessionConfigurationFactory;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
@@ -37,7 +36,6 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.google.common.base.Splitter;
@@ -187,12 +185,9 @@ public class MaintenanceCommandProvider implements CommandProvider {
 
 		String repositoryName = "snomedStore";
 
-		ICDORepositoryManager repositoryManager = ApplicationContext.getServiceForClass(ICDORepositoryManager.class);
 		ICDOConnectionManager connectionManager = ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
 
 		RepositorySynchronizer synchronizer = new RepositorySynchronizer();
-		ICDORepository cdoRepository = repositoryManager.getByUuid(repositoryName);
-		IRepository repository = cdoRepository.getRepository();
 		ICDOConnection cdoConnection = connectionManager.getByUuid(repositoryName);
 		final CDONet4jSessionConfiguration sessionConfiguration = cdoConnection.getSessionConfiguration();
 		synchronizer.setRemoteSessionConfigurationFactory(new CDOSessionConfigurationFactory() {
