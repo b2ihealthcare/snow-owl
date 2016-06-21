@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -93,8 +92,8 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 		return super.getConflicts();
 	}
 	
-	public void postProcess(final CDOBranch sourceBranch, final CDOTransaction transaction) {
-		delegate.postProcess(sourceBranch, transaction);
+	public void postProcess(final CDOTransaction transaction) {
+		delegate.postProcess(transaction);
 	}
 	
 	public Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {

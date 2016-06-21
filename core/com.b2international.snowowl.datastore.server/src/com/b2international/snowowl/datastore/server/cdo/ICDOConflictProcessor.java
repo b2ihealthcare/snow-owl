@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.cdo;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -111,7 +110,7 @@ public interface ICDOConflictProcessor {
 	 * @throws ConflictException if conflicts are detected while post-processing takes place (can be specific to a
 	 * terminology, not necessarily tied to a CDO revision or delta)
 	 */
-	void postProcess(CDOBranch sourceBranch, CDOTransaction transaction) throws ConflictException;
+	void postProcess(CDOTransaction transaction) throws ConflictException;
 	
 	/**
 	 * Handle conflicts detected by CDO during branch merges. The implementation must provide a map, where the keys are unique identifiers and the

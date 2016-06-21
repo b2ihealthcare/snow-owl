@@ -167,7 +167,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     	try {
     		// XXX: specifying sourceBase instead of defaulting to the computed common ancestor point here
     		targetTransaction.merge(sourceBranch.getHead(), sourceBranch.getBase(), merger);
-    		merger.postProcess(sourceBranch, targetTransaction);
+    		merger.postProcess(targetTransaction);
     		return targetTransaction;
     	} catch (CDOMerger.ConflictException e) {
     		CDOTransaction sourceTransaction = connection.createTransaction(sourceBranch);

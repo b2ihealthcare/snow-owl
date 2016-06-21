@@ -95,7 +95,6 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		final ICDOConnection connection = getConnection(repositoryId);
 		final CDOBranch taskBranch = connection.getBranch(taskBranchPath);
 		final IBranchPath parentBranchPath = taskBranchPath.getParent();
-		final CDOBranch parentBranch = connection.getBranch(parentBranchPath);
 
 		LOGGER.info(MessageFormat.format("Applying changes from ''{0}'' to ''{1}'' in ''{2}''...", 
 				parentBranchPath,
@@ -105,7 +104,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		// Do a test run against the parent branch first
 		CDOTransaction testTransaction = connection.createTransaction(parentBranchPath);
 		try {
-			applyChangeSet(testTransaction, taskBranch, parentBranch);
+			applyChangeSet(testTransaction, taskBranch);
 		} finally {
 			if (testTransaction != null) {
 				testTransaction.close();
@@ -122,7 +121,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		
 		// This transaction now holds the actual change set on the reopened child, which has the same name as before
 		final CDOTransaction syncTransaction = connection.createTransaction(taskBranchPath); 
-		applyChangeSet(syncTransaction, taskBranch, parentBranch);
+		applyChangeSet(syncTransaction, taskBranch);
 		
 		if (syncTransaction.isDirty()) {
 			transactions.add(syncTransaction);
@@ -134,7 +133,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 	}
 
-	private void applyChangeSet(final CDOTransaction transaction, final CDOBranch taskBranch, CDOBranch parentBranch) throws CustomConflictException {
+	private void applyChangeSet(final CDOTransaction transaction, final CDOBranch taskBranch) throws CustomConflictException {
 		
 		final String repositoryUuid = transaction.getSession().getRepositoryInfo().getUUID();
 		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryUuid), true);
@@ -144,7 +143,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 			// XXX: specifying sourceBase instead of defaulting to the computed common ancestor point here
 			transaction.merge(taskBranch.getHead(), taskBranch.getBase(), branchMerger);
 			LOGGER.info(MessageFormat.format("Post-processing components in ''{0}''...", repositoryUuid));
-			branchMerger.postProcess(parentBranch, transaction);
+			branchMerger.postProcess(transaction);
 			
 		} catch (final ConflictException e) {
 
