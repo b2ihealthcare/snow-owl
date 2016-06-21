@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.cdo;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
+import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 
@@ -119,5 +120,11 @@ public interface ICDOConnection extends ICDOManagedItem<ICDOConnection> {
 	 * @return the oldest branch associated with the branch path argument. 
 	 */
 	CDOBranch getOldestBranch(final IBranchPath branchPath);
+
+	/**
+	 * Returns the session configuration from the session backing this connection.
+	 * @return session configuration
+	 */
+	CDONet4jSessionConfiguration getSessionConfiguration();
 	
 }
