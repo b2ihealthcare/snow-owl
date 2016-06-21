@@ -137,6 +137,19 @@ public interface ICodeSystem extends Serializable {
 			return input.getRepositoryUuid();
 		}
 	};
+	
+	
+	
+	/**
+	 * Function to turn a {@link ICodeSystem} into it's Snow Owl ID (aka.: tooling id.). 
+	 */
+	public static final Function<ICodeSystem, String> TO_SNOW_OWL_ID_FUNCTION = new Function<ICodeSystem, String> () {
+		
+		@Override
+		public String apply(ICodeSystem input) {
+			return input.getSnowOwlId();
+		}
+	};
 
 	
 	/**

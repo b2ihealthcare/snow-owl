@@ -49,6 +49,16 @@ public abstract class LatestCodeSystemVersionUtils {
 		
 	}
 	
+	
+	/**
+	 * Shorthand for {@link #createLatestCodeSystemVersion(String, String)}
+	 * @param codeSystem
+	 * @return
+	 */
+	public static ICodeSystemVersion createLatestCodeSystemVersion(ICodeSystem codeSystem) {
+		return createLatestCodeSystemVersion(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath());
+	}
+	
 	private static class LatestCodeSystemVersionPredicate implements Predicate<ICodeSystemVersion> {
 
 		@Override
