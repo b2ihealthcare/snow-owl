@@ -140,13 +140,14 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final Iterable<Concept> dirtyConcepts = collectDirtyConcepts(searcher, commitChangeSet);
 		
 		// fetch dirty concept documents
-		final Set<Long> dirtyConceptStorageKeys = newHashSet(FluentIterable.from(CDOIDUtils.getIds(dirtyConcepts)).transform(CDOIDUtils.CDO_ID_TO_LONG_FUNCTION));
+		final Set<Long> dirtyConceptStorageKeys = FluentIterable.from(CDOIDUtils.getIds(dirtyConcepts)).transform(CDOIDUtils.CDO_ID_TO_LONG_FUNCTION).toSet();
 		final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, dirtyConceptStorageKeys), ComponentUtils.<String>getIdFunction());
 		
 		// update dirty concepts
 		for (final Concept concept : dirtyConcepts) {
 			final String id = concept.getId();
 			final SnomedConceptDocument currentDoc = currentConceptDocumentsById.get(id);
+			// current doc should exists at this point in time
 			final Builder doc = SnomedConceptDocument.builder(currentDoc);
 			update(doc, concept, currentDoc);
 			SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
@@ -203,11 +204,15 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		}
 		// collect preferred language member's description's concept for compare change
 		// do we need this??? why not query all changed revision and all other required docs for compare
+		final Set<Concept> newConcepts = newHashSet(commitChangeSet.getNewComponents(Concept.class));
 		for (SnomedLanguageRefSetMember member : commitChangeSet.getNewComponents(SnomedLanguageRefSetMember.class)) {
 			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(member.getAcceptabilityId()) && member.eContainer() instanceof Description) {
 				final Description description = (Description) member.eContainer();
 				if (!Concepts.FULLY_SPECIFIED_NAME.equals(description.getType().getId())) {
-					dirtyConcepts.add(description.getConcept());
+					// add only if the concept is not new
+					if (!newConcepts.contains(description.getConcept())) {
+						dirtyConcepts.add(description.getConcept());
+					}
 				}
 			}
 		}
