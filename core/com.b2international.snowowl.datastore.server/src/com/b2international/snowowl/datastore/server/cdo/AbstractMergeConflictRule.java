@@ -15,26 +15,17 @@
  */
 package com.b2international.snowowl.datastore.server.cdo;
 
-import java.util.Collection;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.eventbus.IEventBus;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-
-import com.b2international.snowowl.core.merge.MergeConflict;
 
 /**
- * Generic interface for merge conflict rules
- * 
  * @since 4.7
  */
-public interface IMergeConflictRule {
+public abstract class AbstractMergeConflictRule implements IMergeConflictRule {
 
-	/**
-	 * Executes the given conflict rule and returns a collection of {@link MergeConflict} if there was any.
-	 * 
-	 * @param transaction
-	 * @return
-	 */
-	Collection<MergeConflict> validate(CDOBranch sourceBranch, CDOTransaction targetTransaction);
-	
+	protected IEventBus getEventBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+
 }

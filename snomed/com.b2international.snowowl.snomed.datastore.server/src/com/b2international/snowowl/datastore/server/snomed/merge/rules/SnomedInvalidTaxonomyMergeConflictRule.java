@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.collections.longs.LongCollection;
@@ -31,7 +32,7 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
+import com.b2international.snowowl.datastore.server.cdo.AbstractMergeConflictRule;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -46,10 +47,10 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-public class SnomedInvalidTaxonomyMergeConflictRule implements IMergeConflictRule {
+public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractMergeConflictRule {
 
 	@Override
-	public Collection<MergeConflict> validate(CDOTransaction transaction) {
+	public Collection<MergeConflict> validate(CDOBranch sourceBranch, CDOTransaction transaction) {
 		
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
 		final ApplicationContext context = ApplicationContext.getInstance();
