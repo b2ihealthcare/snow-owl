@@ -37,7 +37,8 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -70,7 +71,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
@@ -378,26 +379,33 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	
 	private void postProcessTaxonomy(final CDOTransaction transaction, final ImmutableMultimap.Builder<String, Object> conflictingItems) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		final ApplicationContext context = ApplicationContext.getInstance();
-		final LongCollection conceptIds = context.getService(SnomedTerminologyBrowser.class).getAllConceptIds(branchPath);
-
-		for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
-			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
-				@Override
-				public Void execute(RevisionSearcher index) throws IOException {
+		index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
+			@Override
+			public Void execute(RevisionSearcher searcher) throws IOException {
+				final Query<SnomedConceptDocument> allConceptsQuery = Query.builder(SnomedConceptDocument.class)
+						.selectAll()
+						.where(Expressions.matchAll())
+						.limit(Integer.MAX_VALUE)
+						.build();
+				final Hits<SnomedConceptDocument> allConcepts = searcher.search(allConceptsQuery);
+				final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet(allConcepts.getTotal());
+				for (SnomedConceptDocument concept : allConcepts) {
+					conceptIds.add(Long.parseLong(concept.getId()));
+				}
+				for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
 					try {
-						final IsAStatementWithId[] statements = getActiveStatements(index, characteristicTypeId);
+						final IsAStatementWithId[] statements = getActiveStatements(searcher, characteristicTypeId);
 						final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-						new SnomedTaxonomyUpdateRunnable(index, transaction, taxonomyBuilder, characteristicTypeId).run();
+						new SnomedTaxonomyUpdateRunnable(searcher, transaction, taxonomyBuilder, characteristicTypeId).run();
 					} catch (IncompleteTaxonomyException e) {
 						for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
 							conflictingItems.put(Long.toString(invalidRelationship.getMissingConceptId()), invalidRelationship);
 						}
 					}
-					return null;
 				}
-			});
-		}
+				return null;
+			}
+		});
 	}
 
 	private IsAStatementWithId[] getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
