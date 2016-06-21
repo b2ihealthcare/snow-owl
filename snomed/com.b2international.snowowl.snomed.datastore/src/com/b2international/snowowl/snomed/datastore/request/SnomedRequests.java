@@ -179,6 +179,6 @@ public abstract class SnomedRequests {
 	 * @return
 	 */
 	public static SnomedConceptSearchRequestBuilder prepareGetSynonyms() {
-		return prepareSearchConcept().all().filterByActive(true).filterByAncestor("<<"+Concepts.SYNONYM);
+		return prepareSearchConcept().all().filterByActive(true).filterByEscg("<<"+Concepts.SYNONYM);
 	}
 }
