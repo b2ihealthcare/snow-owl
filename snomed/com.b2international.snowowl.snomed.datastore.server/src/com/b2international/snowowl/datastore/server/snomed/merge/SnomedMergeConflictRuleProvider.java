@@ -22,7 +22,6 @@ import java.util.List;
 
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRuleProvider;
-import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedDuplicateComponentIdMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedInvalidTaxonomyMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedLanguageRefsetMembersMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedRefsetMemberReferencingDetachedComponentRule;
@@ -41,7 +40,6 @@ public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvid
 	@Override
 	public Collection<IMergeConflictRule> getRules() {
 		List<IMergeConflictRule> rules = newArrayList();
-		rules.add(new SnomedDuplicateComponentIdMergeConflictRule());
 		rules.add(new SnomedRefsetMemberReferencingDetachedComponentRule());
 		rules.add(new SnomedLanguageRefsetMembersMergeConflictRule());
 		rules.add(new SnomedInvalidTaxonomyMergeConflictRule());

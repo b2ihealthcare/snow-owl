@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
+import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMapper;
@@ -49,6 +50,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -83,7 +85,9 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOConflictProcessor.class);
 	
+	private Map<String, CDOID> newComponentIdsInSource;
 	private Set<CDOID> detachedSourceIds;
+	private Map<String, CDOID> newComponentIdsInTarget;
 	private Set<CDOID> detachedTargetIds;
 
 	public SnomedCDOConflictProcessor() {
@@ -103,7 +107,13 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	@Override
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
 
-		Conflict conflict = checkDetachedReferences(sourceRevision, detachedTargetIds, true);
+		Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget, true);
+		
+		if (conflict != null) {
+			return conflict;
+		}
+
+		conflict = checkDetachedReferences(sourceRevision, detachedTargetIds, true);
 		
 		if (conflict != null) {
 			return conflict;
@@ -115,7 +125,13 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	@Override
 	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
 		
-		Conflict conflict = checkDetachedReferences(targetRevision, detachedSourceIds, false);
+		Conflict conflict = checkDuplicateComponentIds(targetRevision, newComponentIdsInSource, false);
+		
+		if (conflict != null) {
+			return conflict;
+		}
+
+		conflict = checkDetachedReferences(targetRevision, detachedSourceIds, false);
 		
 		if (conflict != null) {
 			return conflict;
@@ -156,8 +172,23 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	
 	@Override
 	public void preProcess(final Map<CDOID, Object> sourceMap, final Map<CDOID, Object> targetMap) {
+		newComponentIdsInSource = extractNewComponentIds(sourceMap);
 		detachedSourceIds = getDetachedIdsInTarget(sourceMap);
+		newComponentIdsInTarget = extractNewComponentIds(targetMap);
 		detachedTargetIds = getDetachedIdsInTarget(targetMap);
+	}
+	
+	private Map<String, CDOID> extractNewComponentIds(final Map<CDOID, Object> revisionMap) {
+		final Iterable<InternalCDORevision> newRevisionsInTarget = getNewRevisionsInTarget(revisionMap);
+		final Map<String, CDOID> newComponentIdsMap = Maps.newHashMap();
+
+		for (final InternalCDORevision targetRevision : newRevisionsInTarget) {
+			if (isComponent(targetRevision)) {
+				newComponentIdsMap.put(getComponentId(targetRevision), targetRevision.getID());
+			}
+		}
+		
+		return newComponentIdsMap;
 	}
 	
 	@Override
@@ -173,12 +204,31 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 	}
 
+	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap, boolean addedInSource) {
+
+		if (isComponent(revision)) {
+			final String newComponentId = getComponentId((InternalCDORevision) revision);
+			final CDOID conflictingNewId = newComponentIdsMap.get(newComponentId);
+
+			if (null != conflictingNewId) {
+				return new AddedInSourceAndTargetConflict(revision.getID(), conflictingNewId, String.format(
+						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId), addedInSource);
+			}
+		}
+
+		return null;
+	}
+
 	private boolean isComponent(final CDORevision revision) {
 		return isComponent(revision.getEClass());
 	}
 
 	private boolean isComponent(final EClass eClass) {
 		return COMPONENT_CLASSES.contains(eClass);
+	}
+
+	private String getComponentId(final InternalCDORevision revision) {
+		return (String) revision.getValue(SnomedPackage.Literals.COMPONENT__ID);
 	}
 
 	private Conflict checkDetachedReferences(final CDORevision revision, final Set<CDOID> detachedIds, final boolean addedInSource) {
