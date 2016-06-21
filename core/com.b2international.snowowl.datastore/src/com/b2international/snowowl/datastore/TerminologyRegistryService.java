@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Multimap;
+
 /**
  * Representation of the global terminology registry service. 
  * @deprecated use CodeSystemRequests instead
@@ -29,6 +31,10 @@ public interface TerminologyRegistryService {
 	/**Returns with all the {@link ICodeSystem code systems } available in the application from a given branch.*/
 	Collection<ICodeSystem> getCodeSystems(final IBranchPathMap branchPathMap);
 	
+	
+	/**Returns with all the {@link ICodeSystem code systems } available in the given repository from a given branch.*/
+	public Collection<ICodeSystem> getCodeSystems(final IBranchPathMap branchPathMap, final String repositoryUuid);
+	
 	/**Returns with all {@link ICodeSystemVersion code system versions} for a given {@link ICodeSystem code system} given with its short name argument.
 	 *<p>Clients should be aware with the followings: not all code system version represents a tag in the application.*/
 	Collection<ICodeSystemVersion> getCodeSystemVersions(final IBranchPathMap branchPathMap, final String codeSystemShortName);
@@ -38,10 +44,6 @@ public interface TerminologyRegistryService {
 	
 	/**Returns with the code system from a given branch identified by its unique code system OID argument.*/
 	ICodeSystem getCodeSystemByOid(final IBranchPathMap branchPathMap, final String codeSystemOid);
-	
-	/**Returns with the mappings between the available application specific terminology component IDs and the associated {@link ICodeSystem code system}s.
-	 *<br>Mapping is one to one.*/
-	Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap(final IBranchPathMap branchPathMap);
 	
 	/**Returns with the mappings between the available application specific terminology component IDs and the associated {@link ICodeSystem code system}s.
 	 *<br>Mapping is one to many.

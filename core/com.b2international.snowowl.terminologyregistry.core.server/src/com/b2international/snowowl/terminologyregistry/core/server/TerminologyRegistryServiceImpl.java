@@ -73,7 +73,19 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 		});
 		return codeSystems;
 	}
+	
+	@Override
+	public Collection<ICodeSystem> getCodeSystems(final IBranchPathMap branchPathMap, final String repositoryUuid) {
+		final Collection<ICodeSystem> codeSystems = newConcurrentHashSet();
+		
+		InternalTerminologyRegistryService service = InternalTerminologyRegistryServiceRegistry.INSTANCE.getService(repositoryUuid);
+		codeSystems.addAll(service.getCodeSystems(branchPathMap.getBranchPath(repositoryUuid)));
+		
+		return codeSystems;
+	}
 
+	
+	
 	@Override
 	public Collection<ICodeSystemVersion> getCodeSystemVersions(final IBranchPathMap branchPathMap, final String codeSystemShortName) {
 		final Collection<ICodeSystemVersion> versions = newConcurrentHashSet();
@@ -114,20 +126,6 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 			}
 		});
 		return getFirst(codeSystems, null);
-	}
-
-	@Override
-	public Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap(final IBranchPathMap branchPathMap) {
-		final Map<String, ICodeSystem> terminologyComponentIdCodeSystemMap = synchronizedMap(Maps.<String, ICodeSystem>newHashMap());
-		forEach(getServices(branchPathMap), new Procedure<Pair<InternalTerminologyRegistryService, IBranchPath>>() {
-			protected void doApply(final Pair<InternalTerminologyRegistryService, IBranchPath> pair) {
-				final Map<String, ICodeSystem> codeSystemMap = pair.getA().getTerminologyComponentIdCodeSystemMap(pair.getB());
-				if (!isEmpty(codeSystemMap)) {
-					terminologyComponentIdCodeSystemMap.putAll(codeSystemMap);
-				}
-			}
-		});
-		return terminologyComponentIdCodeSystemMap;
 	}
 
 	@Override
