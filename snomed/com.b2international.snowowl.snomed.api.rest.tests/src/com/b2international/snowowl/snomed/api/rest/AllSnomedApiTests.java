@@ -52,11 +52,11 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	// RESTful API test cases
 	SnomedBranchingApiTest.class,
-	SnomedMergeApiTest.class,
-	SnomedReviewApiTest.class,
-	SnomedVersioningApiTest.class,
+//	SnomedMergeApiTest.class,
+//	SnomedReviewApiTest.class,
+//	SnomedVersioningApiTest.class,
 	SnomedImportApiTest.class,
-	SnomedImportApiExamplesTest.class,
+//	SnomedImportApiExamplesTest.class,
 	SnomedIdentifierApiTest.class,
 	SnomedConceptApiTest.class,
 	SnomedDescriptionApiTest.class,
@@ -65,7 +65,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
 	SnomedBrowserApiTest.class,
-	SnomedClassificationApiTest.class,
+//	SnomedClassificationApiTest.class,
 	// Java API test cases
 	SnomedBranchRequestTest.class
 })
