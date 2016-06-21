@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.commons.collect.LongSets.forEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
@@ -30,34 +29,25 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Long.parseLong;
 import static java.util.UUID.randomUUID;
-import static org.apache.lucene.search.MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.Query;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.LongSets.LongCollectionProcedure;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.index.IndexServerService;
-import com.b2international.snowowl.datastore.server.snomed.index.ComponentModuleCollector;
-import com.b2international.snowowl.datastore.server.snomed.index.ConcreteDataTypePropertyCollector;
-import com.b2international.snowowl.datastore.server.snomed.index.DescriptionPropertyCollector;
-import com.b2international.snowowl.datastore.server.snomed.index.RelationshipPropertyCollector;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -65,17 +55,18 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
 
 /**
@@ -94,17 +85,6 @@ public enum SnomedModuleDependencyCollectorService {
 	private static final long PRIMITIVE = parseLong(Concepts.PRIMITIVE);
 	private static final long FULLY_DEFINED = parseLong(Concepts.FULLY_DEFINED);
 	private static final long MODULE_ROOT = parseLong(Concepts.MODULE_ROOT);
-	private static final long IS_A = parseLong(Concepts.IS_A);
-	
-	private static final Query ALL_CDT_MEMBERS_QUERY;
-	
-	static {
-		
-		final MultiTermQuery allCdtMembersQuery = SnomedMappings.memberOperatorId().toExistsQuery();
-		allCdtMembersQuery.setRewriteMethod(CONSTANT_SCORE_FILTER_REWRITE);
-		ALL_CDT_MEMBERS_QUERY = allCdtMembersQuery;
-
-	}
 	
 	/**
 	 * Returns with a collection of {@link SnomedModuleDependencyRefSetMember module dependency members}
@@ -113,9 +93,9 @@ public enum SnomedModuleDependencyCollectorService {
 	 * @param view the CDO view. The view is not closed by this method. It's the callers responsibility to clean up the CDO view.
 	 * @param unpublishedStorageKeys a collection of unpublished component storage keys.
 	 * @return a collection of module dependency members.
+	 * @throws IOException 
 	 */
-	public Collection<SnomedModuleDependencyRefSetMember> collectModuleMembers(final CDOView view, 
-			final LongCollection unpublishedStorageKeys) {
+	public Collection<SnomedModuleDependencyRefSetMember> collectModuleMembers(final RevisionSearcher searcher, final CDOView view, final LongCollection unpublishedStorageKeys) throws IOException {
 	
 		final Stopwatch stopwatch = createStarted();
 		final Collection<SnomedModuleDependencyRefSetMember> members = newHashSet();
@@ -126,19 +106,19 @@ public enum SnomedModuleDependencyCollectorService {
 			setConfiguration(initConfiguration(check(view), checkNotNull(unpublishedStorageKeys, "unpublishedStorageKeys")));
 
 			LOGGER.info("Processing unversioned concept... [2 of 6]");
-			tryCreateMembersForConceptChanges();
+			tryCreateMembersForConceptChanges(searcher);
 
 			LOGGER.info("Processing unversioned descriptions... [3 of 6]");
-			tryCreateMembersForDescriptionChanges();
+			tryCreateMembersForDescriptionChanges(searcher);
 			
 			LOGGER.info("Processing unversioned relationships... [4 of 6]");
-			tryCreateMembersForRelationshipChanges();
+			tryCreateMembersForRelationshipChanges(searcher);
 			
 			LOGGER.info("Processing unversioned concrete domains... [5 of 6]");
-			tryCreateMembersForDataTypeChanges();
+			tryCreateMembersForDataTypeChanges(searcher);
 			
 			LOGGER.info("Processing unversioned module concepts... [6 of 6]");
-			tryCreateMembersForNewModules();
+			tryCreateMembersForNewModules(searcher);
 			
 			members.addAll(getMembers());
 			
@@ -169,57 +149,38 @@ public enum SnomedModuleDependencyCollectorService {
 		return configuration;
 	}
 
-	private void tryCreateMembersForConceptChanges() {
-		
-		for (final long[] ids : getAllConceptIdsStorageKeys()) {
-			
-			final long conceptId = ids[0];
-			final long storageKey = ids[1];
-			
-			if (getUnpublishedStorageKeys().contains(storageKey)) {
-				final long conceptModuleId = getConceptModuleMapping().get(conceptId);
-				tryCreateMember(conceptModuleId, getConceptModuleMapping().get(PRIMITIVE));
-				tryCreateMember(conceptModuleId, getConceptModuleMapping().get(FULLY_DEFINED));
-			}
-			
+	private void tryCreateMembersForConceptChanges(RevisionSearcher searcher) throws IOException {
+		for (final SnomedConceptDocument concept : searcher.get(SnomedConceptDocument.class, LongSets.toSet(getUnpublishedStorageKeys()))) {
+			final long conceptModuleId = Long.parseLong(concept.getModuleId());
+			tryCreateMember(conceptModuleId, getConceptModuleMapping().get(PRIMITIVE));
+			tryCreateMember(conceptModuleId, getConceptModuleMapping().get(FULLY_DEFINED));
 		}
 		
 	}
 
-	private void tryCreateMembersForDescriptionChanges() {
-		final DescriptionPropertyCollector collector = new DescriptionPropertyCollector(getUnpublishedStorageKeys());
-		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().description().matchAll(), collector);
+	private void tryCreateMembersForDescriptionChanges(RevisionSearcher searcher) throws IOException {
+		final Iterable<SnomedDescriptionIndexEntry> unpublisedDescriptions = searcher.get(SnomedDescriptionIndexEntry.class, LongSets.toSet(getUnpublishedStorageKeys()));
 		
-		final LongKeyMap<long[]> mapping = collector.getMapping();
-		for (final LongIterator keys = mapping.keySet().iterator(); keys.hasNext(); /**/) {
-			final long key = keys.next();
-			final long[] properties = mapping.get(key);
-			final long conceptId = properties[0];
-			final long moduleId = properties[1];
-			final long typeId = properties[2];
-			final long caseSignificanceId = properties[3];
-			
+		for (SnomedDescriptionIndexEntry description : unpublisedDescriptions) {
+			final long moduleId = Long.parseLong(description.getModuleId());
+			final long conceptId = Long.parseLong(description.getConceptId());
+			final long typeId = Long.parseLong(description.getTypeId());
+			final long caseSignificanceId = Long.parseLong(description.getCaseSignificanceId());
 			tryCreateMember(moduleId, getConceptModuleMapping().get(conceptId));
 			tryCreateMember(moduleId, getConceptModuleMapping().get(typeId));
 			tryCreateMember(moduleId, getConceptModuleMapping().get(caseSignificanceId));
 		}
 	}
 
-	private void tryCreateMembersForRelationshipChanges() {
-		final RelationshipPropertyCollector collector = new RelationshipPropertyCollector(getUnpublishedStorageKeys());
-		getIndexServerService().search(getBranchPath(), SnomedMappings.newQuery().relationship().matchAll(), collector);
-		final LongKeyMap<long[]> mapping = collector.getMapping();
-		
-		for (final LongIterator keys = mapping.keySet().iterator(); keys.hasNext(); /**/) {
-			final long key = keys.next();
-			final long[] properties = mapping.get(key);
-			final long characteristicTypeId = properties[0];
-			final long moduleId = properties[1];
-			final long typeId = properties[2];
-			final long sourceId = properties[3];
-			final long destinationId = properties[4];
-			final long modifierId = properties[5];
-			
+	private void tryCreateMembersForRelationshipChanges(RevisionSearcher searcher) throws IOException {
+		final Iterable<SnomedRelationshipIndexEntry> unpublishedRelationships = searcher.get(SnomedRelationshipIndexEntry.class, LongSets.toSet(getUnpublishedStorageKeys()));
+		for (SnomedRelationshipIndexEntry relationship : unpublishedRelationships) {
+			final long moduleId = Long.parseLong(relationship.getModuleId());
+			final long sourceId = Long.parseLong(relationship.getSourceId());
+			final long typeId = Long.parseLong(relationship.getTypeId());
+			final long destinationId = Long.parseLong(relationship.getDestinationId());
+			final long modifierId = Long.parseLong(relationship.getModifierId());
+			final long characteristicTypeId = Long.parseLong(relationship.getCharacteristicTypeId());
 			tryCreateMember(moduleId, getConceptModuleMapping().get(characteristicTypeId));
 			tryCreateMember(moduleId, getConceptModuleMapping().get(typeId));
 			tryCreateMember(moduleId, getConceptModuleMapping().get(sourceId));
@@ -228,75 +189,59 @@ public enum SnomedModuleDependencyCollectorService {
 		}
 	}
 
-	private void tryCreateMembersForDataTypeChanges() {
-		final ConcreteDataTypePropertyCollector collector = new ConcreteDataTypePropertyCollector(getUnpublishedStorageKeys());
-		getIndexServerService().search(getBranchPath(), ALL_CDT_MEMBERS_QUERY, collector);
-		final LongKeyMap<long[]> mapping = collector.getMapping();
-		
-		Set<Long> referencedComponentIds = newHashSet();
-		
-		for (Object value : mapping.values()) {
-			final long[] properties = (long[]) value;
-			referencedComponentIds.add(properties[1]);
-		}
-		
-		if (referencedComponentIds.isEmpty()) {
-			return;
-		}
-		
-		Filter filter = SnomedMappings.id().createTermsFilter(referencedComponentIds);
-
-		FilteredQuery filteredQuery = new FilteredQuery(new MatchAllDocsQuery(), filter);
-		
-		ComponentModuleCollector componentModuleCollector = new ComponentModuleCollector();
-		getIndexServerService().search(getBranchPath(), filteredQuery, componentModuleCollector);
-		
-		LongKeyLongMap idToModuleMap = componentModuleCollector.getIdToModuleMap();
-		
-		for (final LongIterator keys = mapping.keySet().iterator(); keys.hasNext(); /**/) {
-			final long key = keys.next();
-			final long[] properties = mapping.get(key);
-			final long moduleId = properties[0];
-			final long referencedComponentId = properties[1];
+	private void tryCreateMembersForDataTypeChanges(RevisionSearcher searcher) throws IOException {
+		final Iterable<SnomedRefSetMemberIndexEntry> members = searcher.get(SnomedRefSetMemberIndexEntry.class, LongSets.toSet(getUnpublishedStorageKeys()));
+		for (SnomedRefSetMemberIndexEntry member : members) {
+			// member should depend on the reference set
+			final long memberModuleId = Long.parseLong(member.getModuleId());
+			final long refSetId = Long.parseLong(member.getReferenceSetId());
+			tryCreateMember(memberModuleId, getConceptModuleMapping().get(refSetId));
 			
-			if (idToModuleMap.containsKey(referencedComponentId)) {
-				tryCreateMember(moduleId, idToModuleMap.get(referencedComponentId));
-			}
+			// handle all possible RF2 member fields which refers to a component
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getAcceptabilityId());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getCharacteristicTypeId());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getCorrelationId());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getDescriptionFormat());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getOperatorId());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getValueId());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getUnitId());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getTargetComponent());
+			tryCreateMemberIfNotEmpty(memberModuleId, member.getMapCategoryId());
 		}
 	}
 
-	private void tryCreateMembersForNewModules() {
-		forEach(getAllModuleConceptIds(), new LongCollectionProcedure() {
-			@Override
-			public void apply(final long moduleConceptId) {
+	private void tryCreateMemberIfNotEmpty(long sourceModule, String dependsOnConceptId) {
+		if (!Strings.isNullOrEmpty(dependsOnConceptId)) {
+			tryCreateMember(sourceModule, getConceptModuleMapping().get(Long.parseLong(dependsOnConceptId)));
+		}
+	}
+
+	private void tryCreateMembersForNewModules(final RevisionSearcher searcher) throws IOException {
+		final Set<String> allModuleIds = LongSets.toStringSet(getAllModuleConceptIds()); 
+		for (final SnomedRelationshipIndexEntry isARelationship : getInboundIsARelationships(searcher, allModuleIds)) {
+			if (isComponentAffected(isARelationship.getStorageKey())) {
 				
-				for (final SnomedRelationshipIndexEntry isARelationship : getInboundIsARelationships(moduleConceptId)) {
-					if (isComponentAffected(isARelationship.getStorageKey())) {
-						
-						final Concept concept = new SnomedConceptLookupService().getComponent(isARelationship.getSourceId(), getView());
-						final Concept module = concept.getModule();
-						
-						tryCreateMember(module.getId(), isARelationship.getModuleId());
-						
-						for (final Description description : concept.getDescriptions()) {
-							tryCreateMember(module, description.getModule());
-							tryCreateMember(module, description.getType().getModule());
-							tryCreateMember(module, description.getCaseSignificance().getModule());
-						}
-						
-						for (final Relationship relationship : concept.getOutboundRelationships()) {
-							tryCreateMember(module, relationship.getModule());
-							tryCreateMember(module, relationship.getCharacteristicType().getModule());
-							tryCreateMember(module, relationship.getDestination().getModule());
-							tryCreateMember(module, relationship.getModifier().getModule());
-							tryCreateMember(module, relationship.getType().getModule());
-						}
-						
-					}
+				final Concept concept = new SnomedConceptLookupService().getComponent(isARelationship.getSourceId(), getView());
+				final Concept module = concept.getModule();
+				
+				tryCreateMember(module.getId(), isARelationship.getModuleId());
+				
+				for (final Description description : concept.getDescriptions()) {
+					tryCreateMember(module, description.getModule());
+					tryCreateMember(module, description.getType().getModule());
+					tryCreateMember(module, description.getCaseSignificance().getModule());
+				}
+				
+				for (final Relationship relationship : concept.getOutboundRelationships()) {
+					tryCreateMember(module, relationship.getModule());
+					tryCreateMember(module, relationship.getCharacteristicType().getModule());
+					tryCreateMember(module, relationship.getDestination().getModule());
+					tryCreateMember(module, relationship.getModifier().getModule());
+					tryCreateMember(module, relationship.getType().getModule());
 				}
 				
 			}
-		});
+		}
 	}
 
 	private void tryCreateMember(final long sourceModuleId, final long targetModuleId) {
@@ -328,14 +273,18 @@ public enum SnomedModuleDependencyCollectorService {
 		tryCreateMember(parseLong(sourceModuleId), parseLong(targetModuleId));
 	}
 
-	private Collection<SnomedRelationshipIndexEntry> getInboundIsARelationships(final long moduleConceptId) {
-		return getStatementBrowser().getInboundStatementsById(getBranchPath(), moduleConceptId, IS_A);
+	private Iterable<SnomedRelationshipIndexEntry> getInboundIsARelationships(final RevisionSearcher searcher, final Set<String> destinationIds) throws IOException {
+		final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
+				.selectAll()
+				.where(Expressions.builder()
+						.must(SnomedRelationshipIndexEntry.Expressions.destinationIds(destinationIds))
+						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+						.build())
+				.limit(Integer.MAX_VALUE)
+				.build();
+		return searcher.search(query);
 	}
 
-	private SnomedStatementBrowser getStatementBrowser() {
-		return getServiceForClass(SnomedStatementBrowser.class);
-	}
-	
 	private boolean isComponentAffected(final long storageKey) {
 		return getUnpublishedStorageKeys().contains(storageKey);
 	}
@@ -377,10 +326,6 @@ public enum SnomedModuleDependencyCollectorService {
 		return checkNotNull((SnomedRegularRefSet) new SnomedRefSetLookupService().getComponent(REFSET_MODULE_DEPENDENCY_TYPE, view), "Missing module reference set %s", REFSET_MODULE_DEPENDENCY_TYPE);
 	}
 	
-	private long[][] getAllConceptIdsStorageKeys() {
-		return getTerminologyBrowser().getAllConceptIdsStorageKeys(getBranchPath());
-	}
-
 	private Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules(final IBranchPath branchPath) {
 		return getComponentService().getExistingModules(branchPath);
 	}
@@ -396,11 +341,6 @@ public enum SnomedModuleDependencyCollectorService {
 	private LongKeyLongMap getConceptModuleMapping(final IBranchPath branchPath) {
 		return getComponentService().getConceptModuleMapping(branchPath);
 	}
-
-	private IndexServerService<?> getIndexServerService() {
-		return (IndexServerService<?>) getServiceForClass(SnomedIndexService.class);
-	}
-
 
 	private ISnomedComponentService getComponentService() {
 		return getServiceForClass(ISnomedComponentService.class);
