@@ -168,7 +168,8 @@ import com.google.common.collect.Lists;
 		return (CDOConnectionManager) super.getContainer();
 	}
 	
-	private CDONet4jSessionConfiguration getSessionConfiguration() {
+	@Override
+	public CDONet4jSessionConfiguration getSessionConfiguration() {
 		return getContainer().getSessionConfiguration(this);
 	}
 	
