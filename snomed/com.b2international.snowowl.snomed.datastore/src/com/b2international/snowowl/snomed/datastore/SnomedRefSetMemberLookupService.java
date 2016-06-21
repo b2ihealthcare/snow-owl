@@ -22,8 +22,6 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EPackage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -60,8 +58,6 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 			"SNOMEDREFSET_SNOMEDLANGUAGEREFSETMEMBER",
 			"SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER",
 			"SNOMEDREFSET_SNOMEDQUERYREFSETMEMBER");
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRefSetMemberLookupService.class);
 
 	@Override
 	public SnomedRefSetMember getComponent(final String uuid, final CDOView view) {
@@ -113,6 +109,7 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 	@Override
 	public SnomedRefSetMemberIndexEntry getComponent(final IBranchPath branchPath, final String uuid) {
 		return SnomedRequests.prepareSearchMember()
+				.setLimit(2)
 				.setComponentIds(Collections.singleton(uuid))
 				.build(branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
@@ -128,7 +125,8 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		throw new UnsupportedOperationException("DO WE NEED THIS???");
+		final SnomedRefSetMemberIndexEntry component = getComponent(branchPath, id);
+		return component != null ? component.getStorageKey() : CDOUtils.NO_STORAGE_KEY;
 	}
 
 	@Override
