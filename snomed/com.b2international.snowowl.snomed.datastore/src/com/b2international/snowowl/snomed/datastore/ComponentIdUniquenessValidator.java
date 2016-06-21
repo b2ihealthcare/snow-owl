@@ -146,7 +146,7 @@ final class ComponentIdUniquenessValidator {
 	 * @return {@code true} if the id is unique for the component. Otherwise returns with {@code false}.
 	 */
 	private boolean isUniqueInDatabase(final String componentId) {
-		return ApplicationContext.getInstance().getService(ISnomedIdentiferReservationService.class).isReserved(componentId);
+		return !ApplicationContext.getInstance().getService(ISnomedIdentiferReservationService.class).isReserved(componentId);
 	}
 	
 }
