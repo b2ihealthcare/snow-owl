@@ -15,21 +15,22 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -39,10 +40,10 @@ import com.google.common.collect.Multimap;
  */
 public class TerminologyTreeTest {
 
-	private static final String N1 = "1";
-	private static final String N2 = "2";
-	private static final String N3 = "3";
-	private static final String N4 = "4";
+	private static final String N1 = generateConceptId();
+	private static final String N2 = generateConceptId();
+	private static final String N3 = generateConceptId();
+	private static final String N4 = generateConceptId();
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getNodeThrowsExceptionIfDoesNotExist() throws Exception {
@@ -187,10 +188,15 @@ public class TerminologyTreeTest {
 		}
 		
 		public TestTree addNode(String nodeId, boolean primitive, Set<String> parents, Set<String> children) {
-			// TODO replace mock with real object
-			final SnomedConceptDocument entry = Mockito.mock(SnomedConceptDocument.class);
-			when(entry.getId()).thenReturn(nodeId);
-			when(entry.isPrimitive()).thenReturn(primitive);
+			final SnomedConceptDocument entry = SnomedConceptDocument.builder()
+					.id(nodeId)
+					.iconId(Concepts.ROOT_CONCEPT)
+					.active(true)
+					.moduleId(Concepts.MODULE_ROOT)
+					.primitive(primitive)
+					.build();
+					
+			entry.set_id(UUID.randomUUID().toString());
 			items.put(nodeId, entry);
 			if (parents != null) {
 				superTypes.putAll(nodeId, parents);

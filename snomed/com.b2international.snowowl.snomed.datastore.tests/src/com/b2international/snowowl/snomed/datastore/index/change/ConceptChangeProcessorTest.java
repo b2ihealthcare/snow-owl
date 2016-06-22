@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
-import static com.google.common.collect.Sets.newHashSet;
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -40,7 +40,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -60,7 +59,6 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 
 	private Collection<String> availableImages = ImmutableSet.of(Concepts.ROOT_CONCEPT);
 	private LongSet allConceptIds = PrimitiveSets.newLongOpenHashSet();
-	private Collection<ConstraintDomain> allConstraintDomains = newHashSet();
 	
 	private ConceptChangeProcessor process() {
 		return index().read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<ConceptChangeProcessor>() {
@@ -69,7 +67,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				final ICDOCommitChangeSet commitChangeSet = createChangeSet();
 				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, allConceptIds);
 				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, allConceptIds);
-				final ConceptChangeProcessor processor = new ConceptChangeProcessor(allConceptIds, allConstraintDomains, availableImages, statedTaxonomy, inferredTaxonomy);
+				final ConceptChangeProcessor processor = new ConceptChangeProcessor(availableImages, statedTaxonomy, inferredTaxonomy);
 				processor.process(commitChangeSet, searcher);
 				return processor;
 			}
@@ -431,8 +429,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedParents(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
 				.referringRefSets(Collections.<String>emptySet())
-				.referringMappingRefSets(Collections.<String>emptySet())
-				.referringPredicates(Collections.<String>emptySet());
+				.referringMappingRefSets(Collections.<String>emptySet());
 	}
 
 	private Concept createConcept(final String id) {

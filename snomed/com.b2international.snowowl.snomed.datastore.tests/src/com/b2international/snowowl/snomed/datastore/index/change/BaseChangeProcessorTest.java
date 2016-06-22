@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateRelationshipId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -44,12 +46,10 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 
 import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.commons.VerhoeffCheck;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.Concept;
@@ -58,7 +58,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.id.gen.RandomItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -71,7 +70,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -215,41 +213,6 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return getConcept(Concepts.MODULE_SCT_CORE);
 	}
 
-	protected final static String generateConceptId() {
-		return generateSnomedId(ComponentCategory.CONCEPT);
-	}
-	
-	protected final static String generateDescriptionId() {
-		return generateSnomedId(ComponentCategory.DESCRIPTION);
-	}
-
-	protected final static String generateRelationshipId() {
-		return generateSnomedId(ComponentCategory.RELATIONSHIP);
-	}
-	
-	private static String generateSnomedId(ComponentCategory category) {
-		final String selectedNamespace = "";
-		final StringBuilder builder = new StringBuilder();
-		// generate the SCT Item ID
-		builder.append(new RandomItemIdGenerationStrategy().generateItemId());
-
-		// append namespace and the first part of the partition-identifier
-		if (Strings.isNullOrEmpty(selectedNamespace)) {
-			builder.append('0');
-		} else {
-			builder.append(selectedNamespace);
-			builder.append('1');
-		}
-
-		// append the second part of the partition-identifier
-		builder.append(category.ordinal());
-
-		// calc check-digit
-		builder.append(VerhoeffCheck.calculateChecksum(builder, false));
-
-		return builder.toString();
-	}
-	
 	protected final Relationship createRandomRelationship() {
 		return createStatedRelationship(generateConceptId(), Concepts.IS_A, generateConceptId());
 	}
