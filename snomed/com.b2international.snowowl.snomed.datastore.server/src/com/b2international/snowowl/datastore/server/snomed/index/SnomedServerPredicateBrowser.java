@@ -38,7 +38,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
-import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -59,77 +58,42 @@ import com.google.common.collect.Multimap;
  * Lucene based predicate browser implementation.
  * 
  */
-public class SnomedServerPredicateBrowser implements SnomedPredicateBrowser {
+public class SnomedServerPredicateBrowser {
 
-	private static final Set<String> REFERRING_PREDICATE_FIELDS = SnomedMappings.fieldsToLoad().componentReferringPredicate().build();
-
-	public SnomedServerPredicateBrowser(final SnomedIndexService indexService) {
-		super(indexService);
-	}
-
-	@Override
-	public Set<ConstraintDomain> getConstraintDomains(final IBranchPath branchPath, final long storageKey) {
-		return service.executeReadTransaction(branchPath, new IndexRead<Set<ConstraintDomain>>() {
-			@Override
-			public Set<ConstraintDomain> execute(IndexSearcher index) throws IOException {
-				final String predicateKeyPrefix = String.format("%s%s", storageKey, PredicateUtils.PREDICATE_SEPARATOR);
-				final Query query = SnomedMappings.newQuery()
-						.concept()
-						.and(new PrefixQuery(SnomedMappings.componentReferringPredicate().toTerm(predicateKeyPrefix)))
-						.matchAll();
-				
-				final DocIdCollector collector = DocIdCollector.create(index.getIndexReader().maxDoc());
-				index.search(query, collector);
-				final DocIds docs = collector.getDocIDs();
-				if (docs.size() > 0) {
-					final Set<ConstraintDomain> result = newHashSet();
-					final DocIdsIterator iterator = docs.iterator();
-					while (iterator.next()) {
-						final Document doc = index.doc(iterator.getDocID(), SnomedMappings.fieldsToLoad().id().componentReferringPredicate().build());
-						for (final Iterator<IndexableField> itr = doc.iterator(); itr.hasNext();) {
-							final IndexableField indexableField = itr.next();
-							if (indexableField.name().equals(SnomedMappings.componentReferringPredicate().fieldName()) && !indexableField.stringValue().startsWith(predicateKeyPrefix)) {
-								itr.remove();
-							}
-						}
-						result.addAll(ConstraintDomain.of(doc));
-					}
-					return result;
-				}
-				return Collections.emptySet();
-			}
-		});
-	}
+//	@Override
+//	public Set<ConstraintDomain> getConstraintDomains(final IBranchPath branchPath, final long storageKey) {
+//		return service.executeReadTransaction(branchPath, new IndexRead<Set<ConstraintDomain>>() {
+//			@Override
+//			public Set<ConstraintDomain> execute(IndexSearcher index) throws IOException {
+//				final String predicateKeyPrefix = String.format("%s%s", storageKey, PredicateUtils.PREDICATE_SEPARATOR);
+//				final Query query = SnomedMappings.newQuery()
+//						.concept()
+//						.and(new PrefixQuery(SnomedMappings.componentReferringPredicate().toTerm(predicateKeyPrefix)))
+//						.matchAll();
+//				
+//				final DocIdCollector collector = DocIdCollector.create(index.getIndexReader().maxDoc());
+//				index.search(query, collector);
+//				final DocIds docs = collector.getDocIDs();
+//				if (docs.size() > 0) {
+//					final Set<ConstraintDomain> result = newHashSet();
+//					final DocIdsIterator iterator = docs.iterator();
+//					while (iterator.next()) {
+//						final Document doc = index.doc(iterator.getDocID(), SnomedMappings.fieldsToLoad().id().componentReferringPredicate().build());
+//						for (final Iterator<IndexableField> itr = doc.iterator(); itr.hasNext();) {
+//							final IndexableField indexableField = itr.next();
+//							if (indexableField.name().equals(SnomedMappings.componentReferringPredicate().fieldName()) && !indexableField.stringValue().startsWith(predicateKeyPrefix)) {
+//								itr.remove();
+//							}
+//						}
+//						result.addAll(ConstraintDomain.of(doc));
+//					}
+//					return result;
+//				}
+//				return Collections.emptySet();
+//			}
+//		});
+//	}
 	
-	@Override
-	public Set<ConstraintDomain> getAllConstraintDomains(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		return service.executeReadTransaction(branchPath, new IndexRead<Set<ConstraintDomain>>() {
-			@Override
-			public Set<ConstraintDomain> execute(final IndexSearcher index) throws IOException {
-				final Query query = SnomedMappings.newQuery()
-						.concept()
-						.and(SnomedMappings.componentReferringPredicate().toExistsQuery())
-						.matchAll();
-				
-				final DocIdCollector collector = DocIdCollector.create(index.getIndexReader().maxDoc());
-				index.search(query, collector);
-				final DocIds docs = collector.getDocIDs();
-				if (docs.size() > 0) {
-					final Set<ConstraintDomain> result = newHashSet();
-					final DocIdsIterator iterator = docs.iterator();
-					while (iterator.next()) {
-						final Document doc = index.doc(iterator.getDocID(), SnomedMappings.fieldsToLoad().id().componentReferringPredicate().build());
-						result.addAll(ConstraintDomain.of(doc));
-					}
-					return result;
-				}
-				return Collections.emptySet();
-			}
-		});
-	}
-	
-	@Override
 	public Collection<PredicateIndexEntry> getPredicates(final IBranchPath branchPath, final String conceptId, final @Nullable String ruleRefSetId) {
 		checkNotNull(conceptId, "Concept ID must not be null.");
 
@@ -159,7 +123,8 @@ public class SnomedServerPredicateBrowser implements SnomedPredicateBrowser {
 		addDescendantPredicatesForAncestors(ancestorIds.build(), predicates, newPredicates);
 		
 		final Collection<String> containerRefSetIds = newHashSet(); 
-		containerRefSetIds.addAll(getServiceForClass(SnomedTaxonomyService.class).getContainerRefSetIds(branchPath, conceptId));
+		containerRefSetIds.addAll(concept.getReferringPredicates());
+		containerRefSetIds.addAll(concept.getReferringMappingRefSets());
 		if (null != ruleRefSetId) {
 			containerRefSetIds.add(ruleRefSetId);
 		}
@@ -170,7 +135,6 @@ public class SnomedServerPredicateBrowser implements SnomedPredicateBrowser {
 		return newPredicates;
 	}
 
-	@Override
 	public Collection<PredicateIndexEntry> getPredicates(final IBranchPath branchPath, final Iterable<String> ruleParentIds, final @Nullable String ruleRefSetId) {
 		checkNotNull(ruleParentIds, "Parent IDs iterable must not be null.");
 		checkArgument(!Iterables.isEmpty(ruleParentIds), "Parent IDs iterable must not be empty.");
@@ -234,93 +198,4 @@ public class SnomedServerPredicateBrowser implements SnomedPredicateBrowser {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IPredicateBrowser#getDataTypePredicateLabel(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
-	@Override
-	public String getDataTypePredicateLabel(final IBranchPath branchPath, final String dataTypeName) {
-		return DataTypeUtils.getDefaultDataTypeLabel(dataTypeName);
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.browser.IPredicateBrowser#getDataTypePredicateLabel(com.b2international.snowowl.core.api.IBranchPath, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public String getDataTypePredicateLabel(final IBranchPath branchPath, final String dataTypeName, final String conceptId) {
-		return DataTypeUtils.getDataTypePredicateLabel(dataTypeName, getPredicates(branchPath, conceptId, null));
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser#getRefSetPredicateKeys(java.lang.String)
-	 */
-	@Override
-	public Collection<String> getRefSetPredicateKeys(final IBranchPath branchPath, final String identifierId) {
-		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(identifierId, "Reference set identifier concept ID argument cannot be null.");
-		
-		final TopDocs topDocs = service.search(branchPath, SnomedMappings.newQuery().refSet().id(identifierId).matchAll(), 1);
-		
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return Collections.emptySet();
-		}
-		
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, REFERRING_PREDICATE_FIELDS);
-		return SnomedMappings.componentReferringPredicate().getValues(doc);
-	}
-	
-	@Override
-	public Set<String> getPredicateKeys(final IBranchPath branchPath, final String conceptId) {
-		final DocIdCollector docCollector = DocIdCollector.create(service.maxDoc(branchPath));
-		service.search(branchPath, SnomedMappings.newQuery().concept().id(conceptId).matchAll(), docCollector);
-		
-		try {
-			final DocIdsIterator docIdsIterator = docCollector.getDocIDs().iterator();
-			if (docIdsIterator.next()) {
-				final int docID = docIdsIterator.getDocID();
-				final Document doc = service.document(branchPath, docID, SnomedMappings.fieldsToLoad().componentReferringPredicate().build());
-				return ImmutableSet.copyOf(SnomedMappings.componentReferringPredicate().getValues(doc));
-			}		
-		} catch (final IOException e) {
-			throw new RuntimeException("Error when querying predicate keys.", e);
-		}
-		
-		return ImmutableSet.of();
-	}
-
-	@Override
-	protected Set<String> getFieldNamesToLoad() {
-		return PREDICATE_FIELDS;
-	}
-
-	@Override
-	protected PredicateIndexEntry createResultObject(final IBranchPath branchPath, final Document doc) {
-		final long storageKey = Mappings.storageKey().getValue(doc);
-		final String predicateTypeString = SnomedMappings.predicateType().getValue(doc);
-		final PredicateType predicateType = PredicateType.valueOf(predicateTypeString);
-		final String queryExpression = SnomedMappings.predicateQueryExpression().getValue(doc);
-		final boolean required = BooleanUtils.valueOf(SnomedMappings.predicateRequired().getValue(doc));
-		final boolean multiple = BooleanUtils.valueOf(SnomedMappings.predicateMultiple().getValue(doc));
-		final byte flags = PredicateIndexEntry.createFlags(required, multiple);
-		switch (predicateType) {
-		case DATATYPE:
-			final DataType dataType = DataType.valueOf(SnomedMappings.predicateDataType().getValue(doc));
-			final String dataTypeName = SnomedMappings.predicateDataTypeName().getValue(doc);
-			final String dataTypeLabel = SnomedMappings.predicateDataTypeLabel().getValue(doc);
-			return PredicateIndexEntry.createDataTypeTypePredicate(storageKey, queryExpression, dataType, dataTypeName, dataTypeLabel, flags);
-		case DESCRIPTION:
-			final Long descriptionTypeId = SnomedMappings.predicateDescriptionTypeId().getValue(doc);
-			return PredicateIndexEntry.createDescriptionTypePredicate(storageKey, queryExpression, descriptionTypeId, flags);
-		case RELATIONSHIP:
-			final String relationshipTypeExpression = SnomedMappings.predicateRelationshipTypeExpression().getValue(doc);
-			final String relationshipValueExpression = SnomedMappings.predicateRelationshipValueExpression().getValue(doc);
-			final String characteristicTypeExpression = SnomedMappings.predicateCharacteristicTypeExpression().getValue(doc);
-			final GroupRule groupRule = GroupRule.valueOf(SnomedMappings.predicateGroupRule().getValue(doc));
-			// TODO: is it OK not to specify the required services (see other factory method)?
-			return PredicateIndexEntry.createRelationshipTypePredicate(storageKey, queryExpression, relationshipTypeExpression, 
-					relationshipValueExpression, characteristicTypeExpression, groupRule, flags);
-		default:
-			throw new IllegalArgumentException("Unexpected predicate type: " + predicateType);
-		}
-	}
 }
