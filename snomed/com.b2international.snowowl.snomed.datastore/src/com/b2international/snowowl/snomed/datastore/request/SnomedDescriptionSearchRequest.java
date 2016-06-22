@@ -104,6 +104,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TERM)) {
 //			if (!containsKey(OptionKey.USE_FUZZY)) {

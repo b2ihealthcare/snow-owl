@@ -144,6 +144,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.NAMESPACE)) {
 			queryBuilder.must(namespace(getString(OptionKey.NAMESPACE)));

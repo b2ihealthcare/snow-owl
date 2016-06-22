@@ -53,30 +53,31 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 	protected SnomedRelationships doExecute(BranchContext context) throws IOException {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
-		final ExpressionBuilder exp = Expressions.builder();
-		addActiveClause(exp);
-		addModuleClause(exp);
-		addComponentIdFilter(exp);
+		final ExpressionBuilder queryBuilder = Expressions.builder();
+		addActiveClause(queryBuilder);
+		addModuleClause(queryBuilder);
+		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TYPE)) {
-			exp.must(typeId(getString(OptionKey.TYPE)));
+			queryBuilder.must(typeId(getString(OptionKey.TYPE)));
 		}
 		
 		if (containsKey(OptionKey.CHARACTERISTIC_TYPE)) {
-			exp.must(characteristicTypeId(getString(OptionKey.CHARACTERISTIC_TYPE)));
+			queryBuilder.must(characteristicTypeId(getString(OptionKey.CHARACTERISTIC_TYPE)));
 		}
 
 		if (containsKey(OptionKey.SOURCE)) {
-			exp.must(sourceIds(getCollection(OptionKey.SOURCE, String.class)));
+			queryBuilder.must(sourceIds(getCollection(OptionKey.SOURCE, String.class)));
 		}
 		
 		if (containsKey(OptionKey.DESTINATION)) {
-			exp.must(destinationIds(getCollection(OptionKey.DESTINATION, String.class)));
+			queryBuilder.must(destinationIds(getCollection(OptionKey.DESTINATION, String.class)));
 		}
 
 		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.builder(SnomedRelationshipIndexEntry.class)
 				.selectAll()
-				.where(exp.build())
+				.where(queryBuilder.build())
 				.offset(offset())
 				.limit(limit())
 				.build());

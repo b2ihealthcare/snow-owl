@@ -56,6 +56,7 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		addComponentIdFilter(queryBuilder);
 		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TYPE)) {
 			queryBuilder.must(refSetTypes(getCollection(OptionKey.TYPE, SnomedRefSetType.class)));
