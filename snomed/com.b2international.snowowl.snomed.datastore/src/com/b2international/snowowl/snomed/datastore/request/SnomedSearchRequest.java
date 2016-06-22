@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
 import java.util.List;
 
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
@@ -47,9 +44,14 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 		MODULE,
 		
 		/**
-		 * Component effective time to match
+		 * Filter components by effective time starting from this value, inclusive.
 		 */
-		EFFECTIVE_TIME
+		EFFECTIVE_TIME_START,
+		
+		/**
+		 * Filter components by effective time ending with this value, inclusive.
+		 */
+		EFFECTIVE_TIME_END
 	}
 	
 	protected SnomedSearchRequest() {}
@@ -76,9 +78,10 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 	}
 	
 	protected final void addEffectiveTimeClause(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.EFFECTIVE_TIME)) {
-			final Date parsedEffectiveTime = EffectiveTimes.parse(get(OptionKey.EFFECTIVE_TIME, String.class), DateFormats.SHORT);
-			queryBuilder.must(SnomedDocument.Expressions.effectiveTime(parsedEffectiveTime.getTime()));
+		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
+			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
+			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
+			queryBuilder.must(SnomedDocument.Expressions.effectiveTime(from, to));
 		}
 	}
 }

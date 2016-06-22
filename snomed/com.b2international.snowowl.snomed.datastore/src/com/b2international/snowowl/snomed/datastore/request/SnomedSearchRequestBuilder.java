@@ -20,6 +20,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
@@ -47,7 +49,15 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	}
 	
 	public final B filterByEffectiveTime(String effectiveTime) {
-		return addOption(OptionKey.EFFECTIVE_TIME, effectiveTime);
+		return filterByEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT).getTime());
+	}
+	
+	public final B filterByEffectiveTime(long effectiveTime) {
+		return filterByEffectiveTime(effectiveTime, effectiveTime);
+	}
+	
+	public final B filterByEffectiveTime(long from, long to) {
+		return addOption(OptionKey.EFFECTIVE_TIME_START, from).addOption(OptionKey.EFFECTIVE_TIME_END, to);
 	}
 	
 	public final B filterByExtendedLocales(List<ExtendedLocale> locales) {
