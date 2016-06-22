@@ -100,7 +100,11 @@ public interface ICDOConflictProcessor {
 	 */
 	Object addedInTarget(CDORevision targetRevision, Map<CDOID, Object> sourceMap);
 	
-	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap);
+	Object detachedInSource(CDOID id);
+	
+	Object detachedInTarget(CDOID id);
+	
+	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase);
 
 	/**
 	 * Post-processes the resulting change set. This usually removes cross-references from objects queued for removal

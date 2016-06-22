@@ -102,10 +102,10 @@ public class ConflictMapper {
 			return new ChangedInSourceAndTargetConflict(oldConflict.getTargetDelta(), oldConflict.getSourceDelta());
 		} else if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
 			final AddedInSourceAndDetachedInTargetConflict oldConflict = (AddedInSourceAndDetachedInTargetConflict) conflict;
-			return new AddedInTargetAndDetachedInSourceConflict(oldConflict.getTargetId(), oldConflict.getSourceId());
+			return new AddedInTargetAndDetachedInSourceConflict(oldConflict.getTargetId(), oldConflict.getSourceId(), oldConflict.getFeatureName());
 		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
 			final AddedInTargetAndDetachedInSourceConflict oldConflict = (AddedInTargetAndDetachedInSourceConflict) conflict;
-			return new AddedInSourceAndDetachedInTargetConflict(oldConflict.getTargetId(), oldConflict.getSourceId());
+			return new AddedInSourceAndDetachedInTargetConflict(oldConflict.getTargetId(), oldConflict.getSourceId(), oldConflict.getFeatureName());
 		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
 			AddedInSourceAndTargetConflict oldConflict = (AddedInSourceAndTargetConflict) conflict;
 			return new AddedInSourceAndTargetConflict(oldConflict.getTargetId(), oldConflict.getSourceId(), oldConflict.getMessage(), !oldConflict.isAddedInSource());

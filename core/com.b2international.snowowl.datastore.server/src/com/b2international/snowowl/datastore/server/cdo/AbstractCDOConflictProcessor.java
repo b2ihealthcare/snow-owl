@@ -103,6 +103,16 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
 		return targetRevision;
 	}
+	
+	@Override
+	public Object detachedInSource(CDOID id) {
+		return id;
+	}
+	
+	@Override
+	public Object detachedInTarget(CDOID id) {
+		return id;
+	}
 
 	protected Set<CDOID> getDetachedIdsInTarget(final Map<CDOID, Object> targetMap) {
 		return ImmutableSet.copyOf(Iterables.filter(targetMap.values(), CDOID.class));
@@ -125,7 +135,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 	
 	@Override
-	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap) {
+	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase) {
 	}
 	
 	@Override

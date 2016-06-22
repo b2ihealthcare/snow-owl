@@ -30,10 +30,16 @@ public class AddedInTargetAndDetachedInSourceConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
+	private String featureName;
 
 	public AddedInTargetAndDetachedInSourceConflict(final CDOID sourceId, final CDOID targetId) {
+		this(sourceId, targetId, null);
+	}
+	
+	public AddedInTargetAndDetachedInSourceConflict(final CDOID sourceId, final CDOID targetId, final String featureName) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
+		this.featureName = featureName;
 	}
 
 	@Override
@@ -47,6 +53,10 @@ public class AddedInTargetAndDetachedInSourceConflict extends Conflict {
 
 	public CDOID getTargetId() {
 		return targetId;
+	}
+	
+	public String getFeatureName() {
+		return featureName;
 	}
 
 	@Override

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.merge;
 
+import static java.util.Collections.singletonList;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -40,9 +42,9 @@ import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetached
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Ordering;
 
@@ -61,9 +63,9 @@ public class SnomedMergeConflictMapper {
 		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
 			return from((AddedInSourceAndTargetConflict) conflict, targetTransaction);
 		} else if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
-			return from((AddedInSourceAndDetachedInTargetConflict) conflict, sourceTransaction, targetTransaction);
+			return from((AddedInSourceAndDetachedInTargetConflict) conflict, sourceTransaction);
 		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
-			return from((AddedInTargetAndDetachedInSourceConflict) conflict, sourceTransaction, targetTransaction);
+			return from((AddedInTargetAndDetachedInSourceConflict) conflict, targetTransaction);
 		}
 		throw new IllegalArgumentException("Unknown conflict type: " + conflict);
 	}
@@ -104,19 +106,18 @@ public class SnomedMergeConflictMapper {
 				.build();
 	}
 
-	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetTransaction, conflict.getTargetId()))
-				// TODO add attributes
-				.withArtefactType(getType(targetTransaction, conflict.getTargetId()))
+				.withArtefactId(getComponentId(sourceTransaction, conflict.getTargetId()))
+				.withArtefactType(getType(sourceTransaction, conflict.getTargetId()))
 				.withType(ConflictType.CAUSES_MISSING_REFERENCE)
 				.build();
 	}
 	
-	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction targetTransaction) {
 		return MergeConflictImpl.builder()
 				.withArtefactId(getComponentId(targetTransaction, conflict.getTargetId()))
-				// TODO add attributes
+				.withConflictingAttributes(Strings.isNullOrEmpty(conflict.getFeatureName()) ? Collections.<String>emptyList() : singletonList(conflict.getFeatureName()))
 				.withArtefactType(getType(targetTransaction, conflict.getTargetId()))
 				.withType(ConflictType.HAS_MISSING_REFERENCE)
 				.build();
@@ -130,8 +131,6 @@ public class SnomedMergeConflictMapper {
 					return ((Component) object).getId();
 				} else if (object instanceof SnomedRefSetMember) {
 					return ((SnomedRefSetMember) object).getUuid();
-				} else if (object instanceof SnomedRefSet) { // not sure about this??
-					return ((SnomedRefSet) object).getIdentifierId();
 				}
 			}
 		} catch (final ObjectNotFoundException e) {
@@ -140,23 +139,6 @@ public class SnomedMergeConflictMapper {
 		return id.toString();
 	}
 
-	private static String getComponentIdWithFallback(final CDOTransaction primaryTransaction, final CDOTransaction secondaryTransaction,
-			final CDOID id) {
-		String componentId = getComponentId(primaryTransaction, id);
-		if (componentId.equals(id.toString())) {
-			componentId = getComponentId(secondaryTransaction, id);
-		}
-		return componentId;
-	}
-
-	private static String getTypeWithFallback(final CDOTransaction primaryTransaction, final CDOTransaction secondaryTransaction, final CDOID id) {
-		String componentType = getType(primaryTransaction, id);
-		if (componentType == null) {
-			componentType = getType(secondaryTransaction, id);
-		}
-		return componentType == null ? "Component with unknown type" : componentType;
-	}
-	
 	private static String getType(final CDOTransaction transaction, final CDOID id) {
 		try {
 			final CDOObject object = transaction.getObject(id);

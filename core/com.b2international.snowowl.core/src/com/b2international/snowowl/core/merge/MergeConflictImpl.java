@@ -28,6 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 4.7
@@ -62,7 +63,7 @@ public class MergeConflictImpl implements MergeConflict {
 			@Override public String apply(Entry<String, String> input) {
 				return String.format(ATTRIBUTE_KEY_VALUE_TEMPLATE, input.getKey(), input.getValue());
 			}
-		}).toList();
+		}).toSortedList(Ordering.natural());
 	}
 
 	private static String buildAttributesMessage(List<String> conflictingAttributes) {
@@ -102,7 +103,7 @@ public class MergeConflictImpl implements MergeConflict {
 		return message;
 	}
 
-	@JsonPOJOBuilder(withPrefix = "with")
+	@JsonPOJOBuilder(buildMethodName="build", withPrefix = "with")
 	public static class Builder {
 
 		private String artefactId;

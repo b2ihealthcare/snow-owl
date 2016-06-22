@@ -23,10 +23,14 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.updateMemberEffectiveTime;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +40,8 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -48,15 +54,6 @@ import com.jayway.restassured.response.Response;
  */
 public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
-	/*
-	 * The test branch path is MAIN/<random UUID>/merge-conflict-test. Tests should affect <random UUID> and merge-conflict-test branches
-	 */
-	@Override
-	public void setup() {
-		super.setup();
-		givenBranchWithPath(testBranchPath);
-	}
-
 	@Override
 	protected IBranchPath createRandomBranchPath() {
 		final IBranchPath parentBranch = super.createRandomBranchPath();
@@ -64,8 +61,19 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		return BranchPathUtils.createPath(parentBranch, "merge-conflict-test");
 	}
 
+	/*
+	 * The test branch path is MAIN/<random UUID>/merge-conflict-test. Tests should affect <random UUID> and merge-conflict-test branches
+	 */
+	private void init() {
+		testBranchPath = createRandomBranchPath();
+		givenBranchWithPath(testBranchPath);
+	}
+	
 	@Test
 	public void changedInSourceAndTargetMergeConflict() {
+		
+		init();
+		
 		assertDescriptionCreated(testBranchPath, "D100", ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D100");
 
@@ -90,27 +98,25 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
-//		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-//				.put("artefactId", symbolicNameMap.get("D100"))
-//				.put("artefactType", "Description")
-//				.put("conflictingAttributes", singletonList("caseSignificance"))
-//				.put("type", ConflictType.CONCURRENT_CHANGE.name())
-//				.put("location", ConflictLocation.TARGET.name())
-//				.put("message", MergeConflictImpl.buildDefaultMessage(
-//						symbolicNameMap.get("D100"), 
-//						"Description", 
-//						singletonList("caseSignificance"), 
-//						ConflictType.CONCURRENT_CHANGE, 
-//						ConflictLocation.TARGET))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict));
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("D100"))
+				.put("artefactType", "Description")
+				.put("conflictingAttributes", singletonList("caseSignificance"))
+				.put("type", ConflictType.CONFLICTING_CHANGE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("D100"), 
+						"Description", 
+						singletonList("caseSignificance"), 
+						ConflictType.CONFLICTING_CHANGE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 
 	@Test
 	public void changedInSourceDetachedInTargetMergeConflict() {
 
-		setup();
+		init();
 
 		assertRefsetMemberCreated(testBranchPath, "M1");
 
@@ -143,29 +149,27 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
-//		List<String> attributeList = createAttributeList(ImmutableMap.<String, String>of("effectiveTime", effectiveTime, "released", "true"));
+		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("effectiveTime", effectiveTime, "released", "true"));
 		
-//		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-//				.put("artefactId", symbolicNameMap.get("M1"))
-//				.put("artefactType", "SnomedRefSetMember")
-//				.put("conflictingAttributes", attributeList)
-//				.put("type", ConflictType.DELETED.name())
-//				.put("location", ConflictLocation.TARGET.name())
-//				.put("message", MergeConflictImpl.buildDefaultMessage(
-//						symbolicNameMap.get("M1"), 
-//						"SnomedRefSetMember", 
-//						attributeList, 
-//						ConflictType.DELETED, 
-//						ConflictLocation.TARGET))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict));
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("M1"))
+				.put("artefactType", "SnomedRefSetMember")
+				.put("conflictingAttributes", attributeList)
+				.put("type", ConflictType.DELETED_WHILE_CHANGED.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("M1"), 
+						"SnomedRefSetMember", 
+						attributeList, 
+						ConflictType.DELETED_WHILE_CHANGED))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 
 	@Test
 	public void changedInSourceDetachedInTargetNoMergeConflict() {
 
-		setup();
+		init();
 
 		assertDescriptionCreated(testBranchPath, "D100", ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D100");
@@ -200,7 +204,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 	@Test
 	public void changedInTargetDetachedInSourceMergeConflict() {
 		
-		setup();
+		init();
 		
 		assertDescriptionCreated(testBranchPath, "D100", ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D100");
@@ -232,27 +236,25 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
-//		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-//				.put("artefactId", symbolicNameMap.get("D100"))
-//				.put("artefactType", "Description")
-//				.put("conflictingAttributes", singletonList("caseSignificance"))
-//				.put("type", ConflictType.DELETED.name())
-//				.put("location", ConflictLocation.SOURCE.name())
-//				.put("message", MergeConflictImpl.buildDefaultMessage(
-//						symbolicNameMap.get("D100"), 
-//						"Description", 
-//						singletonList("caseSignificance"), 
-//						ConflictType.DELETED, 
-//						ConflictLocation.SOURCE))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict));
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("D100"))
+				.put("artefactType", "Description")
+				.put("conflictingAttributes", singletonList("caseSignificance"))
+				.put("type", ConflictType.CHANGED_WHILE_DELETED.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("D100"), 
+						"Description", 
+						singletonList("caseSignificance"), 
+						ConflictType.CHANGED_WHILE_DELETED))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 	
 	@Test
 	public void addedInSourceAndTargetMergeConflict() {
 		
-		setup();
+		init();
 		
 		assertDescriptionCreated(testBranchPath, "D200", ACCEPTABLE_ACCEPTABILITY_MAP);
 		
@@ -270,45 +272,27 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
-		assertEquals(2, conflicts.size());
+		assertEquals(1, conflicts.size());
 
-//		ImmutableMap<String, Object> conflict1 = ImmutableMap.<String, Object>builder()
-//				.put("artefactId", descriptionId)
-//				.put("artefactType", "Description")
-//				.put("conflictingAttributes", singletonList("id"))
-//				.put("type", ConflictType.DUPLICATE.name())
-//				.put("location", ConflictLocation.TARGET.name())
-//				.put("message", MergeConflictImpl.buildDefaultMessage(
-//						descriptionId, 
-//						"Description", 
-//						singletonList("id"), 
-//						ConflictType.DUPLICATE, 
-//						ConflictLocation.TARGET))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict1));
-//		
-//		ImmutableMap<String, Object> conflict2 = ImmutableMap.<String, Object>builder()
-//				.put("artefactId", descriptionId)
-//				.put("artefactType", "Description")
-//				.put("conflictingAttributes", singletonList("id"))
-//				.put("type", ConflictType.DUPLICATE.name())
-//				.put("location", ConflictLocation.SOURCE.name())
-//				.put("message", MergeConflictImpl.buildDefaultMessage(
-//						descriptionId, 
-//						"Description", 
-//						singletonList("id"), 
-//						ConflictType.DUPLICATE, 
-//						ConflictLocation.SOURCE))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict2));
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", descriptionId)
+				.put("artefactType", "Description")
+				.put("conflictingAttributes", singletonList("id"))
+				.put("type", ConflictType.CONFLICTING_CHANGE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						descriptionId, 
+						"Description", 
+						singletonList("id"), 
+						ConflictType.CONFLICTING_CHANGE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 	
 	@Test
 	public void addedInTargetDetachedInSourceMergeConflict() {
 		
-		setup();
+		init();
 		
 		assertConceptCreated(testBranchPath, "C1");
 
@@ -327,27 +311,29 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "merge");
 		
-		mergeResponse.jsonPath().prettyPrint();
-		
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
 		assertEquals(1, conflicts.size());
-//
-//		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-//				.put("sourceType", "Concept")
-//				.put("sourceId", symbolicNameMap.get("C1"))
-//				.put("targetType", "Relationship")
-//				.put("targetId", symbolicNameMap.get("R1"))
-//				.put("message", String.format(ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict));
+		
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("R1"))
+				.put("artefactType", "Relationship")
+				.put("conflictingAttributes", singletonList("type"))
+				.put("type", ConflictType.HAS_MISSING_REFERENCE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("R1"), 
+						"Relationship", 
+						singletonList("type"), 
+						ConflictType.HAS_MISSING_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 	
 	@Test
 	public void addedInSourceDetachedInTargetMergeConflict() {
 		
-		setup();
+		init();
 		
 		assertConceptCreated(testBranchPath, "C1");
 
@@ -366,20 +352,21 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "merge");
 		
-		mergeResponse.jsonPath().prettyPrint();
-		
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
 		assertEquals(1, conflicts.size());
 
-//		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-//				.put("sourceType", "Relationship")
-//				.put("sourceId", symbolicNameMap.get("R1"))
-//				.put("targetType", "Concept")
-//				.put("targetId", symbolicNameMap.get("C1"))
-//				.put("message", String.format(ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R1"), "Concept", symbolicNameMap.get("C1")))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict));
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("C1"))
+				.put("artefactType", "Concept")
+				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("C1"), 
+						"Concept", 
+						Collections.<String>emptyList(), 
+						ConflictType.CAUSES_MISSING_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 	}
 }

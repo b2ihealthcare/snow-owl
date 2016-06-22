@@ -62,6 +62,16 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 
 	@Override
+	protected Object detachedInSource(CDOID id) {
+		return delegate.detachedInSource(id);
+	}
+	
+	@Override
+	protected Object detachedInTarget(CDOID id) {
+		return delegate.detachedInTarget(id);
+	}
+	
+	@Override
 	protected Object changedInTargetAndDetachedInSource(final CDORevisionDelta targetDelta) {
 		return delegate.changedInTargetAndDetachedInSource(targetDelta);
 	}
@@ -76,7 +86,7 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	
 	@Override
 	protected void preProcess() {
-		delegate.preProcess(getSourceMap(), getTargetMap());
+		delegate.preProcess(getSourceMap(), getTargetMap(), isRebase);
 	}
 
 	@Override

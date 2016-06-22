@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.snomed;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -33,6 +34,7 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
@@ -46,7 +48,9 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -90,6 +94,12 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	private Map<String, CDOID> newComponentIdsInTarget;
 	private Set<CDOID> detachedTargetIds;
 
+	private boolean isRebase;
+
+	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newSourceRevisionIdToFeatureIdMap;
+
+	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newTargetRevisionIdToFeatureIdMap;
+
 	public SnomedCDOConflictProcessor() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, RELEASED_ATTRIBUTE_MAP);
 	}
@@ -107,16 +117,18 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	@Override
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
 
-		Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget, true);
-		
-		if (conflict != null) {
-			return conflict;
-		}
-
-		conflict = checkDetachedReferences(sourceRevision, detachedTargetIds, true);
-		
-		if (conflict != null) {
-			return conflict;
+		if (isRebase) {
+			Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget);
+			
+			if (conflict != null) {
+				return conflict;
+			}
+			
+			conflict = checkDetachedReferences(sourceRevision.getID(), newSourceRevisionIdToFeatureIdMap.get(sourceRevision.getID()), detachedTargetIds);
+			
+			if (conflict != null) {
+				return conflict;
+			}
 		}
 		
 		return super.addedInSource(sourceRevision, targetMap);
@@ -125,19 +137,51 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	@Override
 	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
 		
-		Conflict conflict = checkDuplicateComponentIds(targetRevision, newComponentIdsInSource, false);
-		
-		if (conflict != null) {
-			return conflict;
-		}
-
-		conflict = checkDetachedReferences(targetRevision, detachedSourceIds, false);
-		
-		if (conflict != null) {
-			return conflict;
+		if (!isRebase) {
+			
+			Conflict conflict = checkDuplicateComponentIds(targetRevision, newComponentIdsInSource);
+			
+			if (conflict != null) {
+				return conflict;
+			}
+			
+			conflict = checkDetachedReferences(targetRevision.getID(), newTargetRevisionIdToFeatureIdMap.get(targetRevision.getID()), detachedSourceIds);
+			
+			if (conflict != null) {
+				return conflict;
+			}
+			
 		}
 		
 		return super.addedInTarget(targetRevision, sourceMap);
+	}
+	
+	@Override
+	public Object detachedInSource(CDOID id) {
+		
+		if (isRebase) {
+			Conflict conflict = checkDetachedReferences(newTargetRevisionIdToFeatureIdMap, id);
+			
+			if (conflict != null) {
+				return conflict;
+			}
+		}
+		
+		return super.detachedInSource(id);
+	}
+	
+	@Override
+	public Object detachedInTarget(CDOID id) {
+		
+		if (!isRebase) {
+			Conflict conflict = checkDetachedReferences(newSourceRevisionIdToFeatureIdMap, id);
+			
+			if (conflict != null) {
+				return conflict;
+			}
+		}
+		
+		return super.detachedInTarget(id);
 	}
 	
 	@Override
@@ -171,23 +215,49 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 	
 	@Override
-	public void preProcess(final Map<CDOID, Object> sourceMap, final Map<CDOID, Object> targetMap) {
-		newComponentIdsInSource = extractNewComponentIds(sourceMap);
+	public void preProcess(final Map<CDOID, Object> sourceMap, final Map<CDOID, Object> targetMap, boolean isRebase) {
+		this.isRebase = isRebase;
+		
+		Collection<InternalCDORevision> newSourceComponentRevisions = extractNewComponentRevisions(sourceMap);
+		Collection<InternalCDORevision> newTargetComponentRevisions = extractNewComponentRevisions(targetMap);
+
+		newSourceRevisionIdToFeatureIdMap = extractNewRevisionIdToFeatureIdMap(newSourceComponentRevisions);
+		newTargetRevisionIdToFeatureIdMap = extractNewRevisionIdToFeatureIdMap(newTargetComponentRevisions);
+		
+		newComponentIdsInSource = extractNewComponentIds(newSourceComponentRevisions);
+		newComponentIdsInTarget = extractNewComponentIds(newTargetComponentRevisions);
+		
 		detachedSourceIds = getDetachedIdsInTarget(sourceMap);
-		newComponentIdsInTarget = extractNewComponentIds(targetMap);
 		detachedTargetIds = getDetachedIdsInTarget(targetMap);
 	}
 	
-	private Map<String, CDOID> extractNewComponentIds(final Map<CDOID, Object> revisionMap) {
-		final Iterable<InternalCDORevision> newRevisionsInTarget = getNewRevisionsInTarget(revisionMap);
-		final Map<String, CDOID> newComponentIdsMap = Maps.newHashMap();
-
-		for (final InternalCDORevision targetRevision : newRevisionsInTarget) {
-			if (isComponent(targetRevision)) {
-				newComponentIdsMap.put(getComponentId(targetRevision), targetRevision.getID());
+	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> extractNewRevisionIdToFeatureIdMap(Collection<InternalCDORevision> newComponentRevisions) {
+		Multimap<CDOID, Pair<EStructuralFeature, CDOID>> revisionToFeatureIdMap = HashMultimap.<CDOID, Pair<EStructuralFeature, CDOID>>create();
+		for (InternalCDORevision internalCDORevision : newComponentRevisions) {
+			Collection<EStructuralFeature> featuresToCheck = DETACHED_FEATURE_MAP.get(internalCDORevision.getEClass());
+			for (EStructuralFeature feature : featuresToCheck) {
+				CDOID id = (CDOID) internalCDORevision.getValue(feature);
+				if (id != null) {
+					revisionToFeatureIdMap.put(internalCDORevision.getID(), Pair.of(feature, id));
+				}
 			}
 		}
-		
+		return revisionToFeatureIdMap;
+	}
+
+	private Collection<InternalCDORevision> extractNewComponentRevisions(final Map<CDOID, Object> revisionMap) {
+		return FluentIterable.from(getNewRevisionsInTarget(revisionMap)).filter(new Predicate<InternalCDORevision>() {
+			@Override public boolean apply(InternalCDORevision input) {
+				return isComponent(input);
+			}
+		}).toSet();
+	}
+	
+	private Map<String, CDOID> extractNewComponentIds(Collection<InternalCDORevision> newComponentRevisions) {
+		final Map<String, CDOID> newComponentIdsMap = Maps.newHashMap();
+		for (final InternalCDORevision revision : newComponentRevisions) {
+			newComponentIdsMap.put(getComponentId(revision), revision.getID());
+		}
 		return newComponentIdsMap;
 	}
 	
@@ -204,7 +274,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		}
 	}
 
-	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap, boolean addedInSource) {
+	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap) {
 
 		if (isComponent(revision)) {
 			final String newComponentId = getComponentId((InternalCDORevision) revision);
@@ -212,7 +282,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 			if (null != conflictingNewId) {
 				return new AddedInSourceAndTargetConflict(revision.getID(), conflictingNewId, String.format(
-						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId), addedInSource);
+						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId));
 			}
 		}
 
@@ -231,27 +301,33 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return (String) revision.getValue(SnomedPackage.Literals.COMPONENT__ID);
 	}
 
-	private Conflict checkDetachedReferences(final CDORevision revision, final Set<CDOID> detachedIds, final boolean addedInSource) {
-		
-		if (isComponent(revision)) {
-			
-			Collection<EStructuralFeature> featuresToCheck = DETACHED_FEATURE_MAP.get(revision.getEClass());
-			InternalCDORevision internalCDORevision = (InternalCDORevision) revision;
-			
-			for (final EStructuralFeature feature : featuresToCheck) {
-				final CDOID targetId = (CDOID) internalCDORevision.getValue(feature);
-				if (detachedIds.contains(targetId)) {
-					if (addedInSource) {
-						return new AddedInSourceAndDetachedInTargetConflict(internalCDORevision.getID(), targetId);
+	private Conflict checkDetachedReferences(final CDOID revisionId, final Collection<Pair<EStructuralFeature, CDOID>> featureIds, final Set<CDOID> detachedIds) {
+		for (Pair<EStructuralFeature, CDOID> featureAndId : featureIds) {
+			if (detachedIds.contains(featureAndId.getB())) {
+				if (isRebase) {
+					return new AddedInSourceAndDetachedInTargetConflict(revisionId, featureAndId.getB(), featureAndId.getA().getName());
+				} else {
+					return new AddedInTargetAndDetachedInSourceConflict(featureAndId.getB(), revisionId, featureAndId.getA().getName());
+				}
+			}
+		}
+		return null;
+	}
+	
+	private Conflict checkDetachedReferences(Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newRevisionIdToFeatureIdMap, CDOID id) {
+		for (Entry<CDOID, Collection<Pair<EStructuralFeature, CDOID>>> entry : newRevisionIdToFeatureIdMap.asMap().entrySet()) {
+			for (Pair<EStructuralFeature, CDOID> featureAndId : entry.getValue()) {
+				if (featureAndId.getB().equals(id)) {
+					if (isRebase) {
+						return new AddedInTargetAndDetachedInSourceConflict(id, entry.getKey(), featureAndId.getA().getName());
 					} else {
-						return new AddedInTargetAndDetachedInSourceConflict(targetId, internalCDORevision.getID());
+						return new AddedInSourceAndDetachedInTargetConflict(entry.getKey(), id, featureAndId.getA().getName());
 					}
 				}
 			}
-			
 		}
-
 		return null;
 	}
+
 	
 }
