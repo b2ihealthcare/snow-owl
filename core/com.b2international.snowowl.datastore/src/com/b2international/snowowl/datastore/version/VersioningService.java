@@ -68,6 +68,7 @@ import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
+import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -133,6 +134,7 @@ public class VersioningService implements IVersioningService {
 		lockContexts = newHashMap();
 		lockTargets = newHashMap();
 		locked = new AtomicBoolean();
+		configuration.setCodeSystemShortName(getActiveCodeSystem().getShortName());
 	}
 	
 	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
@@ -389,22 +391,24 @@ public class VersioningService implements IVersioningService {
 	}
 	
 	private HashMap<String, Collection<ICodeSystemVersion>> initExistingVersions(final Iterable<String> toolingIds) {
-		
-		
-		final Map<String , Collection<ICodeSystemVersion>> codeversions = Maps.newConcurrentMap();
+		final Map<String , Collection<ICodeSystemVersion>> codeVersions = Maps.newConcurrentMap();
 		ConcurrentCollectionUtils.forEach(toolingIds, new Procedure<String>() {
 			protected void doApply(final String toolingId) {
-				codeversions.put(toolingId, new VersionCollector(toolingId).getVersions());
+				
+				Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), getRepositoryUuid(toolingId));
+				for (ICodeSystem codeSystem : codeSystems) {
+					codeVersions.put(codeSystem.getBranchPath(), getTerminologyRegistryService().getCodeSystemVersions(new UserBranchPathMap(), codeSystem.getShortName()));
+				}
 			}
 		});
-		return newHashMap(codeversions);
+		return newHashMap(codeVersions);
 	}
 	
 	private Map<String, Supplier<ICodeSystemVersion>> initCurrentVersionSuppliers(final Iterable<String> toolingIds) {
 		final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers = newHashMap();
 		
 		for (final String toolingId : toolingIds) {
-			Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(getTaskManager().getUserBranchPathMap(), getRepositoryUuid(toolingId));
+			Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), getRepositoryUuid(toolingId));
 			for (final ICodeSystem codeSystem : codeSystems) {
 				currentVersionSuppliers.put(codeSystem.getBranchPath(), memoize(new Supplier<ICodeSystemVersion>() {
 					@Override
@@ -414,7 +418,7 @@ public class VersioningService implements IVersioningService {
 							public boolean apply(ICodeSystemVersion input) {
 								return Objects.equal(input.getParentBranchPath(), codeSystem.getBranchPath());
 							}
-						}, createLatestCodeSystemVersion(getRepositoryUuid(toolingId), codeSystem.getBranchPath()));
+						}, createLatestCodeSystemVersion(codeSystem));
 					}
 				}));
 			}
@@ -452,8 +456,8 @@ public class VersioningService implements IVersioningService {
 	private Map<ICodeSystem, Boolean> shouldPerformTag() {
 		final Map<ICodeSystem, Boolean> shouldPerformTagPerCodeSystem = newHashMap(); 
 		for (final String toolingId : getToolingIds()) {
-			
-			Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(getTaskManager().getUserBranchPathMap(), getRepositoryUuid(toolingId));
+			// TODO FIXME: (endre) should only perform tagging for the necessary codeSystems!!!
+			Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), getRepositoryUuid(toolingId));
 			for (ICodeSystem codeSystem : codeSystems) {
 				
 				shouldPerformTagPerCodeSystem.put(codeSystem, !tryFind(codeSystemBranchPathToExistingVersionsMap.get(codeSystem.getBranchPath()), new Predicate<ICodeSystemVersion>() {
@@ -502,10 +506,18 @@ public class VersioningService implements IVersioningService {
 		final Supplier<ICodeSystemVersion> versionIdSupplier = codesystemBranchPathToCurrentVersionSuppliers.get(checkNotNull(codeSystem.getBranchPath(), "codeSystem branchPath"));
 		return checkNotNull(versionIdSupplier, "Current version ID supplier does not exist for: " + codeSystem.getBranchPath()).get().getVersionId();
 	}
+
+	private String getCurrentVersionBranchPath(final ICodeSystem codeSystem) {
+		final Supplier<ICodeSystemVersion> versionIdSupplier = codesystemBranchPathToCurrentVersionSuppliers.get(checkNotNull(codeSystem.getBranchPath(), "codeSystem branchPath"));
+		return checkNotNull(versionIdSupplier, "Current version bra supplier does not exist for: " + codeSystem.getBranchPath()).get().getPath();
+	}
 	
 	private IBranchPath getCurrentBranchPath(final ICodeSystem codeSystem) {
 		checkNotNull(codeSystem, "codeSystem");
-		return BranchPathUtils.createPath(getCurrentVersionId(codeSystem));
+		IBranchPath branchPath = BranchPathUtils.createPath(getCurrentVersionBranchPath(codeSystem));
+		if (Objects.equal(BranchPathUtils.trimTaskPart(branchPath).lastSegment(), ICodeSystemVersion.UNVERSIONED))
+			return branchPath.getParent();
+		return branchPath;
 	}
 
 	private void tryReleaseLock() throws OperationLockException {
