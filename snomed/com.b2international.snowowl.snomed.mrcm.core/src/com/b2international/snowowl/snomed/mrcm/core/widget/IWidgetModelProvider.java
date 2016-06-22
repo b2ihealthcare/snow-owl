@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.widget;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 
 /**
+ * @deprecated - use {@link SnomedRequests#prepareGetApplicablePredicates(String, Set, Set, Set)} with proper parameters instead
  */
 public interface IWidgetModelProvider {
 

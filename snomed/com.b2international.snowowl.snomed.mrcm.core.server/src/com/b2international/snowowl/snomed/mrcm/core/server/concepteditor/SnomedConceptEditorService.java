@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.concepteditor;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -29,9 +29,9 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.core.concepteditor.ISnomedConceptEditorService;
@@ -93,22 +93,29 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 		}
 
 		// Retrieve applicable predicates
-		final Collection<SnomedConstraintDocument> predicates = predicateBrowser.getPredicates(branchPath, conceptIdString, null);
+		final Collection<SnomedConstraintDocument> predicates = SnomedRequests.prepareGetApplicablePredicates(branchPath.getPath(), Collections.singleton(conceptIdString), getAncestors(branchPath.getPath(), conceptIdString), Collections.<String>emptySet()).getSync();
 
 		// Create regular index entry
-		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
-		final SnomedConceptDocument conceptIndexEntry = terminologyBrowser.getConcept(branchPath, conceptIdString);
+		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptIdString)
+				.setExpand("pt()")
+				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 		
-		checkArgument(conceptIndexEntry != null, "Can't find concept '" + conceptId + "'.");
-
-		final SnomedConceptDetailsBean snomedConceptDetailsBean = new SnomedConceptDetailsBean(conceptIndexEntry.getLabel(), 
-				Long.parseLong(conceptIndexEntry.getIconId()), 
-				widgetBean, 
-				synonymAndDescendantIds, 
-				configuration,
-				predicates);
-
-		return snomedConceptDetailsBean;
+		return new SnomedConceptDetailsBean(
+				concept.getPt() == null ? concept.getId() : concept.getPt().getTerm(),
+				Long.parseLong(concept.getIconId()), widgetBean, synonymAndDescendantIds, configuration, predicates);
+	}
+	
+	private Set<String> getAncestors(String branch, String conceptId) {
+		return SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptId)
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(ISnomedConcept.GET_ANCESTORS)
+				.getSync();
 	}
 
 }

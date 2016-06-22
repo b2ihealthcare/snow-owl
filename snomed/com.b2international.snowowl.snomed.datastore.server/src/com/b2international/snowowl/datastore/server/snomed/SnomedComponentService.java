@@ -284,17 +284,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> getPredicates(final IBranchPath branchPath) {
-		checkAndJoin(branchPath, null);
-		try {
-			return (Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>>) cache.get(branchPath).get(CacheKeyType.PREDICATE_TYPES);
-		} catch (final ExecutionException e) {
-			LOGGER.error("Error while getting available MRCM predicates on '" + branchPath + "' branch.", e);
-			throw new UncheckedExecutionException(e);
-		}
-	}
-	
-	@Override
 	public Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId) {
 		
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -656,73 +645,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 			cdoIdToIdMap.put(cdoId, refSetId);
 		}
 		return unmodifiableMap(cdoIdToIdMap);
-	}
-
-	private Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> getAllPredicates(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		final Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> predicates = newHashMap();
-		
-		predicates.put(HierarchyInclusionType.SELF, HashMultimap.<String, PredicateIndexEntry>create());
-		predicates.put(HierarchyInclusionType.DESCENDANT, HashMultimap.<String, PredicateIndexEntry>create());
-		predicates.put(HierarchyInclusionType.SELF_OR_DESCENDANT, HashMultimap.<String, PredicateIndexEntry>create());
-		
-		final Map<String, PredicateIndexEntry> predicateMappings = uniqueIndex(getServiceForClass(SnomedPredicateBrowser.class).getAllPredicates(branchPath), new Function<PredicateIndexEntry, String>() {
-			@Override
-			public String apply(final PredicateIndexEntry predicate) {
-				return predicate.getId();
-			}
-		});
-		
-		try {
-			
-			final IndexServerService<?> service = getIndexServerService();
-			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			final PrefixQuery query = SnomedMappings.componentReferringPredicate().toExistsQuery();
-			query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-			service.search(branchPath, query, collector);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			while (itr.next()) {
-				final Document doc = service.document(branchPath, itr.getDocID(), SnomedMappings.fieldsToLoad().id().componentReferringPredicate().build());
-				final List<String> referringPredicates = SnomedMappings.componentReferringPredicate().getValues(doc);
-				final String componentId = SnomedMappings.id().getValueAsString(doc);
-				for (final String referringPredicate : referringPredicates) {
-					final String[] split = referringPredicate.split(PredicateUtils.PREDICATE_SEPARATOR, 2);
-					Preconditions.checkState(!isEmpty(split), "");
-					final String predicateStorageKey = split[0];
-					final String key = split[1];
-					final PredicateIndexEntry predicate = predicateMappings.get(predicateStorageKey);
-					final HierarchyInclusionType type = HierarchyInclusionType.get(key);
-					if (type != null) {
-						predicates.get(type).put(componentId, predicate);	
-					} else if (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(key) == CONCEPT_NUMBER) {
-						predicates.get(HierarchyInclusionType.SELF).put(predicateStorageKey + "#" + componentId, predicate);	
-					} else if (PredicateUtils.REFSET_PREDICATE_KEY_PREFIX.equals(key)) {
-						predicates.get(HierarchyInclusionType.SELF).put(componentId, predicate);
-					} else {
-						throw new IllegalArgumentException("Cannot parse component referring predicate value: " + referringPredicate);
-					}
-				}
-			}
-			
-		} catch (final IOException e) {
-			throw new IndexException("Error while getting components referenced by MRCM predicates on '" + branchPath + "' branch.", e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					try {
-						manager.release(searcher);
-					} catch (final IOException e1) {
-						e.addSuppressed(e1);
-					}
-					throw new IndexException("Error while releasing index searcher.", e);
-				}
-			}
-		}
-		
-		return unmodifiableMap(predicates);
 	}
 
 	/*checks the cache refreshing job. joins to the job if the job state is not NONE. makes the flow synchronous.*/
