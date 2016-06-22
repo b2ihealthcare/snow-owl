@@ -22,6 +22,8 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSour
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 
 /**
  * @since 4.7
@@ -46,48 +48,45 @@ public class ConflictMapper {
 	}
 	
 	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict) {
-		final String id = conflict.getID().toString();
-		//return new GenericCDOMergeConflict(id, id, String.format(CHANGED_IN_SOURCE_AND_TARGET_MESSAGE, id));
-		return null;
+		return MergeConflictImpl.builder()
+				.withArtefactId(conflict.getTargetDelta().getID().toString())
+				.withType(ConflictType.CONFLICTING_CHANGE)
+				.build();
 	}
 	
 	public static MergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict) {
-		final String id = conflict.getID().toString();
-//		return new GenericCDOMergeConflict(id, null, String.format(CHANGED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, id));
-		return null;
+		return MergeConflictImpl.builder()
+				.withArtefactId(conflict.getSourceDelta().getID().toString())
+				.withType(ConflictType.DELETED_WHILE_CHANGED)
+				.build();
 	}
 	
 	public static MergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict) {
-		final String id = conflict.getID().toString();
-//		return new GenericCDOMergeConflict(null, id, String.format(CHANGED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, id));
-		return null;
+		return MergeConflictImpl.builder()
+				.withArtefactId(conflict.getTargetDelta().getID().toString())
+				.withType(ConflictType.CHANGED_WHILE_DELETED)
+				.build();
 	}
 	
 	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction) {
-		final String sourceId = conflict.getSourceId().toString();
-		final String targetId = conflict.getTargetId().toString();
-		final String type = sourceTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName(); // FIXME
-//		return new GenericCDOMergeConflict(sourceId, targetId, String.format(conflict.isAddedInSource() ? ADDED_IN_SOURCE_AND_TARGET_SOURCE_MESSAGE
-//				: ADDED_IN_SOURCE_AND_TARGET_TARGET_MESSAGE, type, sourceId));
-		return null;
+		return MergeConflictImpl.builder()
+				.withArtefactId(conflict.getTargetId().toString())
+				.withType(ConflictType.CONFLICTING_CHANGE)
+				.build();
 	}
 	
 	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
-		final String sourceId = conflict.getSourceId().toString();
-		final String targetId = conflict.getTargetId().toString();
-		final String sourceType = sourceTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName();
-		final String targetType = sourceTransaction.getObject(conflict.getTargetId()).getClass().getSimpleName();
-//		return new GenericCDOMergeConflict(sourceId, targetId, String.format(ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, sourceType, sourceId, targetType, targetId));
-		return null;
+		return MergeConflictImpl.builder()
+				.withArtefactId(conflict.getTargetId().toString())
+				.withType(ConflictType.CAUSES_MISSING_REFERENCE)
+				.build();
 	}
 	
 	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction targetTransaction) {
-		final String sourceId = conflict.getSourceId().toString();
-		final String targetId = conflict.getTargetId().toString();
-		final String sourceType = targetTransaction.getObject(conflict.getSourceId()).getClass().getSimpleName();
-		final String targetType = targetTransaction.getObject(conflict.getTargetId()).getClass().getSimpleName();
-//		return new GenericCDOMergeConflict(sourceId, targetId, String.format(ADDED_IN_TARGET_DETACHED_IN_SOURCE_MESSAGE, targetType, targetId, sourceType, sourceId));
-		return null;
+		return MergeConflictImpl.builder()
+				.withArtefactId(conflict.getTargetId().toString())
+				.withType(ConflictType.HAS_MISSING_REFERENCE)
+				.build();
 	}
 	
 	public static Conflict invert(final Conflict conflict) {
