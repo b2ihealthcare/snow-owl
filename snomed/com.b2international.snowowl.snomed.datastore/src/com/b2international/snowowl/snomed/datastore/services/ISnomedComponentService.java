@@ -22,7 +22,6 @@ import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
@@ -46,15 +45,6 @@ public interface ISnomedComponentService {
 	Set<String> getAvailableDataTypeLabels(IBranchPath branchPath, final DataType dataType);
 
 	/**
-	 * Returns with a collection of {@link IdStorageKeyPair#getId() component ID} - {@link IdStorageKeyPair#getStorageKey() storage key} pairs
-	 * for all components in the SNOMED&nbsp;CT ontology on a specified {@link IBranchPath branch}. Retired members are included in the result set.
-	 * @param branchPath the branch path.
-	 * @param terminologyComponentId the application specific terminology component ID. See: {@link SnomedTerminologyComponentConstants#REFSET_MEMBER_NUMBER}.
-	 * @return a collection of component ID - storage key pairs. 
-	 */
-	Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId);
-
-	/**
 	 * Returns with a collection of the reference set member's referenced component storage keys.  
 	 * 
 	 * @param branchPath the branch path.
@@ -64,14 +54,6 @@ public interface ISnomedComponentService {
 	 */
 	LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType);
 	
-	/**
-	 * Returns with the storage keys of all unpublished concepts, descriptions and relationships from the ontology.
-	 * <p>Unpublished components are those components where the effective time of the component is not set.
-	 * @param branchPath the branch path.
-	 * @return a collection of unpublished core component storage keys.
-	 */
-	LongSet getAllUnpublishedComponentStorageKeys(final IBranchPath branchPath);
-
 	/**
 	 * @param branchPath
 	 * @return

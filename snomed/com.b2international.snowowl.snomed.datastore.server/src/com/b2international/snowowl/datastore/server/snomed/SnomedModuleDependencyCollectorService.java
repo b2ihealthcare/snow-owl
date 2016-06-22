@@ -33,8 +33,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.view.CDOView;
@@ -56,6 +58,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
@@ -92,6 +95,10 @@ public enum SnomedModuleDependencyCollectorService {
 	private static final long PRIMITIVE = parseLong(Concepts.PRIMITIVE);
 	private static final long FULLY_DEFINED = parseLong(Concepts.FULLY_DEFINED);
 	private static final long MODULE_ROOT = parseLong(Concepts.MODULE_ROOT);
+	
+	public Collection<SnomedModuleDependencyRefSetMember> collectModuleMembers(Map<String, SnomedComponent> unpublishedComponentsById) {
+		return Collections.emptySet();
+	}
 	
 	/**
 	 * Returns with a collection of {@link SnomedModuleDependencyRefSetMember module dependency members}

@@ -427,12 +427,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 
 	@Override
-	public LongSet getAllUnpublishedComponentStorageKeys(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		return getUnpublishedStorageKeys(branchPath, SnomedMappings.newQuery().effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll());
-	}
-
-	@Override
 	public Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules(final IBranchPath branchPath) {
 		checkNotNull(branchPath, "branchPath");
 		
@@ -507,48 +501,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		module.setSourceEffectiveTime(EffectiveTimes.toDate(SnomedMappings.memberSourceEffectiveTime().getValue(doc)));
 		module.setTargetEffectiveTime(EffectiveTimes.toDate(SnomedMappings.memberTargetEffectiveTime().getValue(doc)));
 		return module;
-	}
-	
-	private LongSet getUnpublishedStorageKeys(final IBranchPath branchPath, final Query query) {
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(query, "query");
-		
-		final int maxDoc = getIndexServerService().maxDoc(branchPath);
-		final DocIdCollector collector = DocIdCollector.create(maxDoc);
-		getIndexServerService().search(branchPath, query, collector);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			
-			final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet(murmur3_32());
-			manager = getIndexServerService().getManager(branchPath);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			searcher = manager.acquire();
-			
-			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), Mappings.fieldsToLoad().storageKey().build());
-				storageKeys.add(Mappings.storageKey().getValue(doc));
-			}
-			
-			return storageKeys;
-			
-		} catch (final IOException e) {
-			LOGGER.error("Error while getting unpublished component storage keys.");
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-		}
-		
 	}
 	
 	@Override
@@ -690,7 +642,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 
 	private Map<CDOID, String> internalGetRefSetCdoIdIdMapping(final IBranchPath branchPath) {
 		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
 		final Query refSetTypeQuery = SnomedMappings.newQuery().refSet().matchAll();
 		final int hitCount = indexService.getHitCount(branchPath, refSetTypeQuery, null);
 		final TopDocs topDocs = getIndexServerService().search(branchPath, refSetTypeQuery, hitCount);
@@ -714,9 +665,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		predicates.put(HierarchyInclusionType.SELF, HashMultimap.<String, PredicateIndexEntry>create());
 		predicates.put(HierarchyInclusionType.DESCENDANT, HashMultimap.<String, PredicateIndexEntry>create());
 		predicates.put(HierarchyInclusionType.SELF_OR_DESCENDANT, HashMultimap.<String, PredicateIndexEntry>create());
-		
-		final ReferenceManager<IndexSearcher> manager = null;
-		final IndexSearcher searcher = null;
 		
 		final Map<String, PredicateIndexEntry> predicateMappings = uniqueIndex(getServiceForClass(SnomedPredicateBrowser.class).getAllPredicates(branchPath), new Function<PredicateIndexEntry, String>() {
 			@Override
