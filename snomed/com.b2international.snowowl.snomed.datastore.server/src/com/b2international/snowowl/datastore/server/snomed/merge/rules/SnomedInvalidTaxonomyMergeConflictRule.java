@@ -80,7 +80,7 @@ public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeC
 						.withArtefactId(relationshipId)
 						.withArtefactType("Relationship")
 						.withConflictingAttributes(MergeConflictImpl.buildAttributeList(attributeMap))
-						.withType(ConflictType.HAS_MISSING_REFERENCE)
+						.withType(ConflictType.HAS_INACTIVE_REFERENCE)
 						.build());
 				}	
 			}

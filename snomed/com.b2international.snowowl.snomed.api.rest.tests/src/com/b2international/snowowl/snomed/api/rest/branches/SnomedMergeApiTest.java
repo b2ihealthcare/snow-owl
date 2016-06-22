@@ -24,7 +24,9 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -497,7 +501,28 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		assertComponentCreated(testBranchPath.getParent(), "R1", SnomedComponentType.RELATIONSHIP, changeOnParent);
-		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept inactivation");
+		
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept inactivation");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+		
+		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("source", symbolicNameMap.get("C1")));
+
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("R1"))
+				.put("artefactType", "Relationship")
+				.put("conflictingAttributes", attributeList)
+				.put("type", ConflictType.HAS_INACTIVE_REFERENCE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("R1"), 
+						"Relationship",
+						attributeList,
+						ConflictType.HAS_INACTIVE_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 		
 		// If changes could not be taken over, C1 will be active on the test branch
 		SnomedComponentApiAssert.assertComponentActive(testBranchPath, SnomedComponentType.CONCEPT, symbolicNameMap.get("C1"), false);
