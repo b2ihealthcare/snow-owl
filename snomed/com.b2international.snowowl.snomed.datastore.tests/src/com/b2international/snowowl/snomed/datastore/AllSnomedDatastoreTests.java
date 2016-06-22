@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.datastore.index.change.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntrySerializationTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedPredicateDocumentSerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConstraintDocumentSerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberDocumentSerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierTest;
@@ -52,7 +52,7 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 	SnomedConceptIndexEntrySerializationTest.class,
 	SnomedRelationshipIndexEntrySerializationTest.class,
 	SnomedDescriptionIndexEntrySerializationTest.class,
-	SnomedPredicateDocumentSerializationTest.class,
+	SnomedConstraintDocumentSerializationTest.class,
 	SnomedRefSetMemberDocumentSerializationTest.class,
 	// change proc test cases
 	DescriptionChangeProcessorTest.class,

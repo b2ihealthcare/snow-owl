@@ -16,9 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.snor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
@@ -80,6 +85,14 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	public static Builder builder(AttributeConstraint constraint) {
 		final ConceptSetDefinition domain = constraint.getDomain();
 		final String domainExpression = PredicateUtils.getEscgExpression(domain);
+
+		// collect and index domain identifier based on their domain type
+		final Set<String> selfIds = newHashSet();
+		final Set<String> descendantIds = newHashSet();
+		final Set<String> refSetIds = newHashSet();
+		PredicateUtils.collectDomainIds(domain, selfIds, descendantIds, refSetIds);
+		
+		// TODO index relationship refinements as type#value
 		GroupRule groupRule = GroupRule.ALL_GROUPS;
 		int minCardinality = -1;
 		int maxCardinality = 0;
@@ -127,6 +140,9 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 		
 		return doc.id(CDOIDUtil.getLong(constraint.cdoID()))
 			.domain(domainExpression)
+			.selfIds(selfIds)
+			.descendantIds(descendantIds)
+			.refSetIds(refSetIds)
 			.minCardinality(minCardinality)
 			.maxCardinality(maxCardinality);
 	}
@@ -142,7 +158,7 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	public static Builder dataTypeBuilder() {
 		return new Builder(PredicateType.DATATYPE);
 	}
-	
+
 	/**
 	 * @since 4.7
 	 */
@@ -160,6 +176,9 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 		private String characteristicTypeExpression;
 		private String relationshipTypeExpression;
 		private String relationshipValueExpression;
+		private Collection<String> selfIds;
+		private Collection<String> descendantIds;
+		private Collection<String> refSetIds;
 
 		/* Required for Jackson deserialization */
 		@JsonCreator
@@ -233,10 +252,28 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 			this.groupRule = groupRule;
 			return getSelf();
 		}
+		
+		Builder selfIds(Collection<String> selfIds) {
+			this.selfIds = selfIds;
+			return getSelf();
+		}
+		
+		Builder descendantIds(Collection<String> descendantIds) {
+			this.descendantIds = descendantIds;
+			return getSelf();
+		}
+		
+		Builder refSetIds(Collection<String> refSetIds) {
+			this.refSetIds = refSetIds;
+			return getSelf();
+		}
 
 		public PredicateIndexEntry build() {
 			final PredicateIndexEntry doc = new PredicateIndexEntry(id, domain, type, minCardinality, maxCardinality);
 			
+			doc.selfIds = Collections3.toImmutableSet(selfIds);
+			doc.descendantIds = Collections3.toImmutableSet(descendantIds);
+			doc.refSetIds = Collections3.toImmutableSet(refSetIds);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
@@ -297,6 +334,10 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	private final String domain;
 	private final int minCardinality;
 	private final int maxCardinality;
+	
+	private Set<String> selfIds;
+	private Set<String> descendantIds;
+	private Set<String> refSetIds;
 
 	/**
 	 * Private constructor.
@@ -430,6 +471,31 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	 */
 	public int getMaxCardinality() {
 		return maxCardinality;
+	}
+	
+	/**
+	 * Returns all SNOMED CT identifiers where this predicate can be applied directly.
+	 *  
+	 * @return
+	 */
+	public Set<String> getSelfIds() {
+		return selfIds;
+	}
+	
+	/**
+	 * Returns all SNOMED CT identifiers where this predicate can be applied on the sub hierarchy of the given identifier.
+	 * @return
+	 */
+	public Set<String> getDescendantIds() {
+		return descendantIds;
+	}
+	
+	/**
+	 * Returns all SNOMED CT reference set identifiers where this predicate can be applied.
+	 * @return
+	 */
+	public Set<String> getRefSetIds() {
+		return refSetIds;
 	}
 
 	/**

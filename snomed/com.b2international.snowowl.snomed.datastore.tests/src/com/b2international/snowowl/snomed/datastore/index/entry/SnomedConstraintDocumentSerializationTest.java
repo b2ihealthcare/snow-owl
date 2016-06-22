@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
 /**
  * @since 4.7
  */
-public class SnomedPredicateDocumentSerializationTest extends BaseRevisionIndexTest {
+public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
