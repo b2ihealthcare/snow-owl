@@ -27,6 +27,7 @@ import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.HashMultimap.create;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static java.lang.Long.parseLong;
 import static java.util.UUID.randomUUID;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -45,13 +46,13 @@ import org.slf4j.Logger;
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -63,7 +64,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -77,6 +77,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Multimap;
 
 /**
@@ -94,7 +95,6 @@ public enum SnomedModuleDependencyCollectorService {
 	
 	private static final long PRIMITIVE = parseLong(Concepts.PRIMITIVE);
 	private static final long FULLY_DEFINED = parseLong(Concepts.FULLY_DEFINED);
-	private static final long MODULE_ROOT = parseLong(Concepts.MODULE_ROOT);
 	
 	public Collection<SnomedModuleDependencyRefSetMember> collectModuleMembers(Map<String, SnomedComponent> unpublishedComponentsById) {
 		return Collections.emptySet();
@@ -231,7 +231,7 @@ public enum SnomedModuleDependencyCollectorService {
 	}
 
 	private void tryCreateMembersForNewModules(final RevisionSearcher searcher) throws IOException {
-		final Set<String> allModuleIds = LongSets.toStringSet(getAllModuleConceptIds()); 
+		final Set<String> allModuleIds = getAllModuleConceptIds(); 
 		for (final SnomedRelationshipIndexEntry isARelationship : getInboundIsARelationships(searcher, allModuleIds)) {
 			if (isComponentAffected(isARelationship.getStorageKey())) {
 				
@@ -303,14 +303,22 @@ public enum SnomedModuleDependencyCollectorService {
 		return getUnpublishedStorageKeys().contains(storageKey);
 	}
 	
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return getServiceForClass(SnomedTerminologyBrowser.class);
-	}
-
-	private LongSet getAllModuleConceptIds() {
-		final LongSet moduleConceptIds = getTerminologyBrowser().getAllSubTypeIds(getBranchPath(), MODULE_ROOT);
-		moduleConceptIds.add(MODULE_ROOT);
-		return moduleConceptIds;
+	private Set<String> getAllModuleConceptIds() {
+		return SnomedRequests.prepareSearchConcept()
+				.filterByActive(true)
+				.filterByAncestor(Concepts.MODULE_ROOT)
+				.build(getBranchPath().getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						final Set<String> moduleIds = newHashSetWithExpectedSize(input.getTotal() + 1);
+						FluentIterable.from(input).transform(IComponent.ID_FUNCTION).copyInto(moduleIds);
+						moduleIds.add(Concepts.MODULE_ROOT);
+						return moduleIds;
+					}
+				})
+				.getSync();
 	}
 	
 	private boolean isKnownModuleDependency(final long sourceModuleId, final long targetModuleId) {

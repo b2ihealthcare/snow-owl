@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.commit;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
@@ -37,15 +36,16 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.derivation.SnomedRefSetDerivationModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRefSetDerivationService;
@@ -247,14 +247,19 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 	 * Collects all the active sub type IDs of the given components.
 	 */
 	private Collection<String> collectSubTypeConceptIds(final IBranchPath branchPath, final Collection<String> conceptIds) {
-		
-		final Collection<String> allDescendantConceptIds = newHashSet(conceptIds);
-		final SnomedTaxonomyService taxonomyService = getServiceForClass(SnomedTaxonomyService.class);
-		for (final String conceptId : conceptIds) {
-			allDescendantConceptIds.addAll(taxonomyService.getAllSubtypes(branchPath, conceptId));
-		}
-		
-		return allDescendantConceptIds;
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByAncestors(conceptIds)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						final Set<String> subTypeIds = newHashSet(conceptIds);
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).copyInto(subTypeIds);
+					}
+				})
+				.getSync();
 	}
 	
 }
