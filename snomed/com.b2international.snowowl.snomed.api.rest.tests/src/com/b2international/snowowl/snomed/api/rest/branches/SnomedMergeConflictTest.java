@@ -369,4 +369,91 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertThat(conflicts, hasItem(conflict));
 	}
+	
+	@Test
+	public void deleteReferencedComponentOnSourceMergeConflict() {
+		
+		init();
+		
+		assertConceptCreated(testBranchPath, "C1");
+		
+		assertBranchCanBeMerged(testBranchPath, "merge");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		assertRefsetMemberCreated(testBranchPath, "M1", symbolicNameMap.get("C1"));
+		
+		assertRefSetMemberExists(testBranchPath, "M1");
+		assertRefSetMemberNotExists(testBranchPath.getParent(), "M1");
+		
+		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
+		
+		assertConceptNotExists(testBranchPath.getParent(), "C1");
+		assertConceptExists(testBranchPath, "C1");
+		
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "merge");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+
+		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("referencedComponent", symbolicNameMap.get("C1")));
+		
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("M1"))
+				.put("artefactType", "SnomedRefSetMember")
+				.put("conflictingAttributes", attributeList)
+				.put("type", ConflictType.HAS_MISSING_REFERENCE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("M1"), 
+						"SnomedRefSetMember", 
+						attributeList, 
+						ConflictType.HAS_MISSING_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
+	}
+	
+	@Test
+	public void deleteReferencedComponentOnTargetMergeConflict() {
+		
+		init();
+		
+		assertConceptCreated(testBranchPath, "C1");
+		
+		assertBranchCanBeMerged(testBranchPath, "merge");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		assertRefsetMemberCreated(testBranchPath.getParent(), "M1", symbolicNameMap.get("C1"));
+		
+		assertRefSetMemberExists(testBranchPath.getParent(), "M1");
+		assertRefSetMemberNotExists(testBranchPath, "M1");
+		
+		assertConceptCanBeDeleted(testBranchPath, "C1");
+		
+		assertConceptNotExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "merge");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("C1"))
+				.put("artefactType", "Concept")
+				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("C1"), 
+						"Concept",
+						Collections.<String>emptyList(),
+						ConflictType.CAUSES_MISSING_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
+	}
 }

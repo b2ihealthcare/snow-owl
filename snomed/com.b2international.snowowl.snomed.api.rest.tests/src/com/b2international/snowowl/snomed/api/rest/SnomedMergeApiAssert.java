@@ -191,6 +191,10 @@ public abstract class SnomedMergeApiAssert {
 		symbolicNameMap.put(symbolicName, createSimpleConceptReferenceSetMember(branchPath));
 	}
 	
+	public static void assertRefsetMemberCreated(final IBranchPath branchPath, final String symbolicName, final String referencedComponentId) {
+		symbolicNameMap.put(symbolicName, createSimpleConceptReferenceSetMember(branchPath, referencedComponentId));
+	}
+	
 	// --------------------------------------------------------
 	// Symbolic component updates
 	// --------------------------------------------------------

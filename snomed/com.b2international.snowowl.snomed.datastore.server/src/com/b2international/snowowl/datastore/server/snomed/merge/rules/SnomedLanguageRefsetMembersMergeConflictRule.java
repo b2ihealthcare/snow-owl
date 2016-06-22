@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -43,7 +42,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 4.7
  */
-public class SnomedLanguageRefsetMembersMergeConflictRule implements IMergeConflictRule {
+public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomedMergeConflictRule {
 
 	@Override
 	public Collection<MergeConflict> validate(CDOTransaction transaction) {

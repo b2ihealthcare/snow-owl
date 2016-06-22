@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
 import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -46,7 +45,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-public class SnomedInvalidTaxonomyMergeConflictRule implements IMergeConflictRule {
+public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeConflictRule {
 
 	@Override
 	public Collection<MergeConflict> validate(CDOTransaction transaction) {

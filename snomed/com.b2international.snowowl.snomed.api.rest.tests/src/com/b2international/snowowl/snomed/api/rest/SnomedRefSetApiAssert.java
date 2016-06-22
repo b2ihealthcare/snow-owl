@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 
@@ -40,9 +41,18 @@ import com.jayway.restassured.http.ContentType;
 public class SnomedRefSetApiAssert {
 
 	public static String createSimpleConceptReferenceSetMember(IBranchPath branchPath) {
-		// create concept ref. component
-		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String createdConceptId = assertComponentCreated(branchPath, SnomedComponentType.CONCEPT, conceptReq);
+		return createSimpleConceptReferenceSetMember(branchPath, null);
+	}
+	
+	public static String createSimpleConceptReferenceSetMember(IBranchPath branchPath, String referencedComponentId) {
+		
+		String conceptId = referencedComponentId;
+		
+		if (Strings.isNullOrEmpty(referencedComponentId)) {
+			// create concept ref. component
+			final Map<?, ?> conceptReq = givenConceptRequestBody(referencedComponentId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+			conceptId = assertComponentCreated(branchPath, SnomedComponentType.CONCEPT, conceptReq);
+		}
 		
 		// create refset
 		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
@@ -50,7 +60,7 @@ public class SnomedRefSetApiAssert {
 		assertComponentExists(branchPath, SnomedComponentType.REFSET, createdRefSetId);
 		
 		// create member
-		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(conceptId, createdRefSetId);
 		return assertComponentCreated(branchPath, SnomedComponentType.MEMBER, memberReq);
 	}
 	
