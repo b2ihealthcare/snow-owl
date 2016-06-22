@@ -53,7 +53,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		if (CoreTerminologyBroker.UNSPECIFIED.equals(referencedComponentType)) {
 			return getSelf();
 		}
-		final int referencedComponentTypeAsInt = (int) CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType);
+		final int referencedComponentTypeAsInt = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType);
 		return filterByReferencedComponentType(referencedComponentTypeAsInt);
 	}
 	

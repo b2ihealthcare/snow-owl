@@ -38,6 +38,10 @@ public abstract class SnomedRequests {
 	private SnomedRequests() {
 	}
 	
+	public static SnomedConstraintSearchRequestBuilder prepareSearchConstraint() {
+		return new SnomedConstraintSearchRequestBuilder(REPOSITORY_ID);
+	}
+	
 	public static SnomedConceptSearchRequestBuilder prepareSearchConcept() {
 		return new SnomedConceptSearchRequestBuilder(REPOSITORY_ID);
 	}

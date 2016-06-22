@@ -30,23 +30,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 public interface IPredicateBrowser<P> {
 
 	/**
-	 * Returns with a collection of SNOMED&nbsp;CT concept attribute predicate identified by their UUIDs.
-	 * 
-	 * @param branchPath the branch path reference limiting visibility to a particular branch.
-	 * @param storageKeys unique identifiers of the SNOMED&nbsp;CT concept attribute constraints
-	 * @return the lightweight representation of the concept attribute predicates.
-	 */
-	Collection<P> getPredicate(final IBranchPath branchPath, final long...storageKeys);
-
-	/**
-	 * Returns with all the predicates.
-	 * 
-	 * @param branchPath the branch path reference limiting visibility to a particular branch.
-	 * @return the collection of all concept attribute predicates.
-	 */
-	Collection<P> getAllPredicates(final IBranchPath branchPath);
-
-	/**
 	 * Returns with a collection of MRCM attribute predicates, using the specified parent IDs and reference set ID, if given, to
 	 * determine applicability.
 	 * 

@@ -33,24 +33,15 @@ import javax.annotation.Nullable;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.index.lucene.DocIdCollector;
-import com.b2international.index.lucene.DocIdCollector.DocIds;
-import com.b2international.index.lucene.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.server.index.AbstractIndexBrowser;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
@@ -68,24 +59,7 @@ import com.google.common.collect.Multimap;
  * Lucene based predicate browser implementation.
  * 
  */
-public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<PredicateIndexEntry> implements SnomedPredicateBrowser {
-
-	private static final Set<String> PREDICATE_FIELDS = SnomedMappings.fieldsToLoad()
-			.storageKey()
-			.predicateCharacteristicTypeExpression()
-			.predicateDataTypeLabel()
-			.predicateDataType()
-			.predicateDataTypeName()
-			.predicateDescriptionTypeId()
-			.predicateGroupRule()
-			.predicateMultiple()
-			.predicateRequired()
-			.predicateQueryExpression()
-			.predicateRelationshipTypeExpression()
-			.predicateRelationshipValueExpression()
-			.predicateType()
-			.build();
-	
+public class SnomedServerPredicateBrowser implements SnomedPredicateBrowser {
 
 	private static final Set<String> REFERRING_PREDICATE_FIELDS = SnomedMappings.fieldsToLoad().componentReferringPredicate().build();
 
@@ -155,35 +129,6 @@ public class SnomedServerPredicateBrowser extends AbstractIndexBrowser<Predicate
 		});
 	}
 	
-	@Override
-	public Collection<PredicateIndexEntry> getAllPredicates(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		
-		try {
-			final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-			service.search(branchPath, SnomedMappings.newQuery().predicate().matchAll(), collector);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			return createResultObjects(branchPath, itr);
-		} catch (final IOException e) {
-			throw new SnowowlRuntimeException("Error while loading all MRCM predicates on '" + branchPath + "' branch.");
-		}
-	}
-	
-	@Override
-	public Collection<PredicateIndexEntry> getPredicate(final IBranchPath branchPath, final long...storageKeys) {
-		final SnomedQueryBuilder query = SnomedMappings.newQuery();
-		for (final long storageKey : storageKeys) {
-			query.storageKey(storageKey);
-		}
-		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-		try {
-			service.search(branchPath, query.matchAny(), collector);
-			return createResultObjects(branchPath, collector.getDocIDs().iterator());
-		} catch (final IOException e) {
-			throw new RuntimeException("Error whey retrieving predicates by storageKeys: " + storageKeys, e);
-		}
-	}
-
 	@Override
 	public Collection<PredicateIndexEntry> getPredicates(final IBranchPath branchPath, final String conceptId, final @Nullable String ruleRefSetId) {
 		checkNotNull(conceptId, "Concept ID must not be null.");
