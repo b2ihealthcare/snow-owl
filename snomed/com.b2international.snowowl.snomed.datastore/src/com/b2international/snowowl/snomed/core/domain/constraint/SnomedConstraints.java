@@ -19,18 +19,18 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 
 /**
  * @since 4.7
  */
-public class SnomedConstraints extends PageableCollectionResource<PredicateIndexEntry> {
+public class SnomedConstraints extends PageableCollectionResource<SnomedConstraintDocument> {
 
 	public SnomedConstraints(int offset, int limit, int total) {
-		super(Collections.<PredicateIndexEntry>emptyList(), offset, limit, total);
+		super(Collections.<SnomedConstraintDocument>emptyList(), offset, limit, total);
 	}
 	
-	public SnomedConstraints(List<PredicateIndexEntry> items, int offset, int limit, int total) {
+	public SnomedConstraints(List<SnomedConstraintDocument> items, int offset, int limit, int total) {
 		super(items, offset, limit, total);
 	}
 

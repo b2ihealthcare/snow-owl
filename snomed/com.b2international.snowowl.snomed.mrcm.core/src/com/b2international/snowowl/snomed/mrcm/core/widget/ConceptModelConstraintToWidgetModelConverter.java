@@ -27,8 +27,8 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeContainerWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
@@ -53,11 +53,11 @@ public class ConceptModelConstraintToWidgetModelConverter {
 	 * @param predicateMinis the predicates stored in store representing the SNOMED CT concept attribute constraints.
 	 * @return concept widget bean for the form editor.
 	 */
-	public static ConceptWidgetModel processConstraints(IBranchPath path, final Collection<PredicateIndexEntry> predicateMinis) {
+	public static ConceptWidgetModel processConstraints(IBranchPath path, final Collection<SnomedConstraintDocument> predicateMinis) {
 		return internalProcessConstraints(path, predicateMinis);
 	}
 	
-	private static ConceptWidgetModel internalProcessConstraints(final IBranchPath branchPath, final Collection<PredicateIndexEntry> predicateMinis) {
+	private static ConceptWidgetModel internalProcessConstraints(final IBranchPath branchPath, final Collection<SnomedConstraintDocument> predicateMinis) {
 		
 		final List<DescriptionWidgetModel> descriptionWidgetModels = newSynchronizedList();
 		final List<DataTypeWidgetModel> dataTypeWidgetModels = newSynchronizedList();
@@ -66,7 +66,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final List<RelationshipGroupWidgetModel> relationshipGroupWidgetModels = newSynchronizedList();
 		
 		final List<Runnable> runnables = Lists.newArrayList();
-		for (final PredicateIndexEntry predicateIndexEntry : predicateMinis) {
+		for (final SnomedConstraintDocument predicateIndexEntry : predicateMinis) {
 			runnables.add(new Runnable() { @Override public void run() {
 				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicateIndexEntry);
 			}});
@@ -111,7 +111,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 	
 	private static void processAttributeConstraint(final IBranchPath branchPath, final List<DescriptionWidgetModel> descriptionWidgetModels, final List<DataTypeWidgetModel> dataTypeWidgetModels,
 			final List<WidgetModel> singleGroupRelationshipWidgetModels, final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels,
-			final PredicateIndexEntry predicate) {
+			final SnomedConstraintDocument predicate) {
 		switch (predicate.getType()) {
 			case DATATYPE:
 				processConcreteDomainElementPredicate(predicate, dataTypeWidgetModels);
@@ -124,7 +124,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		}
 	}
 
-	private static void processDescriptionPredicate(final PredicateIndexEntry predicate, final List<DescriptionWidgetModel> descriptionWidgetModels) {
+	private static void processDescriptionPredicate(final SnomedConstraintDocument predicate, final List<DescriptionWidgetModel> descriptionWidgetModels) {
 		
 		final LowerBound lowerBound = predicate.isRequired() ? LowerBound.REQUIRED : LowerBound.OPTIONAL;
 		final UpperBound upperBound = predicate.isMultiple() ? UpperBound.MULTIPLE : UpperBound.SINGLE;
@@ -136,7 +136,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		descriptionWidgetModels.add(descriptionWidgetModel);
 	}
 
-	private static void processConcreteDomainElementPredicate(final PredicateIndexEntry predicate, final List<DataTypeWidgetModel> dataTypeWidgetModels) {
+	private static void processConcreteDomainElementPredicate(final SnomedConstraintDocument predicate, final List<DataTypeWidgetModel> dataTypeWidgetModels) {
 		final LowerBound lowerBound = predicate.isRequired() ? LowerBound.REQUIRED : LowerBound.OPTIONAL;
 		final UpperBound upperBound = predicate.isMultiple()? UpperBound.MULTIPLE : UpperBound.SINGLE;
 		final DataTypeWidgetModel dataTypeWidgetModel = DataTypeWidgetModel.createRegularModel(lowerBound, upperBound, 
@@ -151,7 +151,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 	 * @param multiple
 	 * @param strength
 	 */
-	private static void processRelationshipPredicate(final IBranchPath branchPath, final PredicateIndexEntry predicate, final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels, 
+	private static void processRelationshipPredicate(final IBranchPath branchPath, final SnomedConstraintDocument predicate, final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels, 
 			final List<WidgetModel> singleGroupedRelationshipWidgetModels) {
 
 		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(predicate.getType()), "Predicate type was not a relationship type but " + predicate.getType());

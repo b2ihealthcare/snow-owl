@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 
@@ -37,14 +37,14 @@ public class SnomedConceptDetailsBean implements Serializable {
 	private final ConceptWidgetBean conceptWidgetBean;
 	private final long iconId;
 	private final String label;
-	private final Collection<PredicateIndexEntry> predicates;
+	private final Collection<SnomedConstraintDocument> predicates;
 	private final LongSet synonymAndDescendantIds;
 	private final SnomedSimpleTypeRefSetAttributeConfiguration configuration;
 	
 	public SnomedConceptDetailsBean(String label, long iconId, ConceptWidgetBean conceptWidgetBean, 
 			LongSet synonymAndDescendantIds, 
 			SnomedSimpleTypeRefSetAttributeConfiguration configuration, 
-			Collection<PredicateIndexEntry> predicates) {
+			Collection<SnomedConstraintDocument> predicates) {
 		
 		this.conceptWidgetBean = conceptWidgetBean;
 		this.iconId = iconId;
@@ -66,7 +66,7 @@ public class SnomedConceptDetailsBean implements Serializable {
 		return label;
 	}
 
-	public Collection<PredicateIndexEntry> getPredicates() {
+	public Collection<SnomedConstraintDocument> getPredicates() {
 		return predicates;
 	}
 	

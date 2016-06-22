@@ -23,7 +23,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.core.mrcm.ConceptModelUtils;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
@@ -55,10 +55,10 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 
 		// (re)index new/changed constraints
 		for (AttributeConstraint constraint : newAndDirtyConstraints) {
-			indexRevision(constraint.cdoID(), PredicateIndexEntry.builder(constraint).build());
+			indexRevision(constraint.cdoID(), SnomedConstraintDocument.builder(constraint).build());
 		}
 
-		deleteRevisions(PredicateIndexEntry.class, commitChangeSet.getDetachedComponents(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT));
+		deleteRevisions(SnomedConstraintDocument.class, commitChangeSet.getDetachedComponents(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT));
 	}
 	
 }

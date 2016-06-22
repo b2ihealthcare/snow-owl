@@ -19,8 +19,7 @@ import java.util.Collection;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.ConceptModelConstraintToWidgetModelConverter;
 import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetModelProvider;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
@@ -31,15 +30,13 @@ public enum WidgetModelProvider implements IWidgetModelProvider {
 
 	@Override
 	public ConceptWidgetModel createConceptWidgetModel(final IBranchPath branchPath, final Iterable<String> ruleParentIds, final String ruleRefSetId) {
-		final SnomedPredicateBrowser predicateBrowser = ApplicationContext.getServiceForClass(SnomedPredicateBrowser.class);
-		final Collection<PredicateIndexEntry> applicablePredicates = predicateBrowser.getPredicates(branchPath, ruleParentIds, ruleRefSetId);
+		final Collection<SnomedConstraintDocument> applicablePredicates = predicateBrowser.getPredicates(branchPath, ruleParentIds, ruleRefSetId);
 		return ConceptModelConstraintToWidgetModelConverter.processConstraints(branchPath, applicablePredicates);
 	}
 	
 	@Override
 	public ConceptWidgetModel createConceptWidgetModel(final IBranchPath branchPath, final String conceptId, final String ruleRefSetId) {
-		final SnomedPredicateBrowser predicateBrowser = ApplicationContext.getServiceForClass(SnomedPredicateBrowser.class);
-		final Collection<PredicateIndexEntry> applicablePredicates = predicateBrowser.getPredicates(branchPath, conceptId, ruleRefSetId);
+		final Collection<SnomedConstraintDocument> applicablePredicates = predicateBrowser.getPredicates(branchPath, conceptId, ruleRefSetId);
 		return ConceptModelConstraintToWidgetModelConverter.processConstraints(branchPath, applicablePredicates);
 	}		
 }

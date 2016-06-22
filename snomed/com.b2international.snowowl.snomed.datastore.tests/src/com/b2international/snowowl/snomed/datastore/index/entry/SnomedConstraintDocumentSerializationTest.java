@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
@@ -36,12 +36,12 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return Collections.<Class<?>>singleton(PredicateIndexEntry.class);
+		return Collections.<Class<?>>singleton(SnomedConstraintDocument.class);
 	}
 	
 	@Test
 	public void indexDescriptionPredicate() throws Exception {
-		final PredicateIndexEntry predicate = PredicateIndexEntry.descriptionBuilder()
+		final SnomedConstraintDocument predicate = SnomedConstraintDocument.descriptionBuilder()
 				.id(STORAGE_KEY1)
 				.domain("queryExpressionTestField")
 				.descriptionType(Concepts.FULLY_SPECIFIED_NAME)
@@ -49,14 +49,14 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, predicate);
-		final PredicateIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, PredicateIndexEntry.class, STORAGE_KEY1);
+		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertDocEquals(predicate, actual);
 	}
 	
 	@Test
 	public void indexRelationshipPredicate() throws Exception {
-		final PredicateIndexEntry predicate = PredicateIndexEntry.relationshipBuilder()
+		final SnomedConstraintDocument predicate = SnomedConstraintDocument.relationshipBuilder()
 				.id(STORAGE_KEY1)
 				.domain("queryExpressionTestField")
 				.cardinality(1, 1)
@@ -67,14 +67,14 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, predicate);
-		final PredicateIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, PredicateIndexEntry.class, STORAGE_KEY1);
+		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertDocEquals(predicate, actual);
 	}
 	
 	@Test
 	public void indexDataTypePredicate() throws Exception {
-		final PredicateIndexEntry predicate = PredicateIndexEntry.dataTypeBuilder()
+		final SnomedConstraintDocument predicate = SnomedConstraintDocument.dataTypeBuilder()
 				.id(STORAGE_KEY1)
 				.domain("queryExpressionTestField")
 				.dataTypeLabel("My Concrete Domain")
@@ -84,7 +84,7 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, predicate);
-		final PredicateIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, PredicateIndexEntry.class, STORAGE_KEY1);
+		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertDocEquals(predicate, actual);
 	}

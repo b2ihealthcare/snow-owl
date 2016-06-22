@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
@@ -52,7 +52,7 @@ public class ConstraintChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		process(processor);
 		
-		final PredicateIndexEntry expected = PredicateIndexEntry.builder(constraint).build();
+		final SnomedConstraintDocument expected = SnomedConstraintDocument.builder(constraint).build();
 		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getDeletions().size());

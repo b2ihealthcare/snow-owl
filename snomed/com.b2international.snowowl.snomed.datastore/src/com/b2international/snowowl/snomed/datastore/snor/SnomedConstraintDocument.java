@@ -52,15 +52,15 @@ import com.google.common.base.Strings;
  * @see PredicateType
  */
 @Doc
-@JsonDeserialize(builder = PredicateIndexEntry.Builder.class)
-public final class PredicateIndexEntry extends RevisionDocument implements ITerminologyComponentIdProvider {
+@JsonDeserialize(builder = SnomedConstraintDocument.Builder.class)
+public final class SnomedConstraintDocument extends RevisionDocument implements ITerminologyComponentIdProvider {
 
 	private static final long serialVersionUID = -3084452506109842527L;
 
 	/**
 	 * SNOMED&nbsp;CT concept attribute predicate type.
 	 * 
-	 * @see PredicateIndexEntry
+	 * @see SnomedConstraintDocument
 	 */
 	public static enum PredicateType {
 		/** Relationship type predicate. */
@@ -112,13 +112,13 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 			}
 		}
 
-		final PredicateIndexEntry.Builder doc;
+		final SnomedConstraintDocument.Builder doc;
 		
 		if (predicate instanceof DescriptionPredicate) {
-			doc = PredicateIndexEntry.descriptionBuilder().descriptionType(((DescriptionPredicate) predicate).getTypeId());
+			doc = SnomedConstraintDocument.descriptionBuilder().descriptionType(((DescriptionPredicate) predicate).getTypeId());
 		} else if (predicate instanceof ConcreteDomainElementPredicate) {
 			final ConcreteDomainElementPredicate dataTypePredicate = (ConcreteDomainElementPredicate) predicate;
-			doc = PredicateIndexEntry.dataTypeBuilder()
+			doc = SnomedConstraintDocument.dataTypeBuilder()
 					.dataTypeLabel(dataTypePredicate.getLabel())
 					.dataTypeName(dataTypePredicate.getName())
 					.dataType(dataTypePredicate.getType());
@@ -129,7 +129,7 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 			final String valueType = PredicateUtils.getEscgExpression(relationshipPredicate.getRange());
 			final String characteristicType = Strings.isNullOrEmpty(characteristicTypeConceptId) ? "<" + Concepts.CHARACTERISTIC_TYPE : "<<" + characteristicTypeConceptId;
 
-			doc = PredicateIndexEntry.relationshipBuilder()
+			doc = SnomedConstraintDocument.relationshipBuilder()
 				.relationshipTypeExpression(type)
 				.relationshipValueExpression(valueType)
 				.characteristicTypeExpression(characteristicType)
@@ -268,8 +268,8 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 			return getSelf();
 		}
 
-		public PredicateIndexEntry build() {
-			final PredicateIndexEntry doc = new PredicateIndexEntry(id, domain, type, minCardinality, maxCardinality);
+		public SnomedConstraintDocument build() {
+			final SnomedConstraintDocument doc = new SnomedConstraintDocument(id, domain, type, minCardinality, maxCardinality);
 			
 			doc.selfIds = Collections3.toImmutableSet(selfIds);
 			doc.descendantIds = Collections3.toImmutableSet(descendantIds);
@@ -349,7 +349,7 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	 * @param flags
 	 *            the flags for describing the {@code isMultiple} and {@code isRequired} boolean properties.
 	 */
-	private PredicateIndexEntry(final String id, final String domain, final PredicateType type, final int minCardinality,
+	private SnomedConstraintDocument(final String id, final String domain, final PredicateType type, final int minCardinality,
 			final int maxCardinality) {
 		super(id, createLabel(id, type), null);
 		this.domain = checkNotNull(domain, "domain");
@@ -359,7 +359,7 @@ public final class PredicateIndexEntry extends RevisionDocument implements ITerm
 	}
 
 	private static String createLabel(String storageKey, PredicateType type) {
-		return Objects.toStringHelper(PredicateIndexEntry.class).add("id", storageKey).add("type", type).toString();
+		return Objects.toStringHelper(SnomedConstraintDocument.class).add("id", storageKey).add("type", type).toString();
 	}
 
 	/**

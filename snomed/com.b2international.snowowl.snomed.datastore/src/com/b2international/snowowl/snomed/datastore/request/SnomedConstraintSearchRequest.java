@@ -25,7 +25,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 
 /**
  * @since 4.7
@@ -39,14 +39,14 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 		
 		addComponentIdFilter(queryBuilder);
 		
-		final Query<PredicateIndexEntry> query = Query.builder(PredicateIndexEntry.class)
+		final Query<SnomedConstraintDocument> query = Query.builder(SnomedConstraintDocument.class)
 				.selectAll()
 				.where(queryBuilder.build())
 				.offset(offset())
 				.limit(limit())
 				.build();
 		
-		final Hits<PredicateIndexEntry> hits = searcher.search(query);
+		final Hits<SnomedConstraintDocument> hits = searcher.search(query);
 		return new SnomedConstraints(hits.getHits(), offset(), limit(), hits.getTotal());
 	}
 

@@ -23,7 +23,7 @@ import java.util.Set;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Function;
@@ -58,7 +58,7 @@ public interface ISnomedComponentService {
 	 * @param branchPath
 	 * @return
 	 */
-	Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> getPredicates(final IBranchPath branchPath);
+	Map<HierarchyInclusionType, Multimap<String, SnomedConstraintDocument>> getPredicates(final IBranchPath branchPath);
 	
 	/**
 	 * @param branchPath

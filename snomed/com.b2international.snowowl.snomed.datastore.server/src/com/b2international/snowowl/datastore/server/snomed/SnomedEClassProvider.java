@@ -39,7 +39,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.ImmutableMap;
@@ -53,7 +53,7 @@ public class SnomedEClassProvider implements IEClassProvider {
 			.put(SnomedConceptDocument.class, SnomedPackage.Literals.CONCEPT)
 			.put(SnomedDescriptionIndexEntry.class, SnomedPackage.Literals.DESCRIPTION)
 			.put(SnomedRelationshipIndexEntry.class, SnomedPackage.Literals.RELATIONSHIP)
-			.put(PredicateIndexEntry.class, MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT)
+			.put(SnomedConstraintDocument.class, MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT)
 			.put(SnomedRefSetMemberIndexEntry.class, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER)
 			.build();
 			

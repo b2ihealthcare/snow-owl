@@ -62,7 +62,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
@@ -96,7 +96,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				SnomedDescriptionIndexEntry.class,
 				SnomedRelationshipIndexEntry.class,
 				SnomedRefSetMemberIndexEntry.class,
-				PredicateIndexEntry.class);
+				SnomedConstraintDocument.class);
 	}
 	
 	@Override

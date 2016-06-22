@@ -42,8 +42,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -94,11 +94,11 @@ public class SnomedServerPredicateBrowser {
 //		});
 //	}
 	
-	public Collection<PredicateIndexEntry> getPredicates(final IBranchPath branchPath, final String conceptId, final @Nullable String ruleRefSetId) {
+	public Collection<SnomedConstraintDocument> getPredicates(final IBranchPath branchPath, final String conceptId, final @Nullable String ruleRefSetId) {
 		checkNotNull(conceptId, "Concept ID must not be null.");
 
-		final Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> predicates = getServiceForClass(ISnomedComponentService.class).getPredicates(branchPath);
-		final HashSet<PredicateIndexEntry> newPredicates = newHashSet();
+		final Map<HierarchyInclusionType, Multimap<String, SnomedConstraintDocument>> predicates = getServiceForClass(ISnomedComponentService.class).getPredicates(branchPath);
+		final HashSet<SnomedConstraintDocument> newPredicates = newHashSet();
 
 		addPredicatesForFocus(conceptId, HierarchyInclusionType.SELF, predicates, newPredicates);
 		addPredicatesForFocus(conceptId, HierarchyInclusionType.SELF_OR_DESCENDANT, predicates, newPredicates);
@@ -135,12 +135,12 @@ public class SnomedServerPredicateBrowser {
 		return newPredicates;
 	}
 
-	public Collection<PredicateIndexEntry> getPredicates(final IBranchPath branchPath, final Iterable<String> ruleParentIds, final @Nullable String ruleRefSetId) {
+	public Collection<SnomedConstraintDocument> getPredicates(final IBranchPath branchPath, final Iterable<String> ruleParentIds, final @Nullable String ruleRefSetId) {
 		checkNotNull(ruleParentIds, "Parent IDs iterable must not be null.");
 		checkArgument(!Iterables.isEmpty(ruleParentIds), "Parent IDs iterable must not be empty.");
 		
-		final Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> predicates = getServiceForClass(ISnomedComponentService.class).getPredicates(branchPath);
-		final HashSet<PredicateIndexEntry> newPredicates = newHashSet();
+		final Map<HierarchyInclusionType, Multimap<String, SnomedConstraintDocument>> predicates = getServiceForClass(ISnomedComponentService.class).getPredicates(branchPath);
+		final HashSet<SnomedConstraintDocument> newPredicates = newHashSet();
 		
 		for (final String ruleParentId : ruleParentIds) {
 			// XXX: for a direct child of ruleParentId, ruleParentId itself should be treated as an ancestor, so include it 
@@ -161,15 +161,15 @@ public class SnomedServerPredicateBrowser {
 	
 	private void addPredicatesForFocus(final String conceptId,
 			final HierarchyInclusionType inclusionType,
-			final Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> predicates,
-			final HashSet<PredicateIndexEntry> newPredicates) {
+			final Map<HierarchyInclusionType, Multimap<String, SnomedConstraintDocument>> predicates,
+			final HashSet<SnomedConstraintDocument> newPredicates) {
 
 		newPredicates.addAll(predicates.get(inclusionType).get(conceptId));
 	}
 
 	private void addDescendantPredicatesForAncestors(final Iterable<String> ancestorIds,
-			final Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> predicates,
-			final HashSet<PredicateIndexEntry> newPredicates) {
+			final Map<HierarchyInclusionType, Multimap<String, SnomedConstraintDocument>> predicates,
+			final HashSet<SnomedConstraintDocument> newPredicates) {
 
 		for (final String ancestorId : ancestorIds) {
 			addPredicatesForFocus(ancestorId, HierarchyInclusionType.SELF_OR_DESCENDANT, predicates, newPredicates);
@@ -178,8 +178,8 @@ public class SnomedServerPredicateBrowser {
 	}
 
 	private void addRefSetPredicates(final Collection<String> containerRefSetIds,
-			final Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> predicates,
-			final HashSet<PredicateIndexEntry> newPredicates) {
+			final Map<HierarchyInclusionType, Multimap<String, SnomedConstraintDocument>> predicates,
+			final HashSet<SnomedConstraintDocument> newPredicates) {
 		
 		for (final String containerRefSetId : containerRefSetIds) {
 			// FIXME: We do not distinguish between a concept rule on the refset identifier concept, and a refset rule
@@ -188,8 +188,8 @@ public class SnomedServerPredicateBrowser {
 	}
 
 	private void addRelationshipPredicates(final IBranchPath branchPath, final String conceptId,
-			final Map<HierarchyInclusionType, Multimap<String, PredicateIndexEntry>> predicates,
-			final HashSet<PredicateIndexEntry> newPredicates) {
+			final Map<HierarchyInclusionType, Multimap<String, SnomedConstraintDocument>> predicates,
+			final HashSet<SnomedConstraintDocument> newPredicates) {
 	
 		for (final String typeId : getServiceForClass(SnomedTaxonomyService.class).getOutboundRelationshipTypes(branchPath, conceptId)) {
 			for (final String outboundId: getServiceForClass(SnomedTaxonomyService.class).getOutboundConcepts(branchPath, conceptId, typeId)) {

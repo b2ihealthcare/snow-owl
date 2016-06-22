@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
 import com.b2international.snowowl.snomed.datastore.quicksearch.DataTypeLabelQuickSearchProvider;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -62,7 +62,7 @@ public class DataTypeLabelQuickSearchContentProvider extends AbstractQuickSearch
 		@Override
 		public QuickSearchElement apply(String input) {
 			// TODO: Add an icon ID for each reference set, reflecting the data type (#, abc, calendar, #.##, checkbox?)
-			final String label = DataTypeUtils.getDataTypePredicateLabel(input, Collections.<PredicateIndexEntry>emptyList());
+			final String label = DataTypeUtils.getDataTypePredicateLabel(input, Collections.<SnomedConstraintDocument>emptyList());
 
 			return new FullQuickSearchElement(
 					input, 

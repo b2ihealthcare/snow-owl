@@ -41,7 +41,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrows
 import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedTerminologyBrowserProvider;
 import com.b2international.snowowl.snomed.mrcm.core.extensions.IConceptModelExtension;
 import com.b2international.snowowl.snomed.mrcm.core.extensions.IConceptModelExtensionProvider;
@@ -142,7 +142,7 @@ public class CDOClientSnomedConceptEditorService implements IClientSnomedConcept
 		// Retrieve applicable predicates
 		final SnomedPredicateBrowser predicateBrowser = ApplicationContext.getServiceForClass(SnomedPredicateBrowser.class);
 		final IBranchPath branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE);
-		final Collection<PredicateIndexEntry> predicates;
+		final Collection<SnomedConstraintDocument> predicates;
 		if (ruleParentIds.isEmpty()) {
 			predicates = predicateBrowser.getPredicates(branchPath, conceptIdString, ruleRefSetId);
 		} else {
