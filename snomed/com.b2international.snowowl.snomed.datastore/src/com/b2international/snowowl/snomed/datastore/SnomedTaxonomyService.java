@@ -28,29 +28,6 @@ public interface SnomedTaxonomyService {
 	boolean isActive(final IBranchPath branchPath, final String conceptId);
 	
 	/**
-	 * Returns with the ID of the SNOMED&nbsp;CT root concept.
-	 * @param branchPath the branch path.
-	 * @return the root concept ID.
-	 */
-	String getSnomedRoot(final IBranchPath branchPath);
-	
-	/**
-	 * Returns with the direct descendants IDs of a given concept.
-	 * @param branchPath the branch path. 
-	 * @param conceptId the concept ID.
-	 * @return the direct descendant IDs.
-	 */
-	Collection<String> getSubtypes(final IBranchPath branchPath, final String conceptId);
-
-	/**
-	 * Returns with all descendant IDs of a given concept.
-	 * @param branchPath the branch path. 
-	 * @param conceptId the concept ID.
-	 * @return all descendant IDs.
-	 */
-	Collection<String> getAllSubtypes(final IBranchPath branchPath, final String conceptId);
-	
-	/**
 	 * Returns with the number of direct descendants of a given concept.
 	 * @param branchPath the branch path. 
 	 * @param conceptId the concept ID.

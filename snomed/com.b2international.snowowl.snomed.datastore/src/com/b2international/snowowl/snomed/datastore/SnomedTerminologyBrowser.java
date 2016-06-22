@@ -29,14 +29,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 public interface SnomedTerminologyBrowser extends ITerminologyBrowser<SnomedConceptDocument, String> {
 
 	/**
-	 * Returns with a set of the active direct descendant concept IDs of a SNOMED&nbsp;CT concept given by its unique ID.
-	 * @param branchPath the branch path.
-	 * @param conceptId the unique ID of the concept.
-	 * @return a set of concept IDs of the active direct descendant concepts.
-	 */
-	LongSet getSubTypeIds(final IBranchPath branchPath, final long conceptId);
-
-	/**
 	 * Returns with a set of all active descendant concept IDs of a SNOMED&nbsp;CT concept given by its unique ID.
 	 * @param branchPath the branch path.
 	 * @param conceptId the unique ID of the concept.

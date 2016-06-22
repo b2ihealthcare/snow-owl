@@ -80,27 +80,6 @@ public class SnomedTaxonomyServiceImpl implements SnomedTaxonomyService, IPostSt
 	}
 	
 	@Override
-	public String getSnomedRoot(final IBranchPath branchPath) {
-		return getTaxonomy(branchPath).getSnomedRoot();
-	}
-
-	@Override
-	public Collection<String> getSubtypes(final IBranchPath branchPath, final String conceptId) {
-		if (isEmpty(conceptId)) {
-			return emptyList();
-		}
-		return getTaxonomy(branchPath).getSubtypes(conceptId);
-	}
-
-	@Override
-	public Collection<String> getAllSubtypes(final IBranchPath branchPath, final String conceptId) {
-		if (isEmpty(conceptId)) {
-			return emptyList();
-		}
-		return getTaxonomy(branchPath).getAllSubtypes(conceptId);
-	}
-
-	@Override
 	public int getSubtypesCount(final IBranchPath branchPath, final String conceptId) {
 		if (isEmpty(conceptId)) {
 			return 0;

@@ -61,10 +61,8 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.IsAStatement.Statement;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomy;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -144,39 +142,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		}
 	}
 	
-	@Override
-	public String getSnomedRoot() {
-		return Concepts.ROOT_CONCEPT;
-	}
-
-	@Override
-	public Collection<String> getSubtypes(final String conceptId) {
-		if (isInitialized()) {
-			final int internalId = getInternalId(conceptId);
-			if (internalId < 0) {
-				return emptyList();
-			}
-			return getIds(descendants[internalId]);
-		} else {
-			initializeTaxonomyInBackgroud();
-			return toStringList(getTerminologyBrowser().getSubTypeIds(branchPath, Long.parseLong(conceptId)));
-		}
-	}
-
-	@Override
-	public Collection<String> getAllSubtypes(final String conceptId) {
-		if (isInitialized()) {
-			final int internalId = getInternalId(conceptId);
-			if (internalId < 0) {
-				return emptyList();
-			}
-			return getIds(getAllSubTypeInternalIds(internalId));
-		} else {
-			initializeTaxonomyInBackgroud();
-			return toStringList(getTerminologyBrowser().getAllSubTypeIds(branchPath, Long.parseLong(conceptId)));
-		}
-	}
-
 	@Override
 	public int getSubtypesCount(final String conceptId) {
 		if (isInitialized()) {
@@ -500,20 +465,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 		} else {
 			initializeTaxonomyInBackgroud();
 			return toStringList(getEscgQueryEvaluator().evaluateConceptIds(branchPath, expression));
-		}
-	}
-	
-	@Override
-	public int getDepth(final String conceptId) {
-		if (isInitialized()) {
-			final Multimap<String, String> parentageMap = create();
-			for (final String supertypeId : getAllSupertypes(conceptId)) {
-				parentageMap.putAll(supertypeId, getSubtypes(supertypeId));
-			}
-			return getLongestPath(parentageMap).size() - 1;
-		} else {
-			initializeTaxonomyInBackgroud();
-			return getTerminologyBrowser().getDepth(branchPath, conceptId);
 		}
 	}
 	
@@ -956,10 +907,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	
 	private IEscgQueryEvaluatorService getEscgQueryEvaluator() {
 		return getServiceForClass(IEscgQueryEvaluatorService.class);
-	}
-	
-	private SnomedStatementBrowser getStatementBrowser() {
-		return getServiceForClass(SnomedStatementBrowser.class);
 	}
 	
 }

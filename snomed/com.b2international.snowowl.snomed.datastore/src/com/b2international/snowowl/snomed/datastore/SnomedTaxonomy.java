@@ -44,26 +44,6 @@ public interface SnomedTaxonomy {
 	boolean isActive(final String conceptId);
 	
 	/**
-	 * Returns with the ID of the SNOMED&nbsp;CT root concept.
-	 * @return the root concept ID.
-	 */
-	String getSnomedRoot();
-	
-	/**
-	 * Returns with the direct descendants IDs of a given concept. 
-	 * @param conceptId the concept ID.
-	 * @return the direct descendant IDs.
-	 */
-	Collection<String> getSubtypes(final String conceptId);
-
-	/**
-	 * Returns with all descendant IDs of a given concept. 
-	 * @param conceptId the concept ID.
-	 * @return all descendant IDs.
-	 */
-	Collection<String> getAllSubtypes(final String conceptId);
-	
-	/**
 	 * Returns with the number of direct descendants of a given concept. 
 	 * @param conceptId the concept ID.
 	 * @return the number of direct descendants.

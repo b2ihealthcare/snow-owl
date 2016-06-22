@@ -44,21 +44,6 @@ public class SnomedClientTaxonomyServiceImpl extends ActiveBranchPathAwareServic
 	}
 	
 	@Override
-	public String getSnomedRoot() {
-		return delegate.getSnomedRoot(getBranchPath());
-	}
-
-	@Override
-	public Collection<String> getSubtypes(final String conceptId) {
-		return delegate.getSubtypes(getBranchPath(), conceptId);
-	}
-
-	@Override
-	public Collection<String> getAllSubtypes(final String conceptId) {
-		return delegate.getAllSubtypes(getBranchPath(), conceptId);
-	}
-
-	@Override
 	public int getSubtypesCount(final String conceptId) {
 		return delegate.getSubtypesCount(getBranchPath(), conceptId);
 	}

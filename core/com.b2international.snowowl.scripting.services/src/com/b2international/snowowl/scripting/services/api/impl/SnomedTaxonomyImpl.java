@@ -37,21 +37,6 @@ public class SnomedTaxonomyImpl implements SnomedTaxonomy {
 	}
 	
 	@Override
-	public String getSnomedRoot() {
-		return delegate.getSnomedRoot();
-	}
-
-	@Override
-	public Collection<String> getSubtypes(final String conceptId) {
-		return delegate.getSubtypes(conceptId);
-	}
-
-	@Override
-	public Collection<String> getAllSubtypes(final String conceptId) {
-		return delegate.getAllSubtypes(conceptId);
-	}
-
-	@Override
 	public int getSubtypesCount(final String conceptId) {
 		return delegate.getSubtypesCount(conceptId);
 	}
