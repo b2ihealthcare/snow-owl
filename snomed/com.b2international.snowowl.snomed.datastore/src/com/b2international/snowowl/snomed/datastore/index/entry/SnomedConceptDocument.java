@@ -37,16 +37,12 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Function;
-import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -227,7 +223,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private LongSet ancestors;
 		private LongSet statedParents;
 		private LongSet statedAncestors;
-		private Collection<String> referringPredicates = Collections.emptyList();
 		private SnomedRefSetType refSetType;
 		private int referencedComponentType;
 		private float doi = DEFAULT_DOI;
@@ -273,11 +268,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		
 		public Builder statedAncestors(final LongSet statedAncestors) {
 			this.statedAncestors = statedAncestors;
-			return getSelf();
-		}
-		
-		public Builder referringPredicates(final Collection<String> referringPredicates) {
-			this.referringPredicates = referringPredicates;
 			return getSelf();
 		}
 		
@@ -356,7 +346,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				entry.statedAncestors = statedAncestors;
 			}
 			
-			entry.referringPredicates = Collections3.toImmutableSet(referringPredicates);
 			entry.referringRefSets = Collections3.toImmutableSet(referringRefSets);
 			entry.referringMappingRefSets = Collections3.toImmutableSet(referringMappingRefSets);
 			
@@ -376,7 +365,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private LongSet ancestors;
 	private LongSet statedParents;
 	private LongSet statedAncestors;
-	private Collection<String> referringPredicates;
 	private float doi;
 	private Collection<String> referringRefSets;
 	private Collection<String> referringMappingRefSets;
@@ -403,23 +391,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.referencedComponentType = referencedComponentType;
 		this.refSetStorageKey = refSetStorageKey;
 		this.structural = structural;
-	}
-	
-	@JsonIgnore
-	public Collection<ConstraintDomain> getPredicates() {
-		return FluentIterable.from(referringPredicates).transform(new Function<String, ConstraintDomain>() {
-			@Override 
-			public ConstraintDomain apply(final String predicateKey) {
-				final List<String> segments = Splitter.on(PredicateUtils.PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
-				final long storageKey = Long.parseLong(segments.get(0));
-				final String predicateKeySuffix = segments.get(1);
-				return new ConstraintDomain(Long.parseLong(getId()), predicateKeySuffix, storageKey);
-			}
-		}).toList();
-	}
-	
-	public Collection<String> getReferringPredicates() {
-		return referringPredicates;
 	}
 	
 	public long getRefSetStorageKey() {

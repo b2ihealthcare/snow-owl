@@ -58,7 +58,6 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -87,21 +86,16 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	private final IconIdUpdater iconId;
 	private final ParentageUpdater inferred;
 	private final ParentageUpdater stated;
-	private final LongSet allConceptIds;
-	private final Collection<ConstraintDomain> allConstraintDomains;
 	private final Taxonomy statedTaxonomy;
 	private final Taxonomy inferredTaxonomy;
 	
 	private Multimap<String, RefSetMemberChange> referringRefSets;
-	private Multimap<String, String> referringPredicates;
 
-	public ConceptChangeProcessor(LongSet allConceptIds, Collection<ConstraintDomain> allConstraintDomains, Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
+	public ConceptChangeProcessor(Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
 		super("concept changes");
 		this.iconId = new IconIdUpdater(inferredTaxonomy.getNewTaxonomy(), statedTaxonomy.getNewTaxonomy(), availableImages);
 		this.inferred = new ParentageUpdater(inferredTaxonomy.getNewTaxonomy(), false);
 		this.stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
-		this.allConceptIds = allConceptIds;
-		this.allConstraintDomains = allConstraintDomains;
 		this.statedTaxonomy = statedTaxonomy;
 		this.inferredTaxonomy = inferredTaxonomy;
 	}
@@ -112,7 +106,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		deleteRevisions(SnomedConceptDocument.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT));
 		// collect member changes
 		this.referringRefSets = HashMultimap.create(new ConceptReferringMemberChangeProcessor().process(commitChangeSet, searcher));
-		this.referringPredicates = HashMultimap.create(new ComponentReferringPredicateChangeProcessor(allConceptIds, allConstraintDomains).process(commitChangeSet, searcher));
 
 		// collect new and dirty reference sets
 		final Map<String, SnomedRefSet> newAndDirtyRefSetsById = newHashMap(FluentIterable.from(Iterables.concat(commitChangeSet.getNewComponents(), commitChangeSet.getDirtyComponents()))
@@ -171,7 +164,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.moduleId(concept.getModule().getId())
 			.exhaustive(concept.isExhaustive())
 			.primitive(concept.isPrimitive())
-			.referringPredicates(referringPredicates.removeAll(id))
 	//		.relevant() // TODO register change type
 			;
 		
@@ -226,7 +218,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		// collect dirty concepts due to change in hierarchy
 		final Set<String> conceptsToBeLoaded = newHashSet();
-		conceptsToBeLoaded.addAll(referringPredicates.keySet());
 		conceptsToBeLoaded.addAll(referringRefSets.keySet());
 		conceptsToBeLoaded.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
 		conceptsToBeLoaded.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));

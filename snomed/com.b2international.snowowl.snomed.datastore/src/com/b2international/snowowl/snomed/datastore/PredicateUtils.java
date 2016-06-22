@@ -178,62 +178,6 @@ public abstract class PredicateUtils {
 	}
 
 	/**
-	 * POJO for storing constraint domain information.
-	 */
-	public static final class ConstraintDomain {
-		
-		private final long componentId;
-		private final String predicateKey;
-		private long storageKey;
-
-		public ConstraintDomain(final long componentId, final String predicateKeySuffix, final long storageKey) {
-			this.componentId = componentId;
-			this.storageKey = storageKey;
-			this.predicateKey = String.format("%s#%s", storageKey, predicateKeySuffix);
-		}
-		
-		public long getStorageKey() {
-			return storageKey;
-		}
-
-		/**Returns with the component ID.*/
-		public long getComponentId() {
-			return componentId;
-		}
-
-		/**Returns with the predicate key.*/
-		public String getPredicateKey() {
-			return predicateKey;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + (int) (componentId ^ (componentId >>> 32));
-			result = prime * result + (int) (storageKey ^ (storageKey >>> 32));
-			return result;
-		}
-
-		@Override
-		public boolean equals(final Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof ConstraintDomain))
-				return false;
-			final ConstraintDomain other = (ConstraintDomain) obj;
-			if (componentId != other.componentId)
-				return false;
-			if (storageKey != other.storageKey) 
-				return false;
-			return true;
-		}
-		
-	}
-	
-	/**
 	 * Enumeration for concept set definition type.
 	 */
 	public enum DefinitionType {

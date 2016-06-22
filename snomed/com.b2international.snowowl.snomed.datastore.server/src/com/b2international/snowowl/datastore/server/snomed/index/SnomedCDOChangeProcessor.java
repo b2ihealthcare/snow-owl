@@ -22,7 +22,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -61,7 +60,6 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
@@ -250,10 +248,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		prepareTaxonomyBuilders(searcher, allConceptIds);
 		
-		final Collection<ConstraintDomain> allConstraintDomains = Collections.emptySet();
-		
 		final Collection<ChangeSetProcessor> changeSetProcessors = newHashSet();
-		changeSetProcessors.add(new ConceptChangeProcessor(allConceptIds, allConstraintDomains, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy));
+		changeSetProcessors.add(new ConceptChangeProcessor(SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy));
 		changeSetProcessors.add(new DescriptionChangeProcessor());
 		changeSetProcessors.add(new RelationshipChangeProcessor());
 		changeSetProcessors.add(new RefSetMemberChangeProcessor());

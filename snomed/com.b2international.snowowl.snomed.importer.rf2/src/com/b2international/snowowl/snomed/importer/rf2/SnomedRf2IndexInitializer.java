@@ -50,7 +50,6 @@ import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
-import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
@@ -76,9 +75,6 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils;
-import com.b2international.snowowl.snomed.datastore.PredicateUtils.ConstraintDomain;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -89,20 +85,16 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetIconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetParentageUpdater;
-import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -126,7 +118,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	private final SnomedImportContext context;
 	private final RevisionIndex index;
 
-	private Multimap<Long, String> conceptIdToPredicateMap;
 	private Map<String, String> nonFsnIdToConceptIdMap;
 	
 	private Multimap<String, RefSetMemberChange> refSetMemberChanges;
@@ -181,24 +172,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		LOGGER.info("Pre-processing phase [1 of 3]...");
 		
 		doiData = new DoiInitializer().run(delegateMonitor);
-		
-		LOGGER.info("Collecting MRCM rule related changes...");
-		conceptIdToPredicateMap = HashMultimap.create();
-		
-		try (MrcmEditingContext context = new MrcmEditingContext()) {
-			ConceptModel conceptModel = context.getOrCreateConceptModel();
-			
-			final Iterable<AttributeConstraint> constraints = FluentIterable.from(conceptModel.getConstraints())
-					.filter(new ConstraintFormIsApplicableForValidationPredicate())
-					.filter(AttributeConstraint.class);
-			
-			for (final AttributeConstraint constraint : constraints) {
-				final long storageKey = CDOIDUtil.getLong(constraint.cdoID());
-				for (final ConstraintDomain constraintDomain : PredicateUtils.processConstraintDomain(storageKey, constraint.getDomain())) {
-					conceptIdToPredicateMap.put(constraintDomain.getComponentId(), constraintDomain.getPredicateKey());
-				}
-			}
-		}
 		
 		conceptsInImportFile = Sets.newHashSet();
 		descriptionsInImportFile = Sets.newHashSet();
@@ -504,10 +477,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 		unvisitedConcepts.addAll(visitedDescendants);
 		
-		//index MRCM related changed on the concept.
-		//See issue: https://snowowl.atlassian.net/browse/SO-1532?focusedCommentId=29572&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-29572
-		unvisitedConcepts.addAll(LongToStringFunction.copyOf(conceptIdToPredicateMap.keySet()));
-		
 		// Finally, remove all concepts that were already processed because an RF2 row was visited.
 		unvisitedConcepts.removeAll(conceptsInImportFile);
 		if (LOGGER.isTraceEnabled()) {
@@ -717,7 +686,6 @@ public class SnomedRf2IndexInitializer extends Job {
 								
 								final String conceptModuleId = concept.getModule().getId();
 								final SnomedConceptDocument.Builder conceptDocument = createConceptDocument(
-										conceptIdToPredicateMap, 
 										concept.getId(),
 										concept.isActive(),
 										concept.isReleased(),
@@ -892,7 +860,6 @@ public class SnomedRf2IndexInitializer extends Job {
 			final Collection<String> updatedMappingRefSetIds = getCurrentRefSetMemberships(mappingRefSetIds, mappingRefSetMemberChanges.get(conceptId));
 
 			final SnomedConceptDocument.Builder doc = createConceptDocument(
-					conceptIdToPredicateMap, 
 					conceptId, 
 					concept.isActive(), 
 					concept.isReleased(), 
@@ -979,7 +946,6 @@ public class SnomedRf2IndexInitializer extends Job {
 				final boolean released = isReleased(effectiveTime);
 				
 				final SnomedConceptDocument.Builder doc = createConceptDocument(
-						conceptIdToPredicateMap, 
 						conceptId, 
 						active, 
 						released, 
@@ -1004,7 +970,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 	}
 	
-	private SnomedConceptDocument.Builder createConceptDocument(final Multimap<Long, String> conceptIdToPredicateMap, final String conceptId, final boolean active,
+	private SnomedConceptDocument.Builder createConceptDocument(final String conceptId, final boolean active,
 			final boolean released, final String definitionStatusId, final boolean exhaustive, final String moduleId, final Collection<String> currentRefSetMemberships,
 			final Collection<String> currentMappingMemberships, final long effectiveTime) {
 		
@@ -1020,8 +986,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				.exhaustive(exhaustive)
 				.doi(doiData.containsKey(conceptIdLong) ? doiData.get(conceptIdLong) : SnomedConceptDocument.DEFAULT_DOI)
 				.referringRefSets(currentRefSetMemberships)
-				.referringMappingRefSets(currentMappingMemberships)
-				.referringPredicates(conceptIdToPredicateMap.get(Long.valueOf(conceptId)));
+				.referringMappingRefSets(currentMappingMemberships);
 
 		updateIconId(conceptId, active, builder, true);
 
