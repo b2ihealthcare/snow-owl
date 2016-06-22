@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
@@ -26,6 +28,30 @@ public final class SnomedConstraintSearchRequestBuilder extends SearchRequestBui
 
 	SnomedConstraintSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterBySelfId(String selfId) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.SELF, selfId);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterBySelfIds(Collection<String> selfIds) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.SELF, selfIds);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByDescendantId(String descendantd) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.DESCENDANT, descendantd);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByDescendantIds(Collection<String> descendantIds) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.DESCENDANT, descendantIds);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByRefSetId(String refSetId) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.REFSET, refSetId);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByRefSetIds(Collection<String> refSetIds) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.REFSET, refSetIds);
 	}
 
 	@Override

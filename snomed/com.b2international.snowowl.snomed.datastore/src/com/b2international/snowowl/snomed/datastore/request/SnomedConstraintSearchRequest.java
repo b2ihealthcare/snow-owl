@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.descendantIds;
+import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.refSetIds;
+import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.selfIds;
+
 import java.io.IOException;
 
 import com.b2international.index.Hits;
@@ -32,10 +36,41 @@ import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocumen
  */
 public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedConstraints> {
 
+	public enum OptionKey {
+		
+		/**
+		 * Match MRCM constraints that are applicable to the given identifiers.
+		 */
+		SELF,
+		
+		/**
+		 * Match MRCM constraints that are applicable to the hierarchy of the given identifiers.
+		 */
+		DESCENDANT,
+		
+		/**
+		 * Match MRCM constraints that are applicable to the given reference set identifiers.
+		 */
+		REFSET
+		
+	}
+	
 	@Override
 	protected SnomedConstraints doExecute(BranchContext context) throws IOException {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		final ExpressionBuilder queryBuilder = Expressions.builder();
+		
+		if (containsKey(OptionKey.SELF)) {
+			queryBuilder.must(selfIds(getCollection(OptionKey.SELF, String.class)));
+		}
+		
+		if (containsKey(OptionKey.DESCENDANT)) {
+			queryBuilder.must(descendantIds(getCollection(OptionKey.DESCENDANT, String.class)));
+		}
+
+		if (containsKey(OptionKey.REFSET)) {
+			queryBuilder.must(refSetIds(getCollection(OptionKey.REFSET, String.class)));
+		}
 		
 		addComponentIdFilter(queryBuilder);
 		

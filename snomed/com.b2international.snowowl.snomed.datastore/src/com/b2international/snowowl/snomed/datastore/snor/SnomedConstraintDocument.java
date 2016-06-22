@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.snor;
 
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -25,6 +26,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
@@ -304,6 +306,34 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			return this;
 		}
 
+	}
+	
+	/**
+	 * @since 4.7
+	 */
+	public static final class Fields extends RevisionDocument.Fields {
+		public static final String SELF_IDS = "selfIds";
+		public static final String DESCENDANT_IDS = "descendantIds";
+		public static final String REFSET_IDS = "refSetIds";
+	}
+	
+	/**
+	 * @since 4.7
+	 */
+	public static final class Expressions extends RevisionDocument.Expressions {
+		
+		public static Expression selfIds(Collection<String> selfIds) {
+			return matchAny(Fields.SELF_IDS, selfIds);
+		}
+		
+		public static Expression descendantIds(Collection<String> descendantIds) {
+			return matchAny(Fields.DESCENDANT_IDS, descendantIds);
+		}
+		
+		public static Expression refSetIds(Collection<String> refSetIds) {
+			return matchAny(Fields.REFSET_IDS, refSetIds);
+		}
+		
 	}
 
 	/** Type of the predicate. Cannot be {@code null}. */
