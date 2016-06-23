@@ -253,3 +253,103 @@ PUT /snowowl/admin/codesystems/SNOMEDCT_B2i
   "branchPath": "MAIN/2016-01-31/Extension_branch"
 }
 ....
+
+== SNOMED CT Swedish Extension management example
+The following example demonstrates how a blank server is provisioned for the Swedish extension management through the REST API.
+
+First create the import configuration for the International release.
+....
+POST /snowowl/snomed-ct/v2/imports
+{
+  "createVersions": true,
+  "type": "FULL",
+  "branchPath": "MAIN",
+  "codeSystemShortName": "SNOMEDCT"
+}
+....
+
+Then upload the RF2 archive file to start the import.
+....
+POST /snowowl/snomed-ct/v2/imports/{importId}/archive
+....
+
+After the import process, create a new branch for the Swedish extension which is based on version 2015-01-31.
+....
+POST /snowowl/snomed-ct/v2/branches
+{
+  "metadata": {},
+  "parent": "MAIN/2015-01-31",
+  "name": "SNOMEDCT-SV"
+}
+....
+
+Create a new Code System for the Swedish extension. The branch path points to the previously created branch.
+....
+POST /snowowl/admin/codesystems
+{
+	"oid": "2.16.840.1.113883.6.962",
+	"name": "SNOMED CT Swedish Extension",
+	"shortName": "SNOMEDCT-SV",
+	"organizationLink": "http://www.socialstyrelsen.se/",
+	"primaryLanguage": "SWE",
+	"citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care.",
+	"iconPath": "icons/snomed.png",
+	"terminologyId": "com.b2international.snowowl.terminology.snomed",
+	"repositoryUuid": "snomedStore",
+	"branchPath": "MAIN/2015-01-31/SNOMEDCT-SV",
+	"extensionOf": "SNOMEDCT"
+}
+....
+
+Create the import configuration for the Swedish import.
+....
+POST /snowowl/snomed-ct/v2/imports
+{
+  "createVersions": true,
+  "type": "FULL",
+  "branchPath": "MAIN/2015-01-31/SNOMEDCT-SV",
+  "codeSystemShortName": "SNOMEDCT-SV"
+}
+....
+
+Upload the Swedish RF2 archive file to start the extension import.
+....
+POST /snowowl/snomed-ct/v2/imports/{importId}/archive
+....
+
+Create a new branch based on version 2016-01-31. The Swedish extension will be merged onto this branch.
+....
+POST /snowowl/snomed-ct/v2/branches
+{
+  "metadata": {},
+  "parent": "MAIN/2016-01-31",
+  "name": "SNOMEDCT-SV"
+}
+....
+
+Start a merge to upgrade the extension content onto the previously created branch.
+....
+POST /snowowl/snomed-ct/v2/merges
+{
+  "source": "MAIN/2015-01-31/SNOMEDCT-SV",
+  "target": "MAIN/2016-01-31/SNOMEDCT-SV",
+  "commitComment": "Upgrade Swedish extension to international version 2016-01-31"
+}
+....
+
+The merge will fail with the following conflicts:
+....
+Relationship with ID '6271000052128' has a conflict of type 'HAS_INACTIVE_REFERENCE' on target branch, conflicting attributes are: [destinationId -> 373245004].
+Relationship with ID '16741000052126' has a conflict of type 'HAS_INACTIVE_REFERENCE' on target branch, conflicting attributes are: [destinationId -> 373245004].
+Relationship with ID '44001000052128' has a conflict of type 'HAS_INACTIVE_REFERENCE' on target branch, conflicting attributes are: [destinationId -> 237968007].
+Relationship with ID '1929491000052120' has a conflict of type 'HAS_INACTIVE_REFERENCE' on target branch, conflicting attributes are: [destinationId -> 237968007].
+....
+
+After fixing the conflicts, start another merge (same as before) and then update the branch path of the Swedish Code System.
+....
+PUT /snowowl/admin/codesystems/SNOMEDCT-SV
+{
+  "repositoryUuid": "snomedStore",
+  "branchPath": "MAIN/2016-01-31/SNOMEDCT-SV"
+}
+....
