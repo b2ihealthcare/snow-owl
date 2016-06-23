@@ -15,19 +15,23 @@
  */
 package com.b2international.snowowl.api.rest.codesystem;
 
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
-import static org.hamcrest.CoreMatchers.containsString;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemExists;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemHasAttributeValue;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotCreated;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotExists;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotUpdated;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.api.rest.CodeSystemApiAssert;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
 
 /**
  * @since 1.0
@@ -36,126 +40,70 @@ public class CodeSystemApiTest {
 
 	@Test
 	public void getAllCodeSystems() {
-		givenAuthenticatedRequest("/admin")
-		.when().get("/codesystems")
-		.then().assertThat().statusCode(200)
-		.and().body("items.oid", hasItem("2.16.840.1.113883.6.96"));
+		assertCodeSystemHasAttributeValue("SNOMEDCT", "oid", "2.16.840.1.113883.6.96");
 	}
 
 	@Test
 	public void getCodeSystemByOid() {
-		givenAuthenticatedRequest("/admin")
-		.when().get("/codesystems/{id}", "2.16.840.1.113883.6.96")
-		.then().assertThat().statusCode(200)
-		.and().body("oid", equalTo("2.16.840.1.113883.6.96"));		
+		final String oid = "2.16.840.1.113883.6.96";
+		assertCodeSystemExists(oid)
+			.and().body("oid", equalTo(oid));
 	}
 
 	@Test
 	public void getCodeSystemByShortName() {
 		final String shortName = "SNOMEDCT";
-		assertCodeSystemExists(shortName);
+		assertCodeSystemExists(shortName)
+			.and().body("shortName", equalTo(shortName));
 	}
 	
 	@Test
 	public void getCodeSystemByNonExistentOid() {
-		givenAuthenticatedRequest("/admin")
-		.when().get("/codesystems/{id}", "1.2.3.4.10000")
-		.then().assertThat().statusCode(404);		
+		assertCodeSystemNotExists("1.2.3.4.10000");
 	}
 	
 	@Test
 	public void createCodeSystem() {
 		final String shortName = "cs";
-		final String oid = "1";
+		final Map<?, ?> requestBody = newCodeSystemRequestBody(shortName);
+		final String lastPathSegment = CodeSystemApiAssert.assertCodeSystemCreated(requestBody);
 		
-		assertCodeSystemCreated(shortName, oid);
+		assertEquals(shortName, lastPathSegment);
+		assertCodeSystemExists(shortName);
 	}
 	
 	@Test
 	public void createCodeSystemWithNonUniqueShortName() {
-		final String shortName = "cs";
-		final String oid = "1";
-		final Map<?, ?> requestBody = newCodeSystem(shortName, oid);
-		
-		givenAuthenticatedRequest("/admin")
-				.with().contentType(ContentType.JSON)
-				.and().body(requestBody)
-				.when().post("/codesystems")
-				.then().assertThat().statusCode(409);
-			
+		final Map<?, ?> requestBody = newCodeSystemRequestBody("cs");
+		assertCodeSystemNotCreated(requestBody);
 	}
 	
 	@Test
 	public void updateCodeSystem() {
-		assertCodeSystemCreated("cs2", "2");
+		final String shortName = "cs2";
+		final Map<String, String> requestBody = newCodeSystemRequestBody(shortName);
+		assertCodeSystemCreated(requestBody);
 		
-		final ImmutableMap<String, String> requestBody = ImmutableMap.<String, String>builder()
+		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
 				.put("name", "updated name")
 				.put("repositoryUuid", "snomedStore")
 				.build();
 		
-		givenAuthenticatedRequest("/admin")
-			.with().contentType(ContentType.JSON)
-			.and().body(requestBody)
-			.when().put("codesystems/{id}", "cs2")
-			.then().assertThat().statusCode(204);
-		
-		givenAuthenticatedRequest("/admin")
-			.when().get("/codesystems/{id}", "cs2")
-			.then().assertThat().statusCode(200)
-			.and().body("name", equalTo("updated name"));
+		assertCodeSystemUpdated(shortName, updateRequestBody);
+		assertCodeSystemHasAttributeValue(shortName, "name", "updated name");
 	}
 	
 	@Test
 	public void noUpdateCodeSystem() {
-		assertCodeSystemCreated("cs3", "3");
+		final String shortName = "cs3";
+		final Map<String, String> requestBody = newCodeSystemRequestBody(shortName);
+		assertCodeSystemCreated(requestBody);
 		
-		final ImmutableMap<String, String> requestBody = ImmutableMap.<String, String>builder()
+		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
 				.put("name", "updated name")
 				.build();
 		
-		givenAuthenticatedRequest("/admin")
-			.with().contentType(ContentType.JSON)
-			.and().body(requestBody)
-			.when().put("codesystems/{id}", "cs3")
-			.then().assertThat().statusCode(400);
-	}
-
-	private void assertCodeSystemExists(final String shortName) {
-		givenAuthenticatedRequest("/admin")
-		.when().get("/codesystems/{id}", shortName)
-		.then().assertThat().statusCode(200)
-		.and().body("shortName", equalTo(shortName));
-	}
-	
-	private void assertCodeSystemCreated(final String shortName, final String oid) {
-		final Map<?, ?> requestBody = newCodeSystem(shortName, oid);
-		final String path = givenAuthenticatedRequest("/admin")
-				.with().contentType(ContentType.JSON)
-				.and().body(requestBody)
-				.when().post("/codesystems")
-				.then().assertThat().statusCode(201)
-				.and().header("Location", containsString(String.format("%s/%s", "codesystems", shortName)))
-				.and().body(equalTo(""))
-				.and().extract().response().getHeader("Location");
-			
-		assertEquals(shortName, lastPathSegment(path));
-		assertCodeSystemExists(shortName);
-	}
-	
-	private Map<String, String> newCodeSystem(final String shortName, final String oid) {
-		return ImmutableMap.<String, String>builder()
-				.put("name", "CodeSystem")
-				.put("branchPath", "MAIN")
-				.put("shortName", shortName)
-				.put("citation", "citation")
-				.put("iconPath", "icons/snomed.png")
-				.put("repositoryUuid", "snomedStore")
-				.put("terminologyId", "concept")
-				.put("oid", oid)
-				.put("primaryLanguage", "ENG")
-				.put("organizationLink", "link")
-				.build();
+		assertCodeSystemNotUpdated(shortName, updateRequestBody);
 	}
 	
 }

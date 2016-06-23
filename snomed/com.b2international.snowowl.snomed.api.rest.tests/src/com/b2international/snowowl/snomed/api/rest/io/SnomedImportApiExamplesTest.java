@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.io;
 
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentActive;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertConceptExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertConceptNotExists;
@@ -117,7 +119,8 @@ public class SnomedImportApiExamplesTest extends AbstractSnomedImportApiTest {
 	@Test
 	public void import08NewExtensionConceptOnNestedBranch() {
 		final IBranchPath nestedBranch = createNestedBranch(testBranchPath, "extensionImport");
-		createCodeSystem(nestedBranch.getPath(), "extensionImport");
+		final Map<String, String> newCodeSystemRequestBody = newCodeSystemRequestBody("extensionImport", nestedBranch.getPath());
+		assertCodeSystemCreated(newCodeSystemRequestBody);
 		assertConceptNotExists(nestedBranch, "555231000005107");
 		
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()

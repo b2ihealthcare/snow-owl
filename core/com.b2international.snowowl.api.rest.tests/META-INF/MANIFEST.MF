@@ -15,3 +15,4 @@ Import-Package: com.b2international.snowowl.api.impl.codesystem.domain,
  com.b2international.snowowl.terminologyregistry.core.request,
  com.b2international.snowowl.terminologymetadata,
  com.b2international.snowowl.terminologyregistry.core.builder
+Export-Package: com.b2international.snowowl.api.rest
