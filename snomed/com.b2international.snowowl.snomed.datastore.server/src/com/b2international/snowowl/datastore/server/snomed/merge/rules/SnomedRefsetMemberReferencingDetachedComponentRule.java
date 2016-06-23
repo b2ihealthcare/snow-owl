@@ -44,7 +44,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
@@ -133,8 +132,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 							.builder()
 							.withArtefactId(entry.getB())
 							.withArtefactType(entry.getA())
-							.withConflictingAttributes(
-									MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String> of("referencedComponent", id)))
+							.withConflictingAttribute("referencedComponent", id)
 							.withType(ConflictType.HAS_MISSING_REFERENCE).build());
 				}
 			}

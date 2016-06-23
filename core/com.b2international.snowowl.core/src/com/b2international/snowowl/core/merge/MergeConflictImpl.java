@@ -127,6 +127,11 @@ public class MergeConflictImpl implements MergeConflict {
 			return this;
 		}
 
+		public Builder withConflictingAttribute(String key, String value) {
+			this.conflictingAttributes.add(String.format(ATTRIBUTE_KEY_VALUE_TEMPLATE, key, value));
+			return this;
+		}
+		
 		public Builder withConflictingAttributes(List<String> attributes) {
 			this.conflictingAttributes.addAll(attributes);
 			return this;

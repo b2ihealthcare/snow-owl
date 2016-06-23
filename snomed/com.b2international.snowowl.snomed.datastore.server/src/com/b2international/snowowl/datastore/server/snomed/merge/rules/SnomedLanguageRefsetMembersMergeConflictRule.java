@@ -37,7 +37,6 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -109,7 +108,7 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 							conflicts.add(MergeConflictImpl.builder()
 											.withArtefactId(newLanguageRefSetMember.getUuid())
 											.withArtefactType(newLanguageRefSetMember.eClass().getName())
-											.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("acceptabilityId", newLanguageRefSetMember.getAcceptabilityId())))
+											.withConflictingAttribute("acceptabilityId", newLanguageRefSetMember.getAcceptabilityId())
 											.withType(ConflictType.CONFLICTING_CHANGE)
 											.build());
 						}
@@ -120,9 +119,8 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 							conflicts.add(MergeConflictImpl.builder()
 								.withArtefactId(description.getId())
 								.withArtefactType(description.eClass().getName())
-								.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of(
-										newLanguageRefSetMember.getUuid(), newLanguageRefSetMember.getAcceptabilityId(),
-										conceptDescriptionMember.getUuid(), conceptDescriptionMember.getAcceptabilityId())))
+								.withConflictingAttribute(newLanguageRefSetMember.getUuid(), newLanguageRefSetMember.getAcceptabilityId())
+								.withConflictingAttribute(conceptDescriptionMember.getUuid(), conceptDescriptionMember.getAcceptabilityId())
 								.withType(ConflictType.CONFLICTING_CHANGE)
 								.build());
 						}

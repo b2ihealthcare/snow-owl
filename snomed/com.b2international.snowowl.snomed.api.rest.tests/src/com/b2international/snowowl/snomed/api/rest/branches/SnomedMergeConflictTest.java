@@ -529,4 +529,54 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertThat(conflicts, hasItem(conflict));
 	}
+	
+	@Test
+	public void inactiveRelationshipDestinationRebaseConflict() {
+		
+		init();
+		
+		assertConceptCreated(testBranchPath, "C1");
+		
+		assertBranchCanBeMerged(testBranchPath, "merge");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		assertRelationshipCreated(testBranchPath, "R1", Concepts.ROOT_CONCEPT, symbolicNameMap.get("C1"));
+		
+		assertRelationshipExists(testBranchPath, "R1");
+		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
+		
+		final Map<?, ?> changeOnParent = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated concept on parent")
+				.build();
+		
+		assertConceptCanBeUpdated(testBranchPath.getParent(), "C1", changeOnParent);
+		
+		SnomedComponentApiAssert.assertComponentActive(testBranchPath.getParent(), SnomedComponentType.CONCEPT, symbolicNameMap.get("C1"), false);
+		SnomedComponentApiAssert.assertComponentActive(testBranchPath, SnomedComponentType.CONCEPT, symbolicNameMap.get("C1"), true);
+		
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "rebase");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+		
+		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("destinationId", symbolicNameMap.get("C1")));
+
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("R1"))
+				.put("artefactType", "Relationship")
+				.put("type", ConflictType.HAS_INACTIVE_REFERENCE.name())
+				.put("conflictingAttributes", attributeList)
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("R1"), 
+						"Relationship",
+						attributeList,
+						ConflictType.HAS_INACTIVE_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
+	}
 }
