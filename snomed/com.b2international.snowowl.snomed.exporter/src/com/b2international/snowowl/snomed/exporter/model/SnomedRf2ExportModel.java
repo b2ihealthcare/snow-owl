@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.exporter.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
@@ -39,7 +38,6 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.collect.Iterables;
@@ -75,7 +73,6 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String namespace;
 	private IBranchPath clientBranch;
 	private String userId;
-	private Collection<SnomedModuleDependencyRefSetMemberFragment> moduleDependencyMembers;
 	private String unsetEffectiveTimeLabel;
 
 	/**
@@ -279,14 +276,6 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		return userId;
 	}
 
-	public void setModuleDependencies(final Collection<SnomedModuleDependencyRefSetMemberFragment> moduleDependencyMembers) {
-		this.moduleDependencyMembers = moduleDependencyMembers;
-	}
-	
-	public Collection<SnomedModuleDependencyRefSetMemberFragment> getModuleDependencyMembers() {
-		return moduleDependencyMembers;
-	}
-	
 	public String getUnsetEffectiveTimeLabel() {
 		return unsetEffectiveTimeLabel;
 	}

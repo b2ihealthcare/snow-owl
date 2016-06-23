@@ -191,7 +191,7 @@ public abstract class AbstractSnomedRefSetDerivator {
 		return SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
-			.filterByConceptIds(conceptIds)
+			.filterByConceptId(conceptIds)
 			.build(context.getBranch())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();

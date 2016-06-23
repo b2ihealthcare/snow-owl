@@ -19,15 +19,15 @@ import java.util.Collection;
 
 import org.eclipse.emf.cdo.view.CDOView;
 
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongKeyLongMap;
 
 /**
  * POJO used for collecting SNOMED CT module dependencies.
@@ -40,7 +40,7 @@ public class ModuleCollectorConfiguration {
 	private Multimap<Long, Long> moduleMapping = HashMultimap.create();
 	private LongKeyLongMap conceptModuleMapping;
 	private LongCollection unpublishedStorageKeys;
-	private Collection<SnomedModuleDependencyRefSetMemberFragment> existingModules = Sets.newHashSet();
+	private SnomedReferenceSetMembers existingModules;
 	private SnomedRefSet moduleDependencyRefSet;
 	
 	public CDOView getView() {
@@ -91,11 +91,11 @@ public class ModuleCollectorConfiguration {
 		this.unpublishedStorageKeys = unpublishedStorageKeys;
 	}
 	
-	public Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules() {
+	public SnomedReferenceSetMembers getExistingModules() {
 		return existingModules;
 	}
 	
-	public void setExistingModules(Collection<SnomedModuleDependencyRefSetMemberFragment> existingModules) {
+	public void setExistingModules(SnomedReferenceSetMembers existingModules) {
 		this.existingModules = existingModules;
 	}
 	

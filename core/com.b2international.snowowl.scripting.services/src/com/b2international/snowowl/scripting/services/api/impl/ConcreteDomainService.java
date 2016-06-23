@@ -15,13 +15,6 @@
  */
 package com.b2international.snowowl.scripting.services.api.impl;
 
-import static com.b2international.commons.CompareUtils.isEmpty;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.google.common.collect.Iterables.get;
-import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
-import static com.google.common.collect.Sets.newHashSet;
-
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -35,15 +28,11 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 
 /**
  * Concrete domain service implementation.

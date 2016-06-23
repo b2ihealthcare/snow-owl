@@ -117,8 +117,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -127,7 +125,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
@@ -284,103 +281,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 	}
 	
 	@Override
-	public Collection<IdStorageKeyPair> getAllComponentIdStorageKeys(final IBranchPath branchPath, final short terminologyComponentId) {
-		
-		checkNotNull(branchPath, "Branch path argument cannot be null.");
-		
-		Query query = null;
-		Set<String> fieldsToLoad = null;
-		IndexField<?> idField = SnomedMappings.id();
-		IndexField<Long> storageKeyField = Mappings.storageKey();
-		
-		switch (terminologyComponentId) {
-			
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: //$FALL-THROUGH$
-				
-				query = SnomedMappings.newQuery().type(terminologyComponentId).matchAll();
-				fieldsToLoad = COMPONENT_ID_STORAGE_KEY_TO_LOAD;
-				break;
-			case SnomedTerminologyComponentConstants.REFSET_NUMBER:
-				query = SnomedMappings.newQuery().type(terminologyComponentId).matchAll();
-				fieldsToLoad = SnomedMappings.fieldsToLoad().id().refSetStorageKey().build();
-				storageKeyField = SnomedMappings.refSetStorageKey();
-				break;
-			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
-				query = SnomedMappings.memberUuid().toExistsQuery();
-				fieldsToLoad = MEMBER_UUID_STORAGE_KEY_TO_LOAD;
-				idField = SnomedMappings.memberUuid();
-				break;
-				
-			default:
-				throw new IllegalArgumentException("Unknown terminology component ID for SNOMED CT: '" + terminologyComponentId + "'.");
-			
-				
-		}
-
-		
-		@SuppressWarnings("rawtypes")
-		final IndexServerService indexService = getIndexServerService();
-		
-		final int maxDoc = indexService.maxDoc(branchPath);
-		final DocIdCollector collector = DocIdCollector.create(maxDoc);
-		
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		try {
-			
-			manager = indexService.getManager(branchPath);
-			searcher = manager.acquire();
-			
-			indexService.search(branchPath, query, collector);
-			
-			final int hitCount = collector.getDocIDs().size();
-			final IdStorageKeyPair[] $ = new IdStorageKeyPair[hitCount];
-
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			int i = 0;
-			while (itr.next()) {
-				
-				final Document doc = searcher.doc(itr.getDocID(), fieldsToLoad);
-				$[i++] = new IdStorageKeyPair(
-						checkNotNull(idField.getValueAsString(doc), "Cannot get ID field for document. [" + doc + "]"),
-						storageKeyField.getValue(doc));
-				
-			}
-			
-			return Arrays.asList($);
-			
-		} catch (final IOException e) {
-			
-			LOGGER.error("Error while getting component ID and storage keys for components.");
-			throw new SnowowlRuntimeException(e);
-			
-		} finally {
-			
-			if (null != manager && null != searcher) {
-				
-				try {
-					
-					manager.release(searcher);
-					
-				} catch (final IOException e) {
-					
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-					
-				}
-				
-			}
-			
-		}
-		
-		
-	}
-	
-	@Override
 	public LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType) {
 		
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -415,33 +315,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		}
 	}
 
-	@Override
-	public Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules(final IBranchPath branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		
-		final Collection<SnomedModuleDependencyRefSetMemberFragment> modules = newHashSet();
-		
-		try {
-			
-			final int maxDoc = getIndexServerService().maxDoc(branchPath);
-			final DocIdCollector collector = create(maxDoc);
-			getIndexServerService().search(branchPath, SnomedMappings.newQuery().active().memberRefSetId(REFSET_MODULE_DEPENDENCY_TYPE).matchAll(), collector);
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			
-			while (itr.next()) {
-				final Document doc = getIndexServerService().document(branchPath, itr.getDocID(), MODULE_MEMBER_FIELDS_TO_LOAD);
-				modules.add(createModuleMember(doc));
-			}
-			
-		} catch (final IOException e) {
-			final String message = "Error while resolving dependencies between existing modules.";
-			LOGGER.error(message, e);
-			throw new SnowowlRuntimeException(message, e);
-		}
-		
-		return modules;
-	}
-	
 //	private Map<String, Date> getExistingModulesWithEffectiveTime(final IBranchPath branchPath) {
 //		final ImmutableSet<SnomedModuleDependencyRefSetMemberFragment> existingModules = ImmutableSet.copyOf(getExistingModules(branchPath));
 //
@@ -480,16 +353,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 				return terminologyBrowser.getStorageKey(branchPath, conceptId);
 			}
 		}));
-	}
-	
-	private SnomedModuleDependencyRefSetMemberFragment createModuleMember(final Document doc) {
-		final SnomedModuleDependencyRefSetMemberFragment module = new SnomedModuleDependencyRefSetMemberFragment();
-		module.setModuleId(SnomedMappings.module().getValueAsString(doc));
-		module.setReferencedComponentId(SnomedMappings.memberReferencedComponentId().getValueAsString(doc));
-		module.setStorageKey(Mappings.storageKey().getValue(doc));
-		module.setSourceEffectiveTime(EffectiveTimes.toDate(SnomedMappings.memberSourceEffectiveTime().getValue(doc)));
-		module.setTargetEffectiveTime(EffectiveTimes.toDate(SnomedMappings.memberTargetEffectiveTime().getValue(doc)));
-		return module;
 	}
 	
 	@SuppressWarnings("rawtypes")

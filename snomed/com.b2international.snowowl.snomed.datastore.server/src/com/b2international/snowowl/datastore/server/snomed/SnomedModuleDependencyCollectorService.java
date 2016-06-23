@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.getConfiguration;
@@ -58,18 +57,19 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
@@ -308,7 +308,7 @@ public enum SnomedModuleDependencyCollectorService {
 				.filterByActive(true)
 				.filterByAncestor(Concepts.MODULE_ROOT)
 				.build(getBranchPath().getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(getBus())
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
 					public Set<String> apply(SnomedConcepts input) {
@@ -326,15 +326,15 @@ public enum SnomedModuleDependencyCollectorService {
 	}
 
 	private Date getExistingModuleEffectiveTime(final String expectedModuleId) {
-		for (final SnomedModuleDependencyRefSetMemberFragment module : getExistingModules()) {
-			final Date sourceEffectiveTime = module.getSourceEffectiveTime();
+		for (final SnomedReferenceSetMember module : getExistingModules()) {
+			final Long sourceEffectiveTime = (Long) module.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
 			final String moduleId = module.getModuleId();
 			if (null != sourceEffectiveTime && moduleId.equals(expectedModuleId)) {
-				return sourceEffectiveTime;
+				return new Date(sourceEffectiveTime);
 			}
-			final Date targetEffectiveTime = module.getTargetEffectiveTime();
+			final Long targetEffectiveTime = (Long) module.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
 			if (null != targetEffectiveTime && moduleId.equals(expectedModuleId)) {
-				return targetEffectiveTime;
+				return new Date(targetEffectiveTime);
 			}
 		}
 		return null;
@@ -348,14 +348,20 @@ public enum SnomedModuleDependencyCollectorService {
 		return checkNotNull((SnomedRegularRefSet) new SnomedRefSetLookupService().getComponent(REFSET_MODULE_DEPENDENCY_TYPE, view), "Missing module reference set %s", REFSET_MODULE_DEPENDENCY_TYPE);
 	}
 	
-	private Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules(final IBranchPath branchPath) {
-		return getComponentService().getExistingModules(branchPath);
+	private SnomedReferenceSetMembers getExistingModules(final IBranchPath branchPath) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByActive(true)
+				.filterByRefSet(REFSET_MODULE_DEPENDENCY_TYPE)
+				.build(branchPath.getPath())
+				.execute(getBus())
+				.getSync();
 	}
 	
-	private Multimap<Long, Long> getModuleMapping(final Collection<SnomedModuleDependencyRefSetMemberFragment> existingModules) {
+	private Multimap<Long, Long> getModuleMapping(final SnomedReferenceSetMembers existingModules) {
 		final Multimap<Long, Long> moduleMapping = create();
-		for (final SnomedModuleDependencyRefSetMemberFragment module : existingModules) {
-			moduleMapping.put(parseLong(module.getModuleId()), parseLong(module.getReferencedComponentId()));
+		for (final SnomedReferenceSetMember module : existingModules) {
+			moduleMapping.put(parseLong(module.getModuleId()), parseLong(module.getReferencedComponent().getId()));
 		}
 		return moduleMapping;
 	}
@@ -364,7 +370,7 @@ public enum SnomedModuleDependencyCollectorService {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.build(branchPath.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(getBus())
 				.then(new Function<SnomedConcepts, LongKeyLongMap>() {
 					@Override
 					public LongKeyLongMap apply(SnomedConcepts input) {
@@ -378,10 +384,10 @@ public enum SnomedModuleDependencyCollectorService {
 				.getSync();
 	}
 
-	private ISnomedComponentService getComponentService() {
-		return getServiceForClass(ISnomedComponentService.class);
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
-	
+
 	private LongCollection getUnpublishedStorageKeys() {
 		return getConfiguration().getUnpublishedStorageKeys();
 	}
@@ -410,7 +416,7 @@ public enum SnomedModuleDependencyCollectorService {
 		return getConfiguration().getModuleDependencyRefSet();
 	}
 	
-	private Collection<SnomedModuleDependencyRefSetMemberFragment> getExistingModules() {
+	private SnomedReferenceSetMembers getExistingModules() {
 		return getConfiguration().getExistingModules();
 	}
 	

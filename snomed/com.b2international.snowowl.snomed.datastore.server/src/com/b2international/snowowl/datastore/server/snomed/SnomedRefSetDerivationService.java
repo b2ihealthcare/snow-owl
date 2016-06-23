@@ -174,7 +174,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
-			.filterByConceptIds(componentIds)
+			.filterByConceptId(componentIds)
 			.build(context.getBranch())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
