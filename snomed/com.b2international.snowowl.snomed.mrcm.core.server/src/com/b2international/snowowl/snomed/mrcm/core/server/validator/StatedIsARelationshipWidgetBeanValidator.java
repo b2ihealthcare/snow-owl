@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidgetBean;
 
@@ -26,9 +25,6 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidg
  * @since 4.4
  */
 public class StatedIsARelationshipWidgetBeanValidator implements ModeledWidgetBeanValidator {
-
-	public StatedIsARelationshipWidgetBeanValidator(SnomedTerminologyBrowser browser) {
-	}
 
 	@Override
 	public void validate(IBranchPath branch, ConceptWidgetBean concept, ValidationStatusReporter reporter) {

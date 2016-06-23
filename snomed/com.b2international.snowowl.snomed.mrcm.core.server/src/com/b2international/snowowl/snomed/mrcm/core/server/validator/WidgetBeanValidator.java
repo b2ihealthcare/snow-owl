@@ -22,23 +22,15 @@ import java.util.Collection;
 import org.eclipse.core.runtime.IStatus;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.mrcm.core.validator.IWidgetBeanValidator;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
 import com.google.common.collect.Multimap;
-import com.google.inject.Provider;
 
 /**
  * Server side {@link ConceptWidgetBean} validator.
  */
 public class WidgetBeanValidator implements IWidgetBeanValidator {
-
-	private Provider<SnomedTerminologyBrowser> browserProvider;
-
-	public WidgetBeanValidator(Provider<SnomedTerminologyBrowser> browserProvider) {
-		this.browserProvider = browserProvider;
-	}
 
 	/**
 	 * Validates a {@link ConceptWidgetBean} and returns with a multimap of status informations. <br>
@@ -51,13 +43,12 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 	 */
 	@Override
 	public Multimap<ModeledWidgetBean, IStatus> validate(IBranchPath branchPath, ConceptWidgetBean concept) {
-		final SnomedTerminologyBrowser browser = browserProvider.get();
 		final ValidationStatusReporter reporter = new DefaultValidationStatusReporter();
 		
 		final Collection<ModeledWidgetBeanValidator> validators = newHashSet();
-		validators.add(new DescriptionWidgetBeanValidator(browser));
-		validators.add(new RelationshipWidgetBeanValidator(browser));
-		validators.add(new StatedIsARelationshipWidgetBeanValidator(browser));
+		validators.add(new DescriptionWidgetBeanValidator());
+		validators.add(new RelationshipWidgetBeanValidator());
+		validators.add(new StatedIsARelationshipWidgetBeanValidator());
 		
 		for (ModeledWidgetBeanValidator validator : validators) {
 			validator.validate(branchPath, concept, reporter);

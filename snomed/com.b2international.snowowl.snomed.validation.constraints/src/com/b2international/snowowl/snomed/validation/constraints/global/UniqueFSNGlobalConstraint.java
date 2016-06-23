@@ -33,11 +33,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IdAndTerminologyComponentIdProvider;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.validation.GlobalConstraintStatus;
 import com.b2international.snowowl.core.validation.IGlobalConstraint;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -45,11 +45,12 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -78,9 +79,8 @@ public class UniqueFSNGlobalConstraint implements IGlobalConstraint {
 
 			final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
 			final List<ExtendedLocale> locales = ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
-			final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
 			
-			final Set<String> activeConceptIds = LongSets.toStringSet(terminologyBrowser.getAllActiveConceptIds(branchPath));
+			final Set<String> activeConceptIds = getActiveConceptIds(branchPath);
 			
 			subMonitor.worked(1);
 			
@@ -130,6 +130,21 @@ public class UniqueFSNGlobalConstraint implements IGlobalConstraint {
 
 		// FIXME return error status, as the calculation failed
 		return createEmptyStatus();
+	}
+
+	private Set<String> getActiveConceptIds(IBranchPath branchPath) {
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByActive(true)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 	}
 
 	private IdAndTerminologyComponentIdProvider createConcept(final String conceptId) {

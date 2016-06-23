@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.mrcm.core.server.MrcmCoreServerActivator;
 import com.b2international.snowowl.snomed.mrcm.core.validator.IWidgetBeanValidator;
 
@@ -49,6 +48,6 @@ public class WidgetBeanValidatorConfigJob extends AbstractServerServiceConfigJob
 	 */
 	@Override
 	protected WidgetBeanValidator createServiceImplementation() throws SnowowlServiceException {
-		return new WidgetBeanValidator(getEnvironment().provider(SnomedTerminologyBrowser.class));
+		return new WidgetBeanValidator();
 	}
 }
