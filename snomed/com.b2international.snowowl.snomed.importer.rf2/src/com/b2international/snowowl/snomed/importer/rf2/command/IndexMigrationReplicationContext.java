@@ -37,21 +37,12 @@ import org.eclipse.net4j.util.om.monitor.Monitor;
 
 import com.b2international.snowowl.datastore.server.DelegatingTransaction;
 
-/**
- *
- */
 public class IndexMigrationReplicationContext implements CDOReplicationContext {
 
-	private long initialLastCommitTime;
-	private int initialBranchId;
-	private InternalSession replicatorSession;
+	private final long initialLastCommitTime;
+	private final int initialBranchId;
+	private final InternalSession replicatorSession;
 
-	/**
-	 * 
-	 * @param initialBranchId
-	 * @param initialLastCommitTime
-	 * @param session
-	 */
 	public IndexMigrationReplicationContext(int initialBranchId, long initialLastCommitTime, InternalSession session) {
 		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
@@ -60,13 +51,10 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	@SuppressWarnings("restriction")
 	@Override
-	public void handleCommitInfo(CDOCommitInfo commitInfo) {
+	public void handleCommitInfo(final CDOCommitInfo commitInfo) {
 		CDOBranch branch = commitInfo.getBranch();
 
 		CDOBranchPoint head = branch.getHead();
-		
-		//we need the previous point as we already see the modified content in the CDO repository
-		final CDOBranchPoint currentBranchPoint = branch.getPoint(commitInfo.getTimeStamp()-1);
 		
 		final InternalRepository repository = replicatorSession.getManager().getRepository();
 		final InternalCDORevisionManager revisionManager = repository.getRevisionManager();
@@ -161,15 +149,6 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 				return delegateRepository;
 			}
 			
-			//@Override
-			//public CDORevision getRevision(CDOID id) {
-//				InternalCDORevision revision = delegateRepository.getRevisionManager().getRevision(id, currentBranchPoint, CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true);
-//				InternalCDORevision copiedRevision = revision.copy();
-//				
-//				//we fake the revision as a new revision
-//				copiedRevision.setRevised(0);
-//				return copiedRevision;
-			//}
 		};
 
 		NonWritingReplicatorCommitContext commitContext = new NonWritingReplicatorCommitContext(delegatingTransaction, commitInfo);
@@ -185,7 +164,6 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 			commitContext.postCommit(success);
 			transaction.close();
 			StoreThreadLocal.setSession(replicatorSession);
-			
 		}
 
 	}
