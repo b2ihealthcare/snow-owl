@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.exporter.server.refset.SnomedSimpleTyp
 public class SnomedRefSetExcelExportServerIndication extends AbstractExportIndication {
 
 	private String refSetId;
-	private short referencedComponentType;
 
 	public SnomedRefSetExcelExportServerIndication(SignalProtocol<?> protocol) {
 		super(protocol, Net4jProtocolConstants.SNOMED_EXPORT_REFSET_TO_EXCEL_SIGNAL);
@@ -40,15 +39,12 @@ public class SnomedRefSetExcelExportServerIndication extends AbstractExportIndic
 	
 	@Override
 	protected void postIndicating(ExtendedDataInputStream in) throws Exception {
-
 		refSetId = in.readUTF();
-		referencedComponentType = in.readShort();
-		
 	}
 
 	@Override
 	protected ITerminologyExporter getExporter() {
-		return new SnomedSimpleTypeRefSetExcelExporter(getUserId(), getBranchPath(), refSetId, referencedComponentType);
+		return new SnomedSimpleTypeRefSetExcelExporter(getUserId(), getBranchPath(), refSetId);
 	}
 
 }

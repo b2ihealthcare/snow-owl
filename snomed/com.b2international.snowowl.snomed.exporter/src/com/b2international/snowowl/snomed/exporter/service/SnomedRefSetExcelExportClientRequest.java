@@ -40,10 +40,7 @@ public class SnomedRefSetExcelExportClientRequest extends AbstractExportRequest 
 	
 	@Override
 	protected void postRequesting(ExtendedDataOutputStream out) throws Exception {
-
 		out.writeUTF(model.getRefSetId());
-		out.writeShort(model.getReferencedComponentType());
-		
 	}
 
 	@Override

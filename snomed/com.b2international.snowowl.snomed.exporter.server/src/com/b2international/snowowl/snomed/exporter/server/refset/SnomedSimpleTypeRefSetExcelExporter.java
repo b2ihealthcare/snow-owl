@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -29,27 +31,29 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
-import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.google.common.collect.Sets;
+import com.google.common.base.Function;
 
 /**
  * Exporter class to export simple type reference sets to Excel format where the 
@@ -61,27 +65,19 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	
 	private final static String FONT_STYLE = "Sarif";
 
-	private final String refSetId;
-	private final short referencedComponentType;
+	private final SnomedReferenceSet refSet;
 	private final SnomedEditingContext context;
 	private final Workbook workbook;
-	private final ISnomedComponentService service;
 	
 	private final CellStyle DEFAULT_STYLE;
 	private final CellStyle BOLD_STYLE;
 
-	//the language we support on the server-side
-	private String supportedLanguageRefsetId;
-
-	public SnomedSimpleTypeRefSetExcelExporter(final String userId, final IBranchPath branchPath, final String refSetId, final short referencedComponentType) {
+	public SnomedSimpleTypeRefSetExcelExporter(final String userId, final IBranchPath branchPath, final String refSetId) {
 		super(userId, branchPath);
 		
-		this.refSetId = refSetId;
-		this.referencedComponentType = referencedComponentType;
+		this.refSet = SnomedRequests.prepareGetReferenceSet().setComponentId(refSetId).build(branchPath.getPath()).execute(getBus()).getSync();
 		this.context = new SnomedEditingContext(branchPath);
 		this.workbook = new XSSFWorkbook();
-		this.service = ApplicationContext.getInstance().getService(ISnomedComponentService.class);
-		this.supportedLanguageRefsetId = this.context.getLanguageRefSetId();
 		
 		final Font headerFont = workbook.createFont();
 		headerFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
@@ -99,32 +95,27 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		DEFAULT_STYLE.setFont(defaultFont);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter#getTerminologyName()
-	 */
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+
 	@Override
 	protected String getTerminologyName() {
-		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+		switch (refSet.getReferencedComponentType()) {
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
 			return "description";
-		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
 			return "relationship";
 		default: 
 			return "Unknown terminology name";
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter#getEditingContext()
-	 */
 	@Override
 	protected CDOEditingContext getEditingContext() {
 		return context;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter#exportTerminology(java.lang.String)
-	 */
 	@Override
 	protected File exportTerminology(final String exportFilePath, OMMonitor monitor) throws IOException {
 		
@@ -155,9 +146,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		return file;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter#exportTerminologyComponents()
-	 */
 	@Override
 	protected void exportTerminologyComponents(final OMMonitor monitor) {
 
@@ -166,32 +154,28 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		
 		try {
 			
-			final String refSetLabel = formatSheetName(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId));
+			final String refSetLabel = formatSheetName(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSet.getId()));
 			final Sheet sheet = workbook.createSheet(refSetLabel);
 			
 			async = monitor.forkAsync(70);
-			
-			final LongSet componentStorageKeys = service.getComponentByRefSetIdAndReferencedComponent(getBranchPath(), refSetId, referencedComponentType);
-			final List<CDOID> cdoIds = CDOIDUtils.getIds(componentStorageKeys);
-			
-			final Set<CDOObject> components = Sets.newHashSet();
-			
-			for (final CDOID cdoid : cdoIds) {
-				components.add(context.getTransaction().getObject(cdoid));
-			}
+
+			final Collection<SnomedCoreComponent> components = getComponents(refSet);
 			
 			async.stop();
 			
-			componentsMonitor.begin(cdoIds.size());
+			componentsMonitor.begin(components.size());
 			
-			if (referencedComponentType == SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER) {
+			switch (refSet.getReferencedComponentType()) {
+			case SnomedTerminologyComponentConstants.DESCRIPTION:
 				cretaDescriptionHeader(sheet);
 				exportDescriptions(components, sheet, componentsMonitor);
-			} else if (referencedComponentType == SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER) {
+				break;
+			case SnomedTerminologyComponentConstants.RELATIONSHIP:
 				createRelationshipHeader(sheet);
 				exportRelationships(components, sheet, componentsMonitor);
-			} else {
-				throw new IllegalStateException(MessageFormat.format("Invalid referenced component type: ", referencedComponentType));
+				break;
+			default:
+				throw new IllegalStateException(MessageFormat.format("Invalid referenced component type: ", refSet.getReferencedComponentType()));
 			}
 			
 			for (int i = 0; i <= getColumnNumber(); i++) {
@@ -206,6 +190,43 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			if (null != componentsMonitor) {
 				componentsMonitor.done();
 			}
+		}
+	}
+
+	private Collection<SnomedCoreComponent> getComponents(SnomedReferenceSet refSet) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByRefSet(refSet.getId())
+				.setExpand(getExpand(refSet))
+				.setLocales(getLocales())
+				.build(context.getBranch())
+				.execute(getBus())
+				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedCoreComponent>>() {
+					@Override
+					public Collection<SnomedCoreComponent> apply(SnomedReferenceSetMembers input) {
+						final Collection<SnomedCoreComponent> components = newHashSet();
+						
+						for (SnomedReferenceSetMember member : input) {
+							components.add(member.getReferencedComponent());
+						}
+						
+						return components;
+					}
+				})
+				.getSync();
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
+	}
+	
+	private String getExpand(SnomedReferenceSet refSet) {
+		switch (refSet.getReferencedComponentType()) {
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
+			return "";
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+			return "source(expand(pt())),type(expand(pt())),destination(expand(pt()))";
+		default: return "";
 		}
 	}
 
@@ -239,63 +260,72 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		createCell(row, "Module Preferred Term", 10, BOLD_STYLE);
 	}
 
-	private void exportDescriptions(final Set<CDOObject> components, final Sheet sheet, final OMMonitor monitor) {
+	private void exportDescriptions(final Collection<SnomedCoreComponent> descriptions, final Sheet sheet, final OMMonitor monitor) {
 		
 		int rowNum = 1;
 		
-		for (final CDOObject cdoObject : components) {
-			final Description description = (Description) cdoObject;
+		for (final SnomedCoreComponent component : descriptions) {
+			final ISnomedDescription description = (ISnomedDescription) component;
 			
 			final Row row = sheet.createRow(rowNum);
 			
-			final String acceptabilityId = getAcceptablilityId(description);
+			// TODO all acceptability values should be printed out
+			final Acceptability acceptability = description.getAcceptabilityMap().get(context.getLanguageRefSetId());
 			
-			if (null == acceptabilityId) {
+			if (null == acceptability) {
 				monitor.worked(1);
 				continue;
 			}
 			
 			createCell(row, description.getId(), 0, DEFAULT_STYLE);
 			createCell(row, description.getTerm(), 1, DEFAULT_STYLE);
-			createCell(row, acceptabilityId, 2, DEFAULT_STYLE);
-			createCell(row, description.getConcept().getId(), 3, DEFAULT_STYLE);
-			createCell(row, getPrefferedTermByConcept(description.getConcept()), 4, DEFAULT_STYLE);
+			createCell(row, acceptability.getConceptId(), 2, DEFAULT_STYLE);
+			createCell(row, description.getConceptId(), 3, DEFAULT_STYLE);
+			// TODO support description concept label again
+//			createCell(row, getPtOrId(description.getConceptId()), 4, DEFAULT_STYLE);
 			createCell(row, description.isActive() ? "Active" : "Inactive", 5, DEFAULT_STYLE);
 			createCell(row, getExportedEffectiveTime(description.getEffectiveTime()), 6, DEFAULT_STYLE);
-			createCell(row, description.getModule().getId(), 7, DEFAULT_STYLE);
-			createCell(row, getPrefferedTermByConcept(description.getModule()), 8, DEFAULT_STYLE);
+			createCell(row, description.getModuleId(), 7, DEFAULT_STYLE);
+
+			// TODO support module labels again
+//			createCell(row, getPrefferedTermByConcept(description.getModule()), 8, DEFAULT_STYLE);
 			
 			rowNum++;
 			monitor.worked(1);
 		}
 	}
 	
-	private void exportRelationships(final Set<CDOObject> components, final Sheet sheet, final OMMonitor monitor) {
+	private void exportRelationships(final Collection<SnomedCoreComponent> relationships, final Sheet sheet, final OMMonitor monitor) {
 		
 		int rowNum = 1;
 		
-		for (final CDOObject cdoObject : components) {
-			final Relationship relationship = (Relationship) cdoObject;
+		for (final SnomedCoreComponent component : relationships) {
+			final ISnomedRelationship relationship = (ISnomedRelationship) component;
 			
 			final Row row = sheet.createRow(rowNum);
 			
 			createCell(row, relationship.getId(), 0, DEFAULT_STYLE);
-			createCell(row, relationship.getSource().getId(), 1, DEFAULT_STYLE);
-			createCell(row, getPrefferedTermByConcept(relationship.getSource()), 2, DEFAULT_STYLE);
-			createCell(row, relationship.getType().getId(), 3, DEFAULT_STYLE);
-			createCell(row, getPrefferedTermByConcept(relationship.getType()), 4, DEFAULT_STYLE);
-			createCell(row, relationship.getDestination().getId(), 5, DEFAULT_STYLE);
-			createCell(row, getPrefferedTermByConcept(relationship.getDestination()), 6, DEFAULT_STYLE);
+			createCell(row, relationship.getSourceConcept().getId(), 1, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getSourceConcept()), 2, DEFAULT_STYLE);
+			createCell(row, relationship.getTypeConcept().getId(), 3, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getTypeConcept()), 4, DEFAULT_STYLE);
+			createCell(row, relationship.getDestinationConcept().getId(), 5, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getDestinationConcept()), 6, DEFAULT_STYLE);
 			createCell(row, relationship.isActive() ? "Active" : "Inactive", 7, DEFAULT_STYLE);
 			createCell(row, getExportedEffectiveTime(relationship.getEffectiveTime()), 8, DEFAULT_STYLE);
-			createCell(row, relationship.getModule().getId(), 9, DEFAULT_STYLE);
-			createCell(row, getPrefferedTermByConcept(relationship.getModule()), 10, DEFAULT_STYLE);
+			createCell(row, relationship.getModuleId(), 9, DEFAULT_STYLE);
+			// TODO support module labels again
+//			createCell(row, getPrefferedTermByConcept(relationship.getModule()), 10, DEFAULT_STYLE);
 			
 			rowNum++;
 			monitor.worked(1);
 		}
 	}
 	
+	private String getPtOrId(ISnomedConcept concept) {
+		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
+	}
+
 	private void createCell(final Row row, final String value, final int columnNumber, final CellStyle style) {
 		final Cell cell = row.createCell(columnNumber);
 		cell.setCellValue(value);
@@ -303,31 +333,16 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	}
 	
 	private int getColumnNumber() {
-		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+		switch (refSet.getReferencedComponentType()) {
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
 			return 9;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
 			return 11;
 		default: 
 			return 0;
 		}
 	}
 
-	private String getPrefferedTermByConcept(final Concept concept) {
-		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), concept.getId());
-	}
-
-	private String getAcceptablilityId(final Description description) {
-		
-		EList<SnomedLanguageRefSetMember> languageRefSetMembers = description.getLanguageRefSetMembers();
-		for (SnomedLanguageRefSetMember snomedLanguageRefSetMember : languageRefSetMembers) {
-			if (snomedLanguageRefSetMember.getRefSetIdentifierId().equals(supportedLanguageRefsetId)) {
-				return snomedLanguageRefSetMember.getAcceptabilityId();
-			}
-		}
-		return null;
-	}
-	
 	private String formatSheetName(final String refSetLabel) {
 		if (refSetLabel.length() < 32) {
 			return refSetLabel;
@@ -336,9 +351,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter#getFileExtension()
-	 */
 	@Override
 	protected String getFileExtension() {
 		return ".xlsx";

@@ -23,19 +23,13 @@ package com.b2international.snowowl.snomed.exporter.model;
 public class SnomedRefSetExcelExportModel extends SnomedExportModel {
 	
 	private final String refSetId;
-	private final short referencedComponentType;
 	
-	public SnomedRefSetExcelExportModel(final String refSetId, final short referencedComponentType) {
+	public SnomedRefSetExcelExportModel(final String refSetId) {
 		this.refSetId = refSetId;
-		this.referencedComponentType = referencedComponentType;
 	}
 
 	public String getRefSetId() {
 		return refSetId;
-	}
-
-	public short getReferencedComponentType() {
-		return referencedComponentType;
 	}
 
 }
