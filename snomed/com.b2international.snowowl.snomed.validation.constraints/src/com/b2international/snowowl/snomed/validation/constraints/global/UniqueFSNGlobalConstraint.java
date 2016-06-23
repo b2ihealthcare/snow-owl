@@ -80,7 +80,7 @@ public class UniqueFSNGlobalConstraint implements IGlobalConstraint {
 			final List<ExtendedLocale> locales = ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
 			final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
 			
-			final Set<Long> activeConceptIds = LongSets.toSet(terminologyBrowser.getAllActiveConceptIds(branchPath));
+			final Set<String> activeConceptIds = LongSets.toStringSet(terminologyBrowser.getAllActiveConceptIds(branchPath));
 			
 			subMonitor.worked(1);
 			

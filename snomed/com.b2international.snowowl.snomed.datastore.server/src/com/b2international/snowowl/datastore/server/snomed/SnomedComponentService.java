@@ -492,74 +492,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		return module;
 	}
 	
-	@Override
-	public Map<String, Multimap<String, String>> getDescriptionPreferabilityMap(final IBranchPath branchPath, final String conceptId) {
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(conceptId, "conceptId");
-		
-		final Query descriptionQuery = SnomedMappings.newQuery().active().descriptionConcept(conceptId).matchAll();
-		
-		final Collection<String> descriptionIds = newHashSet(getIndexServerService().searchUnorderedIds(branchPath, descriptionQuery, null));
-		if (isEmpty(descriptionIds)) {
-			return emptyMap();
-		}
-
-		final SnomedQueryBuilder referencedComponentQuery = SnomedMappings.newQuery();
-		for (final String descriptionId : descriptionIds) {
-			referencedComponentQuery.memberReferencedComponentId(descriptionId);
-		}
-		
-		final Query languageMemberQuery = SnomedMappings.newQuery()
-				.active()
-				.memberRefSetType(SnomedRefSetType.LANGUAGE)
-				.and(referencedComponentQuery.matchAny())
-				.matchAll();
-
-		ReferenceManager<IndexSearcher> manager = null;
-		IndexSearcher searcher = null;
-		
-		final Map<String, Multimap<String, String>> descriptionAcceptabilityMap = newHashMap();
-
-		try {
-			manager = getIndexServerService().getManager(branchPath);
-			searcher = manager.acquire();
-			
-			final DocIdCollector collector = DocIdCollector.create(searcher.getIndexReader().maxDoc());
-			searcher.search(languageMemberQuery, collector);
-			
-			final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().memberReferencedComponentId().memberRefSetId().memberAcceptabilityId().build();
-			
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			while (itr.next()) {
-				final Document doc = searcher.doc(itr.getDocID(), fieldsToLoad);
-				final String referencedComponentId = SnomedMappings.memberReferencedComponentId().getValueAsString(doc);
-				final String refSetId = SnomedMappings.memberRefSetId().getValueAsString(doc);
-				final String acceptabilityId = SnomedMappings.memberAcceptabilityId().getValueAsString(doc);
-				if (!descriptionAcceptabilityMap.containsKey(referencedComponentId)) {
-					final Multimap<String, String> acceptabilityMap = HashMultimap.create();
-					descriptionAcceptabilityMap.put(referencedComponentId, acceptabilityMap);
-				}
-				descriptionAcceptabilityMap.get(referencedComponentId).put(acceptabilityId, refSetId);
-			}
-			
-		} catch (final IOException e) {
-			LOGGER.error("Error while getting description preferability mapping for concept '" + conceptId + "' on '" + branchPath + "' branch.");
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			if (null != manager && null != searcher) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					LOGGER.error("Error while releasing index searcher.");
-					throw new SnowowlRuntimeException(e);
-				}
-			}
-		}
-		
-		return descriptionAcceptabilityMap;
-		
-	}
-	
 	@SuppressWarnings("rawtypes")
 	private Set<String> getReferencedComponentIdsByRefSetId(final IBranchPath branchPath, final IndexServerService indexService, 
 			final ReferenceManager<IndexSearcher> manager, final IndexSearcher searcher, final String refSetId) throws IOException {
@@ -620,8 +552,6 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		switch (type) {
 			case DATA_TYPE_LABELS:
 				return getDataTypeLabels(branchPath);
-			case PREDICATE_TYPES:
-				return getAllPredicates(branchPath);
 			case REFERENCE_SET_CDO_IDS:
 				return internalGetRefSetCdoIdIdMapping(branchPath);
 			default: 

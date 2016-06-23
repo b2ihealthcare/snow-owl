@@ -15,28 +15,22 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.widget;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.mrcm.core.widget.SnomedDescription;
 import com.b2international.snowowl.snomed.mrcm.core.widget.SnomedRelationship;
 import com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanProviderStrategy;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
@@ -52,7 +46,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 
 /**
  * Server side widget bean provider strategy implementation.
@@ -64,6 +57,8 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 
 	private final IBranchPath branchPath;
 	private final String conceptId;
+	
+	private Collection<ISnomedDescription> descriptions;
 
 	public ServerSideWidgetBeanProviderStrategy(final String conceptId, final ConceptWidgetModel conceptWidgetModel, final IBranchPath branchPath, final boolean includeUnsanctioned) {
 		super(conceptWidgetModel, includeUnsanctioned);
@@ -72,24 +67,17 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	}
 
 	@Override
-	protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap() {
-		return getServiceForClass(ISnomedComponentService.class).getDescriptionPreferabilityMap(branchPath, conceptId);
-	}
-
-	@Override
-	protected Collection<SnomedDescription> getDescriptions() {
-		return SnomedRequests.prepareSearchDescription()
-				.all()
-				.filterByActive(true)
-				.filterByConceptId(conceptId)
-				.build(branchPath.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<SnomedDescriptions, Collection<SnomedDescription>>() {
-					@Override
-					public Collection<SnomedDescription> apply(SnomedDescriptions input) {
-						return Collections2.transform(SnomedDescriptionIndexEntry.fromDescriptions(input), SnomedDescription.IndexObjectConverterFunctions.INSTANCE);
-					}
-				}).getSync();
+	protected Collection<ISnomedDescription> getDescriptions() {
+		if (descriptions == null) {
+			this.descriptions = SnomedRequests.prepareSearchDescription()
+					.all()
+					.filterByActive(true)
+					.filterByConceptId(conceptId)
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync().getItems();
+		}
+		return descriptions;
 	}
 	
 	@Override

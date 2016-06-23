@@ -18,11 +18,13 @@ package com.b2international.snowowl.snomed.mrcm.core.widget;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.view.CDOView;
 
@@ -33,6 +35,11 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
@@ -46,12 +53,9 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipGro
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 
 /**
  * Widget provider strategy implementation, which uses CDO and RPC calls.
@@ -67,38 +71,39 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 	}
 
 	@Override
-	protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap() {
-		Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
-		Preconditions.checkState(!concept.cdoView().isClosed(), "Underlying CDO view should be active.");
-		
-		final Map<String, Multimap<String, String>> descriptionAcceptabilityMap = newHashMap();
-		for (Description description : concept.getDescriptions()) {
+	protected Collection<ISnomedDescription> getDescriptions() {
+		final Set<ISnomedDescription> descriptions = newHashSet();
+		for (final Description description : concept.getDescriptions()) {
 			if (!description.isActive()) {
 				continue;
 			}
 			
-			final Multimap<String, String> acceptabilityMap = HashMultimap.create();
+			final SnomedDescription convertedDescription = new SnomedDescription();
+			convertedDescription.setId(description.getId());
+			convertedDescription.setActive(description.isActive());
+			convertedDescription.setCaseSignificance(CaseSignificance.getByConceptId(description.getCaseSignificance().getId()));
+			convertedDescription.setConceptId(description.getConcept().getId());
+			convertedDescription.setEffectiveTime(description.getEffectiveTime());
+			convertedDescription.setLanguageCode(description.getLanguageCode());
+			convertedDescription.setModuleId(description.getModule().getId());
+			convertedDescription.setReleased(description.isReleased());
+			convertedDescription.setTerm(description.getTerm());
+			convertedDescription.setType(new SnomedConcept(description.getType().getId()));
+			convertedDescription.setTypeId(description.getType().getId());
+			
+			final Map<String, Acceptability> acceptabilityMap = newHashMap();
 			for (SnomedLanguageRefSetMember member : description.getLanguageRefSetMembers()) {
 				if (!member.isActive()) {
 					continue;
 				}
-				acceptabilityMap.put(member.getAcceptabilityId(), member.getRefSetIdentifierId());
+				acceptabilityMap.put(member.getRefSetIdentifierId(), Acceptability.getByConceptId(member.getAcceptabilityId()));
 			}
-			descriptionAcceptabilityMap.put(description.getId(), acceptabilityMap);
+			convertedDescription.setAcceptabilityMap(acceptabilityMap);
 		}
 		
-		return descriptionAcceptabilityMap;
-	}
-
-	@Override
-	protected Collection<SnomedDescription> getDescriptions() {
-		return Collections2.filter(Collections2.transform(concept.getDescriptions(), SnomedDescription.CDOObjectConverterFunction.INSTANCE), 
-				SnomedDescription.ActivePredicate.INSTANCE);
+		return descriptions;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanProviderStrategy#getConcept(java.lang.String)
-	 */
 	@Override
 	protected SnomedConceptDocument getConcept(String conceptId) {
 		return ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(conceptId);

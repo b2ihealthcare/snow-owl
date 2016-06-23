@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
@@ -26,7 +25,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSet
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Multimap;
 
 /**
  * Interface for retrieving information about SNOMED&nbsp;CT core components on the server side.
@@ -51,13 +49,6 @@ public interface ISnomedComponentService {
 	 * @return a collection of component storage keys.
 	 */
 	LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType);
-	
-	/**
-	 * @param branchPath
-	 * @param conceptId
-	 * @return
-	 */
-	Map<String, Multimap<String, String>> getDescriptionPreferabilityMap(IBranchPath branchPath, String conceptId);
 	
 	/**
 	 * Returns with all existing {@link SnomedModuleDependencyRefSetMemberFragment module dependency reference set member}s from the underling ontology.
