@@ -32,7 +32,6 @@ import java.util.Set;
 
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.LongToStringFunction;
-import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
@@ -182,7 +181,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				.prepareSearchDescription()
 				.all()
 				.setExpand(expandOptions.get("expand", Options.class))
-				.filterByConceptId(StringToLongFunction.copyOf(conceptIds))
+				.filterByConceptId(conceptIds)
 				.setLocales(locales())
 				.build()
 				.execute(context());

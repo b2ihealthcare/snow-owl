@@ -206,6 +206,10 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 			return exactMatch(Fields.LANGUAGE_CODE, languageCode);
 		}
 		
+		public static Expression languageCodes(Collection<String> languageCodes) {
+			return matchAny(Fields.LANGUAGE_CODE, languageCodes);
+		}
+		
 	}
 	
 	public static class Builder extends SnomedDocumentBuilder<Builder> {
@@ -387,6 +391,22 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 	 */
 	public String getCaseSignificanceId() {
 		return caseSignificanceId;
+	}
+	
+	/**
+	 * Returns the language reference set identifiers where this description is preferred.
+	 * @return
+	 */
+	public Set<String> getPreferredIn() {
+		return preferredIn;
+	}
+	
+	/**
+	 * Returns the language reference set identifiers where this description is acceptable.
+	 * @return
+	 */
+	public Set<String> getAcceptableIn() {
+		return acceptableIn;
 	}
 	
 	/**

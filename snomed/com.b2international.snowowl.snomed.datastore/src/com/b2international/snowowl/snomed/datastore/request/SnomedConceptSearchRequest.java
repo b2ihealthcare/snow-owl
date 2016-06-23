@@ -32,7 +32,6 @@ import java.util.Map;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -306,7 +305,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			.filterByActive(true)
 			.filterByTerm(term)
 			.filterByLanguageRefSetIds(languageRefSetIds())
-			.filterByConceptId(StringToLongFunction.copyOf(componentIds()));
+			.filterByConceptId(componentIds());
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);

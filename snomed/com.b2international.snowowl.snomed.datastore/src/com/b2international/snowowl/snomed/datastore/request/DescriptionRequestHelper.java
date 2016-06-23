@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -32,7 +31,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -176,7 +174,7 @@ public abstract class DescriptionRequestHelper {
 	private SnomedDescriptionSearchRequestBuilder prepareFsnSearchDefault(final Collection<String> conceptIds) {
 		return SnomedRequests.prepareSearchDescription()
 				.filterByActive(true)
-				.filterByConceptId(Collections2.transform(conceptIds, new StringToLongFunction()))
+				.filterByConceptId(conceptIds)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 				.setLimit(conceptIds.size());
 	}
@@ -196,7 +194,7 @@ public abstract class DescriptionRequestHelper {
 	private SnomedDescriptionSearchRequestBuilder preparePtSearch(final Collection<String> conceptIds, final List<ExtendedLocale> locales) {
 		return SnomedRequests.prepareSearchDescription()
 				.filterByActive(true)
-				.filterByConceptId(Collections2.transform(conceptIds, new StringToLongFunction()))
+				.filterByConceptId(conceptIds)
 				.filterByType("<<" + Concepts.SYNONYM)
 				.filterByAcceptability(Acceptability.PREFERRED)
 				.filterByExtendedLocales(locales)

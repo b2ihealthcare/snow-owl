@@ -56,8 +56,8 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 	
 	protected SnomedSearchRequest() {}
 	
-	protected List<Long> languageRefSetIds() {
-		return getList(OptionKey.LANGUAGE_REFSET, Long.class);
+	protected List<String> languageRefSetIds() {
+		return getList(OptionKey.LANGUAGE_REFSET, String.class);
 	}
 
 	@Override
