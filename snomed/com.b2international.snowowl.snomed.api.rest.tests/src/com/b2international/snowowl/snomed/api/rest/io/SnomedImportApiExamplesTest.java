@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.io;
 
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemCreated;
-import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentActive;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertConceptExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertConceptNotExists;
