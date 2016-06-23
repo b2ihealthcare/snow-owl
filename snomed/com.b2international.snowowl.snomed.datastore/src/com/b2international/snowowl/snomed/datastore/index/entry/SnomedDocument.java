@@ -21,10 +21,7 @@ import static com.b2international.index.query.Expressions.matchRange;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.Serializable;
-
 import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
@@ -36,7 +33,7 @@ import com.google.common.base.Predicate;
 /**
  * Common superclass for SNOMED CT transfer objects.
  */
-public abstract class SnomedDocument extends RevisionDocument implements IComponent<String>, Serializable {
+public abstract class SnomedDocument extends RevisionDocument {
 
 	public static abstract class Expressions extends RevisionDocument.Expressions {
 		
