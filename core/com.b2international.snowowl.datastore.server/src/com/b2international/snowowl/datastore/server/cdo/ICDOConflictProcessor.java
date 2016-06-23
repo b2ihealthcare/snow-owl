@@ -23,6 +23,7 @@ import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.snowowl.core.exceptions.ConflictException;
@@ -125,5 +126,5 @@ public interface ICDOConflictProcessor {
 	 * @param conflicts
 	 * @return
 	 */
-	Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts);
+	Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts);
 }

@@ -26,7 +26,7 @@ import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta.Type;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -203,15 +203,15 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 
 	@Override
-	public Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
+	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
 			return FluentIterable.from(conflicts.values()).transform(new Function<Conflict, MergeConflict>() {
 				@Override public MergeConflict apply(Conflict input) {
-					return SnomedMergeConflictMapper.convert(input, sourceTransaction, targetTransaction);
+					return SnomedMergeConflictMapper.convert(input, sourceView, targetView);
 				}
 			}).toList();
 		}
-		return super.handleCDOConflicts(sourceTransaction, targetTransaction, conflicts);
+		return super.handleCDOConflicts(sourceView, targetView, conflicts);
 	}
 	
 	@Override

@@ -26,8 +26,8 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.ObjectNotFoundException;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
@@ -53,79 +53,79 @@ import com.google.common.collect.Ordering;
  */
 public class SnomedMergeConflictMapper {
 
-	public static MergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public static MergeConflict convert(final Conflict conflict, final CDOView sourceView, final CDOView targetView) {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
-			return from((ChangedInSourceAndTargetConflict) conflict, targetTransaction);
+			return from((ChangedInSourceAndTargetConflict) conflict, targetView);
 		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
-			return from((ChangedInSourceAndDetachedInTargetConflict) conflict, sourceTransaction);
+			return from((ChangedInSourceAndDetachedInTargetConflict) conflict, sourceView);
 		} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
-			return from((ChangedInTargetAndDetachedInSourceConflict) conflict, targetTransaction);
+			return from((ChangedInTargetAndDetachedInSourceConflict) conflict, targetView);
 		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
-			return from((AddedInSourceAndTargetConflict) conflict, targetTransaction);
+			return from((AddedInSourceAndTargetConflict) conflict, targetView);
 		} else if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
-			return from((AddedInSourceAndDetachedInTargetConflict) conflict, sourceTransaction);
+			return from((AddedInSourceAndDetachedInTargetConflict) conflict, sourceView);
 		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
-			return from((AddedInTargetAndDetachedInSourceConflict) conflict, targetTransaction);
+			return from((AddedInTargetAndDetachedInSourceConflict) conflict, targetView);
 		}
 		throw new IllegalArgumentException("Unknown conflict type: " + conflict);
 	}
 
-	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict, final CDOTransaction targetTransaction) {
+	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetTransaction, conflict.getTargetDelta().getID()))
-				.withArtefactType(getType(targetTransaction, conflict.getTargetDelta().getID()))
+				.withArtefactId(getComponentId(targetView, conflict.getTargetDelta().getID()))
+				.withArtefactType(getType(targetView, conflict.getTargetDelta().getID()))
 				.withConflictingAttributes(getConflictingAttributes(conflict.getTargetDelta()))
 				.withType(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}
 
-	public static MergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
+	public static MergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOView sourceView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(sourceTransaction, conflict.getSourceDelta().getID()))
-				.withArtefactType(getType(sourceTransaction, conflict.getSourceDelta().getID()))
+				.withArtefactId(getComponentId(sourceView, conflict.getSourceDelta().getID()))
+				.withArtefactType(getType(sourceView, conflict.getSourceDelta().getID()))
 				.withConflictingAttributes(getConflictingAttributes(conflict.getSourceDelta()))
 				.withType(ConflictType.DELETED_WHILE_CHANGED)
 				.build();
 	}
 
-	public static MergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction targetTransaction) {
+	public static MergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetTransaction, conflict.getTargetDelta().getID()))
-				.withArtefactType(getType(targetTransaction, conflict.getTargetDelta().getID()))
+				.withArtefactId(getComponentId(targetView, conflict.getTargetDelta().getID()))
+				.withArtefactType(getType(targetView, conflict.getTargetDelta().getID()))
 				.withConflictingAttributes(getConflictingAttributes(conflict.getTargetDelta()))
 				.withType(ConflictType.CHANGED_WHILE_DELETED)
 				.build();
 	}
 
-	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction targetTransaction) {
+	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetTransaction, conflict.getTargetId()))
-				.withArtefactType(getType(targetTransaction, conflict.getTargetId()))
-				.withConflictingAttributes(Collections.singletonList("id")) // FIXME
+				.withArtefactId(getComponentId(targetView, conflict.getTargetId()))
+				.withArtefactType(getType(targetView, conflict.getTargetId()))
+				.withConflictingAttributes(Collections.singletonList("id")) // FIXME?
 				.withType(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}
 
-	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
+	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOView sourceView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(sourceTransaction, conflict.getTargetId()))
-				.withArtefactType(getType(sourceTransaction, conflict.getTargetId()))
+				.withArtefactId(getComponentId(sourceView, conflict.getTargetId()))
+				.withArtefactType(getType(sourceView, conflict.getTargetId()))
 				.withType(ConflictType.CAUSES_MISSING_REFERENCE)
 				.build();
 	}
 	
-	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction targetTransaction) {
+	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetTransaction, conflict.getTargetId()))
+				.withArtefactId(getComponentId(targetView, conflict.getTargetId()))
 				.withConflictingAttributes(Strings.isNullOrEmpty(conflict.getFeatureName()) ? Collections.<String>emptyList() : singletonList(conflict.getFeatureName()))
-				.withArtefactType(getType(targetTransaction, conflict.getTargetId()))
+				.withArtefactType(getType(targetView, conflict.getTargetId()))
 				.withType(ConflictType.HAS_MISSING_REFERENCE)
 				.build();
 	}
 
-	private static String getComponentId(final CDOTransaction transaction, final CDOID id) {
+	private static String getComponentId(final CDOView view, final CDOID id) {
 		try {
-			final CDOObject object = transaction.getObject(id);
+			final CDOObject object = view.getObject(id);
 			if (object != null) {
 				if (object instanceof Component) {
 					return ((Component) object).getId();
@@ -139,9 +139,9 @@ public class SnomedMergeConflictMapper {
 		return id.toString();
 	}
 
-	private static String getType(final CDOTransaction transaction, final CDOID id) {
+	private static String getType(final CDOView view, final CDOID id) {
 		try {
-			final CDOObject object = transaction.getObject(id);
+			final CDOObject object = view.getObject(id);
 			return object.eClass().getName();
 		} catch (final ObjectNotFoundException e) {
 			// fall through

@@ -23,6 +23,7 @@ import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
@@ -106,10 +107,10 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 		delegate.postProcess(transaction);
 	}
 	
-	public Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView) {
 		if (isRebase) {
-			return delegate.handleCDOConflicts(targetTransaction, sourceTransaction, getConflicts());
+			return delegate.handleCDOConflicts(targetView, sourceView, getConflicts());
 		}
-		return delegate.handleCDOConflicts(sourceTransaction, targetTransaction, getConflicts());
+		return delegate.handleCDOConflicts(sourceView, targetView, getConflicts());
 	}
 }

@@ -28,6 +28,7 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.core.Metadata;
@@ -170,10 +171,10 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     		merger.postProcess(targetTransaction);
     		return targetTransaction;
     	} catch (CDOMerger.ConflictException e) {
-    		CDOTransaction sourceTransaction = connection.createTransaction(sourceBranch);
-    		Collection<MergeConflict> conflicts = merger.handleCDOConflicts(sourceTransaction, targetTransaction);
+    		CDOView sourceView = connection.createView(sourceBranch);
+    		Collection<MergeConflict> conflicts = merger.handleCDOConflicts(sourceView, targetTransaction);
     		LifecycleUtil.deactivate(targetTransaction);
-    		LifecycleUtil.deactivate(sourceTransaction);
+    		LifecycleUtil.deactivate(sourceView);
 			throw new MergeConflictException(conflicts, String.format("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path()));
     	}
     }

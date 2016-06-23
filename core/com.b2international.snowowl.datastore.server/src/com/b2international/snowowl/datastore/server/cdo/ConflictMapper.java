@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.cdo;
 
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
@@ -30,7 +29,7 @@ import com.b2international.snowowl.core.merge.MergeConflictImpl;
  */
 public class ConflictMapper {
 
-	public static MergeConflict convert(final Conflict conflict, final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction) {
+	public static MergeConflict convert(final Conflict conflict) {
 		if (conflict instanceof ChangedInSourceAndTargetConflict) {
 			return from((ChangedInSourceAndTargetConflict) conflict);
 		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
@@ -38,11 +37,11 @@ public class ConflictMapper {
 		} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
 			return from((ChangedInTargetAndDetachedInSourceConflict) conflict);
 		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
-			return from((AddedInSourceAndTargetConflict) conflict, sourceTransaction);
+			return from((AddedInSourceAndTargetConflict) conflict);
 		} else if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
-			return from((AddedInSourceAndDetachedInTargetConflict) conflict, sourceTransaction);
+			return from((AddedInSourceAndDetachedInTargetConflict) conflict);
 		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
-			return from((AddedInTargetAndDetachedInSourceConflict) conflict, targetTransaction);
+			return from((AddedInTargetAndDetachedInSourceConflict) conflict);
 		}
 		throw new IllegalArgumentException("Unknown conflict type: " + conflict);
 	}
@@ -68,21 +67,21 @@ public class ConflictMapper {
 				.build();
 	}
 	
-	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOTransaction sourceTransaction) {
+	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict) {
 		return MergeConflictImpl.builder()
 				.withArtefactId(conflict.getTargetId().toString())
 				.withType(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}
 	
-	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOTransaction sourceTransaction) {
+	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict) {
 		return MergeConflictImpl.builder()
 				.withArtefactId(conflict.getTargetId().toString())
 				.withType(ConflictType.CAUSES_MISSING_REFERENCE)
 				.build();
 	}
 	
-	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOTransaction targetTransaction) {
+	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict) {
 		return MergeConflictImpl.builder()
 				.withArtefactId(conflict.getTargetId().toString())
 				.withType(ConflictType.HAS_MISSING_REFERENCE)

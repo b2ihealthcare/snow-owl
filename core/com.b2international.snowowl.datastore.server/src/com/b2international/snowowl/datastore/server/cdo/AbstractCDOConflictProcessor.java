@@ -32,6 +32,7 @@ import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -123,11 +124,11 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 
 	@Override
-	public Collection<MergeConflict> handleCDOConflicts(final CDOTransaction sourceTransaction, final CDOTransaction targetTransaction, final Map<CDOID, Conflict> conflicts) {
+	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
 			return FluentIterable.from(conflicts.values()).transform(new Function<Conflict, MergeConflict>() {
 				@Override public MergeConflict apply(Conflict input) {
-					return ConflictMapper.convert(input, sourceTransaction, targetTransaction);
+					return ConflictMapper.convert(input);
 				}
 			}).toList();
 		}
