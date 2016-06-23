@@ -68,7 +68,7 @@ public class MergeConflictImpl implements MergeConflict {
 	}
 
 	private static String buildAttributesMessage(List<String> conflictingAttributes) {
-		return Joiner.on(ATTRIBUTE_SEPARATOR).join(conflictingAttributes);
+		return Joiner.on(ATTRIBUTE_SEPARATOR).join(FluentIterable.from(conflictingAttributes).toSortedList(Ordering.natural()));
 	}
 
 	private MergeConflictImpl(String artefactId, String artefactType, List<String> conflictingAttributes, ConflictType type, String message) {
