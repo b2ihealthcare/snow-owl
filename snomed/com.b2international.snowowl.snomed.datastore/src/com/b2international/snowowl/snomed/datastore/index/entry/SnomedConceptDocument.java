@@ -158,6 +158,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
+		
+		if (input == null) {
+			System.err.println("Null input");
+		}
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
 				.id(input.getId())

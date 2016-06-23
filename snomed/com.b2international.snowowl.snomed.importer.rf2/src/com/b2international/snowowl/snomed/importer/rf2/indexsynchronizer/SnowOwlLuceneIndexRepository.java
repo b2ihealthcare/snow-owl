@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.server.console;
+package com.b2international.snowowl.snomed.importer.rf2.indexsynchronizer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchHandler;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
@@ -38,10 +39,12 @@ import org.eclipse.emf.cdo.common.lock.IDurableLockingManager.LockArea;
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit;
 import org.eclipse.emf.cdo.common.protocol.CDODataInput;
 import org.eclipse.emf.cdo.common.protocol.CDODataOutput;
+import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.CDORevisionHandler;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.common.util.CDOQueryInfo;
+import org.eclipse.emf.cdo.internal.common.commit.CDOCommitInfoImpl;
 import org.eclipse.emf.cdo.server.IQueryHandler;
 import org.eclipse.emf.cdo.server.IQueryHandlerProvider;
 import org.eclipse.emf.cdo.server.IStoreAccessor;
@@ -67,6 +70,7 @@ import org.eclipse.emf.cdo.spi.server.InternalStore;
 import org.eclipse.emf.cdo.spi.server.InternalSynchronizableRepository;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.cdo.spi.server.InternalView;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -77,16 +81,64 @@ import org.eclipse.net4j.util.concurrent.IRWLockManager.LockType;
 import org.eclipse.net4j.util.event.IListener;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-/**
- * Fake internal repository to use as part of the index recreation based on the CDO store.
- */
-public class SnowOwlDummyInternalRepository implements InternalSynchronizableRepository {
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.IBranchPoint;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.BranchPointUtils;
+import com.b2international.snowowl.datastore.cdo.ICDOConnection;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactoryManager;
 
-	private State state;
+/**
+ * Snow Owl's Lucene index-based repository responsible for recreating the index
+ * based on the based on the CDO store.
+ */
+public class SnowOwlLuceneIndexRepository implements InternalSynchronizableRepository {
+
+	private State state = State.OFFLINE;
+	int counter = 0;
+
+	@Override
+	public void handleCommitInfo(CDOCommitInfo commitInfo) {
+
+		String repositoryName = "snomedStore";
+		ICDOConnectionManager connectionManager = ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
+		ICDOConnection connection = connectionManager.getByUuid(repositoryName);
+
+		List<CDOIDAndVersion> newObjects = commitInfo.getNewObjects();
+		System.out.println("New objects size: " + newObjects.size());
+		
+		for (CDOIDAndVersion cdoidAndVersion : newObjects) {
+			InternalCDORevision cdoRevision = (InternalCDORevision) cdoidAndVersion;
+			IBranchPath branchPath = BranchPathUtils.createPath(cdoRevision.getBranch());
+			IBranchPoint branchPoint = BranchPointUtils.create(connection, branchPath, cdoRevision.getTimeStamp());
+			
+			CDOView cdoView = connection.createView(branchPoint);
+			CDOObject object = cdoView.getObject(cdoRevision.getID());
+			System.out.println("CDO Object: " + object);
+			
+		}
+		
+;/*
+		SnomedOntology snomedOntology = new SnomedOntology(commitInfo);
+		snomedOntology.preProcessCommitInfo();
+		snomedOntology.processRevisions();
+		snomedOntology.createDocuments();
+		*/
+		
+		
+		
+	}
+	
+	@Override
+	public String[] getLockAreaIDs() {
+		return new String[] {};
+	}
 
 	@Override
 	public int getLastReplicatedBranchID() {
-		//no branch has been synched
+		// no branch has been synched
 		return -1;
 	}
 
@@ -118,7 +170,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return 0;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.server.IRepository#waitForCommit(long)
 	 */
 	@Override
@@ -127,7 +181,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return 0;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.server.IRepository#validateTimeStamp(long)
 	 */
 	@Override
@@ -136,7 +192,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.server.IRepository#getCommitInfoHandlers()
 	 */
 	@Override
@@ -147,12 +205,14 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	@Override
 	public void addCommitInfoHandler(CDOCommitInfoHandler handler) {
-		
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.server.IRepository#removeCommitInfoHandler(org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.emf.cdo.server.IRepository#removeCommitInfoHandler(org.
+	 * eclipse.emf.cdo.common.commit.CDOCommitInfoHandler)
 	 */
 	@Override
 	public void removeCommitInfoHandler(CDOCommitInfoHandler handler) {
@@ -160,7 +220,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.server.IRepository#getHandlers()
 	 */
 	@Override
@@ -169,8 +231,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.server.IRepository#addHandler(org.eclipse.emf.cdo.server.IRepository.Handler)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.server.IRepository#addHandler(org.eclipse.emf.cdo.
+	 * server.IRepository.Handler)
 	 */
 	@Override
 	public void addHandler(Handler handler) {
@@ -178,8 +244,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.server.IRepository#removeHandler(org.eclipse.emf.cdo.server.IRepository.Handler)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.server.IRepository#removeHandler(org.eclipse.emf.cdo.
+	 * server.IRepository.Handler)
 	 */
 	@Override
 	public void removeHandler(Handler handler) {
@@ -187,8 +257,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.server.IRepository#setInitialPackages(org.eclipse.emf.ecore.EPackage[])
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.server.IRepository#setInitialPackages(org.eclipse.emf
+	 * .ecore.EPackage[])
 	 */
 	@Override
 	public void setInitialPackages(EPackage... initialPackages) {
@@ -196,7 +270,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getName()
 	 */
 	@Override
@@ -204,7 +280,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return "Dummy Index store";
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getUUID()
 	 */
 	@Override
@@ -213,7 +291,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getType()
 	 */
 	@Override
@@ -227,7 +307,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return state;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getCreationTime()
 	 */
 	@Override
@@ -236,7 +318,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return 0;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getStoreType()
 	 */
 	@Override
@@ -245,7 +329,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getObjectIDTypes()
 	 */
 	@Override
@@ -254,8 +340,11 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getIDGenerationLocation()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.common.CDOCommonRepository#getIDGenerationLocation()
 	 */
 	@Override
 	public IDGenerationLocation getIDGenerationLocation() {
@@ -263,7 +352,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#getRootResourceID()
 	 */
 	@Override
@@ -272,7 +363,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#isSupportingAudits()
 	 */
 	@Override
@@ -281,8 +374,11 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#isSupportingBranches()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.common.CDOCommonRepository#isSupportingBranches()
 	 */
 	@Override
 	public boolean isSupportingBranches() {
@@ -290,7 +386,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return false;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#isSupportingEcore()
 	 */
 	@Override
@@ -299,8 +397,11 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#isEnsuringReferentialIntegrity()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.emf.cdo.common.CDOCommonRepository#
+	 * isEnsuringReferentialIntegrity()
 	 */
 	@Override
 	public boolean isEnsuringReferentialIntegrity() {
@@ -308,7 +409,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return false;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.common.util.CDOTimeProvider#getTimeStamp()
 	 */
 	@Override
@@ -317,8 +420,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.server.IQueryHandlerProvider#getQueryHandler(org.eclipse.emf.cdo.common.util.CDOQueryInfo)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.server.IQueryHandlerProvider#getQueryHandler(org.
+	 * eclipse.emf.cdo.common.util.CDOQueryInfo)
 	 */
 	@Override
 	public IQueryHandler getQueryHandler(CDOQueryInfo info) {
@@ -326,7 +433,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.net4j.util.container.IContainer#isEmpty()
 	 */
 	@Override
@@ -335,7 +444,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return false;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.net4j.util.container.IContainer#getElements()
 	 */
 	@Override
@@ -344,8 +455,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.net4j.util.event.INotifier#addListener(org.eclipse.net4j.util.event.IListener)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.net4j.util.event.INotifier#addListener(org.eclipse.net4j.util
+	 * .event.IListener)
 	 */
 	@Override
 	public void addListener(IListener listener) {
@@ -353,8 +468,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.net4j.util.event.INotifier#removeListener(org.eclipse.net4j.util.event.IListener)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.net4j.util.event.INotifier#removeListener(org.eclipse.net4j.
+	 * util.event.IListener)
 	 */
 	@Override
 	public void removeListener(IListener listener) {
@@ -362,7 +481,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.net4j.util.event.INotifier#hasListeners()
 	 */
 	@Override
@@ -371,7 +492,9 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return false;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.net4j.util.event.INotifier#getListeners()
 	 */
 	@Override
@@ -380,8 +503,11 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setName(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setName(java.lang.
+	 * String)
 	 */
 	@Override
 	public void setName(String name) {
@@ -389,8 +515,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setType(org.eclipse.emf.cdo.common.CDOCommonRepository.Type)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.spi.server.InternalRepository#setType(org.eclipse.emf
+	 * .cdo.common.CDOCommonRepository.Type)
 	 */
 	@Override
 	public void setType(Type type) {
@@ -398,8 +528,12 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setState(org.eclipse.emf.cdo.common.CDOCommonRepository.State)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.emf.cdo.spi.server.InternalRepository#setState(org.eclipse.
+	 * emf.cdo.common.CDOCommonRepository.State)
 	 */
 	@Override
 	public void setState(State state) {
@@ -407,270 +541,143 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getStore()
 	 */
 	@Override
 	public InternalStore getStore() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setStore(org.eclipse.emf.cdo.spi.server.InternalStore)
-	 */
 	@Override
 	public void setStore(InternalStore store) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setProperties(java.util.Map)
-	 */
 	@Override
 	public void setProperties(Map<String, String> properties) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getBranchManager()
-	 */
 	@Override
 	public InternalCDOBranchManager getBranchManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setBranchManager(org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager)
-	 */
 	@Override
 	public void setBranchManager(InternalCDOBranchManager branchManager) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getPackageRegistryCommitLock()
-	 */
 	@Override
 	public Semaphore getPackageRegistryCommitLock() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getPackageRegistry()
-	 */
 	@Override
 	public InternalCDOPackageRegistry getPackageRegistry() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getPackageRegistry(boolean)
-	 */
 	@Override
 	public InternalCDOPackageRegistry getPackageRegistry(boolean considerCommitContext) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getRevisionManager()
-	 */
 	@Override
 	public InternalCDORevisionManager getRevisionManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setRevisionManager(org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager)
-	 */
 	@Override
 	public void setRevisionManager(InternalCDORevisionManager revisionManager) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getCommitInfoManager()
-	 */
 	@Override
 	public InternalCDOCommitInfoManager getCommitInfoManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getSessionManager()
-	 */
 	@Override
 	public InternalSessionManager getSessionManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setSessionManager(org.eclipse.emf.cdo.spi.server.InternalSessionManager)
-	 */
 	@Override
 	public void setSessionManager(InternalSessionManager sessionManager) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getLockManager()
-	 */
 	@Override
 	public InternalLockManager getLockManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getLockingManager()
-	 */
 	@Override
 	public InternalLockManager getLockingManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getQueryManager()
-	 */
 	@Override
 	public InternalQueryManager getQueryManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setQueryHandlerProvider(org.eclipse.emf.cdo.server.IQueryHandlerProvider)
-	 */
 	@Override
 	public void setQueryHandlerProvider(IQueryHandlerProvider queryHandlerProvider) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#getCommitManager()
-	 */
 	@Override
 	public InternalCommitManager getCommitManager() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#createCommitContext(org.eclipse.emf.cdo.spi.server.InternalTransaction)
-	 */
 	@Override
 	public InternalCommitContext createCommitContext(InternalTransaction transaction) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#createCommitTimeStamp(org.eclipse.net4j.util.om.monitor.OMMonitor)
-	 */
 	@Override
 	public long[] createCommitTimeStamp(OMMonitor monitor) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#forceCommitTimeStamp(long, org.eclipse.net4j.util.om.monitor.OMMonitor)
-	 */
 	@Override
 	public long[] forceCommitTimeStamp(long timestamp, OMMonitor monitor) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#endCommit(long)
-	 */
 	@Override
 	public void endCommit(long timeStamp) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#failCommit(long)
-	 */
 	@Override
 	public void failCommit(long timeStamp) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#sendCommitNotification(org.eclipse.emf.cdo.spi.server.InternalSession, org.eclipse.emf.cdo.common.commit.CDOCommitInfo)
-	 */
 	@Override
 	public void sendCommitNotification(InternalSession sender, CDOCommitInfo commitInfo) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setRootResourceID(org.eclipse.emf.cdo.common.id.CDOID)
-	 */
 	@Override
 	public void setRootResourceID(CDOID rootResourceID) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#setLastCommitTimeStamp(long)
-	 */
 	@Override
 	public void setLastCommitTimeStamp(long commitTimeStamp) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#ensureChunks(org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision)
-	 */
 	@Override
 	public void ensureChunks(InternalCDORevision revision) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#ensureChunk(org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision, org.eclipse.emf.ecore.EStructuralFeature, int, int)
-	 */
 	@Override
 	public IStoreAccessor ensureChunk(InternalCDORevision revision, EStructuralFeature feature, int chunkStart, int chunkEnd) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#notifyReadAccessHandlers(org.eclipse.emf.cdo.spi.server.InternalSession, org.eclipse.emf.cdo.common.revision.CDORevision[], java.util.List)
-	 */
 	@Override
 	public void notifyReadAccessHandlers(InternalSession session, CDORevision[] revisions, List<CDORevision> additionalRevisions) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalRepository#notifyWriteAccessHandlers(org.eclipse.emf.cdo.server.ITransaction, org.eclipse.emf.cdo.server.IStoreAccessor.CommitContext, boolean, org.eclipse.net4j.util.om.monitor.OMMonitor)
-	 */
 	@Override
 	public void notifyWriteAccessHandlers(ITransaction transaction, CommitContext commitContext, boolean beforeCommit, OMMonitor monitor) {
 	}
@@ -681,6 +688,7 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	@Override
 	public void replicate(CDOReplicationContext context) {
+		System.out.println("Context: " + context.getLastReplicatedCommitTime());
 	}
 
 	@Override
@@ -771,7 +779,6 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	@Override
 	public int loadBranches(int startID, int endID, CDOBranchHandler branchHandler) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
@@ -795,19 +802,8 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 	}
 
 	@Override
-	public String[] getLockAreaIDs() {
-		return null;
-	}
-
-	@Override
 	public void handleBranch(CDOBranch branch) {
-		//branches are already created during start
-	}
-
-	@Override
-	public void handleCommitInfo(CDOCommitInfo commitInfo) {
-		//do the actual work here
-		System.out.println("Commit info: " + commitInfo);
+		// branches are already created during start
 	}
 
 	@Override
@@ -825,44 +821,24 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 
 	@Override
 	public InternalRepositorySynchronizer getSynchronizer() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalSynchronizableRepository#setSynchronizer(org.eclipse.emf.cdo.spi.server.InternalRepositorySynchronizer)
-	 */
 	@Override
 	public void setSynchronizer(InternalRepositorySynchronizer synchronizer) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalSynchronizableRepository#getReplicatorSession()
-	 */
 	@Override
 	public InternalSession getReplicatorSession() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalSynchronizableRepository#setLastReplicatedBranchID(int)
-	 */
 	@Override
 	public void setLastReplicatedBranchID(int lastReplicatedBranchID) {
-		// TODO Auto-generated method stub
-
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.emf.cdo.spi.server.InternalSynchronizableRepository#setLastReplicatedCommitTime(long)
-	 */
 	@Override
 	public void setLastReplicatedCommitTime(long lastReplicatedCommitTime) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

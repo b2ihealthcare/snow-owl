@@ -17,27 +17,12 @@ package com.b2international.snowowl.server.console;
 
 import java.util.Collection;
 
-import org.eclipse.emf.cdo.common.CDOCommonRepository.State;
-import org.eclipse.emf.cdo.internal.server.syncing.RepositorySynchronizer;
-import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.server.IRepository;
-import org.eclipse.emf.cdo.session.CDOSessionConfiguration;
-import org.eclipse.emf.cdo.session.CDOSessionConfigurationFactory;
-import org.eclipse.emf.cdo.spi.server.InternalSynchronizableRepository;
-import org.eclipse.net4j.util.event.IEvent;
-import org.eclipse.net4j.util.event.IListener;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
-import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 
 /**
  * OSGI command contribution with Snow Owl commands.
@@ -53,7 +38,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 //		buffer.append("\tsnowowl test - Execute Snow Owl server smoke test\n");
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
-		buffer.append("\tsnowowl recreateindex - recreates the index from the CDO store.");
 		return buffer.toString();
 	}
 
@@ -80,11 +64,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				return;
 			}
 			
-			if ("recreateindex".equals(cmd)) {
-				executeRecreateIndex(interpreter);
-				return;
-			}
-			
 			interpreter.println(getHelp());
 		} catch (Exception ex) {
 			interpreter.println(ex.getMessage());
@@ -99,42 +78,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		} else {
 			interpreter.print("Namespace URI should be specified.");
 		}
-	}
-	
-	@SuppressWarnings("restriction")
-	public synchronized void executeRecreateIndex(CommandInterpreter interpreter) throws InterruptedException {
-		
-		String repositoryName = "snomedStore";
-		
-		ICDORepositoryManager repositoryManager = ApplicationContext.getServiceForClass(ICDORepositoryManager.class);
-		ICDOConnectionManager connectionManager = ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
-		
-		
-		RepositorySynchronizer synchronizer = new RepositorySynchronizer();
-		ICDORepository cdoRepository = repositoryManager.getByUuid(repositoryName);
-		IRepository repository = cdoRepository.getRepository();
-		ICDOConnection cdoConnection = connectionManager.getByUuid(repositoryName);
-		final CDONet4jSessionConfiguration sessionConfiguration = cdoConnection.getSessionConfiguration();
-		synchronizer.setRemoteSessionConfigurationFactory(new CDOSessionConfigurationFactory() {
-			
-			@Override
-			public CDOSessionConfiguration createSessionConfiguration() {
-				return sessionConfiguration;
-			}
-		});
-
-		//replicate commits as opposed to raw lines
-		synchronizer.setRawReplication(false);
-		SnowOwlDummyInternalRepository localRepository = new SnowOwlDummyInternalRepository();
-		synchronizer.setLocalRepository(localRepository);
-		synchronizer.activate();
-		
-		//do the work, wait until it finishes
-		do {
-			Thread.sleep(10000);
-		} while (localRepository.getState() == State.ONLINE);
-		
-		synchronizer.deactivate();
 	}
 	
 	public synchronized void checkServices(CommandInterpreter ci) {

@@ -162,7 +162,8 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			}
 			
 		} else {
-			throw new IncompleteTaxonomyException(invalidRelationships);
+			///throw new IncompleteTaxonomyException(invalidRelationships);
+			LOGGER.warn("Missing concepts from relationships", new IncompleteTaxonomyException(invalidRelationships));
 		}
 
 		dirty = false;
@@ -404,10 +405,12 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		final BitSet ancestorInternalIds = new BitSet(conceptCount);
 	
 		// ancestors == supertypes of this concept's direct parents
-		for (final int directParent : ancestors[id]) {
-			collectAncestors(directParent, ancestorInternalIds);
+		int[] internalId = ancestors[id];
+		if (internalId != null) {
+			for (final int directParent : internalId) {
+				collectAncestors(directParent, ancestorInternalIds);
+			}
 		}
-	
 		return processElements(Long.parseLong(conceptId), processingFunction, ancestorInternalIds);		
 	}
 

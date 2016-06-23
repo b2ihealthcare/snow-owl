@@ -122,7 +122,7 @@ public class TransactionCommitContext implements InternalCommitContext
 
   private TransactionPackageRegistry packageRegistry;
 
-  private IStoreAccessor accessor;
+  protected IStoreAccessor accessor;
 
   private long timeStamp = CDORevision.UNSPECIFIED_DATE;
 
