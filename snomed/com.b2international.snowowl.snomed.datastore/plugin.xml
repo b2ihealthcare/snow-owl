@@ -339,11 +339,6 @@
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedTaxonomyClientServiceConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedTaxonomyClientServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedStatedClientTerminologyBrowserConfigJob"
             id="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedStatedClientTerminologyBrowserConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
