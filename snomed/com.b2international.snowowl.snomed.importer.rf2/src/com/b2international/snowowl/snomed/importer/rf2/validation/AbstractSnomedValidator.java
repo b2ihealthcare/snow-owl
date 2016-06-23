@@ -380,7 +380,7 @@ public abstract class AbstractSnomedValidator {
 			if (componentId.equals(partOfComponentId)) {
 				messages.add(String.format("Missing component '%s' in effective time '%s'", componentId, effectiveTime));
 			} else {
-				messages.add(String.format("Component '%s' references missing component '%' in effective time '%s'", partOfComponentId, componentId, effectiveTime));
+				messages.add(String.format("Component '%s' references missing component '%s' in effective time '%s'", partOfComponentId, componentId, effectiveTime));
 			}
 			return false;
 		}
