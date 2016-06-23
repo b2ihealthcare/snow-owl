@@ -30,7 +30,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -40,8 +39,6 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -104,11 +101,6 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 		return descriptions;
 	}
 	
-	@Override
-	protected SnomedConceptDocument getConcept(String conceptId) {
-		return ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(conceptId);
-	}
-
 	@Override
 	protected Collection<SnomedRelationship> getRelationships() {
 		final List<Relationship> sourceRelationships = concept.getOutboundRelationships();

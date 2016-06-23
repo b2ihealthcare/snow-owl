@@ -312,9 +312,6 @@ public abstract class WidgetBeanProviderStrategy {
 		return !groupModel.isUngrouped() && !Sets.intersection(unusedModel.getAllowedTypeIds(), WidgetBeanUtils.NEVER_GROUPED_RELATIONSHIP_TYPE_IDS).isEmpty();
 	}
 	
-	/*returns with the lightweight representation of the SNOMED CT concept identifier by the specified ID*/
-	abstract protected SnomedConceptDocument getConcept(final String conceptId);
-	
 	abstract protected Collection<ISnomedDescription> getDescriptions();
 	
 	abstract protected Collection<SnomedRelationship> getRelationships();

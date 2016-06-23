@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.widget;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -37,9 +35,9 @@ import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.component.IconIdProviderUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
@@ -92,7 +90,12 @@ public class WidgetBeanProvider {
 			monitor = new NullProgressMonitor();
 		}
 		
-		final boolean active = getServiceForClass(SnomedTaxonomyService.class).isActive(branchPath, conceptId);
+		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptId)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		final boolean active = concept.isActive();
 		
 		final ConceptWidgetBean cwb = new ConceptWidgetBean(conceptWidgetModel, conceptId, active);
 		
