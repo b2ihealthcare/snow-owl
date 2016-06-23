@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.importer.rf2.command;
+package com.b2international.snowowl.snomed.importer.rf2.indexsynchronizer;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
@@ -37,25 +37,33 @@ import org.eclipse.net4j.util.om.monitor.Monitor;
 
 import com.b2international.snowowl.datastore.server.DelegatingTransaction;
 
+/**
+ * Replication context the delegates the actual work to the same repository the replications is reading from. 
+ * During the replication, the change processors responsible for writing Lucene index documents 
+ * are triggered but no actual records are written into the repository via the replaced CommitContext
+ */
+@SuppressWarnings("restriction")
 public class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	private final long initialLastCommitTime;
 	private final int initialBranchId;
 	private final InternalSession replicatorSession;
 
+	/**
+	 * 
+	 * @param initialBranchId
+	 * @param initialLastCommitTime
+	 * @param session
+	 */
 	public IndexMigrationReplicationContext(int initialBranchId, long initialLastCommitTime, InternalSession session) {
 		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
 	}
 
-	@SuppressWarnings("restriction")
 	@Override
 	public void handleCommitInfo(final CDOCommitInfo commitInfo) {
-		CDOBranch branch = commitInfo.getBranch();
 
-		CDOBranchPoint head = branch.getHead();
-		
 		final InternalRepository repository = replicatorSession.getManager().getRepository();
 		final InternalCDORevisionManager revisionManager = repository.getRevisionManager();
 		
@@ -90,9 +98,9 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 						InternalCDORevision revision = super.getRevision(id, branchPoint, referenceChunk, prefetchDepth, loadOnDemand);
 						InternalCDORevision copiedRevision = revision.copy();
 						
-						//we fake later revisions as brand new revision
+						//we fake later revisions as brand new revision (revised=0)
 						if (revision.getRevised() >= commitInfo.getTimeStamp() -1) {
-							copiedRevision.setRevised(0);
+							copiedRevision.setRevised(CDORevision.UNSPECIFIED_DATE);
 						}
 						return copiedRevision;
 					}
@@ -131,15 +139,16 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 				//do nothing
 			}
 			
-			//turn off post commit notifications from the repository
 			@Override 
 			public void sendCommitNotification(final InternalSession sender, final CDOCommitInfo commitInfo) {
-				//do nothing
+				//do nothing, no post commit notifications are expected
 			}
 		};
 		
+		// this is not the actual HEAD of the particular branch!!
+		CDOBranch branch = commitInfo.getBranch();
+		CDOBranchPoint head = branch.getHead();
 
-		// this is not the HEAD of the particular branch!!
 		InternalTransaction transaction = replicatorSession.openTransaction(InternalSession.TEMP_VIEW_ID, head);
 		DelegatingTransaction delegatingTransaction = new DelegatingTransaction(transaction) {
 
@@ -148,10 +157,9 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 			public InternalRepository getRepository() {
 				return delegateRepository;
 			}
-			
 		};
 
-		NonWritingReplicatorCommitContext commitContext = new NonWritingReplicatorCommitContext(delegatingTransaction, commitInfo);
+		NonWritingTransactionCommitContext commitContext = new NonWritingTransactionCommitContext(delegatingTransaction, commitInfo);
 
 		commitContext.preWrite();
 		boolean success = false;
@@ -165,7 +173,6 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 			transaction.close();
 			StoreThreadLocal.setSession(replicatorSession);
 		}
-
 	}
 
 	@Override

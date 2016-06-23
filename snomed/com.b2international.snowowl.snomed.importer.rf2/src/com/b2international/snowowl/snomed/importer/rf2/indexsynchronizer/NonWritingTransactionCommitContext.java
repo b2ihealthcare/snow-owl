@@ -1,7 +1,19 @@
-/*******************************************************************************
- * Copyright (c) 2016 B2i Healthcare. All rights reserved.
- *******************************************************************************/
-package com.b2international.snowowl.snomed.importer.rf2.command;
+/*
+ * Copyright 2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.snomed.importer.rf2.indexsynchronizer;
 
 import java.util.List;
 
@@ -11,9 +23,7 @@ import org.eclipse.emf.cdo.common.model.CDOPackageUnit;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.internal.server.TransactionCommitContext;
-import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
-import org.eclipse.emf.cdo.server.IStoreAccessor.CommitContext;
 import org.eclipse.emf.cdo.spi.common.model.InternalCDOPackageRegistry;
 import org.eclipse.emf.cdo.spi.common.model.InternalCDOPackageUnit;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
@@ -25,16 +35,15 @@ import org.eclipse.net4j.util.collection.Pair;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 /**
- *
+ * Commit context that does not actually write into the repository, only pretends to do so
+ * in order to trigger notifications.
  */
 @SuppressWarnings("restriction")
-public class NonWritingReplicatorCommitContext extends TransactionCommitContext {
+public class NonWritingTransactionCommitContext extends TransactionCommitContext {
 
 	private final CDOCommitInfo commitInfo;
 
-	//private IStoreAccessor reader;
-
-	public NonWritingReplicatorCommitContext(InternalTransaction transaction, CDOCommitInfo commitInfo) {
+	public NonWritingTransactionCommitContext(InternalTransaction transaction, CDOCommitInfo commitInfo) {
 		super(transaction);
 		this.commitInfo = commitInfo;
 
@@ -63,7 +72,7 @@ public class NonWritingReplicatorCommitContext extends TransactionCommitContext 
 	protected long[] createTimeStamp(OMMonitor monitor) {
 		
 		//roll back the clock -1
-		return new long[] { commitInfo.getTimeStamp() -1 , commitInfo.getPreviousTimeStamp() };
+		return new long[] { commitInfo.getTimeStamp()-1 , commitInfo.getPreviousTimeStamp() };
 	}
 
 	public void preWrite() {
@@ -71,7 +80,7 @@ public class NonWritingReplicatorCommitContext extends TransactionCommitContext 
 		// Allocate a store writer
 	    accessor = getTransaction().getRepository().getStore().getWriter(getTransaction());
 
-		//hide everything the writes in the store
+		//hide everything that writes in the store
 		accessor = new StoreAccessorDelegate(accessor) {
 
 			@Override
@@ -86,11 +95,10 @@ public class NonWritingReplicatorCommitContext extends TransactionCommitContext 
 			
 			@Override
 			public void commit(OMMonitor monitor) {
+				//do nothing
 			}
 		};
 
-		// Make the store reader available as a ThreadLocal variable
-		//StoreThreadLocal.setAccessor(accessor);
 		StoreThreadLocal.setCommitContext(this);
 	}
 	
@@ -103,22 +111,13 @@ public class NonWritingReplicatorCommitContext extends TransactionCommitContext 
 	public void applyIDMappings(OMMonitor monitor) {
 		monitor.begin();
 
-		// this notification will drive the change processor
+		//this is the notification that will drive the change processor
+		//and the sole reason of this class
 		try {
 			notifyBeforeCommitting(monitor);
 		} finally {
 			monitor.done();
 		}
-	}
-
-	@Override
-	protected void lockObjects() throws InterruptedException {
-		// Do nothing
-	}
-
-	@Override
-	protected void checkXRefs() {
-		// Do nothing
 	}
 
 	private static InternalCDOPackageUnit[] getNewPackageUnits(CDOCommitInfo commitInfo, InternalCDOPackageRegistry packageRegistry) {
@@ -131,7 +130,6 @@ public class NonWritingReplicatorCommitContext extends TransactionCommitContext 
 			packageRegistry.putPackageUnit(result[i]);
 			++i;
 		}
-
 		return result;
 	}
 
@@ -167,8 +165,17 @@ public class NonWritingReplicatorCommitContext extends TransactionCommitContext 
 		for (CDOIDAndVersion key : list) {
 			result[i++] = key.getID();
 		}
-
 		return result;
+	}
+	
+	@Override
+	protected void lockObjects() throws InterruptedException {
+		// Do nothing
+	}
+
+	@Override
+	protected void checkXRefs() {
+		// Do nothing
 	}
 
 }
