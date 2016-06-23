@@ -59,9 +59,9 @@ import com.b2international.snowowl.snomed.api.impl.domain.classification.Equival
 import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConceptSet;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
@@ -274,7 +274,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		for (final AbstractEquivalenceSet equivalenceSet : equivalenceSets) {
 
 			final List<IEquivalentConcept> convertedEquivalentConcepts = newArrayList();
-			for (final SnomedConceptDocument equivalentEntry : equivalenceSet.getConcepts()) {
+			for (final ISnomedConcept equivalentEntry : equivalenceSet.getConcepts()) {
 				addEquivalentConcept(convertedEquivalentConcepts, equivalentEntry);
 			}
 
@@ -323,7 +323,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		return classificationIssueFlags;
 	}
 
-	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final SnomedConceptDocument equivalentEntry) {
+	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final ISnomedConcept equivalentEntry) {
 		final EquivalentConcept convertedConcept = new EquivalentConcept();
 		convertedConcept.setId(equivalentEntry.getId());
 		convertedEquivalentConcepts.add(convertedConcept);

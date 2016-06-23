@@ -22,7 +22,7 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
@@ -70,7 +70,7 @@ public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 				continue;
 			}
 
-			final SnomedConceptDocument suggestedConcept = ((EquivalenceSet) equivalenceSet).getSuggestedConcept();
+			final ISnomedConcept suggestedConcept = ((EquivalenceSet) equivalenceSet).getSuggestedConcept();
 			registerEquivalentConcepts(suggestedConcept, equivalenceSet.getConcepts(), equivalentConceptMap, conceptIdsToCheck);
 		}
 	}
@@ -86,15 +86,15 @@ public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 		return conceptIds;
 	}
 
-	private void registerEquivalentConcepts(final SnomedConceptDocument suggestedConcept, 
-			final List<SnomedConceptDocument> equivalentConcepts,
+	private void registerEquivalentConcepts(final ISnomedConcept suggestedConcept, 
+			final List<ISnomedConcept> equivalentConcepts,
 			final LongKeyLongMap equivalentConceptMap, 
 			final LongSet conceptIdsToCheck) {
 
 		final long replacementConceptId = getConceptId(suggestedConcept);
 		final boolean registerAll = conceptIdsToCheck.isEmpty();
 		
-		for (final SnomedConceptDocument equivalentConcept : equivalentConcepts) {
+		for (final ISnomedConcept equivalentConcept : equivalentConcepts) {
 			final long equivalentConceptId = getConceptId(equivalentConcept);
 			if (registerAll || conceptIdsToCheck.contains(equivalentConceptId)) {
 				equivalentConceptMap.put(equivalentConceptId, replacementConceptId);
@@ -102,7 +102,7 @@ public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 		}
 	}
 
-	private Long getConceptId(final SnomedConceptDocument conceptIndexEntry) {
+	private Long getConceptId(final ISnomedConcept conceptIndexEntry) {
 		return Long.valueOf(conceptIndexEntry.getId());
 	}
 }

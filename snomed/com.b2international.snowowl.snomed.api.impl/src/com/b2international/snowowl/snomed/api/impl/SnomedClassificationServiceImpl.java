@@ -75,7 +75,6 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
@@ -418,10 +417,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 			}
 		}
 		return conceptDetails;
-	}
-
-	private static SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
 	}
 
 	private ISnomedBrowserRelationship findRelationship(List<ISnomedBrowserRelationship> relationships, IRelationshipChange relationshipChange) {
