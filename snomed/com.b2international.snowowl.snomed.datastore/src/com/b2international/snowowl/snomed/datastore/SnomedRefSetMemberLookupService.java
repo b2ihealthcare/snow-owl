@@ -44,6 +44,7 @@ import com.google.common.collect.Iterables;
 
 /**
  * Lookup service implementation for SNOMED CT reference set members.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible
  */
 public class SnomedRefSetMemberLookupService extends AbstractLookupService<String, SnomedRefSetMember, CDOView> {
 

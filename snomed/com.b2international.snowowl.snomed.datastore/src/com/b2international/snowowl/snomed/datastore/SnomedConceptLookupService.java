@@ -42,6 +42,7 @@ import com.google.common.collect.Iterables;
 
 /**
  * Lookup service implementation for SNOMED CT concepts.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible
  */
 public class SnomedConceptLookupService extends AbstractLookupService<String, Concept, CDOView> {
 

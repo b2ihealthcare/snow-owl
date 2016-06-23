@@ -74,7 +74,6 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
@@ -517,10 +516,6 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.build(branch)
 				.execute(bus)
 				.getSync().getTotal() > 0;
-	}
-
-	private static SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
 	}
 
 	@Override

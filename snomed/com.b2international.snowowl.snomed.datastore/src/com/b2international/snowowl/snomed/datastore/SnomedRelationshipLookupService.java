@@ -38,7 +38,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
- * Lookup service implementation for SNOMED CT relationships. 
+ * Lookup service implementation for SNOMED CT relationships.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible 
  */
 public class SnomedRelationshipLookupService extends AbstractLookupService<String, Relationship, CDOView> {
 

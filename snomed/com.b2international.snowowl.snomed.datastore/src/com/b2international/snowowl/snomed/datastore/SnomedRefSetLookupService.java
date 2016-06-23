@@ -34,12 +34,14 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
  * Lookup service implementation for SNOMED CT reference sets.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible
  */
 public class SnomedRefSetLookupService extends AbstractLookupService<String, SnomedRefSet, CDOView> {
 

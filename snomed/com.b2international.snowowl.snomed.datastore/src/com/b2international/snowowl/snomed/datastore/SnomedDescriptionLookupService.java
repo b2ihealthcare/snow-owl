@@ -38,7 +38,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
- * Lookup service implementation for SNOMED CT descriptions. 
+ * Lookup service implementation for SNOMED CT descriptions.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible 
  */
 public class SnomedDescriptionLookupService extends AbstractLookupService<String, Description, CDOView> {
 
