@@ -132,7 +132,8 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 	public String getIconId() {
 		return iconId;
 	}
-	
+
+	@JsonIgnore
 	@Override
 	public float getScore() {
 		return 0;
