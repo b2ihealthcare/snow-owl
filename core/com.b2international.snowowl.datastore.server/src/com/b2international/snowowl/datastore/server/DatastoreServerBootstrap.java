@@ -138,9 +138,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 		final ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
-			final String toolingId = cdoRepositoryManager.getByUuid(repositoryId).getSnowOwlTerminologyComponentId();
 			repositories
-				.prepareCreate(repositoryId, toolingId)
+				.prepareCreate(repositoryId)
 				.setNumberOfWorkers(repositoryConfig.getNumberOfWorkers())
 				.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 				.build(env);

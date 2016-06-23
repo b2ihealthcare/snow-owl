@@ -58,8 +58,8 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 		repositories.put(repositoryId, repository);
 	}
 	
-	public RepositoryBuilder prepareCreate(String repositoryId, String toolingId) {
-		return new RepositoryBuilder(this, repositoryId, toolingId);
+	public RepositoryBuilder prepareCreate(String repositoryId) {
+		return new RepositoryBuilder(this, repositoryId);
 	}
 	
 	@Override

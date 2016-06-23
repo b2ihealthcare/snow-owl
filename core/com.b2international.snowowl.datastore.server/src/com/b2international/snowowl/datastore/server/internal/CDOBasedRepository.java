@@ -79,18 +79,16 @@ import com.google.inject.Provider;
  */
 public final class CDOBasedRepository implements InternalRepository, RepositoryContextProvider, ServiceProvider {
 
-	private final String toolingId;
 	private final String repositoryId;
 	private final Environment env;
 	private final IEventBus handlers;
 	
 	private final Map<Class<?>, Object> registry = newHashMap();
 
-	CDOBasedRepository(String repositoryId, String toolingId, int numberOfWorkers, int mergeMaxResults, Environment env) {
+	CDOBasedRepository(String repositoryId, int numberOfWorkers, int mergeMaxResults, Environment env) {
 		checkArgument(numberOfWorkers > 0, "At least one worker thread must be specified");
 		
 		this.repositoryId = repositoryId;
-		this.toolingId = toolingId;
 		this.env = env;
 		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
 
