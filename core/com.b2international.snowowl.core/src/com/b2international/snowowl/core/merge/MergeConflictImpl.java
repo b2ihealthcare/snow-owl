@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.merge;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -151,6 +152,7 @@ public class MergeConflictImpl implements MergeConflict {
 			if (Strings.isNullOrEmpty(message)) {
 				this.message = MergeConflictImpl.buildDefaultMessage(this.artefactId, this.artefactType, this.conflictingAttributes, this.type);
 			}
+			Collections.sort(this.conflictingAttributes);
 			return new MergeConflictImpl(this.artefactId, this.artefactType, this.conflictingAttributes, this.type, this.message);
 		}
 	}
