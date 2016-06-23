@@ -15,19 +15,18 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.widget;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
@@ -44,7 +43,9 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.LowerBound;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.UpperBound;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -178,9 +179,9 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		
 
 		final RelationshipWidgetModel relationshipWidgetModel = RelationshipWidgetModel.createRegularModel(lowerBound, upperBound, branchPath, 
-				newHashSet(getTaxonomyService().evaluateEscg(branchPath, predicate.getRelationshipTypeExpression())),
+				getMatchingConceptIds(branchPath, predicate.getRelationshipTypeExpression()),
 				predicate.getRelationshipValueExpression(),
-				newHashSet(getTaxonomyService().evaluateEscg(branchPath, predicate.getCharacteristicTypeExpression())));
+				getMatchingConceptIds(branchPath, predicate.getCharacteristicTypeExpression()));
 		
 		switch (predicate.getGroupRule()) {
 			case SINGLE_GROUP: 
@@ -199,11 +200,23 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		
 	}
 
+	private static Set<String> getMatchingConceptIds(IBranchPath branchPath, String expression) {
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByEscg(expression)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
+	}
+
 	private static <T> List<T> newSynchronizedList() {
 		return Collections.synchronizedList(Lists.<T>newArrayList());
 	}
 	
-	private static SnomedTaxonomyService getTaxonomyService() {
-		return getServiceForClass(SnomedTaxonomyService.class);
-	}
 }

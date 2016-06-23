@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.widget.model;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.datastore.EscgExpressionConstants.REJECT_ALL_EXPRESSION;
 import static com.b2international.snowowl.snomed.datastore.EscgExpressionConstants.UNRESTRICTED_EXPRESSION;
 
@@ -23,9 +22,15 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.utils.UnrestrictedStringSet;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * The model that drives the rendering of the relationship selector widget.
@@ -126,7 +131,23 @@ public class RelationshipWidgetModel extends AllowedTypesWidgetModel implements 
 		if (UNRESTRICTED_EXPRESSION.equals(allowedValueIdsExpression) || REJECT_ALL_EXPRESSION.equals(allowedValueIdsExpression)) {
 			return true;
 		}
-		return getServiceForClass(SnomedTaxonomyService.class).evaluateEscg(branchPath, allowedValueIdsExpression).contains(valueId);
+		return getMatchingConceptIds(branchPath, allowedValueIdsExpression).contains(valueId);
+	}
+	
+	// FIXME performance problem for concept with many relationship predicates
+	private static Set<String> getMatchingConceptIds(IBranchPath branchPath, String expression) {
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByEscg(expression)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 	}
 	
 }
