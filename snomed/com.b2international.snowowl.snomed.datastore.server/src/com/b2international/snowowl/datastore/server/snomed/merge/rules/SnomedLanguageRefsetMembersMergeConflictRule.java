@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
@@ -32,6 +31,7 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -48,32 +48,27 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 	public Collection<MergeConflict> validate(CDOTransaction transaction) {
 
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(
-				branchPath);
+		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
 		final Set<SnomedLanguageRefSetMember> membersToRemove = newHashSet();
 
 		List<MergeConflict> conflicts = newArrayList();
 
-		label: for (CDOObject newObject : transaction.getNewObjects().values()) {
-
-			if (!(newObject instanceof SnomedLanguageRefSetMember)) {
-				continue;
-			}
-
-			SnomedLanguageRefSetMember newLanguageRefSetMember = (SnomedLanguageRefSetMember) newObject;
+		Iterable<SnomedLanguageRefSetMember> newLanguageRefSetMembers = ComponentUtils2.getNewObjects(transaction, SnomedLanguageRefSetMember.class);
+		
+		label: for (SnomedLanguageRefSetMember newLanguageRefSetMember : newLanguageRefSetMembers) {
 
 			if (!newLanguageRefSetMember.isActive()) {
 				continue;
 			}
 
-			Description description = (Description) newObject.eContainer();
+			Description description = (Description) newLanguageRefSetMember.eContainer();
 
 			if (!description.isActive()) {
 				continue;
 			}
 
+			String descriptionTypeId = description.getType().getId();
 			String acceptabilityId = newLanguageRefSetMember.getAcceptabilityId();
-			String typeId = description.getType().getId();
 			String languageRefSetId = newLanguageRefSetMember.getRefSetIdentifierId();
 
 			Concept concept = description.getConcept();
@@ -86,8 +81,7 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 
 				String conceptDescriptionTypeId = conceptDescription.getType().getId();
 
-				if (!typeId.equals(conceptDescriptionTypeId)
-						&& !(synonymAndDescendantIds.contains(typeId) && synonymAndDescendantIds.contains(conceptDescriptionTypeId))) {
+				if (!descriptionTypeId.equals(conceptDescriptionTypeId) && !(synonymAndDescendantIds.contains(descriptionTypeId) && synonymAndDescendantIds.contains(conceptDescriptionTypeId))) {
 					continue;
 				}
 
@@ -110,19 +104,25 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 							membersToRemove.add(newLanguageRefSetMember);
 							continue label;
 						} else if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
+							
+							// Two SNOMED CT Descriptions selected as preferred terms.
 							conflicts.add(MergeConflictImpl.builder()
 											.withArtefactId(newLanguageRefSetMember.getUuid())
 											.withArtefactType(newLanguageRefSetMember.eClass().getName())
-											.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("acceptability", newLanguageRefSetMember.getAcceptabilityId())))
+											.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("acceptabilityId", newLanguageRefSetMember.getAcceptabilityId())))
 											.withType(ConflictType.CONFLICTING_CHANGE)
 											.build());
 						}
 					} else {
 						if (description.equals(conceptDescription)) {
+							
+							// Different acceptability selected for the same description
 							conflicts.add(MergeConflictImpl.builder()
-								.withArtefactId(conceptDescription.getId())
-								.withArtefactType("Description")
-								.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of(newLanguageRefSetMember.getUuid(), newLanguageRefSetMember.getAcceptabilityId())))
+								.withArtefactId(description.getId())
+								.withArtefactType(description.eClass().getName())
+								.withConflictingAttributes(MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of(
+										newLanguageRefSetMember.getUuid(), newLanguageRefSetMember.getAcceptabilityId(),
+										conceptDescriptionMember.getUuid(), conceptDescriptionMember.getAcceptabilityId())))
 								.withType(ConflictType.CONFLICTING_CHANGE)
 								.build());
 						}

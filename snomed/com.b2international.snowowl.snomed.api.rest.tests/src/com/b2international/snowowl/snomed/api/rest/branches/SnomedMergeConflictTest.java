@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.branches;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFailsWithConflict;
@@ -30,10 +31,12 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -43,9 +46,17 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
 
@@ -452,6 +463,68 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 						"Concept",
 						Collections.<String>emptyList(),
 						ConflictType.CAUSES_MISSING_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
+	}
+	
+	@Test
+	public void differentAcceptabilityForOneDescriptionMergeConflict() throws Exception {
+		
+		init();
+		
+		assertDescriptionCreated(testBranchPath, "D1", PREFERRED_ACCEPTABILITY_MAP);
+		
+		List<String> memberIds = SnomedComponentApiAssert.assertDescriptionExists(testBranchPath, symbolicNameMap.get("D1"), "members()").and().extract().body().path("members.items.id");
+		
+		assertEquals(1, memberIds.size());
+		
+		assertBranchCanBeMerged(testBranchPath, "merge");
+		
+		assertDescriptionExists(testBranchPath, "D1");
+		assertDescriptionExists(testBranchPath.getParent(), "D1");
+
+		String newMemberId = UUID.randomUUID().toString();
+		
+		try (final SnomedEditingContext context = new SnomedEditingContext(testBranchPath)) {
+			final SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
+			member.setUuid(newMemberId);
+			member.setActive(true);
+			member.setModuleId(Concepts.MODULE_SCT_CORE);
+			member.setRefSet(context.lookup(Concepts.REFSET_LANGUAGE_TYPE_UK, SnomedRefSet.class));
+			member.setReferencedComponentId(symbolicNameMap.get("D1"));
+			member.setAcceptabilityId(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
+			final Description description = context.lookup(symbolicNameMap.get("D1"), Description.class);
+			description.getLanguageRefSetMembers().add(member);
+			context.commit("Add member to " + symbolicNameMap.get("D1"));
+		}
+		
+		Collection<Map<String, Object>> members = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.when().get("/{path}/{componentType}?referencedComponentId={componentId}", testBranchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), symbolicNameMap.get("D1"))
+			.then().extract().body().path("items");
+		
+		assertEquals(2, members.size());
+		
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath, testBranchPath.getParent(), "merge");
+		
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+
+		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of(
+				newMemberId, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, 
+				memberIds.get(0), Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED));
+		
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", symbolicNameMap.get("D1"))
+				.put("artefactType", "Description")
+				.put("type", ConflictType.CONFLICTING_CHANGE.name())
+				.put("conflictingAttributes", attributeList)
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						symbolicNameMap.get("D1"), 
+						"Description",
+						attributeList,
+						ConflictType.CONFLICTING_CHANGE))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict));

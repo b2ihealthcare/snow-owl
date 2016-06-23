@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
+import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0
@@ -413,12 +414,41 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
 
+		ValidatableResponse response = SnomedComponentApiAssert.assertDescriptionExists(testBranchPath, symbolicNameMap.get("D1"), "members()");
+		List<String> memberIds = response.and().extract().body().path("members.items.id");
+		assertEquals(memberIds.size(), 1);
+		String memberId = memberIds.get(0);
+
+		List<String> acceptabilityIds = response.and().extract().body().path("members.items.acceptabilityId");
+		assertEquals(acceptabilityIds.size(), 1);
+		String acceptabilityId = acceptabilityIds.get(0);
+		
 		assertDescriptionCreated(testBranchPath.getParent(), "D2", PREFERRED_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
 		assertDescriptionNotExists(testBranchPath,"D2");
 
-		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
+		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
 
+		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
+		
+		assertEquals(1, conflicts.size());
+
+		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("acceptabilityId", acceptabilityId));
+		
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("artefactId", memberId)
+				.put("artefactType", "SnomedLanguageRefSetMember")
+				.put("conflictingAttributes", attributeList)
+				.put("type", ConflictType.CONFLICTING_CHANGE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						memberId, 
+						"SnomedLanguageRefSetMember", 
+						attributeList, 
+						ConflictType.CONFLICTING_CHANGE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
+		
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
