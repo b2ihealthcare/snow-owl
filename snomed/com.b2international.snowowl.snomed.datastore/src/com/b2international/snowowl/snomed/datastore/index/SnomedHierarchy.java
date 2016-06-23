@@ -26,14 +26,10 @@ import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.google.common.base.Preconditions;
 
 /**
@@ -86,7 +82,7 @@ public class SnomedHierarchy {
 		
 		final Runnable getConceptsRunnable = new Runnable() {
 			@Override public void run() {
-				final LongCollection conceptIds = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getAllActiveConceptIds(branchPath);
+				final LongCollection conceptIds = getAllActiveConceptIds(branchPath);
 				conceptIds.trimToSize();
 				conceptIdsReference.set(conceptIds.toArray());
 			}
@@ -94,8 +90,7 @@ public class SnomedHierarchy {
 		
 		final Runnable getStatementsRunnable = new Runnable() {
 			@Override public void run() {
-				final SnomedStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
-				final IsAStatement[] statements = statementBrowser.getActiveStatements(branchPath, StatementCollectionMode.NO_IDS);
+				final IsAStatement[] statements = getActiveStatements(branchPath, StatementCollectionMode.NO_IDS);
 				statementsReference.set(statements);
 			}
 		};

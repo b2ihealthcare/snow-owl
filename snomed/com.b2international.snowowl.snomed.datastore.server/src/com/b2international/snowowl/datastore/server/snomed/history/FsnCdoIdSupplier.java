@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.google.common.base.Supplier;
 
 /**
@@ -51,9 +51,7 @@ public enum FsnCdoIdSupplier implements Supplier<Long> {
 		}
 		
 		private long getStorageKey(String conceptId) {
-			final SnomedTerminologyBrowser terminologyBrowser = //
-					getServiceForClass(SnomedTerminologyBrowser.class);
-			return terminologyBrowser.getStorageKey(createMainPath(), conceptId);
+			return new SnomedConceptLookupService().getStorageKey(BranchPathUtils.createMainPath(), Concepts.FULLY_SPECIFIED_NAME);
 		}
 		
 	};

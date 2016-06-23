@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.version;
 
 import static com.b2international.commons.ChangeKind.UNCHANGED;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
@@ -50,7 +49,6 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedCachingSuperTypeIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
@@ -168,7 +166,7 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 
 	@Override
 	protected ExtendedComponentProvider getExtendedComponentProvider() {
-		return getServiceForClass(SnomedTerminologyBrowser.class);
+		throw new UnsupportedOperationException("TODO reimplement version compare hierarchy building");
 	}
 
 	@Override

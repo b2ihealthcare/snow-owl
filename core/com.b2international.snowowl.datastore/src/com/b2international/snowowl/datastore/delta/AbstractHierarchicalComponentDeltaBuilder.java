@@ -23,9 +23,10 @@ import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
+import com.b2international.snowowl.core.api.component.IconIdProvider;
+import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
@@ -143,13 +144,13 @@ public abstract class AbstractHierarchicalComponentDeltaBuilder<C extends Hierar
 
 	protected abstract String getParentIdFromCdoObject(final CDOObject cdoObject);
 
-	private AbstractIndexEntry getIndexEntry(final String id) {
+	private IIndexEntry getIndexEntry(final String id) {
 		if (!terminologyAvailable) {
 			return null;
 		}
 
 		// Try the terminology browser-based approach first, look in CDO directly if the approach fails
-		final AbstractIndexEntry indexEntry = getIndexEntryFromTerminologyBrowser(id);
+		final IIndexEntry indexEntry = getIndexEntryFromTerminologyBrowser(id);
 		if (null != indexEntry) {
 			return indexEntry;
 		} else {
@@ -157,15 +158,15 @@ public abstract class AbstractHierarchicalComponentDeltaBuilder<C extends Hierar
 		}
 	}
 
-	protected AbstractIndexEntry getIndexEntryFromTerminologyBrowser(final String id) {
+	protected IIndexEntry getIndexEntryFromTerminologyBrowser(final String id) {
 		return getTerminologyBrowser().getConcept(getBranchPath(), id);
 	}
 
-	protected abstract AbstractIndexEntry getIndexEntryFromCdoObject(final String ancestorId);
+	protected abstract IIndexEntry getIndexEntryFromCdoObject(final String ancestorId);
 
 	protected abstract AbstractLookupService<String, ? extends CDOObject, CDOView> createLookupService();
 
-	protected abstract ITerminologyBrowser<? extends AbstractIndexEntry, String> getTerminologyBrowser();
+	protected abstract ITerminologyBrowser<? extends IIndexEntry, String> getTerminologyBrowser();
 
 	protected abstract short getTerminologyComponentId();
 
@@ -173,7 +174,7 @@ public abstract class AbstractHierarchicalComponentDeltaBuilder<C extends Hierar
 	 * Builds the delta based on the specified component.
 	 */
 	@SuppressWarnings("unchecked")
-	protected <CC extends AbstractIndexEntry> C buildUnchangedDelta(final CC component) {
+	protected <CC extends IIndexEntry> C buildUnchangedDelta(final CC component) {
 		final short terminologyComponentId = getTerminologyComponentId();
 		final String codeSystemOid = getCodeSystemOID(terminologyComponentId);
 
@@ -182,7 +183,7 @@ public abstract class AbstractHierarchicalComponentDeltaBuilder<C extends Hierar
 				component.getStorageKey(),
 				getBranchPath(),
 				component.getLabel(),
-				component.getIconId(),
+				component instanceof IconIdProvider<?> ? ((IconIdProvider<String>)component).getIconId() : null,
 				terminologyComponentId,
 				codeSystemOid,
 				ChangeKind.UNCHANGED);

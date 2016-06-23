@@ -63,16 +63,18 @@ import com.b2international.snowowl.datastore.server.CDOChangeSetDataProvider;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.ComponentDeltaProvider;
 import com.b2international.snowowl.datastore.tasks.PromoteException;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.delta.ISnomedConceptDeltaProvider;
 import com.b2international.snowowl.snomed.datastore.delta.RefSetMemberDeltaBuilder;
 import com.b2international.snowowl.snomed.datastore.delta.SnomedConceptDeltaBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -86,6 +88,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -199,11 +202,12 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 		});
 		
 		//supplies a single boolean flag whether the reference set that has to be authored exists on the destination branch or not
-		final Supplier<Boolean> refSetExistanceSupplier = Suppliers.memoize(new Supplier<Boolean>() {
-			@Override public Boolean get() {
-				return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).exists(destinationBranch.get(), identifierId);
-			}
-		});
+		final SnomedReferenceSet referenceSet = Iterables.getOnlyElement(SnomedRequests.prepareSearchRefSet()
+				.setLimit(1)
+				.setComponentIds(Collections.singleton(identifierId))
+				.build(destinationBranch.get().getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync(), null);
 		
 		try {
 			
@@ -261,10 +265,8 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 				
 				final ChangeSetDataWithTransaction changeSetDataWithView = cache.get(delta.getBranchPath());
 				
-				final boolean exsitingRefSet = refSetExistanceSupplier.get();
-				
 				//XXX consider thread safety if component delta loop runs parallel on the server
-				if (!exsitingRefSet && null == refSet) {
+				if (referenceSet == null && refSet == null) {
 
 					//as the reference set does not exist on the destination branch, we copied the reference set
 					//and the identifier concept to the destination branch. the copy operation already copied 
@@ -273,14 +275,8 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 					refSet = createRefSetOnTransaction(identifierId, editingContextSupplier.get(), changeSetDataWithView);
 					refSet.getMembers().clear();
 					
-				} else {
-					
-					if (null == refSet) {
-						
-						refSet = (SnomedRegularRefSet) new SnomedRefSetLookupService().getComponent(identifierId, editingContextSupplier.get().getTransaction());
-						
-					}
-					
+				} else if (refSet == null) {
+					refSet = CDOUtils.getObjectIfExists(editingContextSupplier.get().getTransaction(), referenceSet.getStorageKey());
 				}
 
 				//check whether referenced component (and map target) exists

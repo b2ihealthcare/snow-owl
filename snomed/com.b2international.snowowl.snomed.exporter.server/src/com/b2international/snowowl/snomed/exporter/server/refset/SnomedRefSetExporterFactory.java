@@ -15,23 +15,12 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-
-import java.io.IOException;
 import java.util.Collections;
 
 import org.eclipse.emf.cdo.view.CDOView;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -39,10 +28,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.NoopExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedAssociationRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedAttributeValueRefSetExporter;
@@ -58,8 +44,6 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedRefSetEx
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedSimpleMapRefSetExporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Optional;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 /**
@@ -113,10 +97,8 @@ public class SnomedRefSetExporterFactory {
 			
 			final SnomedRefSetType type = refSet.getType();
 			switch (type) {
-
 				case SIMPLE_MAP:
-					final boolean includeMapTargetDescription = isSddMapping(createPath(cdoView), refSetId);
-					return new SnomedSimpleMapRefSetExporter(configuration, refSetId, type, includeMapTargetDescription);
+					return new SnomedSimpleMapRefSetExporter(configuration, refSetId, type, configuration.includeMapTargetDescription());
 				case COMPLEX_MAP: //$FALL-THROUGH$
 				case EXTENDED_MAP:
 					final boolean extended = SnomedRefSetType.EXTENDED_MAP.equals(refSet.getType());
@@ -199,38 +181,6 @@ public class SnomedRefSetExporterFactory {
 			if (null != view)
 				view.close();
 		}
-	}
-
-	private static boolean isSddMapping(final IBranchPath branchPath, final String refSetId) {
-		return isChildOfSddSimpleMap(branchPath, refSetId) && isReferencedComponentConcept(branchPath, refSetId);
-	}
-	
-	private static boolean isReferencedComponentConcept(final IBranchPath branchPath, final String refSetId) {
-		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-		
-		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
-		final Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(refSetId)).build();
-		
-		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
-
-			@Override
-			public SnomedConceptDocument execute(RevisionSearcher searcher) throws IOException {
-				
-				Hits<SnomedConceptDocument> snomedConceptDocuments = searcher.search(query);
-				Optional<SnomedConceptDocument> first = FluentIterable.<SnomedConceptDocument>from(snomedConceptDocuments).first();
-				if (first.isPresent()) {
-					return first.get();
-				} else {
-					throw new IllegalArgumentException("Could not find reference set with id: " + refSetId);
-				}
-			}
-		});
-		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == (short) refsetConcept.getReferencedComponentType();
-	}
-
-	private static boolean isChildOfSddSimpleMap(final IBranchPath branchPath, final String refSetId) {
-		return getServiceForClass(SnomedTerminologyBrowser.class).isSuperTypeOfById(branchPath, Concepts.SDD_DRUG_REFERENCE_SET, refSetId);
 	}
 
 	/*returns with a SNOMED CT reference set identified by the identifier concept ID, opened in the specified CDO view*/

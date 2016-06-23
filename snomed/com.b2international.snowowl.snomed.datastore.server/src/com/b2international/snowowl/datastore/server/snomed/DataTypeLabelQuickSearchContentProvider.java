@@ -18,11 +18,11 @@ package com.b2international.snowowl.datastore.server.snomed;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.index.compat.Highlighting;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.FullQuickSearchElement;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
@@ -30,17 +30,22 @@ import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
 import com.b2international.snowowl.snomed.datastore.quicksearch.DataTypeLabelQuickSearchProvider;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 
 /**
  * Quick search content provider for data type labels.
@@ -123,10 +128,21 @@ public class DataTypeLabelQuickSearchContentProvider extends AbstractQuickSearch
 	}
 
 	private FluentIterable<String> getFilteredDataTypeLabelSet(final String queryExpression, IBranchPath branchPath, DataType dataType) {
-		Set<String> availableDataTypeLabels = new SnomedComponentService().getAvailableDataTypeLabels(branchPath, dataType);
+		final SnomedConstraints dataTypeConstraints = SnomedRequests.prepareSearchConstraint()
+				.all()
+				.filterByType(SnomedConstraintDocument.PredicateType.DATATYPE)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		
+		// TODO support filtering of constraints by datatype
+		final Multimap<DataType, String> labelsByType = HashMultimap.create();
+		for (SnomedConstraintDocument constraint : dataTypeConstraints) {
+			labelsByType.put(constraint.getDataType(), constraint.getDataTypeLabel());
+		}
 
 		return FluentIterable
-				.from(availableDataTypeLabels)
+				.from(labelsByType.get(dataType))
 				.filter(new Predicate<String>() {
 					@Override
 					public boolean apply(String input) {

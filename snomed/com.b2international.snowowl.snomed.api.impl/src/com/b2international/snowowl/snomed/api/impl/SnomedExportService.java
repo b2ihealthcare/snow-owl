@@ -23,30 +23,34 @@ import static com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportM
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.SnomedExportException;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -98,12 +102,25 @@ public class SnomedExportService implements ISnomedExportService {
 		final String namespaceId = configuration.getNamespaceId();
 		model.setNamespace(namespaceId);
 		
+		final Collection<String> moduleIds;
 		if (configuration.getModuleIds().isEmpty()) {
-			final LongSet modules = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class).getAllSubTypeIds(exportBranch, Long.parseLong(Concepts.MODULE_ROOT));
-			model.getModulesToExport().addAll(LongSets.toStringSet(modules));
+			moduleIds = SnomedRequests.prepareSearchConcept()
+					.all()
+					.filterByActive(true)
+					.filterByAncestor(Concepts.MODULE_ROOT)
+					.build(exportBranch.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(new Function<SnomedConcepts, Collection<String>>() {
+						@Override
+						public Collection<String> apply(SnomedConcepts input) {
+							return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+						}
+					})
+					.getSync();
 		} else {
-			model.getModulesToExport().addAll(configuration.getModuleIds());
+			moduleIds = configuration.getModuleIds();
 		}
+		model.getModulesToExport().addAll(moduleIds);
 		
 		model.setDeltaExportStartEffectiveTime(configuration.getDeltaExportStartEffectiveTime());
 		model.setDeltaExportEndEffectiveTime(configuration.getDeltaExportEndEffectiveTime());

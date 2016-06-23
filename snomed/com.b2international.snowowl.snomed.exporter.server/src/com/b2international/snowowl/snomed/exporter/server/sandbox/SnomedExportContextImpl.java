@@ -44,8 +44,9 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private Searcher searcher;
 
 	private boolean includeUnpublished;
+	// FIXME always false, clients should specify the value
+	private boolean includeMapTargetDescription = false; 
 
-	
 	public SnomedExportContextImpl(final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
@@ -110,4 +111,10 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	public void setIncludeUnpublished(boolean includeUnpublished) {
 		this.includeUnpublished = includeUnpublished;
 	}
+	
+	@Override
+	public boolean includeMapTargetDescription() {
+		return includeMapTargetDescription;
+	}
+	
 }

@@ -88,4 +88,10 @@ public interface SnomedExportContext {
 	 */
 	boolean includeUnpublished();
 
+	/**
+	 * In case of SIMPLE MAP reference sets include or not the map target description column.
+	 * @return
+	 */
+	boolean includeMapTargetDescription();
+
 }

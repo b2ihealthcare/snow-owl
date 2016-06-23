@@ -62,10 +62,8 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -173,7 +171,7 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 		final Set<SnomedRefSetMemberIndexEntry> sourceMembers = toSet(getRefSetMembers(sourcePath, diff.getId()));
 		final Set<SnomedRefSetMemberIndexEntry> targetMembers = toSet(getRefSetMembers(targetPath, diff.getId()));
 		
-		final SetDifference<SnomedRefSetMemberFragment> difference = compare(sourceMembers, targetMembers, SnomedRefSetMemberFragment.EQUIVALENCE);
+		final SetDifference<SnomedRefSetMemberFragment> difference = compare(sourceMembers, targetMembers, SnomedRefSetMemberIndexEntry.EQUIVALENCE);
 		
 		final Set<SnomedRefSetMemberFragment> newOrChangedMembers = newHashSet(difference.entriesOnlyOnRight());
 		final Collection<NodeDelta> memberChanges = newArrayList();
@@ -399,12 +397,4 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 		return REFSET_NUMBER == diff.getTerminologyComponentId();
 	}
 
-	private ISnomedComponentService getComponentService() {
-		return getServiceForClass(ISnomedComponentService.class);
-	}
-	
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return getServiceForClass(SnomedTerminologyBrowser.class);
-	}
-	
 }
