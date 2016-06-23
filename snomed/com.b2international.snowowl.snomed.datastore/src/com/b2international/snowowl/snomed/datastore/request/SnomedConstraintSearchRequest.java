@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.descendantIds;
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.refSetIds;
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.selfIds;
+import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.types;
 
 import java.io.IOException;
 
@@ -30,6 +31,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 
 /**
  * @since 4.7
@@ -51,7 +53,12 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 		/**
 		 * Match MRCM constraints that are applicable to the given reference set identifiers.
 		 */
-		REFSET
+		REFSET, 
+		
+		/**
+		 * Match MRCM constraints that has any of the given {@link PredicateType}.
+		 */
+		TYPE
 		
 	}
 	
@@ -59,6 +66,8 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 	protected SnomedConstraints doExecute(BranchContext context) throws IOException {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		final ExpressionBuilder queryBuilder = Expressions.builder();
+		
+		addComponentIdFilter(queryBuilder);
 		
 		if (containsKey(OptionKey.SELF)) {
 			queryBuilder.must(selfIds(getCollection(OptionKey.SELF, String.class)));
@@ -72,7 +81,10 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 			queryBuilder.must(refSetIds(getCollection(OptionKey.REFSET, String.class)));
 		}
 		
-		addComponentIdFilter(queryBuilder);
+		if (containsKey(OptionKey.TYPE)) {
+			queryBuilder.must(types(getCollection(OptionKey.TYPE, PredicateType.class)));
+		}
+		
 		
 		final Query<SnomedConstraintDocument> query = Query.builder(SnomedConstraintDocument.class)
 				.selectAll()

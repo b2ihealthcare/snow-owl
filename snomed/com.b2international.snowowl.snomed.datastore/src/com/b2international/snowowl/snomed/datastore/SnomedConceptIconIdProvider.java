@@ -33,7 +33,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -114,7 +113,7 @@ public class SnomedConceptIconIdProvider implements IComponentIconIdProvider<Str
 	
 	/*returns with the associated icon ID of a concept. may return with null.*/
 	private String getIconIdUnsafe(final IBranchPath branchPath, final String conceptId) {
-		return ApplicationContext.getInstance().getService(ISnomedComponentService.class).getIconId(branchPath, conceptId)[0];
+		throw new UnsupportedOperationException("Implement proper icon id state");
 	}
 	
 	/*returns with the icon ID of the first found existing parent concept*/

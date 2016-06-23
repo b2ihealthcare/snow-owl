@@ -25,8 +25,11 @@ import java.util.List;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
@@ -42,7 +45,9 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.Low
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.UpperBound;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 /**
  */
@@ -78,8 +83,20 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		//otherwise we can get the wildcard when calling e.g.: com.b2international.snowowl.snomed.mrcm.core.widget.model.DescriptionContainerWidgetModel.getFirstMatching(String)
 		descriptionWidgetModels.add(DescriptionWidgetModel.createUnsanctionedModel());
 		
+		final SnomedConstraints dataTypeConstraints = SnomedRequests.prepareSearchConstraint()
+				.all()
+				.filterByType(SnomedConstraintDocument.PredicateType.DATATYPE)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		
+		final Multimap<DataType, String> labelsByType = HashMultimap.create();
+		for (SnomedConstraintDocument constraint : dataTypeConstraints) {
+			labelsByType.put(constraint.getDataType(), constraint.getDataTypeLabel());
+		}
+		
 		for (DataType type : DataType.values()) {
-			dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, type));
+			dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(type, labelsByType.get(type)));
 		}
 		
 		ForkJoinUtils.runInParallel(

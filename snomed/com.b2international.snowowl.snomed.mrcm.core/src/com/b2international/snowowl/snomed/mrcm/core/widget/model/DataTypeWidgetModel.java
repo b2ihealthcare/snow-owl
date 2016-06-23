@@ -17,15 +17,12 @@ package com.b2international.snowowl.snomed.mrcm.core.widget.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.utils.UnrestrictedStringSet;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 /**
  * A widget model for data types. The model limits the allowed label and type of a data type widget bean.
@@ -55,14 +52,13 @@ public class DataTypeWidgetModel extends WidgetModel {
 
 	/**
 	 * Creates an unsanctioned data type model with 0..* cardinality and the corresponding type.
-	 * 
 	 * @param allowedType the allowed data type (may not be {@code null}
+	 * @param allowedDataTypeLabels allowed labels appropriate for the given allowedType parameter 
 	 * @return the created data type model instance
 	 */
-	public static DataTypeWidgetModel createUnsanctionedModel(final IBranchPath path, final DataType allowedType) {
-		
+	public static DataTypeWidgetModel createUnsanctionedModel(final DataType allowedType, final Collection<String> allowedDataTypeLabels) {
 		return new DataTypeWidgetModel(LowerBound.OPTIONAL, UpperBound.MULTIPLE, ModelType.UNSANCTIONED, 
-				getDataTypeNamesById(path, allowedType), allowedType); // FIXME: in the future the set of allowed IDs could be UNRESTRICTED
+				allowedDataTypeLabels, allowedType); // FIXME: in the future the set of allowed IDs could be UNRESTRICTED
 	}
 	
 	/**
@@ -83,11 +79,11 @@ public class DataTypeWidgetModel extends WidgetModel {
 	}
 	
 	private DataTypeWidgetModel(final LowerBound lowerBound, final UpperBound upperBound, final ModelType modelType, 
-			final Set<String> allowedLabels, final DataType type) {
+			final Collection<String> allowedLabels, final DataType type) {
 
 		super(lowerBound, upperBound, modelType);
 		
-		this.allowedLabels = copySet(checkNotNull(allowedLabels, "allowedLabels"));
+		this.allowedLabels = ImmutableSet.copyOf(allowedLabels);
 		this.allowedType = checkNotNull(type, "type");
 	}
 
@@ -122,8 +118,4 @@ public class DataTypeWidgetModel extends WidgetModel {
 				allowedLabels, allowedType);
 	}
 	
-	/*returns with a collection of data type unique names by the specified data type.*/
-	private static Set<String> getDataTypeNamesById(IBranchPath path, final DataType dataType) {
-		return Sets.newHashSet(ApplicationContext.getInstance().getService(ISnomedComponentService.class).getAvailableDataTypeLabels(path, dataType));
-	}
 }

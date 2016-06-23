@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.snor;
 
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -45,8 +46,10 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Index document of a MRCM rule.
@@ -315,12 +318,22 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		public static final String SELF_IDS = "selfIds";
 		public static final String DESCENDANT_IDS = "descendantIds";
 		public static final String REFSET_IDS = "refSetIds";
+		public static final String TYPE = "type";
 	}
 	
 	/**
 	 * @since 4.7
 	 */
 	public static final class Expressions extends RevisionDocument.Expressions {
+		
+		public static Expression types(Collection<PredicateType> types) {
+			return matchAnyInt(Fields.TYPE, FluentIterable.from(types).transform(new Function<PredicateType, Integer>() {
+				@Override
+				public Integer apply(PredicateType input) {
+					return input.ordinal();
+				}
+			}).toSet());
+		}
 		
 		public static Expression selfIds(Collection<String> selfIds) {
 			return matchAny(Fields.SELF_IDS, selfIds);

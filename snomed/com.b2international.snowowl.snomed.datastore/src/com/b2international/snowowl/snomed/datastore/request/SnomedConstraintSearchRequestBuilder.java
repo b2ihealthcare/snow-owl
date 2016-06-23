@@ -20,6 +20,7 @@ import java.util.Collection;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 
 /**
  * @since 4.7
@@ -52,6 +53,14 @@ public final class SnomedConstraintSearchRequestBuilder extends SearchRequestBui
 	
 	public SnomedConstraintSearchRequestBuilder filterByRefSetIds(Collection<String> refSetIds) {
 		return addOption(SnomedConstraintSearchRequest.OptionKey.REFSET, refSetIds);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByType(PredicateType type) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.TYPE, type);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByTypes(Collection<PredicateType> type) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.TYPE, type);
 	}
 
 	@Override
