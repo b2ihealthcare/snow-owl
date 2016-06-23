@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Set;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
@@ -35,23 +34,4 @@ public interface ISnomedComponentService {
 	 */
 	Set<String> getAvailableDataTypeLabels(IBranchPath branchPath, final DataType dataType);
 
-	/**
-	 * Returns with a collection of the reference set member's referenced component storage keys.  
-	 * 
-	 * @param branchPath the branch path.
-	 * @param refSetId the Id of the reference set.
-	 * @param referencedComponentType the type of the reference set member's referenced component.
-	 * @return a collection of component storage keys.
-	 */
-	LongSet getComponentByRefSetIdAndReferencedComponent(final IBranchPath branchPath, final String refSetId, final short referencedComponentType);
-	
-	/**
-	 * Returns with a set of concept storage keys that have to be inactivated when retiring the concept concepts
-	 * argument.
-	 * @param branchPath the branch path for the calculation.
-	 * @param focusConceptIds the concept IDs to retire with their descendants.
-	 * @return a collection of concept storage keys to inactivate.
-	 */
-	LongSet getSelfAndAllSubtypeStorageKeysForInactivation(final IBranchPath branchPath, final String... focusConceptIds);
-	
 }

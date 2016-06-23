@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.commons.collect.LongSets.transform;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
@@ -26,8 +24,6 @@ import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMes
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.toArray;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
 
@@ -55,7 +51,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -95,7 +90,6 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
@@ -989,23 +983,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return description;
 	}
 
-	/**
-	 * Inactivates the specified SNOMED&nbsp;CT concept with all subtypes and all references. Also creates the required reference set memberships based on the inactivation reason.
-	 * @param monitor progress monitor for the operation.
-	 * @param conceptIds the identifier of the SNOMED&nbsp;CT concept to inactivate.
-	 * @return the inactivation plan what should be executed to perform the inactivation process.
-	 */
-	public SnomedInactivationPlan inactivateConceptAndSubtypes(@Nullable final IProgressMonitor monitor, final String... conceptIds) {
-		final IBranchPath branchPath = createPath(transaction);
-		final ISnomedComponentService componentService = getServiceForClass(ISnomedComponentService.class);
-		final LongSet storageKeys = componentService.getSelfAndAllSubtypeStorageKeysForInactivation(branchPath, conceptIds);
-		final Collection<CDOID> cdoIds = newHashSet(transform(storageKeys, STORAGE_KEY_TO_CDO_ID_FUNCTION));
-		if (null != monitor) {
-			monitor.beginTask("Creating inactivation plan...", cdoIds.size());
-		}
-		return internalInactivateConcept(createDefaultPlan(), false, monitor, toArray(cdoIds, CDOID.class));
-	}
-	
 	/**
 	 * Inactivates the given concepts and all relevant SNOMED&nbsp;CT component references these concepts. Inactivation reference set memberships
 	 * created when you perform the inactivation. This method return a plan to review the components which are going to be inactivated.
