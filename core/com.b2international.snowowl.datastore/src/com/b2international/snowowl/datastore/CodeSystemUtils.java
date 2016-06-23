@@ -160,7 +160,7 @@ public class CodeSystemUtils {
 		}
 
 		// falling back to the repositoryUUID's main code system.
-		return Iterables.find(codeSystemsInRepository, ICodeSystem.IS_MAIN_BRANCH_PATH_PREDICATE); 
+		return Iterables.find(codeSystemsInRepository, ICodeSystem.IS_MAIN_BRANCH_PATH_PREDICATE, null); 
 	}
 	
 	/**
