@@ -16,27 +16,14 @@
 package com.b2international.snowowl.snomed.exporter.model;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.MapSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Optional;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 public final class SnomedExporterUtil {
@@ -49,77 +36,41 @@ public final class SnomedExporterUtil {
 	 * Creates a set of map set setting for the SNOMED&nbsp;CT publication process for the RF1 release format.
 	 * <p><b>NOTE:&nbsp;</b>this method should not be called on the server side since it uses the Snor to retrieve information.<br>
 	 * This method should be invoked when clients are sure the RF1 release format is also selected for the SNOMED&nbsp;CT publication process.
-	 * @param refSetIds the reference set identifier concept ID.
+	 * @param refSets the reference set identifier concept ID.
 	 * @return a collection of map set setting. Can be empty if no map set should be created while publishing SNOMED&nbsp;CT into RF1.
 	 */
-	public static final Set<SnomedMapSetSetting> createSettings(final Set<String> refSetIds) {
+	public static final Set<SnomedMapSetSetting> createSettings(final Set<SnomedReferenceSet> refSets) {
 		final Set<SnomedMapSetSetting> settings = Sets.newHashSet();
-		for (final String refSetId : refSetIds) {
-			if (shouldCreateMapSetSetting(refSetId))
-				settings.add(createSetting(refSetId));
+		for (final SnomedReferenceSet refSet : refSets) {
+			if (shouldCreateMapSetSetting(refSet))
+				settings.add(createSetting(refSet));
 		}
 		return settings;
 	}
 
 	/*returns true if a map set setting should be created for the RF1 publication process*/
-	private static boolean shouldCreateMapSetSetting(final String refSetId) {
-		
-		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-		
-		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
-
-		Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(refSetId)).build();
-		
-		//TODO: is this always main?
-		SnomedConceptDocument refsetConcept = revisionIndex.read(BranchPathUtils.createMainPath().getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
-
-			@Override
-			public SnomedConceptDocument execute(RevisionSearcher searcher) throws IOException {
-				
-				Hits<SnomedConceptDocument> snomedConceptDocuments = searcher.search(query);
-				Optional<SnomedConceptDocument> first = FluentIterable.<SnomedConceptDocument>from(snomedConceptDocuments).first();
-				if (first.isPresent()) {
-					return first.get();
-				} else {
-					throw new IllegalArgumentException("Could not find reference set with id: " + refSetId);
-				}
-			}
-		});
-		
-		
-		
-		return isConceptType(refSetId) && !(!isMapping(refsetConcept.getRefSetType()) || isStructuralRefSet(refSetId));
+	private static boolean shouldCreateMapSetSetting(final SnomedReferenceSet refSet) {
+		return SnomedTerminologyComponentConstants.CONCEPT.equals(refSet.getReferencedComponentType()) && !(!SnomedRefSetUtil.isMapping(refSet.getType()) || isStructuralRefSet(refSet));
 	}
 
 	/*returns true if the passed in reference set identifier concept ID is either CTV3 simple map ID or SNOMED RT simple map reference set ID*/
-	private static boolean isStructuralRefSet(final String refSetId) {
-		return Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId) 
-				|| Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId);
+	private static boolean isStructuralRefSet(final SnomedReferenceSet refSet) {
+		return Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSet.getId()) 
+				|| Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSet.getId());
 	}
 	
 	/*creates and returns with a new map setting instance for the RF1 publication.*/
-	private static SnomedMapSetSetting createSetting(final String refSetId) {
-		if (Concepts.ICD_O_REFERENCE_SET_ID.equals(refSetId))
-			return (SnomedMapSetSetting) SnomedMapSetSetting.ICD_O_SETTING;
-		else if (Concepts.ICD_9_CM_REFERENCE_SET_ID.equals(refSetId))
-			return (SnomedMapSetSetting) SnomedMapSetSetting.ICD_9_CM_SETTING;
-		else if (Concepts.ICD_10_REFERENCE_SET_ID.equals(refSetId))
-			return (SnomedMapSetSetting) SnomedMapSetSetting.ICD_10_SETTING;
+	private static SnomedMapSetSetting createSetting(final SnomedReferenceSet refSet) {
+		if (Concepts.ICD_O_REFERENCE_SET_ID.equals(refSet.getId()))
+			return SnomedMapSetSetting.ICD_O_SETTING;
+		else if (Concepts.ICD_9_CM_REFERENCE_SET_ID.equals(refSet.getId()))
+			return SnomedMapSetSetting.ICD_9_CM_SETTING;
+		else if (Concepts.ICD_10_REFERENCE_SET_ID.equals(refSet.getId()))
+			return SnomedMapSetSetting.ICD_10_SETTING;
 		else 
-			return new SnomedMapSetSetting(refSetId, "", "", "", "", MapSetType.UNSPECIFIED, isComplex(getType(refSetId)));
+			return new SnomedMapSetSetting(refSet.getId(), "", "", "", "", MapSetType.UNSPECIFIED, SnomedRefSetUtil.isComplexMapping(refSet.getType()));
 	}
 
-	/*returns true if the reference set type is either simple map or complex map type*/
-	private static boolean isMapping(final SnomedRefSetType type) {
-		return SnomedRefSetUtil.isMapping(type);
-	}
-
-	/*returns true if the reference set member is a complex type*/
-	private static boolean isComplex(final SnomedRefSetType type) {
-		return SnomedRefSetUtil.isComplexMapping(type);
-	}
-	
 	private SnomedExporterUtil() { }
 	
 }
