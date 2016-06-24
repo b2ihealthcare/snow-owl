@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
 
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -94,11 +95,17 @@ public abstract class CodeSystemApiAssert {
 			.when().put("codesystems/{id}", uniqueId);
 	}
 	
-	public static void assertCodeSystemHasAttributeValue(final String uniqueId, final String attributeName, final String attributeValue) {
+	public static void assertCodeSystemHasProperty(final String uniqueId, final String propertyName, final String value) {
 		givenAuthenticatedRequest("/admin")
 			.when().get("/codesystems/{id}", uniqueId)
 			.then().assertThat().statusCode(200)
-			.and().body(attributeName, equalTo(attributeValue));
+			.and().body(propertyName, equalTo(value));
+	}
+	
+	public static CodeSystem getCodeSystem(final String uniqueId) {
+		return givenAuthenticatedRequest("/admin")
+			.when().get("/codesystems/{id}", uniqueId)
+			.then().extract().body().as(CodeSystem.class);
 	}
 	
 	public static Map<String, String> newCodeSystemRequestBody(final String shortName) {

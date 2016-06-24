@@ -17,9 +17,13 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
@@ -27,7 +31,7 @@ import com.jayway.restassured.response.Response;
  * @since 4.7
  */
 public class SnomedVersioningApiAssert {
-
+	
 	/**
 	 * The context-relative base URL for the administrative controller. 
 	 */
@@ -44,7 +48,11 @@ public class SnomedVersioningApiAssert {
 	}
 
 	public static void assertVersionPostStatus(final String version, final String effectiveDate, final int status) {
-		whenCreatingVersion(version, effectiveDate)
+		assertVersionPostStatus(version, effectiveDate, "SNOMEDCT", status);
+	}
+	
+	public static void assertVersionPostStatus(final String version, final String effectiveDate, final String shortName, final int status) {
+		whenCreatingVersion(version, effectiveDate, shortName)
 		.then().assertThat().statusCode(status);
 	}
 
@@ -63,6 +71,26 @@ public class SnomedVersioningApiAssert {
 				.and().contentType(ContentType.JSON)
 				.and().body(requestBody)
 				.when().post("/codesystems/{shortNameOrOid}/versions", shortName);
+	}
+	
+	public static Collection<String> getEffectiveDates(final String uniqueId) {
+		final Map<?, ?> response = givenAuthenticatedRequest(ADMIN_API)
+			.and().contentType(ContentType.JSON)
+			.when().get("/codesystems/{shortName}/versions", uniqueId)
+			.then().extract().body().as(Map.class);
+		
+		if (!response.containsKey("items")) {
+			return Collections.emptyList();
+		} else {
+			final List<String> effectiveDates = Lists.newArrayList();
+			final List<Map<?, ?>> items = (List<Map<?, ?>>) response.get("items");
+			for (final Map<?, ?> version : items) {
+				final String effectiveDate = (String) version.get("effectiveDate");
+				effectiveDates.add(effectiveDate);
+			}
+			
+			return effectiveDates;
+		}
 	}
 	
 }
