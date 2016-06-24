@@ -160,11 +160,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
-		
-		if (input == null) {
-			System.err.println("Null input");
-		}
-		final Builder builder = builder()
+		return builder()
 				.storageKey(input.getStorageKey())
 				.id(input.getId())
 //				.score(input.getScore())
@@ -183,8 +179,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.referencedComponentType(input.getReferencedComponentType())
 				.refSetType(input.getRefSetType())
 				.structural(input.isStructural());
-		
-		return builder;
 	}
 	
 	public static Builder builder(ISnomedConcept input) {
