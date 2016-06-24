@@ -159,7 +159,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void mergeNewConceptToNotParentBranch01() {
+	public void mergeNewConceptToNotParentBranch() {
 		final IBranchPath b1 = createRandomBranchPath();
 		final IBranchPath b2 = createRandomBranchPath();
 		
@@ -178,7 +178,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void mergeNewConceptToNotParentBranch02() {
+	public void mergeNewConceptToNotParentBranchWithChangesInBoth() {
 		final IBranchPath b1 = createRandomBranchPath();
 		givenBranchWithPath(b1);
 		
