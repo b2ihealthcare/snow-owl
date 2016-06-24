@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUt
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +30,10 @@ import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -49,9 +53,6 @@ import com.google.common.primitives.Longs;
 
 import uk.ac.manchester.cs.owl.owlapi.OWLObjectImpl;
 
-/**
- * 
- */
 public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntology {
 
 	private final OWLOntologyManager manager;
@@ -60,7 +61,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 	private final DefaultPrefixManager prefixManager;
 
-	private final RevisionSearcher searcher;
+	private final RevisionIndex index;
 	
 	private final boolean trackingChanges;
 	
@@ -68,19 +69,14 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 	private volatile InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
 
+	private final IBranchPath branchPath;
 
-	/**
-	 * 
-	 * @param manager
-	 * @param ontologyID
-	 * @param branchPath
-	 * @throws OWLOntologyCreationException 
-	 */
-	public DelegateOntology(final OWLOntologyManager manager, final OWLOntologyID ontologyID, final RevisionSearcher searcher) throws OWLOntologyCreationException {
+	public DelegateOntology(final OWLOntologyManager manager, final OWLOntologyID ontologyID, final IBranchPath branchPath, final RevisionIndex index) throws OWLOntologyCreationException {
 		super();
 		this.manager = manager;
 		this.ontologyID = ontologyID;
-		this.searcher = searcher;
+		this.branchPath = branchPath;
+		this.index = index;
 		this.prefixManager = SnomedOntologyUtils.createPrefixManager(this);
 		this.plusOntology = manager.createOntology();
 		this.trackingChanges = (null == ontologyID.getVersionIRI());
@@ -1150,14 +1146,19 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 	private InitialReasonerTaxonomyBuilder getReasonerTaxonomyBuilder() {
 
 		if (null == reasonerTaxonomyBuilder) {
-			reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(searcher, Type.REASONER);
+			reasonerTaxonomyBuilder = index.read(branchPath.getPath(), new RevisionIndexRead<InitialReasonerTaxonomyBuilder>() {
+				@Override
+				public InitialReasonerTaxonomyBuilder execute(RevisionSearcher searcher) throws IOException {
+					return new InitialReasonerTaxonomyBuilder(searcher, Type.REASONER);
+				}
+			});
 		}
 
 		return reasonerTaxonomyBuilder;
 	}
 
 	@Override public String toString() {
-		return "DelegateOntology[branch=" + searcher.branch() + "]";
+		return "DelegateOntology[branch=" + branchPath + "]";
 	}
 
 	public void dispose() {
