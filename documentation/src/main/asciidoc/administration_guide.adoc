@@ -90,7 +90,7 @@ TIP: See `terminologyregistry listall` OSGi command to list all existing code sy
 
 Language:: Three letter language code of the code system.
 Code system OID:: The OID of the code system.
-Base code system OID:: The OID of the base code system / release this SNOMED CT release depends on.
+Extension of:: The short name of the base code system / release this SNOMED CT release depends on.
 Maintaining organization link:: Maintaining organization link.
 Release type:: The type of the release. Either `INTERNATIONAL` or `EXTENSION`.
 Citation:: Citation.
@@ -112,9 +112,7 @@ Where `snomed_ct_international.json` looks like:
   "shortName": "SNOMEDCT",
   "language": "ENG",
   "codeSystemOID": "2.16.840.1.113883.6.96",
-  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
   "maintainingOrganizationLink": "http://www.ihtsdo.org",
-  "releaseType": "INTERNATIONAL",
   "citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care."
 }
 ----
@@ -135,9 +133,8 @@ Where `snomed_ct_extension.json` looks like:
   "shortName": "SNOMEDCT-SE",
   "language": "ENG",
   "codeSystemOID": "2.16.840.1.113883.6.96.2",
-  "baseCodeSystemOID": "2.16.840.1.113883.6.96",
+  "extensionOf": "SNOMEDCT",
   "maintainingOrganizationLink": "http://www.snomed-special-extension.org",
-  "releaseType": "EXTENSION",
   "citation": "Long citation about the details of SNOMED CT special extension"
 }
 ----
