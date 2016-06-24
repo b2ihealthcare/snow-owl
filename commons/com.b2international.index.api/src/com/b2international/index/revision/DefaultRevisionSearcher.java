@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
@@ -46,8 +47,12 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	
 	@Override
 	public <T extends Revision> Iterable<T> get(Class<T> type, Iterable<Long> storageKeys) throws IOException {
-		final Query<T> query = Query.builder(type).selectAll().where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).limit(Iterables.size(storageKeys)).build();
-		return search(query);
+		if (Iterables.isEmpty(storageKeys)) {
+			return Collections.emptySet();
+		} else {
+			final Query<T> query = Query.builder(type).selectAll().where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).limit(Iterables.size(storageKeys)).build();
+			return search(query);
+		}
 	}
 
 	@Override
