@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
@@ -50,13 +49,8 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
@@ -67,7 +61,6 @@ import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdate
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -82,6 +75,13 @@ import com.google.common.collect.Multimap;
  * @since 4.3
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
+
+	private static final Function<Concept, String> GET_CONCEPT_ID = new Function<Concept, String>() {
+		@Override
+		public String apply(Concept input) {
+			return input.getId();
+		}
+	};
 	
 	private final IconIdUpdater iconId;
 	private final ParentageUpdater inferred;
@@ -130,16 +130,25 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		}
 		
 		// collect dirty concepts for reindex
-		final Iterable<Concept> dirtyConcepts = collectDirtyConcepts(searcher, commitChangeSet);
+		final Map<String, Concept> dirtyConceptsById = Maps.uniqueIndex(commitChangeSet.getDirtyComponents(Concept.class), GET_CONCEPT_ID);
 		
-		// fetch dirty concept documents
-		final Set<Long> dirtyConceptStorageKeys = FluentIterable.from(CDOIDUtils.getIds(dirtyConcepts)).transform(CDOIDUtils.CDO_ID_TO_LONG_FUNCTION).toSet();
-		final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, dirtyConceptStorageKeys), ComponentUtils.<String>getIdFunction());
+		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
+		
+		// fetch all dirty concept documents by their ID
+		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
+				.selectAll()
+				.where(SnomedConceptDocument.Expressions.ids(dirtyConceptIds))
+				.limit(dirtyConceptIds.size())
+				.build();
+		final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.uniqueIndex(searcher.search(query), ComponentUtils.<String>getIdFunction());
 		
 		// update dirty concepts
-		for (final Concept concept : dirtyConcepts) {
-			final String id = concept.getId();
+		for (final String id : dirtyConceptIds) {
+			final Concept concept = dirtyConceptsById.get(id);
 			final SnomedConceptDocument currentDoc = currentConceptDocumentsById.get(id);
+			if (currentDoc == null) {
+				throw new IllegalStateException("Current concept revision should not be null for: " + id);
+			}
 			// current doc should exists at this point in time
 			final Builder doc = SnomedConceptDocument.builder(currentDoc);
 			update(doc, concept, currentDoc);
@@ -147,31 +156,43 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			if (refSet != null) {
 				doc.refSet(refSet);
 			}
-			indexRevision(concept.cdoID(), doc.build());
+			if (concept != null) {
+				indexRevision(concept.cdoID(), doc.build());				
+			} else {
+				indexRevision(currentDoc.getStorageKey(), doc.build());
+			}
 		}
 		
 		// TODO reindex remaining new/changed reference sets
 		// TODO process deleted reference sets
 	}
 	
-	/*Updates already existing concept document with changes from concept and other sources*/
+	/*
+	 * Updates already existing concept document with changes from concept and the current revision.
+	 * New concepts does not have currentRevision and dirty concepts may not have a loaded Concept CDOObject, 
+	 * therefore both can be null, but not at the same time.
+	 * In case of new objects the Concept object should not be null, in case of dirty, the currentVersion should not be null, 
+	 * but there can be a dirty concept if a property changed on it.
+	 * We will use whatever we actually have locally to compute the new revision.
+	 */
 	private void update(SnomedConceptDocument.Builder doc, Concept concept, SnomedConceptDocument currentVersion) {
-		final String id = concept.getId();
-
-		doc.active(concept.isActive())
-			.released(concept.isReleased())
-			.effectiveTime(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-			.moduleId(concept.getModule().getId())
-			.exhaustive(concept.isExhaustive())
-			.primitive(concept.isPrimitive())
+		final String id = concept != null ? concept.getId() : currentVersion.getId();
+		final boolean active = concept != null ? concept.isActive() : currentVersion.isActive();
+		
+		doc.active(active)
+			.released(concept != null ? concept.isReleased() : currentVersion.isReleased())
+			.effectiveTime(concept != null ? getEffectiveTime(concept) : currentVersion.getEffectiveTime())
+			.moduleId(concept != null ? concept.getModule().getId() : currentVersion.getModuleId())
+			.exhaustive(concept != null ? concept.isExhaustive() : currentVersion.isExhaustive())
+			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive())
 	//		.relevant() // TODO register change type
 			;
 		
-		boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
-		boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(id);
+		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
+		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(id);
 		
 		if (inStated || inInferred) {
-			iconId.update(id, concept.isActive(), doc);
+			iconId.update(id, active, doc);
 		}
 	
 		if (inStated) {
@@ -187,74 +208,39 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets).update(doc);
 	}
 
-	private Iterable<Concept> collectDirtyConcepts(final RevisionSearcher searcher, final ICDOCommitChangeSet commitChangeSet) throws IOException {
-		// collect relevant concept changes
-		final Set<Concept> dirtyConcepts = newHashSet(FluentIterable.from(commitChangeSet.getDirtyComponents(Concept.class)).filter(new Predicate<Concept>() {
-			@Override
-			public boolean apply(Concept input) {
-				final DirtyConceptFeatureDeltaVisitor visitor = new DirtyConceptFeatureDeltaVisitor();
-				commitChangeSet.getRevisionDeltas().get(input.cdoID()).accept(visitor);
-				return visitor.hasAllowedChanges();
-			}
-		}));
-		// collect description concepts for compare change
-		for (final Description description : commitChangeSet.getDirtyComponents(Description.class)) {
-			dirtyConcepts.add(description.getConcept());
-		}
-		// collection relationship source concepts for compare change
-		for (final Relationship relationship : commitChangeSet.getDirtyComponents(Relationship.class)) {
-			dirtyConcepts.add(relationship.getSource());
-		}
-		// collect preferred language member's description's concept for compare change
-		// do we need this??? why not query all changed revision and all other required docs for compare
-		final Set<Concept> newConcepts = newHashSet(commitChangeSet.getNewComponents(Concept.class));
-		for (SnomedLanguageRefSetMember member : commitChangeSet.getNewComponents(SnomedLanguageRefSetMember.class)) {
-			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(member.getAcceptabilityId()) && member.eContainer() instanceof Description) {
-				final Description description = (Description) member.eContainer();
-				if (!Concepts.FULLY_SPECIFIED_NAME.equals(description.getType().getId())) {
-					// add only if the concept is not new
-					if (!newConcepts.contains(description.getConcept())) {
-						dirtyConcepts.add(description.getConcept());
-					}
-				}
-			}
-		}
+	private long getEffectiveTime(Concept concept) {
+		return concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME;
+	}
 
-		final Collection<String> currentDirtyConceptIds = FluentIterable.from(Iterables.concat(dirtyConcepts, commitChangeSet.getNewComponents(Concept.class))).transform(new Function<Concept, String>() {
-			@Override
-			public String apply(Concept input) {
-				return input.getId();
-			}
-		}).toSet();
+	private Set<String> collectDirtyConceptIds(final RevisionSearcher searcher, final ICDOCommitChangeSet commitChangeSet) throws IOException {
+		final Set<String> dirtyConceptIds = newHashSet();
 		
+		// collect relevant concept changes
+		FluentIterable.from(commitChangeSet.getDirtyComponents(Concept.class))
+			.filter(new Predicate<Concept>() {
+				@Override
+				public boolean apply(Concept input) {
+					final DirtyConceptFeatureDeltaVisitor visitor = new DirtyConceptFeatureDeltaVisitor();
+					commitChangeSet.getRevisionDeltas().get(input.cdoID()).accept(visitor);
+					return visitor.hasAllowedChanges();
+				}
+			}).transform(GET_CONCEPT_ID).copyInto(dirtyConceptIds);
+
 		// collect dirty concepts due to change in hierarchy
-		final Set<String> conceptsToBeLoaded = newHashSet();
-		conceptsToBeLoaded.addAll(referringRefSets.keySet());
-		conceptsToBeLoaded.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
-		conceptsToBeLoaded.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));
+		dirtyConceptIds.addAll(referringRefSets.keySet());
+		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
+		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));
 		
 		// collect inferred taxonomy changes
-		conceptsToBeLoaded.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
-		conceptsToBeLoaded.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getB(), inferredTaxonomy.getOldTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getB(), inferredTaxonomy.getOldTaxonomy()));
 		// collect stated taxonomy changes
-		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getA(), statedTaxonomy.getNewTaxonomy()));
-		conceptsToBeLoaded.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), statedTaxonomy.getOldTaxonomy()));
-		conceptsToBeLoaded.removeAll(currentDirtyConceptIds);
+		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getA(), statedTaxonomy.getNewTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), statedTaxonomy.getOldTaxonomy()));
+		// make sure we remove all new concept IDs
+		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(GET_CONCEPT_ID).toSet());
 		
-		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(SnomedConceptDocument.Expressions.ids(conceptsToBeLoaded))
-				.limit(conceptsToBeLoaded.size())
-				.build();
-		final Hits<SnomedConceptDocument> hits = searcher.search(query);
-		
-		for (SnomedConceptDocument hit : hits) {
-			final Concept concept = CDOUtils.getObjectIfExists(commitChangeSet.getView(), hit.getStorageKey());
-			checkNotNull(concept, "Concept should not be null");
-			dirtyConcepts.add(concept);
-		}
-		
-		return dirtyConcepts;
+		return dirtyConceptIds;
 	}
 	
 	private Set<String> registerConceptAndDescendants(LongCollection relationshipIds, ISnomedTaxonomyBuilder taxonomy) {
@@ -305,12 +291,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			}
 		}
 		
-		return FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(new Function<Concept, String>() {
-			@Override
-			public String apply(Concept input) {
-				return input.getId();
-			}
-		}).copyInto(iconIdUpdates);
+		return iconIdUpdates;
 	}
 	
 	private Map<String, String> getSourceConceptIconIds(RevisionSearcher searcher, ISnomedTaxonomyBuilder oldTaxonomy, LongSet detachedRelationshipIds) throws IOException {
