@@ -28,7 +28,7 @@ public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
-	private String featureName;
+	private final String featureName;
 
 	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId) {
 		this(sourceId, targetId, null);
