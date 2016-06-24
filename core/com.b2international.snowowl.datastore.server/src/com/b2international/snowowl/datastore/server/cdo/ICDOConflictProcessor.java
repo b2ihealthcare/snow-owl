@@ -118,11 +118,10 @@ public interface ICDOConflictProcessor {
 	void postProcess(CDOTransaction transaction) throws ConflictException;
 	
 	/**
-	 * Handle conflicts detected by CDO during branch merges. The implementation must provide a map, where the keys are unique identifiers and the
-	 * values are serializable conflicts.
+	 * Handle conflicts detected by CDO during branch merges. Can be used for converting CDO conflicts to {@link MergeConflict}s.
 	 * 
-	 * @param sourceTransaction
-	 * @param targetTransaction
+	 * @param sourceView
+	 * @param targetView
 	 * @param conflicts
 	 * @return
 	 */
