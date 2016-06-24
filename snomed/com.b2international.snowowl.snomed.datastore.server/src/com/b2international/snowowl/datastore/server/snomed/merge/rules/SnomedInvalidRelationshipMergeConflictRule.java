@@ -26,6 +26,7 @@ import java.util.Set;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
@@ -81,28 +82,28 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 					
 					if (inactiveConceptIds.contains(relationship.getSource().getId())) {
 						conflicts.add(MergeConflictImpl.builder()
-										.withArtefactId(relationship.getId())
-										.withArtefactType("Relationship")
-										.withConflictingAttribute("sourceId", relationship.getSource().getId())
-										.withType(ConflictType.HAS_INACTIVE_REFERENCE)
+										.componentId(relationship.getId())
+										.componentType("Relationship")
+										.conflictingAttribute(ConflictingAttributeImpl.builder().property("sourceId").value(relationship.getSource().getId()).build())
+										.type(ConflictType.HAS_INACTIVE_REFERENCE)
 										.build());	
 					}
 					
 					if (inactiveConceptIds.contains(relationship.getDestination().getId())) {
 						conflicts.add(MergeConflictImpl.builder()
-								.withArtefactId(relationship.getId())
-								.withArtefactType("Relationship")
-								.withConflictingAttribute("destinationId", relationship.getDestination().getId())
-								.withType(ConflictType.HAS_INACTIVE_REFERENCE)
+								.componentId(relationship.getId())
+								.componentType("Relationship")
+								.conflictingAttribute(ConflictingAttributeImpl.builder().property("destinationId").value(relationship.getDestination().getId()).build())
+								.type(ConflictType.HAS_INACTIVE_REFERENCE)
 								.build());
 					}
 					
 					if (inactiveConceptIds.contains(relationship.getType().getId())) {
 						conflicts.add(MergeConflictImpl.builder()
-								.withArtefactId(relationship.getId())
-								.withArtefactType("Relationship")
-								.withConflictingAttribute("typeId", relationship.getType().getId())
-								.withType(ConflictType.HAS_INACTIVE_REFERENCE)
+								.componentId(relationship.getId())
+								.componentType("Relationship")
+								.conflictingAttribute(ConflictingAttributeImpl.builder().property("typeId").value(relationship.getType().getId()).build())
+								.type(ConflictType.HAS_INACTIVE_REFERENCE)
 								.build());
 					}
 					

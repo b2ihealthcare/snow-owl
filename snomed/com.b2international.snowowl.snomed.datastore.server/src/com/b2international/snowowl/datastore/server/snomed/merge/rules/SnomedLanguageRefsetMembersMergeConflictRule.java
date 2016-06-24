@@ -27,6 +27,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
@@ -106,10 +107,10 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 							
 							// Two SNOMED CT Descriptions selected as preferred terms.
 							conflicts.add(MergeConflictImpl.builder()
-											.withArtefactId(newLanguageRefSetMember.getUuid())
-											.withArtefactType(newLanguageRefSetMember.eClass().getName())
-											.withConflictingAttribute("acceptabilityId", newLanguageRefSetMember.getAcceptabilityId())
-											.withType(ConflictType.CONFLICTING_CHANGE)
+											.componentId(newLanguageRefSetMember.getUuid())
+											.componentType(newLanguageRefSetMember.eClass().getName())
+											.conflictingAttribute(ConflictingAttributeImpl.builder().property("acceptabilityId").value(newLanguageRefSetMember.getAcceptabilityId()).build())
+											.type(ConflictType.CONFLICTING_CHANGE)
 											.build());
 						}
 					} else {
@@ -117,11 +118,10 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 							
 							// Different acceptability selected for the same description
 							conflicts.add(MergeConflictImpl.builder()
-								.withArtefactId(description.getId())
-								.withArtefactType(description.eClass().getName())
-								.withConflictingAttribute(newLanguageRefSetMember.getUuid(), newLanguageRefSetMember.getAcceptabilityId())
-								.withConflictingAttribute(conceptDescriptionMember.getUuid(), conceptDescriptionMember.getAcceptabilityId())
-								.withType(ConflictType.CONFLICTING_CHANGE)
+								.componentId(newLanguageRefSetMember.getUuid())
+								.componentType(newLanguageRefSetMember.eClass().getName())
+								.conflictingAttribute(ConflictingAttributeImpl.builder().property("acceptabilityId").value(newLanguageRefSetMember.getAcceptabilityId()).build())
+								.type(ConflictType.CONFLICTING_CHANGE)
 								.build());
 						}
 					}

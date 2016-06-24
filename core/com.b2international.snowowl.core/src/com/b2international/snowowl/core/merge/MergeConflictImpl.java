@@ -19,8 +19,6 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -29,7 +27,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Ordering;
 
 /**
  * @since 4.7
@@ -37,60 +34,62 @@ import com.google.common.collect.Ordering;
 @JsonDeserialize(builder = MergeConflictImpl.Builder.class)
 public class MergeConflictImpl implements MergeConflict {
 
-	public static final String ATTRIBUTE_KEY_VALUE_TEMPLATE = "%s -> %s";
-	
 	private static final String ATTRIBUTE_SEPARATOR = "; ";
 	private static final String END_OF_LINE_CHAR = ".";
 	private static final String DEFAULT_ATTRIBUTES_MESSAGE = ", conflicting attributes are: [%s].";
 	private static final String DEFAULT_CONFLICT_MESSAGE = "%s with ID '%s' has a conflict of type '%s' on target branch%s";
 
-	private String artefactId;
-	private String artefactType;
-	private List<String> conflictingAttributes;
+	private String componentId;
+	private String componentType;
+	private List<ConflictingAttribute> conflictingAttributes;
 	private ConflictType type;
 	private String message;
 
 	public static Builder builder() {
 		return new Builder();
 	}
+	
+	public static Builder builder(MergeConflict copy) {
+		return new Builder()
+					.componentId(copy.getComponentId())
+					.componentType(copy.getComponentType())
+					.conflictingAttributes(copy.getConflictingAttributes())
+					.type(copy.getType());
+	}
 
-	public static String buildDefaultMessage(String artefactId, String artefactType, List<String> conflictingAttributes, ConflictType type) {
-		String attributes = buildAttributesMessage(conflictingAttributes);
-		return String.format(DEFAULT_CONFLICT_MESSAGE, artefactType, artefactId, type, Strings.isNullOrEmpty(attributes) ? END_OF_LINE_CHAR : String.format(DEFAULT_ATTRIBUTES_MESSAGE, attributes));
+	public static String buildDefaultMessage(String componentId, String componentType, List<ConflictingAttribute> conflictingAttributes, ConflictType type) {
+		return String.format(DEFAULT_CONFLICT_MESSAGE, componentType, componentId, type, 
+				conflictingAttributes.isEmpty() ? END_OF_LINE_CHAR : String.format(DEFAULT_ATTRIBUTES_MESSAGE, buildAttributes(conflictingAttributes)));
 	}
 	
-	public static List<String> buildAttributeList(Map<String, String> attributes) {
-		return FluentIterable.from(attributes.entrySet()).transform(new Function<Entry<String, String>, String>() {
-			@Override public String apply(Entry<String, String> input) {
-				return String.format(ATTRIBUTE_KEY_VALUE_TEMPLATE, input.getKey(), input.getValue());
+	private static String buildAttributes(List<ConflictingAttribute> conflictingAttributes) {
+		return Joiner.on(ATTRIBUTE_SEPARATOR).join(FluentIterable.from(conflictingAttributes).transform(new Function<ConflictingAttribute, String>() {
+			@Override public String apply(ConflictingAttribute attribute) {
+				return attribute.toDisplayName();
 			}
-		}).toSortedList(Ordering.natural());
+		}).toList());
 	}
-
-	private static String buildAttributesMessage(List<String> conflictingAttributes) {
-		return Joiner.on(ATTRIBUTE_SEPARATOR).join(FluentIterable.from(conflictingAttributes).toSortedList(Ordering.natural()));
-	}
-
-	private MergeConflictImpl(String artefactId, String artefactType, List<String> conflictingAttributes, ConflictType type, String message) {
-		this.artefactId = artefactId;
-		this.artefactType = artefactType;
+	
+	private MergeConflictImpl(String componentId, String componentType, List<ConflictingAttribute> conflictingAttributes, ConflictType type, String message) {
+		this.componentId = componentId;
+		this.componentType = componentType;
 		this.conflictingAttributes = conflictingAttributes;
 		this.type = type;
 		this.message = message;
 	}
 
 	@Override
-	public String getArtefactId() {
-		return artefactId;
+	public String getComponentId() {
+		return componentId;
 	}
 
 	@Override
-	public String getArtefactType() {
-		return artefactType;
+	public String getComponentType() {
+		return componentType;
 	}
 
 	@Override
-	public List<String> getConflictingAttributes() {
+	public List<ConflictingAttribute> getConflictingAttributes() {
 		return conflictingAttributes;
 	}
 
@@ -104,12 +103,12 @@ public class MergeConflictImpl implements MergeConflict {
 		return message;
 	}
 
-	@JsonPOJOBuilder(buildMethodName="build", withPrefix = "with")
+	@JsonPOJOBuilder(buildMethodName="build", withPrefix = "")
 	public static class Builder {
 
-		private String artefactId;
-		private String artefactType;
-		private List<String> conflictingAttributes;
+		private String componentId;
+		private String componentType;
+		private List<ConflictingAttribute> conflictingAttributes;
 		private ConflictType type;
 		private String message;
 
@@ -118,42 +117,47 @@ public class MergeConflictImpl implements MergeConflict {
 			this.conflictingAttributes = newArrayList();
 		}
 
-		public Builder withArtefactId(String id) {
-			this.artefactId = id;
+		public Builder componentId(String id) {
+			this.componentId = id;
 			return this;
 		}
 
-		public Builder withArtefactType(String type) {
-			this.artefactType = type;
+		public Builder componentType(String type) {
+			this.componentType = type;
 			return this;
 		}
 
-		public Builder withConflictingAttribute(String key, String value) {
-			this.conflictingAttributes.add(String.format(ATTRIBUTE_KEY_VALUE_TEMPLATE, key, value));
+		public Builder conflictingAttribute(ConflictingAttribute attribute) {
+			this.conflictingAttributes.add(attribute);
 			return this;
 		}
 		
-		public Builder withConflictingAttributes(List<String> attributes) {
+		public Builder conflictingAttributes(List<ConflictingAttribute> attributes) {
 			this.conflictingAttributes.addAll(attributes);
 			return this;
 		}
 
-		public Builder withType(ConflictType type) {
+		public Builder type(ConflictType type) {
 			this.type = type;
 			return this;
 		}
 
-		public Builder withMessage(String message) {
+		public Builder message(String message) {
 			this.message = message;
 			return this;
 		}
 
 		public MergeConflictImpl build() {
-			if (Strings.isNullOrEmpty(message)) {
-				this.message = MergeConflictImpl.buildDefaultMessage(this.artefactId, this.artefactType, this.conflictingAttributes, this.type);
+			
+			if (this.conflictingAttributes.size() > 1) {
+				Collections.sort(this.conflictingAttributes, ConflictingAttributeImpl.ATTRIBUTE_COMPARATOR);
 			}
-			Collections.sort(this.conflictingAttributes);
-			return new MergeConflictImpl(this.artefactId, this.artefactType, this.conflictingAttributes, this.type, this.message);
+			
+			if (Strings.isNullOrEmpty(message)) {
+				this.message = MergeConflictImpl.buildDefaultMessage(this.componentId, this.componentType, this.conflictingAttributes, this.type);
+			}
+			
+			return new MergeConflictImpl(this.componentId, this.componentType, this.conflictingAttributes, this.type, this.message);
 		}
 	}
 

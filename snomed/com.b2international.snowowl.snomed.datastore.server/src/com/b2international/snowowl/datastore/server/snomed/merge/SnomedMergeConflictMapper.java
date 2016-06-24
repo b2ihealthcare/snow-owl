@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.merge;
 
-import static java.util.Collections.singletonList;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +33,8 @@ import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.merge.ConflictingAttribute;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
@@ -46,7 +46,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Ordering;
 
 /**
  * @since 4.7
@@ -72,54 +71,56 @@ public class SnomedMergeConflictMapper {
 
 	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetView, conflict.getTargetDelta().getID()))
-				.withArtefactType(getType(targetView, conflict.getTargetDelta().getID()))
-				.withConflictingAttributes(getConflictingAttributes(conflict.getTargetDelta()))
-				.withType(ConflictType.CONFLICTING_CHANGE)
+				.componentId(getComponentId(targetView, conflict.getTargetDelta().getID()))
+				.componentType(getType(targetView, conflict.getTargetDelta().getID()))
+				.conflictingAttributes(getConflictingAttributes(conflict.getTargetDelta(), targetView))
+				.type(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}
 
 	public static MergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOView sourceView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(sourceView, conflict.getSourceDelta().getID()))
-				.withArtefactType(getType(sourceView, conflict.getSourceDelta().getID()))
-				.withConflictingAttributes(getConflictingAttributes(conflict.getSourceDelta()))
-				.withType(ConflictType.DELETED_WHILE_CHANGED)
+				.componentId(getComponentId(sourceView, conflict.getSourceDelta().getID()))
+				.componentType(getType(sourceView, conflict.getSourceDelta().getID()))
+				.conflictingAttributes(getConflictingAttributes(conflict.getSourceDelta(), sourceView))
+				.type(ConflictType.DELETED_WHILE_CHANGED)
 				.build();
 	}
 
 	public static MergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetView, conflict.getTargetDelta().getID()))
-				.withArtefactType(getType(targetView, conflict.getTargetDelta().getID()))
-				.withConflictingAttributes(getConflictingAttributes(conflict.getTargetDelta()))
-				.withType(ConflictType.CHANGED_WHILE_DELETED)
+				.componentId(getComponentId(targetView, conflict.getTargetDelta().getID()))
+				.componentType(getType(targetView, conflict.getTargetDelta().getID()))
+				.conflictingAttributes(getConflictingAttributes(conflict.getTargetDelta(), targetView))
+				.type(ConflictType.CHANGED_WHILE_DELETED)
 				.build();
 	}
 
 	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetView, conflict.getTargetId()))
-				.withArtefactType(getType(targetView, conflict.getTargetId()))
-				.withConflictingAttributes(Collections.singletonList("id")) // FIXME?
-				.withType(ConflictType.CONFLICTING_CHANGE)
+				.componentId(getComponentId(targetView, conflict.getTargetId()))
+				.componentType(getType(targetView, conflict.getTargetId()))
+				.conflictingAttribute(ConflictingAttributeImpl.builder().property("id").build())
+				.type(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}
 
 	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOView sourceView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(sourceView, conflict.getTargetId()))
-				.withArtefactType(getType(sourceView, conflict.getTargetId()))
-				.withType(ConflictType.CAUSES_MISSING_REFERENCE)
+				.componentId(getComponentId(sourceView, conflict.getTargetId()))
+				.componentType(getType(sourceView, conflict.getTargetId()))
+				.type(ConflictType.CAUSES_MISSING_REFERENCE)
 				.build();
 	}
 	
 	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOView targetView) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(getComponentId(targetView, conflict.getTargetId()))
-				.withConflictingAttributes(Strings.isNullOrEmpty(conflict.getFeatureName()) ? Collections.<String>emptyList() : singletonList(conflict.getFeatureName()))
-				.withArtefactType(getType(targetView, conflict.getTargetId()))
-				.withType(ConflictType.HAS_MISSING_REFERENCE)
+				.componentId(getComponentId(targetView, conflict.getTargetId()))
+				.componentType(getType(targetView, conflict.getTargetId()))
+				.conflictingAttributes(
+						Strings.isNullOrEmpty(conflict.getFeatureName()) ? Collections.<ConflictingAttribute> emptyList() : 
+							Collections.<ConflictingAttribute> singletonList(ConflictingAttributeImpl.builder().property(conflict.getFeatureName()).build()))
+				.type(ConflictType.HAS_MISSING_REFERENCE)
 				.build();
 	}
 
@@ -149,34 +150,48 @@ public class SnomedMergeConflictMapper {
 		return null;
 	}
 	
-	private static List<String> getConflictingAttributes(final CDORevisionDelta cdoRevisionDelta) {
-		return FluentIterable.from(cdoRevisionDelta.getFeatureDeltas()).transform(new Function<CDOFeatureDelta, String>() {
+	private static List<ConflictingAttribute> getConflictingAttributes(final CDORevisionDelta cdoRevisionDelta, final CDOView view) {
+		return FluentIterable.from(cdoRevisionDelta.getFeatureDeltas()).transform(new Function<CDOFeatureDelta, ConflictingAttribute>() {
 			@Override 
-			public String apply(CDOFeatureDelta featureDelta) {
+			public ConflictingAttribute apply(CDOFeatureDelta featureDelta) {
 				
-				String key = featureDelta.getFeature().getName();
-				Object value = null;
+				String property = featureDelta.getFeature().getName();
+				String oldValue = null;
+				String newValue = null;
 				
 				if (featureDelta instanceof CDOSetFeatureDelta) {
 					CDOSetFeatureDelta setFeatureDelta = (CDOSetFeatureDelta) featureDelta;
-					if (!(setFeatureDelta.getValue() instanceof CDOID)) {
-						if (setFeatureDelta.getValue() instanceof Date) {
-							value = Dates.formatByHostTimeZone(setFeatureDelta.getValue(), DateFormats.SHORT);
-						} else {
-							value = setFeatureDelta.getValue();
-						}
-					}
+					newValue = convertValue(setFeatureDelta.getValue(), view);
+					oldValue = convertValue(setFeatureDelta.getOldValue(), view);
 				}
-				
-				if (value != null) {
-					return String.format(MergeConflictImpl.ATTRIBUTE_KEY_VALUE_TEMPLATE, key, value);
-				}
-				
-				return key;
+				return ConflictingAttributeImpl.builder()
+							.property(property)
+							.oldValue(oldValue)
+							.value(newValue)
+							.build();
 			}
-		}).toSortedList(Ordering.natural());
+
+		}).toList();
 	}
 
+	private static String convertValue(final Object value, final CDOView view) {
+		if (value instanceof CDOID) {
+			// try to resolve id
+			CDOID cdoId = (CDOID) value;
+			String componentId = getComponentId(view, cdoId);
+			if (!componentId.equals(cdoId.toString())) {
+				return componentId;
+			}
+		} else {
+			if (value instanceof Date) {
+				return Dates.formatByHostTimeZone(value, DateFormats.SHORT);
+			} else if (value != null) {
+				return value.toString();
+			}
+		}
+		return null;
+	}
+	
 	private SnomedMergeConflictMapper() { /* prevent instantiation */ }
 	
 }

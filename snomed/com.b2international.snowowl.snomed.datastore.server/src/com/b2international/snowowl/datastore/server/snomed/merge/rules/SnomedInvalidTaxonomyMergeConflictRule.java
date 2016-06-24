@@ -16,17 +16,17 @@
 package com.b2international.snowowl.datastore.server.snomed.merge.rules;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.ConflictingAttribute;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
@@ -68,19 +68,19 @@ public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeC
 					String sourceId = String.valueOf(invalidRelationship.getSourceId());
 					String destinationId = String.valueOf(invalidRelationship.getDestinationId());
 					
-					Map<String, String> attributeMap = newHashMap();
+					ConflictingAttribute attribute;
 					
 					if (invalidRelationship.getMissingConcept() == MissingConcept.SOURCE) {
-						attributeMap.put("source", sourceId);
+						attribute = ConflictingAttributeImpl.builder().property("sourceId").value(sourceId).build();
 					} else {
-						attributeMap.put("destination", destinationId);
+						attribute = ConflictingAttributeImpl.builder().property("destinationId").value(destinationId).build();
 					}
 					
 					conflicts.add(MergeConflictImpl.builder()
-						.withArtefactId(relationshipId)
-						.withArtefactType("Relationship")
-						.withConflictingAttributes(MergeConflictImpl.buildAttributeList(attributeMap))
-						.withType(ConflictType.HAS_INACTIVE_REFERENCE)
+						.componentId(relationshipId)
+						.componentType("Relationship")
+						.conflictingAttribute(attribute)
+						.type(ConflictType.HAS_INACTIVE_REFERENCE)
 						.build());
 				}	
 			}

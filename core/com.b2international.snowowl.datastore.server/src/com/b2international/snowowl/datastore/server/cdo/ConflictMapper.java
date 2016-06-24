@@ -48,43 +48,43 @@ public class ConflictMapper {
 	
 	public static MergeConflict from(final ChangedInSourceAndTargetConflict conflict) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(conflict.getTargetDelta().getID().toString())
-				.withType(ConflictType.CONFLICTING_CHANGE)
+				.componentId(conflict.getTargetDelta().getID().toString())
+				.type(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}
 	
 	public static MergeConflict from(final ChangedInSourceAndDetachedInTargetConflict conflict) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(conflict.getSourceDelta().getID().toString())
-				.withType(ConflictType.DELETED_WHILE_CHANGED)
+				.componentId(conflict.getSourceDelta().getID().toString())
+				.type(ConflictType.DELETED_WHILE_CHANGED)
 				.build();
 	}
 	
 	public static MergeConflict from(final ChangedInTargetAndDetachedInSourceConflict conflict) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(conflict.getTargetDelta().getID().toString())
-				.withType(ConflictType.CHANGED_WHILE_DELETED)
+				.componentId(conflict.getTargetDelta().getID().toString())
+				.type(ConflictType.CHANGED_WHILE_DELETED)
 				.build();
 	}
 	
 	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(conflict.getTargetId().toString())
-				.withType(ConflictType.CONFLICTING_CHANGE)
+				.componentId(conflict.getTargetId().toString())
+				.type(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}
 	
 	public static MergeConflict from(final AddedInSourceAndDetachedInTargetConflict conflict) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(conflict.getTargetId().toString())
-				.withType(ConflictType.CAUSES_MISSING_REFERENCE)
+				.componentId(conflict.getTargetId().toString())
+				.type(ConflictType.CAUSES_MISSING_REFERENCE)
 				.build();
 	}
 	
 	public static MergeConflict from(final AddedInTargetAndDetachedInSourceConflict conflict) {
 		return MergeConflictImpl.builder()
-				.withArtefactId(conflict.getTargetId().toString())
-				.withType(ConflictType.HAS_MISSING_REFERENCE)
+				.componentId(conflict.getTargetId().toString())
+				.type(ConflictType.HAS_MISSING_REFERENCE)
 				.build();
 	}
 	

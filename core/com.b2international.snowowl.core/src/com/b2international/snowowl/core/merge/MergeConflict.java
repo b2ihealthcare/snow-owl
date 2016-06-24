@@ -17,9 +17,12 @@ package com.b2international.snowowl.core.merge;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 /**
  * @since 4.7
  */
+@JsonDeserialize(as = MergeConflictImpl.class)
 public interface MergeConflict {
 
 	public enum ConflictType {
@@ -33,25 +36,25 @@ public interface MergeConflict {
 	}
 	
 	/**
-	 * Returns the unique identifier of the artefact that induced this merge conflict.
+	 * Returns the unique identifier of the component that induced this merge conflict.
 	 * 
-	 * @return unique identifier of the artefact
+	 * @return unique identifier of the component
 	 */
-	String getArtefactId();
+	String getComponentId();
 	
 	/**
-	 * Returns the type of the artefact that induced this merge conflict.
+	 * Returns the type of the component that induced this merge conflict.
 	 * 
-	 * @return the type of the artefact
+	 * @return the type of the component
 	 */
-	String getArtefactType();
+	String getComponentType();
 	
 	/**
 	 * Returns a list of attributes represented as {@link String}s, all of which was involved in causing the conflict.
 	 * 
 	 * @return the list of attributes involved in causing the conflict
 	 */
-	List<String> getConflictingAttributes();
+	List<ConflictingAttribute> getConflictingAttributes();
 	
 	/**
 	 * Returns the type of the conflict, which reflects the nature of problem causing the merge to fail.

@@ -30,6 +30,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
@@ -78,9 +79,9 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
 				if (!detachedMemberIds.contains(member.getId())) {
 					conflicts.add(MergeConflictImpl.builder()
-									.withArtefactId(member.getReferencedComponent().getId())
-									.withArtefactType(idToComponentTypeMap.get(member.getReferencedComponent().getId()))
-									.withType(ConflictType.CAUSES_MISSING_REFERENCE)
+									.componentId(member.getReferencedComponent().getId())
+									.componentType(idToComponentTypeMap.get(member.getReferencedComponent().getId()))
+									.type(ConflictType.CAUSES_MISSING_REFERENCE)
 									.build());
 				}
 			}
@@ -130,10 +131,10 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 				for (Pair<String, String> entry : referencedComponentIdToRefsetMemberMap.get(id)) {
 					conflicts.add(MergeConflictImpl
 							.builder()
-							.withArtefactId(entry.getB())
-							.withArtefactType(entry.getA())
-							.withConflictingAttribute("referencedComponent", id)
-							.withType(ConflictType.HAS_MISSING_REFERENCE).build());
+							.componentId(entry.getB())
+							.componentType(entry.getA())
+							.conflictingAttribute(ConflictingAttributeImpl.builder().property("referencedComponent").value(id).build())
+							.type(ConflictType.HAS_MISSING_REFERENCE).build());
 				}
 			}
 			
