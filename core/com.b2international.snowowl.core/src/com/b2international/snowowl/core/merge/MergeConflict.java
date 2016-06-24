@@ -32,14 +32,39 @@ public interface MergeConflict {
 		CAUSES_INACTIVE_REFERENCE
 	}
 	
+	/**
+	 * Returns the unique identifier of the artefact that induced this merge conflict.
+	 * 
+	 * @return unique identifier of the artefact
+	 */
 	String getArtefactId();
 	
+	/**
+	 * Returns the type of the artefact that induced this merge conflict.
+	 * 
+	 * @return the type of the artefact
+	 */
 	String getArtefactType();
 	
+	/**
+	 * Returns a list of attributes represented as {@link String}s, all of which was involved in causing the conflict.
+	 * 
+	 * @return the list of attributes involved in causing the conflict
+	 */
 	List<String> getConflictingAttributes();
 	
+	/**
+	 * Returns the type of the conflict, which reflects the nature of problem causing the merge to fail.
+	 * 
+	 * @return the conflict type
+	 */
 	ConflictType getType();
 	
+	/**
+	 * Returns an interpretable message about the conflict, built using it's properties.
+	 * 
+	 * @return a summarizing, interpretable message about the conflict
+	 */
 	String getMessage();
 	
 }
