@@ -28,12 +28,15 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.ConflictingAttribute;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -256,16 +259,19 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
 		assertEquals(1, conflicts.size());
-//
-//		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-//				.put("sourceType", "Description")
-//				.put("sourceId", symbolicNameMap.get("D1"))
-//				.put("targetType", "Concept")
-//				.put("targetId", conceptId)
-//				.put("message", String.format(GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Description", symbolicNameMap.get("D1"), "Concept", conceptId))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict));
+		
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("componentId", conceptId)
+				.put("componentType", "Concept")
+				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						conceptId, 
+						"Concept", 
+						Collections.<ConflictingAttribute>emptyList(), 
+						ConflictType.CAUSES_MISSING_REFERENCE))
+				.build();
+		
+		assertThat(conflicts, hasItem(conflict));
 		
 		assertDescriptionNotExists(b2, "D1");
 	}
@@ -290,21 +296,24 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptCanBeDeleted(b2, "C");
 		assertConceptNotExists(b2, "C");
 		
-		Response mergeResponse = assertMergeJobFails(b1, b2, "Merge b1 to b2");
+		Response mergeResponse = assertMergeJobFailsWithConflict(b1, b2, "Merge b1 to b2");
 		
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
 		assertEquals(1, conflicts.size());
+		
+		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
+				.put("componentId", conceptId)
+				.put("componentType", "Concept")
+				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
+				.put("message", MergeConflictImpl.buildDefaultMessage(
+						conceptId, 
+						"Concept", 
+						Collections.<ConflictingAttribute>emptyList(), 
+						ConflictType.CAUSES_MISSING_REFERENCE))
+				.build();
 
-//		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-//				.put("sourceType", "Relationship")
-//				.put("sourceId", symbolicNameMap.get("R"))
-//				.put("targetType", "Concept")
-//				.put("targetId", conceptId)
-//				.put("message", String.format(GenericCDOMergeConflictMessages.ADDED_IN_SOURCE_DETACHED_IN_TARGET_MESSAGE, "Relationship", symbolicNameMap.get("R"), "Concept", conceptId))
-//				.build();
-//		
-//		assertThat(conflicts, hasItem(conflict));
+		assertThat(conflicts, hasItem(conflict));
 		
 		assertRelationshipNotExists(b2, "R");
 	}
@@ -432,18 +441,21 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
 		assertEquals(1, conflicts.size());
-
-		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("acceptabilityId", acceptabilityId));
 		
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+				.property("acceptabilityId")
+				.value(acceptabilityId)
+				.build();
+
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", memberId)
-				.put("artefactType", "SnomedLanguageRefSetMember")
-				.put("conflictingAttributes", attributeList)
+				.put("componentId", memberId)
+				.put("componentType", "SnomedLanguageRefSetMember")
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("type", ConflictType.CONFLICTING_CHANGE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						memberId, 
 						"SnomedLanguageRefSetMember", 
-						attributeList, 
+						Collections.<ConflictingAttribute>singletonList(attribute), 
 						ConflictType.CONFLICTING_CHANGE))
 				.build();
 		
@@ -538,17 +550,20 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 		
-		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("source", symbolicNameMap.get("C1")));
-
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+				.property("sourceId")
+				.value(symbolicNameMap.get("C1"))
+				.build();
+		
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("R1"))
-				.put("artefactType", "Relationship")
-				.put("conflictingAttributes", attributeList)
+				.put("componentId", symbolicNameMap.get("R1"))
+				.put("componentType", "Relationship")
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("type", ConflictType.HAS_INACTIVE_REFERENCE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("R1"), 
 						"Relationship",
-						attributeList,
+						Collections.<ConflictingAttribute>singletonList(attribute),
 						ConflictType.HAS_INACTIVE_REFERENCE))
 				.build();
 		

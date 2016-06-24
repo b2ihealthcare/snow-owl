@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.updateMemberEffectiveTime;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -43,6 +42,8 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.merge.ConflictingAttribute;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -57,6 +58,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
 
@@ -109,15 +112,21 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+				.property("caseSignificance")
+				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
+				.value(CaseSignificance.CASE_INSENSITIVE.getConceptId())
+				.build();
+		
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("D100"))
-				.put("artefactType", "Description")
-				.put("conflictingAttributes", singletonList("caseSignificance"))
+				.put("componentId", symbolicNameMap.get("D100"))
+				.put("componentType", "Description")
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("type", ConflictType.CONFLICTING_CHANGE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("D100"), 
 						"Description", 
-						singletonList("caseSignificance"), 
+						Collections.<ConflictingAttribute>singletonList(attribute), 
 						ConflictType.CONFLICTING_CHANGE))
 				.build();
 		
@@ -159,18 +168,21 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
 		assertEquals(1, conflicts.size());
-
-		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("effectiveTime", effectiveTime, "released", "true"));
 		
+		List<ConflictingAttribute> attributes = FluentIterable.from(ImmutableList.<ConflictingAttribute>of(
+				ConflictingAttributeImpl.builder().property("effectiveTime").value(effectiveTime).build(), 
+				ConflictingAttributeImpl.builder().property("released").value("true").oldValue("false").build())
+			).toSortedList(ConflictingAttributeImpl.ATTRIBUTE_COMPARATOR);	
+
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("M1"))
-				.put("artefactType", "SnomedRefSetMember")
-				.put("conflictingAttributes", attributeList)
+				.put("componentId", symbolicNameMap.get("M1"))
+				.put("componentType", "SnomedRefSetMember")
+				.put("conflictingAttributes", createAttributesMap(attributes))
 				.put("type", ConflictType.DELETED_WHILE_CHANGED.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("M1"), 
 						"SnomedRefSetMember", 
-						attributeList, 
+						attributes, 
 						ConflictType.DELETED_WHILE_CHANGED))
 				.build();
 		
@@ -247,15 +259,21 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+				.property("caseSignificance")
+				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
+				.value(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId())
+				.build();
+		
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("D100"))
-				.put("artefactType", "Description")
-				.put("conflictingAttributes", singletonList("caseSignificance"))
+				.put("componentId", symbolicNameMap.get("D100"))
+				.put("componentType", "Description")
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("type", ConflictType.CHANGED_WHILE_DELETED.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("D100"), 
 						"Description", 
-						singletonList("caseSignificance"), 
+						Collections.<ConflictingAttribute>singletonList(attribute), 
 						ConflictType.CHANGED_WHILE_DELETED))
 				.build();
 		
@@ -285,15 +303,17 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder().property("id").build();
+		
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", descriptionId)
-				.put("artefactType", "Description")
-				.put("conflictingAttributes", singletonList("id"))
+				.put("componentId", descriptionId)
+				.put("componentType", "Description")
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("type", ConflictType.CONFLICTING_CHANGE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						descriptionId, 
 						"Description", 
-						singletonList("id"), 
+						Collections.<ConflictingAttribute>singletonList(attribute), 
 						ConflictType.CONFLICTING_CHANGE))
 				.build();
 		
@@ -326,15 +346,17 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 		
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder().property("type").build();
+		
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("R1"))
-				.put("artefactType", "Relationship")
-				.put("conflictingAttributes", singletonList("type"))
+				.put("componentId", symbolicNameMap.get("R1"))
+				.put("componentType", "Relationship")
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("type", ConflictType.HAS_MISSING_REFERENCE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("R1"), 
 						"Relationship", 
-						singletonList("type"), 
+						Collections.<ConflictingAttribute>singletonList(attribute), 
 						ConflictType.HAS_MISSING_REFERENCE))
 				.build();
 		
@@ -368,13 +390,13 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(1, conflicts.size());
 
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("C1"))
-				.put("artefactType", "Concept")
+				.put("componentId", symbolicNameMap.get("C1"))
+				.put("componentType", "Concept")
 				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("C1"), 
 						"Concept", 
-						Collections.<String>emptyList(), 
+						Collections.<ConflictingAttribute>emptyList(), 
 						ConflictType.CAUSES_MISSING_REFERENCE))
 				.build();
 		
@@ -409,17 +431,17 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
-		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("referencedComponent", symbolicNameMap.get("C1")));
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder().property("referencedComponent").value(symbolicNameMap.get("C1")).build();
 		
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("M1"))
-				.put("artefactType", "SnomedRefSetMember")
-				.put("conflictingAttributes", attributeList)
+				.put("componentId", symbolicNameMap.get("M1"))
+				.put("componentType", "SnomedRefSetMember")
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("type", ConflictType.HAS_MISSING_REFERENCE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("M1"), 
 						"SnomedRefSetMember", 
-						attributeList, 
+						Collections.<ConflictingAttribute>singletonList(attribute), 
 						ConflictType.HAS_MISSING_REFERENCE))
 				.build();
 		
@@ -455,13 +477,13 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(1, conflicts.size());
 
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("C1"))
-				.put("artefactType", "Concept")
+				.put("componentId", symbolicNameMap.get("C1"))
+				.put("componentType", "Concept")
 				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("C1"), 
 						"Concept",
-						Collections.<String>emptyList(),
+						Collections.<ConflictingAttribute>emptyList(),
 						ConflictType.CAUSES_MISSING_REFERENCE))
 				.build();
 		
@@ -511,19 +533,17 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		
 		assertEquals(1, conflicts.size());
 
-		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of(
-				newMemberId, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, 
-				memberIds.get(0), Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED));
-		
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder().property("acceptabilityId").value(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE).build();
+			
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("D1"))
-				.put("artefactType", "Description")
+				.put("componentId", newMemberId)
+				.put("componentType", "SnomedLanguageRefSetMember")
 				.put("type", ConflictType.CONFLICTING_CHANGE.name())
-				.put("conflictingAttributes", attributeList)
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("message", MergeConflictImpl.buildDefaultMessage(
-						symbolicNameMap.get("D1"), 
-						"Description",
-						attributeList,
+						newMemberId, 
+						"SnomedLanguageRefSetMember",
+						Collections.<ConflictingAttribute>singletonList(attribute),
 						ConflictType.CONFLICTING_CHANGE))
 				.build();
 		
@@ -562,21 +582,22 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
 		
 		assertEquals(1, conflicts.size());
-		
-		List<String> attributeList = MergeConflictImpl.buildAttributeList(ImmutableMap.<String, String>of("destinationId", symbolicNameMap.get("C1")));
+
+		ConflictingAttribute attribute = ConflictingAttributeImpl.builder().property("destinationId").value(symbolicNameMap.get("C1")).build();
 
 		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("artefactId", symbolicNameMap.get("R1"))
-				.put("artefactType", "Relationship")
+				.put("componentId", symbolicNameMap.get("R1"))
+				.put("componentType", "Relationship")
 				.put("type", ConflictType.HAS_INACTIVE_REFERENCE.name())
-				.put("conflictingAttributes", attributeList)
+				.put("conflictingAttributes", createAttributesMap(attribute))
 				.put("message", MergeConflictImpl.buildDefaultMessage(
 						symbolicNameMap.get("R1"), 
 						"Relationship",
-						attributeList,
+						Collections.<ConflictingAttribute>singletonList(attribute),
 						ConflictType.HAS_INACTIVE_REFERENCE))
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict));
 	}
+	
 }

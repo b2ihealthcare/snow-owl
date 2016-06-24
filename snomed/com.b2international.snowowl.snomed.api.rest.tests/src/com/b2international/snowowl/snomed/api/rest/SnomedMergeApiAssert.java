@@ -21,11 +21,17 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.createSimpleConceptReferenceSetMember;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -233,6 +239,43 @@ public abstract class SnomedMergeApiAssert {
 	
 	public static void assertRefSetMemberCanBeDeleted(final IBranchPath branchPath, final String symbolicName) {
 		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.MEMBER);
+	}
+	
+	public static List<Map<String, String>> createAttributesMap(ConflictingAttribute attribute) {
+		return createAttributesMap(Collections.<ConflictingAttribute>singletonList(attribute));
+	}
+	
+	public static List<Map<String, String>> createAttributesMap(List<ConflictingAttribute> attributes) {
+		return FluentIterable.from(attributes)
+				.transform(new Function<ConflictingAttribute, Map<String, String>>() {
+					@Override
+					public Map<String, String> apply(ConflictingAttribute input) {
+						return createAttributeMap(input);
+					}
+				}).toList();
+	}
+
+	private static Map<String, String> createAttributeMap(ConflictingAttribute attribute) {
+		if (!Strings.isNullOrEmpty(attribute.getValue()) && !Strings.isNullOrEmpty(attribute.getOldValue())) {
+			return ImmutableMap.<String, String>builder()
+					.put("property", attribute.getProperty())
+					.put("value", attribute.getValue())
+					.put("oldValue", attribute.getOldValue())
+					.build();
+		} else if (!Strings.isNullOrEmpty(attribute.getValue())) {
+			return ImmutableMap.<String, String>builder()
+					.put("property", attribute.getProperty())
+					.put("value", attribute.getValue())
+					.build();
+		} else if (!Strings.isNullOrEmpty(attribute.getOldValue())) {
+			return ImmutableMap.<String, String>builder()
+					.put("property", attribute.getProperty())
+					.put("oldValue", attribute.getValue())
+					.build();
+		}
+		return ImmutableMap.<String, String>builder()
+				.put("property", attribute.getProperty())
+				.build();
 	}
 	
 	private SnomedMergeApiAssert() {}
