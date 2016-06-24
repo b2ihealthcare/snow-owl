@@ -46,9 +46,7 @@ public class IconIdUpdater {
 		if (active) {
 			// TODO do not set the iconId to the one in the taxonomyBuilder if the concept is inactive
 			// we may have to need a ref to the concept itself or at least know the active flag
-			if (inferredTaxonomy.containsNode(conceptId)) {
-				iconId = getParentIcon(conceptId, inferredTaxonomy);
-			}
+			iconId = getParentIcon(conceptId, inferredTaxonomy);
 			// try to use the stated form to get the ID
 			if (iconId == null) {
 				iconId = getParentIcon(conceptId, statedTaxonomy);
@@ -59,7 +57,7 @@ public class IconIdUpdater {
 	}
 	
 	private String getParentIcon(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
-		if (componentId == null) {
+		if (componentId == null || !taxonomyBuilder.containsNode(componentId)) {
 			return null;
 		}
 		if (taxonomyBuilder.getAllAncestorNodeIds(componentId).contains(Long.valueOf(componentId))) {
