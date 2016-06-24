@@ -44,7 +44,7 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedBranchingApiAssert {
 
-	private static final Set<String> FINISH_STATES = ImmutableSet.of(Merge.Status.COMPLETED.name(), Merge.Status.FAILED.name(), Merge.Status.HAS_CONFLICT.name());
+	private static final Set<String> FINISH_STATES = ImmutableSet.of(Merge.Status.COMPLETED.name(), Merge.Status.FAILED.name(), Merge.Status.CONFLICTS.name());
 
 	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
 
@@ -249,14 +249,14 @@ public abstract class SnomedBranchingApiAssert {
 	public static Response assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
 		Response mergeResponse = waitForMergeJob(id);
-		mergeResponse.then().assertThat().body("status", anyOf(equalTo("FAILED"), equalTo("HAS_CONFLICT")));
+		mergeResponse.then().assertThat().body("status", anyOf(equalTo("FAILED"), equalTo("CONFLICTS")));
 		return mergeResponse;
 	}
 	
 	public static Response assertMergeJobFailsWithConflict(final IBranchPath source, final IBranchPath target, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
 		Response mergeResponse = waitForMergeJob(id);
-		mergeResponse.then().assertThat().body("status", equalTo(Merge.Status.HAS_CONFLICT.name()));
+		mergeResponse.then().assertThat().body("status", equalTo(Merge.Status.CONFLICTS.name()));
 		return mergeResponse;
 	}
 	

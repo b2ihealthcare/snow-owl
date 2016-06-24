@@ -105,7 +105,7 @@ public class MergeImpl implements Merge {
 	}
 	
 	public void failedWithConflicts(Collection<MergeConflict> conflicts, ApiError error) {
-		status = Status.HAS_CONFLICT;
+		status = Status.CONFLICTS;
 		endDate = new Date();
 		apiError = error;
 		this.conflicts = conflicts;

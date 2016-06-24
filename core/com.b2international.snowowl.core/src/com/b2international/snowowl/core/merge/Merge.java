@@ -30,7 +30,7 @@ public interface Merge {
 		SCHEDULED,
 		IN_PROGRESS,
 		COMPLETED,
-		HAS_CONFLICT,
+		CONFLICTS,
 		FAILED, 
 		CANCEL_REQUESTED;
 	}
