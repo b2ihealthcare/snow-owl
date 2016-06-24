@@ -17,7 +17,6 @@ package com.b2international.snowowl.api.japi.codesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +24,6 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -54,6 +52,11 @@ public class CodeSystemRequestTest {
 	public void getCodeSystem() {
 		final ICodeSystem codeSystem = getCodeSystem(SNOMEDCT);
 		assertNotNull(codeSystem);
+	}
+	
+	@Test(expected = CodeSystemNotFoundException.class)
+	public void getNonExistentCodeSystem() {
+		getCodeSystem("non-existent-code-system-short-name");
 	}
 	
 	@Test
@@ -87,23 +90,6 @@ public class CodeSystemRequestTest {
 	}
 	
 	@Test
-	public void noUpdateCodeSystem() {
-		assertCodeSystemCreated("sn3", "oid3");
-		assertCodeSystemCreated("sn4", "oid4");
-		
-		try {
-			requests.prepareUpdateCodeSystem("sn4")
-			.setShortName("sn3")
-			.build("system", BRANCH, "Updated code system.")
-			.executeSync(bus);	
-		} catch (BadRequestException e) {
-			return;
-		}
-		
-		fail("BadRequestException was not thrown when updateing short name to nonunique.");
-	}
-	
-	@Test
 	public void searchCodeSystem() {
 		final CodeSystems codeSystems = requests.prepareSearchCodeSystem()
 			.setShortName(SNOMEDCT)
@@ -131,14 +117,10 @@ public class CodeSystemRequestTest {
 	}
 	
 	private ICodeSystem getCodeSystem(final String shortName) {
-		try {
-			return requests.prepareGetCodeSystem()
-					.setUniqueId(shortName)
-					.build(BRANCH)
-					.executeSync(bus);
-		} catch (CodeSystemNotFoundException e) {
-			return null;
-		}
+		return requests.prepareGetCodeSystem()
+				.setUniqueId(shortName)
+				.build(BRANCH)
+				.executeSync(bus);
 	}
 	
 	private void assertCodeSystemCreated(final String shortName, final String oid) {

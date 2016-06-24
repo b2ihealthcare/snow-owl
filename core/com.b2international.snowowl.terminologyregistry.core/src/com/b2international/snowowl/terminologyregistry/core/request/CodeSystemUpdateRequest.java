@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
@@ -30,33 +27,20 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 	private static final long serialVersionUID = 1L;
 
 	private final String uniqueId;
-	private final String repositoryId;
 
-	private String oid;
 	private String name;
-	private String shortName;
 	private String link;
 	private String language;
 	private String citation;
 	private String branchPath;
 	private String iconPath;
-	private String terminologyId;
 
-	CodeSystemUpdateRequest(final String repositoryId, String uniqueId) {
-		this.repositoryId = repositoryId;
+	CodeSystemUpdateRequest(String uniqueId) {
 		this.uniqueId = uniqueId;
-	}
-
-	void setOid(final String oid) {
-		this.oid = oid;
 	}
 
 	void setName(final String name) {
 		this.name = name;
-	}
-
-	void setShortName(final String shortName) {
-		this.shortName = shortName;
 	}
 
 	void setLink(final String link) {
@@ -79,49 +63,18 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 		this.iconPath = iconPath;
 	}
 
-	void setTerminologyId(final String terminologyId) {
-		this.terminologyId = terminologyId;
-	}
-
 	@Override
 	public Void execute(final TransactionContext context) {
 		final CodeSystem codeSystem = context.lookup(uniqueId, CodeSystem.class);
-		
-		if (codeSystem == null) {
-			throw new BadRequestException("Code System with unique ID %s was not found.", uniqueId);
-		}
 
-		updateOid(codeSystem, context);
 		updateName(codeSystem);
-		updateShortName(codeSystem, context);
 		updateLink(codeSystem);
 		updateLanguage(codeSystem);
 		updateCitation(codeSystem);
 		updateBranchPath(codeSystem);
 		updateIconPath(codeSystem);
-		updateTerminologyId(codeSystem);
 
 		return null;
-	}
-
-	private void updateOid(final CodeSystem codeSystem, final TransactionContext context) {
-		if (oid == null) {
-			return;
-		}
-
-		if (!codeSystem.getCodeSystemOID().equals(oid)) {
-			final CodeSystems codeSystems = new CodeSystemRequests(repositoryId)
-					.prepareSearchCodeSystem()
-					.setOid(oid)
-					.build(IBranchPath.MAIN_BRANCH)
-					.execute(context);
-			
-			if (codeSystems.getItems().isEmpty()) {
-				codeSystem.setCodeSystemOID(oid);
-			} else {
-				throw new BadRequestException("Code System OID %s is not unique.", oid);
-			}
-		}
 	}
 
 	private void updateName(final CodeSystem codeSystem) {
@@ -131,26 +84,6 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 
 		if (!codeSystem.getName().equals(name)) {
 			codeSystem.setName(name);
-		}
-	}
-
-	private void updateShortName(final CodeSystem codeSystem, final TransactionContext context) {
-		if (shortName == null) {
-			return;
-		}
-
-		if (!codeSystem.getShortName().equals(shortName)) {
-			final CodeSystems codeSystems = new CodeSystemRequests(repositoryId)
-					.prepareSearchCodeSystem()
-					.setShortName(shortName)
-					.build(IBranchPath.MAIN_BRANCH)
-					.execute(context);
-			
-			if (codeSystems.getItems().isEmpty()) {
-				codeSystem.setShortName(shortName);
-			} else {
-				throw new BadRequestException("Code System short name %s is not unique.", shortName);
-			}
 		}
 	}
 
@@ -201,16 +134,6 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 
 		if (!codeSystem.getIconPath().equals(iconPath)) {
 			codeSystem.setIconPath(iconPath);
-		}
-	}
-
-	private void updateTerminologyId(final CodeSystem codeSystem) {
-		if (terminologyId == null) {
-			return;
-		}
-
-		if (!codeSystem.getTerminologyComponentId().equals(terminologyId)) {
-			codeSystem.setTerminologyComponentId(terminologyId);
 		}
 	}
 

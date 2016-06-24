@@ -59,6 +59,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
@@ -372,7 +373,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			}
 		});
 
-		return optional.isPresent() ? optional.get() : null;
+		if (optional.isPresent()) {
+			return optional.get();
+		} else {
+			throw new CodeSystemNotFoundException(uniqueId);
+		}
 	}
 
 	/**

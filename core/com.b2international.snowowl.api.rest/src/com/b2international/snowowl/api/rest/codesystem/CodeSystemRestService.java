@@ -161,15 +161,12 @@ public class CodeSystemRestService extends AbstractRestService {
 		
 		new CodeSystemRequests(codeSystem.getRepositoryUuid())
 				.prepareUpdateCodeSystem(shortNameOrOId)
-				.setOid(codeSystem.getOid())
 				.setName(codeSystem.getName())
-				.setShortName(codeSystem.getShortName())
 				.setBranchPath(codeSystem.getBranchPath())
 				.setCitation(codeSystem.getCitation())
 				.setIconPath(codeSystem.getIconPath())
 				.setLanguage(codeSystem.getPrimaryLanguage())
 				.setLink(codeSystem.getOrganizationLink())
-				.setTerminologyId(codeSystem.getTerminologyId())
 				.build(principal.getName(), IBranchPath.MAIN_BRANCH, commitComment)
 				.executeSync(bus);
 	}
