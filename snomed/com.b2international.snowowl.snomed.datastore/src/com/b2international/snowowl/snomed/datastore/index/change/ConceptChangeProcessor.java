@@ -302,17 +302,21 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			sourceNodeIds.add(oldTaxonomy.getSourceNodeId(relationshipId)); 
 		}
 		
-		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(SnomedDocument.Expressions.ids(sourceNodeIds))
-				.limit(sourceNodeIds.size())
-				.build();
-		final Hits<SnomedConceptDocument> hits = searcher.search(query);
-		final Map<String, String> iconsByIds = newHashMapWithExpectedSize(hits.getTotal());
-		for (SnomedConceptDocument hit : hits) {
-			iconsByIds.put(hit.getId(), hit.getIconId());
+		if (sourceNodeIds.isEmpty()) {
+			return Collections.emptyMap();
+		} else {
+			final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
+					.selectAll()
+					.where(SnomedDocument.Expressions.ids(sourceNodeIds))
+					.limit(sourceNodeIds.size())
+					.build();
+			final Hits<SnomedConceptDocument> hits = searcher.search(query);
+			final Map<String, String> iconsByIds = newHashMapWithExpectedSize(hits.getTotal());
+			for (SnomedConceptDocument hit : hits) {
+				iconsByIds.put(hit.getId(), hit.getIconId());
+			}
+			return iconsByIds;
 		}
-		return iconsByIds;
  	}
 
 	/**

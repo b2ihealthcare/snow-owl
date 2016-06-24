@@ -92,13 +92,14 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		}
 		
 		// process cascading acceptability changes in unchanged docs
-		final Query<SnomedDescriptionIndexEntry> descriptionsToBeLoadedQuery = Query.builder(SnomedDescriptionIndexEntry.class).selectAll().where(SnomedDocument.Expressions.ids(descriptionsToBeLoaded)).limit(descriptionsToBeLoaded.size()).build();
-		for (SnomedDescriptionIndexEntry unchangedDescription : searcher.search(descriptionsToBeLoadedQuery)) {
-			final Builder doc = SnomedDescriptionIndexEntry.builder(unchangedDescription);
-			processChanges(doc, unchangedDescription, acceptabilityChangesByDescription.get(unchangedDescription.getId()));
-			indexRevision(unchangedDescription.getStorageKey(), doc.build());
+		if (!descriptionsToBeLoaded.isEmpty()) {
+			final Query<SnomedDescriptionIndexEntry> descriptionsToBeLoadedQuery = Query.builder(SnomedDescriptionIndexEntry.class).selectAll().where(SnomedDocument.Expressions.ids(descriptionsToBeLoaded)).limit(descriptionsToBeLoaded.size()).build();
+			for (SnomedDescriptionIndexEntry unchangedDescription : searcher.search(descriptionsToBeLoadedQuery)) {
+				final Builder doc = SnomedDescriptionIndexEntry.builder(unchangedDescription);
+				processChanges(doc, unchangedDescription, acceptabilityChangesByDescription.get(unchangedDescription.getId()));
+				indexRevision(unchangedDescription.getStorageKey(), doc.build());
+			}
 		}
-		
 	}
 
 	private void processChanges(final Builder doc, final SnomedDescriptionIndexEntry currentRevision, Multimap<Acceptability, RefSetMemberChange> acceptabilityChanges) {

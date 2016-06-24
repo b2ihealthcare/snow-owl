@@ -256,62 +256,72 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final LongSet statedConceptIds = PrimitiveSets.newLongOpenHashSet();
 		final LongSet inferredConceptIds = PrimitiveSets.newLongOpenHashSet();
 		
-		final Query<SnomedConceptDocument> statedDestinationConceptsQuery = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(SnomedDocument.Expressions.ids(statedDestinationIds))
-				.limit(statedDestinationIds.size())
-				.build();
 		
-		for (SnomedConceptDocument statedDestinationConcept : searcher.search(statedDestinationConceptsQuery)) {
-			statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
-			statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
-			statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors());
+		if (!statedDestinationIds.isEmpty()) {
+			final Query<SnomedConceptDocument> statedDestinationConceptsQuery = Query.builder(SnomedConceptDocument.class)
+					.selectAll()
+					.where(SnomedDocument.Expressions.ids(statedDestinationIds))
+					.limit(statedDestinationIds.size())
+					.build();
+			
+			for (SnomedConceptDocument statedDestinationConcept : searcher.search(statedDestinationConceptsQuery)) {
+				statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
+				statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
+				statedConceptIds.addAll(statedDestinationConcept.getStatedAncestors());
+			}
 		}
 		
-		final Query<SnomedConceptDocument> inferredDestinationConceptsQuery = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(SnomedDocument.Expressions.ids(inferredDestinationIds))
-				.limit(inferredDestinationIds.size())
-				.build();
-		
-		for (SnomedConceptDocument inferredDestinationConcept : searcher.search(inferredDestinationConceptsQuery)) {
-			inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
-			inferredConceptIds.addAll(inferredDestinationConcept.getParents());
-			inferredConceptIds.addAll(inferredDestinationConcept.getAncestors());
+		if (!inferredDestinationIds.isEmpty()) {
+			final Query<SnomedConceptDocument> inferredDestinationConceptsQuery = Query.builder(SnomedConceptDocument.class)
+					.selectAll()
+					.where(SnomedDocument.Expressions.ids(inferredDestinationIds))
+					.limit(inferredDestinationIds.size())
+					.build();
+			
+			for (SnomedConceptDocument inferredDestinationConcept : searcher.search(inferredDestinationConceptsQuery)) {
+				inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
+				inferredConceptIds.addAll(inferredDestinationConcept.getParents());
+				inferredConceptIds.addAll(inferredDestinationConcept.getAncestors());
+			}
 		}
 		
-		final Query<SnomedConceptDocument> statedSourceConceptsQuery = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(Expressions.builder()
-						.should(SnomedConceptDocument.Expressions.ids(statedSourceIds))
-						.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIds))
-						.should(SnomedConceptDocument.Expressions.statedAncestors(statedSourceIds))
-						.build())
-				.limit(Integer.MAX_VALUE)
-				.build();
-		
-		for (SnomedConceptDocument statedSourceConcept : searcher.search(statedSourceConceptsQuery)) {
-			statedConceptIds.add(Long.parseLong(statedSourceConcept.getId()));
+		if (!statedSourceIds.isEmpty()) {
+			final Query<SnomedConceptDocument> statedSourceConceptsQuery = Query.builder(SnomedConceptDocument.class)
+					.selectAll()
+					.where(Expressions.builder()
+							.should(SnomedConceptDocument.Expressions.ids(statedSourceIds))
+							.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIds))
+							.should(SnomedConceptDocument.Expressions.statedAncestors(statedSourceIds))
+							.build())
+					.limit(Integer.MAX_VALUE)
+					.build();
+			
+			for (SnomedConceptDocument statedSourceConcept : searcher.search(statedSourceConceptsQuery)) {
+				statedConceptIds.add(Long.parseLong(statedSourceConcept.getId()));
+			}
 		}
 		
-		final Query<SnomedConceptDocument> inferredSourceConceptsQuery = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(Expressions.builder()
-						.should(SnomedConceptDocument.Expressions.parents(inferredSourceIds))
-						.should(SnomedConceptDocument.Expressions.ancestors(inferredSourceIds))
-						.build())
-				.limit(Integer.MAX_VALUE)
-				.build();
-		
-		for (SnomedConceptDocument inferredSourceConcept : searcher.search(inferredSourceConceptsQuery)) {
-			inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
+		if (!inferredSourceIds.isEmpty()) {
+			final Query<SnomedConceptDocument> inferredSourceConceptsQuery = Query.builder(SnomedConceptDocument.class)
+					.selectAll()
+					.where(Expressions.builder()
+							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIds))
+							.should(SnomedConceptDocument.Expressions.ancestors(inferredSourceIds))
+							.build())
+					.limit(Integer.MAX_VALUE)
+					.build();
+			
+			for (SnomedConceptDocument inferredSourceConcept : searcher.search(inferredSourceConceptsQuery)) {
+				inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
+			}
+			
+			for (Concept newConcept : commitChangeSet.getNewComponents(Concept.class)) {
+				long longId = Long.parseLong(newConcept.getId());
+				statedConceptIds.add(longId);
+				inferredConceptIds.add(longId);
+			}
 		}
 		
-		for (Concept newConcept : commitChangeSet.getNewComponents(Concept.class)) {
-			long longId = Long.parseLong(newConcept.getId());
-			statedConceptIds.add(longId);
-			inferredConceptIds.add(longId);
-		}
 		
 		prepareTaxonomyBuilders(searcher, statedConceptIds, inferredConceptIds);
 		
