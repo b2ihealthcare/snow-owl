@@ -167,9 +167,20 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	//		.relevant() // TODO register change type
 			;
 		
-		iconId.update(id, concept.isActive(), doc);
-		inferred.update(id, doc);
-		stated.update(id, doc);
+		boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
+		boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(id);
+		
+		if (inStated || inInferred) {
+			iconId.update(id, concept.isActive(), doc);
+		}
+	
+		if (inStated) {
+			stated.update(id, doc);
+		}
+	
+		if (inInferred) {
+			inferred.update(id, doc);
+		}
 		
 		final Collection<String> currentReferringRefSets = currentVersion == null ? Collections.<String>emptySet() : currentVersion.getReferringRefSets();
 		final Collection<String> currentReferringMappingRefSets = currentVersion == null ? Collections.<String>emptySet() : currentVersion.getReferringMappingRefSets();
