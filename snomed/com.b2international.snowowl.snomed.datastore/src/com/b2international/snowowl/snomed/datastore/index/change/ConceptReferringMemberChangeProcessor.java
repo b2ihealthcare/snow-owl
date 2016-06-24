@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 /**
@@ -55,12 +54,10 @@ final class ConceptReferringMemberChangeProcessor {
 		final Multimap<String, RefSetMemberChange> memberChanges = HashMultimap.create();
 		
 		// process active new and dirty
-		final Iterable<SnomedRefSetMember> newReferringMembers = FluentIterable
-				.from(Iterables.concat(commitChangeSet.getNewComponents(), commitChangeSet.getDirtyComponents())).filter(SnomedRefSetMember.class)
-				.filter(REFERRING_CONCEPT_MEMBER).toSet();
-
+		final Iterable<SnomedRefSetMember> newAndDirtyReferringMembers = FluentIterable.from(commitChangeSet.getNewComponents()).filter(SnomedRefSetMember.class)
+				.filter(REFERRING_CONCEPT_MEMBER);
 		
-		for (SnomedRefSetMember member : newReferringMembers) {
+		for (SnomedRefSetMember member : newAndDirtyReferringMembers) {
 			if (member.isActive()) {
 				addChange(memberChanges, member, MemberChangeKind.ADDED);
 			}
@@ -69,10 +66,12 @@ final class ConceptReferringMemberChangeProcessor {
 		// process dirty inactive members
 		final Iterable<SnomedRefSetMember> dirtyReferringMembers = FluentIterable
 				.from(commitChangeSet.getDirtyComponents(SnomedRefSetMember.class))
-				.filter(REFERRING_CONCEPT_MEMBER).toSet();
+				.filter(REFERRING_CONCEPT_MEMBER);
 		
 		for (SnomedRefSetMember member : dirtyReferringMembers) {
-			if (!member.isActive()) {
+			if (member.isActive()) {
+				addChange(memberChanges, member, MemberChangeKind.ADDED);
+			} else {
 				addChange(memberChanges, member, MemberChangeKind.REMOVED);
 			}
 		}
@@ -83,7 +82,7 @@ final class ConceptReferringMemberChangeProcessor {
 		final Iterable<SnomedRefSetMemberIndexEntry> detachedMembers = searcher.get(SnomedRefSetMemberIndexEntry.class, detachedMemberStorageKeys);
 		for (SnomedRefSetMemberIndexEntry doc : detachedMembers) {
 			final SnomedRefSetType type = doc.getReferenceSetType(); 
-			if (doc.isActive() && isValidType(type)) {
+			if (doc.isActive() && isValidType(type) && doc.getReferencedComponentType() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER) {
 				final String uuid = doc.getId();
 				final String referencedComponentId = doc.getReferencedComponentId();
 				final String refSetId = doc.getReferenceSetId();
