@@ -22,15 +22,20 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
+import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
@@ -42,6 +47,7 @@ import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 4.7
@@ -61,6 +67,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private Directory directory;
 	private IndexWriter writer;
 	private ReferenceManager<IndexSearcher> manager;
+	private ExecutorService executor;
 	
 	protected BaseLuceneIndexAdmin(String name) {
 		this(name, Maps.<String, Object>newHashMap());
@@ -123,7 +130,13 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 				writer.commit(); // actually create the index
 			}
 			// TODO configure warmer???
-			manager = new SearcherManager(writer, true, null);
+			executor = Executors.newFixedThreadPool(Math.max(2, Math.min(16, Runtime.getRuntime().availableProcessors())));
+			manager = new SearcherManager(writer, true, new SearcherFactory() {
+				@Override
+				public IndexSearcher newSearcher(IndexReader reader) throws IOException {
+					return new IndexSearcher(reader, executor);
+				}
+			});
 			closer.register(manager);
 			open.set(true);
 		} catch (IOException e) {
@@ -159,13 +172,15 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			if (pc != null) {
 				pc.cancel();
 			}
+			executor.shutdown();
+			executor.awaitTermination(1, TimeUnit.MINUTES);
 			directory = null;
 			writer = null;
 			manager = null;
 			closer.close();
 			closer = null;
 			open.set(false);
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			throw new IndexException("Couldn't close index " + name(), e);
 		}
 	}
