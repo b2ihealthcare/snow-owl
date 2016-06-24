@@ -17,11 +17,8 @@ package com.b2international.index.json;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
@@ -29,7 +26,6 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
-import org.apache.lucene.util.BytesRef;
 
 import com.b2international.index.Hits;
 import com.b2international.index.IndexException;
@@ -42,6 +38,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
@@ -88,68 +85,54 @@ public class JsonDocumentSearcher implements Searcher {
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		final Class<T> type = query.getType();
 		final org.apache.lucene.search.Query lq = toLuceneQuery(type, query);
-		
-		final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
-		searcher.search(lq, totalHitCollector);
-		final int totalHits = totalHitCollector.getTotalHits();
-		
 		final int offset = query.getOffset();
 		final int limit = query.getLimit();
 		
-		if (limit < 1 || totalHits < 1) {
+		if (limit < 1) {
+			Stopwatch w = Stopwatch.createStarted();
+			final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
+			searcher.search(lq, totalHitCollector);
+			final int totalHits = totalHitCollector.getTotalHits();
+			System.err.println("TotalHitCollector: " + w);
 			return new Hits<>(Collections.<T>emptyList(), offset, limit, totalHits);
 		}
 		
+		Stopwatch w = Stopwatch.createStarted();
+		
 		final ObjectReader reader = mapper.reader(type);
 		
-		if (query.getSortBy() == SortBy.NONE) {
-			// use collector to collect _id and _source values as fast as possible
-			final DocSourceCollector collector = new DocSourceCollector(offset, numDocsToRetrieve(query, totalHits));
-			searcher.search(lq, collector);
-			final byte[][] sources = collector.getSources();
-			final String[] ids = collector.getIds();
-			
-			if (sources.length < 1) {
-				return Hits.empty(offset, limit);
-			}
-			
-			final ImmutableList.Builder<T> matches = ImmutableList.builder();
-			for (int i = offset; i < sources.length; i++) {
-				final T t = reader.readValue(sources[i]);
-				if (t instanceof WithId) {
-					((WithId) t).set_id(ids[i]);
-				}
-				matches.add(t);
-			}
-			return new Hits<>(matches.build(), offset, limit, totalHits);
-		} else {
-			final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(query, totalHits), toSort(query.getSortBy()), true, false);
-			
-			if (topDocs.scoreDocs.length < 1) {
-				return Hits.empty(offset, limit);
-			}
-			
-			final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-			final ImmutableList.Builder<T> matches = ImmutableList.builder();
-			final List<AtomicReaderContext> leaves = searcher.getIndexReader().leaves();
-			
-			for (int i = offset; i < scoreDocs.length; i++) {
-				final int docId = scoreDocs[i].doc;
-				final int leavesIndex = ReaderUtil.subIndex(docId, leaves);
-				final AtomicReaderContext leaf = leaves.get(leavesIndex);
-				final int relativeDocId = docId - leaf.docBase;
-				
-				final BytesRef source = leaf.reader().getBinaryDocValues("_source").get(relativeDocId);
-				final T readValue = reader.readValue(source.bytes);
-				matches.add(readValue);
-				
-				if (readValue instanceof WithId) {
-					final BytesRef _id = leaf.reader().getBinaryDocValues(JsonDocumentMapping._id().fieldName()).get(relativeDocId);
-					((WithId) readValue).set_id(_id.utf8ToString());
-				}
-			}
-			return new Hits<>(matches.build(), offset, limit, totalHits);
+		if (searcher.getIndexReader().maxDoc() <= 0) {
+			return Hits.empty(offset, limit);
 		}
+		
+		final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(query.getOffset(), query.getLimit()), toSort(query.getSortBy()), true, false);
+		System.err.println("Search: " + w);
+		if (topDocs.scoreDocs.length < 1) {
+			return Hits.empty(offset, limit);
+		}
+		
+		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		final String[] ids = new String[scoreDocs.length - offset];
+		final byte[][] sources = new byte[scoreDocs.length - offset][];
+		
+		w.reset().start();
+		for (int i = offset; i < scoreDocs.length; i++) {
+			final Document doc = searcher.doc(scoreDocs[i].doc);
+			sources[i] = doc.getBinaryValue("_source").bytes;
+			ids[i] = JsonDocumentMapping._id().getValue(doc);
+		}
+		System.err.println("Data collect: " + w + " - " + scoreDocs.length);
+		w.reset().start();
+		final ImmutableList.Builder<T> matches = ImmutableList.builder();
+		for (int i = offset; i < scoreDocs.length; i++) {
+			final T readValue = reader.readValue(sources[i]);
+			if (readValue instanceof WithId) {
+				((WithId) readValue).set_id(ids[i]);
+			}
+			matches.add(readValue);
+		}
+		System.err.println("Jackson: " + w);
+		return new Hits<>(matches.build(), offset, limit, topDocs.totalHits);
 	}
 
 	private Sort toSort(SortBy sortBy) {
@@ -157,12 +140,8 @@ public class JsonDocumentSearcher implements Searcher {
 		return Sort.INDEXORDER;
 	}
 
-	private int numDocsToRetrieve(Query<?> query, int totalHits) {
-		return numDocsToRetrieve(query.getOffset(), query.getLimit(), totalHits);
-	}
-	
-	protected int numDocsToRetrieve(final int offset, final int limit, final int totalHits) {
-		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
+	protected int numDocsToRetrieve(final int offset, final int limit) {
+		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc());
 	}
 
 	private <T> org.apache.lucene.search.Query toLuceneQuery(Class<T> type, Query<T> query) {
