@@ -103,6 +103,21 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 			return getSelf();
 		}
 		
+		B commitTimestamp(final long commitTimestamp) {
+			this.commitTimestamp = commitTimestamp;
+			return getSelf();
+		}
+		
+		B branchPath(final String branchPath) {
+			this.branchPath = branchPath;
+			return getSelf();
+		}
+		
+		B replacedIns(final Collection<ReplacedIn> replacedIns) {
+			this.replacedIns = replacedIns;
+			return getSelf();
+		}
+		
 		protected abstract B getSelf();
 		
 	}

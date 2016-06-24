@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -120,7 +121,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		final SnomedConstraintDocument.Builder doc;
 		
 		if (predicate instanceof DescriptionPredicate) {
-			doc = SnomedConstraintDocument.descriptionBuilder().descriptionType(((DescriptionPredicate) predicate).getTypeId());
+			doc = SnomedConstraintDocument.descriptionBuilder().descriptionTypeId(((DescriptionPredicate) predicate).getTypeId());
 		} else if (predicate instanceof ConcreteDomainElementPredicate) {
 			final ConcreteDomainElementPredicate dataTypePredicate = (ConcreteDomainElementPredicate) predicate;
 			doc = SnomedConstraintDocument.dataTypeBuilder()
@@ -153,20 +154,21 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	}
 	
 	public static Builder descriptionBuilder() {
-		return new Builder(PredicateType.DESCRIPTION);
+		return new Builder().type(PredicateType.DESCRIPTION);
 	}
 	
 	public static Builder relationshipBuilder() {
-		return new Builder(PredicateType.RELATIONSHIP);
+		return new Builder().type(PredicateType.RELATIONSHIP);
 	}
 	
 	public static Builder dataTypeBuilder() {
-		return new Builder(PredicateType.DATATYPE);
+		return new Builder().type(PredicateType.DATATYPE);
 	}
 
 	/**
 	 * @since 4.7
 	 */
+	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends RevisionDocumentBuilder<Builder> {
 
 		private PredicateType type;
@@ -190,8 +192,9 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		Builder() {
 		}
 
-		Builder(PredicateType type) {
+		Builder type(PredicateType type) {
 			this.type = type;
+			return getSelf();
 		}
 
 		public Builder id(long storageKey) {
@@ -218,7 +221,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			return getSelf();
 		}
 		
-		public Builder descriptionType(String typeId) {
+		public Builder descriptionTypeId(String typeId) {
 			this.descriptionTypeId = typeId;
 			return getSelf();
 		}

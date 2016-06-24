@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -212,6 +213,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 		
 	}
 	
+	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String term;
@@ -260,6 +262,16 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 
 		public Builder caseSignificanceId(final String caseSignificanceId) {
 			this.caseSignificanceId = caseSignificanceId;
+			return getSelf();
+		}
+		
+		public Builder acceptableIn(final Set<String> acceptableIn) {
+			this.acceptableIn = acceptableIn;
+			return getSelf();
+		}
+		
+		public Builder preferredIn(final Set<String> preferredIn) {
+			this.preferredIn = preferredIn;
 			return getSelf();
 		}
 		

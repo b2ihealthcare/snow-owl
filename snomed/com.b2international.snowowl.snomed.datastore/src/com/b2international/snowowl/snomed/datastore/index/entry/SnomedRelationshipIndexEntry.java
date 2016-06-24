@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -172,6 +173,7 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 		public static final String DESTINATION_NEGATED = "destinationNegated";
 	}
 
+	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String sourceId;

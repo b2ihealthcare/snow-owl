@@ -35,7 +35,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
@@ -61,6 +60,7 @@ import com.b2international.snowowl.snomed.snomedrefset.util.SnomedRefSetSwitch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -137,11 +137,21 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.id(input.getId())
 				.moduleId(input.getModuleId())
 				.referencedComponentId(input.getReferencedComponent().getId())
-				.referencedComponentType(input.getReferencedComponent())
 				.referenceSetId(input.getReferenceSetId())
 				.referenceSetType(input.type())
 				.released(input.isReleased())
 				.mapTargetComponentType(mapTargetComponentType == null ? -1 : (short) mapTargetComponentType);
+		
+		if (input.getReferencedComponent() instanceof SnomedConcept) {
+			builder.referencedComponentType(CONCEPT_NUMBER);
+		} else if (input.getReferencedComponent() instanceof SnomedDescription) {
+			builder.referencedComponentType(DESCRIPTION_NUMBER);
+		} else if (input.getReferencedComponent() instanceof SnomedRelationship) {
+			builder.referencedComponentType(RELATIONSHIP_NUMBER);
+		} else {
+			builder.referencedComponentType(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
+		}
+		
 		
 		for (Entry<String, Object> entry : input.getProperties().entrySet()) {
 			final Object value = entry.getValue();
@@ -290,7 +300,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 		
 	}
-	
+
+	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String referencedComponentId;
@@ -394,30 +405,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 
-		public Builder referencedComponentType(final String referencedComponentType) {
-			this.referencedComponentType = SnomedTerminologyComponentConstants.getValue(referencedComponentType);
-			return this;
-		}
-		
 		public Builder referencedComponentType(final short referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return this;
 		}
 		
-		public Builder referencedComponentType(final SnomedCoreComponent component) {
-			if (component instanceof SnomedConcept) {
-				this.referencedComponentType = CONCEPT_NUMBER;
-			} else if (component instanceof SnomedDescription) {
-				this.referencedComponentType = DESCRIPTION_NUMBER;
-			} else if (component instanceof SnomedRelationship) {
-				this.referencedComponentType = RELATIONSHIP_NUMBER;
-			} else {
-				this.referencedComponentType = -1;
-			}
-			
-			return this;
-		}
-
 		public Builder mapTargetComponentType(final short mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
 			return this;
@@ -426,6 +418,111 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public Builder targetComponent(String targetComponent) {
 			this.targetComponent = targetComponent;
 			return this;
+		}
+		
+		Builder acceptabilityId(String acceptabilityId) {
+			this.acceptabilityId = acceptabilityId;
+			return getSelf();
+		}
+		
+		Builder attributeName(String attributeName) {
+			this.attributeName = attributeName;
+			return getSelf();
+		}
+		
+		Builder characteristicTypeId(final String characteristicTypeId) {
+			this.characteristicTypeId = characteristicTypeId;
+			return getSelf();
+		}
+		
+		Builder correlationId(final String correlationId) {
+			this.correlationId = correlationId;
+			return getSelf();
+		}
+		
+		Builder dataType(final DataType dataType) {
+			this.dataType = dataType;
+			return getSelf();
+		}
+		
+		Builder descriptionFormat(final String descriptionFormat) {
+			this.descriptionFormat = descriptionFormat;
+			return getSelf();
+		}
+		
+		Builder descriptionLength(final Integer descriptionLength) {
+			this.descriptionLength = descriptionLength;
+			return getSelf();
+		}
+		
+		Builder mapAdvice(final String mapAdvice) {
+			this.mapAdvice = mapAdvice;
+			return getSelf();
+		}
+		
+		Builder mapCategoryId(final String mapCategoryId) {
+			this.mapCategoryId = mapCategoryId;
+			return getSelf();
+		}
+		
+		Builder mapGroup(final Integer mapGroup) {
+			this.mapGroup = mapGroup;
+			return getSelf();
+		}
+		
+		Builder mapPriority(final Integer mapPriority) {
+			this.mapPriority = mapPriority;
+			return getSelf();
+		}
+		
+		Builder mapRule(final String mapRule) {
+			this.mapRule = mapRule;
+			return getSelf();
+		}
+		
+		Builder mapTarget(final String mapTarget) {
+			this.mapTarget = mapTarget;
+			return getSelf();
+		}
+		
+		Builder mapTargetDescription(final String mapTargetDescription) {
+			this.mapTargetDescription = mapTargetDescription;
+			return getSelf();
+		}
+		
+		Builder operatorId(final String operatorId) {
+			this.operatorId = operatorId;
+			return getSelf();
+		}
+		
+		Builder query(final String query) {
+			this.query = query;
+			return getSelf();
+		}
+		
+		Builder sourceEffectiveTime(final Long sourceEffectiveTime) {
+			this.sourceEffectiveTime = sourceEffectiveTime;
+			return getSelf();
+		}
+		
+		Builder targetEffectiveTime(final Long targetEffectiveTime) {
+			this.targetEffectiveTime = targetEffectiveTime;
+			return getSelf();
+		}
+		
+		Builder unitId(final String unitId) {
+			this.unitId = unitId;
+			return getSelf();
+		}
+		
+		Builder value(final String value) {
+			this.value = value;
+			return getSelf();
+		}
+		
+		Builder valueId(String valueId) {
+			this.valueId = valueId;
+			return getSelf();
 		}
 		
 		public SnomedRefSetMemberIndexEntry build() {

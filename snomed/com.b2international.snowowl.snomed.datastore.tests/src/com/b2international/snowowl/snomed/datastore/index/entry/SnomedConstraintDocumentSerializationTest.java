@@ -44,7 +44,7 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 		final SnomedConstraintDocument predicate = SnomedConstraintDocument.descriptionBuilder()
 				.id(STORAGE_KEY1)
 				.domain("queryExpressionTestField")
-				.descriptionType(Concepts.FULLY_SPECIFIED_NAME)
+				.descriptionTypeId(Concepts.FULLY_SPECIFIED_NAME)
 				.cardinality(1, 1)
 				.build();
 		

@@ -35,8 +35,6 @@ import com.b2international.snowowl.datastore.server.internal.review.BranchStateI
 import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImplMixin;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -46,7 +44,6 @@ public class JsonSupport {
 
 	public static ObjectMapper getDefaultObjectMapper() {
 		final ObjectMapper mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		
 		mapper.addMixInAnnotations(Metadata.class, MetadataMixin.class);
 		mapper.addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);

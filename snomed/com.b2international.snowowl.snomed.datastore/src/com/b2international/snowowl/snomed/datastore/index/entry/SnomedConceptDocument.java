@@ -41,7 +41,9 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -179,7 +181,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.statedAncestors(input.getStatedAncestors())
 				.refSetStorageKey(input.getRefSetStorageKey())
 				.referencedComponentType(input.getReferencedComponentType())
-				.refSetType(input.getRefSetType());
+				.refSetType(input.getRefSetType())
+				.structural(input.isStructural());
 		
 		return builder;
 	}
@@ -219,6 +222,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}).toList();
 	}
 
+	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
 
 		private boolean primitive;
@@ -275,9 +279,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
+		@JsonIgnore
 		public Builder refSet(final SnomedRefSet refSet) {
-			structural = SnomedRefSetUtil.isStructural(refSet.getIdentifierId(), refSet.getType());
-			return refSetType(refSet.getType())
+			return structural(SnomedRefSetUtil.isStructural(refSet.getIdentifierId(), refSet.getType()))
+					.refSetType(refSet.getType())
 					.referencedComponentType(refSet.getReferencedComponentType())
 					.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()));
 		}
@@ -297,6 +302,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 
+		Builder structural(boolean structural) {
+			this.structural = structural;
+			return getSelf();
+		}
+		
 		public Builder doi(float doi) {
 			this.doi = doi;
 			return getSelf();
@@ -311,7 +321,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			this.referringMappingRefSets = referringMappingRefSets;
 			return getSelf();
 		}
-
+		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,

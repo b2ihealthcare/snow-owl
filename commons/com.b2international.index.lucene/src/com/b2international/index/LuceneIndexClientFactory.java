@@ -22,6 +22,7 @@ import com.b2international.index.admin.FSIndexAdmin;
 import com.b2international.index.admin.RAMIndexAdmin;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 /**
  * @since 4.7
@@ -30,6 +31,7 @@ public class LuceneIndexClientFactory implements IndexClientFactory {
 
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
+		mapper.registerModule(new AfterburnerModule());
 		if (settings.containsKey(IndexClientFactory.DIRECTORY)) {
 			final Object dir = settings.get(IndexClientFactory.DIRECTORY);
 			final File directory = dir instanceof File ? (File) dir : new File((String) dir);
