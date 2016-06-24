@@ -249,21 +249,6 @@ public interface Branch extends Deletable, MetadataHolder {
 	IBranchPath branchPath();
 
 	/**
-	 * Commits changes from the specified branch on this {@link Branch}.
-	 * 
-	 * @param source
-	 *            - the {@link Branch} from which changes should be
-	 *            lifted
-	 * @param dryRun
-	 *            - set <code>true</code> if only potential conflicts should be
-	 *            collected, <code>false</code> to actually perform the commit
-	 * @param commitMessage
-	 *            - the commit message to use
-	 * @return the state of this branch after applying changes
-	 */
-	Branch applyChangeSet(Branch source, boolean dryRun, String commitMessage);
-
-	/**
 	 * Sends a notification event about changes on this branch to interested parties. 
 	 * 
 	 * @return the state of this branch
