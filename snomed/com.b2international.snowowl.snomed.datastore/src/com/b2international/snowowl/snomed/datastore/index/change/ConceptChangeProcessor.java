@@ -134,32 +134,34 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
 		
-		// fetch all dirty concept documents by their ID
-		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
-				.where(SnomedConceptDocument.Expressions.ids(dirtyConceptIds))
-				.limit(dirtyConceptIds.size())
-				.build();
-		final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.uniqueIndex(searcher.search(query), ComponentUtils.<String>getIdFunction());
-		
-		// update dirty concepts
-		for (final String id : dirtyConceptIds) {
-			final Concept concept = dirtyConceptsById.get(id);
-			final SnomedConceptDocument currentDoc = currentConceptDocumentsById.get(id);
-			if (currentDoc == null) {
-				throw new IllegalStateException("Current concept revision should not be null for: " + id);
-			}
-			// current doc should exists at this point in time
-			final Builder doc = SnomedConceptDocument.builder(currentDoc);
-			update(doc, concept, currentDoc);
-			SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
-			if (refSet != null) {
-				doc.refSet(refSet);
-			}
-			if (concept != null) {
-				indexRevision(concept.cdoID(), doc.build());				
-			} else {
-				indexRevision(currentDoc.getStorageKey(), doc.build());
+		if (!dirtyConceptIds.isEmpty()) {
+			// fetch all dirty concept documents by their ID
+			final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
+					.selectAll()
+					.where(SnomedConceptDocument.Expressions.ids(dirtyConceptIds))
+					.limit(dirtyConceptIds.size())
+					.build();
+			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.uniqueIndex(searcher.search(query), ComponentUtils.<String>getIdFunction());
+			
+			// update dirty concepts
+			for (final String id : dirtyConceptIds) {
+				final Concept concept = dirtyConceptsById.get(id);
+				final SnomedConceptDocument currentDoc = currentConceptDocumentsById.get(id);
+				if (currentDoc == null) {
+					throw new IllegalStateException("Current concept revision should not be null for: " + id);
+				}
+				// current doc should exists at this point in time
+				final Builder doc = SnomedConceptDocument.builder(currentDoc);
+				update(doc, concept, currentDoc);
+				SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
+				if (refSet != null) {
+					doc.refSet(refSet);
+				}
+				if (concept != null) {
+					indexRevision(concept.cdoID(), doc.build());				
+				} else {
+					indexRevision(currentDoc.getStorageKey(), doc.build());
+				}
 			}
 		}
 		
