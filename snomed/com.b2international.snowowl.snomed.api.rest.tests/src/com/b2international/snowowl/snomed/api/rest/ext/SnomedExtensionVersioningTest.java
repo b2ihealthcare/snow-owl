@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest.ext;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionGetStatus;
@@ -29,7 +28,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -44,8 +42,7 @@ public class SnomedExtensionVersioningTest extends ExtensionTest {
 	
 	@Test
 	public void createVersionWithoutChangesOnB2iBranch() {
-		final IBranchPath branchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		assertBranchExists(branchPath);
+		assertB2iExtensionExistsWithDefaults();
 		
 		final String versionDate = getDateForNewVersion(B2I_EXT_SHORT_NAME);
 		final String versionId = UUID.randomUUID().toString();
@@ -56,19 +53,17 @@ public class SnomedExtensionVersioningTest extends ExtensionTest {
 	
 	@Test
 	public void createVersionWithoutVersionIdOnB2iBranch() {
-		final IBranchPath branchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		assertBranchExists(branchPath);
+		assertB2iExtensionExistsWithDefaults();
 		
 		final String versionDate = getDateForNewVersion(B2I_EXT_SHORT_NAME);
 		assertVersionPostStatus("", versionDate, B2I_EXT_SHORT_NAME, 400);
 	}
 	
 	@Test
-	@Ignore
 	public void createVersionOnB2iBranch() {
-		final IBranchPath branchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		assertBranchExists(branchPath);
+		assertB2iExtensionExistsWithDefaults();
 		
+		final IBranchPath branchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String conceptId = assertComponentCreated(branchPath, SnomedComponentType.CONCEPT, requestBody);
 		
