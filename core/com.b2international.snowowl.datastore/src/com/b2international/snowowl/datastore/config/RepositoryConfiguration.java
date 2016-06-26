@@ -58,6 +58,8 @@ public class RepositoryConfiguration {
 	@Min(10)
 	@Max(1000)
 	private int mergeMaxResults = 100;
+
+	private boolean revisionCacheEnabled = true;
 	
 	/**
 	 * Returns whether the communication used by the persistance layer is done
@@ -210,6 +212,16 @@ public class RepositoryConfiguration {
 		properties.put("user", getDatabaseConfiguration().getUsername());
 		properties.put("password", getDatabaseConfiguration().getPassword());
 		return properties.build();
+	}
+
+	@JsonProperty("revisionCache")
+	public boolean isRevisionCacheEnabled() {
+		return revisionCacheEnabled ;
+	}
+	
+	@JsonProperty("revisionCache")
+	public void setRevisionCacheEnabled(boolean revisionCacheEnabled) {
+		this.revisionCacheEnabled = revisionCacheEnabled;
 	}
 
 }

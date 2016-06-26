@@ -736,6 +736,10 @@ authentication:
 |`3 x NumberOfCores`
 |The number of worker threads to assign to a repository during initialization.
 
+|revisionCache
+|`true`
+|Enable CDO revision cache to keep data returned from the database.
+
 |indexTimeout
 |`240`
 |The timeout in minutes after indexes will be closed if they are not in use anymore.
