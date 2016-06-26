@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Deque;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
@@ -111,7 +110,7 @@ public final class LuceneQueryBuilder {
 	public org.apache.lucene.search.Query build(Expression expression) {
 		checkNotNull(expression, "expression");
 		// always filter by type
-		traversePostOrder(Expressions.builder().must(mapping.matchType()).must(expression).build());
+		visit(Expressions.builder().must(mapping.matchType()).must(expression).build());
 		if (deque.size() == 1) {
 			return deque.pop().toQuery();
 		} else {
@@ -122,12 +121,6 @@ public final class LuceneQueryBuilder {
 	private void visit(Expression expression) {
 		if (expression instanceof MatchAll) {
 			deque.push(new DequeItem(new MatchAllDocsQuery()));
-		} else if (expression instanceof And) {
-			visit((And) expression);
-		} else if (expression instanceof Or) {
-			visit((Or) expression);
-		} else if (expression instanceof AndNot) {
-			visit((AndNot) expression);
 		} else if (expression instanceof StringPredicate) {
 			StringPredicate predicate = (StringPredicate) expression;
 			visit(predicate);
@@ -301,108 +294,4 @@ public final class LuceneQueryBuilder {
 		deque.push(new DequeItem(filter));
 	}
 	
-	private void visit(And and) {
-		if (and.getRight().isPresent() && deque.size() >= 2) {
-			DequeItem right = deque.pop();
-			DequeItem left = deque.pop();
-			if (right.isFilter() && left.isFilter()) {
-				final BooleanFilter filter = new BooleanFilter();
-				filter.add(left.getFilter(), Occur.MUST);
-				filter.add(right.getFilter(), Occur.MUST);
-				deque.push(new DequeItem(filter));
-			} else {
-				final Query query = Fields.newQuery().and(left.toQuery()).and(right.toQuery()).matchAll();
-				deque.push(new DequeItem(query));
-			}
-		} else if (deque.size() >= 1) {
-			DequeItem item = deque.pop();
-			if (item.isFilter()) {
-				deque.push(new DequeItem(item.getFilter()));
-			} else if (item.isQuery()) {
-				deque.push(new DequeItem(item.getQuery()));
-			} else {
-				throw newIllegalStateException();
-			}
-		} else {
-			throw newIllegalStateException();
-		}
-	}
-	
-	private void visit(AndNot and) {
-		if (and.getRight().isPresent() && deque.size() >= 2) {
-			DequeItem right = deque.pop();
-			DequeItem left = deque.pop();
-			if (right.isFilter() && left.isFilter()) {
-				final BooleanFilter filter = new BooleanFilter();
-				filter.add(left.getFilter(), Occur.MUST);
-				filter.add(right.getFilter(), Occur.MUST_NOT);
-				deque.push(new DequeItem(filter));
-			} else {
-				final BooleanQuery query = new BooleanQuery();
-				query.add(left.toQuery(), Occur.MUST);
-				query.add(right.toQuery(), Occur.MUST_NOT);
-				deque.push(new DequeItem(query));
-			}
-		} else if (deque.size() >= 1) {
-			DequeItem item = deque.pop();
-			if (item.isFilter()) {
-				deque.push(new DequeItem(item.getFilter()));
-			} else if (item.isQuery()) {
-				deque.push(new DequeItem(item.getQuery()));
-			} else {
-				throw newIllegalStateException();
-			}
-		} else {
-			throw newIllegalStateException();
-		}
-	}
-
-	private void visit(Or or) {
-		if (or.getRight().isPresent() && deque.size() >= 2) {
-			DequeItem right = deque.pop();
-			DequeItem left = deque.pop();
-			if (right.isFilter() && left.isFilter()) {
-				final BooleanFilter filter = new BooleanFilter();
-				filter.add(left.getFilter(), Occur.SHOULD);
-				filter.add(right.getFilter(), Occur.SHOULD);
-				deque.push(new DequeItem(filter));
-			} else {
-				final Query query = Fields.newQuery().and(left.toQuery()).and(right.toQuery()).matchAny();
-				deque.push(new DequeItem(query));
-			}
-		} else if (deque.size() >= 1) {
-			DequeItem item = deque.pop();
-			if (item.isFilter()) {
-				final BooleanFilter filter = new BooleanFilter();
-				filter.add(item.getFilter(), Occur.SHOULD);
-				deque.push(new DequeItem(filter));
-			} else if (item.isQuery()) {
-				final BooleanQuery query = new BooleanQuery(true);
-				query.add(item.getQuery(), Occur.SHOULD);
-				deque.push(new DequeItem(query));
-			} else {
-				throw newIllegalStateException();
-			}
-		} else {
-			throw newIllegalStateException();
-		}
-	}
-	
-	private void traversePostOrder(Expression node) {
-		if (node instanceof BinaryOperator) {
-			BinaryOperator binaryOperator = (BinaryOperator) node;
-			Expression left = binaryOperator.getLeft();
-			traversePostOrder(left);
-			if (binaryOperator.getRight().isPresent()) {
-				Expression right = binaryOperator.getRight().get();
-				traversePostOrder(right);
-			}
-		} else if (node instanceof UnaryOperator) {
-			UnaryOperator unaryOperator = (UnaryOperator) node;
-			Expression right = unaryOperator.getRight();
-			traversePostOrder(right);
-		}
-		visit(node);
-	}
-
 }
