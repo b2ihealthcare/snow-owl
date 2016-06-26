@@ -103,6 +103,14 @@ public class NonWritingTransactionCommitContext extends TransactionCommitContext
 	}
 	
 	@Override
+	public void postCommit(boolean success) {
+		super.postCommit(success);
+		if (accessor != null) {
+			accessor.release();
+		}
+	}
+	
+	@Override
 	protected void adjustForCommit() {
 		// Do nothing
 	}
