@@ -26,7 +26,6 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.query.Expression;
-import com.b2international.index.revision.ReplacedIn;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
@@ -75,7 +74,7 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 		protected long storageKey;
 		protected String branchPath;
 		protected long commitTimestamp;
-		protected Collection<ReplacedIn> replacedIns = Collections.emptyList();
+		protected Collection<String> replacedIns = Collections.emptyList();
 
 		/**
 		 * @deprecated - see reason at {@link com.b2international.snowowl.core.domain.IComponent#getStorageKey()} why this should be removed
@@ -113,7 +112,7 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 			return getSelf();
 		}
 		
-		B replacedIns(final Collection<ReplacedIn> replacedIns) {
+		B replacedIns(final Collection<String> replacedIns) {
 			this.replacedIns = replacedIns;
 			return getSelf();
 		}

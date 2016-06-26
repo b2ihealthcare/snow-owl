@@ -256,18 +256,6 @@ public final class LuceneQueryBuilder {
 //		}
 //	}
 	
-//	private void visit(StringSetPredicate predicate) {
-//		Feature feature = predicate.getFeature();
-//		FilterBuilder filter = FilterBuilders.termsFilter(feature.getField(), predicate.getArgument());
-//		deque.push(new DequeItem(filter));
-//	}
-	
-//	private void visit(BooleanPredicate predicate) {
-//		Feature feature = predicate.getFeature();
-//		FilterBuilder filter = FilterBuilders.termFilter(feature.getField(), predicate.getArgument());
-//		deque.push(new DequeItem(filter));
-//	}
-
 	private void visit(StringPredicate predicate) {
 		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
 		deque.push(new DequeItem(filter));
@@ -303,25 +291,13 @@ public final class LuceneQueryBuilder {
 		deque.push(new DequeItem(filter));
 	}
 	
-//	private void visit(DateRangePredicate predicate) {
-//		Feature feature = predicate.getFeature();
-//		RangeFilterBuilder filter = FilterBuilders.rangeFilter(feature.getField());
-//		if (predicate.getStart().isPresent()) {
-//			filter.from(predicate.getStart().get()).includeLower(predicate.isStartInclusive());
-//		}
-//		if (predicate.getEnd().isPresent()) {
-//			filter.to(predicate.getEnd().get()).includeUpper(predicate.isEndInclusive());
-//		}
-//		deque.push(new DequeItem(filter));
-//	}
-	
 	private void visit(RangePredicate range) {
 		final Filter filter = NumericRangeFilter.newLongRange(range.getField(), range.from(), range.to(), true, true);
 		deque.push(new DequeItem(filter));
 	}
 	
 	private void visit(StringRangePredicate range) {
-		final Filter filter = TermRangeFilter.newStringRange(range.getField(), range.from(), range.to(), false, false);
+		final Filter filter = TermRangeFilter.newStringRange(range.getField(), range.from(), range.to(), true, true);
 		deque.push(new DequeItem(filter));
 	}
 	
@@ -412,25 +388,6 @@ public final class LuceneQueryBuilder {
 		}
 	}
 	
-//	private void visit(Same same) {
-//		if (deque.size() >= 1) {
-//			DequeItem item = deque.pop();
-//			if (item.isFilter()) {
-//				deque.push(new DequeItem(FilterBuilders.nestedFilter(same.getPath().getPath(), item.getFilterBuilder())));
-//			} else if (item.isQuery()) {
-//				deque.push(new DequeItem(QueryBuilders.nestedQuery(same.getPath().getPath(), item.getQueryBuilder())));
-//			} else {
-//				handleIllegalDequeState();
-//			}
-//		} else {
-//			handleIllegalDequeState();
-//		}
-//	}
-	
-//	private void visit(Group parenthesis) {
-//		// carries no real meaning, skip it
-//	}
-
 	private void traversePostOrder(Expression node) {
 		if (node instanceof BinaryOperator) {
 			BinaryOperator binaryOperator = (BinaryOperator) node;

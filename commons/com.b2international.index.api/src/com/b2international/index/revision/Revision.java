@@ -24,6 +24,7 @@ import com.b2international.index.WithId;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 
@@ -37,6 +38,9 @@ public abstract class Revision implements WithId {
 	public static final String STORAGE_KEY = "storageKey";
 	public static final String BRANCH_PATH = "branchPath";
 	public static final String COMMIT_TIMESTAMP = "commitTimestamp";
+	public static final String REPLACED_INS = "replacedIns";
+	/*ReplacedIn values are concatenation of the corresponding branch and commitTimestamp value with a separator of _*/
+	private static final String REPLACED_INS_TEMPLATE = "%s_%s";
 
 	// move the following fields up to a abstract doc???
 	private String _id;
@@ -45,7 +49,7 @@ public abstract class Revision implements WithId {
 	private long commitTimestamp;
 	private String branchPath;
 	
-	private Collection<ReplacedIn> replacedIns = Collections.emptySet();
+	private Collection<String> replacedIns = Collections.emptySet();
 	
 	@Override
 	public final void set_id(String _id) {
@@ -69,7 +73,7 @@ public abstract class Revision implements WithId {
 		this.storageKey = storageKey;
 	}
 	
-	protected final void setReplacedIns(Collection<ReplacedIn> replacedIns) {
+	protected final void setReplacedIns(Collection<String> replacedIns) {
 		this.replacedIns = replacedIns;
 	}
 	
@@ -77,7 +81,7 @@ public abstract class Revision implements WithId {
 		return storageKey;
 	}
 	
-	public final Collection<ReplacedIn> getReplacedIns() {
+	public final Collection<String> getReplacedIns() {
 		return ImmutableList.copyOf(replacedIns);
 	}
 
@@ -88,6 +92,17 @@ public abstract class Revision implements WithId {
 	public final long getCommitTimestamp() {
 		return commitTimestamp;
 	}
+	
+	@Override
+	public String toString() {
+		return Objects.toStringHelper(this)
+				.add("_id", _id)
+				.add(STORAGE_KEY, storageKey)
+				.add(Revision.BRANCH_PATH, branchPath)
+				.add(Revision.COMMIT_TIMESTAMP, commitTimestamp)
+				.add(Revision.REPLACED_INS, replacedIns)
+				.toString();
+	}
 
 	public static Expression branchFilter(RevisionBranch branch) {
 		return Expressions.builder()
@@ -97,7 +112,7 @@ public abstract class Revision implements WithId {
 	}
 
 	public static Expression replacedInFilter(RevisionBranch branch) {
-		return Expressions.nestedMatch("replacedIns", createBranchSegmentFilter(branch, new ReplacedSegmentFilterBuilder()));
+		return createBranchSegmentFilter(branch, new ReplacedSegmentFilterBuilder());
 	}
 
 	public static Expression branchRevisionFilter(RevisionBranch branch) {
@@ -159,12 +174,15 @@ public abstract class Revision implements WithId {
 		public Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
 			final long maxHead = child != null ? child.baseTimestamp() : Long.MAX_VALUE;
 			final long head = Math.min(maxHead, parent.headTimestamp());
-			return Expressions.builder()
-					.must(Expressions.exactMatch(Revision.BRANCH_PATH, parent.path()))
-					.must(Expressions.matchRange(Revision.COMMIT_TIMESTAMP, 0L, head))
-					.build();
+			final String from = toReplacedIn(parent.path(), 0L);
+			final String to = toReplacedIn(parent.path(), head);
+			return Expressions.matchRange(Revision.REPLACED_INS, from, to);
 		}
 		
+	}
+
+	public static String toReplacedIn(final String branchPath, final long commitTimestamp) {
+		return String.format(REPLACED_INS_TEMPLATE, branchPath, commitTimestamp);
 	}
 
 }

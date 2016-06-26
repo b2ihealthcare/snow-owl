@@ -101,10 +101,10 @@ public class DefaultRevisionWriter implements RevisionWriter {
 			final Iterable<? extends Revision> revisionsToUpdate = searcher.search(entry.getValue());
 			final Map<String, Object> revisionUpdates = newHashMap();
 			for (Revision rev : revisionsToUpdate) {
-				final Set<ReplacedIn> set = newHashSet();
-				final Collection<ReplacedIn> prevReplacedIns = rev.getReplacedIns();
+				final Set<String> set = newHashSet();
+				final Collection<String> prevReplacedIns = rev.getReplacedIns();
 				set.addAll(prevReplacedIns);
-				set.add(new ReplacedIn(branchPath, commitTimestamp));
+				set.add(Revision.toReplacedIn(branchPath, commitTimestamp));
 				rev.setReplacedIns(set);
 				revisionUpdates.put(rev._id(), rev);
 			}
