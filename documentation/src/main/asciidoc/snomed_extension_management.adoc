@@ -215,7 +215,7 @@ Then copy over the entire content onto the target extension branch. (If the merg
 ....
 POST /snowowl/snomed-ct/v2/merges
 {
-  "source": "MAIN/2016-01-31/Extension_bracnh",
+  "source": "MAIN/2016-01-31/Extension_branch",
   "target": "MAIN/2016-07-31/Extension_branch",
   "commitComment": "Upgrade extension content."
 }
@@ -239,7 +239,7 @@ If no new content was added to the current branch since the merge, you can skip 
 ....
 POST /snowowl/snomed-ct/v2/merges
 {
-  "source": "MAIN/2016-07-31/Extension_bracnh",
+  "source": "MAIN/2016-07-31/Extension_branch",
   "target": "MAIN/2016-01-31/Extension_branch",
   "commitComment": "Downgrade extension content."
 }
