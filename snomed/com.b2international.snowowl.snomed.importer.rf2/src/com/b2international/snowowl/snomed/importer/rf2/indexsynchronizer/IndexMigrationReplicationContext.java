@@ -136,7 +136,8 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 			
 			@Override
 			public void failCommit(long timeStamp) {
-				//do nothing
+				//interrupt the replication process when a commit fails
+				throw new RuntimeException("Commit with timestamp " + timeStamp +" failed.  Check the log file for details.");
 			}
 			
 			@Override 
