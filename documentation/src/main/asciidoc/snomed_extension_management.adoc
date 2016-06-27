@@ -171,7 +171,7 @@ POST /snowowl/snomed-ct/v2/imports/{importId}/archive
 ....
 
 === Versioning extension content
-There is no command line command available for versioning, the functionality is only accessible via the REST interface:
+There is no command-line command available for versioning, the functionality is only accessible via the REST interface:
 ....
 POST /snowowl/admin/codesystems/SNOMEDCT_B2i/versions
 {
@@ -182,7 +182,7 @@ POST /snowowl/admin/codesystems/SNOMEDCT_B2i/versions
 ....
 
 === Upgrading extension content
-There is no command line command available for upgrading, the functionality is only accessible via the REST interface:
+There is no command-line command available for upgrading, the functionality is only accessible via the REST interface:
 
 Import the new International DELTA archive to the MAIN branch in two steps:
 
