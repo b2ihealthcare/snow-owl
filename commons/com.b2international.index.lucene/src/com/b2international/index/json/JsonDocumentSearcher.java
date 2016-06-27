@@ -101,7 +101,9 @@ public class JsonDocumentSearcher implements Searcher {
 		
 		final ObjectReader reader = mapper.reader(type);
 		
-		if (searcher.getIndexReader().maxDoc() <= 0) {
+		int maxDoc = searcher.getIndexReader().maxDoc();
+		System.err.println("MaxDoc: " + maxDoc);
+		if (maxDoc <= 0) {
 			return Hits.empty(offset, limit);
 		}
 		
