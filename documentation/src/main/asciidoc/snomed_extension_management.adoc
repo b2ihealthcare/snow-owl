@@ -353,3 +353,7 @@ PUT /snowowl/admin/codesystems/SNOMEDCT-SV
   "branchPath": "MAIN/2016-01-31/SNOMEDCT-SV"
 }
 ....
+
+=== Developer notes
+
+During the upgrade/downgrade process, conflicts are identified between the terminology to be upgraded/downgraded and the international release.  Using the *mergeConflictRuleProvider* extension point, rule providers can be registered the provide conflict rules. The currently registered rule provider is **com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictRuleProvider.java**.
