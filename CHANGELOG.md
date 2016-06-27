@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 ## 4.7.0
 
 ### Added
-- New feature, SNOMED CT Extension support
+- New feature, SNOMED CT Extension support, see snomed_extension_management.adoc for details.
  * `POST` `/codesystems` - creates a new codesystem (or release in SNOMED CT)
 - Representations
  * New `branchPath` property on CodeSystems (currently active path of a CodeSystem or SNOMED CT Release)
