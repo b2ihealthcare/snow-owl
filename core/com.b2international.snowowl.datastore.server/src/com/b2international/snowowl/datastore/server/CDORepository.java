@@ -146,7 +146,8 @@ import com.google.common.base.Preconditions;
 
 		repository = createRepository(IPluginContainer.INSTANCE, dbStore);
 		
-		if (getRepositoryConfiguration().isRevisionCacheEnabled()) {
+		// disable revision cache by using a NOOP instance
+		if (!getRepositoryConfiguration().isRevisionCacheEnabled()) {
 			repository.setRevisionManager((InternalCDORevisionManager) CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP));
 		}
 		
