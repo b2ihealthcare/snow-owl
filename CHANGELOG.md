@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
  * Makes it possible to use `ELK v0.4.2` runtime and during tests
 - Upgrade custom `Protegé` libraries from `4.1` to `4.3`
 - Replaced the unsupported [pcj](http://pcj.sourceforge.net/) library with [FastUtil](https://github.com/vigna/fastutil) and also added a nice primitive collection API on top of it to support replacement of the primitive collection library underneath (and/or support multiple libraries with different capabilities, performance at the same time)
+- Migration from old terminology registry model to updated model, migration scripts are in `/documentation/src/main/asciidoc/scripts/migration_4.6_to_4.7/`
 
 ### New modules
 - `com.b2international.collections.api` - primitive collections API
