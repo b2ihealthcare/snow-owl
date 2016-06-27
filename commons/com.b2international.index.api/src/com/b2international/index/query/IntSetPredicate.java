@@ -37,7 +37,7 @@ public class IntSetPredicate extends Predicate {
 	
 	@Override
 	public String toString() {
-		return String.format("ANY%s", values);
+		return String.format("%s IN(%s)", getField(), values);
 	}
 	
 }
