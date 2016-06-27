@@ -157,25 +157,25 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	final InternalBranch merge(final InternalBranch from, final InternalBranch to, final String commitMessage) {
-		final InternalBranch mergedTo = applyChangeSet(from, to, false, commitMessage); // Implicit notification (commit)
+		final InternalBranch mergedTo = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
 		final InternalBranch reopenedFrom = reopen(to, from.name(), from.metadata());
 		sendChangeEvent(reopenedFrom); // Explicit notification (reopen)
 		return mergedTo;
 	}
 
 	InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String commitMessage, final Runnable postReopen) {
-		applyChangeSet(branch, onTopOf, true, commitMessage);
+		applyChangeSet(branch, onTopOf, true, true, commitMessage);
 		final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
 		postReopen.run();
 		
 		if (branch.headTimestamp() > branch.baseTimestamp()) {
-			return applyChangeSet(branch, rebasedBranch, false, commitMessage); // Implicit notification (reopen & commit)
+			return applyChangeSet(branch, rebasedBranch, false, true, commitMessage); // Implicit notification (reopen & commit)
 		} else {
 			return sendChangeEvent(rebasedBranch); // Explicit notification (reopen)
 		}
 	}
 
-	abstract InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage);
+	abstract InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage);
 
 	/*package*/ final InternalBranch delete(final InternalBranch branchImpl) {
 		for (Branch child : branchImpl.children()) {

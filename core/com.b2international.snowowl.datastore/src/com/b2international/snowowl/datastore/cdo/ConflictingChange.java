@@ -25,7 +25,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import com.b2international.commons.Change;
 
 /**
- * Wraps a conflicting a change.
+ * Wraps a conflicting change.
  */
 public class ConflictingChange implements Serializable {
 	

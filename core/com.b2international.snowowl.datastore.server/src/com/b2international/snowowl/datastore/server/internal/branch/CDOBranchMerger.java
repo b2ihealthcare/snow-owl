@@ -15,14 +15,23 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import java.util.Collection;
+import java.util.Map;
+
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
+import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 /**
  * An extension of CDO's {@link ManyValued many-valued} merger implementation, that delegates to a terminology-specific
@@ -31,14 +40,16 @@ import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 
 	private final ICDOConflictProcessor delegate;
+	private final boolean isRebase;
 
 	/**
 	 * Creates a new instance using the specified repository identifier.
 	 * 
 	 * @param delegate the CDO conflict processor handling terminology-specific merge decisions 
 	 */
-	public CDOBranchMerger(final ICDOConflictProcessor delegate) {
+	public CDOBranchMerger(final ICDOConflictProcessor delegate, final boolean isRebase) {
 		this.delegate = delegate;
+		this.isRebase = isRebase;
 	}
 
 	@Override
@@ -52,19 +63,54 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 
 	@Override
+	protected Object detachedInSource(CDOID id) {
+		return delegate.detachedInSource(id);
+	}
+	
+	@Override
+	protected Object detachedInTarget(CDOID id) {
+		return delegate.detachedInTarget(id);
+	}
+	
+	@Override
 	protected Object changedInTargetAndDetachedInSource(final CDORevisionDelta targetDelta) {
 		return delegate.changedInTargetAndDetachedInSource(targetDelta);
 	}
 	
 	@Override
-	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(EStructuralFeature feature, 
-			CDOFeatureDelta targetFeatureDelta, 
-			CDOFeatureDelta sourceFeatureDelta) {
+	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(final EStructuralFeature feature, 
+			final CDOFeatureDelta targetFeatureDelta, 
+			final CDOFeatureDelta sourceFeatureDelta) {
 
 		return delegate.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
 	}
+	
+	@Override
+	protected void preProcess() {
+		delegate.preProcess(getSourceMap(), getTargetMap(), isRebase);
+	}
 
+	@Override
+	public Map<CDOID, Conflict> getConflicts() {
+		// Due to the nature of rebase we need to transform certain conflicts to reflect the source and target branches properly
+		if (isRebase) {
+			return Maps.transformValues(super.getConflicts(), new Function<Conflict, Conflict>() {
+				@Override public Conflict apply(Conflict input) {
+					return ConflictMapper.invert(input);
+				}
+			});
+		}
+		return super.getConflicts();
+	}
+	
 	public void postProcess(final CDOTransaction transaction) {
 		delegate.postProcess(transaction);
+	}
+	
+	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView) {
+		if (isRebase) {
+			return delegate.handleCDOConflicts(targetView, sourceView, getConflicts());
+		}
+		return delegate.handleCDOConflicts(sourceView, targetView, getConflicts());
 	}
 }

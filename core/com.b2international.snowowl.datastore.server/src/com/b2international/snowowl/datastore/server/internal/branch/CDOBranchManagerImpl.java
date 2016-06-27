@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Deque;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -27,12 +28,15 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.exceptions.MergeConflictException;
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
@@ -113,7 +117,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		CDOTransaction newTransaction = null;
 		
 		try {
-			testTransaction = applyChangeSet(branch, onTopOf);
+			testTransaction = applyChangeSet(branch, onTopOf, true);
 			final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
 			postReopen.run();
 			
@@ -141,8 +145,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 	}
     
     @Override
-    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
-        final CDOTransaction dirtyTransaction = applyChangeSet(from, to);
+    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
+        final CDOTransaction dirtyTransaction = applyChangeSet(from, to, isRebase);
         try {
         	if (dryRun) {
             	return to;
@@ -154,11 +158,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 		}
     }
     
-    private CDOTransaction applyChangeSet(InternalBranch from, InternalBranch to) {
+    private CDOTransaction applyChangeSet(InternalBranch from, InternalBranch to, boolean isRebase) {
     	final CDOBranch sourceBranch = getCDOBranch(from);
     	final CDOBranch targetBranch = getCDOBranch(to);
     	final ICDOConnection connection = repository.getConnection();
-    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
+    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor(), isRebase);
     	final CDOTransaction targetTransaction = connection.createTransaction(targetBranch);
 
     	try {
@@ -167,8 +171,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     		merger.postProcess(targetTransaction);
     		return targetTransaction;
     	} catch (CDOMerger.ConflictException e) {
+    		CDOView sourceView = connection.createView(sourceBranch);
+    		Collection<MergeConflict> conflicts = merger.handleCDOConflicts(sourceView, targetTransaction);
     		LifecycleUtil.deactivate(targetTransaction);
-    		throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path(), e);
+    		LifecycleUtil.deactivate(sourceView);
+			throw new MergeConflictException(conflicts, String.format("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path()));
     	}
     }
     

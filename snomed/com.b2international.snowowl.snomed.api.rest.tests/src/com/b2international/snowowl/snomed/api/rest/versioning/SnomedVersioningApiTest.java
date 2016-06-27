@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.api.rest.versioning;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
@@ -124,7 +126,8 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 		final String shortName = "versionTest";
 		final IBranchPath branchPath = createRandomBranchPath();
 		givenBranchWithPath(branchPath);
-		createCodeSystem(branchPath.getPath(), shortName);
+		final Map<String, String> newCodeSystemRequestBody = newCodeSystemRequestBody(shortName, branchPath.getPath());
+		assertCodeSystemCreated(newCodeSystemRequestBody);
 		
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
@@ -160,7 +163,8 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 			.then().statusCode(404);
 		
 		final String shortName = "versionTest2";
-		createCodeSystem(branchPath.getPath(), shortName);
+		final Map<String, String> newCodeSystemRequestBody = newCodeSystemRequestBody(shortName, branchPath.getPath());
+		assertCodeSystemCreated(newCodeSystemRequestBody);
 		
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)

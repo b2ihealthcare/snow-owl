@@ -62,7 +62,7 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
+		InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
 			if (!dryRun && from.headTimestamp() > from.baseTimestamp()) {
 				return handleCommit(to, clock.getTimestamp());
 			} else {

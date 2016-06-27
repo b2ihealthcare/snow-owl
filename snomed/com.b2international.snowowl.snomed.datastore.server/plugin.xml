@@ -222,4 +222,10 @@
             class="com.b2international.snowowl.datastore.server.snomed.SnomedConcreteDomainImportPostProcessor">
       </postProcessor>
    </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.server.mergeConflictRuleProvider">
+      <ruleprovider
+            class="com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictRuleProvider">
+      </ruleprovider>
+   </extension>
 </plugin>

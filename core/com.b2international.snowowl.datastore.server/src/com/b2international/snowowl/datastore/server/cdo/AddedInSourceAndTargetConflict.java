@@ -28,20 +28,26 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 	private final CDOID sourceId;
 	private final CDOID targetId;
 	private final String message;
+	private final boolean addedInSource;
 
-	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message, Object...args) {
-		this.sourceId = sourceId;
-		this.targetId = targetId;
-		this.message = String.format(message, args);
-	}
-
-	public String getMessage() {
-		return message;
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message) {
+		this(sourceId, targetId, message, true);
 	}
 	
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message, final boolean addedInSource) {
+		this.sourceId = sourceId;
+		this.targetId = targetId;
+		this.message = message;
+		this.addedInSource = addedInSource;
+	}
+
 	@Override
 	public CDOID getID() {
 		return sourceId;
+	}
+	
+	public String getMessage() {
+		return message;
 	}
 
 	public CDOID getSourceId() {
@@ -51,7 +57,11 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 	public CDOID getTargetId() {
 		return targetId;
 	}
-
+	
+	public boolean isAddedInSource() {
+		return addedInSource;
+	}
+	
 	@Override
 	public String toString() {
 		return MessageFormat.format("AddedInSourceAndTarget[source={0}, target={1}]", sourceId, targetId);

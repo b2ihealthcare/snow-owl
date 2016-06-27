@@ -59,6 +59,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
@@ -352,13 +353,17 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * @return an immutable list of the available code systems.
 	 */
 	public List<CodeSystem> getCodeSystems() {
+		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
+			throw new IllegalStateException(String.format("Snomed Code Systems are maintained on MAIN branch, this editing context uses %s", getBranch()));
+		}
+		
 		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
 		return FluentIterable.from(cdoResource.getContents()).filter(CodeSystem.class).toList();
 	}
 	
 	public CodeSystem getCodeSystem(final String uniqueId) {
 		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			throw new IllegalStateException(String.format("Snomed releases are maintained on MAIN branch, this editing context uses %s", getBranch()));
+			throw new IllegalStateException(String.format("Snomed Code Systems are maintained on MAIN branch, this editing context uses %s", getBranch()));
 		}
 		
 		final Optional<CodeSystem> optional = FluentIterable.from(getCodeSystems()).firstMatch(new Predicate<CodeSystem>() {
@@ -368,7 +373,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			}
 		});
 
-		return optional.isPresent() ? optional.get() : null;
+		if (optional.isPresent()) {
+			return optional.get();
+		} else {
+			throw new CodeSystemNotFoundException(uniqueId);
+		}
 	}
 
 	/**
