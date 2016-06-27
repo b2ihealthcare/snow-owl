@@ -159,7 +159,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void mergeNewConceptToNotParentBranch() {
+	public void mergeNewConceptToEmptyStaleBranch() {
 		final IBranchPath b1 = createRandomBranchPath();
 		final IBranchPath b2 = createRandomBranchPath();
 		
@@ -178,7 +178,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void mergeNewConceptToNotParentBranchWithChangesInBoth() {
+	public void mergeNewConceptToStaleBranchWithChangesInBoth() {
 		final IBranchPath b1 = createRandomBranchPath();
 		givenBranchWithPath(b1);
 		
@@ -202,7 +202,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void mergeNewDescriptionToNotParentBranch() {
+	public void mergeNewDescriptionToEmptyStaleBranch() {
 		final IBranchPath b1 = createRandomBranchPath();
 		final IBranchPath b2 = createRandomBranchPath();
 		
@@ -219,7 +219,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void mergeNewRelationshipToNotParentBranch() {
+	public void mergeNewRelationshipToEmptyStaleBranch() {
 		final IBranchPath b1 = createRandomBranchPath();
 		final IBranchPath b2 = createRandomBranchPath();
 		
@@ -236,7 +236,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void noMergeNewDescriptionToNotParentBranch() {
+	public void noMergeNewDescriptionToConflictingStaleBranch() {
 		final IBranchPath mainPath = BranchPathUtils.createMainPath();
 		assertConceptCreated(mainPath, "C");
 		assertConceptExists(mainPath, "C");
@@ -277,7 +277,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void noMergeNewRelationshipToNotParentBranch() {
+	public void noMergeNewRelationshipToConflictingStaleBranch() {
 		final IBranchPath mainPath = BranchPathUtils.createMainPath();
 		assertConceptCreated(mainPath, "C");
 		assertConceptExists(mainPath, "C");
