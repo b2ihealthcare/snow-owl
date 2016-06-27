@@ -7,7 +7,7 @@ The international content is not edited on the server, only updated via delta re
 image::images/snomed_extensions.png[role="text-center"]
 
 == Branching arrangement
-The implemented branching arrangement closely follows the current branching preferences where the international release is imported onto the MAIN branch and each Member country will have a dedicated branch for the extension content.  The only commits on the MAIN branch are the contents of the delta release for a particular version. These commit points are versioned during the import process. The dedicated branch will be forked off the MAIN branch at the point representing the base international release as shown in Figure 1.
+The implemented branching arrangement closely follows the current branching preferences where the international release is imported onto the MAIN branch and each Member Country will have a dedicated branch for the extension content.  The only commits on the MAIN branch are the contents of the delta release for a particular version. These commit points are versioned during the import process. The dedicated branch will be forked off the MAIN branch at the point representing the base international release as shown in Figure 1.
 
 image::images/extension_authoring.png[role="text-center"]
 
@@ -15,7 +15,7 @@ image::images/extension_authoring.png[role="text-center"]
 The extension content is marked with a version tag for future reference with a new empty branch. All new components will receive an effective time.
 
 == Upgrading/Downgrading
-Upgrading means to increase the version of the base international release. During the upgrade process, the current extension branch is forward-rebased via creating a new branch and copying over the entire content as a single commit. As shown in Figure 3, the V1 and V2 versioned content is based on the 2016.01.01, whereas the V3 version is based on the 2016.06.01 version of the international release. The main advantage is that the old branch still maintains the earlier versions of the extension, this way the version dependencies between the extension and international release can be implicitly represented via the branches. If the user decides to switch back to the read-only older V1 version, content is properly displayed with international content from 2016.01.01. To avoid content with incorrect dependencies, only versioned extensions should be allowed to be upgraded. Downgrading means to decrease the version of the base international release. The same process described above for upgrade applies.
+Upgrading means to increase the version of the base international release. During the upgrade process, the current extension branch is forward-rebased via creating a new branch and copying over the entire content as a single commit. As shown in Figure 2, the V1 and V2 versioned content is based on the 2016.01.01, whereas the V3 version is based on the 2016.06.01 version of the international release. The main advantage is that the old branch still maintains the earlier versions of the extension, this way the version dependencies between the extension and international release can be implicitly represented via the branches. If the user decides to switch back to the read-only older V1 version, content is properly displayed with international content from 2016.01.01. To avoid content with incorrect dependencies, only versioned extensions should be allowed to be upgraded. Downgrading means to decrease the version of the base international release. The same process described above for upgrade applies.
 
 == International version update
 When new international release is available, the corresponding delta is imported onto the MAIN branch.
@@ -24,7 +24,7 @@ When new international release is available, the corresponding delta is imported
 The following example demonstrates how a blank server is provisioned for extension management.  The example is carried out using both the command line OSGi interface as well as the REST API.
 
 === OSGi command line interface
-First, the full International Release is imported with version tags created (_-v_).  The selected language refset is English.
+First, the full International Release is imported with version tags created (_-v_). The selected Language Refset is English.
 
 ....
 > sctimport rf2_release -t full -v /path/to/SnomedCT_RF2Release_INT_20160131.zip /path/to/snomed_ct_international.json
@@ -182,7 +182,7 @@ POST /snowowl/admin/codesystems/SNOMEDCT_B2i/versions
 ....
 
 === Upgrading extension content
-There is no command-line command available for upgrading, the functionality is only accessible via the REST interface:
+There is no command-line command available for upgrading, the functionality is only accessible via the REST interface.
 
 Import the new International DELTA archive to the MAIN branch in two steps:
 
@@ -211,7 +211,7 @@ POST /snowowl/snomed-ct/v2/branches
 }
 ....
 
-Then copy over the entire content onto the target extension branch. (If the merge fails because of conflicts, fix the errors and then try again)
+Then copy over the entire content onto the target extension branch. If the merge fails because of conflicts, fix the errors and then try again.
 ....
 POST /snowowl/snomed-ct/v2/merges
 {
@@ -231,9 +231,9 @@ PUT /snowowl/admin/codesystems/SNOMEDCT_B2i
 ....
 
 === Downgrading extension content
-There is no command line command available for downgrading, the functionality is only accessible via the REST interface:
+There is no command line command available for downgrading, the functionality is only accessible via the REST interface.
 
-Copy over the current extension content onto the target extension branch. (If the merge fails because of conflicts, fix the errors and then try again) 
+Copy over the current extension content onto the target extension branch. If the merge fails because of conflicts, fix the errors and then try again.
 
 If no new content was added to the current branch since the merge, you can skip this step.
 ....
@@ -279,7 +279,7 @@ POST /snowowl/snomed-ct/v2/branches
 {
   "metadata": {},
   "parent": "MAIN/2015-01-31",
-  "name": "SNOMEDCT-SV"
+  "name": "SNOMEDCT-SE"
 }
 ....
 
@@ -289,14 +289,14 @@ POST /snowowl/admin/codesystems
 {
 	"oid": "2.16.840.1.113883.6.962",
 	"name": "SNOMED CT Swedish Extension",
-	"shortName": "SNOMEDCT-SV",
+	"shortName": "SNOMEDCT-SE",
 	"organizationLink": "http://www.socialstyrelsen.se/",
 	"primaryLanguage": "SWE",
 	"citation": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care.",
 	"iconPath": "icons/snomed.png",
 	"terminologyId": "com.b2international.snowowl.terminology.snomed",
 	"repositoryUuid": "snomedStore",
-	"branchPath": "MAIN/2015-01-31/SNOMEDCT-SV",
+	"branchPath": "MAIN/2015-01-31/SNOMEDCT-SE",
 	"extensionOf": "SNOMEDCT"
 }
 ....
@@ -307,8 +307,8 @@ POST /snowowl/snomed-ct/v2/imports
 {
   "createVersions": true,
   "type": "FULL",
-  "branchPath": "MAIN/2015-01-31/SNOMEDCT-SV",
-  "codeSystemShortName": "SNOMEDCT-SV"
+  "branchPath": "MAIN/2015-01-31/SNOMEDCT-SE",
+  "codeSystemShortName": "SNOMEDCT-SE"
 }
 ....
 
@@ -323,7 +323,7 @@ POST /snowowl/snomed-ct/v2/branches
 {
   "metadata": {},
   "parent": "MAIN/2016-01-31",
-  "name": "SNOMEDCT-SV"
+  "name": "SNOMEDCT-SE"
 }
 ....
 
@@ -331,8 +331,8 @@ Start a merge to upgrade the extension content onto the previously created branc
 ....
 POST /snowowl/snomed-ct/v2/merges
 {
-  "source": "MAIN/2015-01-31/SNOMEDCT-SV",
-  "target": "MAIN/2016-01-31/SNOMEDCT-SV",
+  "source": "MAIN/2015-01-31/SNOMEDCT-SE",
+  "target": "MAIN/2016-01-31/SNOMEDCT-SE",
   "commitComment": "Upgrade Swedish extension to international version 2016-01-31"
 }
 ....
@@ -347,10 +347,10 @@ Relationship with ID '1929491000052120' has a conflict of type 'HAS_INACTIVE_REF
 
 After fixing the conflicts, start another merge (same as before) and then update the branch path of the Swedish Code System.
 ....
-PUT /snowowl/admin/codesystems/SNOMEDCT-SV
+PUT /snowowl/admin/codesystems/SNOMEDCT-SE
 {
   "repositoryUuid": "snomedStore",
-  "branchPath": "MAIN/2016-01-31/SNOMEDCT-SV"
+  "branchPath": "MAIN/2016-01-31/SNOMEDCT-SE"
 }
 ....
 
