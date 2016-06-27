@@ -128,7 +128,6 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
       final OMMonitor idsMonitor = monitor.fork();
       
       Set<CDOID> ids = runAsync(idsMonitor, new Callable<Set<CDOID>>() {
-		@Override
 		public Set<CDOID> call() throws Exception {
 			return repository.getMergeData(targetInfo, sourceInfo, targetBaseInfo, sourceBaseInfo, nsURIs, idsMonitor);
 		}
@@ -146,7 +145,6 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
       final OMMonitor targetInfoMonitor = monitor.fork();
       
       runAsync(targetInfoMonitor, new Callable<Void>() {
-		@Override
 		public Void call() throws Exception {
 			writeRevisionAvailabilityInfo(out, targetInfo, writtenRevisions, targetInfoMonitor);
 			return null;
@@ -155,7 +153,6 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
       
       final OMMonitor sourceInfoMonitor = monitor.fork();
       runAsync(sourceInfoMonitor, new Callable<Void>() {
-  		@Override
   		public Void call() throws Exception {
   			writeRevisionAvailabilityInfo(out, sourceInfo, writtenRevisions, sourceInfoMonitor);
   			return null;
@@ -166,7 +163,6 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
       {
     	  final OMMonitor targetBaseInfoMonitor = monitor.fork();
           runAsync(targetBaseInfoMonitor, new Callable<Void>() {
-      		@Override
       		public Void call() throws Exception {
       			writeRevisionAvailabilityInfo(out, targetBaseInfo, writtenRevisions, targetBaseInfoMonitor);
       			return null;
@@ -178,7 +174,6 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
       {
     	  final OMMonitor sourceBaseInfoMonitor = monitor.fork();
           runAsync(sourceBaseInfoMonitor, new Callable<Void>() {
-      		@Override
       		public Void call() throws Exception {
       			writeRevisionAvailabilityInfo(out, sourceBaseInfo, writtenRevisions, sourceBaseInfoMonitor);
       			return null;
