@@ -35,7 +35,6 @@ All notable changes to this project will be documented in this file.
 ### New modules
 - `com.b2international.collections.api` - primitive collections API
 - `com.b2international.collections.fastutil` - [FastUtil](https://github.com/vigna/fastutil) implementation of primitive collections API
-- `com.b2international.collections.jackson` - Jackson Ser/Deser module for primitive collections API interfaces
  
 ### Bugs
 - Reduces thread usage of SNOMED CT change processing
