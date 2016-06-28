@@ -38,6 +38,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchProvider;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ClassLoaderProvider;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -192,6 +194,9 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	
 	@Override
 	public <T> T service(Class<T> type) {
+		if (Repository.class.isAssignableFrom(type)) {
+			return type.cast(this);
+		}
 		if (registry.containsKey(type)) {
 			return (T) registry.get(type);
 		}
@@ -214,7 +219,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 
 	private void initializeBranchingSupport(int mergeMaxResults) {
-		registry.put(BranchManager.class, new CDOBranchManagerImpl(this));
+		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this);
+		registry.put(BranchManager.class, branchManager);
+		registry.put(BranchReplicator.class, branchManager);
+		
 		
 		final ReviewConfiguration reviewConfiguration = env.service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
