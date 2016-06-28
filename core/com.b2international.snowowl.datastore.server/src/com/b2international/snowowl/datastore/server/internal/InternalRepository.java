@@ -55,4 +55,9 @@ public interface InternalRepository extends Repository {
 
 	long getHeadTimestamp(CDOBranch branch);
 
+	/**
+	 * Drops and recreates the current index content of this repository.
+	 */
+	void reindex();
+
 }
