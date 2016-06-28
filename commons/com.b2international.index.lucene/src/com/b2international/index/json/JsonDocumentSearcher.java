@@ -86,7 +86,7 @@ public class JsonDocumentSearcher implements Searcher {
 		final Class<T> type = query.getType();
 		final org.apache.lucene.search.Query lq = toLuceneQuery(type, query);
 		final int offset = query.getOffset();
-		final int limit = query.getLimit();
+		int limit = query.getLimit();
 		
 		if (limit < 1) {
 			Stopwatch w = Stopwatch.createStarted();
@@ -95,6 +95,15 @@ public class JsonDocumentSearcher implements Searcher {
 			final int totalHits = totalHitCollector.getTotalHits();
 			System.err.println("TotalHitCollector: " + w);
 			return new Hits<>(Collections.<T>emptyList(), offset, limit, totalHits);
+		} else if (limit == Integer.MAX_VALUE || limit == Integer.MAX_VALUE - 1 /*SearchRequest max value*/) { 
+			// if all values required, or clients expect all values to be returned
+			// use collector instead of TopDocs, TODO bring back DocSourceCollector to life
+			Stopwatch w = Stopwatch.createStarted();
+			final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
+			searcher.search(lq, totalHitCollector);
+			// reduce limit to max. total hits
+			limit = totalHitCollector.getTotalHits();
+			System.err.println("TotalHitCollector: " + w);
 		}
 		
 		Stopwatch w = Stopwatch.createStarted();
@@ -103,11 +112,12 @@ public class JsonDocumentSearcher implements Searcher {
 		
 		int maxDoc = searcher.getIndexReader().maxDoc();
 		System.err.println("MaxDoc: " + maxDoc);
-		if (maxDoc <= 0) {
+		System.err.println("Limit: " + limit);
+		if (maxDoc <= 0 || limit < 1) {
 			return Hits.empty(offset, limit);
 		}
 		
-		final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(query.getOffset(), query.getLimit()), toSort(query.getSortBy()), true, false);
+		final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(offset, limit), toSort(query.getSortBy()), true, false);
 		System.err.println("Search: " + w);
 		if (topDocs.scoreDocs.length < 1) {
 			return Hits.empty(offset, limit);
