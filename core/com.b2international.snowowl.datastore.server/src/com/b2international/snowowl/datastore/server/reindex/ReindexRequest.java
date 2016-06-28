@@ -21,7 +21,6 @@ import org.eclipse.emf.cdo.spi.server.InternalSession;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 
 /**
@@ -35,7 +34,6 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, Void> {
 	@Override
 	public Void execute(RepositoryContext context) {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
-		final BranchReplicator branchReplicator = context.service(BranchReplicator.class);
 		
 		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		final InternalSession session = cdoRepository.getSessionManager().openSession(null);
@@ -46,7 +44,7 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, Void> {
 			StoreThreadLocal.setSession(session);
 			//for partial replication get the last branch id and commit time from the index
 			//right now index is fully recreated
-			cdoRepository.replicate(new IndexMigrationReplicationContext(-1, 0, session, branchReplicator));
+			cdoRepository.replicate(new IndexMigrationReplicationContext(context, -1, 0, session));
 		} finally {
 			StoreThreadLocal.release();
 			session.close();

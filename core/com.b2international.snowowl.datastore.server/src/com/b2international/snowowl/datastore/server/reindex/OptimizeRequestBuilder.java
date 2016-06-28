@@ -23,10 +23,17 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
 /**
  * @since 4.7
  */
-public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, RepositoryContext, Void> {
+public final class OptimizeRequestBuilder extends BaseRepositoryRequestBuilder<OptimizeRequestBuilder, RepositoryContext, Void> {
 
-	ReindexRequestBuilder(String repositoryId) {
+	private int maxSegments = 1;
+	
+	OptimizeRequestBuilder(String repositoryId) {
 		super(repositoryId);
+	}
+	
+	public OptimizeRequestBuilder setMaxSegments(int maxSegments) {
+		this.maxSegments = maxSegments;
+		return getSelf();
 	}
 	
 	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
@@ -36,7 +43,9 @@ public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<Re
 
 	@Override
 	protected Request<RepositoryContext, Void> doBuild() {
-		return new ReindexRequest();
+		OptimizeRequest req = new OptimizeRequest();
+		req.setMaxSegments(maxSegments);
+		return req;
 	}
 
 }

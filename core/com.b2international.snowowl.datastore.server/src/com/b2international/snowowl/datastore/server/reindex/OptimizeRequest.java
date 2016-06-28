@@ -15,28 +15,36 @@
  */
 package com.b2international.snowowl.datastore.server.reindex;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.index.Index;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
+import com.b2international.snowowl.core.events.BaseRequest;
 
 /**
  * @since 4.7
  */
-public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, RepositoryContext, Void> {
+public final class OptimizeRequest extends BaseRequest<RepositoryContext, Void> {
 
-	ReindexRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	private int maxSegments;
+	
+	OptimizeRequest() {}
+	
+	void setMaxSegments(int maxSegments) {
+		this.maxSegments = maxSegments;
 	}
 	
-	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
-	public Request<ServiceProvider, Void> create() {
-		return wrap(build());
+	@Override
+	public Void execute(RepositoryContext context) {
+		context.service(Index.class).admin().optimize(maxSegments);
+		return null;
 	}
 
 	@Override
-	protected Request<RepositoryContext, Void> doBuild() {
-		return new ReindexRequest();
+	protected Class<Void> getReturnType() {
+		return Void.class;
+	}
+	
+	public static OptimizeRequestBuilder builder(String repositoryId) {
+		return new OptimizeRequestBuilder(repositoryId);
 	}
 
 }

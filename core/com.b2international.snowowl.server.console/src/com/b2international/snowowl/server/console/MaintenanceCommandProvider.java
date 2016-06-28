@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
+import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Strings;
@@ -83,7 +84,12 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			
 			interpreter.println(getHelp());
 		} catch (Exception ex) {
-			interpreter.println(ex.getMessage());
+			if (Strings.isNullOrEmpty(ex.getMessage())) {
+				interpreter.println("Something went wrong during the processing of your request.");
+				ex.printStackTrace();
+			} else {
+				interpreter.println(ex.getMessage());
+			}
 		}
 	}
 
@@ -107,6 +113,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		final String repositoryId = interpreter.nextArgument();
 		if (Strings.isNullOrEmpty(repositoryId)) {
 			interpreter.println("repositoryId parameter is required");
+			return;
 		}
 		
 		// default max segments is 1
@@ -117,11 +124,13 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 
 		// TODO convert this to a request
-		ApplicationContext.getInstance().getService(RepositoryManager.class)
-			.get(repositoryId)
-			.service(Index.class)
-			.admin()
-			.optimize(maxSegments);
+		interpreter.println("Optimizing index to max. " + maxSegments + " number of segments...");
+		OptimizeRequest.builder(repositoryId)
+			.setMaxSegments(maxSegments)
+			.create()
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+		interpreter.println("Index optimization completed");
 	}
 
 	public synchronized void executeCreateDbIndex(CommandInterpreter interpreter) {

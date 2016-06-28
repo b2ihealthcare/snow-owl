@@ -39,11 +39,11 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
  * in order to trigger notifications.
  */
 @SuppressWarnings("restriction")
-public class NonWritingTransactionCommitContext extends TransactionCommitContext {
+class NonWritingTransactionCommitContext extends TransactionCommitContext {
 
 	private final CDOCommitInfo commitInfo;
 
-	public NonWritingTransactionCommitContext(InternalTransaction transaction, CDOCommitInfo commitInfo) {
+	NonWritingTransactionCommitContext(InternalTransaction transaction, CDOCommitInfo commitInfo) {
 		super(transaction);
 		this.commitInfo = commitInfo;
 

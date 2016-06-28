@@ -38,6 +38,7 @@ import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.server.DelegatingTransaction;
 
@@ -49,18 +50,18 @@ import com.b2international.snowowl.datastore.server.DelegatingTransaction;
 @SuppressWarnings("restriction")
 class IndexMigrationReplicationContext implements CDOReplicationContext {
 
+	private final RepositoryContext context;
 	private final long initialLastCommitTime;
 	private final int initialBranchId;
 	private final InternalSession replicatorSession;
-	private final BranchReplicator branchReplicator;
 	
 	private TreeMap<Long, CDOBranch> branchesByBasetimestamp = new TreeMap<>();
 
-	IndexMigrationReplicationContext(int initialBranchId, long initialLastCommitTime, InternalSession session, BranchReplicator branchReplicator) {
+	IndexMigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session) {
+		this.context = context;
 		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
-		this.branchReplicator = branchReplicator;
 	}
 
 	@Override
@@ -70,8 +71,14 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 		if (branchToReplicate != null) {
 			final CDOBranch branch = branchToReplicate.getValue();
 			System.err.println("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
-			branchReplicator.replicateBranch(branch);
+			context.service(BranchReplicator.class).replicateBranch(branch);
 			branchesByBasetimestamp.remove(branchToReplicate.getKey());
+			
+			// optimize index after branch creations
+			OptimizeRequest.builder(context.id())
+				.setMaxSegments(4)
+				.build()
+				.execute(context);
 		}
 		
 		System.err.println("Replicating commit: " + commitInfo.getComment() + " at " + commitTimestamp);
