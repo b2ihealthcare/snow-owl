@@ -18,6 +18,7 @@ package com.b2international.index.json;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -29,6 +30,7 @@ import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -88,6 +90,9 @@ public class JsonDocumentMappingStrategy {
 			break;
 		case NUMBER:
 			Class<?> fieldType = mapping.getField(name).getType();
+			if (Collection.class.isAssignableFrom(fieldType)) {
+				fieldType = Reflections.getType(mapping.getField(name));
+			}
 			if (fieldType == Long.class || fieldType == long.class || LongCollection.class.isAssignableFrom(fieldType)) {
 				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
 			} else if (fieldType == Float.class || fieldType == float.class || FloatCollection.class.isAssignableFrom(fieldType)) {
@@ -96,6 +101,8 @@ public class JsonDocumentMappingStrategy {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
 			} else if (fieldType == Short.class || fieldType == short.class) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
+			} else {
+				throw new UnsupportedOperationException("Unsupported number type: " + fieldType + " for field: " + name);
 			}
 			break;
 		default:
