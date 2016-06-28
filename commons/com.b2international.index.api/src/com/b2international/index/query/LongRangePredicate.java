@@ -18,12 +18,12 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class RangePredicate extends Predicate {
+public class LongRangePredicate extends Predicate {
 
 	private final long from;
 	private final long to;
 
-	public RangePredicate(String field, long from, long to) {
+	public LongRangePredicate(String field, long from, long to) {
 		super(field);
 		this.from = from;
 		this.to = to;

@@ -126,8 +126,8 @@ public final class LuceneQueryBuilder {
 			visit(predicate);
 		} else if (expression instanceof LongPredicate) {
 			visit((LongPredicate) expression);
-		} else if (expression instanceof RangePredicate) {
-			visit((RangePredicate) expression);
+		} else if (expression instanceof LongRangePredicate) {
+			visit((LongRangePredicate) expression);
 		} else if (expression instanceof StringRangePredicate) {
 			visit((StringRangePredicate) expression);
 		} else if (expression instanceof NestedPredicate) {
@@ -152,6 +152,8 @@ public final class LuceneQueryBuilder {
 			visit((BoolExpression) expression);
 		} else if (expression instanceof BooleanPredicate) {
 			visit((BooleanPredicate) expression);
+		} else if (expression instanceof IntRangePredicate) {
+			visit((IntRangePredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -284,8 +286,13 @@ public final class LuceneQueryBuilder {
 		deque.push(new DequeItem(filter));
 	}
 	
-	private void visit(RangePredicate range) {
+	private void visit(LongRangePredicate range) {
 		final Filter filter = NumericRangeFilter.newLongRange(range.getField(), range.from(), range.to(), true, true);
+		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(IntRangePredicate range) {
+		final Filter filter = NumericRangeFilter.newIntRange(range.getField(), range.from(), range.to(), true, true);
 		deque.push(new DequeItem(filter));
 	}
 	

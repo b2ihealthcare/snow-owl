@@ -114,7 +114,11 @@ public class Expressions {
 	}
 
 	public static Expression matchRange(String fieldName, long from, long to) {
-		return new RangePredicate(fieldName, from, to);
+		return new LongRangePredicate(fieldName, from, to);
+	}
+	
+	public static Expression matchRange(String fieldName, int from, int to) {
+		return new IntRangePredicate(fieldName, from, to);
 	}
 
 	public static Expression hasParent(Class<?> parentType, Expression expression) {
