@@ -25,6 +25,7 @@ import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBui
 public final class CodeSystemUpdateRequestBuilder extends BaseTransactionalRequestBuilder<CodeSystemUpdateRequestBuilder, Void> {
 
 	private final String uniqueId;
+	private final String repositoryId;
 
 	private String name;
 	private String link;
@@ -33,9 +34,11 @@ public final class CodeSystemUpdateRequestBuilder extends BaseTransactionalReque
 	private String branchPath;
 	private String iconPath;
 
+
 	CodeSystemUpdateRequestBuilder(final String repositoryId, final String uniqueId) {
 		super(repositoryId);
 		this.uniqueId = uniqueId;
+		this.repositoryId = repositoryId;
 	}
 
 	public CodeSystemUpdateRequestBuilder setName(String name) {
@@ -70,7 +73,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseTransactionalReque
 
 	@Override
 	protected Request<TransactionContext, Void> doBuild() {
-		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(uniqueId);
+		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(uniqueId, repositoryId);
 
 		req.setName(name);
 		req.setLink(link);

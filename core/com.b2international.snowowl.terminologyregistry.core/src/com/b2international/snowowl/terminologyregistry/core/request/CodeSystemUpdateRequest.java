@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 
 /**
@@ -27,6 +30,7 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 	private static final long serialVersionUID = 1L;
 
 	private final String uniqueId;
+	private final String repositoryUuid;
 
 	private String name;
 	private String link;
@@ -35,8 +39,9 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 	private String branchPath;
 	private String iconPath;
 
-	CodeSystemUpdateRequest(String uniqueId) {
+	CodeSystemUpdateRequest(final String uniqueId, final String repositoryUuid) {
 		this.uniqueId = uniqueId;
+		this.repositoryUuid = repositoryUuid;
 	}
 
 	void setName(final String name) {
@@ -71,7 +76,7 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 		updateLink(codeSystem);
 		updateLanguage(codeSystem);
 		updateCitation(codeSystem);
-		updateBranchPath(codeSystem);
+		updateBranchPath(codeSystem, context);
 		updateIconPath(codeSystem);
 
 		return null;
@@ -117,9 +122,18 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 		}
 	}
 
-	private void updateBranchPath(final CodeSystem codeSystem) {
+	private void updateBranchPath(final CodeSystem codeSystem, final TransactionContext context) {
 		if (branchPath == null) {
 			return;
+		}
+		
+		final Branch branch = RepositoryRequests
+				.branching(repositoryUuid)
+				.prepareGet(branchPath)
+				.execute(context);
+		
+		if (branch.isDeleted()) {
+			throw new BadRequestException("Branch with identifier %s is deleted.", branchPath);
 		}
 
 		if (!codeSystem.getBranchPath().equals(branchPath)) {
