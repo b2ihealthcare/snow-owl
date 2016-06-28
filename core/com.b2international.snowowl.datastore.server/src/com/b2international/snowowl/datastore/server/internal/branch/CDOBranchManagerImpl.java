@@ -54,7 +54,7 @@ import com.google.common.collect.ImmutableSet;
  *
  * @since 4.1
  */
-public class CDOBranchManagerImpl extends BranchManagerImpl {
+public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchReplicator {
 
     private static final String CDO_BRANCH_ID = "cdoBranchId";
 
@@ -77,6 +77,25 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     	return segmentIds.getAndIncrement();
     }
     
+    @Override
+    public void replicateBranch(org.eclipse.emf.cdo.common.branch.CDOBranch branch) {
+		if (!branch.isMainBranch()) {
+			// if content already available with this cdoBranchId then skip
+			final Branch existingBranch = getBranch(branch.getID());
+			
+			if (existingBranch == null) {
+				final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(branch.getBase().getBranch().getID());
+				long baseTimestamp = repository.getBaseTimestamp(branch);
+				long headTimestamp = repository.getHeadTimestamp(branch);
+				final int segmentId = nextSegmentId();
+				final Set<Integer> segments = newHashSet();
+				segments.add(segmentId);
+				segments.addAll(parent.segments());
+				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), segmentId, segments));
+				parent.withSegmentId(nextSegmentId());
+			}
+		}
+    }
 
     CDOBranch getCDOBranch(Branch branch) {
         checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
