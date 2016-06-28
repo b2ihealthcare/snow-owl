@@ -22,6 +22,7 @@ import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCod
 import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotExists;
 import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemNotUpdated;
 import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
+import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
 import static com.b2international.snowowl.api.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -94,8 +95,23 @@ public class CodeSystemApiTest {
 	}
 	
 	@Test
-	public void noUpdateCodeSystem() {
+	public void updateCodeSystemWithInvalidBranchPath() {
 		final String shortName = "cs3";
+		final Map<String, String> requestBody = newCodeSystemRequestBody(shortName);
+		
+		assertCodeSystemCreated(requestBody);
+		
+		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
+				.put("branchPath", "non-existent-branch-path")
+				.put("repositoryUuid", "snomedStore")
+				.build();
+		
+		assertCodeSystemUpdatedWithStatus(shortName, updateRequestBody, 404);
+	}
+	
+	@Test
+	public void noUpdateCodeSystem() {
+		final String shortName = "cs4";
 		final Map<String, String> requestBody = newCodeSystemRequestBody(shortName);
 		assertCodeSystemCreated(requestBody);
 		

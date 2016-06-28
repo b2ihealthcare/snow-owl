@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -87,6 +88,21 @@ public class CodeSystemRequestTest {
 		final ICodeSystem updatedCodeSystem = getCodeSystem(shortName);
 		assertNotNull(updatedCodeSystem);
 		assertEquals("updated name", updatedCodeSystem.getName());
+	}
+	
+	@Test(expected = NotFoundException.class)
+	public void updateCodeSystemWithInvalidBranchPath() {
+		final String shortName = "sn3";
+		final String oid = "oid3";
+		
+		createCodeSystem(shortName, oid);
+		final ICodeSystem oldCodeSystem = getCodeSystem(shortName);
+		assertNotNull(oldCodeSystem);
+		
+		requests.prepareUpdateCodeSystem(shortName)
+			.setBranchPath("non-existent-branch-path")
+			.build("system", BRANCH, String.format("Updated code system %s.", shortName))
+			.executeSync(bus);
 	}
 	
 	@Test
