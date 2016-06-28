@@ -23,6 +23,9 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
+import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.base.Strings;
 
 /**
  * OSGI command contribution with Snow Owl commands.
@@ -38,6 +41,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 //		buffer.append("\tsnowowl test - Execute Snow Owl server smoke test\n");
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
+		buffer.append("\tsnowowl reindex <repositoryId> - reindexes the content for the given repository ID\n");
 		return buffer.toString();
 	}
 
@@ -64,10 +68,28 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				return;
 			}
 			
+			if ("reindex".equals(cmd)) {
+				reindex(interpreter);
+				return;
+			}
+			
 			interpreter.println(getHelp());
 		} catch (Exception ex) {
 			interpreter.println(ex.getMessage());
 		}
+	}
+
+	private void reindex(CommandInterpreter interpreter) {
+		final String repositoryId = interpreter.nextArgument();
+		
+		if (Strings.isNullOrEmpty(repositoryId)) {
+			interpreter.println("repositoryId parameter is required");
+		}
+		
+		ReindexRequest.builder(repositoryId)
+			.build()
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
 	}
 
 	public synchronized void executeCreateDbIndex(CommandInterpreter interpreter) {

@@ -15,26 +15,21 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, BranchContext, R> {
-
-	private final String repositoryId;
+public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilder<B, R>, R> extends BaseRepositoryRequestBuilder<B, BranchContext, R> {
 
 	protected BaseBranchRequestBuilder(String repositoryId) {
-		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
+		super(repositoryId);
 	}
 
 	public final Request<ServiceProvider, R> build(String branch) {
-		return new RepositoryRequest<>(repositoryId, new BranchRequest<>(branch, wrap(build())));
+		return wrap(new BranchRequest<>(branch, wrapBranchRequest(build())));
 	}
 
 	/**
@@ -43,7 +38,7 @@ public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilde
 	 * @param req
 	 * @return
 	 */
-	protected Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+	protected Request<BranchContext, R> wrapBranchRequest(Request<BranchContext, R> req) {
 		return req;
 	}
 

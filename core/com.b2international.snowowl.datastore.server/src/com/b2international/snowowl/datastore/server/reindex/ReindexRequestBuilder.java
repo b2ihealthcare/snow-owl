@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.datastore.server.reindex;
 
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
 
 /**
- * @since 4.6
+ * @since 4.7
  */
-public abstract class BaseRevisionIndexReadRequestBuilder<B extends BaseRevisionIndexReadRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
+public class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, RepositoryContext, Void> {
 
-	protected BaseRevisionIndexReadRequestBuilder(final String repositoryId) {
+	ReindexRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
 
 	@Override
-	protected Request<BranchContext, R> wrapBranchRequest(Request<BranchContext, R> req) {
-		return new RevisionIndexReadRequest<>(super.wrapBranchRequest(req));
+	protected Request<RepositoryContext, Void> doBuild() {
+		return new ReindexRequest();
 	}
 
 }
