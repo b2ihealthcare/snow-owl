@@ -40,16 +40,17 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, Void> {
 		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		final InternalSession session = cdoRepository.getSessionManager().openSession(null);
 		
-		//set the session on the StoreThreadlocal for later access
-		StoreThreadLocal.setSession(session);
 		
-		//for partial replication get the last branch id and commit time from the index
-		//right now index is fully recreated
-		cdoRepository.replicate(new IndexMigrationReplicationContext(-1, 0, session, branchReplicator));
-		
-		StoreThreadLocal.release();
-		session.close();
-		
+		try {
+			//set the session on the StoreThreadlocal for later access
+			StoreThreadLocal.setSession(session);
+			//for partial replication get the last branch id and commit time from the index
+			//right now index is fully recreated
+			cdoRepository.replicate(new IndexMigrationReplicationContext(-1, 0, session, branchReplicator));
+		} finally {
+			StoreThreadLocal.release();
+			session.close();
+		}
 		return null;
 	}
 

@@ -85,11 +85,14 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		if (Strings.isNullOrEmpty(repositoryId)) {
 			interpreter.println("repositoryId parameter is required");
 		}
-		
-		ReindexRequest.builder(repositoryId)
+		try {
+			ReindexRequest.builder(repositoryId)
 			.create()
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
+		} catch (Throwable e) {
+			interpreter.printStackTrace(e);
+		}
 	}
 
 	public synchronized void executeCreateDbIndex(CommandInterpreter interpreter) {
