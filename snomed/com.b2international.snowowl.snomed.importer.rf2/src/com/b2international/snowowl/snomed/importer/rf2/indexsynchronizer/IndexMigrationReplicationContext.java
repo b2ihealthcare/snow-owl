@@ -35,6 +35,7 @@ import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 
+import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.server.DelegatingTransaction;
 
 /**
@@ -48,6 +49,7 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 	private final long initialLastCommitTime;
 	private final int initialBranchId;
 	private final InternalSession replicatorSession;
+	private final BranchReplicator branchReplicator;
 
 	/**
 	 * 
@@ -55,10 +57,11 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 	 * @param initialLastCommitTime
 	 * @param session
 	 */
-	public IndexMigrationReplicationContext(int initialBranchId, long initialLastCommitTime, InternalSession session) {
+	public IndexMigrationReplicationContext(int initialBranchId, long initialLastCommitTime, InternalSession session, BranchReplicator branchReplicator) {
 		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
+		this.branchReplicator = branchReplicator;
 	}
 
 	@Override
@@ -193,7 +196,7 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	@Override
 	public void handleBranch(CDOBranch branch) {
-		// TODO: index the branches
+		branchReplicator.replicateBranch(branch);
 	}
 
 	@Override
