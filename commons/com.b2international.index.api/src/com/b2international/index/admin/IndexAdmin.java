@@ -65,5 +65,11 @@ public interface IndexAdmin {
 	 * Closes the underlying index.
 	 */
 	void close();
+	
+	/**
+	 * Optimizes the underlying index until it has less than or equal segments than the supplied maxSegments number.
+	 * @param maxSegments - max number of segments to force on the index
+	 */
+	void optimize(int maxSegments);
 
 }

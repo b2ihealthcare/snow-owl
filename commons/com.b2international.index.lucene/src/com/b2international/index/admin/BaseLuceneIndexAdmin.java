@@ -47,7 +47,6 @@ import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
-import com.google.common.primitives.Ints;
 
 /**
  * @since 4.7
@@ -196,6 +195,16 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			close();
 		} catch (IOException e) {
 			throw new IndexException("Couldn't delete index " + name(), e);
+		}
+	}
+	
+	@Override
+	public void optimize(int maxSegments) {
+		ensureOpen();
+		try {
+			writer.forceMerge(maxSegments);
+		} catch (IOException e) {
+			throw new IndexException("Couldn't optimize index " + name(), e);
 		}
 	}
 
