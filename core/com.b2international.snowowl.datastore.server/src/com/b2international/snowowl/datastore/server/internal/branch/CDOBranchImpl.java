@@ -15,34 +15,63 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import java.util.Collection;
+
+import com.b2international.commons.collections.Collections3;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
+
 /**
  * @since 4.1
  */
 public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch {
 
-	private int cdoBranchId;
+	private final int cdoBranchId;
+	private final int segmentId;
+	private final Collection<Integer> segments;
 
-	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, int cdoBranchId) {
-		this(name, parentPath, baseTimestamp, baseTimestamp, cdoBranchId);
+	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, int cdoBranchId, int segmentId, Collection<Integer> segments) {
+		this(name, parentPath, baseTimestamp, baseTimestamp, cdoBranchId, segmentId, segments);
 	}
 
-	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, int cdoBranchId) {
-		this(name, parentPath, baseTimestamp, headTimestamp, false, cdoBranchId);
+	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, int cdoBranchId, int segmentId, Collection<Integer> segments) {
+		this(name, parentPath, baseTimestamp, headTimestamp, false, cdoBranchId, segmentId, segments);
 	}
 
-	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, int cdoBranchId) {
+	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, int cdoBranchId, int segmentId, Collection<Integer> segments) {
 		super(name, parentPath, baseTimestamp, headTimestamp, deleted);
 		this.cdoBranchId = cdoBranchId;
+		this.segmentId = segmentId;
+		this.segments = Collections3.toImmutableSet(segments); 
 	}
 	
 	@Override
 	protected CDOBranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
-		return new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted, cdoBranchId);
+		return new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted, cdoBranchId, segmentId, segments);
+	}
+	
+	@Override
+	public int segmentId() {
+		return segmentId;
+	}
+	
+	@Override
+	public Collection<Integer> segments() {
+		return segments;
 	}
 
 	@Override
 	public int cdoBranchId() {
 		return cdoBranchId;
+	}
+	
+	@Override
+	public InternalCDOBasedBranch withSegmentId(int segmentId) {
+		final Builder<Integer> builder = ImmutableSet.builder();
+		builder.add(segmentId);
+		// use previous segments here, the branch got a new segment because a new child branch got opened
+		builder.addAll(segments());
+		return new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), cdoBranchId(), segmentId, builder.build());
 	}
 
 }

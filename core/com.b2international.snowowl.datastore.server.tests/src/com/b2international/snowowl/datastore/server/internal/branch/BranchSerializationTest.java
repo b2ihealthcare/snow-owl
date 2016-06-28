@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static org.junit.Assert.*;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +37,7 @@ public class BranchSerializationTest {
 	@Before
 	public void givenBranch() {
 		this.branch = new BranchImpl("name", "parent", 0L, 0L, false);
-		this.cdoBranch = new CDOBranchImpl("name", "parent", 0L, 0L, false, 1);
+		this.cdoBranch = new CDOBranchImpl("name", "parent", 0L, 0L, false, 1, 0, Collections.singleton(0));
 	}
 	
 	@Test
@@ -73,7 +75,7 @@ public class BranchSerializationTest {
 	@Test
 	public void serializeCDOBranchImpl() throws Exception {
 		final String json = mapper.writeValueAsString(cdoBranch);
-		assertEquals("{\"type\":\"CDOBranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{},\"cdoBranchId\":1}", json);
+		assertEquals("{\"type\":\"CDOBranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"segmentId\":0,\"segments\":[0],\"metadata\":{},\"cdoBranchId\":1}", json);
 	}
 	
 	@Test
@@ -84,9 +86,9 @@ public class BranchSerializationTest {
 	
 	@Test
 	public void serializeCDOMainBranchImpl() throws Exception {
-		final CDOMainBranchImpl mainCdoBranch = new CDOMainBranchImpl(0L, 2L);
+		final CDOMainBranchImpl mainCdoBranch = new CDOMainBranchImpl(0L, 2L, 0, Collections.singleton(0));
 		final String json = mapper.writeValueAsString(mainCdoBranch);
-		assertEquals("{\"type\":\"CDOMainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":2,\"metadata\":{},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false,\"cdoBranchId\":0}", json);
+		assertEquals("{\"type\":\"CDOMainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":2,\"segmentId\":0,\"segments\":[0],\"metadata\":{},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false,\"cdoBranchId\":0}", json);
 		final CDOMainBranchImpl actual = mapper.readValue(json, CDOMainBranchImpl.class);
 		assertEquals(mainCdoBranch.cdoBranchId(), actual.cdoBranchId());
 		

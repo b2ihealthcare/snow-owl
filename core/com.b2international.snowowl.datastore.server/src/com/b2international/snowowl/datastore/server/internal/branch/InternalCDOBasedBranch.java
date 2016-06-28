@@ -15,12 +15,19 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import java.util.Collection;
 
 /**
  * @since 4.1
  */
-public interface InternalCDOBasedBranch {
+public interface InternalCDOBasedBranch extends InternalBranch {
 	
 	int cdoBranchId();
+	
+	int segmentId();
+	
+	Collection<Integer> segments();
+
+	InternalCDOBasedBranch withSegmentId(int segmentId);
 	
 }
