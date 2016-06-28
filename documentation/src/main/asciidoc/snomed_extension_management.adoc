@@ -341,8 +341,12 @@ POST /snowowl/snomed-ct/v2/merges
   "commitComment": "Upgrade Swedish extension to international version 2016-01-31"
 }
 ....
+The POST operation will return a mergeId that can be used to monitor the progress of the merge via:
+....
+GET /snowowl/snomed-ct/v2/merges/{mergeId}
+....
 
-The merge will fail with the following conflicts:
+Which operation will return with failed status and the following conflicts:
 ....
 Relationship with ID '6271000052128' has a conflict of type 'HAS_INACTIVE_REFERENCE' on target branch, conflicting attributes are: [destinationId -> 373245004].
 Relationship with ID '16741000052126' has a conflict of type 'HAS_INACTIVE_REFERENCE' on target branch, conflicting attributes are: [destinationId -> 373245004].
