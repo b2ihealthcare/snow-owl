@@ -73,7 +73,7 @@ public abstract class BranchManagerImpl implements BranchManager {
     	}
 	}
 
-	protected void doInitBranchStore(InternalBranch main) {
+	private void doInitBranchStore(InternalBranch main) {
 		branchStore.admin().clear(Branch.class);
 		registerBranch(main);
 	}
