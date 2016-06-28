@@ -74,7 +74,8 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 		protected long storageKey;
 		protected String branchPath;
 		protected long commitTimestamp;
-		protected Collection<String> replacedIns = Collections.emptyList();
+		protected Collection<Integer> replacedIns = Collections.emptyList();
+		protected int segmentId;
 
 		/**
 		 * @deprecated - see reason at {@link com.b2international.snowowl.core.domain.IComponent#getStorageKey()} why this should be removed
@@ -112,8 +113,13 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 			return getSelf();
 		}
 		
-		B replacedIns(final Collection<String> replacedIns) {
+		B replacedIns(final Collection<Integer> replacedIns) {
 			this.replacedIns = replacedIns;
+			return getSelf();
+		}
+		
+		B segmentId(final int segmentId) {
+			this.segmentId = segmentId;
 			return getSelf();
 		}
 		

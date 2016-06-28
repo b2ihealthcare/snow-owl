@@ -16,13 +16,16 @@
 package com.b2international.index.revision;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
@@ -44,6 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class BaseRevisionIndexTest {
 	
+	protected static final String MAIN = RevisionBranch.MAIN_PATH;
 	protected static final long STORAGE_KEY1 = 1L;
 	protected static final long STORAGE_KEY2 = 2L;
 	
@@ -52,6 +56,7 @@ public abstract class BaseRevisionIndexTest {
 	private RevisionIndex index;
 	private Map<String, RevisionBranch> branches = newHashMap();
 	private AtomicLong clock = new AtomicLong(0L);
+	private AtomicInteger segmentIds = new AtomicInteger(0);
 	private RevisionBranchProvider branchProvider = new RevisionBranchProvider() {
 		@Override
 		public RevisionBranch getBranch(String branchPath) {
@@ -59,10 +64,17 @@ public abstract class BaseRevisionIndexTest {
 		}
 	};
 	
+	private int nextSegmentId() {
+		return segmentIds.getAndIncrement();
+	}
+	
 	@Before
 	public void setup() {
-		// initialize MAIN branch with 0,0 timestamps
-		branches.put(RevisionBranch.MAIN_PATH, new RevisionBranch(null, RevisionBranch.MAIN_PATH, 0L, 0L));
+		// initially the MAIN is only one segment long
+		final Set<Integer> segments = newHashSet();
+		final int initialSegment = nextSegmentId();
+		segments.add(initialSegment);
+		branches.put(MAIN, new RevisionBranch(MAIN, initialSegment, segments));
 		
 		mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
@@ -86,12 +98,28 @@ public abstract class BaseRevisionIndexTest {
 	protected void configureMapper(ObjectMapper mapper) {
 	}
 	
-	protected final void commitBranch(final String branchPath, final long commitTimestamp) {
-		final RevisionBranch branch = branches.get(branchPath);
-		branches.put(branchPath, new RevisionBranch(branch.parent(), branch.path(), branch.baseTimestamp(), commitTimestamp));
+	protected void createBranch(String parent, String child) {
+		RevisionBranch parentBranch = branches.get(parent);
+		if (parentBranch == null) {
+			throw new IllegalArgumentException("Parent could not be found at path: " + parent);
+		}
+		final String path = String.format("%s/%s", parent, child);
+		// register child with new segment ID
+		final int initialSegment = nextSegmentId();
+		final Set<Integer> segments = newHashSet();
+		// add parent segments
+		segments.add(initialSegment);
+		segments.addAll(parentBranch.segments());
+		branches.put(child, new RevisionBranch(path, initialSegment, segments));
+		// reregister parent branch with updated segment information
+		final int newParentSegment = nextSegmentId();
+		final Set<Integer> newParentSegments = newHashSet();
+		newParentSegments.add(newParentSegment);
+		newParentSegments.addAll(parentBranch.segments());
+		branches.put(parent, new RevisionBranch(parent, newParentSegment, newParentSegments));
 	}
 	
-	protected final long nextCommitTimestamp() {
+	protected final long currentTime() {
 		return clock.incrementAndGet();
 	}
 
@@ -119,26 +147,24 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected final void indexRevision(final String branchPath, final long storageKey, final Revision data) {
-		final long commitTimestamp = nextCommitTimestamp();
+		final long commitTimestamp = currentTime();
 		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(RevisionWriter index) throws IOException {
 				index.put(storageKey, data);
 				index.commit();
-				commitBranch(branchPath, commitTimestamp);
 				return null;
 			}
 		});
 	}
 	
 	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final long storageKey) {
-		final long commitTimestamp = nextCommitTimestamp();
+		final long commitTimestamp = currentTime();
 		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(RevisionWriter index) throws IOException {
 				index.remove(type, storageKey);
 				index.commit();
-				commitBranch(branchPath, commitTimestamp);
 				return null;
 			}
 		});

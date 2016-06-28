@@ -318,6 +318,7 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
 			doc.setReplacedIns(replacedIns);
+			doc.setSegmentId(segmentId);
 			return doc;
 		}
 	}

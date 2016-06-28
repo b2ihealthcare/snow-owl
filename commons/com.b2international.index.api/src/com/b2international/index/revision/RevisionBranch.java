@@ -15,7 +15,11 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.7
@@ -24,37 +28,31 @@ public class RevisionBranch {
 	
 	public static final String MAIN_PATH = "MAIN";
 	
-	private final RevisionBranch parent;
 	private final String path;
-	private final long baseTimestamp;
-	private final long headTimestamp;
+	private final int segmentId;
+	private final Set<Integer> segments;
 
-	public RevisionBranch(RevisionBranch parent, String path, long baseTimestamp, long headTimestamp) {
-		this.parent = parent;
+	public RevisionBranch(String path, int segmentId, Collection<Integer> segments) {
 		this.path = path;
-		this.baseTimestamp = baseTimestamp;
-		this.headTimestamp = headTimestamp;
+		this.segmentId = segmentId;
+		this.segments = ImmutableSet.copyOf(segments);
 	}
 
 	public String path() {
 		return path;
 	}
 	
-	public long baseTimestamp() {
-		return baseTimestamp;
+	public int segmentId() {
+		return segmentId;
 	}
 	
-	public long headTimestamp() {
-		return headTimestamp;
+	public Set<Integer> segments() {
+		return segments;
 	}
 	
-	public RevisionBranch parent() {
-		return parent;
-	}
-
 	@Override
 	public int hashCode() {
-		return Objects.hash(parent, path, baseTimestamp, headTimestamp);
+		return Objects.hash(path, segments);
 	}
 
 	@Override
@@ -63,10 +61,7 @@ public class RevisionBranch {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		RevisionBranch other = (RevisionBranch) obj;
-		return Objects.equals(parent, other.parent) 
-			&& Objects.equals(path, other.path)
-			&& Objects.equals(baseTimestamp, other.baseTimestamp)
-			&& Objects.equals(headTimestamp, other.headTimestamp);
+		return Objects.equals(path, other.path) && Objects.equals(segments, other.segments);
 	}
 	
 }

@@ -19,13 +19,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import com.b2international.index.WithId;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 
 
 /**
@@ -33,23 +32,20 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class Revision implements WithId {
 
-//	public static final String ADD_REPLACED_BY_ENTRY_SCRIPT_KEY = "addReplacedByEntryScript";
-//	public static final String ADD_REPLACED_BY_ENTRY_SCRIPT = "ctx._source.replacedIns += [branchPath: branch, commitTimestamp: timestamp]";
 	public static final String STORAGE_KEY = "storageKey";
 	public static final String BRANCH_PATH = "branchPath";
 	public static final String COMMIT_TIMESTAMP = "commitTimestamp";
+	public static final String SEGMENT_ID = "segmentId";
 	public static final String REPLACED_INS = "replacedIns";
-	/*ReplacedIn values are concatenation of the corresponding branch and commitTimestamp value with a separator of _*/
-	private static final String REPLACED_INS_TEMPLATE = "%s_%s";
 
-	// move the following fields up to a abstract doc???
 	private String _id;
 	
 	private long storageKey;
 	private long commitTimestamp;
 	private String branchPath;
 	
-	private Collection<String> replacedIns = Collections.emptySet();
+	private int segmentId;
+	private Collection<Integer> replacedIns = Collections.emptySet();
 	
 	@Override
 	public final void set_id(String _id) {
@@ -73,16 +69,24 @@ public abstract class Revision implements WithId {
 		this.storageKey = storageKey;
 	}
 	
-	protected final void setReplacedIns(Collection<String> replacedIns) {
+	protected final void setReplacedIns(Collection<Integer> replacedIns) {
 		this.replacedIns = replacedIns;
+	}
+	
+	protected final void setSegmentId(int segmentId) {
+		this.segmentId = segmentId;
+	}
+	
+	public final int getSegmentId() {
+		return segmentId;
 	}
 	
 	public final long getStorageKey() {
 		return storageKey;
 	}
 	
-	public final Collection<String> getReplacedIns() {
-		return ImmutableList.copyOf(replacedIns);
+	public final Collection<Integer> getReplacedIns() {
+		return replacedIns;
 	}
 
 	public final String getBranchPath() {
@@ -100,89 +104,24 @@ public abstract class Revision implements WithId {
 				.add(STORAGE_KEY, storageKey)
 				.add(Revision.BRANCH_PATH, branchPath)
 				.add(Revision.COMMIT_TIMESTAMP, commitTimestamp)
+				.add(Revision.SEGMENT_ID, segmentId)
 				.add(Revision.REPLACED_INS, replacedIns)
 				.toString();
 	}
 
 	public static Expression branchFilter(RevisionBranch branch) {
 		return Expressions.builder()
-				.must(branchRevisionFilter(branch))
-				.mustNot(replacedInFilter(branch))
+				.must(segmentIdFilter(branch.segments()))
+				.mustNot(replacedInFilter(branch.segments()))
 				.build();
 	}
 
-	public static Expression replacedInFilter(RevisionBranch branch) {
-		return createBranchSegmentFilter(branch, new ReplacedSegmentFilterBuilder());
+	private static Expression replacedInFilter(Set<Integer> segments) {
+		return Expressions.matchAnyInt(Revision.REPLACED_INS, segments);
 	}
 
-	public static Expression branchRevisionFilter(RevisionBranch branch) {
-		return createBranchSegmentFilter(branch, new RevisionSegmentFilterBuilder());
-	}
-
-	private static Expression createBranchSegmentFilter(RevisionBranch branch, SegmentFilterBuilder builder) {
-		if (branch.parent() != null) {
-			final ExpressionBuilder or = Expressions.builder();
-			// navigate up the branch hierarchy and add should clauses to the expression tree
-			// revisions can match any branch segment but must match at least one path
-			RevisionBranch child = null;
-			for (RevisionBranch currentParent = branch; currentParent != null; currentParent = currentParent.parent()) {
-				or.should(builder.createSegmentFilter(currentParent, child));
-				child = currentParent;
-			}
-			return or.build();
-		} else {
-			return builder.createSegmentFilter(branch, null);
-		}
-	}
-
-	private static interface SegmentFilterBuilder {
-		
-		Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child);
-		
-	}
-	
-	private static class RevisionSegmentFilterBuilder implements SegmentFilterBuilder {
-
-		@Override
-		public Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
-			final Expression currentBranchFilter = Expressions.exactMatch(Revision.BRANCH_PATH, parent.path());
-			final Expression commitTimestampFilter = child == null ? timestampFilter(parent) : timestampFilter(parent, child);
-			return Expressions.builder()
-					.must(currentBranchFilter)
-					.must(commitTimestampFilter)
-					.build();
-		}
-		
-		/*restricts given branchPath's HEAD to baseTimestamp of child*/
-		private static Expression timestampFilter(RevisionBranch parent, RevisionBranch child) {
-			return timestampFilter(parent.baseTimestamp(), child.baseTimestamp());
-		}
-		
-		private static Expression timestampFilter(RevisionBranch branch) {
-			return timestampFilter(branch.baseTimestamp(), branch.headTimestamp());
-		}
-		
-		private static Expression timestampFilter(long from, long to) {
-			return Expressions.matchRange(Revision.COMMIT_TIMESTAMP, from, to);
-		}
-		
-	}
-	
-	private static class ReplacedSegmentFilterBuilder implements SegmentFilterBuilder {
-
-		@Override
-		public Expression createSegmentFilter(RevisionBranch parent, RevisionBranch child) {
-			final long maxHead = child != null ? child.baseTimestamp() : Long.MAX_VALUE;
-			final long head = Math.min(maxHead, parent.headTimestamp());
-			final String from = toReplacedIn(parent.path(), 0L);
-			final String to = toReplacedIn(parent.path(), head);
-			return Expressions.matchRange(Revision.REPLACED_INS, from, to);
-		}
-		
-	}
-
-	public static String toReplacedIn(final String branchPath, final long commitTimestamp) {
-		return String.format(REPLACED_INS_TEMPLATE, branchPath, commitTimestamp);
+	private static Expression segmentIdFilter(Set<Integer> segments) {
+		return Expressions.matchAnyInt(Revision.SEGMENT_ID, segments);
 	}
 
 }

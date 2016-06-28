@@ -33,8 +33,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
-	private final String branchPath = RevisionBranch.MAIN_PATH;
-	
 	@Override
 	protected final Collection<Class<?>> getTypes() {
 		return ImmutableList.<Class<?>>of(DeeplyNestedData.class);
@@ -45,11 +43,11 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final DeeplyNestedData data = new DeeplyNestedData(new ParentData("field1", new NestedData("field2")));
 		final DeeplyNestedData data2 = new DeeplyNestedData(new ParentData("field12", new NestedData("field22")));
 		
-		indexRevision(branchPath, STORAGE_KEY1, data);
-		indexRevision(branchPath, STORAGE_KEY2, data2);
+		indexRevision(MAIN, STORAGE_KEY1, data);
+		indexRevision(MAIN, STORAGE_KEY2, data2);
 		
 		final Query<DeeplyNestedData> deeplyNestedQuery = Query.builder(DeeplyNestedData.class).selectAll().where(Expressions.nestedMatch("parentData.nestedData", Expressions.exactMatch("field2", "field2"))).build();
-		final Iterable<DeeplyNestedData> matches = search(branchPath, deeplyNestedQuery);
+		final Iterable<DeeplyNestedData> matches = search(MAIN, deeplyNestedQuery);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
 	}
@@ -60,11 +58,11 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final DeeplyNestedData data = new DeeplyNestedData(new ParentData("field1", nestedData));
 		final DeeplyNestedData data2 = new DeeplyNestedData(new ParentData("field12", new NestedData("field22")));
 		
-		indexRevision(branchPath, STORAGE_KEY1, data);
-		indexRevision(branchPath, STORAGE_KEY2, data2);
+		indexRevision(MAIN, STORAGE_KEY1, data);
+		indexRevision(MAIN, STORAGE_KEY2, data2);
 		
 		final Query<NestedData> query = Query.builder(NestedData.class, DeeplyNestedData.class).selectAll().where(Expressions.exactMatch("field2", "field2")).build();
-		final Iterable<NestedData> matches = search(branchPath, query);
+		final Iterable<NestedData> matches = search(MAIN, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(nestedData);
 	}

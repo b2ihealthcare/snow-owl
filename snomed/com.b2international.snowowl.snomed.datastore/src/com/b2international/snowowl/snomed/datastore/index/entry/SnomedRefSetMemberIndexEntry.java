@@ -574,6 +574,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
 			doc.setReplacedIns(replacedIns);
+			doc.setSegmentId(segmentId);
 			return doc;
 		}
 	}

@@ -15,9 +15,8 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.revision.RevisionFixtures.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 
@@ -34,8 +33,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
-	private final String branchPath = RevisionBranch.MAIN_PATH;
-	
 	@Override
 	protected Collection<Class<?>> getTypes() {
 		return ImmutableList.<Class<?>>of(NestedData.class);
@@ -44,23 +41,23 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	@Test
 	public void indexNestedDocument() throws Exception {
 		final NestedData data = new NestedData("field1", new Data("field1", "field2"));
-		indexRevision(branchPath, STORAGE_KEY1, data);
-		assertEquals(data, getRevision(branchPath, NestedData.class, STORAGE_KEY1));
+		indexRevision(MAIN, STORAGE_KEY1, data);
+		assertEquals(data, getRevision(MAIN, NestedData.class, STORAGE_KEY1));
 	}
 
 	@Test
 	public void nestedDocumentOfDeletedRevisionShouldNotBeAccessible() throws Exception {
 		indexNestedDocument();
-		deleteRevision(branchPath, NestedData.class, STORAGE_KEY1);
+		deleteRevision(MAIN, NestedData.class, STORAGE_KEY1);
 		
 		// query to get parent document, should be none
 		final Query<NestedData> parentDocQuery = Query.builder(NestedData.class).selectAll().where(Expressions.matchAll()).build();
-		final Iterable<NestedData> parentDocs = search(branchPath, parentDocQuery);
+		final Iterable<NestedData> parentDocs = search(MAIN, parentDocQuery);
 		assertThat(parentDocs).isEmpty();
 		
 		// query to get nested child document, should be none
 		final Query<Data> nestedDataQuery = Query.builder(Data.class, NestedData.class).selectAll().where(Expressions.matchAll()).build();
-		final Iterable<Data> nestedDocs = search(branchPath, nestedDataQuery);
+		final Iterable<Data> nestedDocs = search(MAIN, nestedDataQuery);
 		assertThat(nestedDocs).hasSize(0);
 	}
 	
@@ -69,11 +66,11 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final NestedData data = new NestedData("field1", new Data("field1", "field2"));
 		final Data nestedData2 = new Data("field1Changed", "field2");
 		final NestedData data2 = new NestedData("field1", nestedData2);
-		indexRevision(branchPath, STORAGE_KEY1, data);
-		indexRevision(branchPath, STORAGE_KEY2, data2);
+		indexRevision(MAIN, STORAGE_KEY1, data);
+		indexRevision(MAIN, STORAGE_KEY2, data2);
 		
 		final Query<NestedData> query = Query.builder(NestedData.class).selectAll().where(Expressions.nestedMatch("data", Expressions.exactMatch("field1", "field1"))).build();
-		final Iterable<NestedData> matches = search(branchPath, query);
+		final Iterable<NestedData> matches = search(MAIN, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
 	}
@@ -81,13 +78,13 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	@Test
 	public void searchNestedDocumentWithParentQuery() throws Exception {
 		indexNestedDocument();
-		deleteRevision(branchPath, NestedData.class, STORAGE_KEY1);
+		deleteRevision(MAIN, NestedData.class, STORAGE_KEY1);
 		final Data nestedData2 = new Data("field1", "field2");
 		final NestedData data2 = new NestedData("field1", nestedData2);
-		indexRevision(branchPath, STORAGE_KEY2, data2);
+		indexRevision(MAIN, STORAGE_KEY2, data2);
 		
 		final Query<Data> nestedQuery = Query.builder(Data.class, NestedData.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
-		final Iterable<Data> nestedMatches = search(branchPath, nestedQuery);
+		final Iterable<Data> nestedMatches = search(MAIN, nestedQuery);
 		assertThat(nestedMatches).hasSize(1);
 		assertThat(nestedMatches).containsOnly(nestedData2);
 	}

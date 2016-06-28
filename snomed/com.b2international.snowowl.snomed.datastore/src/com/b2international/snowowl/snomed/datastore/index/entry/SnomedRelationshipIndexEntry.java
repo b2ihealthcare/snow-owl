@@ -256,6 +256,7 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
 			doc.setReplacedIns(replacedIns);
+			doc.setSegmentId(segmentId);
 			return doc;
 		}
 	}

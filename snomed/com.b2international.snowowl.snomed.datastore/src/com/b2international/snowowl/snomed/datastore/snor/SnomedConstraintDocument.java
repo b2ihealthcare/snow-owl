@@ -286,6 +286,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
 			doc.setReplacedIns(replacedIns);
+			doc.setSegmentId(segmentId);
 			
 			switch (type) {
 			case DESCRIPTION:

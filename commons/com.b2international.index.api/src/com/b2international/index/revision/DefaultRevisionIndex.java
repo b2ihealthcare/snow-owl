@@ -64,7 +64,7 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 			@Override
 			public T execute(Writer index) throws IOException {
 				final RevisionBranch branch = branchProvider.getBranch(branchPath);
-				final RevisionWriter writer = new DefaultRevisionWriter(branch.path(), commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
+				final RevisionWriter writer = new DefaultRevisionWriter(branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
 				return write.execute(writer);
 			}
 		});

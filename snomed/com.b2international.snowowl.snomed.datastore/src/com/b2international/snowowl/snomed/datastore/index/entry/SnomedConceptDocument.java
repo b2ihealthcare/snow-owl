@@ -337,6 +337,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			entry.setCommitTimestamp(commitTimestamp);
 			entry.setStorageKey(storageKey);
 			entry.setReplacedIns(replacedIns);
+			entry.setSegmentId(segmentId);
 			
 			if (parents != null) {
 				entry.parents = parents;

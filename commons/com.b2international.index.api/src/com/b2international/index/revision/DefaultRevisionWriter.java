@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import com.b2international.index.Writer;
@@ -39,15 +39,15 @@ import com.google.common.collect.Sets;
  */
 public class DefaultRevisionWriter implements RevisionWriter {
 
-	private final String branchPath;
+	private final RevisionBranch branch;
 	private final long commitTimestamp;
 	private final Writer index;
 	private final RevisionSearcher searcher;
 	
 	private final Map<Class<? extends Revision>, Collection<Long>> revisionUpdates = newHashMap();
 
-	public DefaultRevisionWriter(String branchPath, long commitTimestamp, Writer index, RevisionSearcher searcher) {
-		this.branchPath = branchPath;
+	public DefaultRevisionWriter(final RevisionBranch branch, long commitTimestamp, Writer index, RevisionSearcher searcher) {
+		this.branch = branch;
 		this.commitTimestamp = commitTimestamp;
 		this.index = index;
 		this.searcher = searcher;
@@ -64,9 +64,10 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		checkArgument(!revisionsToUpdate.contains(storageKey), "duplicate revision %s", storageKey);
 		revisionsToUpdate.add(storageKey);
 		
-		object.setBranchPath(branchPath);
+		object.setBranchPath(branch.path());
 		object.setCommitTimestamp(commitTimestamp);
 		object.setStorageKey(storageKey);
+		object.setSegmentId(branch.segmentId());
 		index.put(generateRevisionId(), object);
 	}
 
@@ -101,11 +102,10 @@ public class DefaultRevisionWriter implements RevisionWriter {
 			final Iterable<? extends Revision> revisionsToUpdate = searcher.search(entry.getValue());
 			final Map<String, Object> revisionUpdates = newHashMap();
 			for (Revision rev : revisionsToUpdate) {
-				final Set<String> set = newHashSet();
-				final Collection<String> prevReplacedIns = rev.getReplacedIns();
-				set.addAll(prevReplacedIns);
-				set.add(Revision.toReplacedIn(branchPath, commitTimestamp));
-				rev.setReplacedIns(set);
+				// register this revision as replaced in this segment
+				final Set<Integer> replacedIns = newHashSet(rev.getReplacedIns());
+				replacedIns.add(branch.segmentId());
+				rev.setReplacedIns(replacedIns);
 				revisionUpdates.put(rev._id(), rev);
 			}
 			index.putAll(revisionUpdates);
@@ -121,7 +121,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 
 	@Override
 	public String branch() {
-		return branchPath;
+		return branch.path();
 	}
 	
 	@Override
