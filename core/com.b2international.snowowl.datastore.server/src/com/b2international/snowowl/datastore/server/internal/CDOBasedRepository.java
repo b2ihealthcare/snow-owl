@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -65,6 +64,7 @@ import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchImp
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.EventBusUtil;
@@ -242,20 +242,10 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, new RevisionBranchProvider() {
 			@Override
 			public RevisionBranch getBranch(String branchPath) {
-				final Branch branch = branchManager.get().getBranch(branchPath);
-				return createRevisionBranch(branch, null);
+				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) branchManager.get().getBranch(branchPath);
+				return new RevisionBranch(branchPath, branch.segmentId(), branch.segments());
 			}
 
-			private RevisionBranch createRevisionBranch(Branch branch, Branch childRestriction) {
-				final Branch parent = branch.parent();
-				final long headTimestamp = childRestriction == null ? branch.headTimestamp() : childRestriction.baseTimestamp(); 
-				// we are at the top
-				if (parent == branch) {
-					return new RevisionBranch(null, branch.path(), branch.baseTimestamp(), headTimestamp);
-				} else {
-					return new RevisionBranch(createRevisionBranch(parent, branch), branch.path(), branch.baseTimestamp(), headTimestamp);
-				}
-			}
 		});
 		// register index and revision index access, the underlying index is the same
 		registry.put(Index.class, index);
