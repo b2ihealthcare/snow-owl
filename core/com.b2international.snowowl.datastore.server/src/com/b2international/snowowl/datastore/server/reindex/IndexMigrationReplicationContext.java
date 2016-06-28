@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server.reindex;
 
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
@@ -44,20 +47,16 @@ import com.b2international.snowowl.datastore.server.DelegatingTransaction;
  * are triggered but no actual records are written into the repository via the replaced CommitContext
  */
 @SuppressWarnings("restriction")
-public class IndexMigrationReplicationContext implements CDOReplicationContext {
+class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	private final long initialLastCommitTime;
 	private final int initialBranchId;
 	private final InternalSession replicatorSession;
 	private final BranchReplicator branchReplicator;
+	
+	private TreeMap<Long, CDOBranch> branchesByBasetimestamp = new TreeMap<>();
 
-	/**
-	 * 
-	 * @param initialBranchId
-	 * @param initialLastCommitTime
-	 * @param session
-	 */
-	public IndexMigrationReplicationContext(int initialBranchId, long initialLastCommitTime, InternalSession session, BranchReplicator branchReplicator) {
+	IndexMigrationReplicationContext(int initialBranchId, long initialLastCommitTime, InternalSession session, BranchReplicator branchReplicator) {
 		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
@@ -66,7 +65,17 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	@Override
 	public void handleCommitInfo(final CDOCommitInfo commitInfo) {
-
+		final long commitTimestamp = commitInfo.getTimeStamp();
+		final Entry<Long, CDOBranch> branchToReplicate = branchesByBasetimestamp.floorEntry(commitTimestamp);
+		if (branchToReplicate != null) {
+			final CDOBranch branch = branchToReplicate.getValue();
+			System.err.println("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
+			branchReplicator.replicateBranch(branch);
+			branchesByBasetimestamp.remove(branchToReplicate.getKey());
+		}
+		
+		System.err.println("Replicating commit: " + commitInfo.getComment() + " at " + commitTimestamp);
+		
 		final InternalRepository repository = replicatorSession.getManager().getRepository();
 		final InternalCDORevisionManager revisionManager = repository.getRevisionManager();
 		
@@ -196,7 +205,7 @@ public class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	@Override
 	public void handleBranch(CDOBranch branch) {
-		branchReplicator.replicateBranch(branch);
+		branchesByBasetimestamp.put(branch.getBase().getTimeStamp(), branch);
 	}
 
 	@Override
