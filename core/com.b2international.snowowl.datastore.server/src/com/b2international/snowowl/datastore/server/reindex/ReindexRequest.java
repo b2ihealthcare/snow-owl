@@ -37,7 +37,7 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, Void> {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final BranchReplicator branchReplicator = context.service(BranchReplicator.class);
 		
-		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository();
+		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		final InternalSession session = cdoRepository.getSessionManager().openSession(null);
 		
 		//set the session on the StoreThreadlocal for later access

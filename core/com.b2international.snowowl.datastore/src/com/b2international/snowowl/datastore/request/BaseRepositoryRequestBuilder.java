@@ -10,7 +10,7 @@ import com.b2international.snowowl.core.events.Request;
  * @param <B> - the builder type
  * @param <R> - the response type
  */
-public abstract class BaseRepositoryRequestBuilder<B extends BaseRepositoryRequestBuilder<B, C, R>, C extends RepositoryContext, R> extends BaseRequestBuilder<B, C, R> {
+public abstract class BaseRepositoryRequestBuilder<B extends BaseRepositoryRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends BaseRequestBuilder<B, C, R> {
 
 	private final String repositoryId;
 	
@@ -20,6 +20,6 @@ public abstract class BaseRepositoryRequestBuilder<B extends BaseRepositoryReque
 	
 	protected final Request<ServiceProvider, R> wrap(Request<RepositoryContext, R> req) {
 		return new RepositoryRequest<>(repositoryId, req);
-	} 
+	}
 	
 }

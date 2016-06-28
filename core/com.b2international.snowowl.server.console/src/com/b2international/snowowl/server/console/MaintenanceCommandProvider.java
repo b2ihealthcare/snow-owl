@@ -87,7 +87,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 		
 		ReindexRequest.builder(repositoryId)
-			.build()
+			.create()
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 	}
