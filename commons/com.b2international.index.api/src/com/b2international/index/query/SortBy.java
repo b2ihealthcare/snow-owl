@@ -35,9 +35,21 @@ public class SortBy {
 		ASC, DESC
 	}
 
+	/**
+	 * Singleton representing document sort based on their natural occurrence. 
+	 */
 	public static final SortBy NONE = new SortBy() {
 		public String toString() {
 			return "NONE";
+		};
+	};
+	
+	/**
+	 * Singleton representing document sort based on their score (relevance).
+	 */
+	public static final SortBy SCORE = new SortBy() {
+		public String toString() {
+			return "SCORE";
 		};
 	};
 	

@@ -148,8 +148,8 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	private Sort toSort(SortBy sortBy) {
-		// TODO implement sorting
-		return Sort.INDEXORDER;
+		// TODO implement sorting by field
+		return SortBy.SCORE == sortBy ? Sort.RELEVANCE : Sort.INDEXORDER;
 	}
 
 	protected int numDocsToRetrieve(final int offset, final int limit) {
