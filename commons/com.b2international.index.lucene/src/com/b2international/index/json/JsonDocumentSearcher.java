@@ -130,16 +130,16 @@ public class JsonDocumentSearcher implements Searcher {
 		w.reset().start();
 		for (int i = offset; i < scoreDocs.length; i++) {
 			final Document doc = searcher.doc(scoreDocs[i].doc);
-			sources[i] = doc.getBinaryValue("_source").bytes;
-			ids[i] = JsonDocumentMapping._id().getValue(doc);
+			sources[i - offset] = doc.getBinaryValue("_source").bytes;
+			ids[i - offset] = JsonDocumentMapping._id().getValue(doc);
 		}
 		System.err.println("Data collect: " + w + " - " + scoreDocs.length);
 		w.reset().start();
 		final ImmutableList.Builder<T> matches = ImmutableList.builder();
 		for (int i = offset; i < scoreDocs.length; i++) {
-			final T readValue = reader.readValue(sources[i]);
+			final T readValue = reader.readValue(sources[i - offset]);
 			if (readValue instanceof WithId) {
-				((WithId) readValue).set_id(ids[i]);
+				((WithId) readValue).set_id(ids[i - offset]);
 			}
 			matches.add(readValue);
 		}
