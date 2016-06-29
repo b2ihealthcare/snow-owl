@@ -17,8 +17,11 @@ package com.b2international.index.query;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collection;
 import java.util.List;
 
+import com.b2international.index.Analyzers;
+import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -149,16 +152,52 @@ public class Expressions {
 		return new BoostPredicate(expression, boost);
 	}
 	
-	public static Expression matchText(String field, String term) {
-		return new TextPredicate(field, term);
+	public static Expression matchTextAll(String field, String term) {
+		return new TextPredicate(field, term, MatchType.ALL);
 	}
 	
-	public static Expression matchTextPrefix(String field, String term) {
-		return new PrefixTextPredicate(field, term);
+	public static Expression matchTextAll(String field, String term, Analyzers analyzer) {
+		return new TextPredicate(field, term, MatchType.ALL, analyzer);
+	}
+	
+	public static Expression matchTextAny(String field, String term) {
+		return new TextPredicate(field, term, MatchType.ANY);
+	}
+	
+	public static Expression matchTextAny(String field, String term, Analyzers analyzer) {
+		return new TextPredicate(field, term, MatchType.ANY, analyzer);
+	}
+	
+	public static Expression matchTextPhrase(String field, String term) {
+		return new TextPredicate(field, term, MatchType.PHRASE);
+	}
+	
+	public static Expression matchTextPhrase(String field, String term, Analyzers analyzer) {
+		return new TextPredicate(field, term, MatchType.PHRASE, analyzer);
+	}
+	
+	public static Expression matchTextAllPrefix(String field, String term) {
+		return new TextPredicate(field, term, MatchType.ALL_PREFIX);
+	}
+	
+	public static Expression matchTextAllPrefix(String field, String term, Analyzers analyzer) {
+		return new TextPredicate(field, term, MatchType.ALL_PREFIX, analyzer);
 	}
 	
 	public static Expression matchTextFuzzy(String field, String term) {
-		return new FuzzyTextPredicate(field, term);
+		return new TextPredicate(field, term, MatchType.FUZZY);
+	}
+	
+	public static Expression matchTextFuzzy(String field, String term, Analyzers analyzer) {
+		return new TextPredicate(field, term, MatchType.FUZZY, analyzer);
+	}
+	
+	public static Expression matchTextParsed(String field, String term) {
+		return new TextPredicate(field, term, MatchType.PARSED);
+	}
+	
+	public static Expression dismax(Collection<Expression> disjuncts) {
+		return new DisMaxExpression(disjuncts, 0.0f);
 	}
 
 }

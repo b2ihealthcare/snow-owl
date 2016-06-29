@@ -15,25 +15,47 @@
  */
 package com.b2international.index.query;
 
+import com.b2international.index.Analyzers;
+
 /**
  * @since 4.7
  */
 public final class TextPredicate extends Predicate {
 
+	public enum MatchType {
+		ALL, ANY, PHRASE, FUZZY, ALL_PREFIX, PARSED
+	}
+	
 	private final String term;
+	private final MatchType type;
+	private final Analyzers analyzer;
 
-	TextPredicate(String field, String term) {
+	TextPredicate(String field, String term, MatchType type) {
+		this(field, term, type, Analyzers.DEFAULT);
+	}
+	
+	TextPredicate(String field, String term, MatchType type, Analyzers analyzer) {
 		super(field);
 		this.term = term;
+		this.type = type;
+		this.analyzer = analyzer;
 	}
 	
 	public String term() {
 		return term;
 	}
 	
+	public MatchType type() {
+		return type;
+	}
+	
+	public Analyzers analyzer() {
+		return analyzer;
+	}
+	
 	@Override
 	public String toString() {
-		return String.format("TEXT(%s = %s)", getField(), term);
+		return String.format("TEXT(%s %s %s)", getField(), type(), term());
 	}
 
 }

@@ -16,24 +16,14 @@
 package com.b2international.index.query;
 
 /**
- * @since 4.7
+ * @since 5.0
  */
-public final class PrefixTextPredicate extends Predicate {
+public class QueryParseException extends RuntimeException {
 
-	private final String prefix;
-
-	PrefixTextPredicate(String field, String prefix) {
-		super(field);
-		this.prefix = prefix;
-	}
+	private static final long serialVersionUID = -4301096997520529467L;
 	
-	public String prefix() {
-		return prefix;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("PREFIX(%s = %s)", getField(), prefix);
+	public QueryParseException(String message) {
+		super(message);
 	}
 
 }

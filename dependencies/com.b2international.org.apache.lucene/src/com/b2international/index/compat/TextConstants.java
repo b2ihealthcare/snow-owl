@@ -47,4 +47,59 @@ public abstract class TextConstants {
 	private TextConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
+
+	/**
+	 * Escapes invalid characters in the given searchTerm and returns the escaped form.
+	 * 
+	 * @param string
+	 * @return
+	 */
+	public static String escape(final String string) {
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < string.length(); i++) {
+			final char c = string.charAt(i);
+			outerLoop: {
+				switch (c) {
+				case '\\':
+					if (i != string.length() - 1) {
+						final char charAt = string.charAt(i + 1);
+						switch (charAt) {
+						case '^':
+						case '?':
+						case '~':
+						case '*':
+							break outerLoop;
+						}
+					}
+				case '+':
+				case '-':
+				case '!':
+				case '(':
+				case ')':
+				case ':':
+				case '[':
+				case ']':
+				case '\"':
+				case '{':
+				case '}':
+				case '|':
+				case '&':
+				case '/':
+					sb.append('\\');
+					break;
+				}
+			}
+
+			sb.append(c);
+
+			switch (c) {
+			case '~':
+				sb.append(' ');
+				break;
+			}
+		}
+
+		return sb.toString();
+	}
+
 }

@@ -15,25 +15,35 @@
  */
 package com.b2international.index.query;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.Collection;
+
 /**
- * @since 4.7
+ * @since 5.0
  */
-public final class FuzzyTextPredicate extends Predicate {
+public final class DisMaxExpression implements Expression {
 
-	private final String term;
+	private final float tieBreaker;
+	private final Collection<Expression> disjuncts;
 
-	FuzzyTextPredicate(String field, String term) {
-		super(field);
-		this.term = term;
+	DisMaxExpression(Collection<Expression> disjuncts, float tieBreaker) {
+		checkArgument(!disjuncts.isEmpty(), "At least one disjunct expression is required");
+		this.disjuncts = disjuncts;
+		this.tieBreaker = tieBreaker;
 	}
 	
-	public String term() {
-		return term;
+	public float tieBreaker() {
+		return tieBreaker;
+	}
+
+	public Collection<Expression> disjuncts() {
+		return disjuncts;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("FUZZY(%s = %s)", getField(), term);
+		return String.format("DISMAX(%s)", disjuncts());
 	}
-
+	
 }

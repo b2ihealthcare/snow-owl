@@ -20,8 +20,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
@@ -37,12 +42,18 @@ import org.apache.lucene.search.TermRangeFilter;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
+import org.apache.lucene.util.QueryBuilder;
+import org.apache.lucene.util.Version;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.index.AnalyzerImpls;
+import com.b2international.index.compat.Highlighting;
+import com.b2international.index.compat.TextConstants;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.collect.Queues;
 
 /**
@@ -144,16 +155,14 @@ public final class LuceneQueryBuilder {
 			visit((IntPredicate) expression);
 		} else if (expression instanceof IntSetPredicate) {
 			visit((IntSetPredicate) expression);
-		} else if (expression instanceof PrefixTextPredicate) {
-			visit((PrefixTextPredicate) expression);
-		} else if (expression instanceof FuzzyTextPredicate) {
-			visit((FuzzyTextPredicate) expression);
 		} else if (expression instanceof BoolExpression) {
 			visit((BoolExpression) expression);
 		} else if (expression instanceof BooleanPredicate) {
 			visit((BooleanPredicate) expression);
 		} else if (expression instanceof IntRangePredicate) {
 			visit((IntRangePredicate) expression);
+		} else if (expression instanceof TextPredicate) {
+			visit((TextPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -215,41 +224,56 @@ public final class LuceneQueryBuilder {
 		deque.push(new DequeItem(toChildQuery));
 	}
 
-	private void visit(FuzzyTextPredicate predicate) {
-		final FuzzyQuery query = new FuzzyQuery(new Term(predicate.getField(), predicate.term()), LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
-		deque.push(new DequeItem(query));
+	private void visit(TextPredicate predicate) {
+		final String field = predicate.getField();
+		final String term = predicate.term();
+		final MatchType type = predicate.type();
+		final Analyzer analyzer = AnalyzerImpls.getAnalyzer(predicate.analyzer());
+		final Query query;
+		switch (type) {
+		case PHRASE:
+			{
+				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
+				query = queryBuilder.createPhraseQuery(field, term);
+			}
+			break;
+		case ALL:
+			{
+				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
+				query = queryBuilder.createBooleanQuery(field, term, Occur.MUST);
+			}
+			break;
+		case ANY:
+			{
+				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
+				query = queryBuilder.createBooleanQuery(field, term, Occur.SHOULD);
+			}
+			break;
+		case FUZZY:
+			query = new FuzzyQuery(new Term(field, term), LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
+			break;
+		case ALL_PREFIX:
+			final List<String> prefixes = Highlighting.split(analyzer, term);
+			final BooleanQuery q = new BooleanQuery(true);
+			for (String prefix : prefixes) {
+				q.add(new PrefixQuery(new Term(field, prefix)), Occur.MUST);
+			}
+			query = q;
+			break;
+		case PARSED:
+			final QueryParser parser = new QueryParser(Version.LUCENE_4_9, field, analyzer);
+			parser.setDefaultOperator(Operator.AND);
+			parser.setAllowLeadingWildcard(true);
+			try {
+				query = parser.parse(TextConstants.escape(term));
+			} catch (ParseException e) {
+				throw new QueryParseException(e.getMessage());
+			}
+			break;
+		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
+		}
+		deque.push(new DequeItem(query));		
 	}
-	
-	private void visit(PrefixTextPredicate predicate) {
-		final Query query = new PrefixQuery(new Term(predicate.getField(), predicate.prefix()));
-		deque.push(new DequeItem(query));
-	}
-	
-//	private void visit(TextPredicate predicate) {
-//		Feature feature = predicate.getFeature();
-//		Operator operator = predicate.getOperator();
-//		switch (operator) {
-//		case ALL:
-//			QueryBuilder queryBuilder = QueryBuilders.matchQuery(feature.getField(), predicate.getText()).operator(MatchQueryBuilder.Operator.AND);
-//			deque.push(new DequeItem(queryBuilder));
-//			break;
-//		case ANY:
-//			queryBuilder = QueryBuilders.matchQuery(feature.getField(), predicate.getText()).operator(MatchQueryBuilder.Operator.OR);
-//			deque.push(new DequeItem(queryBuilder));
-//			break;
-//		case EXACT:
-//			queryBuilder = QueryBuilders.matchQuery(feature.getField(), predicate.getText()).type(MatchQueryBuilder.Type.PHRASE);
-//			deque.push(new DequeItem(queryBuilder));
-//			break;
-//		case NONE:
-//			queryBuilder = QueryBuilders.boolQuery().mustNot(
-//					QueryBuilders.matchQuery(feature.getField(), predicate.getText()).operator(MatchQueryBuilder.Operator.OR));
-//			deque.push(new DequeItem(queryBuilder));
-//			break;
-//		default:
-//			throw new IllegalArgumentException("Unexpected operator: " + operator);
-//		}
-//	}
 	
 	private void visit(StringPredicate predicate) {
 		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
