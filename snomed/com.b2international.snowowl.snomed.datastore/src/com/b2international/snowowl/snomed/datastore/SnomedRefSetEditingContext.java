@@ -405,10 +405,10 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @return the populated reference set member instance
 	 */
 	public SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
-			@Nullable final ComponentIdentifierPair<String> mapTargetPair, 
+			final String mapTargetComponentId,
 			final String moduleId,
 			final SnomedMappingRefSet refSet) {
-		return createSimpleMapRefSetMember(referencedComponentPair, mapTargetPair, null, moduleId, refSet);
+		return createSimpleMapRefSetMember(referencedComponentPair, mapTargetComponentId, null, moduleId, refSet);
 	}
 
 	/**
@@ -426,7 +426,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @return the populated reference set member instance
 	 */
 	private SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
-			@Nullable final ComponentIdentifierPair<String> mapTargetPair,
+			final String mapTargetComponentId,
 			@Nullable final String mapTargetDescription,
 			final String moduleId,
 			final SnomedMappingRefSet refSet) {
@@ -435,7 +435,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		if (mapTargetDescription != null) {
 			member.setMapTargetComponentDescription(mapTargetDescription);
 		}
-		initializeMapTarget(member, mapTargetPair);
+		initializeMapTarget(member, mapTargetComponentId);
 		return member;
 	}
 
@@ -455,21 +455,20 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @return the populated reference set member instance
 	 */
 	public SnomedComplexMapRefSetMember createComplexMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
-			@Nullable final ComponentIdentifierPair<String> mapTargetPair, 
+			final String mapTargetComponentId, 
 			final String moduleId,
 			final SnomedMappingRefSet mappingRefSet) {
 		
 		final SnomedComplexMapRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedComplexMapRefSetMember();
 		initializeRefSetMember(member, referencedComponentPair, moduleId, mappingRefSet);
-		initializeMapTarget(member, mapTargetPair);
+		initializeMapTarget(member, mapTargetComponentId);
 		member.setCorrelationId(Concepts.REFSET_CORRELATION_NOT_SPECIFIED);
 		return member;
 	}
 
-	private void initializeMapTarget(final SnomedSimpleMapRefSetMember member, final ComponentIdentifierPair<String> mapTargetPair) {
-		
-		if (null != mapTargetPair) {
-			member.setMapTargetComponentId(mapTargetPair.getComponentId());
+	private void initializeMapTarget(final SnomedSimpleMapRefSetMember member, final String mapTargetComponentId) {
+		if (mapTargetComponentId != null) {
+			member.setMapTargetComponentId(mapTargetComponentId);
 		}
 	}
 	

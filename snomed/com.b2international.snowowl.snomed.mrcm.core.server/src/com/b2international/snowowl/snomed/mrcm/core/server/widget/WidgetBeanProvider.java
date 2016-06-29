@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.widget;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -25,7 +26,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
-import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
@@ -35,10 +35,13 @@ import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.component.IconIdProviderUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.LeafWidgetBeanSorter;
@@ -56,6 +59,7 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.b2international.snowowl.snomed.mrcm.mini.SectionType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ListMultimap;
@@ -93,7 +97,7 @@ public class WidgetBeanProvider {
 		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
 				.build(branchPath.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.execute(getBus())
 				.getSync();
 		final boolean active = concept.isActive();
 		
@@ -166,21 +170,51 @@ public class WidgetBeanProvider {
 	}
 
 	private List<LeafWidgetBean> createMappingWidgetBeans(final ConceptWidgetBean cwb, final String conceptId) {
-		final List<LeafWidgetBean> result = Lists.newArrayList();
 		if (conceptWidgetModel.getMappingContainerWidgetModel() != null) {
 			final List<MappingWidgetModel> unusedModels = Lists.newArrayList(
 					Lists.transform(conceptWidgetModel.getMappingContainerWidgetModel().getChildren(), new UncheckedCastFunction<WidgetModel, MappingWidgetModel>(MappingWidgetModel.class)));
 			
 			// XXX we could add all mappings like this if the model supports it
-			final Collection<SnomedRefSetMemberIndexEntry> atcMappings = getAtcMappings(conceptId);
-			for (final SnomedRefSetMemberIndexEntry entry : atcMappings) {
-				if (!entry.isActive()) {
+			final SnomedReferenceSetMembers atcMappings = getAtcMappings(conceptId);
+			final Set<String> referenceSetIds = FluentIterable.from(atcMappings).transform(new Function<SnomedReferenceSetMember, String>() {
+				@Override
+				public String apply(SnomedReferenceSetMember input) {
+					return input.getReferenceSetId();
+				}
+			}).toSet();
+			
+			// get all reference sets for the members to get the map target component type
+			if (referenceSetIds.isEmpty()) {
+				return Collections.emptyList();
+			}
+			
+			final SnomedReferenceSets refSets = SnomedRequests.prepareSearchRefSet()
+				.setLimit(referenceSetIds.size())
+				.setComponentIds(referenceSetIds)
+				// TODO filter by map target type
+				.build(branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+
+			final Map<String, SnomedReferenceSet> refSetsById = FluentIterable.from(refSets).uniqueIndex(com.b2international.snowowl.core.domain.IComponent.ID_FUNCTION);
+			
+			final List<LeafWidgetBean> result = Lists.newArrayList();
+			for (final SnomedReferenceSetMember entry : atcMappings) {
+				final SnomedReferenceSet refSet = refSetsById.get(entry.getReferenceSetId());
+				// not an ATC mapping
+				if (refSet == null) {
 					continue;
 				}
 				
-				final String mapTargetComponentType = entry.getMapTargetComponentTypeString();
-				final short mapTargetComponentTypeShort = entry.getMapTargetComponentType();
-				final String mapTargetComponentId = entry.getMapTarget();
+				// TODO filter by map target type in requests
+				final String mapTargetComponentType = refSet.getMapTargetComponentType();
+				if (!"com.b2international.snowowl.terminology.atc.concept".equals(mapTargetComponentType)) {
+					continue;
+				}
+				
+				
+				final short mapTargetComponentTypeShort = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(mapTargetComponentType);
+				final String mapTargetComponentId = (String) entry.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
 				
 				final MappingWidgetModel model = conceptWidgetModel.getMappingContainerWidgetModel().getFirstMatching(mapTargetComponentType);
 				final MappingWidgetBean bean = new MappingWidgetBean(cwb, model, entry.isReleased());
@@ -209,24 +243,22 @@ public class WidgetBeanProvider {
 			}
 		}
 		
-		return result;
+		return Collections.emptyList();
 	}
 
-	private Collection<SnomedRefSetMemberIndexEntry> getAtcMappings(String conceptId) {
+	private SnomedReferenceSetMembers getAtcMappings(String conceptId) {
+		// TODO filter by map target type
 		return SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByActive(true)
 				.filterByReferencedComponent(conceptId)
 				.filterByRefSetType(Collections.singleton(SnomedRefSetType.SIMPLE_MAP))
-				.filterByProps(OptionsBuilder.newBuilder().put(SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_TYPE, "com.b2international.snowowl.terminology.atc.concept").build())
 				.build(branchPath.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedRefSetMemberIndexEntry>>() {
-					@Override
-					public Collection<SnomedRefSetMemberIndexEntry> apply(SnomedReferenceSetMembers input) {
-						return SnomedRefSetMemberIndexEntry.from(input);
-					}
-				})
+				.execute(getBus())
 				.getSync();
+	}
+
+	private static IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 }

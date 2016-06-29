@@ -38,6 +38,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -120,6 +121,14 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 		}
 		
+		public static Expression mapTargetComponentType(int mapTargetComponentType) {
+			return match(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
+		}
+		
+		public static Expression mapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
+			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
+		}
+		
 		public static Expression structuralRefSet() {
 			return match(Fields.STRUCTURAL, true);
 		}
@@ -154,6 +163,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		public static final String PREDICATES = "predicates";
 		public static final String REFSET_TYPE = "refSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
+		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String STRUCTURAL = "structural";
 		public static final String REFERRING_REFSETS = "referringRefSets";
 		public static final String REFERRING_MAPPING_REFSETS = "referringMappingRefSets";
@@ -177,6 +187,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.statedAncestors(input.getStatedAncestors())
 				.refSetStorageKey(input.getRefSetStorageKey())
 				.referencedComponentType(input.getReferencedComponentType())
+				.mapTargetComponentType(input.getMapTargetComponentType())
 				.refSetType(input.getRefSetType())
 				.structural(input.isStructural());
 	}
@@ -227,6 +238,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private LongSet statedAncestors;
 		private SnomedRefSetType refSetType;
 		private int referencedComponentType;
+		private int mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
 		private Collection<String> referringRefSets;
 		private Collection<String> referringMappingRefSets;
@@ -275,10 +287,18 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		
 		@JsonIgnore
 		public Builder refSet(final SnomedRefSet refSet) {
+			if (refSet instanceof SnomedMappingRefSet) {
+				mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
+			}
 			return structural(SnomedRefSetUtil.isStructural(refSet.getIdentifierId(), refSet.getType()))
 					.refSetType(refSet.getType())
 					.referencedComponentType(refSet.getReferencedComponentType())
 					.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()));
+		}
+		
+		Builder mapTargetComponentType(int mapTargetComponentType) {
+			this.mapTargetComponentType = mapTargetComponentType;
+			return getSelf();
 		}
 		
 		Builder refSetStorageKey(long refSetStorageKey) {
@@ -328,7 +348,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					primitive, 
 					exhaustive,
 					refSetType, 
-					referencedComponentType, 
+					referencedComponentType,
+					mapTargetComponentType,
 					refSetStorageKey,
 					structural);
 			
@@ -367,6 +388,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private final boolean exhaustive;
 	private final SnomedRefSetType refSetType;
 	private final int referencedComponentType;
+	private final int mapTargetComponentType;
 	private final boolean structural;
 	private final long refSetStorageKey;
 	
@@ -390,6 +412,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
 			final int referencedComponentType,
+			final int mapTargetComponentType,
 			final long refSetStorageKey,
 			final boolean structural) {
 
@@ -398,6 +421,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
+		this.mapTargetComponentType = mapTargetComponentType;
 		this.refSetStorageKey = refSetStorageKey;
 		this.structural = structural;
 	}
@@ -456,6 +480,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	
 	public int getReferencedComponentType() {
 		return referencedComponentType;
+	}
+	
+	public int getMapTargetComponentType() {
+		return mapTargetComponentType;
 	}
 	
 	public boolean isStructural() {

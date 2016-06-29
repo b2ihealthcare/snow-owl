@@ -102,7 +102,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String ATTRIBUTE_NAME = SnomedRf2Headers.FIELD_ATTRIBUTE_NAME;
 		// extra index fields to store datatype and map target type
 		public static final String DATA_TYPE = "dataType";
-		public static final String MAP_TARGET_TYPE = "mapTargetType";
 		public static final String REFSET_TYPE = "referenceSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 	}
@@ -123,13 +122,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.referenceSetId(source.getReferenceSetId())
 				.referenceSetType(source.getReferenceSetType())
 				.released(source.isReleased())
-				.mapTargetComponentType(source.getMapTargetComponentType())
 				.fields(source.getAdditionalFields());
 	}
 	
 	public static final Builder builder(final SnomedReferenceSetMember input) {
-		final Object mapTargetComponentType = input.getProperties().get(Fields.MAP_TARGET_TYPE);
-		
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
 				.active(input.isActive())
@@ -139,8 +135,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.referencedComponentId(input.getReferencedComponent().getId())
 				.referenceSetId(input.getReferenceSetId())
 				.referenceSetType(input.type())
-				.released(input.isReleased())
-				.mapTargetComponentType(mapTargetComponentType == null ? -1 : (short) mapTargetComponentType);
+				.released(input.isReleased());
 		
 		if (input.getReferencedComponent() instanceof SnomedConcept) {
 			builder.referencedComponentType(CONCEPT_NUMBER);
@@ -229,7 +224,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			@Override
 			public Builder caseSnomedSimpleMapRefSetMember(final SnomedSimpleMapRefSetMember mapRefSetMember) {
 				return builder
-						.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType())
 						.field(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
 						.field(Fields.MAP_TARGET_DESCRIPTION, mapRefSetMember.getMapTargetComponentDescription());
 			}
@@ -237,7 +231,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			@Override
 			public Builder caseSnomedComplexMapRefSetMember(final SnomedComplexMapRefSetMember mapRefSetMember) {
 				return builder
-						.mapTargetComponentType(mapRefSetMember.getMapTargetComponentType())
 						.field(Fields.MAP_TARGET, mapRefSetMember.getMapTargetComponentId())
 						.field(Fields.CORRELATION_ID, mapRefSetMember.getCorrelationId())
 						.field(Fields.MAP_GROUP, Integer.valueOf(mapRefSetMember.getMapGroup()))
@@ -309,7 +302,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String referenceSetId;
 		private SnomedRefSetType referenceSetType;
 		private short referencedComponentType;
-		private short mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 
 		// Member specific fields, they can be null or emptyish values
 		// ASSOCIATION reference set members
@@ -407,11 +399,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 		public Builder referencedComponentType(final short referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
-			return this;
-		}
-		
-		public Builder mapTargetComponentType(final short mapTargetComponentType) {
-			this.mapTargetComponentType = mapTargetComponentType;
 			return this;
 		}
 		
@@ -535,8 +522,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 					referencedComponentId, 
 					referenceSetId,
 					referenceSetType,
-					referencedComponentType,
-					mapTargetComponentType);
+					referencedComponentType);
 			// association members
 			doc.targetComponent = targetComponent;
 			// attribute value
@@ -583,7 +569,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private final String referenceSetId;
 	private final SnomedRefSetType referenceSetType;
 	private final short referencedComponentType;
-	private final short mapTargetComponentType;
 	
 	// Member specific fields, they can be null or emptyish values
 	// ASSOCIATION reference set members
@@ -628,8 +613,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			final String referencedComponentId, 
 			final String referenceSetId,
 			final SnomedRefSetType referenceSetType,
-			final short referencedComponentType,
-			final short mapTargetComponentType) {
+			final short referencedComponentType) {
 
 		super(id, 
 				label,
@@ -640,13 +624,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				effectiveTimeLong);
 
 		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
-		checkArgument(mapTargetComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Map target component type '%s' is invalid.", referencedComponentType);
 
 		this.referencedComponentId = checkNotNull(referencedComponentId, "Reference component identifier may not be null.");
 		this.referenceSetId = checkNotNull(referenceSetId, "Reference set identifier may not be null.");
 		this.referenceSetType = checkNotNull(referenceSetType, "Reference set type may not be null.");
 		this.referencedComponentType = referencedComponentType;
-		this.mapTargetComponentType = mapTargetComponentType;
 	}
 
 
@@ -671,14 +653,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return referenceSetType;
 	}
 
-	/**
-	 * @return the {@code String} terminology component identifier of the map target in this member, or
-	 *         {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT} if not known (or the reference set is not a map)
-	 */
-	public short getMapTargetComponentType() {
-		return mapTargetComponentType;
-	}
-
 	@Override
 	public String toString() {
 		// XXX refset type specific toString???
@@ -686,7 +660,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("referencedComponentId", referencedComponentId)
 				.add("referenceSetType", referenceSetType)
 				.add("referencedComponentType", referencedComponentType)
-				.add("mapTargetComponentType", mapTargetComponentType)
 				.toString();
 	}
 	
@@ -824,15 +797,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
 	}
 
-	/**
-	 * @return the {@code String} terminology component identifier of the map target in this member, or
-	 *         {@link CoreTerminologyBroker#UNSPECIFIED} if not known (or the reference set is not a map)
-	 */
-	@JsonIgnore
-	public String getMapTargetComponentTypeString() {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(mapTargetComponentType);
-	}
-	
 	/**
 	 * Helper which converts all non-null/empty additional fields to a values {@link Map} keyed by their field name; 
 	 * @return

@@ -30,7 +30,6 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -304,9 +303,7 @@ public class EquivalentConceptMerger {
 					
 					final SnomedSimpleMapRefSetMember newMember = refSetEditingContext.createSimpleMapRefSetMember(
 							SnomedRefSetEditingContext.createConceptTypePair(id), 
-							ComponentIdentifierPair.create(
-									simpleMapMember.getMapTargetComponentType(), 
-									simpleMapMember.getMapTargetComponentId()),
+							simpleMapMember.getMapTargetComponentId(),
 							simpleMapMember.getModuleId(),
 							(SnomedMappingRefSet) simpleMapMember.getRefSet());
 					

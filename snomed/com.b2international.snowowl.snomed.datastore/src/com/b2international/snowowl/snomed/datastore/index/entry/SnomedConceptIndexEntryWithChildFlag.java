@@ -40,7 +40,11 @@ public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptDocument 
 				conceptIndexEntry.getNamespace(),
 				conceptIndexEntry.isPrimitive(),
 				conceptIndexEntry.isExhaustive(),
-				null, CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, CDOUtils.NO_STORAGE_KEY, false);
+				null, 
+				CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, 
+				CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, 
+				CDOUtils.NO_STORAGE_KEY, 
+				false);
 
 		this.hasChildren = hasChildren;
 	}

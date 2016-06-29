@@ -83,7 +83,11 @@ final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<Sno
 		refset.setIconId(entry.getIconId());
 		final int referencedComponentType = entry.getReferencedComponentType();
 		if (referencedComponentType > 0) {
-			refset.setReferencedComponent(getReferencedComponentType(referencedComponentType));
+			refset.setReferencedComponentType(getReferencedComponentType(referencedComponentType));
+		}
+		final int mapTargetComponentType = entry.getMapTargetComponentType();
+		if (mapTargetComponentType > 0) {
+			refset.setMapTargetComponentType(getReferencedComponentType(mapTargetComponentType));
 		}
 		refset.setType(entry.getRefSetType());
 		return refset;

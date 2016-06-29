@@ -28,7 +28,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -96,9 +95,7 @@ public class SnomedRefSetCloner {
 				break;
 			case COMPLEX_MAP:
 				String mapTargetId = (String) originalMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
-				String mapTargetComponentType = (String) originalMember.getProperties().get(SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_TYPE);
-				specialFieldPair = ComponentIdentifierPair.<String>createWithUncheckedComponentId(mapTargetComponentType, mapTargetId);
-				SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(identifierPair, specialFieldPair, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
+				SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(identifierPair, mapTargetId, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
 				newComplexMapRefSetMember.setCorrelationId((String) originalMember.getProperties().get(Fields.CORRELATION_ID));
 				newComplexMapRefSetMember.setMapAdvice((String) originalMember.getProperties().get(Fields.MAP_ADVICE));
 				newComplexMapRefSetMember.setMapGroup(((Integer) originalMember.getProperties().get(Fields.MAP_GROUP)).byteValue());
@@ -108,9 +105,7 @@ public class SnomedRefSetCloner {
 				break;
 			case SIMPLE_MAP:
 				mapTargetId = (String) originalMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
-				mapTargetComponentType = (String) originalMember.getProperties().get(SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_TYPE);
-				specialFieldPair = ComponentIdentifierPair.create(mapTargetComponentType, mapTargetId);
-				newRefSetMember = editingContext.createSimpleMapRefSetMember(identifierPair, specialFieldPair, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
+				newRefSetMember = editingContext.createSimpleMapRefSetMember(identifierPair, mapTargetId, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
 				break;
 			default:
 				throw new RuntimeException("Unhandled reference set type: " + originalRefSetType); 

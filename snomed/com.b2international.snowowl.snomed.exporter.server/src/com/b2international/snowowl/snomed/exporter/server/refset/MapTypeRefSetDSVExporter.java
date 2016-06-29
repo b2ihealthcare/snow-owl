@@ -231,7 +231,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			case REFERENCED_COMPONENT_ID:
 				return member.getReferencedComponentId();
 			case MAP_TARGET:
-				return getComponentLabel(member.getMapTargetComponentTypeString(), member.getMapTarget());
+				return member.getMapTarget();
 			case MAP_TARGET_ID:
 				return member.getMapTarget();
 			case STATUS_ID:

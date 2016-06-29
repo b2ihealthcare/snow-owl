@@ -88,6 +88,7 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.refSetType(SnomedRefSetType.ASSOCIATION)
 				.refSetStorageKey(STORAGE_KEY1)
 				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.mapTargetComponentType(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, concept);

@@ -36,6 +36,12 @@ public interface SnomedReferenceSet extends SnomedComponent {
 	 * @return
 	 */
 	String getReferencedComponentType();
+	
+	/**
+	 * Returns the type of the map target if this reference set is a mapping reference set.
+	 * @return
+	 */
+	String getMapTargetComponentType();
 
 	/**
 	 * Returns all members of the reference set.

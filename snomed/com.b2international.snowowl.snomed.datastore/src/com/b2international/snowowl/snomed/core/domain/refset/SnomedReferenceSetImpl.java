@@ -24,7 +24,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 public class SnomedReferenceSetImpl extends BaseSnomedComponent implements SnomedReferenceSet {
 
 	private SnomedRefSetType type;
-	private String referencedComponent;
+	private String referencedComponentType;
+	private String mapTargetComponentType;
 	private SnomedReferenceSetMembers members;
 	
 	@Override
@@ -34,7 +35,12 @@ public class SnomedReferenceSetImpl extends BaseSnomedComponent implements Snome
 
 	@Override
 	public String getReferencedComponentType() {
-		return referencedComponent;
+		return referencedComponentType;
+	}
+	
+	@Override
+	public String getMapTargetComponentType() {
+		return mapTargetComponentType;
 	}
 
 	@Override
@@ -42,8 +48,12 @@ public class SnomedReferenceSetImpl extends BaseSnomedComponent implements Snome
 		return members;
 	}
 	
-	public void setReferencedComponent(String referencedComponent) {
-		this.referencedComponent = referencedComponent;
+	public void setReferencedComponentType(String referencedComponent) {
+		this.referencedComponentType = referencedComponent;
+	}
+	
+	public void setMapTargetComponentType(String mapTargetComponentType) {
+		this.mapTargetComponentType = mapTargetComponentType;
 	}
 	
 	public void setType(SnomedRefSetType type) {
