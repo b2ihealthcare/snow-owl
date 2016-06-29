@@ -551,6 +551,51 @@ osgi> snowowl checkservices
 Core services are registered properly and available for use.
 --------------------------
 
+`snowowl listrepositories` prints all the repositories in the system.
+....
+osgi> snowowl listrepositories
+Repositories:
+	snomedStore
+....
+`snowowl listbranches [repository]` prints all the branches in the system for a repository.
+
+....
+osgi> snowowl listbranches snomedStore
+Branches for repository snomedStore:
+|---MAIN
+    |---2011-10-01
+    |---2012-01-31
+    |---2012-07-31
+    |---2013-01-31
+    |---2013-07-31
+    |---2014-01-31
+    |---2014-07-31
+    |---2015-01-31
+        |---SNOMED-CT-SE
+            |---2012-12-21
+            |---2013-05-31
+            |---2013-11-30
+            |---2014-05-31
+            |---2014-11-30
+            |---2015-05-31
+    |---2015-07-31
+    |---2016-01-31
+        |---SNOMED-CT-SE
+....
+
+`snowowl dbcreateindex [nsUri]` creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI.
+
+`snowowl reindex [repositoryId]` recreates the entire index for the content of the given repository.  This long-running process requires the the server to be shut-down, the index to be deleted manually and a restart before invoking this command.
+....
+osgi>snowowl reindex snomedStore
+....
+
+`snowowl optimize [repositoryId] [maxSegments]` optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1).
+
+....
+osgi>snowowl optimize snomedStore 6
+....
+
 == Session management
 
 === Display connected users and session identifiers
