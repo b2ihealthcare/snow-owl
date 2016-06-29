@@ -20,10 +20,8 @@ import java.util.Collection;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
-import com.b2international.index.Index;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
@@ -32,7 +30,6 @@ import com.google.common.base.Strings;
 
 /**
  * OSGI command contribution with Snow Owl commands.
- * 
  *
  */
 public class MaintenanceCommandProvider implements CommandProvider {
@@ -41,7 +38,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
-//		buffer.append("\tsnowowl test - Execute Snow Owl server smoke test\n");
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
 		buffer.append("\tsnowowl reindex [repositoryId] - reindexes the content for the given repository ID\n");
@@ -61,11 +57,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				checkServices(interpreter);
 				return;
 			}
-			
-//			if ("test".equals(cmd)) {
-//				test(interpreter);
-//				return;
-//			}
 			
 			if ("dbcreateindex".equals(cmd)) {
 				executeCreateDbIndex(interpreter);
@@ -146,52 +137,15 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	public synchronized void checkServices(CommandInterpreter ci) {
 		
 		ci.println("Checking core services...");
-		
 		try {
-			
 			Collection<ServiceRegistryEntry<?>> services = ApplicationContext.getInstance().checkServices();
 			for (ServiceRegistryEntry<?> entry : services) {
 				ci.println("Interface: " + entry.getServiceInterface() + " : " + entry.getImplementation());
 			}
 			ci.println("Core services are registered properly and available for use.");
-			
 		} catch (final Throwable t) {
-			
 			ci.print("Error: " + t.getMessage());
-			
 		}
-		
 	}
-	
-//	/**
-//	 * OSGi console contribution, the test touches cdo and index stores.
-//	 * @param ci
-//	 */
-//	public synchronized void test(CommandInterpreter ci) {
-//
-//		ci.println("Smoke testing the Snow Owl server....");
-//		SnomedConceptIndexEntry rootConceptMini = null;
-//		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-//		Collection<SnomedConceptIndexEntry> rootConcepts = terminologyBrowser.getRootConcepts();
-//		for (SnomedConceptIndexEntry rootConcept : rootConcepts) {
-//			rootConceptMini = rootConcept;
-//			ci.println(" Root concept from the semantic cache: " + rootConcept);
-//		}
-//
-//		ci.println(" Semantic cache size: " + terminologyBrowser.getConceptCount());
-//		SnomedClientIndexService indexSearcher = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-//
-//		SnomedConceptFullQueryAdapter adapter = new SnomedConceptFullQueryAdapter(rootConceptMini.getId(), SnomedConceptFullQueryAdapter.SEARCH_BY_CONCEPT_ID);
-//		List<SnomedConceptIndexEntry> search = indexSearcher.search(adapter);
-//		ci.println(" Root concept from the index store: " + search.get(0).getLabel());
-//
-//		SnomedEditingContext editingContext = null;
-//		try {
-//			editingContext = new SnomedEditingContext();
-//			Concept rootConcept = new SnomedConceptLookupService().getComponent(rootConceptMini.getId(), editingContext.getTransaction());
-//			ci.println(" Root concept from the main repository: " + rootConcept.getFullySpecifiedName());
-//		} finally {
-//			editingContext.close();
-//		}
-//	}
+
 }
