@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.lucene.store.Directory;
 
 import com.b2international.index.lucene.Directories;
+import com.b2international.index.mapping.Mappings;
 
 /**
  * @since 4.7
@@ -31,8 +32,8 @@ public final class FSIndexAdmin extends BaseLuceneIndexAdmin {
 
 	private final Path indexPath;
 
-	public FSIndexAdmin(File directory, String name, Map<String, Object> settings) {
-		super(name, settings);
+	public FSIndexAdmin(File directory, String name, Mappings mappings, Map<String, Object> settings) {
+		super(name, mappings, settings);
 		this.indexPath = directory.toPath().resolve(name);
 	}
 

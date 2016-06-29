@@ -20,6 +20,7 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -28,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -41,10 +44,13 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 
+import com.b2international.index.AnalyzerImpls;
+import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.LuceneIndexAdmin;
-import com.b2international.index.analyzer.ComponentTermAnalyzer;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.Mappings;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
 
@@ -60,6 +66,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private final String name;
 	private final AtomicReference<PeriodicCommit> periodicCommit = new AtomicReference<>();
 	private final AtomicBoolean open = new AtomicBoolean(false);
+	private final Mappings mappings;
 	private final Map<String, Object> settings;
 	
 	private Closer closer;
@@ -68,12 +75,13 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private ReferenceManager<IndexSearcher> manager;
 	private ExecutorService executor;
 	
-	protected BaseLuceneIndexAdmin(String name) {
-		this(name, Maps.<String, Object>newHashMap());
+	protected BaseLuceneIndexAdmin(String name, Mappings mappings) {
+		this(name, mappings, Maps.<String, Object>newHashMap());
 	}
 	
-	protected BaseLuceneIndexAdmin(String name, Map<String, Object> settings) {
+	protected BaseLuceneIndexAdmin(String name, Mappings mappings, Map<String, Object> settings) {
 		this.name = name;
+		this.mappings = mappings;
 		
 		// init default settings
 		this.settings = newHashMap(settings);
@@ -158,11 +166,24 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 
 	private IndexWriterConfig createConfig(boolean clean) {
 		// TODO configurable analyzer and options
-		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, new ComponentTermAnalyzer(true, true));
+		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, getDefaultAnalyzer());
 		config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
 		return config;
 	}
 	
+	private Analyzer getDefaultAnalyzer() {
+		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
+		for (DocumentMapping mapping : mappings.getMappings()) {
+			for (Entry<String, Analyzers> entry : mapping.getAnalyzedFields().entrySet()) {
+				final Analyzers analyzer = entry.getValue();
+				if (Analyzers.DEFAULT != analyzer) {
+					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(analyzer));
+				}
+			}
+		}
+		return new PerFieldAnalyzerWrapper(AnalyzerImpls.DEFAULT, fieldAnalyzers);
+	}
+
 	@Override
 	public void close() {
 		ensureOpen();

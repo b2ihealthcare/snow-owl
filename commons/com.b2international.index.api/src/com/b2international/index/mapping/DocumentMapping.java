@@ -22,9 +22,9 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -34,6 +34,8 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @since 4.7
@@ -58,7 +60,7 @@ public final class DocumentMapping {
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
-	private final Set<String> analyzedFields;
+	private final Map<String, Analyzers> analyzedFields;
 	private final DocumentMapping parent;
 
 	DocumentMapping(Class<?> type) {
@@ -77,12 +79,17 @@ public final class DocumentMapping {
 					return !Modifier.isStatic(field.getModifiers());
 				}
 			}).uniqueIndex(GET_NAME);
-		this.analyzedFields = FluentIterable.from(getFields()).filter(new Predicate<Field>() {
-				@Override
-				public boolean apply(Field input) {
-					return input.isAnnotationPresent(Analyzed.class);
-				}
-			}).transform(GET_NAME).toSet();
+		
+		final Builder<String, Analyzers> analyzedFields = ImmutableMap.builder();
+
+		for (Field field : getFields()) {
+			if (field.isAnnotationPresent(Analyzed.class)) {
+				final Analyzers analyzer = field.getAnnotation(Analyzed.class).analyzer();
+				analyzedFields.put(field.getName(), analyzer);
+			}
+		}
+		
+		this.analyzedFields = analyzedFields.build();
 				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(new Function<Field, Class<?>>() {
@@ -152,7 +159,11 @@ public final class DocumentMapping {
 	}
 	
 	public boolean isAnalyzed(String field) {
-		return analyzedFields.contains(field);
+		return analyzedFields.containsKey(field);
+	}
+	
+	public Map<String, Analyzers> getAnalyzedFields() {
+		return analyzedFields;
 	}
 
 	public Class<?> type() {

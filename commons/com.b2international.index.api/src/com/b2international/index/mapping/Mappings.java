@@ -22,8 +22,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -39,7 +37,6 @@ public final class Mappings {
 	
 	public Mappings(Collection<Class<?>> types) {
 		checkArgument(!types.isEmpty(), "At least one document type should be specified");
-		final Builder<Class<?>, DocumentMapping> builder = ImmutableMap.builder();
 		for (Class<?> type : ImmutableSet.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
 			getMapping(type);

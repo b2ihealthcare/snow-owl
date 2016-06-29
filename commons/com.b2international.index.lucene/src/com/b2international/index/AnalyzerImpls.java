@@ -15,18 +15,27 @@
  */
 package com.b2international.index;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.lucene.analysis.Analyzer;
+
+import com.b2international.index.analyzer.ComponentTermAnalyzer;
 
 /**
- * @since 4.7
+ * Lucene specific implementations of the supported {@link Analyzers} enum.
+ * 
+ * @since 5.0
  */
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Analyzed {
+public class AnalyzerImpls {
+
+	public static final Analyzer DEFAULT = new ComponentTermAnalyzer(true, true);
 	
-	public Analyzers analyzer() default Analyzers.DEFAULT;
+	public static final Analyzer NON_BOOKEND = new ComponentTermAnalyzer(false, false);
+	
+	public static Analyzer getAnalyzer(Analyzers analyzer) {
+		switch (analyzer) {
+		case DEFAULT: return DEFAULT;
+		case NON_BOOKEND: return NON_BOOKEND;
+		default: throw new UnsupportedOperationException("Unsupported analyzer: " + analyzer);
+		}
+	}
 	
 }

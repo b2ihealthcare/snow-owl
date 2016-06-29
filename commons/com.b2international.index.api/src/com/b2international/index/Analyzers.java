@@ -13,32 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.admin;
-
-import java.io.IOException;
-import java.util.Map;
-
-import org.apache.lucene.store.Directory;
-
-import com.b2international.index.lucene.Directories;
-import com.b2international.index.mapping.Mappings;
+package com.b2international.index;
 
 /**
- * @since 4.7
+ * Supported analyzers are listed here.
+ * 
+ * @since 5.0
  */
-public final class RAMIndexAdmin extends BaseLuceneIndexAdmin {
+public enum Analyzers {
 
-	public RAMIndexAdmin(String name, Mappings mappings) {
-		super(name, mappings);
-	}
-	
-	public RAMIndexAdmin(String name, Mappings mappings, Map<String, Object> settings) {
-		super(name, mappings, settings);
-	}
+	/**
+	 * The default term analyzer, by default escapes all whitespaces and any character from the default delimiters list and includes a leading and
+	 * trailing marker from the Unicode Private Use Area characters to mark the beginning and end of a text.
+	 */
+	DEFAULT,
 
-	@Override
-	protected Directory openDirectory() throws IOException {
-		return Directories.openRam();
-	}
-	
+	/**
+	 * Restriction on top of the default analyzer, to only escape white spaces and delimiters but do not include the custom markers in the resulting
+	 * text.
+	 */
+	NON_BOOKEND
+
 }
