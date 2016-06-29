@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.request;
 
 import java.io.IOException;
 
+import com.b2international.index.query.QueryParseException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -24,6 +25,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 
 /**
  * A subclass of {@link DelegatingRequest} that:
@@ -46,7 +48,11 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 		return context.service(RevisionIndex.class).read(context.branch().path(), new RevisionIndexRead<B>() {
 			@Override
 			public B execute(RevisionSearcher index) throws IOException {
-				return wrapAndExecute(context, index);
+				try {
+					return wrapAndExecute(context, index);
+				} catch (QueryParseException e) {
+					throw new IllegalQueryParameterException(e.getMessage());
+				}
 			}
 		});
 	}
