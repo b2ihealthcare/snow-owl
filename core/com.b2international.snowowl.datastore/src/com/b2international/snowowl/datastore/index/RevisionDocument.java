@@ -25,6 +25,7 @@ import java.util.Collections;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
+import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
@@ -35,7 +36,7 @@ import com.google.common.base.Objects;
 /**
  * @since 4.7
  */
-public abstract class RevisionDocument extends Revision implements IIndexEntry, IconIdProvider<String> {
+public abstract class RevisionDocument extends Revision implements IIndexEntry, IconIdProvider<String>, WithScore {
 
 	public static abstract class Expressions {
 
@@ -130,6 +131,7 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 	private final String id;
 	private final String label;
 	private final String iconId;
+	private float score = 0.0f;
 	
 	protected RevisionDocument(final String id, final String label, String iconId) {
 		this.id = checkNotNull(id, "id");
@@ -156,7 +158,13 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 	@JsonIgnore
 	@Override
 	public float getScore() {
-		return 0;
+		return score ;
+	}
+	
+	@JsonIgnore
+	@Override
+	public void setScore(float score) {
+		this.score = score;
 	}
 	
 	@Override

@@ -31,6 +31,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
+import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.LuceneQueryBuilder;
@@ -140,6 +141,9 @@ public class JsonDocumentSearcher implements Searcher {
 			final T readValue = reader.readValue(sources[i - offset]);
 			if (readValue instanceof WithId) {
 				((WithId) readValue).set_id(ids[i - offset]);
+			}
+			if (query.isWithScores() && readValue instanceof WithScore) {
+				((WithScore) readValue).setScore(scoreDocs[i].score);
 			}
 			matches.add(readValue);
 		}

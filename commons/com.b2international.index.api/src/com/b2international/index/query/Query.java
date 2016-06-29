@@ -49,6 +49,8 @@ public final class Query<T> {
 		AfterWhereBuilder<T> limit(int limit);
 
 		AfterWhereBuilder<T> sortBy(SortBy sortBy);
+		
+		AfterWhereBuilder<T> withScores(boolean withScores);
 	}
 	
 	private int offset;
@@ -58,6 +60,7 @@ public final class Query<T> {
 	private SortBy sortBy = SortBy.NONE;
 	private Class<T> type;
 	private Class<?> parentType;
+	private boolean withScores;
 
 	Query() {}
 
@@ -115,6 +118,14 @@ public final class Query<T> {
 	
 	void setParentType(Class<?> parentType) {
 		this.parentType = parentType;
+	}
+	
+	public boolean isWithScores() {
+		return withScores;
+	}
+
+	void setWithScores(boolean withScores) {
+		this.withScores = withScores;
 	}
 	
 	@Override

@@ -34,32 +34,13 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterSelectBuilder<T>, 
 	private Select select;
 	private Expression where;
 	private SortBy sortBy = SortBy.NONE;
+	private boolean withScores = false;
 
 	public DefaultQueryBuilder(Class<T> documentType, Class<?> parentType) {
 		this.type = documentType;
 		this.parentType = parentType;
 	}
 
-	public int getLimit() {
-		return limit;
-	}
-	
-	public int getOffset() {
-		return offset;
-	}
-	
-	public Select getSelect() {
-		return select;
-	}
-	
-	public SortBy getSortBy() {
-		return sortBy;
-	}
-	
-	public Expression getWhere() {
-		return where;
-	}
-	
 	@Override
 	public AfterWhereBuilder<T> offset(int offset) {
 		this.offset = offset;
@@ -94,6 +75,12 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterSelectBuilder<T>, 
 		this.sortBy = sortBy;
 		return this;
 	}
+	
+	@Override
+	public AfterWhereBuilder<T> withScores(boolean withScores) {
+		this.withScores = withScores;
+		return this;
+	}
 
 	@Override
 	public Query<T> build() {
@@ -105,6 +92,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterSelectBuilder<T>, 
 		query.setLimit(limit);
 		query.setOffset(offset);
 		query.setSortBy(sortBy);
+		query.setWithScores(withScores);
 		return query;
 	}
 }
