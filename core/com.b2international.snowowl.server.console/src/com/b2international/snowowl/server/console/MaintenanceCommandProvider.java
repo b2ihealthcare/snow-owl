@@ -45,7 +45,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
 		buffer.append("\tsnowowl reindex <repositoryId> - reindexes the content for the given repository ID\n");
-		buffer.append("\tsnowowl optimize <repositoryId> [maxSegments] - optimizes the underlying index to have the supplied (default one) number of segments maximum\n");
+		buffer.append("\tsnowowl optimize <repositoryId> [maxSegments] - optimizes the underlying index to have the supplied maximum number of segments (default number is 1)\n");
 		return buffer.toString();
 	}
 
@@ -112,7 +112,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private void optimize(CommandInterpreter interpreter) {
 		final String repositoryId = interpreter.nextArgument();
 		if (Strings.isNullOrEmpty(repositoryId)) {
-			interpreter.println("repositoryId parameter is required");
+			interpreter.println("RepositoryId parameter is required.");
 			return;
 		}
 		
@@ -130,7 +130,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			.create()
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
-		interpreter.println("Index optimization completed");
+		interpreter.println("Index optimization completed.");
 	}
 
 	public synchronized void executeCreateDbIndex(CommandInterpreter interpreter) {
