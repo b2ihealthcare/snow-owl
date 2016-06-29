@@ -22,12 +22,12 @@ import java.util.Collection;
 /**
  * @since 5.0
  */
-public final class DisMaxExpression implements Expression {
+public final class DisMaxPredicate implements Expression {
 
 	private final float tieBreaker;
 	private final Collection<Expression> disjuncts;
 
-	DisMaxExpression(Collection<Expression> disjuncts, float tieBreaker) {
+	DisMaxPredicate(Collection<Expression> disjuncts, float tieBreaker) {
 		checkArgument(!disjuncts.isEmpty(), "At least one disjunct expression is required");
 		this.disjuncts = disjuncts;
 		this.tieBreaker = tieBreaker;

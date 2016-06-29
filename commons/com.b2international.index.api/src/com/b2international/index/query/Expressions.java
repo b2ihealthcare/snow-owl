@@ -197,7 +197,7 @@ public class Expressions {
 	}
 	
 	public static Expression dismax(Collection<Expression> disjuncts) {
-		return new DisMaxExpression(disjuncts, 0.0f);
+		return new DisMaxPredicate(disjuncts, 0.0f);
 	}
 
 }

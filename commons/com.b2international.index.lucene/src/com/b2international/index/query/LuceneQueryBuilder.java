@@ -17,6 +17,7 @@ package com.b2international.index.query;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collections;
 import java.util.Deque;
@@ -30,6 +31,7 @@ import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.FuzzyQuery;
@@ -163,6 +165,10 @@ public final class LuceneQueryBuilder {
 			visit((IntRangePredicate) expression);
 		} else if (expression instanceof TextPredicate) {
 			visit((TextPredicate) expression);
+		} else if (expression instanceof DisMaxPredicate) {
+			visit((DisMaxPredicate) expression);
+		} else if (expression instanceof BoostPredicate) {
+			visit((BoostPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -323,6 +329,22 @@ public final class LuceneQueryBuilder {
 	private void visit(StringRangePredicate range) {
 		final Filter filter = TermRangeFilter.newStringRange(range.getField(), range.from(), range.to(), true, true);
 		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(DisMaxPredicate dismax) {
+		final List<Query> disjuncts = newArrayList();
+		for (Expression disjunct : dismax.disjuncts()) {
+			visit(disjunct);
+			disjuncts.add(deque.pop().toQuery());
+		}
+		deque.push(new DequeItem(new DisjunctionMaxQuery(disjuncts, dismax.tieBreaker())));
+	}
+	
+	private void visit(BoostPredicate boost) {
+		visit(boost.expression());
+		final Query query = deque.pop().toQuery();
+		query.setBoost(boost.boost());
+		deque.push(new DequeItem(query));
 	}
 	
 }
