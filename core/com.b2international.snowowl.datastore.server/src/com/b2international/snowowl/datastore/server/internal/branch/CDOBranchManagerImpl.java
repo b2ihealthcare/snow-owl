@@ -92,8 +92,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				segments.add(segmentId);
 				segments.addAll(parent.segments());
 				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), segmentId, segments));
-				parent.withSegmentId(nextSegmentId());
-				registerBranch(parent);
+				registerBranch(parent.withSegmentId(nextSegmentId()));
 			}
 		}
     }
