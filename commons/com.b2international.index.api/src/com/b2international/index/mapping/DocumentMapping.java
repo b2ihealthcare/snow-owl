@@ -22,7 +22,9 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
+import com.b2international.index.Analyzed;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -44,11 +46,19 @@ public final class DocumentMapping {
 	public static final String _ID = "_id";
 	public static final String _UID = "_uid";
 	public static final String _TYPE = "_type";
+
+	private static final Function<? super Field, String> GET_NAME = new Function<Field, String>() {
+		@Override
+		public String apply(Field field) {
+			return field.getName();
+		}
+	};
 	
 	private final Class<?> type;
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
+	private final Set<String> analyzedFields;
 	private final DocumentMapping parent;
 
 	DocumentMapping(Class<?> type) {
@@ -66,12 +76,14 @@ public final class DocumentMapping {
 				public boolean apply(Field field) {
 					return !Modifier.isStatic(field.getModifiers());
 				}
-			}).uniqueIndex(new Function<Field, String>() {
+			}).uniqueIndex(GET_NAME);
+		this.analyzedFields = FluentIterable.from(getFields()).filter(new Predicate<Field>() {
 				@Override
-				public String apply(Field field) {
-					return field.getName();
+				public boolean apply(Field input) {
+					return input.isAnnotationPresent(Analyzed.class);
 				}
-			});
+			}).transform(GET_NAME).toSet();
+				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(new Function<Field, Class<?>>() {
 				@Override
@@ -137,6 +149,10 @@ public final class DocumentMapping {
 	
 	public Collection<Field> getFields() {
 		return ImmutableList.copyOf(fieldMap.values());
+	}
+	
+	public boolean isAnalyzed(String field) {
+		return analyzedFields.contains(field);
 	}
 
 	public Class<?> type() {

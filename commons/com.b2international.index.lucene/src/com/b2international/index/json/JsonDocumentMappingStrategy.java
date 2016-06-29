@@ -82,8 +82,11 @@ public class JsonDocumentMappingStrategy {
 			}
 			break;
 		case STRING:
-			// TODO get from mapping if the field is analyzed and use text fields
-			Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
+			if (mapping.isAnalyzed(name)) {
+				Fields.searchOnlyTextField(name).addTo(doc, node.textValue());
+			} else {
+				Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
+			}
 			break;
 		case BOOLEAN:
 			Fields.searchOnlyBoolField(name).addTo(doc, node.booleanValue());
