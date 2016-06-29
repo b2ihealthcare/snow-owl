@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.b2international.index.Analyzed;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -325,7 +326,10 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 
 	private final String conceptId;
 	private final String languageCode;
+	
+	@Analyzed
 	private final String term;
+	
 	private final String typeId;
 	private final String caseSignificanceId;
 	private final Set<String> acceptableIn;
