@@ -44,8 +44,8 @@ public class MaintenanceCommandProvider implements CommandProvider {
 //		buffer.append("\tsnowowl test - Execute Snow Owl server smoke test\n");
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
-		buffer.append("\tsnowowl reindex <repositoryId> - reindexes the content for the given repository ID\n");
-		buffer.append("\tsnowowl optimize <repositoryId> [maxSegments] - optimizes the underlying index to have the supplied maximum number of segments (default number is 1)\n");
+		buffer.append("\tsnowowl reindex [repositoryId] - reindexes the content for the given repository ID\n");
+		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
 		return buffer.toString();
 	}
 
