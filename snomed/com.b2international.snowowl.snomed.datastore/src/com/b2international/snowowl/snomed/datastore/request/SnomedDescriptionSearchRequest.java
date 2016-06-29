@@ -15,11 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.acceptableIn;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermPrefixesPresent;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermsPresent;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.concepts;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.exactTerm;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.fuzzy;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.parsedTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.types;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,6 +38,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -137,14 +145,16 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			}
 		});
 		
+		SortBy sortBy = SortBy.NONE;
+		
 		if (containsKey(OptionKey.TERM)) {
-//			if (!containsKey(OptionKey.USE_FUZZY)) {
-//				addDescriptionTermQuery(queryBuilder);
-//			} else {
-//				addFuzzyQuery(queryBuilder);
-//			}
-//			
-//			sort = Sort.RELEVANCE;
+			final String searchTerm = getString(OptionKey.TERM);
+			if (!containsKey(OptionKey.USE_FUZZY)) {
+				queryBuilder.must(toDescriptionTermQuery(searchTerm));
+			} else {
+				queryBuilder.must(fuzzy(searchTerm));
+			}
+			sortBy = SortBy.SCORE;
 		}
 
 		// TODO: control score tracking
@@ -153,6 +163,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 				.where(queryBuilder.build())
 				.offset(offset)
 				.limit(limit)
+				.sortBy(sortBy)
 				.build());
 		if (limit < 1 || hits.getTotal() < 1) {
 			return new SnomedDescriptions(offset, limit, hits.getTotal());
@@ -161,21 +172,19 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		}
 	}
 	
-	private void addDescriptionTermQuery(final ExpressionBuilder queryBuilder) {
-		final String searchTerm = getString(OptionKey.TERM);
-		
+	private Expression toDescriptionTermQuery(final String searchTerm) {
 		final ExpressionBuilder qb = Expressions.builder();
 		qb.should(createTermDisjunctionQuery(searchTerm));
 		
 		if (containsKey(OptionKey.PARSED_TERM)) {
-			qb.should(createParsedTermQuery(searchTerm));
+			qb.should(parsedTerm(searchTerm));
 		}
 		
 		if (isComponentId(searchTerm, ComponentCategory.DESCRIPTION)) {
-			qb.should(Expressions.boost(SnomedDescriptionIndexEntry.Expressions.id(searchTerm), 1000f));
+			qb.should(Expressions.boost(id(searchTerm), 1000f));
 		}
 		
-		queryBuilder.must(qb.build());
+		return qb.build();
 	}
 	
 	private boolean isComponentId(String value, ComponentCategory type) {
@@ -187,120 +196,11 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private Expression createTermDisjunctionQuery(final String searchTerm) {
-		throw new UnsupportedOperationException("Support dismax queries");
-//		final DisjunctionMaxQuery termDisjunctionQuery = new DisjunctionMaxQuery(0.0f);
-//		
-//		final ComponentTermAnalyzer nonBookendAnalyzer = new ComponentTermAnalyzer(false, false);
-//		final ComponentTermAnalyzer bookendAnalyzer = new ComponentTermAnalyzer(true, true);
-//		
-//		final QueryBuilder bookendTermQueryBuilder = new QueryBuilder(bookendAnalyzer);
-//		final QueryBuilder nonBookendTermQueryBuilder = new QueryBuilder(nonBookendAnalyzer);
-//		termDisjunctionQuery.add(createExactMatchQuery(searchTerm, bookendTermQueryBuilder));
-//		termDisjunctionQuery.add(createAllTermsPresentQuery(searchTerm, nonBookendTermQueryBuilder));
-//		
-//		final List<String> prefixes = IndexUtils.split(nonBookendAnalyzer, searchTerm);
-//		termDisjunctionQuery.add(createAllTermPrefixesPresentQuery(prefixes));
-//		
-//		return termDisjunctionQuery;
-	}
-
-	private Expression createParsedTermQuery(final String searchTerm) {
-		throw new UnsupportedOperationException("TODO support parsed term queries");
-//		final ComponentTermAnalyzer analyzer = new ComponentTermAnalyzer(true, true);
-//		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, SnomedMappings.descriptionTerm().fieldName(), analyzer);
-//		parser.setDefaultOperator(Operator.AND);
-//		parser.setAllowLeadingWildcard(true);
-//		
-//		try {
-//			return parser.parse(escape(searchTerm));
-//		} catch (ParseException e) {
-//			throw new IllegalQueryParameterException(e.getMessage());
-//		}		
-	}
-	
-	// copied from IndexQueryBuilder
-	private String escape(final String searchTerm) {
-		final StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < searchTerm.length(); i++) {
-			final char c = searchTerm.charAt(i);
-			outerLoop: {
-				switch (c) {
-				case '\\':
-					if (i != searchTerm.length() - 1) {
-						final char charAt = searchTerm.charAt(i + 1);
-						switch (charAt) {
-						case '^':
-						case '?':
-						case '~':
-						case '*':
-							break outerLoop;
-						}
-					}
-				case '+':
-				case '-':
-				case '!':
-				case '(':
-				case ')':
-				case ':':
-				case '[':
-				case ']':
-				case '\"':
-				case '{':
-				case '}':
-				case '|':
-				case '&':
-				case '/':
-					sb.append('\\');
-					break;
-				}
-			}
-
-			sb.append(c);
-
-			switch (c) {
-			case '~':
-				sb.append(' ');
-				break;
-			}
-		}
-
-		return sb.toString();
-	}
-
-	private void addFuzzyQuery(final ExpressionBuilder queryBuilder) {
-		throw new UnsupportedOperationException("TODO support fuzzy queries");
-//		final Splitter tokenSplitter = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).omitEmptyStrings();
-//		final ExpressionBuilder fuzzyQuery = Expressions.builder();
-//		int tokenCount = 0;
-//
-//		final String term = getString(OptionKey.TERM).toLowerCase();
-//		for (final String token : tokenSplitter.split(term)) {
-//			fuzzyQuery.should(SnomedDescriptionIndexEntry.Expressions.fuzzyTerm(token));
-//			++tokenCount;
-//		}
-//
-//		final int minShouldMatch = Math.max(1, tokenCount - 2);
-//		fuzzyQuery.setMinimumNumberShouldMatch(minShouldMatch);
-//
-//		queryBuilder.must(fuzzyQuery.build());
-	}
-
-//	private Expression createExactMatchQuery(final String searchTerm, final ExpressionBuilder termQueryBuilder) {
-//		return termQueryBuilder.createPhraseQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm);
-//	}
-
-//	private Query createAllTermsPresentQuery(final String searchTerm, final ExpressionBuilder termQueryBuilder) {
-//		return termQueryBuilder.createBooleanQuery(SnomedMappings.descriptionTerm().fieldName(), searchTerm, Occur.MUST);
-//	}
-
-	private Expression createAllTermPrefixesPresentQuery(List<String> prefixes) {
-		final ExpressionBuilder query = Expressions.builder();
-
-		for (String prefix : prefixes) {
-			query.must(SnomedDescriptionIndexEntry.Expressions.termPrefix(prefix));
-		}
-
-		return query.build();
+		final List<Expression> disjuncts = newArrayList();
+		disjuncts.add(exactTerm(searchTerm));
+		disjuncts.add(allTermsPresent(searchTerm));
+		disjuncts.add(allTermPrefixesPresent(searchTerm));
+		return Expressions.dismax(disjuncts);
 	}
 
 	private void addConceptIdsFilter(ExpressionBuilder queryBuilder) {

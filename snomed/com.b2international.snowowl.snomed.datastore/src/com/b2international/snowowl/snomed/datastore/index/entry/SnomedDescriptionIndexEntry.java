@@ -17,9 +17,11 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchText;
+import static com.b2international.index.query.Expressions.matchTextAll;
+import static com.b2international.index.query.Expressions.matchTextAllPrefix;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
-import static com.b2international.index.query.Expressions.matchTextPrefix;
+import static com.b2international.index.query.Expressions.matchTextParsed;
+import static com.b2international.index.query.Expressions.matchTextPhrase;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -31,8 +33,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.compat.TextConstants;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Description;
@@ -45,6 +50,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -152,16 +158,36 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 		private Expressions() {
 		}
 
-		public static Expression term(String term) {
-			return matchText(Fields.TERM, term);
+		public static Expression fuzzy(String term) {
+			final Splitter tokenSplitter = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).omitEmptyStrings();
+			final ExpressionBuilder fuzzyQuery = com.b2international.index.query.Expressions.builder();
+			int tokenCount = 0;
+
+			for (final String token : tokenSplitter.split(term)) {
+				fuzzyQuery.should(matchTextFuzzy(Fields.TERM, token));
+				++tokenCount;
+			}
+
+			final int minShouldMatch = Math.max(1, tokenCount - 2);
+			fuzzyQuery.setMinimumNumberShouldMatch(minShouldMatch);
+			
+			return fuzzyQuery.build();
 		}
 		
-		public static Expression termPrefix(String term) {
-			return matchTextPrefix(Fields.TERM, term);
+		public static Expression exactTerm(String term) {
+			return matchTextPhrase(Fields.TERM, term);
 		}
 		
-		public static Expression fuzzyTerm(String term) {
-			return matchTextFuzzy(Fields.TERM, term);
+		public static Expression allTermPrefixesPresent(String term) {
+			return matchTextAllPrefix(Fields.TERM, term);
+		}
+		
+		public static Expression allTermsPresent(String term) {
+			return matchTextAll(Fields.TERM, term, Analyzers.NON_BOOKEND);
+		}
+		
+		public static Expression parsedTerm(String term) {
+			return matchTextParsed(Fields.TERM, term);
 		}
 		
 		public static Expression concept(String conceptId) {
