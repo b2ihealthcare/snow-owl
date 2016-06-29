@@ -27,7 +27,6 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 import com.b2international.index.analyzer.DelimiterAnalyzer;
-import com.b2international.index.analyzer.TextConstants;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;

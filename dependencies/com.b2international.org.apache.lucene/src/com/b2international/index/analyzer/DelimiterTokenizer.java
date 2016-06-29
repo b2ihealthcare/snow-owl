@@ -20,6 +20,7 @@ import java.io.Reader;
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.util.Version;
 
+import com.b2international.index.compat.TextConstants;
 import com.google.common.base.CharMatcher;
 
 /**

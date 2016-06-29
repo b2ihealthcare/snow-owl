@@ -37,8 +37,8 @@ import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
-import com.b2international.index.analyzer.TextConstants;
 import com.b2international.index.compat.Highlighting;
+import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.google.common.base.Splitter;
 
