@@ -17,6 +17,8 @@ package com.b2international.index.admin;
 
 import java.util.Map;
 
+import com.b2international.index.mapping.Mappings;
+
 /**
  * Administration interface managing an elasticsearch index.
  * 
@@ -53,6 +55,13 @@ public interface IndexAdmin {
 	 * @return
 	 */
 	Map<String, Object> settings();
+
+	/**
+	 * Returns the mappings defined for this index.
+	 * 
+	 * @return
+	 */
+	Mappings mappings();
 
 	/**
 	 * Returns the index name this {@link IndexAdmin} is responsible for.

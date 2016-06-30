@@ -237,6 +237,11 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	public Map<String, Object> settings() {
 		return settings;
 	}
+	
+	@Override
+	public Mappings mappings() {
+		return mappings;
+	}
 
 	@Override
 	public String name() {
