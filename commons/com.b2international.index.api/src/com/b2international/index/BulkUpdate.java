@@ -13,29 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.json;
+package com.b2international.index;
 
-import java.io.IOException;
-
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.search.Query;
-
-import com.b2international.index.Searcher;
+import com.b2international.index.query.Expression;
+import com.google.common.base.Function;
 
 /**
- * @since 4.7
+ * @since 5.0
  */
-public final class DeleteByQuery implements Operation {
-
-	private final Query query;
-
-	DeleteByQuery(Query query) {
-		this.query = query;
+public final class BulkUpdate<T extends WithId> {
+	
+	private final Class<? extends T> type;
+	private final Expression filter;
+	private final Function<T, T> update;
+	
+	public BulkUpdate(Class<? extends T> type, Expression filter, Function<T, T> func) {
+		this.type = type;
+		this.filter = filter;
+		this.update = func;
 	}
 	
-	@Override
-	public void execute(IndexWriter writer, Searcher searcher) throws IOException {
-		writer.deleteDocuments(query);
+	public Class<? extends T> getType() {
+		return type;
+	}
+	
+	public Expression getFilter() {
+		return filter;
+	}
+	
+	public Function<T, T> getUpdate() {
+		return update;
 	}
 
 }

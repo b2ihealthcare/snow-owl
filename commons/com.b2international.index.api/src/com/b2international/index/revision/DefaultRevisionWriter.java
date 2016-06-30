@@ -23,14 +23,15 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
+import com.b2international.index.BulkUpdate;
 import com.b2international.index.Writer;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -90,25 +91,25 @@ public class DefaultRevisionWriter implements RevisionWriter {
 
 	@Override
 	public void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) throws IOException {
-		final Map<Class<? extends Revision>, Query<? extends Revision>> queriesByType = newHashMap();
 		for (Class<? extends Revision> type : storageKeysByType.keySet()) {
 			final Collection<Long> storageKeysToUpdate = storageKeysByType.get(type);
 			if (!storageKeysToUpdate.isEmpty()) {
-				final Expression where = Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate);
-				queriesByType.put(type, Query.builder(type).selectAll().where(where).limit(Integer.MAX_VALUE).build());
+				final Expression filter = Expressions.builder()
+							.must(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate))
+							.must(Revision.branchFilter(branch))
+							.build();
+				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, new Function<Revision, Revision>() {
+					@Override
+					public Revision apply(Revision rev) {
+						// register this revision as replaced in this segment
+						final Set<Integer> replacedIns = newHashSet(rev.getReplacedIns());
+						replacedIns.add(branch.segmentId());
+						rev.setReplacedIns(replacedIns);
+						return rev;
+					}
+				});
+				index.bulkUpdate(update);
 			}
-		}
-		for (Entry<Class<? extends Revision>, Query<? extends Revision>> entry : queriesByType.entrySet()) {
-			final Iterable<? extends Revision> revisionsToUpdate = searcher.search(entry.getValue());
-			final Map<String, Object> revisionUpdates = newHashMap();
-			for (Revision rev : revisionsToUpdate) {
-				// register this revision as replaced in this segment
-				final Set<Integer> replacedIns = newHashSet(rev.getReplacedIns());
-				replacedIns.add(branch.segmentId());
-				rev.setReplacedIns(replacedIns);
-				revisionUpdates.put(rev._id(), rev);
-			}
-			index.putAll(revisionUpdates);
 		}
 	}
 

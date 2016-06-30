@@ -32,6 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.b2international.index.DefaultIndex;
+import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.DocumentMapping;
@@ -53,6 +54,7 @@ public abstract class BaseRevisionIndexTest {
 	
 	private ObjectMapper mapper;
 	private Mappings mappings;
+	private Index rawIndex;
 	private RevisionIndex index;
 	private Map<String, RevisionBranch> branches = newHashMap();
 	private AtomicLong clock = new AtomicLong(0L);
@@ -80,7 +82,8 @@ public abstract class BaseRevisionIndexTest {
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
-		index = new DefaultRevisionIndex(new DefaultIndex(createIndexClient(mapper, mappings)), branchProvider);
+		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
+		index = new DefaultRevisionIndex(rawIndex, branchProvider);
 		index.admin().create();
 	}
 
@@ -126,6 +129,10 @@ public abstract class BaseRevisionIndexTest {
 
 	protected final RevisionIndex index() {
 		return index;
+	}
+	
+	protected final Index rawIndex() {
+		return rawIndex;
 	}
 	
 	/**
@@ -182,7 +189,9 @@ public abstract class BaseRevisionIndexTest {
 	
 	protected void assertDocEquals(Object expected, Object actual) {
 		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
-			if (Revision.COMMIT_TIMESTAMP.equals(f.getName()) 
+			if (Revision.REPLACED_INS.equals(f.getName()) 
+					|| Revision.SEGMENT_ID.equals(f.getName())
+					|| Revision.COMMIT_TIMESTAMP.equals(f.getName()) 
 					|| Revision.BRANCH_PATH.equals(f.getName()) 
 					|| Revision.STORAGE_KEY.equals(f.getName()) 
 					|| DocumentMapping._ID.equals(f.getName())) {

@@ -31,6 +31,7 @@ import org.apache.lucene.index.IndexWriter;
 import com.b2international.collections.floats.FloatCollection;
 import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.index.Searcher;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.util.Reflections;
@@ -69,7 +70,7 @@ public final class Index implements Operation {
 	}
 	
 	@Override
-	public void execute(IndexWriter writer) throws IOException {
+	public void execute(IndexWriter writer, Searcher searcher) throws IOException {
 		final String uid = mapping.toUid(key);
 		final Collection<Document> docs = newLinkedList();
 		

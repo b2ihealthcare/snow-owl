@@ -19,11 +19,13 @@ import java.io.IOException;
 
 import org.apache.lucene.index.IndexWriter;
 
+import com.b2international.index.Searcher;
+
 /**
  * @since 4.7
  */
 public interface Operation {
 
-	void execute(IndexWriter writer) throws IOException;
+	void execute(IndexWriter writer, Searcher searcher) throws IOException;
 	
 }

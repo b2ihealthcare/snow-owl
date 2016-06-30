@@ -31,7 +31,10 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 
+import com.b2international.index.BulkUpdate;
+import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
+import com.b2international.index.WithId;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
@@ -45,9 +48,11 @@ public class JsonDocumentWriter implements Writer {
 	private final IndexWriter writer;
 	private final ReferenceManager<IndexSearcher> searchers;
 	private final Collection<Operation> operations = newArrayList();
-	private final JsonDocumentSearcher searcher;
 	private final ObjectMapper mapper;
 	private final Mappings mappings;
+	
+	private boolean withUpdate = false;
+	private JsonDocumentSearcher searcher;
 
 	public JsonDocumentWriter(IndexWriter writer, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper, Mappings mappings) {
 		this.writer = writer;
@@ -71,12 +76,29 @@ public class JsonDocumentWriter implements Writer {
 	@Override
 	public void commit() throws IOException {
 		// TODO add a txId to new documents, so we will be able to delete all changes
-		for (Operation op : this.operations) {
-			op.execute(writer);
+		if (withUpdate) {
+			synchronized (writer) {
+				try {
+					// reopen search for bulk update operations
+					searcher.close();
+					searcher = new JsonDocumentSearcher(searchers, mapper, mappings);
+					applyOperations();
+				} catch (Exception e) {
+					throw new IndexException("Failed to commit transaction", e);
+				}
+			}
+		} else {
+			applyOperations();
 		}
-		searchers.maybeRefreshBlocking();
 	}
 	
+	private void applyOperations() throws IOException {
+		for (Operation op : this.operations) {
+			op.execute(writer, searcher);
+		}
+		searchers.maybeRefreshBlocking();		
+	}
+
 	@Override
 	public void put(String key, Object object) throws IOException {
 		putAll(Collections.singletonMap(key, object));
@@ -112,6 +134,12 @@ public class JsonDocumentWriter implements Writer {
 			deleteQuery.add(JsonDocumentMapping._uid().createTermsFilter(uids), Occur.FILTER);
 		}
 		this.operations.add(new DeleteByQuery(deleteQuery.build()));
+	}
+	
+	@Override
+	public <T extends WithId> void bulkUpdate(BulkUpdate<T> update) throws IOException {
+		this.withUpdate = true;
+		this.operations.add(new BulkUpdateOperation<T>(update, mapper, mappings));
 	}
 
 }
