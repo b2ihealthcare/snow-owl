@@ -98,7 +98,7 @@ public abstract class BaseRevisionIndexTest {
 	protected void configureMapper(ObjectMapper mapper) {
 	}
 	
-	protected void createBranch(String parent, String child) {
+	protected String createBranch(String parent, String child) {
 		RevisionBranch parentBranch = branches.get(parent);
 		if (parentBranch == null) {
 			throw new IllegalArgumentException("Parent could not be found at path: " + parent);
@@ -110,13 +110,14 @@ public abstract class BaseRevisionIndexTest {
 		// add parent segments
 		segments.add(initialSegment);
 		segments.addAll(parentBranch.segments());
-		branches.put(child, new RevisionBranch(path, initialSegment, segments));
+		branches.put(path, new RevisionBranch(path, initialSegment, segments));
 		// reregister parent branch with updated segment information
 		final int newParentSegment = nextSegmentId();
 		final Set<Integer> newParentSegments = newHashSet();
 		newParentSegments.add(newParentSegment);
 		newParentSegments.addAll(parentBranch.segments());
 		branches.put(parent, new RevisionBranch(parent, newParentSegment, newParentSegments));
+		return path;
 	}
 	
 	protected final long currentTime() {

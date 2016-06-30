@@ -101,8 +101,7 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	@Test
 	public void parentRevisionsStillVisibleAfterNewChildBranch() throws Exception {
 		indexRevision();
-		final String childBranch = "a";
-		createBranch(MAIN, childBranch);
+		final String childBranch = createBranch(MAIN, "a");
 		assertNotNull(getRevision(childBranch, Data.class, STORAGE_KEY1));
 		assertNotNull(getRevision(MAIN, Data.class, STORAGE_KEY1));
 	}
@@ -110,8 +109,7 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	@Test
 	public void updateRevisionShadowsRevisionOnParent() throws Exception {
 		indexRevision();
-		final String childBranch = "a";
-		createBranch(MAIN, childBranch);
+		final String childBranch = createBranch(MAIN, "a");
 		
 		// put updated revision to child branch
 		final Data data = new Data("field1Changed", "field2Changed");
@@ -136,7 +134,7 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		
 		// child branch still has his own updated revision
 		final Data expectedRevisionOnChild = new Data("field1Changed", "field2Changed");
-		final Data actualRevisionOnChild = getRevision("a", Data.class, STORAGE_KEY1);
+		final Data actualRevisionOnChild = getRevision("MAIN/a", Data.class, STORAGE_KEY1);
 		assertEquals(expectedRevisionOnChild, actualRevisionOnChild);
 	}
 	
