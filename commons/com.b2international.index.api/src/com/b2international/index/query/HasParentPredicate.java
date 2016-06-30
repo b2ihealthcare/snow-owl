@@ -23,7 +23,7 @@ public class HasParentPredicate implements Expression {
 	private final Class<?> parentType;
 	private final Expression expression;
 
-	public HasParentPredicate(Class<?> parentType, Expression expression) {
+	HasParentPredicate(Class<?> parentType, Expression expression) {
 		this.parentType = parentType;
 		this.expression = expression;
 	}

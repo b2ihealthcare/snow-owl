@@ -21,7 +21,7 @@ package com.b2international.index.query;
  */
 public class StringPredicate extends SingleArgumentPredicate<String> {
 
-	public StringPredicate(String field, String argument) {
+	StringPredicate(String field, String argument) {
 		super(field, argument);
 	}
 

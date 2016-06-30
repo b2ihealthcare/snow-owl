@@ -23,7 +23,7 @@ public class IntRangePredicate extends Predicate {
 	private final int from;
 	private final int to;
 
-	public IntRangePredicate(String field, int from, int to) {
+	IntRangePredicate(String field, int from, int to) {
 		super(field);
 		this.from = from;
 		this.to = to;

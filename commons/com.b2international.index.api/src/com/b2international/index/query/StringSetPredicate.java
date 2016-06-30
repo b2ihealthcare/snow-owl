@@ -24,7 +24,7 @@ public final class StringSetPredicate extends Predicate {
 
 	private final Set<String> values;
 
-	public StringSetPredicate(String field, Set<String> values) {
+	StringSetPredicate(String field, Set<String> values) {
 		super(field);
 		this.values = values;
 	}

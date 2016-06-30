@@ -20,7 +20,7 @@ package com.b2international.index.query;
  */
 public class LongPredicate extends SingleArgumentPredicate<Long> {
 
-	public LongPredicate(String field, Long argument) {
+	LongPredicate(String field, Long argument) {
 		super(field, argument);
 	}
 

@@ -22,7 +22,7 @@ public class NestedPredicate extends Predicate {
 
 	private final Expression expression;
 
-	public NestedPredicate(String path, Expression expression) {
+	NestedPredicate(String path, Expression expression) {
 		super(path);
 		this.expression = expression;
 	}

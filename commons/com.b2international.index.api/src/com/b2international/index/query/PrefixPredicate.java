@@ -20,7 +20,7 @@ package com.b2international.index.query;
  */
 public class PrefixPredicate extends SingleArgumentPredicate<String> {
 
-	public PrefixPredicate(String field, String argument) {
+	PrefixPredicate(String field, String argument) {
 		super(field, argument);
 	}
 
