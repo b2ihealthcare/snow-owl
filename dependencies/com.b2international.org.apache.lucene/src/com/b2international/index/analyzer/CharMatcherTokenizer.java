@@ -15,10 +15,7 @@
  */
 package com.b2international.index.analyzer;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.util.CharTokenizer;
-import org.apache.lucene.util.Version;
 
 import com.google.common.base.CharMatcher;
 
@@ -30,8 +27,8 @@ public class CharMatcherTokenizer extends CharTokenizer {
 
 	private final CharMatcher tokenBoundaryMatcher;
 
-	public CharMatcherTokenizer(final Reader input, final CharMatcher tokenBoundaryMatcher) {
-		super(Version.LUCENE_4_9, input);
+	public CharMatcherTokenizer(final CharMatcher tokenBoundaryMatcher) {
+		super();
 		this.tokenBoundaryMatcher = tokenBoundaryMatcher;
 	}
 

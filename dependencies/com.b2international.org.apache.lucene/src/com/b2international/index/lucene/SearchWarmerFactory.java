@@ -36,8 +36,8 @@ public class SearchWarmerFactory extends SearcherFactory {
 	private static final String EMPTY_STRING = "";
 
 	@Override
-	public IndexSearcher newSearcher(IndexReader reader) throws IOException {
-		IndexSearcher searcher = super.newSearcher(reader);
+	public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
+		IndexSearcher searcher = super.newSearcher(reader, previousReader);
 
 		// TODO: experiment with different queries (MatchAllDocs, a set of "typical" queries, etc.)
 		final BooleanQuery query = new BooleanQuery();

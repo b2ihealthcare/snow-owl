@@ -19,8 +19,8 @@ import java.io.IOException;
 
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.LeafReader;
 
 /**
  * @since 4.3
@@ -43,7 +43,7 @@ public class DocValuesStringIndexField extends StringIndexField implements Binar
 	}
 
 	@Override
-	public BinaryDocValues getDocValues(AtomicReader reader) throws IOException {
+	public BinaryDocValues getDocValues(LeafReader reader) throws IOException {
 		return reader.getBinaryDocValues(fieldName());
 	}
 

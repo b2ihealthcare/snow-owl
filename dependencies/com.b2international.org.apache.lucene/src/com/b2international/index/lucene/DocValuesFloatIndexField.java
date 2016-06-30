@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.NumericDocValues;
 
 /**
@@ -44,7 +44,7 @@ public class DocValuesFloatIndexField extends FloatIndexField implements Numeric
 	}
 
 	@Override
-	public NumericDocValues getDocValues(AtomicReader reader) throws IOException {
+	public NumericDocValues getDocValues(LeafReader reader) throws IOException {
 		return reader.getNumericDocValues(fieldName());
 	}
 	

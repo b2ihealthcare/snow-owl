@@ -18,8 +18,8 @@ package com.b2international.index.lucene;
 import java.io.IOException;
 
 import org.apache.lucene.document.BinaryDocValuesField;
-import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.LeafReader;
 
 /**
  * @since 4.3
@@ -28,6 +28,6 @@ public interface BinaryDocValuesIndexField extends IndexField<String> {
 
 	BinaryDocValuesField toDocValuesField(String value);
 	
-	BinaryDocValues getDocValues(AtomicReader reader) throws IOException;
+	BinaryDocValues getDocValues(LeafReader reader) throws IOException;
 	
 }

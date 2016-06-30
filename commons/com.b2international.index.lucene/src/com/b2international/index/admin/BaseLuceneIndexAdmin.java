@@ -42,7 +42,6 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.Version;
 
 import com.b2international.index.AnalyzerImpls;
 import com.b2international.index.Analyzers;
@@ -140,7 +139,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			executor = Executors.newFixedThreadPool(Math.max(2, Math.min(16, Runtime.getRuntime().availableProcessors())));
 			manager = new SearcherManager(writer, true, new SearcherFactory() {
 				@Override
-				public IndexSearcher newSearcher(IndexReader reader) throws IOException {
+				public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
 					return new IndexSearcher(reader, executor);
 				}
 			});
@@ -166,7 +165,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 
 	private IndexWriterConfig createConfig(boolean clean) {
 		// TODO configurable analyzer and options
-		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, getDefaultAnalyzer());
+		final IndexWriterConfig config = new IndexWriterConfig(getDefaultAnalyzer());
 		config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
 		return config;
 	}

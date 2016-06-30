@@ -17,6 +17,7 @@ package com.b2international.index.lucene;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
@@ -56,14 +57,14 @@ public class Directories {
 	 * performance you should consider using {@link MMapDirectory} on 64 bit JVMs.
 	 *
 	 */
-	public static FSDirectory openFile(final File path) throws IOException {
-		return openFile(path, null);
+	public static FSDirectory openFile(final Path path) throws IOException {
+		return openFile(path, NativeFSLockFactory.INSTANCE);
 	}
 
 	/**
 	 * Just like {@link #openFile(File)}, but allows you to also specify a custom {@link LockFactory}.
 	 */
-	public static FSDirectory openFile(final File path, final LockFactory lockFactory) throws IOException {
+	public static FSDirectory openFile(final Path path, final LockFactory lockFactory) throws IOException {
 		if ((Constants.WINDOWS || Constants.SUN_OS || Constants.LINUX || Constants.MAC_OS_X) && Constants.JRE_IS_64BIT
 				&& MMapDirectory.UNMAP_SUPPORTED) {
 

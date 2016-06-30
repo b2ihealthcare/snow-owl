@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.NumericDocValues;
 
 /**
@@ -50,7 +50,7 @@ public class StoredOnlyDocValuesLongIndexField<T extends Number> extends IndexFi
 	}
 
 	@Override
-	public NumericDocValues getDocValues(AtomicReader reader) throws IOException {
+	public NumericDocValues getDocValues(LeafReader reader) throws IOException {
 		return reader.getNumericDocValues(fieldName());
 	}
 

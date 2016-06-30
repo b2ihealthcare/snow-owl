@@ -27,6 +27,7 @@ import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 
 import com.b2international.collections.PrimitiveLists;
@@ -116,9 +117,9 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	 * @deprecated - if possible don't use this API, use {@link Fields} or {@link #LongIndexField(String) constructor} instead
 	 */
 	public static BytesRef _toBytesRef(Long value) {
-		final BytesRef bytesRef = new BytesRef();
+		final BytesRefBuilder bytesRef = new BytesRefBuilder();
 		NumericUtils.longToPrefixCoded(value, 0, bytesRef);
-		return bytesRef;
+		return bytesRef.toBytesRef();
 	}
 
 }

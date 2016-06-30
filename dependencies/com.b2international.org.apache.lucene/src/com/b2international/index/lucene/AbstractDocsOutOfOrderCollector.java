@@ -17,29 +17,28 @@ package com.b2international.index.lucene;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.CollectionTerminatedException;
-import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.SimpleCollector;
 
 /**
  * Abstract collector without scorer feature. The doc IDs will *NOT* be visited in order.
  */
-public abstract class AbstractDocsOutOfOrderCollector extends Collector {
+public abstract class AbstractDocsOutOfOrderCollector extends SimpleCollector {
 
 	@Override
 	public final void setScorer(final Scorer scorer) throws IOException {
-		return;
+	}
+	
+	@Override
+	public boolean needsScores() {
+		return false;
 	}
 
 	@Override
-	public final boolean acceptsDocsOutOfOrder() {
-		return true;
-	}
-
-	@Override
-	public final void setNextReader(final AtomicReaderContext context) throws IOException {
+	public final void doSetNextReader(final LeafReaderContext context) throws IOException {
 		initDocValues(context.reader());
 
 		if (!isLeafCollectible()) {
@@ -52,7 +51,7 @@ public abstract class AbstractDocsOutOfOrderCollector extends Collector {
 	 * 
 	 * @param leafReader the {@link AtomicReader} to use for retrieving docvalues
 	 */
-	protected abstract void initDocValues(AtomicReader leafReader) throws IOException;
+	protected abstract void initDocValues(LeafReader leafReader) throws IOException;
 
 	/**
 	 * Checks whether all required fields are available for reading.

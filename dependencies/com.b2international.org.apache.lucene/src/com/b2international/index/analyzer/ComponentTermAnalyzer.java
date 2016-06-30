@@ -15,8 +15,6 @@
  */
 package com.b2international.index.analyzer;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.Tokenizer;
@@ -48,14 +46,14 @@ public class ComponentTermAnalyzer extends Analyzer {
 	}
 
 	@Override
-	protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-		final Tokenizer source = createTokenizer(fieldName, reader);
+	protected TokenStreamComponents createComponents(final String fieldName) {
+		final Tokenizer source = createTokenizer(fieldName);
 		final TokenFilter result = createFilterChain(source);
 		return new TokenStreamComponents(source, result);
 	}
 
-	private Tokenizer createTokenizer(final String fieldName, final Reader reader) {
-		return new CharMatcherTokenizer(reader, TextConstants.WHITESPACE_OR_DELIMITER_MATCHER);
+	private Tokenizer createTokenizer(final String fieldName) {
+		return new CharMatcherTokenizer(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER);
 	}
 
 	private TokenFilter createFilterChain(final Tokenizer source) {

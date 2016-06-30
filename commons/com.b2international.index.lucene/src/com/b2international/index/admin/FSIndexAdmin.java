@@ -39,7 +39,7 @@ public final class FSIndexAdmin extends BaseLuceneIndexAdmin {
 
 	@Override
 	protected Directory openDirectory() throws IOException {
-		return Directories.openFile(indexPath.toFile());
+		return Directories.openFile(indexPath);
 	}
 	
 }

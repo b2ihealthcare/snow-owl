@@ -37,22 +37,20 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.NumericRangeFilter;
-import org.apache.lucene.search.PrefixFilter;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermRangeFilter;
+import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 import org.apache.lucene.util.QueryBuilder;
-import org.apache.lucene.util.Version;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
@@ -72,51 +70,7 @@ public final class LuceneQueryBuilder {
 
 	private static String ILLEGAL_STACK_STATE_MESSAGE = "Illegal internal stack state: %s";
 	
-	private final class DequeItem {
-		private final Object query;
-		
-		DequeItem(org.apache.lucene.search.Query query) {
-			this.query = query;
-		}
-		
-		DequeItem(Filter filter) {
-			this.query = filter;
-		}
-
-		@Override
-		public String toString() {
-			return query.toString();
-		}
-
-		public boolean isFilter() {
-			return query instanceof Filter;
-		}
-		
-		public boolean isQuery() {
-			return query instanceof Query;
-		}
-		
-		public Filter getFilter() {
-			return (Filter) query;
-		}
-		
-		public Query getQuery() {
-			return (Query) query;
-		}
-		
-		public Query toQuery() {
-			if (isQuery()) {
-				return getQuery();
-			} else if (isFilter()) {
-				return new ConstantScoreQuery(getFilter());
-			} else {
-				throw newIllegalStateException();
-			}
-		}
-
-	}
-	
-	private final Deque<DequeItem> deque = Queues.newLinkedBlockingDeque();
+	private final Deque<Query> deque = Queues.newLinkedBlockingDeque();
 	private final DocumentMapping mapping;
 	
 	public LuceneQueryBuilder(DocumentMapping mapping) {
@@ -132,7 +86,7 @@ public final class LuceneQueryBuilder {
 		// always filter by type
 		visit(Expressions.builder().must(mapping.matchType()).must(expression).build());
 		if (deque.size() == 1) {
-			return deque.pop().toQuery();
+			return deque.pop();
 		} else {
 			throw newIllegalStateException();
 		}
@@ -140,7 +94,7 @@ public final class LuceneQueryBuilder {
 
 	private void visit(Expression expression) {
 		if (expression instanceof MatchAll) {
-			deque.push(new DequeItem(new MatchAllDocsQuery()));
+			deque.push(new MatchAllDocsQuery());
 		} else if (expression instanceof StringPredicate) {
 			StringPredicate predicate = (StringPredicate) expression;
 			visit(predicate);
@@ -188,8 +142,8 @@ public final class LuceneQueryBuilder {
 	private void visit(CustomScoreExpression expression) {
 		final Expression inner = expression.expression();
 		visit(inner);
-		final Query innerQuery = deque.pop().toQuery();
-		deque.push(new DequeItem(new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())))));
+		final Query innerQuery = deque.pop();
+		deque.push(new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func()))));
 	}
 	
 	private ValueSource visit(final ScoreFunction func) {
@@ -227,47 +181,48 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(BooleanPredicate predicate) {
-		deque.push(new DequeItem(Fields.boolField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()))));
+		deque.push(Fields.boolField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument())));
 	}
 	
 	private void visit(BoolExpression bool) {
-		final BooleanQuery query = new BooleanQuery();
+		final BooleanQuery.Builder query = new BooleanQuery.Builder();
+		query.setDisableCoord(true);
 		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
 			visit(must);
-			final DequeItem item = deque.pop();
-			query.add(item.toQuery(), Occur.MUST);
+			query.add(deque.pop(), Occur.MUST);
 		}
 		
 		for (Expression mustNot : bool.mustNotClauses()) {
 			visit(mustNot);
-			final DequeItem item = deque.pop();
-			query.add(item.toQuery(), Occur.MUST_NOT);
+			query.add(deque.pop(), Occur.MUST_NOT);
 		}
 		
 		for (Expression should : bool.shouldClauses()) {
 			visit(should);
-			final DequeItem item = deque.pop();
-			query.add(item.toQuery(), Occur.SHOULD);
+			query.add(deque.pop(), Occur.SHOULD);
 		}
 		
 		if (!bool.shouldClauses().isEmpty()) {
-			query.setMinimumNumberShouldMatch(query.getMinimumNumberShouldMatch());
+			query.setMinimumNumberShouldMatch(bool.minShouldMatch());
 		}
 		
-		deque.push(new DequeItem(query));
+		deque.push(query.build());
 	}
 	
 	private void visit(NestedPredicate predicate) {
-		final Filter parentFilter = JsonDocumentMapping.filterByType(mapping.typeAsString());
+		final Query parentFilter = JsonDocumentMapping.filterByType(mapping.typeAsString());
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		final Filter childFilter = JsonDocumentMapping.filterByType(nestedMapping.typeAsString());
+		final Query childFilter = JsonDocumentMapping.filterByType(nestedMapping.typeAsString());
 		final Query innerQuery = new LuceneQueryBuilder(nestedMapping).build(predicate.getExpression());
-		final Query childQuery = new FilteredQuery(innerQuery, childFilter);
+		final Query childQuery = new BooleanQuery.Builder()
+										.add(innerQuery, Occur.MUST)
+										.add(childFilter, Occur.FILTER)
+										.build();
 		// TODO scoring???
-		final Query nestedQuery = new ToParentBlockJoinQuery(childQuery, parentFilter, ScoreMode.None);
-		deque.push(new DequeItem(nestedQuery));
+		final Query nestedQuery = new ToParentBlockJoinQuery(childQuery, new QueryBitSetProducer(parentFilter), ScoreMode.None);
+		deque.push(nestedQuery);
 	}
 	
 	private void visit(HasParentPredicate predicate) {
@@ -278,8 +233,10 @@ public final class LuceneQueryBuilder {
 		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
 		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
 		
-		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, JsonDocumentMapping.filterByType(parentMapping.typeAsString()), false);
-		deque.push(new DequeItem(toChildQuery));
+		final Query parentFilter = JsonDocumentMapping.filterByType(parentMapping.typeAsString());
+		
+		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, new QueryBitSetProducer(parentFilter));
+		deque.push(toChildQuery);
 	}
 
 	private void visit(TextPredicate predicate) {
@@ -312,14 +269,15 @@ public final class LuceneQueryBuilder {
 			break;
 		case ALL_PREFIX:
 			final List<String> prefixes = Highlighting.split(analyzer, term);
-			final BooleanQuery q = new BooleanQuery(true);
+			final BooleanQuery.Builder q = new BooleanQuery.Builder();
+			q.setDisableCoord(true);
 			for (String prefix : prefixes) {
 				q.add(new PrefixQuery(new Term(field, prefix)), Occur.MUST);
 			}
-			query = q;
+			query = q.build();
 			break;
 		case PARSED:
-			final QueryParser parser = new QueryParser(Version.LUCENE_4_9, field, analyzer);
+			final QueryParser parser = new QueryParser(field, analyzer);
 			parser.setDefaultOperator(Operator.AND);
 			parser.setAllowLeadingWildcard(true);
 			try {
@@ -330,73 +288,71 @@ public final class LuceneQueryBuilder {
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
-		deque.push(new DequeItem(query));		
+		deque.push(query);		
 	}
 	
 	private void visit(StringPredicate predicate) {
-		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
-		deque.push(new DequeItem(filter));
+		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		deque.push(filter);
 	}
 	
 	private void visit(StringSetPredicate predicate) {
-		final Filter filter = Fields.stringField(predicate.getField()).createTermsFilter(predicate.values());
-		deque.push(new DequeItem(filter));
+		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(predicate.values());
+		deque.push(filter);
 	}
 	
 	private void visit(IntSetPredicate predicate) {
-		final Filter filter = Fields.intField(predicate.getField()).createTermsFilter(predicate.values());
-		deque.push(new DequeItem(filter));
+		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(predicate.values());
+		deque.push(filter);
 	}
 	
 	private void visit(LongSetPredicate predicate) {
-		final Filter filter = Fields.longField(predicate.getField()).createTermsFilter(predicate.values());
-		deque.push(new DequeItem(filter));
+		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(predicate.values());
+		deque.push(filter);
 	}
 	
 	private void visit(PrefixPredicate predicate) {
-		final Filter filter = new PrefixFilter(new Term(predicate.getField(), predicate.getArgument()));
-		deque.push(new DequeItem(filter));
+		final Query filter = new PrefixQuery(new Term(predicate.getField(), predicate.getArgument()));
+		deque.push(filter);
 	}
 	
 	private void visit(IntPredicate predicate) {
-		final Filter filter = Fields.intField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
-		deque.push(new DequeItem(filter));
+		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		deque.push(filter);
 	}
 	
 	private void visit(LongPredicate predicate) {
-		final Filter filter = Fields.longField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
-		deque.push(new DequeItem(filter));
+		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		deque.push(filter);
 	}
 	
 	private void visit(LongRangePredicate range) {
-		final Filter filter = NumericRangeFilter.newLongRange(range.getField(), range.from(), range.to(), true, true);
-		deque.push(new DequeItem(filter));
+		final Query filter = NumericRangeQuery.newLongRange(range.getField(), range.from(), range.to(), true, true);
+		deque.push(filter);
 	}
 	
 	private void visit(IntRangePredicate range) {
-		final Filter filter = NumericRangeFilter.newIntRange(range.getField(), range.from(), range.to(), true, true);
-		deque.push(new DequeItem(filter));
+		final Query filter = NumericRangeQuery.newIntRange(range.getField(), range.from(), range.to(), true, true);
+		deque.push(filter);
 	}
 	
 	private void visit(StringRangePredicate range) {
-		final Filter filter = TermRangeFilter.newStringRange(range.getField(), range.from(), range.to(), true, true);
-		deque.push(new DequeItem(filter));
+		final Query filter = TermRangeQuery.newStringRange(range.getField(), range.from(), range.to(), true, true);
+		deque.push(filter);
 	}
 	
 	private void visit(DisMaxPredicate dismax) {
 		final List<Query> disjuncts = newArrayList();
 		for (Expression disjunct : dismax.disjuncts()) {
 			visit(disjunct);
-			disjuncts.add(deque.pop().toQuery());
+			disjuncts.add(deque.pop());
 		}
-		deque.push(new DequeItem(new DisjunctionMaxQuery(disjuncts, dismax.tieBreaker())));
+		deque.push(new DisjunctionMaxQuery(disjuncts, dismax.tieBreaker()));
 	}
 	
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
-		final Query query = deque.pop().toQuery();
-		query.setBoost(boost.boost());
-		deque.push(new DequeItem(query));
+		deque.push(new BoostQuery(deque.pop(), boost.boost()));
 	}
 	
 }

@@ -17,12 +17,14 @@ package com.b2international.index.lucene;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.SimpleCollector;
+import org.apache.lucene.util.BitDocIdSet;
 import org.apache.lucene.util.FixedBitSet;
 
 import com.google.common.base.Preconditions;
@@ -32,7 +34,7 @@ import com.google.common.base.Preconditions;
  * @see DocIds
  * @see DocIdsIterator
  */
-public class DocIdCollector extends Collector {
+public class DocIdCollector extends SimpleCollector {
 
 	private FixedBitSet docIds;
 	private int numDocIds;
@@ -58,6 +60,11 @@ public class DocIdCollector extends Collector {
 	}
 	
 	@Override
+	public boolean needsScores() {
+		return false;
+	}
+	
+	@Override
 	public void setScorer(Scorer scorer) throws IOException {
 		//intentionally ignored
 	}
@@ -70,15 +77,10 @@ public class DocIdCollector extends Collector {
 	}
 
 	@Override
-	public void setNextReader(AtomicReaderContext context) throws IOException {
+	public void doSetNextReader(LeafReaderContext context) throws IOException {
 		docBase = Preconditions.checkNotNull(context, "Atomic reader context argument cannot be null.").docBase;
 	}
 
-	@Override
-	public boolean acceptsDocsOutOfOrder() {
-		return true;
-	}
-	
 	/**
 	 * Returns with the {@link DocIds} instance.
 	 * @return the document IDs.
@@ -94,7 +96,7 @@ public class DocIdCollector extends Collector {
 			@Override public DocIdsIterator iterator() throws IOException {
 				return new DocIdsIterator() {
 					
-					private DocIdSetIterator docIdSetItr = docIds.iterator();
+					private DocIdSetIterator docIdSetItr = new BitDocIdSet(docIds).iterator();
 					private int nextDoc;
 					
 					@Override public boolean next() {
@@ -122,7 +124,7 @@ public class DocIdCollector extends Collector {
 			}
 			
 			@Override public DocIdSet getDocIDs() {
-				return docIds;
+				return new BitDocIdSet(docIds);
 			}
 		};
 		

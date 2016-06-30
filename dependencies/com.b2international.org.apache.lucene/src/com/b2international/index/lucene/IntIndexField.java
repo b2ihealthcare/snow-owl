@@ -22,6 +22,7 @@ import org.apache.lucene.document.IntField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 
 /**
@@ -71,9 +72,9 @@ public class IntIndexField extends IndexFieldBase<Integer> {
 	 * @deprecated - if possible don't use this API, use {@link Fields} or {@link #IntIndexField(String) constructor} instead.
 	 */
 	public static BytesRef _toBytesRef(Integer value) {
-		final BytesRef bytesRef = new BytesRef();
+		final BytesRefBuilder bytesRef = new BytesRefBuilder();
 		NumericUtils.intToPrefixCoded(value, 0, bytesRef);
-		return bytesRef;
+		return bytesRef.toBytesRef();
 	}
 
 }

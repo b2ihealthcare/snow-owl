@@ -18,7 +18,7 @@ package com.b2international.index.lucene;
 import java.io.IOException;
 
 import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.NumericDocValues;
 
 /**
@@ -29,6 +29,6 @@ public interface NumericDocValuesIndexField<T extends Number> extends IndexField
 
 	NumericDocValuesField toDocValuesField(T value);
 	
-	NumericDocValues getDocValues(AtomicReader reader) throws IOException;
+	NumericDocValues getDocValues(LeafReader reader) throws IOException;
 	
 }

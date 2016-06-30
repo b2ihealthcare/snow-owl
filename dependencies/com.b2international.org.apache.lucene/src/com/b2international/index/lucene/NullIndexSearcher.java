@@ -23,7 +23,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 
 /**
  * Null implementation of an {@link IndexSearcher index searcher}.
@@ -73,7 +72,7 @@ public class NullIndexSearcher extends IndexSearcher {
 		final RAMDirectory directory = new RAMDirectory();
 		if (!DirectoryReader.indexExists(directory)) {
 			
-			final IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_4_9, new WhitespaceAnalyzer(Version.LUCENE_4_9));
+			final IndexWriterConfig conf = new IndexWriterConfig(new WhitespaceAnalyzer());
 			final IndexWriter writer = new IndexWriter(directory, conf);
 			writer.commit();
 			writer.close();

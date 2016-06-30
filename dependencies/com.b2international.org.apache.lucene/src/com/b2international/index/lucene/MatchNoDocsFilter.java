@@ -17,7 +17,7 @@ package com.b2international.index.lucene;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.util.Bits;
@@ -30,7 +30,12 @@ import org.apache.lucene.util.Bits;
 public class MatchNoDocsFilter extends Filter {
 
 	@Override
-	public DocIdSet getDocIdSet(AtomicReaderContext context, Bits acceptDocs) throws IOException {
+	public DocIdSet getDocIdSet(LeafReaderContext context, Bits acceptDocs) throws IOException {
 		return null;
+	}
+
+	@Override
+	public String toString(String arg0) {
+		return "NODOCS";
 	}
 }

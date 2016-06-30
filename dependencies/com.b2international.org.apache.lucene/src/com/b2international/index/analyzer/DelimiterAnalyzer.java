@@ -15,8 +15,6 @@
  */
 package com.b2international.index.analyzer;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
 
@@ -26,8 +24,8 @@ import org.apache.lucene.analysis.Tokenizer;
 public final class DelimiterAnalyzer extends Analyzer {
 
 	@Override
-	protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-		final Tokenizer source = new DelimiterTokenizer(reader);
+	protected TokenStreamComponents createComponents(final String fieldName) {
+		final Tokenizer source = new DelimiterTokenizer();
 		return new TokenStreamComponents(source);
 	}
 }
