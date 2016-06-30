@@ -201,6 +201,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 		member.setIconId(entry.getIconId());
 		member.setReferenceSetId(entry.getReferenceSetId());
 		member.setType(entry.getReferenceSetType());
+		member.setScore(entry.getScore());
 
 		final Map<String, Object> props = newHashMap(entry.getAdditionalFields());
 		// convert ID to resources where possible to override value with nested object in JSON

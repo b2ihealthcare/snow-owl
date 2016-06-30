@@ -94,7 +94,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 		result.setIconId(input.getIconId());
 		result.setReleased(input.isReleased());
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
-//		result.setScore(input.getScore());
+		result.setScore(input.getScore());
 		
 		if (input.getAncestors() != null) {
 			result.setAncestorIds(input.getAncestors().toArray());
