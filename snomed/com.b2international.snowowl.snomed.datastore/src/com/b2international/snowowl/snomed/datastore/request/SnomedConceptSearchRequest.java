@@ -33,10 +33,14 @@ import java.util.Map;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
+import com.b2international.index.query.DualScoreFunction;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.FieldScoreFunction;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.ScoreFunction;
+import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
@@ -52,6 +56,7 @@ import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluato
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Fields;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 
@@ -182,10 +187,6 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 
 		if (containsKey(OptionKey.ESCG)) {
-			/* 
-			 * XXX: Not using IEscgQueryEvaluatorService, as it would add the equivalent of 
-			 * active() and concept() to escgQuery, which is not needed.
-			 */
 			final String escg = getString(OptionKey.ESCG);
 			try {
 				final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
@@ -207,7 +208,8 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 
 		
-		Expression queryExpression;
+		final Expression queryExpression;
+		final SortBy sortBy;
 		
 		if (containsKey(OptionKey.TERM)) {
 			final ExpressionBuilder bq = Expressions.builder();
@@ -234,52 +236,44 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			
 			queryBuilder.must(ids(conceptScoreMap.keySet()));
 			
-			// TODO support scoring
-//			final FunctionQuery functionQuery = new FunctionQuery(
-//					new DualFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName()), DOI_VALUE_SOURCE) {
-//						@Override
-//						protected String name() {
-//							return "ConceptScoreMap";
-//						}
-//
-//						@Override
-//						protected float func(int doc, FunctionValues conceptIdValues, FunctionValues interestValues) {
-//							final String conceptId = Long.toString(conceptIdValues.longVal(doc));
-//							float interest = containsKey(OptionKey.USE_DOI) ? interestValues.floatVal(doc) : 0.0f;
-//							
-//							// TODO move this normalization to index initializer.
-//							if (interest != 0.0f) {
-//								interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE - MIN_DOI_VALUE);
-//							}
-//							
-//							if (conceptScoreMap.containsKey(conceptId)) {
-//								return conceptScoreMap.get(conceptId) + interest;
-//							} else {
-//								return 0.0f;
-//							}
-//						}
-//					});
-
-//			final Query filteredQuery = createFilteredQuery(bq, filter);
-//			final Expression q = addSearchProfile(searchProfileQuery, filteredQuery);
-//			query = new CustomScoreQuery(q, functionQuery);
-//			sort = Sort.RELEVANCE;
+			final ScoreFunction func = new DualScoreFunction<String, Float>("ConceptScoreMap", Fields.ID, Fields.DOI) {
+				@Override
+				protected float compute(String idValue, Float interestValue) {
+					float interest = containsKey(OptionKey.USE_DOI) ? interestValue : 0.0f;
+					
+					// TODO move this normalization to index initializer.
+					if (interest != 0.0f) {
+						interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE - MIN_DOI_VALUE);
+					}
+					
+					if (conceptScoreMap.containsKey(idValue)) {
+						return conceptScoreMap.get(idValue) + interest;
+					} else {
+						return 0.0f;
+					}
+				}
+			};
+			
+			
+			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
+			queryExpression = Expressions.customScore(q, func);
+			sortBy = SortBy.SCORE;
 		} else if (containsKey(OptionKey.USE_DOI)) {
-			throw new UnsupportedOperationException("TODO support DOI based scoring");
-//			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
-//			final Expression q = addSearchProfile(searchProfileQuery, filteredQuery);
-//			query = new CustomScoreQuery(createConstantScoreQuery(q), new FunctionQuery(DOI_VALUE_SOURCE));
-//			sort = Sort.RELEVANCE;
+			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
+			queryExpression = Expressions.customScore(q, new FieldScoreFunction(Fields.DOI));
+			sortBy = SortBy.SCORE;
+		} else {
+			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
+			sortBy = SortBy.NONE;
 		}
 		
-		queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
 		
-		// TODO: control score tracking
 		final Hits<SnomedConceptDocument> hits = searcher.search(Query.builder(SnomedConceptDocument.class)
 				.selectAll()
 				.where(queryExpression)
 				.offset(offset())
 				.limit(limit())
+				.withScores(SortBy.SCORE == sortBy)
 				.build());
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedConcepts(offset(), limit(), hits.getTotal());

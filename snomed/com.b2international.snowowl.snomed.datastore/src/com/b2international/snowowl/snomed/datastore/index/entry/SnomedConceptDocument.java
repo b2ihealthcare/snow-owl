@@ -167,6 +167,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		public static final String STRUCTURAL = "structural";
 		public static final String REFERRING_REFSETS = "referringRefSets";
 		public static final String REFERRING_MAPPING_REFSETS = "referringMappingRefSets";
+		public static final String DOI = "doi";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {

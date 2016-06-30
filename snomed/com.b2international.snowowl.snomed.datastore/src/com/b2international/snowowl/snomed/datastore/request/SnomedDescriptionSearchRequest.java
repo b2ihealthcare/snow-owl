@@ -122,7 +122,6 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 	}
 
 	private SnomedDescriptions search(BranchContext context, final RevisionSearcher searcher, String languageRefSetId, int offset, int limit) throws IOException {
-		
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		// Add (presumably) most selective filters first
 		addActiveClause(queryBuilder);
@@ -157,13 +156,13 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			sortBy = SortBy.SCORE;
 		}
 
-		// TODO: control score tracking
 		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(Query.builder(SnomedDescriptionIndexEntry.class)
 				.selectAll()
 				.where(queryBuilder.build())
 				.offset(offset)
 				.limit(limit)
 				.sortBy(sortBy)
+				.withScores(containsKey(OptionKey.TERM))
 				.build());
 		if (limit < 1 || hits.getTotal() < 1) {
 			return new SnomedDescriptions(offset, limit, hits.getTotal());
