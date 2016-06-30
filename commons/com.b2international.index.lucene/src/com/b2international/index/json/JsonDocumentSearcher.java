@@ -118,7 +118,7 @@ public class JsonDocumentSearcher implements Searcher {
 			return Hits.empty(offset, limit);
 		}
 		
-		final TopFieldDocs topDocs = searcher.search(lq, null, numDocsToRetrieve(offset, limit), toSort(query.getSortBy()), true, false);
+		final TopFieldDocs topDocs = searcher.search(lq, numDocsToRetrieve(offset, limit), toSort(query.getSortBy()), true, false);
 		System.err.println("Search: " + w);
 		if (topDocs.scoreDocs.length < 1) {
 			return Hits.empty(offset, limit);

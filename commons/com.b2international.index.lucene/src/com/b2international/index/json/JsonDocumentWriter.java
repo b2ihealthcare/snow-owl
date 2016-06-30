@@ -16,6 +16,7 @@
 package com.b2international.index.json;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -98,17 +99,19 @@ public class JsonDocumentWriter implements Writer {
 	
 	@Override
 	public void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException {
-		final BooleanQuery deleteQuery = new BooleanQuery(true);
-		// TODO more than max clauses
+		final BooleanQuery.Builder deleteQuery = new BooleanQuery.Builder();
+		deleteQuery.setDisableCoord(true);
 		for (Entry<Class<?>, Set<String>> entry : keysByType.entrySet()) {
 			final Class<?> type = entry.getKey();
 			final Set<String> keys = entry.getValue();
 			final DocumentMapping mapping = mappings.getMapping(type);
+			final Set<String> uids = newHashSet();
 			for (String key : keys) {
-				deleteQuery.add(JsonDocumentMapping._uid().toQuery(mapping.toUid(key)), Occur.SHOULD);
+				uids.add(mapping.toUid(key));
 			}
+			deleteQuery.add(JsonDocumentMapping._uid().createTermsFilter(uids), Occur.FILTER);
 		}
-		this.operations.add(new DeleteByQuery(deleteQuery));
+		this.operations.add(new DeleteByQuery(deleteQuery.build()));
 	}
 
 }
