@@ -67,18 +67,22 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	@Override
 	public void handleCommitInfo(final CDOCommitInfo commitInfo) {
 		final long commitTimestamp = commitInfo.getTimeStamp();
-		final Entry<Long, CDOBranch> branchToReplicate = branchesByBasetimestamp.floorEntry(commitTimestamp);
+		
+		Entry<Long, CDOBranch> branchToReplicate = branchesByBasetimestamp.floorEntry(commitTimestamp);
 		if (branchToReplicate != null) {
-			final CDOBranch branch = branchToReplicate.getValue();
-			System.err.println("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
-			context.service(BranchReplicator.class).replicateBranch(branch);
-			branchesByBasetimestamp.remove(branchToReplicate.getKey());
+			// replicate all branches created before the current commit
+			do {
+				final CDOBranch branch = branchToReplicate.getValue();
+				System.err.println("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
+				context.service(BranchReplicator.class).replicateBranch(branch);
+				branchesByBasetimestamp.remove(branchToReplicate.getKey());
+				
+				// if there are more branches to create at this point
+				branchToReplicate = branchesByBasetimestamp.floorEntry(commitTimestamp);
+			} while (branchToReplicate != null);
 			
 			// optimize index after branch creations
-			OptimizeRequest.builder(context.id())
-				.setMaxSegments(4)
-				.build()
-				.execute(context);
+			optimize();
 		}
 		
 		System.err.println("Replicating commit: " + commitInfo.getComment() + " at " + commitTimestamp);
@@ -193,6 +197,13 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			transaction.close();
 			StoreThreadLocal.setSession(replicatorSession);
 		}
+	}
+
+	private void optimize() {
+		OptimizeRequest.builder(context.id())
+			.setMaxSegments(4)
+			.build()
+			.execute(context);
 	}
 
 	@Override
