@@ -20,43 +20,75 @@ import static com.google.common.collect.Lists.newLinkedList;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexWriter;
 
+import com.b2international.collections.floats.FloatCollection;
+import com.b2international.collections.ints.IntCollection;
+import com.b2international.collections.longs.LongCollection;
+import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.util.Reflections;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @since 4.7
  */
-class Index implements Operation {
+public final class Index implements Operation {
 
-	private final String uid;
 	private final String key;
-	private final Object document;
-	private final JsonDocumentMappingStrategy mapper;
-	private final DocumentMapping mapping;
+	private byte[] source;
 
-	Index(String uid, String key, Object document, JsonDocumentMappingStrategy mapper, DocumentMapping mapping) {
-		this.uid = uid;
+	// transient values, should not be serialized into the translog
+	private final Object document;
+	private final DocumentMapping mapping;
+	private ObjectMapper mapper;
+
+	public Index(String key, Object source, ObjectMapper mapper, DocumentMapping mapping) {
 		this.key = key;
-		this.document = document;
+		this.document = source;
 		this.mapper = mapper;
 		this.mapping = mapping;
 	}
 	
+	public Index(String key, byte[] source, ObjectMapper mapper, DocumentMapping mapping) {
+		this.key = key;
+		this.source = source;
+		this.mapper = mapper;
+		this.mapping = mapping;
+		// no document source in this case, we will use the source byte array as document source
+		this.document = null;
+	}
+	
 	@Override
 	public void execute(IndexWriter writer) throws IOException {
+		final String uid = mapping.toUid(key);
 		final Collection<Document> docs = newLinkedList();
-		collectDocs(uid, key, document, mapping, docs);
+		
+		final JsonNode doc = this.document == null ? mapper.readTree(source) : mapper.valueToTree(document);
+		if (source == null) {
+			source = mapper.writeValueAsBytes(doc);
+		}
+		if (doc instanceof ObjectNode) {
+			collectDocs(uid, key, (ObjectNode) doc, mapping, docs);
+		} else {
+			throw new IllegalArgumentException("Expecting root object documents instead of " + doc);
+		}
+		
 		// update all documents with the same uid
 		writer.updateDocuments(JsonDocumentMapping._uid().toTerm(uid), docs);
 	}
 	
 	/* traverse the fields and map the given object and its nested objects */
-	private void collectDocs(String uid, String key, Object object, final DocumentMapping mapping, final Collection<Document> docs) throws IOException {
+	private void collectDocs(String uid, String key, ObjectNode object, final DocumentMapping mapping, final Collection<Document> docs) throws IOException {
 		for (Field field : mapping.getFields()) {
 			// skip Maps
 			if (Reflections.isMapType(field)) {
@@ -65,18 +97,100 @@ class Index implements Operation {
 			final Class<?> fieldType = Reflections.getType(field);
 			if (DocumentMapping.isNestedDoc(fieldType)) {
 				final DocumentMapping nestedTypeMapping = mapping.getNestedMapping(fieldType);
-				final Object fieldValue = Reflections.getValue(object, field);
-				if (fieldValue instanceof Iterable) {
-					for (Object item : (Iterable<?>) fieldValue) {
-						collectDocs(uid, UUID.randomUUID().toString(), item, nestedTypeMapping, docs);
+				final JsonNode node = object.get(field.getName());
+				if (node instanceof ArrayNode) {
+					for (JsonNode item : (ArrayNode) node) {
+						if (item instanceof ObjectNode) {
+							collectDocs(uid, UUID.randomUUID().toString(), (ObjectNode) item, nestedTypeMapping, docs);
+						}
 					}
-				} else {
-					collectDocs(uid, UUID.randomUUID().toString(), fieldValue, nestedTypeMapping, docs);
+				} else if (node instanceof ObjectNode) {
+					collectDocs(uid, UUID.randomUUID().toString(), (ObjectNode) node, nestedTypeMapping, docs);
 				}
 			}
 		}
-		final Document doc = this.mapper.map(uid, key, object, mapping);
+		final Document doc = map(uid, key, object, mapping);
 		docs.add(doc);
+	}
+	
+	public String type() {
+		return mapping.typeAsString();
+	}
+	
+	public byte[] source() {
+		return source;
+	}
+	
+	private Document map(String uid, String key, ObjectNode node, DocumentMapping mapping) throws IOException {
+		final Document doc = new Document();
+		// metadata fields
+		JsonDocumentMapping._id().addTo(doc, key);
+		JsonDocumentMapping._type().addTo(doc, mapping.typeAsString());
+		JsonDocumentMapping._uid().addTo(doc, uid);
+		// TODO create byte fields
+		final byte[] nodeSource; 
+		if (key.equals(this.key)) {
+			// this is the ROOT node, do not serialize it again
+			nodeSource = this.source;
+		} else {
+			nodeSource = mapper.writeValueAsBytes(node);
+		}
+		doc.add(new StoredField("_source", nodeSource));
+		// add all other fields
+		final Iterator<Entry<String, JsonNode>> fields = node.fields();
+		while (fields.hasNext()) {
+			final Entry<String, JsonNode> field = fields.next();
+			final String name = field.getKey();
+			if (JsonDocumentMapping._id().fieldName().equals(name)) {
+				// skip _id field we add that manually
+				continue;
+			}			
+			final JsonNode value = field.getValue();
+			addToDoc(doc, name, value, mapping);
+		}
+		return doc;
+	}
+
+	private void addToDoc(final Document doc, final String name, final JsonNode node, DocumentMapping mapping) {
+		switch (node.getNodeType()) {
+		case ARRAY:
+			// FIXME deeply nested objects, etc.
+			// for now only basic lists are supported
+			final Iterator<JsonNode> array = node.iterator();
+			while (array.hasNext()) {
+				addToDoc(doc, name, array.next(), mapping);
+			}
+			break;
+		case STRING:
+			if (mapping.isAnalyzed(name)) {
+				Fields.searchOnlyTextField(name).addTo(doc, node.textValue());
+			} else {
+				Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
+			}
+			break;
+		case BOOLEAN:
+			Fields.searchOnlyBoolField(name).addTo(doc, node.booleanValue());
+			break;
+		case NUMBER:
+			Class<?> fieldType = mapping.getField(name).getType();
+			if (Collection.class.isAssignableFrom(fieldType)) {
+				fieldType = Reflections.getType(mapping.getField(name));
+			}
+			if (fieldType == Long.class || fieldType == long.class || LongCollection.class.isAssignableFrom(fieldType)) {
+				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
+			} else if (fieldType == Float.class || fieldType == float.class || FloatCollection.class.isAssignableFrom(fieldType)) {
+				Fields.searchOnlyFloatField(name).addTo(doc, node.floatValue());
+			} else if (fieldType == Integer.class || fieldType == int.class || IntCollection.class.isAssignableFrom(fieldType)) {
+				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
+			} else if (fieldType == Short.class || fieldType == short.class) {
+				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
+			} else {
+				throw new UnsupportedOperationException("Unsupported number type: " + fieldType + " for field: " + name);
+			}
+			break;
+		default:
+			break;
+		}
 	}
 	
 }

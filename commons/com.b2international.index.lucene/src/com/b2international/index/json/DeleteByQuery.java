@@ -23,7 +23,7 @@ import org.apache.lucene.search.Query;
 /**
  * @since 4.7
  */
-public class DeleteByQuery implements Operation {
+public final class DeleteByQuery implements Operation {
 
 	private final Query query;
 

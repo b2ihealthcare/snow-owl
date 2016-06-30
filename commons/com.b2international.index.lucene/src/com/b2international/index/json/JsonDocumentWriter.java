@@ -45,15 +45,15 @@ public class JsonDocumentWriter implements Writer {
 	private final ReferenceManager<IndexSearcher> searchers;
 	private final Collection<Operation> operations = newArrayList();
 	private final JsonDocumentSearcher searcher;
+	private final ObjectMapper mapper;
 	private final Mappings mappings;
-	private final JsonDocumentMappingStrategy mappingStrategy;
 
 	public JsonDocumentWriter(IndexWriter writer, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper, Mappings mappings) {
 		this.writer = writer;
 		this.searchers = searchers;
+		this.mapper = mapper;
 		this.mappings = mappings;
 		this.searcher = new JsonDocumentSearcher(searchers, mapper, mappings);
-		this.mappingStrategy = new JsonDocumentMappingStrategy(mapper);
 	}
 	
 	@Override
@@ -87,8 +87,7 @@ public class JsonDocumentWriter implements Writer {
 			final String key = entry.getKey();
 			final T doc = entry.getValue();
 			final DocumentMapping mapping = mappings.getMapping(doc.getClass());
-			final String uid = mapping.toUid(key);
-			operations.add(new Index(uid, key, doc, mappingStrategy, mapping));
+			operations.add(new Index(key, doc, mapper, mapping));
 		}
 	}
 	

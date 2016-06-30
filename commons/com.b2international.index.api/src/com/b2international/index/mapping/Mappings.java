@@ -53,5 +53,14 @@ public final class Mappings {
 		}
 		return mappingsByType.get(type);
 	}
+	
+	public DocumentMapping getByType(String typeAsString) {
+		for (DocumentMapping mapping : mappingsByType.values()) {
+			if (mapping.typeAsString().equals(typeAsString)) {
+				return mapping;
+			}
+		}
+		throw new IllegalArgumentException("Unknown type: " + typeAsString);
+	}
 
 }
