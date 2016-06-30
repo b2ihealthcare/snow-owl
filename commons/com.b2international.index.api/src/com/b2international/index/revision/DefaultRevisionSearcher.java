@@ -67,7 +67,9 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 							.build())
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
-					.offset(query.getOffset()).build();
+					.offset(query.getOffset())
+					.withScores(query.isWithScores())
+					.build();
 		} else {
 			checkArgument(Revision.class.isAssignableFrom(query.getParentType()), "Searching non-revision documents require a revision parent type: %s", query);
 			// run a query on the parent documents with nested match on the children
@@ -80,6 +82,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.offset(query.getOffset())
+					.withScores(query.isWithScores())
 					.build();
 		}
 		return searcher.search(query);
