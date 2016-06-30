@@ -29,11 +29,10 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -126,10 +125,9 @@ public abstract class IndexUtils {
 
 		final FieldType result = new FieldType();
 		
-		result.setIndexed(true);
 		result.setTokenized(true);
 		result.setOmitNorms(true);
-		result.setIndexOptions(IndexOptions.DOCS_ONLY);
+		result.setIndexOptions(org.apache.lucene.index.IndexOptions.DOCS);
 		result.setNumericType(numericType);
 		result.setNumericPrecisionStep(Integer.MAX_VALUE);
 		result.setStored(stored);
@@ -256,9 +254,9 @@ public abstract class IndexUtils {
 	/**
 	 * Comparator for ordering {@link AtomicReaderContext}s based on their ordinal.
 	 */
-	public static final class AtomicReaderContextComparator implements Comparator<AtomicReaderContext> {
+	public static final class AtomicReaderContextComparator implements Comparator<LeafReaderContext> {
 		
-		@Override public int compare(final AtomicReaderContext arc1, final AtomicReaderContext arc2) {
+		@Override public int compare(final LeafReaderContext arc1, final LeafReaderContext arc2) {
 			return arc1.ord - arc2.ord;
 		}
 		

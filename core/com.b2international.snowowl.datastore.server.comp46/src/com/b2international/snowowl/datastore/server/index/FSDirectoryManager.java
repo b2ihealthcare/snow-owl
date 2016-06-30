@@ -71,7 +71,7 @@ public class FSDirectoryManager extends AbstractDirectoryManager implements IDir
 
 	@Override
 	protected Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException {
-		return Directories.openFile(folderForBranchPath);
+		return Directories.openFile(folderForBranchPath.toPath());
 	}
 
 	@Override

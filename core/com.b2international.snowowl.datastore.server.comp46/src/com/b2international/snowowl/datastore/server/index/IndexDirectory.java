@@ -52,9 +52,7 @@ public class IndexDirectory implements AutoCloseable {
 		@Override 
 		public Integer apply(final IndexCommit commit) {
 			try {
-				final SegmentInfos segmentInfos = new SegmentInfos();
-				segmentInfos.read(commit.getDirectory(), commit.getSegmentsFileName());
-				return segmentInfos.counter;
+				return SegmentInfos.readCommit(commit.getDirectory(), commit.getSegmentsFileName()).counter;
 			} catch (final IOException e) {
 				throw new SnowowlRuntimeException("Failed to extract segment counter from index commit: " + commit);
 			}

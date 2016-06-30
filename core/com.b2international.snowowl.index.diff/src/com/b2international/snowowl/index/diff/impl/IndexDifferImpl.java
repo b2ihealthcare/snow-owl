@@ -34,9 +34,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.SegmentReader;
 import org.slf4j.Logger;
@@ -49,8 +49,8 @@ import com.b2international.collections.bytes.ByteList;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.ByteCollections.BytePredicate;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.index.diff.IndexDiff;
 import com.b2international.snowowl.index.diff.IndexDiffException;
 import com.b2international.snowowl.index.diff.IndexDiffer;
@@ -101,7 +101,7 @@ public class IndexDifferImpl implements IndexDiffer {
 			final Collection<String> intersectionSegmentFileNames = getIntersectionSegmentFileNames(sourceCommit, targetCommit);
 			final Map<String, SegmentReader> sourceReaders = createSourceReadersMap(sourceReader);
 			
-			for (final AtomicReaderContext context : targetReader.leaves()) {
+			for (final LeafReaderContext context : targetReader.leaves()) {
 				
 				final SegmentReader segmentReader = (SegmentReader) context.reader();
 				final NumericDocValues docValues = getCompareDocValues(context);
@@ -268,21 +268,21 @@ public class IndexDifferImpl implements IndexDiffer {
 		return DEFAULT_IGNORE_INDEX_COMPARE_KEY;
 	}
 	
-	private NumericDocValues getIgnoreCompareDocValues(final AtomicReaderContext context) throws IOException {
+	private NumericDocValues getIgnoreCompareDocValues(final LeafReaderContext context) throws IOException {
 		return getNumericDocValues(context, getIgnoredCompareField());
 	}
 
-	private NumericDocValues getCompareDocValues(final AtomicReaderContext context) throws IOException {
+	private NumericDocValues getCompareDocValues(final LeafReaderContext context) throws IOException {
 		return getNumericDocValues(context, getCompareField());
 	}
 
-	private NumericDocValues getNumericDocValues(final AtomicReaderContext context, final String field) throws IOException {
+	private NumericDocValues getNumericDocValues(final LeafReaderContext context, final String field) throws IOException {
 		return context.reader().getNumericDocValues(field);
 	}
 
 	private Map<String, SegmentReader> createSourceReadersMap(final DirectoryReader sourceReader) {
-		return uniqueIndex(transform(sourceReader.leaves(), new Function<AtomicReaderContext, SegmentReader>() {
-			@Override public SegmentReader apply(final AtomicReaderContext context) {
+		return uniqueIndex(transform(sourceReader.leaves(), new Function<LeafReaderContext, SegmentReader>() {
+			@Override public SegmentReader apply(final LeafReaderContext context) {
 				return (SegmentReader) context.reader();
 			}
 		}), new Function<SegmentReader, String>() {

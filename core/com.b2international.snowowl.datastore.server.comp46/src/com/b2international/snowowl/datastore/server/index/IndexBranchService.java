@@ -43,7 +43,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
-import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -378,7 +377,7 @@ public class IndexBranchService implements Closeable {
 
 	private IndexWriter createIndexWriter(final boolean commitIfEmpty) throws IOException {
 		final Analyzer analyzer = new ComponentTermAnalyzer(true, true);
-		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
+		final IndexWriterConfig config = new IndexWriterConfig(analyzer);
 		config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
 		final IndexDeletionPolicy innerPolicy = new KeepBranchPointAndLastCommitDeletionPolicy();

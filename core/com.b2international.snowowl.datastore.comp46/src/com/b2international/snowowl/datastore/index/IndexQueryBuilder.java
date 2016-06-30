@@ -34,7 +34,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.QueryBuilder;
-import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.compat.Highlighting;
@@ -313,7 +312,7 @@ public class IndexQueryBuilder {
 	 */
 	public IndexQueryBuilder matchParsedTerm(final String fieldName, final String searchString) {
 		
-		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, fieldName, analyzer);
+		final QueryParser parser = new QueryParser(fieldName, analyzer);
 		parser.setDefaultOperator(Operator.AND);
 		parser.setAllowLeadingWildcard(true);
 		

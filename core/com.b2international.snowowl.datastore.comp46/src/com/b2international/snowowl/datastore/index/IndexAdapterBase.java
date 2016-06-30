@@ -28,7 +28,6 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.Version;
 
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.compat.Highlighting;
@@ -155,7 +154,7 @@ public abstract class IndexAdapterBase<E extends IIndexEntry> extends QueryDslIn
 	 */
 	protected Query addParsedClause(final BooleanQuery query, final String fieldName, final String searchString) throws ParseException {
 		
-		final QueryParser parser = new QueryParser(Version.LUCENE_4_9, fieldName, new ComponentTermAnalyzer());
+		final QueryParser parser = new QueryParser(fieldName, new ComponentTermAnalyzer());
 		parser.setDefaultOperator(Operator.AND);
 		parser.setAllowLeadingWildcard(true);
 		

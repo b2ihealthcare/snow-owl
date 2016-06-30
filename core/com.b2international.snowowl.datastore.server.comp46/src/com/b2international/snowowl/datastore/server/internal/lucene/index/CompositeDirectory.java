@@ -26,8 +26,6 @@ import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
-import org.apache.lucene.store.LockFactory;
-import org.apache.lucene.store.NoSuchDirectoryException;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -52,22 +50,9 @@ public class CompositeDirectory extends Directory {
 	@Override
 	public String[] listAll() throws IOException {
 		final ImmutableSet.Builder<String> files = ImmutableSet.builder();
-		
 		files.add(baseDirectory.listAll());
-		
-		try {
-			files.add(overlayDirectory.listAll());
-		} catch (final NoSuchDirectoryException ignored) {
-			// Allow overlay directory to not exist
-		}
-				
+		files.add(overlayDirectory.listAll());
 		return Iterables.toArray(files.build(), String.class);
-	}
-
-	@Override
-	@Deprecated
-	public boolean fileExists(final String name) throws IOException {
-		return overlayDirectory.fileExists(name) || baseDirectory.fileExists(name);
 	}
 
 	@Override
@@ -171,22 +156,13 @@ public class CompositeDirectory extends Directory {
 	}
 
 	@Override
-	public Lock makeLock(final String name) {
-		return overlayDirectory.makeLock(name);
+	public Lock obtainLock(String name) throws IOException {
+		return overlayDirectory.obtainLock(name);
 	}
-
+	
 	@Override
-	public void clearLock(final String name) throws IOException {
-		overlayDirectory.clearLock(name);
+	public void renameFile(String source, String dest) throws IOException {
+		overlayDirectory.renameFile(source, dest);
 	}
-
-	@Override
-	public void setLockFactory(final LockFactory lockFactory) throws IOException {
-		overlayDirectory.setLockFactory(lockFactory);
-	}
-
-	@Override
-	public LockFactory getLockFactory() {
-		return overlayDirectory.getLockFactory();
-	} 
+	
 }

@@ -59,11 +59,6 @@ public class FilteringMergePolicy extends MergePolicy {
 		return filterOnlyDeletionMerges(delegate.findForcedDeletesMerges(filteredInfos, writer));
 	}
 
-	@Override
-	public void close() {
-		delegate.close();
-	}
-	
 	private SegmentInfos filterSegmentInfos(final SegmentInfos segmentInfos) {
 
 		final SegmentInfos result = segmentInfos.clone();
@@ -115,7 +110,7 @@ public class FilteringMergePolicy extends MergePolicy {
 			for (final SegmentCommitInfo segmentCommitInfo : merge.segments) {
 				
 				final int delCount = segmentCommitInfo.getDelCount();
-				final int docCount = segmentCommitInfo.info.getDocCount();
+				final int docCount = segmentCommitInfo.info.maxDoc() - segmentCommitInfo.getDelCount();
 				
 				if (delCount != docCount) {
 					keep = true;

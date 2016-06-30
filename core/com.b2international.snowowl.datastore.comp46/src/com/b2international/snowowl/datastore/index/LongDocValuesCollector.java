@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.NumericDocValues;
 
 import com.b2international.collections.PrimitiveSets;
@@ -67,7 +67,7 @@ public class LongDocValuesCollector extends AbstractDocsOutOfOrderCollector {
 	}
 
 	@Override
-	protected void initDocValues(final AtomicReader leafReader) throws IOException {
+	protected void initDocValues(final LeafReader leafReader) throws IOException {
 		numericDocValues = leafReader.getNumericDocValues(fieldName);
 	}
 

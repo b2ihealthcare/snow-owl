@@ -28,7 +28,6 @@ import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
-import org.apache.lucene.store.LockFactory;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -58,7 +57,7 @@ public class ReadOnlyDirectory extends Directory {
 	}
 
 	private void checkExists(final String name) throws FileNotFoundException {
-		if (!fileExists(name)) {
+		if (!fileNames.contains(name)) {
 			throw new FileNotFoundException();
 		}
 	}
@@ -66,12 +65,6 @@ public class ReadOnlyDirectory extends Directory {
 	@Override
 	public String[] listAll() throws IOException {
 		return Iterables.toArray(fileNames, String.class);
-	}
-
-	@Override
-	@Deprecated
-	public boolean fileExists(final String name) {
-		return fileNames.contains(name);
 	}
 
 	@Override
@@ -106,27 +99,18 @@ public class ReadOnlyDirectory extends Directory {
 	 * to IndexWriter#addIndexes(Directory...)
 	 */
 	@Override
-	public Lock makeLock(final String name) {
-		return directory.makeLock(name);
+	public Lock obtainLock(String name) throws IOException {
+		return directory.obtainLock(name);
 	}
 
 	@Override
-	public void clearLock(final String name) throws IOException {
-		directory.clearLock(name);
+	public void renameFile(String source, String dest) throws IOException {
+		directory.renameFile(source, dest);
 	}
-
+	
 	@Override
 	public void close() throws IOException {
 		directory.close();
 	}
 
-	@Override
-	public void setLockFactory(final LockFactory lockFactory) throws IOException {
-		directory.setLockFactory(lockFactory);
-	}
-
-	@Override
-	public LockFactory getLockFactory() {
-		return directory.getLockFactory();
-	}
 }

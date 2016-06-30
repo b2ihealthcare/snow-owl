@@ -535,7 +535,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			groupingSearch.setGroupSort(Sort.INDEXORDER);
 			groupingSearch.setGroupDocsLimit(expectedSize);
 			
-			final TopGroups<BytesRef> topGroups = groupingSearch.search(searcher, filter, query, 0, expectedSize);
+			final TopGroups<BytesRef> topGroups = groupingSearch.search(searcher, query, 0, expectedSize);
 			final Multimap<T, String> results = HashMultimap.create();
 			
 			for (final GroupDocs<BytesRef> groupDocs : topGroups.groups) {
