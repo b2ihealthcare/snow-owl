@@ -25,6 +25,13 @@ import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.function.FunctionQuery;
+import org.apache.lucene.queries.function.FunctionValues;
+import org.apache.lucene.queries.function.ValueSource;
+import org.apache.lucene.queries.function.valuesource.BytesRefFieldSource;
+import org.apache.lucene.queries.function.valuesource.DualFloatFunction;
+import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
@@ -169,9 +176,54 @@ public final class LuceneQueryBuilder {
 			visit((DisMaxPredicate) expression);
 		} else if (expression instanceof BoostPredicate) {
 			visit((BoostPredicate) expression);
+		} else if (expression instanceof CustomScoreExpression) {
+			visit((CustomScoreExpression) expression);
+		} else if (expression instanceof CustomScoreExpression) {
+			visit((CustomScoreExpression) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
+	}
+	
+	private void visit(CustomScoreExpression expression) {
+		final Expression inner = expression.expression();
+		visit(inner);
+		final Query innerQuery = deque.pop().toQuery();
+		deque.push(new DequeItem(new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())))));
+	}
+	
+	private ValueSource visit(final ScoreFunction func) {
+		if (func instanceof DualScoreFunction) {
+			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
+			final String firstFieldName = f.getFirst();
+			final Class<?> firstFieldType = mapping.getField(firstFieldName).getType();
+			final String secondFieldName = f.getSecond();
+			final Class<?> secondFieldType = mapping.getField(secondFieldName).getType();
+			// only this combination is supported at the moment
+			if (String.class == firstFieldType && float.class == secondFieldType) {
+				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
+				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
+					@Override
+					protected String name() {
+						return f.name();
+					}
+					
+					@Override
+					protected float func(int doc, FunctionValues aVals, FunctionValues bVals) {
+						final String firstValue = aVals.strVal(doc);
+						final float secondValue = bVals.floatVal(doc);
+						return function.compute(firstValue, secondValue);
+					}
+				};
+			}
+		} else if (func instanceof FieldScoreFunction) {
+			final String field = ((FieldScoreFunction) func).getField();
+			final Class<?> fieldType = mapping.getField(field).getType();
+			if (fieldType == float.class || fieldType == Float.class) {
+				return new FloatFieldSource(field); 
+			}
+		}
+		throw new UnsupportedOperationException("Not supported dual score function: " + func);
 	}
 	
 	private void visit(BooleanPredicate predicate) {

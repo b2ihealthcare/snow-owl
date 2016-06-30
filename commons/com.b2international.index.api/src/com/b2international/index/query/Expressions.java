@@ -200,4 +200,8 @@ public class Expressions {
 		return new DisMaxPredicate(disjuncts, 0.0f);
 	}
 
+	public static Expression customScore(Expression query, ScoreFunction func) {
+		return new CustomScoreExpression(query, func);
+	}
+
 }
