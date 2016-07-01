@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.IComponentRef;
@@ -128,15 +127,15 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
 				.setLocales(locales)
-				.setExpand("descriptions(limit:"+Integer.MAX_VALUE+"),relationships(limit:"+Integer.MAX_VALUE+")")
+				.setExpand("pt(),fsn(),descriptions(limit:"+Integer.MAX_VALUE+"),relationships(limit:"+Integer.MAX_VALUE+")")
 				.build(branchPath.getPath())
 				.execute(bus)
 				.getSync();
 		
 		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
 		
-		final ISnomedDescription fullySpecifiedName = descriptionService.getFullySpecifiedName(conceptId, locales);
-		final ISnomedDescription preferredSynonym = descriptionService.getPreferredTerm(conceptId, locales);
+		final ISnomedDescription fullySpecifiedName = concept.getFsn();
+		final ISnomedDescription preferredSynonym = concept.getPt();
 
 		final SnomedBrowserConcept result = new SnomedBrowserConcept();
 
@@ -399,6 +398,9 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 	
 	private SnomedConcepts getConcepts(final IBranchPath branchPath, final Set<String> destinationConceptIds) {
+		if (destinationConceptIds.isEmpty()) {
+			return new SnomedConcepts(0, 0, 0);
+		}
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.setComponentIds(destinationConceptIds)
