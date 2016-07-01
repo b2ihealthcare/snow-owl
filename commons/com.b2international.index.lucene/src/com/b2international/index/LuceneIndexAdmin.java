@@ -15,6 +15,8 @@
  */
 package com.b2international.index;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
@@ -28,6 +30,8 @@ import com.b2international.index.translog.TransactionLog;
 public interface LuceneIndexAdmin extends IndexAdmin {
 	
 	void close();
+	
+	ReentrantLock getLock();
 	
 	IndexWriter getWriter();
 

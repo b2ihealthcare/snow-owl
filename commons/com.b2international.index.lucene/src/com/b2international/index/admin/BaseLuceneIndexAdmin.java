@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -79,6 +80,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private ReferenceManager<IndexSearcher> manager;
 	private ExecutorService executor;
 	private TransactionLog tlog;
+	private ReentrantLock lock = new ReentrantLock();
 	
 	protected BaseLuceneIndexAdmin(String name, ObjectMapper mapper, Mappings mappings) {
 		this(name, mapper, mappings, Maps.<String, Object>newHashMap());
@@ -111,6 +113,10 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	@Override
 	public TransactionLog getTransactionlog() {
 		return tlog;
+	}
+	
+	public ReentrantLock getLock() {
+		return lock;
 	}
 	
 	@Override

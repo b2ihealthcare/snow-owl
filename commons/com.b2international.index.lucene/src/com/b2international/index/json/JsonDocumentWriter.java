@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
@@ -49,43 +51,45 @@ public class JsonDocumentWriter implements Writer {
 	private final Collection<Operation> operations = newArrayList();
 	private final ObjectMapper mapper;
 	private final Mappings mappings;
+	private final ReentrantLock updateLock;
 	
 	private boolean withUpdate = false;
-	private JsonDocumentSearcher searcher;
+	private AtomicReference<JsonDocumentSearcher> searcher = new AtomicReference<>();
 
-	public JsonDocumentWriter(IndexWriter writer, TransactionLog tlog, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper, Mappings mappings) {
+	public JsonDocumentWriter(IndexWriter writer, TransactionLog tlog, ReentrantLock lock, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper, Mappings mappings) {
 		this.writer = writer;
 		this.tlog = tlog;
+		this.updateLock = lock;
 		this.searchers = searchers;
 		this.mapper = mapper;
 		this.mappings = mappings;
-		this.searcher = new JsonDocumentSearcher(searchers, mapper, mappings);
+		this.searcher.set(new JsonDocumentSearcher(searchers, mapper, mappings));
 	}
 	
 	@Override
 	public Searcher searcher() {
-		return searcher;
+		return searcher.get();
 	}
 	
 	@Override
 	public void close() throws Exception {
 		this.operations.clear();
-		this.searcher.close();
+		this.searcher.get().close();
 	}
 	
 	@Override
 	public void commit() throws IOException {
-		// TODO add a txId to new documents, so we will be able to delete all changes
 		if (withUpdate) {
-			synchronized (writer) {
-				try {
-					// reopen search for bulk update operations
-					searcher.close();
-					searcher = new JsonDocumentSearcher(searchers, mapper, mappings);
-					applyOperations();
-				} catch (Exception e) {
-					throw new IndexException("Failed to commit transaction", e);
-				}
+			updateLock.lock();
+			try {
+				// reopen search for bulk update operations
+				final JsonDocumentSearcher previous = searcher.getAndSet(new JsonDocumentSearcher(searchers, mapper, mappings));
+				previous.close();
+				applyOperations();
+			} catch (Exception e) {
+				throw new IndexException("Failed to commit transaction", e);
+			} finally {
+				updateLock.unlock();
 			}
 		} else {
 			applyOperations();
@@ -94,7 +98,7 @@ public class JsonDocumentWriter implements Writer {
 	
 	private void applyOperations() throws IOException {
 		for (Operation op : this.operations) {
-			op.execute(writer, searcher);
+			op.execute(writer, searcher.get());
 			tlog.addOperation(op);
 		}
 		searchers.maybeRefreshBlocking();

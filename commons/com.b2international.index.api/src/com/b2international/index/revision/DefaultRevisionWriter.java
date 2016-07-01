@@ -130,6 +130,11 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		return searcher;
 	}
 	
+	@Override
+	public Writer writer() {
+		return index;
+	}
+	
 	private String generateRevisionId() {
 		return UUID.randomUUID().toString();
 	}

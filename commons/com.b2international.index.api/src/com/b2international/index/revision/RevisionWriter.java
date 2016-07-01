@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
+import com.b2international.index.Writer;
+
 /**
  * Writer working on top of a {@link RevisionIndex}. A {@link RevisionWriter} is always working on a single {@link RevisionBranch}.
  * 
@@ -33,13 +35,20 @@ public interface RevisionWriter {
 	void remove(Class<? extends Revision> type, long storageKey) throws IOException;
 
 	void remove(Class<? extends Revision> type, Collection<Long> storageKeys) throws IOException;
-	
+
 	void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) throws IOException;
 
 	void commit() throws IOException;
 
 	String branch();
-	
+
 	RevisionSearcher searcher();
+
+	/**
+	 * Returns the underlying raw writer.
+	 * 
+	 * @return
+	 */
+	Writer writer();
 
 }
