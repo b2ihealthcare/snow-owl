@@ -41,7 +41,7 @@ public final class Mappings {
 		checkArgument(!types.isEmpty(), "At least one document type should be specified");
 		for (Class<?> type : ImmutableSet.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
-			getMapping(type);
+			mappingsByType.put(type, new DocumentMapping(type));
 		}
 	}
 	
@@ -50,9 +50,7 @@ public final class Mappings {
 	}
 	
 	public DocumentMapping getMapping(Class<?> type) {
-		if (!mappingsByType.containsKey(type)) {
-			mappingsByType.put(type, new DocumentMapping(type));
-		}
+		checkArgument(mappingsByType.containsKey(type), "Dynamic mapping is not supported: %s", type);
 		return mappingsByType.get(type);
 	}
 	
@@ -63,7 +61,6 @@ public final class Mappings {
 				mappings.add(mapping);
 			}
 		}
-		
 		return Iterables.getOnlyElement(mappings);
 	}
 

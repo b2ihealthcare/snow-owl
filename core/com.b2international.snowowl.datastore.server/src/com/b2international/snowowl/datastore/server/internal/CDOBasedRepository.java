@@ -27,6 +27,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.platform.Extensions;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
@@ -49,10 +50,13 @@ import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
@@ -81,15 +85,17 @@ import com.google.inject.Provider;
  */
 public final class CDOBasedRepository implements InternalRepository, RepositoryContextProvider, ServiceProvider {
 
+	private final String toolingId;
 	private final String repositoryId;
 	private final Environment env;
 	private final IEventBus handlers;
 	
 	private final Map<Class<?>, Object> registry = newHashMap();
 
-	CDOBasedRepository(String repositoryId, int numberOfWorkers, int mergeMaxResults, Environment env) {
+	CDOBasedRepository(String repositoryId, String toolingId, int numberOfWorkers, int mergeMaxResults, Environment env) {
 		checkArgument(numberOfWorkers > 0, "At least one worker thread must be specified");
 		
+		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
 		this.env = env;
 		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
@@ -242,6 +248,9 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		types.add(Review.class);
 		types.add(ConceptChanges.class);
 		types.add(InternalBranch.class);
+		types.add(CodeSystemEntry.class);
+		types.add(CodeSystemVersionEntry.class);
+		types.addAll(getToolingTypes(toolingId));
 		final Map<String, Object> settings = ImmutableMap.<String, Object>of(IndexClientFactory.DIRECTORY, 
 				env.getDataDirectory() + "/indexes");
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);
@@ -261,6 +270,17 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		// initialize the index
 		index.admin().create();
 		
+	}
+
+	private Collection<Class<?>> getToolingTypes(String toolingId) {
+		final Collection<Class<?>> types = newHashSet();
+		final Collection<MappingProvider> providers = Extensions.getExtensions("com.b2international.snowowl.datastore.mappingProvider", MappingProvider.class);
+		for (MappingProvider provider : providers) {
+			if (provider.getToolingId().equals(toolingId)) {
+				types.addAll(provider.getMappings());
+			}
+		}
+		return types;
 	}
 
 	@Override

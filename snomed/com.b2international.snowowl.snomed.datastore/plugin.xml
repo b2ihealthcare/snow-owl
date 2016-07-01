@@ -454,4 +454,10 @@
             class="com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierBootstrap">
       </bootstrapFragment>
    </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.mappingProvider">
+      <provider
+            class="com.b2international.snowowl.snomed.datastore.index.SnomedMappingProvider">
+      </provider>
+   </extension>
 </plugin>
