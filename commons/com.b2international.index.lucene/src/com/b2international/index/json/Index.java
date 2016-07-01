@@ -114,8 +114,16 @@ public final class Index implements Operation {
 		docs.add(doc);
 	}
 	
-	public String type() {
-		return mapping.typeAsString();
+	public String key() {
+		return key;
+	}
+	
+	public String uid() {
+		return mapping.toUid(key);
+	}
+	
+	public DocumentMapping mapping() {
+		return mapping;
 	}
 	
 	public byte[] source() {
@@ -193,5 +201,5 @@ public final class Index implements Operation {
 			break;
 		}
 	}
-	
+
 }
