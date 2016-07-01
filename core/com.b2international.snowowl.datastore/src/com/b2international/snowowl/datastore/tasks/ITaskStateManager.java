@@ -26,7 +26,7 @@ import com.b2international.snowowl.datastore.TaskBranchPathMap;
 
 /**
  * Keeps track of task promotion status on the server. 
- *
+ * @deprecated - refactor after 5.0 release
  */
 public interface ITaskStateManager extends SingleDirectoryIndex {
 
