@@ -39,6 +39,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.translog.TransactionLog;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 
 /**
  * @since 4.7
@@ -79,6 +80,9 @@ public class JsonDocumentWriter implements Writer {
 	
 	@Override
 	public void commit() throws IOException {
+		if (operations.isEmpty()) {
+			return;
+		}
 		if (withUpdate) {
 			updateLock.lock();
 			try {
