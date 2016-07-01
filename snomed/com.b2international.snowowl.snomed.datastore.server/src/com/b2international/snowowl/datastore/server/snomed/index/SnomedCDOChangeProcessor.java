@@ -52,6 +52,8 @@ import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -112,8 +114,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private Map<Long, Revision> mappings = newHashMap();
 	private Multimap<Class<? extends Revision>, Long> deletions = HashMultimap.create();
 
-
-	public SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index, final ISnomedIdentifierService identifierService) {
+	SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index, final ISnomedIdentifierService identifierService) {
 		this.index = index;
 		this.branchPath = Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		this.identifierService = identifierService;
@@ -157,6 +158,22 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			@Override
 			public Void execute(RevisionWriter writer) throws IOException {
 				LOGGER.info("Persisting changes...");
+				for (final CodeSystem newCodeSystem : newCodeSystems) {
+					final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
+					writer.writer().put(Long.toString(entry.getStorageKey()), entry);
+				}
+				
+				for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
+					final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
+					writer.writer().put(Long.toString(entry.getStorageKey()), entry);
+				}
+				
+				for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
+					final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(dirtyCodeSystemVersion).build();
+					writer.writer().put(Long.toString(entry.getStorageKey()), entry);
+				}
+				
+				// execute revision updates
 				for (Class<? extends Revision> type : ImmutableMultimap.copyOf(deletions).keySet()) {
 					writer.remove(type, Sets.newHashSet(deletions.get(type)));
 				}
@@ -216,20 +233,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private void updateDocuments(RevisionSearcher searcher) throws IOException {
 		LOGGER.info("Processing and updating changes...");
 		
-//		final LongSet conceptIds = LongSets.
-		// TODO refactor code system update into updaters
-//		for (final CodeSystem newCodeSystem : newCodeSystems) {
-//			new CodeSystemIndexMappingStrategy(newCodeSystem).createDocument();
-//		}
-//		
-//		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
-//			index.index(branchPath, new CodeSystemVersionIndexMappingStrategy(newCodeSystemVersion));
-//		}
-//		
-//		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
-//			index.index(branchPath, new CodeSystemVersionIndexMappingStrategy(dirtyCodeSystemVersion));
-//		}
-
 		final Set<String> statedSourceIds = Sets.newHashSet();
 		final Set<String> statedDestinationIds = Sets.newHashSet();
 		final Set<String> inferredSourceIds = Sets.newHashSet();
