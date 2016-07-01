@@ -23,6 +23,8 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * @since 4.7
@@ -54,13 +56,15 @@ public final class Mappings {
 		return mappingsByType.get(type);
 	}
 	
-	public DocumentMapping getByType(String typeAsString) {
+	public DocumentMapping getByType(String className) {
+		final Collection<DocumentMapping> mappings = Lists.newArrayList();
 		for (DocumentMapping mapping : mappingsByType.values()) {
-			if (mapping.typeAsString().equals(typeAsString)) {
-				return mapping;
+			if (mapping.type().getName().equals(className)) {
+				mappings.add(mapping);
 			}
 		}
-		throw new IllegalArgumentException("Unknown type: " + typeAsString);
+		
+		return Iterables.getOnlyElement(mappings);
 	}
 
 }
