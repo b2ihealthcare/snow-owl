@@ -91,19 +91,15 @@ public class JsonDocumentSearcher implements Searcher {
 		
 		if (limit < 1) {
 			Stopwatch w = Stopwatch.createStarted();
-			final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
-			searcher.search(lq, totalHitCollector);
-			final int totalHits = totalHitCollector.getTotalHits();
+			final int totalHits = searcher.count(lq);
 			System.err.println("TotalHitCollector: " + w);
 			return new Hits<>(Collections.<T>emptyList(), offset, limit, totalHits);
 		} else if (limit == Integer.MAX_VALUE || limit == Integer.MAX_VALUE - 1 /*SearchRequest max value*/) { 
 			// if all values required, or clients expect all values to be returned
 			// use collector instead of TopDocs, TODO bring back DocSourceCollector to life
 			Stopwatch w = Stopwatch.createStarted();
-			final TotalHitCountCollector totalHitCollector = new TotalHitCountCollector();
-			searcher.search(lq, totalHitCollector);
 			// reduce limit to max. total hits
-			limit = totalHitCollector.getTotalHits();
+			limit = searcher.count(lq);
 			System.err.println("TotalHitCollector: " + w);
 		}
 		
