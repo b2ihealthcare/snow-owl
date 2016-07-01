@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.snor;
 
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -331,10 +330,10 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	public static final class Expressions extends RevisionDocument.Expressions {
 		
 		public static Expression types(Collection<PredicateType> types) {
-			return matchAnyInt(Fields.TYPE, FluentIterable.from(types).transform(new Function<PredicateType, Integer>() {
+			return matchAny(Fields.TYPE, FluentIterable.from(types).transform(new Function<PredicateType, String>() {
 				@Override
-				public Integer apply(PredicateType input) {
-					return input.ordinal();
+				public String apply(PredicateType input) {
+					return input.name();
 				}
 			}).toSet());
 		}

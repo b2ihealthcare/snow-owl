@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.*;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchAnyLong;
@@ -105,10 +105,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}
 		
 		public static Expression refSetTypes(Collection<SnomedRefSetType> types) {
-			return matchAnyInt(Fields.REFSET_TYPE, FluentIterable.from(types).transform(new Function<SnomedRefSetType, Integer>() {
+			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(types).transform(new Function<SnomedRefSetType, String>() {
 				@Override
-				public Integer apply(SnomedRefSetType input) {
-					return input.ordinal();
+				public String apply(SnomedRefSetType input) {
+					return input.name();
 				}
 			}).toSet());
 		}
