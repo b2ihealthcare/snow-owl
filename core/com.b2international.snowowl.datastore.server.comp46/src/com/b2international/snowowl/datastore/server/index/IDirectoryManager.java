@@ -25,14 +25,6 @@ import com.b2international.snowowl.core.api.BranchPath;
  */
 public interface IDirectoryManager {
 
-	/**
-	 * Initializes the the specified {@link IndexBranchService} if it represents the MAIN branch and its directory does 
-	 * not exist on the file system.
-	 * 
-	 * @param service the service which is initialized first time
-	 */
-	void firstStartup(IndexBranchService service);
-
 	/** 
 	 * Creates a new {@link IndexDirectory} instance for the specified sequence of CDO branch identifiers.
 	 *  

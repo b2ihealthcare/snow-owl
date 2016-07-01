@@ -98,13 +98,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 				physicalPath = getMostRecentPhysicalPath(key);
 			}
 			
-			final IndexBranchService branchService = new IndexBranchService(key, physicalPath, getDirectoryManager());
-			
-			if (branchService.isFirstStartupAtMain()) {
-				getDirectoryManager().firstStartup(branchService);
-			}
-			
-			return branchService;
+			return new IndexBranchService(key, physicalPath, getDirectoryManager());
 		}
 	}
 
