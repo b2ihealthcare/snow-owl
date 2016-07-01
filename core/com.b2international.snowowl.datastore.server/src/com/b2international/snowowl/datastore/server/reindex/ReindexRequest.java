@@ -27,12 +27,12 @@ import com.b2international.snowowl.datastore.server.internal.InternalRepository;
  * @since 4.7
  */
 @SuppressWarnings("restriction")
-public class ReindexRequest extends BaseRequest<RepositoryContext, Void> {
+public class ReindexRequest extends BaseRequest<RepositoryContext, Boolean> {
 
 	ReindexRequest() {}
 	
 	@Override
-	public Void execute(RepositoryContext context) {
+	public Boolean execute(RepositoryContext context) {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		
 		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
@@ -49,12 +49,12 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, Void> {
 			StoreThreadLocal.release();
 			session.close();
 		}
-		return null;
+		return Boolean.TRUE;
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 
 	public static ReindexRequestBuilder builder(String repositoryId) {

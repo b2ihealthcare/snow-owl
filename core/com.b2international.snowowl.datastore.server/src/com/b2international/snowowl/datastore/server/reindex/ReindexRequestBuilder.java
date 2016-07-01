@@ -23,19 +23,19 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
 /**
  * @since 4.7
  */
-public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, RepositoryContext, Void> {
+public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, RepositoryContext, Boolean> {
 
 	ReindexRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
 	
 	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
-	public Request<ServiceProvider, Void> create() {
+	public Request<ServiceProvider, Boolean> create() {
 		return wrap(build());
 	}
 
 	@Override
-	protected Request<RepositoryContext, Void> doBuild() {
+	protected Request<RepositoryContext, Boolean> doBuild() {
 		return new ReindexRequest();
 	}
 

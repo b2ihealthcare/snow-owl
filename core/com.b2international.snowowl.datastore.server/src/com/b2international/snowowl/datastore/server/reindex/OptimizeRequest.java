@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.events.BaseRequest;
 /**
  * @since 4.7
  */
-public final class OptimizeRequest extends BaseRequest<RepositoryContext, Void> {
+public final class OptimizeRequest extends BaseRequest<RepositoryContext, Boolean> {
 
 	private int maxSegments;
 	
@@ -33,14 +33,14 @@ public final class OptimizeRequest extends BaseRequest<RepositoryContext, Void> 
 	}
 	
 	@Override
-	public Void execute(RepositoryContext context) {
+	public Boolean execute(RepositoryContext context) {
 		context.service(Index.class).admin().optimize(maxSegments);
-		return null;
+		return Boolean.TRUE;
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 	
 	public static OptimizeRequestBuilder builder(String repositoryId) {

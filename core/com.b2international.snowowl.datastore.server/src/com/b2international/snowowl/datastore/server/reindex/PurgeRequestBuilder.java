@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
 /**
  * @since 5.0
  */
-public class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeRequestBuilder, RepositoryContext, Void> {
+public class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeRequestBuilder, RepositoryContext, Boolean> {
 
 	private String branchPath;
 	private Purge purge = Purge.LATEST;
@@ -44,12 +44,12 @@ public class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeReque
 	}
 	
 	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
-	public Request<ServiceProvider, Void> create() {
+	public Request<ServiceProvider, Boolean> create() {
 		return wrap(build());
 	}
 
 	@Override
-	protected Request<RepositoryContext, Void> doBuild() {
+	protected Request<RepositoryContext, Boolean> doBuild() {
 		PurgeRequest req = new PurgeRequest();
 		req.setBranchPath(branchPath);
 		req.setPurge(purge );

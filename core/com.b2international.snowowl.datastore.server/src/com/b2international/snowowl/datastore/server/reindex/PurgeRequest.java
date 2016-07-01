@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.events.BaseRequest;
 /**
  * @since 5.0
  */
-public class PurgeRequest extends BaseRequest<RepositoryContext, Void> {
+public class PurgeRequest extends BaseRequest<RepositoryContext, Boolean> {
 
 	private String branchPath;
 	private Purge purge;
@@ -39,14 +39,14 @@ public class PurgeRequest extends BaseRequest<RepositoryContext, Void> {
 	}
 	
 	@Override
-	public Void execute(RepositoryContext context) {
+	public Boolean execute(RepositoryContext context) {
 		context.service(RevisionIndex.class).purge(branchPath, purge);
-		return null;
+		return Boolean.TRUE;
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 
 	public static PurgeRequestBuilder builder(String repositoryId) {
