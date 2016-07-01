@@ -37,9 +37,9 @@ public interface IndexClientFactory {
 	String COMMIT_INTERVAL_KEY = "commitInterval";
 
 	/**
-	 * The default commit interval is 5 minutes.
+	 * The default commit interval is 15 seconds.
 	 */
-	long DEFAULT_COMMIT_INTERVAL = TimeUnit.MINUTES.toMillis(5L);
+	long DEFAULT_COMMIT_INTERVAL = TimeUnit.SECONDS.toMillis(15L);
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.
