@@ -20,12 +20,15 @@ import java.util.Collection;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
+import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
+import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 /**
@@ -42,6 +45,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
 		buffer.append("\tsnowowl reindex [repositoryId] - reindexes the content for the given repository ID\n");
 		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
+		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
 		return buffer.toString();
 	}
 
@@ -73,6 +77,11 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				return; 
 			}
 			
+			if ("purge".equals(cmd)) {
+				purge(interpreter);
+				return;
+			}
+			
 			interpreter.println(getHelp());
 		} catch (Exception ex) {
 			if (Strings.isNullOrEmpty(ex.getMessage())) {
@@ -84,20 +93,52 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 	}
 
+	private void purge(CommandInterpreter interpreter) {
+		final String repositoryId = interpreter.nextArgument();
+		
+		if (Strings.isNullOrEmpty(repositoryId)) {
+			interpreter.println("RepositoryId parameter is required");
+			return;
+		}
+		
+		final String branchPath = interpreter.nextArgument();
+		
+		if (Strings.isNullOrEmpty(branchPath)) {
+			interpreter.print("BranchPath parameter is required");
+			return;
+		}
+		
+		
+		final String purgeArg = interpreter.nextArgument();
+		final Purge purge = Strings.isNullOrEmpty(purgeArg) ? Purge.LATEST : Purge.valueOf(purgeArg);
+		if (purge == null) {
+			interpreter.print("Invalid purge parameter. Select one of " + Joiner.on(",").join(Purge.values()));
+			return;
+		}
+		
+		PurgeRequest.builder(repositoryId)
+			.setBranchPath(branchPath)
+			.setPurge(purge)
+			.create()
+			.execute(getBus())
+			.getSync();
+	}
+
 	private void reindex(CommandInterpreter interpreter) {
 		final String repositoryId = interpreter.nextArgument();
 		
 		if (Strings.isNullOrEmpty(repositoryId)) {
-			interpreter.println("repositoryId parameter is required");
+			interpreter.println("RepositoryId parameter is required");
+			return;
 		}
-		try {
-			ReindexRequest.builder(repositoryId)
+		ReindexRequest.builder(repositoryId)
 			.create()
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getBus())
 			.getSync();
-		} catch (Throwable e) {
-			interpreter.printStackTrace(e);
-		}
+	}
+
+	private static IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 	
 	private void optimize(CommandInterpreter interpreter) {
@@ -119,7 +160,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		OptimizeRequest.builder(repositoryId)
 			.setMaxSegments(maxSegments)
 			.create()
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.execute(getBus())
 			.getSync();
 		interpreter.println("Index optimization completed.");
 	}
