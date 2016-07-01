@@ -37,8 +37,6 @@ import com.b2international.snowowl.datastore.server.AbstractCDOChangeProcessor;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemIndexMappingStrategy;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemVersionIndexMappingStrategy;
 import com.google.common.collect.Iterables;
 
 /**
@@ -133,16 +131,6 @@ public abstract class AbstractIndexCDOChangeProcessor<E extends IIndexEntry, T e
 	/**Returns with {@code true} if the object argument is a {@link CodeSystemVersion} instance. Otherwise {@code false}.*/
 	protected boolean isCodeSystemVersion(final EObject object) {
 		return TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(object.eClass());
-	}
-	
-	/**Returns with the code system index mapping strategy.*/
-	protected final IIndexMappingStrategy createMappingStrategy(final CodeSystem codeSystem) {
-		return new CodeSystemIndexMappingStrategy(codeSystem);
-	}
-	
-	/**Returns with the index mapping strategy for the {@link CodeSystemVersion} argument.*/
-	protected final IIndexMappingStrategy createMappingStrategy(final CodeSystemVersion version) {
-		return new CodeSystemVersionIndexMappingStrategy(version);
 	}
 	
 	@SuppressWarnings({ "restriction", "unchecked" }) 

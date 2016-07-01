@@ -72,7 +72,7 @@ public interface ICodeSystem extends Serializable {
 	 *  feature or container repository.
 	 * @return the application specific ID.
 	 */
-	String getSnowOwlId();
+	String getTerminologyComponentId();
 	
 	/**
 	 * Returns with the unique ID of the repository where the current code system belongs to. 

@@ -33,17 +33,15 @@ public abstract class LatestCodeSystemVersionUtils {
 	 * @return a fake version representing the HEAD in the repository.
 	 */
 	public static ICodeSystemVersion createLatestCodeSystemVersion(final String repositoryUuid) {
-
-		return new CodeSystemVersionEntry(MAX_VALUE, MAX_VALUE, UNSET_EFFECTIVE_TIME, LATEST_VERSION, MAIN_BRANCH, NO_STORAGE_KEY, repositoryUuid) {
-			
-			private static final long serialVersionUID = 3431197771869140761L;
-
-			@Override
-			public boolean isPatched() {
-				return false;
-			}
-		};
-		
+		return CodeSystemVersionEntry.builder()
+				.repositoryUuid(repositoryUuid)
+				.versionId(MAIN_BRANCH)
+				.storageKey(NO_STORAGE_KEY)
+				.effectiveDate(MAX_VALUE)
+				.importDate(MAX_VALUE)
+				.latestUpdateDate(UNSET_EFFECTIVE_TIME)
+				.description(LATEST_VERSION)
+				.build();
 	}
 	
 	/**

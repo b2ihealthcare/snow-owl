@@ -208,7 +208,7 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 			@Override protected void doApply(final ICodeSystemVersion version) {
 				if (version instanceof CodeSystemVersionEntry) {
 					if (isPatched(repositoryUuid, createVersionPath(version.getVersionId()))) {
-						((CodeSystemVersionEntry) version).setPatched();
+						((CodeSystemVersionEntry) version).setPatched(true);
 					}
 				}
 			}

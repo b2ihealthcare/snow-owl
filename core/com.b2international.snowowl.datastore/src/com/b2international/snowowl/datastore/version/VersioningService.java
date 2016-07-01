@@ -323,7 +323,7 @@ public class VersioningService implements IVersioningService {
 			return;
 		}
 		
-		if (null != version && (lastModificationOnBranch <= version.getLastUpdateDate())) {
+		if (null != version && (lastModificationOnBranch <= version.getLatestUpdateDate())) {
 			throw new NoChangesException(getRepositoryUuid(toolingId));
 		}
 	}

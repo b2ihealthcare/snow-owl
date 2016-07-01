@@ -73,7 +73,7 @@ public interface ICodeSystemVersion extends Serializable {
 	 * yet. 
 	 * @return the last update date of the current version.
 	 */
-	long getLastUpdateDate();
+	long getLatestUpdateDate();
 	
 	/**
 	 * Returns with the description of the version.

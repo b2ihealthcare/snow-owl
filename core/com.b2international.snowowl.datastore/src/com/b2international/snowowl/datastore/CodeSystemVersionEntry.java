@@ -18,17 +18,105 @@ package com.b2international.snowowl.datastore;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 
-import java.io.Serializable;
-
+import com.b2international.index.Doc;
+import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * CDO independent representation of a {@link CodeSystemVersion}.
  */
-	
-public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion {
-	private static final long serialVersionUID = 5948841680432090865L;
+@Doc
+@JsonDeserialize(builder = CodeSystemVersionEntry.Builder.class)
+public class CodeSystemVersionEntry implements ICodeSystemVersion {
 
+	public static class Fields {
+		public static final String IMPORT_DATE = "importDate";
+		public static final String EFFECTIVE_DATE = "effectiveDate";
+		public static final String DESCRIPTION = "description";
+		public static final String VERSION_ID = "versionId";
+		public static final String LATEST_UPDATE_DATE = "latestUpdateDate";
+		public static final String STORAGE_KEY = "storageKey";
+		public static final String REPOSITORY_UUID = "repositoryUuid";
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static Builder builder(CodeSystemVersion version) {
+		return builder()
+				.storageKey(CDOIDUtils.asLong(version.cdoID()))
+				.versionId(version.getVersionId())
+				.description(version.getDescription())
+				.effectiveDate(EffectiveTimes.getEffectiveTime(version.getEffectiveDate()))
+				.importDate(Dates.getTime(version.getImportDate()))
+				.latestUpdateDate(EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()))
+				.repositoryUuid(version.getCodeSystemVersionGroup().getRepositoryUuid());
+	}
+	
+	@JsonPOJOBuilder(withPrefix="")
+	public static class Builder {
+		
+		private long importDate;
+		private long effectiveDate;
+		private String description;
+		private String versionId;
+		private long latestUpdateDate;
+		private boolean patched;
+		private long storageKey;
+		private String repositoryUuid;
+		
+		public Builder description(String description) {
+			this.description = description;
+			return this;
+		}
+		
+		public Builder effectiveDate(long effectiveDate) {
+			this.effectiveDate = effectiveDate;
+			return this;
+		}
+		
+		public Builder importDate(long importDate) {
+			this.importDate = importDate;
+			return this;
+		}
+		
+		public Builder latestUpdateDate(long latestUpdateDate) {
+			this.latestUpdateDate = latestUpdateDate;
+			return this;
+		}
+		
+		public Builder patched(boolean patched) {
+			this.patched = patched;
+			return this;
+		}
+		
+		public Builder repositoryUuid(String repositoryUuid) {
+			this.repositoryUuid = repositoryUuid;
+			return this;
+		}
+		
+		public Builder storageKey(long storageKey) {
+			this.storageKey = storageKey;
+			return this;
+		}
+		
+		public Builder versionId(String versionId) {
+			this.versionId = versionId;
+			return this;
+		}
+		
+		public CodeSystemVersionEntry build() {
+			return new CodeSystemVersionEntry(importDate, effectiveDate, latestUpdateDate, description, versionId, patched, storageKey,
+					repositoryUuid);
+		}
+		
+	}
+	
 	private final long importDate;
 	private final long effectiveDate;
 	private final String description;
@@ -37,13 +125,8 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 	private boolean patched;
 	private final long storageKey;
 	private final String repositoryUuid;
-
-	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, 
-			final String description, final String versionId, final long storageKey, final String repositoryUuid) {
-		this(importDate, effectiveDate, latestUpdateDate, nullToEmpty(description), checkNotNull(versionId, "versionId"), false, storageKey, checkNotNull(repositoryUuid, "repositoryUuid"));
-	}
 	
-	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
+	private CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
 			final String description, final String versionId, final boolean patched, final long storageKey, final String repositoryUuid) {
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
@@ -53,6 +136,14 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 		this.versionId = checkNotNull(versionId, "versionId");
 		this.patched = patched;
 		this.storageKey = storageKey;
+	}
+	
+	/**
+	 * @param patched
+	 * @deprecated - use {@link #builder()} to construct immutable version entry with patch flag set to true 
+	 */
+	public void setPatched(boolean patched) {
+		this.patched = patched;
 	}
 
 	@Override
@@ -81,7 +172,7 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 	}
 
 	@Override
-	public long getLastUpdateDate() {
+	public long getLatestUpdateDate() {
 		return latestUpdateDate;
 	}
 
@@ -95,15 +186,6 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 		return repositoryUuid;
 	}
 	
-	/**
-	 * (non-API)
-	 * 
-	 * Sets the patched flag on the code system version to {@code true}.
-	 */
-	public void setPatched() {
-		this.patched = true;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
