@@ -18,24 +18,27 @@ package com.b2international.index.json;
 import java.io.IOException;
 
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.search.Query;
 
 import com.b2international.index.Searcher;
 
 /**
  * @since 4.7
  */
-public final class DeleteByQuery implements Operation {
+public final class Delete implements Operation {
 
-	private final Query query;
+	private final String uid;
 
-	DeleteByQuery(Query query) {
-		this.query = query;
+	public Delete(String uid) {
+		this.uid = uid;
 	}
 	
 	@Override
 	public void execute(IndexWriter writer, Searcher searcher) throws IOException {
-		writer.deleteDocuments(query);
+		writer.deleteDocuments(JsonDocumentMapping._uid().toTerm(uid));
+	}
+	
+	public String uid() {
+		return uid;
 	}
 
 }
