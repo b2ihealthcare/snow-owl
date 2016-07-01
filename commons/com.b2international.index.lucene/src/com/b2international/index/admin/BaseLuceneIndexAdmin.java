@@ -256,6 +256,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		ensureOpen();
 		try {
 			writer.forceMerge(maxSegments);
+			writer.commit();
 		} catch (IOException e) {
 			throw new IndexException("Couldn't optimize index " + name(), e);
 		}
