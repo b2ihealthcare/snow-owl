@@ -15,12 +15,10 @@
  */
 package com.b2international.index.revision;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import com.b2international.index.Hits;
@@ -90,26 +88,19 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 				// TODO support selective type purging
 				final Set<Class<? extends Revision>> typesToPurge = getRevisionTypes();
 				
-				final Searcher searcher = index.searcher();
-				final Map<Class<?>, Set<String>> docsToPurge;
 				switch (purge) {
 				case ALL: 
-					docsToPurge = purge(branch.path(), searcher, typesToPurge, branch.segments());
+					purge(branch.path(), index, typesToPurge, branch.segments());
 					break;
 				case HISTORY:
 					final Set<Integer> segmentsToPurge = newHashSet(branch.segments());
 					segmentsToPurge.remove(branch.segmentId());
-					docsToPurge = purge(branch.path(), searcher, typesToPurge, segmentsToPurge);
+					purge(branch.path(), index, typesToPurge, segmentsToPurge);
 					break;
 				case LATEST:
-					docsToPurge = purge(branch.path(), searcher, typesToPurge, Collections.singleton(branch.segmentId()));
+					purge(branch.path(), index, typesToPurge, Collections.singleton(branch.segmentId()));
 					break;
 				default: throw new UnsupportedOperationException("Unsupported purge: " + purge);
-				}
-				
-				if (!docsToPurge.isEmpty()) {
-					index.removeAll(docsToPurge);
-					index.commit();
 				}
 				return null;
 			}
@@ -117,11 +108,13 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 		});
 	}
 	
-	private Map<Class<?>, Set<String>> purge(final String branchToPurge, Searcher searcher, Set<Class<? extends Revision>> typesToPurge, Set<Integer> segmentsToPurge) throws IOException {
-		// if nothing to purge return empty map
+	private void purge(final String branchToPurge, Writer writer, Set<Class<? extends Revision>> typesToPurge, Set<Integer> segmentsToPurge) throws IOException {
+		// if nothing to purge return
 		if (typesToPurge.isEmpty() || segmentsToPurge.isEmpty()) {
-			return Collections.emptyMap();
+			return;
 		}
+		
+		final Searcher searcher = writer.searcher();
 		final ExpressionBuilder purgeQuery = Expressions.builder();
 		// purge only documents added to the selected branch
 		purgeQuery.must(Expressions.exactMatch(Revision.BRANCH_PATH, branchToPurge));
@@ -131,20 +124,30 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 				.must(Expressions.match(Revision.REPLACED_INS, segmentToPurge))
 				.build());
 		}
-		final Map<Class<?>, Set<String>> docsToPurge = newHashMap();
 		for (Class<? extends Revision> revisionType : typesToPurge) {
-			final Hits<? extends Revision> revisionsToPurge = searcher.search(Query.builder(revisionType)
-					.selectAll()
-					.where(purgeQuery.build())
-					.limit(Integer.MAX_VALUE)
-					.build());
-			final Set<String> docIds = newHashSet();
-			for (Revision hit : revisionsToPurge) {
-				docIds.add(hit._id());
+			// execute hit count query first
+			final int totalRevisionsToPurge = searcher.search(Query.builder(revisionType)
+					.selectAll().where(purgeQuery.build()).limit(0).build()).getTotal();
+			if (totalRevisionsToPurge > 0) {
+				System.err.println(String.format("Purging %s number of %s documents...", totalRevisionsToPurge, DocumentMapping.getType(revisionType)));
+				// partition the total hit number by the current threshold
+				final int limit = 10000;
+				int offset = 0;
+				do {
+					final Hits<? extends Revision> revisionsToPurge = searcher.search(Query.builder(revisionType)
+							.selectAll().where(purgeQuery.build()).offset(offset).limit(limit).build());
+					
+					for (Revision hit : revisionsToPurge) {
+						writer.remove(revisionType, hit._id());
+					}
+					
+					// register processed items in the offset, and check if we reached the limit, if yes break
+					offset += limit;
+					// commit the batch
+					writer.commit();
+				} while (offset <= totalRevisionsToPurge);
 			}
-			docsToPurge.put(revisionType, docIds);
 		}
-		return docsToPurge;
 	}
 
 	private RevisionBranch getBranch(final String branchPath) {
