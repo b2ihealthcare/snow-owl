@@ -24,19 +24,18 @@ import com.b2international.index.lucene.Directories;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.translog.NullTransactionLog;
 import com.b2international.index.translog.TransactionLog;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.7
  */
 public final class RAMIndexAdmin extends BaseLuceneIndexAdmin {
 
-	public RAMIndexAdmin(String name, ObjectMapper mapper, Mappings mappings) {
-		super(name, mapper, mappings);
+	public RAMIndexAdmin(String name, Mappings mappings) {
+		super(name, mappings);
 	}
 	
-	public RAMIndexAdmin(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
-		super(name, mapper, mappings, settings);
+	public RAMIndexAdmin(String name, Mappings mappings, Map<String, Object> settings) {
+		super(name, mappings, settings);
 	}
 
 	@Override

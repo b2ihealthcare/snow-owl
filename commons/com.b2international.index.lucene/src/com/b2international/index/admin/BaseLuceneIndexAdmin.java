@@ -49,11 +49,9 @@ import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.LuceneIndexAdmin;
-import com.b2international.index.json.JsonDocumentSearcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.translog.TransactionLog;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
 
@@ -69,26 +67,23 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private final String name;
 	private final AtomicReference<PeriodicCommit> periodicCommit = new AtomicReference<>();
 	private final AtomicBoolean open = new AtomicBoolean(false);
-	private final ObjectMapper mapper;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
 	
 	private Closer closer;
 	private Directory directory;
 	private IndexWriter writer;
-	private JsonDocumentSearcher searcher;
 	private ReferenceManager<IndexSearcher> manager;
 	private ExecutorService executor;
 	private TransactionLog tlog;
 	private ReentrantLock lock = new ReentrantLock();
 	
-	protected BaseLuceneIndexAdmin(String name, ObjectMapper mapper, Mappings mappings) {
-		this(name, mapper, mappings, Maps.<String, Object>newHashMap());
+	protected BaseLuceneIndexAdmin(String name, Mappings mappings) {
+		this(name, mappings, Maps.<String, Object>newHashMap());
 	}
 	
-	protected BaseLuceneIndexAdmin(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
+	protected BaseLuceneIndexAdmin(String name, Mappings mappings, Map<String, Object> settings) {
 		this.name = name;
-		this.mapper = mapper;
 		this.mappings = mappings;
 		
 		// init default settings
@@ -149,6 +144,18 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			closer.register(directory);
 			
 			writer = new IndexWriter(directory, createConfig(false));
+			closer.register(writer);
+			
+			tlog = createTransactionlog(writer.getCommitData());
+			closer.register(tlog);
+			
+			initPeriodicCommit(writer, tlog);
+			
+			if (!DirectoryReader.indexExists(directory)) {
+				tlog.commitWriter(writer);
+			} else {
+				tlog.recoverFromTranslog(writer, null);
+			}
 			
 			// TODO configure warmer???
 			executor = Executors.newFixedThreadPool(Math.max(2, Math.min(16, Runtime.getRuntime().availableProcessors())));
@@ -158,22 +165,8 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 					return new IndexSearcher(reader, executor);
 				}
 			});
+			
 			closer.register(manager);
-			
-			searcher = new JsonDocumentSearcher(manager, mapper, mappings);
-			tlog = createTransactionlog(writer.getCommitData());
-			
-			closer.register(writer);
-			closer.register(tlog);
-			
-			initPeriodicCommit(writer, tlog);
-			
-			if (!DirectoryReader.indexExists(directory)) {
-				tlog.commitWriter(writer);
-			} else {
-				tlog.recoverFromTranslog(writer, searcher);
-			}
-			
 			open.set(true);
 		} catch (IOException e) {
 			throw new IndexException("Couldn't create index " + name(), e);
@@ -280,10 +273,6 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	@Override
 	public String name() {
 		return name;
-	}
-	
-	public ObjectMapper mapper() {
-		return mapper;
 	}
 	
 	public TransactionLog tlog() {

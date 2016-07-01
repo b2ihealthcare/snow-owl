@@ -36,10 +36,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public final class FSIndexAdmin extends BaseLuceneIndexAdmin {
 
 	private final Path indexPath;
+	private final ObjectMapper mapper;
 
 	public FSIndexAdmin(File directory, String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
-		super(name, mapper, mappings, settings);
+		super(name, mappings, settings);
 		this.indexPath = directory.toPath().resolve(name);
+		this.mapper = mapper;
 	}
 
 	@Override
@@ -50,7 +52,7 @@ public final class FSIndexAdmin extends BaseLuceneIndexAdmin {
 	@Override
 	protected TransactionLog createTransactionlog(final Map<String, String> commitData) throws IOException {
 		final Path translogPath = Paths.get((String) settings().get(IndexClientFactory.DIRECTORY)).resolve(name()).resolve("translog");
-		return new EsTransactionLog(name(), translogPath, mapper(), mappings(), commitData);
+		return new EsTransactionLog(name(), translogPath, mapper, mappings(), commitData);
 	}
 	
 }

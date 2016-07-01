@@ -49,6 +49,7 @@ import com.b2international.index.json.JsonDocumentSearcher;
 import com.b2international.index.json.Operation;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 
 /**
@@ -144,6 +145,9 @@ public class EsTransactionLog implements TransactionLog {
 	
 	@Override
 	public void recoverFromTranslog(final IndexWriter writer, final JsonDocumentSearcher searcher) throws IOException {
+		final Stopwatch w = Stopwatch.createStarted();
+		System.err.println("Starting recovery from translog.");
+		
 		final Snapshot snapshot = translog.newSnapshot();
 		org.elasticsearch.index.translog.Translog.Operation translogOperation = null;
 		
@@ -152,8 +156,13 @@ public class EsTransactionLog implements TransactionLog {
 			operation.execute(writer, searcher);
 		}
 		
-		if (snapshot.estimatedTotalOperations() != 0) {
+		final int recoveredOperations = snapshot.estimatedTotalOperations();
+		
+		if (recoveredOperations != 0) {
 			commit(writer);
+			System.err.println(String.format("Recovered %d operations from translog in %s.", recoveredOperations, w));
+		} else {
+			System.err.println("No operations were found to recover.");
 		}
 	}
 
