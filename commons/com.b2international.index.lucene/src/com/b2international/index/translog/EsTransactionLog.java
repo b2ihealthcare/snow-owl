@@ -15,8 +15,11 @@
  */
 package com.b2international.index.translog;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -38,6 +41,7 @@ import org.elasticsearch.index.translog.Translog.Snapshot;
 import org.elasticsearch.index.translog.Translog.TranslogGeneration;
 import org.elasticsearch.index.translog.TranslogConfig;
 
+import com.b2international.index.json.BulkUpdateOperation;
 import com.b2international.index.json.Delete;
 import com.b2international.index.json.Index;
 import com.b2international.index.json.JsonDocumentMapping;
@@ -104,11 +108,13 @@ public class EsTransactionLog implements TransactionLog {
 	
 	@Override
 	public void addOperation(final Operation operation) throws IOException {
-		final org.elasticsearch.index.translog.Translog.Operation translogOperation = toTranslogOperation(operation);
-		translog.add(translogOperation);
+		final Collection<Translog.Operation> translogOperations = toTranslogOperation(operation);
+		for (Translog.Operation op : translogOperations) {
+			translog.add(op);
+		}
 	}
 
-	private org.elasticsearch.index.translog.Translog.Operation toTranslogOperation(final Operation operation) {
+	private Collection<Translog.Operation> toTranslogOperation(final Operation operation) {
 		if (operation instanceof Index) {
 			final Index op = (Index) operation;
 			final String uid = op.uid();
@@ -118,12 +124,19 @@ public class EsTransactionLog implements TransactionLog {
 					new BytesArray(op.source()), null);
 			org.elasticsearch.index.engine.Engine.Index index = new Engine.Index(new Term(uid), document);
 
-			return new org.elasticsearch.index.translog.Translog.Index(index);
+			return Collections.<Translog.Operation>singleton(new org.elasticsearch.index.translog.Translog.Index(index));
 		} else if (operation instanceof Delete) { 
 			final Delete op = (Delete) operation;
 			final org.elasticsearch.index.engine.Engine.Delete delete = new Engine.Delete(null, null, JsonDocumentMapping._uid().toTerm(op.uid()));
 			
-			return new org.elasticsearch.index.translog.Translog.Delete(delete);
+			return Collections.<Translog.Operation>singleton(new org.elasticsearch.index.translog.Translog.Delete(delete));
+		} else if (operation instanceof BulkUpdateOperation<?>){
+			final Collection<Index> updates = ((BulkUpdateOperation<?>) operation).updates();
+			final Collection<Translog.Operation> ops = newArrayList();
+			for (Index update : updates) {
+				ops.addAll(toTranslogOperation(update));
+			}
+			return ops;
 		} else {
 			throw new IllegalArgumentException(String.format("Unhandled operation type %s.", operation));
 		}

@@ -15,7 +15,10 @@
  */
 package com.b2international.index.json;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.IOException;
+import java.util.Collection;
 
 import org.apache.lucene.index.IndexWriter;
 
@@ -35,6 +38,7 @@ public final class BulkUpdateOperation<T extends WithId> implements Operation {
 	private final ObjectMapper mapper;
 	private final Mappings mappings;
 	private final BulkUpdate<T> update;
+	private final Collection<Index> updates = newArrayList();
 
 	public BulkUpdateOperation(BulkUpdate<T> update, ObjectMapper mapper, Mappings mappings) {
 		this.update = update;
@@ -48,8 +52,14 @@ public final class BulkUpdateOperation<T extends WithId> implements Operation {
 		final Query<? extends T> query = Query.builder(update.getType()).selectAll().where(update.getFilter()).limit(Integer.MAX_VALUE).build();
 		for (T hit : searcher.search(query)) {
 			final T changed = update.getUpdate().apply(hit);
-			new Index(changed._id(), changed, mapper, mapping).execute(writer, searcher);
+			Index op = new Index(changed._id(), changed, mapper, mapping);
+			op.execute(writer, searcher);
+			updates.add(op);
 		}
+	}
+	
+	public Collection<Index> updates() {
+		return updates;
 	}
 	
 }
