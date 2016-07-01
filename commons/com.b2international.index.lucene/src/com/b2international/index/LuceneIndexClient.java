@@ -45,7 +45,7 @@ public final class LuceneIndexClient implements IndexClient {
 	@Override
 	public Writer writer() {
 		// TODO move writer and searcher creation to factory
-		return new JsonDocumentWriter(admin.getWriter(), admin.getManager(), mapper, mappings);
+		return new JsonDocumentWriter(admin.getWriter(), admin.getTransactionlog(), admin.getManager(), mapper, mappings);
 	}
 	
 	@Override

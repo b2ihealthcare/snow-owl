@@ -35,9 +35,9 @@ public class LuceneIndexClientFactory implements IndexClientFactory {
 		if (settings.containsKey(IndexClientFactory.DIRECTORY)) {
 			final Object dir = settings.get(IndexClientFactory.DIRECTORY);
 			final File directory = dir instanceof File ? (File) dir : new File((String) dir);
-			return new LuceneIndexClient(new FSIndexAdmin(directory, name, mappings, settings), mapper, mappings);
+			return new LuceneIndexClient(new FSIndexAdmin(directory, name, mapper, mappings, settings), mapper, mappings);
 		} else {
-			return new LuceneIndexClient(new RAMIndexAdmin(name, mappings, settings), mapper, mappings);
+			return new LuceneIndexClient(new RAMIndexAdmin(name, mapper, mappings, settings), mapper, mappings);
 		}
 	}
 	

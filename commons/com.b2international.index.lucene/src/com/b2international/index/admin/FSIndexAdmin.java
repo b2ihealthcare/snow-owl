@@ -18,12 +18,17 @@ package com.b2international.index.admin;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.lucene.store.Directory;
 
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.lucene.Directories;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.translog.EsTransactionLog;
+import com.b2international.index.translog.TransactionLog;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.7
@@ -32,14 +37,20 @@ public final class FSIndexAdmin extends BaseLuceneIndexAdmin {
 
 	private final Path indexPath;
 
-	public FSIndexAdmin(File directory, String name, Mappings mappings, Map<String, Object> settings) {
-		super(name, mappings, settings);
+	public FSIndexAdmin(File directory, String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
+		super(name, mapper, mappings, settings);
 		this.indexPath = directory.toPath().resolve(name);
 	}
 
 	@Override
 	protected Directory openDirectory() throws IOException {
 		return Directories.openFile(indexPath);
+	}
+	
+	@Override
+	protected TransactionLog createTransactionlog(final Map<String, String> commitData) throws IOException {
+		final Path translogPath = Paths.get((String) settings().get(IndexClientFactory.DIRECTORY)).resolve(name()).resolve("translog");
+		return new EsTransactionLog(name(), translogPath, mapper(), mappings(), commitData);
 	}
 	
 }

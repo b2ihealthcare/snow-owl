@@ -20,6 +20,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.translog.TransactionLog;
 
 /**
  * @since 4.7
@@ -31,5 +32,7 @@ public interface LuceneIndexAdmin extends IndexAdmin {
 	IndexWriter getWriter();
 
 	ReferenceManager<IndexSearcher> getManager();
+	
+	TransactionLog getTransactionlog();
 	
 }
