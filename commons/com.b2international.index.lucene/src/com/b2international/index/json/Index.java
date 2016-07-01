@@ -24,9 +24,12 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.util.BytesRef;
 
 import com.b2international.collections.floats.FloatCollection;
 import com.b2international.collections.ints.IntCollection;
@@ -155,19 +158,19 @@ public final class Index implements Operation {
 				continue;
 			}			
 			final JsonNode value = field.getValue();
-			addToDoc(doc, name, value, mapping);
+			addToDoc(doc, name, value, mapping, true);
 		}
 		return doc;
 	}
 
-	private void addToDoc(final Document doc, final String name, final JsonNode node, DocumentMapping mapping) {
+	private void addToDoc(final Document doc, final String name, final JsonNode node, DocumentMapping mapping, boolean docValues) {
 		switch (node.getNodeType()) {
 		case ARRAY:
 			// FIXME deeply nested objects, etc.
 			// for now only basic lists are supported
 			final Iterator<JsonNode> array = node.iterator();
 			while (array.hasNext()) {
-				addToDoc(doc, name, array.next(), mapping);
+				addToDoc(doc, name, array.next(), mapping, false);
 			}
 			break;
 		case STRING:
@@ -175,6 +178,9 @@ public final class Index implements Operation {
 				Fields.searchOnlyTextField(name).addTo(doc, node.textValue());
 			} else {
 				Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
+				if (docValues) {
+					doc.add(new BinaryDocValuesField(name, new BytesRef(node.textValue())));
+				}
 			}
 			break;
 		case BOOLEAN:
@@ -184,6 +190,10 @@ public final class Index implements Operation {
 			Class<?> fieldType = mapping.getField(name).getType();
 			if (Collection.class.isAssignableFrom(fieldType)) {
 				fieldType = Reflections.getType(mapping.getField(name));
+			} else {
+				if (docValues) {
+					doc.add(new NumericDocValuesField(name, node.longValue()));
+				}
 			}
 			if (fieldType == Long.class || fieldType == long.class || LongCollection.class.isAssignableFrom(fieldType)) {
 				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
