@@ -78,6 +78,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -773,7 +774,7 @@ public class SnomedRf2IndexInitializer extends Job {
 		}
 	}
 	
-	protected void updateIconId(String conceptId, boolean active, SnomedConceptDocument.Builder doc, boolean withDocValues) {
+	protected void updateIconId(String conceptId, boolean active, SnomedConceptDocument.Builder doc) {
 		final Collection<String> availableImages = SnomedIconProvider.getInstance().getAvailableIconIds();
 		new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, availableImages, identifierConceptIdsForNewRefSets).update(conceptId, active, doc);		
 	}
@@ -928,6 +929,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			@Override
 			public void handleRecord(final int recordCount, final List<String> record) {
 				final String conceptId = record.get(0);
+				final Long conceptIdLong = Long.parseLong(conceptId);
 				conceptsInImportFile.add(conceptId);
 
 				final long conceptStorageKey = getStorageKey(conceptId);
@@ -945,17 +947,28 @@ public class SnomedRf2IndexInitializer extends Job {
 				
 				final long effectiveTime = getEffectiveTime(record);
 				final boolean released = isReleased(effectiveTime);
-				
-				final SnomedConceptDocument.Builder doc = createConceptDocument(
-						conceptId, 
-						active, 
-						released, 
-						definitionStatusId, 
-						exhaustive, 
-						moduleId, 
-						updatedRefSetIds,
-						updatedMappingRefSetIds,
-						effectiveTime);
+
+				final Builder doc;
+				if (currentRevision != null) {
+					doc = SnomedConceptDocument.builder(currentRevision)
+						.active(active)
+						.exhaustive(exhaustive)
+						.primitive(Concepts.PRIMITIVE.equals(definitionStatusId))
+						.released(released)
+						.effectiveTime(effectiveTime)
+						.moduleId(moduleId)
+						.doi(doiData.containsKey(conceptIdLong) ? doiData.get(conceptIdLong) : SnomedConceptDocument.DEFAULT_DOI)
+						.referringRefSets(updatedRefSetIds)
+						.referringMappingRefSets(updatedMappingRefSetIds);
+					
+					updateIconId(conceptId, active, doc);
+					
+					// update parents and ancestors
+					new RefSetParentageUpdater(inferredTaxonomyBuilder, identifierConceptIdsForNewRefSets, false).update(conceptId, doc);
+					new RefSetParentageUpdater(statedTaxonomyBuilder, identifierConceptIdsForNewRefSets, true).update(conceptId, doc);
+				} else {
+					doc = createConceptDocument(conceptId, active, released, definitionStatusId, exhaustive, moduleId, updatedRefSetIds, updatedMappingRefSetIds, effectiveTime);
+				}
 				
 				indexDocument(writer, conceptStorageKey, doc.build());
 			}
@@ -989,7 +1002,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				.referringRefSets(currentRefSetMemberships)
 				.referringMappingRefSets(currentMappingMemberships);
 
-		updateIconId(conceptId, active, builder, true);
+		updateIconId(conceptId, active, builder);
 
 		// update parents and ancestors
 		new RefSetParentageUpdater(inferredTaxonomyBuilder, identifierConceptIdsForNewRefSets, false).update(conceptId, builder);
