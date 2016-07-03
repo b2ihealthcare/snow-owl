@@ -190,7 +190,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.referencedComponentType(input.getReferencedComponentType())
 				.mapTargetComponentType(input.getMapTargetComponentType())
 				.refSetType(input.getRefSetType())
-				.structural(input.isStructural());
+				.structural(input.isStructural())
+				.doi(input.getDoi());
 	}
 	
 	public static Builder builder(ISnomedConcept input) {
@@ -209,7 +210,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.statedParents(PrimitiveSets.newLongOpenHashSet(input.getStatedParentIds()))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()));
 		
-		// TODO add back scoring
 //		if (input.getScore() != null) {
 //			builder.score(input.getScore());
 //		}

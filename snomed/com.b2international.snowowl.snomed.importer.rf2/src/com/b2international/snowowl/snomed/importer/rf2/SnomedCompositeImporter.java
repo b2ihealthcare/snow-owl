@@ -162,7 +162,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		subMonitor.setWorkRemaining(units.size() + 1);
 
 		if (isRefSetImport(units)) {
-		
+			// enable commit notifications in case of refset import
+			importContext.setCommitNotificationEnabled(true);
 			String lastUnitEffectiveTimeKey = units.get(0).getEffectiveTimeKey();
 			
 			for (final ComponentImportUnit subUnit : units) {

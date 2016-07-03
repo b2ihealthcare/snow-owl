@@ -32,7 +32,7 @@ public abstract class LatestCodeSystemVersionUtils {
 	 * @param repositoryUuid the repository UUID.
 	 * @return a fake version representing the HEAD in the repository.
 	 */
-	public static ICodeSystemVersion createLatestCodeSystemVersion(final String repositoryUuid) {
+	public static CodeSystemVersionEntry createLatestCodeSystemVersion(final String repositoryUuid) {
 		return CodeSystemVersionEntry.builder()
 				.repositoryUuid(repositoryUuid)
 				.versionId(MAIN_BRANCH)
@@ -41,6 +41,7 @@ public abstract class LatestCodeSystemVersionUtils {
 				.importDate(MAX_VALUE)
 				.latestUpdateDate(UNSET_EFFECTIVE_TIME)
 				.description(LATEST_VERSION)
+				.codeSystemShortName("SNOMEDCT")
 				.build();
 	}
 	

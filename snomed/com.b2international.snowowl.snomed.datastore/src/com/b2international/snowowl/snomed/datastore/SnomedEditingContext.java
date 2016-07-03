@@ -19,7 +19,21 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
@@ -1396,7 +1410,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					continue;
 				}
 				
-				SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(member.getRefSetIdentifierId(), transaction);
+				final SnomedRefSet refSet = member.getRefSet();
 				
 				if (!(refSet instanceof SnomedStructuralRefSet)) { // XXX: also includes the previous null check for refSet
 					
@@ -1434,7 +1448,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			else if (eObject instanceof SnomedRefSetMember) {
 				// get the refset and remove the member from it's list
 				SnomedRefSetMember member = (SnomedRefSetMember) eObject;	
-				SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(member.getRefSetIdentifierId(), transaction);
+				SnomedRefSet refSet = member.getRefSet();
 
 				if (refSet != null) {
 					

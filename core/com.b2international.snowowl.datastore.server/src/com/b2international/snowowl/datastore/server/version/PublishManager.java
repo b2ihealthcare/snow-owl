@@ -55,21 +55,24 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
-import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 
 
 /**
@@ -290,8 +293,11 @@ public abstract class PublishManager implements IPublishManager {
 	}
 
 	private Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
-		return InternalTerminologyRegistryServiceRegistry.INSTANCE.getService(getRepositoryUuid()).getCodeSystemVersionsFromRepository(branchPath,
-				getRepositoryUuid());
+		return ImmutableList.<ICodeSystemVersion>copyOf(new CodeSystemRequests(getRepositoryUuid()).prepareSearchCodeSystemVersion()
+				.all()
+				.build(createMainPath().getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getItems());
 	}
 
 	private void publishTerminologyMetadateChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {

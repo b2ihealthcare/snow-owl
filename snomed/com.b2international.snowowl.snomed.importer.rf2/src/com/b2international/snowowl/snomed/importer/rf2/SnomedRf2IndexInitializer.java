@@ -766,9 +766,6 @@ public class SnomedRf2IndexInitializer extends Job {
 	
 	private void indexDocument(final RevisionWriter writer, final long storageKey, final Revision revision) {
 		try {
-			if (storageKey <= 0) {
-				System.err.println("");
-			}
 			checkArgument(storageKey > 0, "StorageKey must be greater than zero, %s", revision);
 			writer.put(storageKey, revision);
 		} catch (IOException e) {
@@ -869,6 +866,10 @@ public class SnomedRf2IndexInitializer extends Job {
 					updatedRefSetIds,
 					updatedMappingRefSetIds,
 					concept.getEffectiveTime());
+			
+			if (visitedRefSets.containsKey(conceptId)) {
+				doc.refSet(visitedRefSets.get(conceptId));			
+			}
 			
 			indexDocument(writer, conceptStorageKey, doc.build());
 		}

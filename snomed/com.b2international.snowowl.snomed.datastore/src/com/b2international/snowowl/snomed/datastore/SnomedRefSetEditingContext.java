@@ -813,7 +813,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		// persistent component. check for referring members in index
 		} else {
 			for (SnomedReferenceSetMember member : getAllReferringMembersStorageKey(id, getReferringMemberTypes(component))) {
-				referringMembers.add(getSnomedEditingContext().lookup(member.getId(), SnomedRefSetMember.class));
+				referringMembers.add((SnomedRefSetMember) getSnomedEditingContext().lookupIfExists(member.getStorageKey()));
 			}
 		}
 		

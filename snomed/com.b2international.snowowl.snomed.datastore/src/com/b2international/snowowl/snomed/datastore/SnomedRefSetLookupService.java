@@ -102,7 +102,11 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 
 	@Override
 	public SnomedConceptDocument getComponent(final IBranchPath branchPath, final String id) {
-		return new SnomedConceptLookupService().getComponent(branchPath, id);
+		SnomedConceptDocument doc = new SnomedConceptLookupService().getComponent(branchPath, id);
+		if (doc != null) {
+			checkArgument(doc.getRefSetStorageKey() > 0, "Missing reference set storage key on concept document: " + id); 
+		}
+		return doc;
 	}
 
 	@Override

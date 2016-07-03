@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * Representation of the global terminology registry service. 
- * 
+ * @deprecated - UNSUPPORTED API
  */
 public interface TerminologyRegistryService {
 	
@@ -38,16 +38,10 @@ public interface TerminologyRegistryService {
 	/**Returns with the code system from a given branch identified by its unique code system OID argument.*/
 	ICodeSystem getCodeSystemByOid(final IBranchPathMap branchPathMap, final String codeSystemOid);
 	
-	/**Returns with the mappings between the available application specific terminology component IDs and the associated {@link ICodeSystem code system}s.
-	 *<br>Mapping is one to one.*/
-	Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap(final IBranchPathMap branchPathMap);
-	
-	/**Returns with the mappings between the available application specific terminology component IDs and the associated {@link ICodeSystem code system}s.
-	 *<br>Mapping is one to many.
-	 *<p>Consider local terminology concepts where application specific is the same but code system could be multiple.*/
-	Map<String, Collection<ICodeSystem>> getTerminologyComponentIdWithMultipleCodeSystemsMap(final IBranchPathMap branchPathMap);
-	
-	/**Returns with the application specific tooling (terminology component) ID for the given unique code system short name.*/
+	/**
+	 * Returns with the application specific tooling (terminology component) ID for the given unique code system short name.
+	 * @deprecated - UNSUPPORTED API
+	 */
 	String getTerminologyComponentIdByShortName(final IBranchPathMap branchPathMap, final String codeSystemShortName);
 	
 	/**Returns with the most recent version ID of the given {@link ICodeSystem code system}.*/
@@ -61,13 +55,4 @@ public interface TerminologyRegistryService {
 	 * the repository.
 	 */
 	Map<String, List<ICodeSystemVersion>> getAllVersion();
-	
-	/**
-	 * Returns with all versions for the given repository which are visible from the HEAD of the MAIN branch. 
-	 * Includes the {@link ICodeSystemVersion#INITIAL_STATE 'init'} version as well. Does not contain the 'MAIN' latest 
-	 * entry version.
-	 * @return all available versions from a given repository.
-	 */
-	List<ICodeSystemVersion> getAllVersion(final String repositoryUuid);
-
 }

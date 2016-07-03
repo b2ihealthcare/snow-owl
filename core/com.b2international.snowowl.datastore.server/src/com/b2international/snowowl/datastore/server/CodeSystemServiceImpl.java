@@ -225,7 +225,7 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 	}
 
 	private List<ICodeSystemVersion> getAllTagsWithHead(final String repositoryUuid, final boolean decorateWithPatched) {
-		final List<ICodeSystemVersion> $ = newArrayList(LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid));
+		final List<ICodeSystemVersion> $ = Lists.<ICodeSystemVersion>newArrayList(LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid));
 		final Collection<ICodeSystemVersion> allTags = getAllTags(repositoryUuid);
 		final List<ICodeSystemVersion> versions = Lists.newArrayList(decorateWithPatched ? decorateWithPatchedFlag(repositoryUuid, allTags) : allTags);
 	
