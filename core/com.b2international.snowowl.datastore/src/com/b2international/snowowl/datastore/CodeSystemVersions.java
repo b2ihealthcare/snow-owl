@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core.server;
+package com.b2international.snowowl.datastore;
 
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
-import com.b2international.snowowl.datastore.InternalTerminologyRegistryService;
+import java.util.List;
 
-public interface TerminologyRegistryIndexUpdater extends InternalTerminologyRegistryService, IIndexUpdater<IIndexEntry> {
-	// Empty interface body
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
+
+/**
+ * @since 4.7
+ */
+public final class CodeSystemVersions extends PageableCollectionResource<CodeSystemVersionEntry> {
+
+	private static final long serialVersionUID = 1L;
+	
+	public CodeSystemVersions(final List<CodeSystemVersionEntry> items, int offset, int limit, int total) {
+		super(items, offset, limit, total);
+	}
+
 }

@@ -15,16 +15,19 @@
  */
 package com.b2international.snowowl.datastore;
 
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 
 import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Iterables;
 
 /**
  * CDO independent representation of a {@link CodeSystemVersion}.
@@ -41,6 +44,15 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 		public static final String LATEST_UPDATE_DATE = "latestUpdateDate";
 		public static final String STORAGE_KEY = "storageKey";
 		public static final String REPOSITORY_UUID = "repositoryUuid";
+		public static final String codeSystemShortName = "codeSystemShortName";
+	}
+
+	public static class Expressions {
+
+		public static Expression versionId(String versionId) {
+			return exactMatch(Fields.VERSION_ID, versionId);
+		}
+		
 	}
 	
 	public static Builder builder() {
@@ -48,6 +60,7 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 	}
 	
 	public static Builder builder(CodeSystemVersion version) {
+		final String codeSystemShortName = Iterables.getOnlyElement(version.getCodeSystemVersionGroup().getCodeSystems()).getShortName();
 		return builder()
 				.storageKey(CDOIDUtils.asLong(version.cdoID()))
 				.versionId(version.getVersionId())
@@ -55,7 +68,8 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 				.effectiveDate(EffectiveTimes.getEffectiveTime(version.getEffectiveDate()))
 				.importDate(Dates.getTime(version.getImportDate()))
 				.latestUpdateDate(EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()))
-				.repositoryUuid(version.getCodeSystemVersionGroup().getRepositoryUuid());
+				.repositoryUuid(version.getCodeSystemVersionGroup().getRepositoryUuid())
+				.codeSystemShortName(codeSystemShortName);
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
@@ -69,6 +83,7 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 		private boolean patched;
 		private long storageKey;
 		private String repositoryUuid;
+		private String codeSystemShortName;
 		
 		public Builder description(String description) {
 			this.description = description;
@@ -110,9 +125,14 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 			return this;
 		}
 		
+		public Builder codeSystemShortName(String codeSystemShortName) {
+			this.codeSystemShortName = codeSystemShortName;
+			return this;
+		}
+		
 		public CodeSystemVersionEntry build() {
 			return new CodeSystemVersionEntry(importDate, effectiveDate, latestUpdateDate, description, versionId, patched, storageKey,
-					repositoryUuid);
+					repositoryUuid, codeSystemShortName);
 		}
 		
 	}
@@ -125,17 +145,25 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 	private boolean patched;
 	private final long storageKey;
 	private final String repositoryUuid;
+	private final String codeSystemShortName;
 	
 	private CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
-			final String description, final String versionId, final boolean patched, final long storageKey, final String repositoryUuid) {
+			final String description, final String versionId, final boolean patched, final long storageKey, final String repositoryUuid, 
+			final String codeSystemShortName) {
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;
+		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystemShortName");
 		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
 		this.description = nullToEmpty(description);
 		this.versionId = checkNotNull(versionId, "versionId");
 		this.patched = patched;
 		this.storageKey = storageKey;
+	}
+	
+	@Override
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
 	}
 	
 	/**

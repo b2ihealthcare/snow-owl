@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.request;
 
 import java.io.IOException;
 
+import com.b2international.index.Searcher;
 import com.b2international.index.query.QueryParseException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
@@ -61,7 +62,9 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 		final BranchContext decoratedContext = new DelegatingBranchContext(context) {
 			@Override
 			public <T> T service(Class<T> type) {
-				if (type.isAssignableFrom(RevisionSearcher.class)) {
+				if (type.isAssignableFrom(Searcher.class)) {
+					return type.cast(index.searcher());
+				} else if (type.isAssignableFrom(RevisionSearcher.class)) {
 					return type.cast(index);
 				} else {
 					return super.service(type);

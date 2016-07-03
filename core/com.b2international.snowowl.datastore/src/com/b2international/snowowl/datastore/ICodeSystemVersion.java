@@ -56,6 +56,12 @@ public interface ICodeSystemVersion extends Serializable {
 	Date FAKE_LAST_UPDATE_TIME_DATE = new Date(Dates.MIN_DATE_LONG);
 	
 	/**
+	 * Get the code system short name where this version belongs to.
+	 * @return
+	 */
+	String getCodeSystemShortName();
+	
+	/**
 	 * Returns with the import date time.
 	 * @return the import date time.
 	 */
@@ -175,5 +181,5 @@ public interface ICodeSystemVersion extends Serializable {
 			return Longs.compare(time1, time2);
 		}
 	}
-	
+
 }

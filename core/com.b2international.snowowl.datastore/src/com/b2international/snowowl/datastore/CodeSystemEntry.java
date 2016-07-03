@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.datastore;
 
+import static com.b2international.index.query.Expressions.*;
 import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
@@ -31,6 +33,19 @@ import com.google.common.base.Strings;
 @JsonDeserialize(builder = CodeSystemEntry.Builder.class)
 public class CodeSystemEntry implements ICodeSystem {
 
+	public static class Expressions {
+
+		public static Expression shortName(String shortName) {
+			return exactMatch(Fields.SHORT_NAME, shortName);
+		}
+		
+		public static Expression oid(String oid) {
+			return exactMatch(Fields.OID, oid);
+		}
+		
+		
+	}
+	
 	public static class Fields {
 		public static final String STORAGE_KEY = "storageKey";
 		public static final String OID = "oid";
@@ -43,7 +58,7 @@ public class CodeSystemEntry implements ICodeSystem {
 		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
 		public static final String REPOSITORY_UUID = "repositoryUuid";
 	}
-	
+
 	public static Builder builder() {
 		return new Builder();
 	}

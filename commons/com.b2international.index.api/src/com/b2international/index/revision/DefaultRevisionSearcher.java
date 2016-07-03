@@ -40,6 +40,11 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	}
 	
 	@Override
+	public Searcher searcher() {
+		return searcher;
+	}
+	
+	@Override
 	public <T extends Revision> T get(Class<T> type, long storageKey) throws IOException {
 		final Query<T> query = Query.builder(type).selectAll().where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey)).limit(2).build();
 		return Iterables.getOnlyElement(search(query), null);

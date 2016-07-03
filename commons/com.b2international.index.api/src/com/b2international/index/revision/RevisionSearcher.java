@@ -18,12 +18,20 @@ package com.b2international.index.revision;
 import java.io.IOException;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Searcher;
 import com.b2international.index.query.Query;
 
 /**
  * @since 4.7
  */
 public interface RevisionSearcher {
+
+	/**
+	 * Returns the searcher instance used by this revision searcher.
+	 * 
+	 * @return
+	 */
+	Searcher searcher();
 
 	/**
 	 * Get the latest revision of an object from the index with the given type and storageKey as identifier.
@@ -40,8 +48,10 @@ public interface RevisionSearcher {
 	/**
 	 * Gets a bunch of revision for the given type and storage key collection.
 	 * 
-	 * @param type - the type of the object
-	 * @param storageKeys - the storage identifiers of the revisions
+	 * @param type
+	 *            - the type of the object
+	 * @param storageKeys
+	 *            - the storage identifiers of the revisions
 	 * @return the loaded revision objects
 	 * @throws IOException
 	 */
@@ -62,5 +72,5 @@ public interface RevisionSearcher {
 	 * @return the branch where this {@link RevisionSearcher} will execute all read operations
 	 */
 	String branch();
-	
+
 }
