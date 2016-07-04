@@ -35,11 +35,15 @@ public interface IndexClientFactory {
 	 * Configuration key to use to specify the hard commit interval of an index.
 	 */
 	String COMMIT_INTERVAL_KEY = "commitInterval";
+	
+	String TRANSLOG_SYNC_INTERVAL_KEY = "transloySyncInterval";
 
 	/**
 	 * The default commit interval is 15 seconds.
 	 */
 	long DEFAULT_COMMIT_INTERVAL = TimeUnit.SECONDS.toMillis(15L);
+	
+	long DEFAULT_TRANSLOG_SYNC_INTERVAL = TimeUnit.SECONDS.toMillis(5L);
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.
