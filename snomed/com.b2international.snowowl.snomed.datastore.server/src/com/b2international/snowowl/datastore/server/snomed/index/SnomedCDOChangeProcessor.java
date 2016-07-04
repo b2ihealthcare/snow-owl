@@ -143,6 +143,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOChangeProcessor.class);
 	
 	private final Set<CodeSystem> newCodeSystems = newHashSet();
+	private final Set<CodeSystem> dirtyCodeSystems = newHashSet();
 	private final Set<CodeSystemVersion> newCodeSystemVersions = newHashSet();
 	private final Set<CodeSystemVersion> dirtyCodeSystemVersions = newHashSet();
 	
@@ -215,7 +216,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
-			if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(dirtyObject.eClass())) {
+			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(dirtyObject.eClass())) {
+				dirtyCodeSystems.add((CodeSystem) dirtyObject);
+			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(dirtyObject.eClass())) {
 				checkAndSetCodeSystemLastUpdateTime(dirtyObject);
 			}
 		}
@@ -330,6 +333,10 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
 			index.index(branchPath, new CodeSystemVersionIndexMappingStrategy(newCodeSystemVersion));
+		}
+		
+		for (final CodeSystem newCodeSystem : dirtyCodeSystems) {
+			index.index(branchPath, new CodeSystemIndexMappingStrategy(newCodeSystem));
 		}
 		
 		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {

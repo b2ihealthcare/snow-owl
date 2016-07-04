@@ -2,14 +2,14 @@
 
 == Introduction
 
-This document lists the required data migration steps for each release
+This document lists the required data migration steps for each release.
 
 == 4.7.0
 
-There are two ways to migrate data from 4.6 to 4.7. Either run the provided sql statements against the database or use the shell scripts which migrate the data in three steps. 
+There are two ways to migrate data from 4.6 to 4.7. Either run the provided SQL statements against the database or use the shell scripts which migrate the data in three steps. 
 
 === SQL
-The `migration_4.6_to_4.7/snowowl_migration_4.6_to_4.7_terminology_snomed.sql` file contains the necessary SQL statements for the migration. Execute each sql statement against the database to migrate your data.
+The `migration_4.6_to_4.7/snowowl_migration_4.6_to_4.7_terminology_snomed.sql` file contains the necessary SQL statements for the migration. Execute each SQL statement against the database to migrate your data.
 
 === Shell scripts
 The `migration_4.6_to_4.7` folder contains three shell scripts for the migration.

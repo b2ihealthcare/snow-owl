@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 ## 4.7.0
 
 ### Added
-- New feature, SNOMED CT Extension support
- * `POST` `/codesystems` - creates a new codesystem (or release in SNOMED CT)
+- New feature, SNOMED CT Extension support, see `snomed_extension_management.adoc` for details.
+ * `POST` `/codesystems` - creates a new codesystem
+ * `PUT` `/codesystems` - updates an existing codesystem
 - Representations
- * New `branchPath` property on CodeSystems (currently active path of a CodeSystem or SNOMED CT Release)
- * New `repositoryUuid` property on CodeSystems (the current repository of the CodeSystem or SNOMED CT Release)
+ * New `branchPath` property on CodeSystems (currently active path of a CodeSystem)
+ * New `repositoryUuid` property on CodeSystems (the current repository of the CodeSystem )
+ * New `extensionOf` property on CodeSystems (the base code system of the CodeSystem)
  * New `parentBranchPath` property on CodeSystemVersions (the parent branch path where the version branch is forked off)
 - `effectiveTime` based filtering for all components (currently members only, other components will be support on release of 4.7)
 - New module for support full javadoc of Snow Owl public APIs (`com.b2international.snowowl.javadoc`). The new module is part of the `site` Maven profile.
@@ -19,7 +21,7 @@ All notable changes to this project will be documented in this file.
  * `GET` `/codesystems/:id` - returns a codesystem by its unique identifier, which can be its short name or its oid (both should be unique)
  * `POST` `/codesystems/:id/versions` - create a new version in a codesystem (or release in SNOMED CT)
 - SNOMED CT RF2 import
- * `POST` `/imports` - new optional property `snomedReleaseShortName`, identifies the target code system of the import, the default value is the short name of the SNOMED CT International Release
+ * `POST` `/imports` - new optional property `codeSystemShortName`, identifies the target code system of the import, the default value is the short name of the SNOMED CT International Release
  * 
 - Revise handling of structural reference set members (language, inactivation and association members)
  * Try to reuse members where possible (reactivate if necessary)
@@ -30,19 +32,18 @@ All notable changes to this project will be documented in this file.
  * Makes it possible to use `ELK v0.4.2` runtime and during tests
 - Upgrade custom `Protegé` libraries from `4.1` to `4.3`
 - Replaced the unsupported [pcj](http://pcj.sourceforge.net/) library with [FastUtil](https://github.com/vigna/fastutil) and also added a nice primitive collection API on top of it to support replacement of the primitive collection library underneath (and/or support multiple libraries with different capabilities, performance at the same time)
+- Migration from old terminology registry model to updated model, migration scripts are in `/documentation/src/main/asciidoc/scripts/migration_4.6_to_4.7/`
 
 ### New modules
 - `com.b2international.collections.api` - primitive collections API
 - `com.b2international.collections.fastutil` - [FastUtil](https://github.com/vigna/fastutil) implementation of primitive collections API
-- `com.b2international.collections.jackson` - Jackson Ser/Deser module for primitive collections API interfaces
  
 ### Bugs
 - Reduces thread usage of SNOMED CT change processing
 - Index initialization during SNOMED CT RF2 import now filters content based on the current latest system effective time, resulting in much more reliable imports and content when the import completes
 
 ### Known issues
-- Representation of a codesystem from SNOMED CT does not support `additionalProperties`
-- No RF2 import config validation when the branchPath is unrelated with the given `snomedReleaseShortName` property
+- No RF2 import config validation when the branchPath is unrelated with the given `codeSystemShortName` property
 
 ## 4.6.0
 

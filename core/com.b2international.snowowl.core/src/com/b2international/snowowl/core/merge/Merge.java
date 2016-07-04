@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.merge;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
@@ -29,6 +30,7 @@ public interface Merge {
 		SCHEDULED,
 		IN_PROGRESS,
 		COMPLETED,
+		CONFLICTS,
 		FAILED, 
 		CANCEL_REQUESTED;
 	}
@@ -48,4 +50,6 @@ public interface Merge {
 	Date getEndDate();
 	
 	ApiError getApiError();
+	
+	Collection<MergeConflict> getConflicts();
 }

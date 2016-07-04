@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.createSimpleConceptReferenceSetMember;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetApiAssert.updateMemberEffectiveTime;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Map;
@@ -28,7 +28,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -369,31 +368,4 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.MEMBER, memberId, true);
 		assertComponentNotExists(testBranchPath, SnomedComponentType.MEMBER, memberId);
 	}
-	
-	private static String createSimpleConceptReferenceSetMember(IBranchPath branchPath) {
-		// create concept ref. component
-		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String createdConceptId = assertComponentCreated(branchPath, SnomedComponentType.CONCEPT, conceptReq);
-		
-		// create refset
-		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
-		final String createdRefSetId = assertComponentCreated(branchPath, SnomedComponentType.REFSET, refSetReq);
-		assertComponentExists(branchPath, SnomedComponentType.REFSET, createdRefSetId);
-		
-		// create member
-		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
-		return assertComponentCreated(branchPath, SnomedComponentType.MEMBER, memberReq);
-	}
-	
-	static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
-		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", "20160201", "commitComment", "Update member effective time: " + memberId);
-		// without force flag API responds with 204, but the content remains the same
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.with().contentType(ContentType.JSON)
-			.and().body(effectiveTimeUpdate)
-			.when().put("/{path}/{componentType}/{id}?force="+force, branchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId)
-			.then().log().ifValidationFails()
-			.statusCode(204);
-	}
-	
 }

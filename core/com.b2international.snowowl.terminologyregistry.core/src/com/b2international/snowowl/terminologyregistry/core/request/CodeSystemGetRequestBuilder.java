@@ -27,7 +27,7 @@ public final class CodeSystemGetRequestBuilder extends BaseResourceRequestBuilde
 
 	private String uniqueId;
 
-	protected CodeSystemGetRequestBuilder(final String repositoryId) {
+	CodeSystemGetRequestBuilder(final String repositoryId) {
 		super(repositoryId);
 	}
 	

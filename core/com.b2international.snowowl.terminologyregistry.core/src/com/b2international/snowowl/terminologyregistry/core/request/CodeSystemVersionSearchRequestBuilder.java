@@ -28,7 +28,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 	private String codeSystemShortName;
 	private String versionId;
 
-	protected CodeSystemVersionSearchRequestBuilder(final String repositoryId) {
+	CodeSystemVersionSearchRequestBuilder(final String repositoryId) {
 		super(repositoryId);
 	}
 

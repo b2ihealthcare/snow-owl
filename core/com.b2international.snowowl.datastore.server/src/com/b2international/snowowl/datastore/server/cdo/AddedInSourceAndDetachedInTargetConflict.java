@@ -21,17 +21,23 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 /**
- * Reported when a component is added on the source branch, but it references a component (either directly or
- * indirectly) which was detached on the target branch.
+ * Reported when a component is added on the source branch, but it references a component (either directly or indirectly) which was detached on the
+ * target branch.
  */
 public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
+	private final String featureName;
 
 	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId) {
+		this(sourceId, targetId, null);
+	}
+	
+	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId, final String featureName) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
+		this.featureName = featureName;
 	}
 
 	@Override
@@ -46,10 +52,13 @@ public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 	public CDOID getTargetId() {
 		return targetId;
 	}
+	
+	public String getFeatureName() {
+		return featureName;
+	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return MessageFormat.format("AddedInSourceAndDetachedInTarget[source={0}, target={1}]", sourceId, targetId);
 	}
 }

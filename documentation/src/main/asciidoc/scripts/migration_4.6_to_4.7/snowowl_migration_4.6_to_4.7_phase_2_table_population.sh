@@ -57,7 +57,7 @@ COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystem\`
 COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystem\` 
   SET \`codeSystemVersions\` = (SELECT COUNT(*) 
   FROM \`${TERMINOLOGY}_codesystem\` c, \`${TERMINOLOGY}_codesystemversion\` v
-  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` & \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\")
+  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\")
   WHERE \`terminologymetadata_codesystem\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\";"
 
 COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystem\` 
@@ -78,18 +78,18 @@ COMMAND="USE ${TERMINOLOGY}Store;"
 COMMAND="${COMMAND} INSERT INTO \`terminologymetadata_codesystem_codesystemversions_list\` (\`cdo_source\`, \`cdo_branch\`, \`cdo_version_added\`, \`cdo_version_removed\`, \`cdo_idx\`, \`cdo_value\`)
   SELECT \`l\`.\`cdo_source\`, \`l\`.\`cdo_branch\`, \`l\`.\`cdo_version_added\`, \`l\`.\`cdo_version_removed\`, \`l\`.\`cdo_idx\`, \`l\`.\`cdo_value\`
   FROM \`${TERMINOLOGY}_codesystemversiongroup_codesystemversions_list\` l, \`${TERMINOLOGY}_codesystem\` c
-  WHERE \`l\`.\`cdo_source\` = \`c\`.\`cdo_container\` & \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\";"
+  WHERE \`l\`.\`cdo_source\` = \`c\`.\`cdo_container\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\";"
   
 COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystem_codesystemversions_list\` 
   SET \`cdo_source\` = (SELECT \`c\`.\`cdo_id\`
   FROM \`${TERMINOLOGY}_codesystem\` c, \`${TERMINOLOGY}_codesystemversion\` v
-  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` & \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\"
+  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\"
   LIMIT 1);"
   
 COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystem_codesystemversions_list\` 
   SET \`cdo_version_added\` = (SELECT \`c\`.\`cdo_version\`
   FROM \`${TERMINOLOGY}_codesystem\` c, \`${TERMINOLOGY}_codesystemversion\` v
-  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` & \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\"
+  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\"
   LIMIT 1);"
   
 ${MYSQL} -u${USER} -p${PASSWORD} -e "${COMMAND}"
@@ -104,7 +104,7 @@ COMMAND="USE ${TERMINOLOGY}Store;"
 COMMAND="${COMMAND} INSERT INTO \`terminologymetadata_codesystemversion\` (\`cdo_id\`, \`cdo_version\`, \`cdo_branch\`, \`cdo_created\`, \`cdo_revised\`, \`cdo_resource\`, \`cdo_container\`, \`cdo_feature\`, \`versionId\`, \`description\`, \`effectiveDate\`, \`importDate\`, \`lastUpdateDate\`)
   SELECT \`v\`.\`cdo_id\`, \`v\`.\`cdo_version\`, \`v\`.\`cdo_branch\`, \`v\`.\`cdo_created\`, \`v\`.\`cdo_revised\`, \`v\`.\`cdo_resource\`, \`v\`.\`cdo_container\`, \`v\`.\`cdo_feature\`, \`v\`.\`versionId\`, \`v\`.\`description\`, \`v\`.\`effectiveDate\`, \`v\`.\`importDate\`, \`v\`.\`lastUpdateDate\`
   FROM \`${TERMINOLOGY}_codesystemversion\` v, \`${TERMINOLOGY}_codesystem\` c
-  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` & \`c\`.\`shortName\` = \"${CODE_SYSTE_SHORT_NAME}\";"
+  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\";"
 
 COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystemversion\` 
   SET \`parentBranchPath\` = \"MAIN\";"
@@ -112,7 +112,7 @@ COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystemversion\`
 COMMAND="${COMMAND} UPDATE \`terminologymetadata_codesystemversion\` 
   SET \`cdo_container\` = (SELECT \`c\`.\`cdo_id\`
   FROM \`${TERMINOLOGY}_codesystem\` c, \`${TERMINOLOGY}_codesystemversion\` v
-  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` & \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\"
+  WHERE \`c\`.\`cdo_container\` = \`v\`.\`cdo_container\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\"
   LIMIT 1);"
 
 ${MYSQL} -u${USER} -p${PASSWORD} -e "${COMMAND}"
@@ -124,8 +124,8 @@ echo -e "\t4. Updating eresource_cdoresource_contents_list table."
 COMMAND="USE ${TERMINOLOGY}Store;"
 
 COMMAND="${COMMAND} UPDATE \`eresource_cdoresource_contents_list\`
-  SET \`cdo_value\` = (SELECT \`c\`.\`cdo_id\` FROM \`terminologymetadata_codesystem\` c, \`${TERMINOLOGY}_codesystemversiongroup\` g WHERE \`c\`.\`cdo_resource\` = \`g\`.\`cdo_resource\` & \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\" LIMIT 1)
-  WHERE \`cdo_source\` = (SELECT \`c\`.\`cdo_resource\` FROM \`terminologymetadata_codesystem\` c, \`${TERMINOLOGY}_codesystemversiongroup\` g WHERE \`c\`.\`cdo_resource\` = \`g\`.\`cdo_resource\` & \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\" LIMIT 1);"
+  SET \`cdo_value\` = (SELECT \`c\`.\`cdo_id\` FROM \`terminologymetadata_codesystem\` c, \`${TERMINOLOGY}_codesystemversiongroup\` g WHERE \`c\`.\`cdo_resource\` = \`g\`.\`cdo_resource\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\" LIMIT 1)
+  WHERE \`cdo_source\` = (SELECT \`c\`.\`cdo_resource\` FROM \`terminologymetadata_codesystem\` c, \`${TERMINOLOGY}_codesystemversiongroup\` g WHERE \`c\`.\`cdo_resource\` = \`g\`.\`cdo_resource\` AND \`c\`.\`shortName\` = \"${CODE_SYSTEM_SHORT_NAME}\" LIMIT 1);"
 
 ${MYSQL} -u${USER} -p${PASSWORD} -e "${COMMAND}"
 

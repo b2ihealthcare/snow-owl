@@ -20,7 +20,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 
@@ -65,12 +64,10 @@ public final class CreateMergeRequestBuilder {
 		final IBranchPath targetPath = BranchPathUtils.createPath(target);
 		final BaseRequest<RepositoryContext, Merge> next;
 		
-		if (sourcePath.getParent().equals(targetPath)) {
-			next = new BranchMergeRequest(source, target, commitComment, reviewId);
-		} else if (targetPath.getParent().equals(sourcePath)) {
+		if (targetPath.getParent().equals(sourcePath)) {
 			next = new BranchRebaseRequest(source, target, commitComment, reviewId);
 		} else {
-			throw new BadRequestException("Branches '%s' and '%s' can only be merged or rebased if one branch is the direct parent of the other.", source, target);
+			next = new BranchMergeRequest(source, target, commitComment, reviewId);
 		}
 		
 		return RepositoryRequests.wrap(repositoryId, next);

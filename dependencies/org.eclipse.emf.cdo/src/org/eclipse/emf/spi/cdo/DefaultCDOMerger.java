@@ -10,6 +10,15 @@
  */
 package org.eclipse.emf.spi.cdo;
 
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
 import org.eclipse.emf.cdo.common.commit.CDOChangeSet;
 import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
@@ -31,18 +40,8 @@ import org.eclipse.emf.cdo.internal.common.revision.delta.CDORevisionDeltaImpl;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDOFeatureDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
-
-import org.eclipse.net4j.util.collection.Pair;
-
 import org.eclipse.emf.ecore.EStructuralFeature;
-
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import org.eclipse.net4j.util.collection.Pair;
 
 /**
  * @author Eike Stepper
@@ -77,9 +76,11 @@ public class DefaultCDOMerger implements CDOMerger
     result = new CDOChangeSetDataImpl();
     conflicts = new HashMap<CDOID, Conflict>();
 
-    targetMap = createMap(target);
-    sourceMap = createMap(source);
+    targetMap = Collections.unmodifiableMap(createMap(target));
+    sourceMap = Collections.unmodifiableMap(createMap(source));
 
+    preProcess();
+    
     Set<CDOID> taken = new HashSet<CDOID>();
     for (Entry<CDOID, Object> entry : targetMap.entrySet())
     {
@@ -112,7 +113,10 @@ public class DefaultCDOMerger implements CDOMerger
     return result;
   }
 
-  protected boolean merge(Object targetData, Object sourceData)
+  protected void preProcess() {
+  }
+
+protected boolean merge(Object targetData, Object sourceData)
   {
     Object data = null;
     if (sourceData == null)

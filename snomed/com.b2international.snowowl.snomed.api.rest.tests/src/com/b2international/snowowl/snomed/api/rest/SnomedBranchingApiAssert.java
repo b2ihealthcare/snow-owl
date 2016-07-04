@@ -18,10 +18,10 @@ package com.b2international.snowowl.snomed.api.rest;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -30,11 +30,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.Merge;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
-import com.jayway.restassured.response.ResponseBody;
 import com.jayway.restassured.response.ValidatableResponse;
 
 /**
@@ -44,7 +44,7 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedBranchingApiAssert {
 
-	private static final Set<String> FINISH_STATES = ImmutableSet.of("COMPLETED", "FAILED");
+	private static final Set<String> FINISH_STATES = ImmutableSet.of(Merge.Status.COMPLETED.name(), Merge.Status.FAILED.name(), Merge.Status.CONFLICTS.name());
 
 	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
 
@@ -233,38 +233,40 @@ public abstract class SnomedBranchingApiAssert {
 	}
 	
 	public static void assertBranchCanBeMerged(final IBranchPath branchPath, final String commitComment) {
-		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(branchPath, branchPath.getParent(), commitComment)));
-		ResponseBody<?> entry = waitForMergeJob(id);
-		
-		assertNotNull(entry);
-		if (!"COMPLETED".equals(entry.path("status"))) {
-			fail(entry.path("apiError").toString());
-		}
+		assertBranchCanBeMerged(branchPath, branchPath.getParent(), commitComment);
+	}
+	
+	public static void assertBranchCanBeMerged(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
+		waitForMergeJob(id).then().assertThat().body("status", equalTo("COMPLETED"));
 	}
 
 	public static void assertBranchCanBeRebased(final IBranchPath branchPath, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(branchPath.getParent(), branchPath, commitComment)));
-		ResponseBody<?> entry = waitForMergeJob(id);
-		
-		assertNotNull(entry);
-		assertEquals("COMPLETED", entry.path("status"));
+		waitForMergeJob(id).then().assertThat().body("status", equalTo("COMPLETED"));
 	}
 
-	// TODO: Any info in the ApiError to discern failures?
-	public static void assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {
+	public static Response assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
-		ResponseBody<?> entry = waitForMergeJob(id);
-		
-		assertNotNull(entry);
-		assertEquals("FAILED", entry.path("status"));
+		Response mergeResponse = waitForMergeJob(id);
+		mergeResponse.then().assertThat().body("status", anyOf(equalTo("FAILED"), equalTo("CONFLICTS")));
+		return mergeResponse;
 	}
 	
-	private static ResponseBody<?> waitForMergeJob(String id) {
+	public static Response assertMergeJobFailsWithConflict(final IBranchPath source, final IBranchPath target, final String commitComment) {
+		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
+		Response mergeResponse = waitForMergeJob(id);
+		mergeResponse.then().assertThat().body("status", equalTo(Merge.Status.CONFLICTS.name()));
+		return mergeResponse;
+	}
+	
+	private static Response waitForMergeJob(String id) {
 		
 		final long endTime = System.currentTimeMillis() + POLL_TIMEOUT;
 
 		long currentTime;
-		ResponseBody<?> currentStatus = null;
+		Response response = null;
+		String mergeStatus = null;
 
 		do {
 
@@ -274,16 +276,20 @@ public abstract class SnomedBranchingApiAssert {
 				fail(e.toString());
 			}
 
-			currentStatus = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-					.when().get("/merges/{id}", id)
-					.then().assertThat().statusCode(200)
-					.and().extract().response().body();
+			response = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+					.when().get("/merges/{id}", id);
+			
+			response.then().assertThat().statusCode(200);
+			
+			mergeStatus = response.then().extract().path("status");
 
 			currentTime = System.currentTimeMillis();
 
-		} while (!FINISH_STATES.contains(currentStatus.path("status")) && currentTime < endTime);
+		} while (!FINISH_STATES.contains(mergeStatus) && currentTime < endTime);
 
-		return currentStatus;
+		assertNotNull(response);
+		
+		return response;
 	}
 	
 	private SnomedBranchingApiAssert() {

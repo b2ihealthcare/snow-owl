@@ -30,8 +30,16 @@ public class CodeSystemRequests {
 		return new CodeSystemCreateRequestBuilder(repositoryId);
 	}
 
+	public CodeSystemUpdateRequestBuilder prepareUpdateCodeSystem(final String uniqueId) {
+		return new CodeSystemUpdateRequestBuilder(repositoryId, uniqueId);
+	}
+
 	public CodeSystemGetRequestBuilder prepareGetCodeSystem() {
 		return new CodeSystemGetRequestBuilder(repositoryId);
+	}
+
+	public CodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
+		return new CodeSystemSearchRequestBuilder(repositoryId);
 	}
 
 	public CodeSystemVersionSearchRequestBuilder prepareSearchCodeSystemVersion() {

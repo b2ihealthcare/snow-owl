@@ -81,6 +81,32 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>**/AllSnomedApiTests.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>snomed-ext-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>**/SnomedExtensionApiTests.java</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
 				<configuration>
 					<useUIThread>false</useUIThread>
 					<argLine>-XX:MaxPermSize=256m -Xms512m -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>

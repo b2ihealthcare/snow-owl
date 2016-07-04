@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.internal.merge;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeConflict;
 
 /**
  * @since 4.6
@@ -34,6 +36,7 @@ public class MergeImpl implements Merge {
 	private Date startDate;
 	private Date endDate;
 	private ApiError apiError;
+	private Collection<MergeConflict> conflicts;
 
 	public MergeImpl(String source, String target) {
 		this.source = source;
@@ -80,6 +83,11 @@ public class MergeImpl implements Merge {
 		return apiError;
 	}
 	
+	@Override
+	public Collection<MergeConflict> getConflicts() {
+		return conflicts;
+	}
+	
 	public void start() {
 		status = Status.IN_PROGRESS;
 		startDate = new Date();
@@ -94,6 +102,13 @@ public class MergeImpl implements Merge {
 		status = Status.FAILED;
 		endDate = new Date();
 		apiError = error;
+	}
+	
+	public void failedWithConflicts(Collection<MergeConflict> conflicts, ApiError error) {
+		status = Status.CONFLICTS;
+		endDate = new Date();
+		apiError = error;
+		this.conflicts = conflicts;
 	}
 	
 	public void cancelRequested() {
