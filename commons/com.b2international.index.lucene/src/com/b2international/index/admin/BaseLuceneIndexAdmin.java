@@ -62,10 +62,12 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 
 	private static class Holder {
 		private static final Timer PERIODIC_COMMIT_TIMER = new Timer("Index commit thread", true);
+		private static final Timer PERIODIC_TRANSLOG_SYNC_TIMER = new Timer("Index translog sync thread", true);
 	}
 
 	private final String name;
 	private final AtomicReference<PeriodicCommit> periodicCommit = new AtomicReference<>();
+	private final AtomicReference<PeriodicTranslogSync> periodicTranslogSync = new AtomicReference<>();
 	private final AtomicBoolean open = new AtomicBoolean(false);
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
@@ -90,6 +92,10 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		this.settings = newHashMap(settings);
 		if (!this.settings.containsKey(IndexClientFactory.COMMIT_INTERVAL_KEY)) {
 			this.settings.put(IndexClientFactory.COMMIT_INTERVAL_KEY, IndexClientFactory.DEFAULT_COMMIT_INTERVAL);
+		}
+		
+		if (!this.settings.containsKey(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY)) {
+			this.settings.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 		}
 	}
 	
@@ -149,13 +155,14 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			tlog = createTransactionlog(writer.getCommitData());
 			closer.register(tlog);
 			
-			initPeriodicCommit(writer, tlog);
-			
 			if (!DirectoryReader.indexExists(directory)) {
 				tlog.commitWriter(writer);
 			} else {
 				tlog.recoverFromTranslog(writer, null);
 			}
+			
+			initPeriodicCommit(writer, tlog);
+			initPeriodicTranslogSync(tlog);
 			
 			// TODO configure warmer???
 			executor = Executors.newFixedThreadPool(Math.max(2, Math.min(16, Runtime.getRuntime().availableProcessors())));
@@ -186,6 +193,18 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		}
 		Holder.PERIODIC_COMMIT_TIMER.schedule(newPc, periodicCommitInterval, periodicCommitInterval);
 	}
+	
+	private void initPeriodicTranslogSync(TransactionLog tlog) {
+		final long interval = (long) settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY);
+		final PeriodicTranslogSync newSync = new PeriodicTranslogSync(name, tlog);
+		final PeriodicTranslogSync oldSync = periodicTranslogSync.getAndSet(newSync);
+		
+		if (oldSync != null) {
+			oldSync.cancel();
+		}
+		
+		Holder.PERIODIC_TRANSLOG_SYNC_TIMER.schedule(newSync, interval, interval);
+	}
 
 	private IndexWriterConfig createConfig(boolean clean) {
 		// TODO configurable analyzer and options
@@ -215,6 +234,12 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			if (pc != null) {
 				pc.cancel();
 			}
+			
+			final PeriodicTranslogSync pts = periodicTranslogSync.getAndSet(null);
+			if (pts != null) {
+				pts.cancel();
+			}
+			
 			executor.shutdown();
 			executor.awaitTermination(1, TimeUnit.MINUTES);
 			tlog.commit(writer);
@@ -288,7 +313,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		
 		private final String name;
 		private final IndexWriter writer;
-		private TransactionLog tlog;
+		private final TransactionLog tlog;
 		
 		private PeriodicCommit(String name, IndexWriter writer, TransactionLog tlog) {
 			this.name = name;
@@ -307,6 +332,28 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 				cancel();
 			}
 		}
+	}
+	
+	private static class PeriodicTranslogSync extends TimerTask {
+		
+		private final String name;
+		private final TransactionLog tlog;
+		
+		private PeriodicTranslogSync(final String name, final TransactionLog tlog) {
+			this.name = name;
+			this.tlog = tlog;
+		}
+
+		@Override
+		public void run() {
+			Thread.currentThread().setName(String.format("'%s' index translog sync", name));
+			try {
+				tlog.sync();
+			} catch (IOException e) {
+				e.printStackTrace(); // TODO log error instead of print
+			}
+		}
+		
 	}
 
 }
