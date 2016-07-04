@@ -40,6 +40,7 @@ import org.elasticsearch.index.translog.Translog;
 import org.elasticsearch.index.translog.Translog.Snapshot;
 import org.elasticsearch.index.translog.Translog.TranslogGeneration;
 import org.elasticsearch.index.translog.TranslogConfig;
+import org.slf4j.Logger;
 
 import com.b2international.index.json.BulkUpdateOperation;
 import com.b2international.index.json.Delete;
@@ -60,11 +61,13 @@ public class EsTransactionLog implements TransactionLog {
 	private final ObjectMapper mapper;
 	private final Mappings mappings;
 	private final Translog translog;
+	private final Logger logger;
 
 	public EsTransactionLog(final String indexName, final Path translogPath, final ObjectMapper mapper, final Mappings mappings,
-			final Map<String, String> commitData) throws IOException {
+			final Map<String, String> commitData, final Logger logger) throws IOException {
 		this.mapper = mapper;
 		this.mappings = mappings;
+		this.logger = logger;
 		
 		final ShardId shardId = new ShardId(indexName, 0);
 		
@@ -161,7 +164,7 @@ public class EsTransactionLog implements TransactionLog {
 	@Override
 	public void recoverFromTranslog(final IndexWriter writer, final JsonDocumentSearcher searcher) throws IOException {
 		final Stopwatch w = Stopwatch.createStarted();
-		System.err.println("Starting recovery from translog.");
+		logger.info("Starting recovery from translog.");
 		
 		final Snapshot snapshot = translog.newSnapshot();
 		Translog.Operation op = null;
@@ -173,11 +176,11 @@ public class EsTransactionLog implements TransactionLog {
 		
 		final int recoveredOps = snapshot.estimatedTotalOperations();
 		
-		if (recoveredOps != 0) {
-			commit(writer);
-			System.err.println(String.format("Recovered %d operations from translog in %s.", recoveredOps, w));
+		if (recoveredOps == 0) {
+			logger.info("No operations were found to recover.");
 		} else {
-			System.err.println("No operations were found to recover.");
+			commit(writer);
+			logger.info(String.format("Recovered %d operations from translog in %s.", recoveredOps, w));
 		}
 	}
 
@@ -197,9 +200,9 @@ public class EsTransactionLog implements TransactionLog {
 	@Override
 	public void sync() throws IOException {
 		final Stopwatch w = Stopwatch.createStarted();
-		System.err.println("Starting translog sync.");
+		logger.info("Starting translog sync.");
 		translog.sync();
-		System.err.println(String.format("Translog sync finished in %s.", w));
+		logger.info(String.format("Translog sync finished in %s.", w));
 	}
 	
 }
