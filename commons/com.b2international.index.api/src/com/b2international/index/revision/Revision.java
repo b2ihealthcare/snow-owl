@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
@@ -110,18 +111,21 @@ public abstract class Revision implements WithId {
 	}
 
 	public static Expression branchFilter(RevisionBranch branch) {
+		return branchSegmentFilter(branch.segments());
+	}
+
+	public static Expression branchSegmentFilter(final Integer segment) {
 		return Expressions.builder()
-				.must(segmentIdFilter(branch.segments()))
-				.mustNot(replacedInFilter(branch.segments()))
+				.must(match(Revision.SEGMENT_ID, segment))
+				.mustNot(match(Revision.REPLACED_INS, segment))
 				.build();
 	}
-
-	private static Expression replacedInFilter(Set<Integer> segments) {
-		return Expressions.matchAnyInt(Revision.REPLACED_INS, segments);
-	}
-
-	private static Expression segmentIdFilter(Set<Integer> segments) {
-		return Expressions.matchAnyInt(Revision.SEGMENT_ID, segments);
+	
+	public static Expression branchSegmentFilter(final Set<Integer> segments) {
+		return Expressions.builder()
+				.must(matchAnyInt(Revision.SEGMENT_ID, segments))
+				.mustNot(matchAnyInt(Revision.REPLACED_INS, segments))
+				.build();
 	}
 
 }

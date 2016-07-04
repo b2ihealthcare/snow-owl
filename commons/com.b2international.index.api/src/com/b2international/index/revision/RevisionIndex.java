@@ -17,6 +17,7 @@ package com.b2international.index.revision;
 
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.revision.compare.RevisionCompare;
 
 /**
  * @since 4.7
@@ -62,5 +63,15 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 *            - the type of purge to execute
 	 */
 	void purge(String branchPath, Purge purge);
+
+	/**
+	 * Compares the given compare branch with the given base branch. The {@link RevisionCompare} response will contain the difference from the compare
+	 * branch compared to the base. The result might contain new, changed, deleted revision storage keys.
+	 * 
+	 * @param baseBranch
+	 * @param compareBranch
+	 * @return
+	 */
+	RevisionCompare compare(String baseBranch, String compareBranch);
 
 }

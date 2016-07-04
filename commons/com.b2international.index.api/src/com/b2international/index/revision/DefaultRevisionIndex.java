@@ -15,12 +15,18 @@
  */
 package com.b2international.index.revision;
 
+import static com.b2international.index.query.Expressions.matchAnyInt;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
@@ -32,6 +38,9 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.compare.RevisionCompare;
+import com.b2international.index.revision.compare.RevisionCompare.Builder;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.7
@@ -75,6 +84,84 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 				final RevisionBranch branch = getBranch(branchPath);
 				final RevisionWriter writer = new DefaultRevisionWriter(branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
 				return write.execute(writer);
+			}
+		});
+	}
+	
+	@Override
+	public RevisionCompare compare(final String baseBranch, final String compareBranch) {
+		return index.read(new IndexRead<RevisionCompare>() {
+			@Override
+			public RevisionCompare execute(Searcher searcher) throws IOException {
+				final RevisionBranch base = getBranch(baseBranch);
+				final RevisionBranch compare = getBranch(compareBranch);
+				
+				final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
+				final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
+				
+				final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
+				final Builder result = RevisionCompare.builder();
+				
+				final Map<Class<? extends Revision>, LongSet> newAndChangedComponents = newHashMap();
+				final Map<Class<? extends Revision>, LongSet> deletedAndChangedComponents = newHashMap();
+				
+				// query all registered revision types for new, changed and deleted components
+				for (Class<? extends Revision> typeToCompare : typesToCompare) {
+					final Query<? extends Revision> newAndChangedQuery = Query.builder(typeToCompare)
+							.selectAll()
+							.where(Revision.branchSegmentFilter(segmentsToCompare))
+							.limit(Integer.MAX_VALUE)
+							.build();
+					final Hits<? extends Revision> newAndChangedHits = searcher.search(newAndChangedQuery);
+					final LongSet newAndChangedKeys = PrimitiveSets.newLongOpenHashSet();
+					for (Revision newOrChangedHit : newAndChangedHits) {
+						newAndChangedKeys.add(newOrChangedHit.getStorageKey());
+					}
+					newAndChangedComponents.put(typeToCompare, newAndChangedKeys);
+					
+					// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
+					final Query<? extends Revision> deletedAndChangedQuery = Query.builder(typeToCompare)
+							.selectAll()
+							.where(Expressions.builder()
+									.must(matchAnyInt(Revision.SEGMENT_ID, commonPath))
+									.must(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
+									.build())
+							.limit(Integer.MAX_VALUE)
+							.build();
+					final Hits<? extends Revision> deletedAndChangedHits = searcher.search(deletedAndChangedQuery);
+					final LongSet deletedAndChangedKeys = PrimitiveSets.newLongOpenHashSet();
+					for (Revision deletedOrChangedHit : deletedAndChangedHits) {
+						deletedAndChangedKeys.add(deletedOrChangedHit.getStorageKey());
+					}
+					deletedAndChangedComponents.put(typeToCompare, deletedAndChangedKeys);
+				}
+				
+				for (Class<? extends Revision> typeToCompare : typesToCompare) {
+					final LongSet newAndChangedKeys = newAndChangedComponents.get(typeToCompare);
+					final LongSet deletedAndChangedKeys = deletedAndChangedComponents.get(typeToCompare);
+					LongIterator newAndChangedIterator = newAndChangedKeys.iterator();
+					while (newAndChangedIterator.hasNext()) {
+						final long newOrChangedKey = newAndChangedIterator.next();
+						if (deletedAndChangedKeys.contains(newOrChangedKey)) {
+							// CHANGED
+							result.changedRevision(typeToCompare, newOrChangedKey);
+						} else {
+							// NEW
+							result.newRevision(typeToCompare, newOrChangedKey);
+						}
+					}
+					
+					LongIterator deletedAndChangedIterator = deletedAndChangedKeys.iterator();
+					while (deletedAndChangedIterator.hasNext()) {
+						final long deletedOrChangedKey = deletedAndChangedIterator.next();
+						if (!newAndChangedKeys.contains(deletedOrChangedKey)) {
+							// DELETED
+							result.deletedRevision(typeToCompare, deletedOrChangedKey);
+						}
+					}
+				}
+				
+				return result.build();
 			}
 		});
 	}
