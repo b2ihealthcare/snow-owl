@@ -44,13 +44,17 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 		public static final String LATEST_UPDATE_DATE = "latestUpdateDate";
 		public static final String STORAGE_KEY = "storageKey";
 		public static final String REPOSITORY_UUID = "repositoryUuid";
-		public static final String codeSystemShortName = "codeSystemShortName";
+		public static final String CODE_SYSTEM_SHORT_NAME = "codeSystemShortName";
 	}
 
 	public static class Expressions {
 
 		public static Expression versionId(String versionId) {
 			return exactMatch(Fields.VERSION_ID, versionId);
+		}
+
+		public static Expression shortName(String shortName) {
+			return exactMatch(Fields.CODE_SYSTEM_SHORT_NAME, shortName);
 		}
 		
 	}
@@ -153,7 +157,7 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;
-		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystemShortName");
+		this.codeSystemShortName = codeSystemShortName;
 		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
 		this.description = nullToEmpty(description);
 		this.versionId = checkNotNull(versionId, "versionId");

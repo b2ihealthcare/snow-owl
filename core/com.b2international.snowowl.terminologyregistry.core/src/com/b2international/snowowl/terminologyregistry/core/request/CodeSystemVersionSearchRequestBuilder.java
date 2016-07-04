@@ -32,12 +32,12 @@ public final class CodeSystemVersionSearchRequestBuilder
 		super(repositoryId);
 	}
 
-	public CodeSystemVersionSearchRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
+	public CodeSystemVersionSearchRequestBuilder filterByCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
 		return getSelf();
 	}
 	
-	public CodeSystemVersionSearchRequestBuilder setVersionId(String versionId) {
+	public CodeSystemVersionSearchRequestBuilder filterByVersionId(String versionId) {
 		this.versionId = versionId;
 		return getSelf();
 	}

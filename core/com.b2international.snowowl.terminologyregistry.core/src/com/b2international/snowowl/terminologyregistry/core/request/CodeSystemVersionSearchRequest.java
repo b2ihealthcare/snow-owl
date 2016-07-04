@@ -54,9 +54,9 @@ final class CodeSystemVersionSearchRequest extends RevisionSearchRequest<CodeSys
 	protected CodeSystemVersions doExecute(final BranchContext context) throws IOException {
 		final ExpressionBuilder query = Expressions.builder();
 
-//		if (!StringUtils.isEmpty(codeSystemShortName)) {
-//			query.must(CodeSystemVersionEntry.Expressions.shortName(codeSystemShortName));
-//		}
+		if (!StringUtils.isEmpty(codeSystemShortName)) {
+			query.must(CodeSystemVersionEntry.Expressions.shortName(codeSystemShortName));
+		}
 		
 		if (!StringUtils.isEmpty(versionId)) {
 			query.must(CodeSystemVersionEntry.Expressions.versionId(versionId));
