@@ -47,4 +47,8 @@ public class NullTransactionLog implements TransactionLog {
 	public void recoverFromTranslog(IndexWriter writer, JsonDocumentSearcher searcher) throws IOException {
 	}
 
+	@Override
+	public void sync() throws IOException {
+	}
+
 }

@@ -69,7 +69,6 @@ public class EsTransactionLog implements TransactionLog {
 		final ShardId shardId = new ShardId(indexName, 0);
 		
 		final Settings indexSettings = Settings.builder()
-			.put(TranslogConfig.INDEX_TRANSLOG_SYNC_INTERVAL, 0)
 			.put(PageCacheRecycler.TYPE, PageCacheRecycler.Type.NONE.name())
 			.build();
 		
@@ -193,6 +192,14 @@ public class EsTransactionLog implements TransactionLog {
 		default:
 			throw new IllegalArgumentException(String.format("Unhandled translog operation type %s.", op.opType().name()));
 		}
+	}
+	
+	@Override
+	public void sync() throws IOException {
+		final Stopwatch w = Stopwatch.createStarted();
+		System.err.println("Starting translog sync.");
+		translog.sync();
+		System.err.println(String.format("Translog sync finished in %s.", w));
 	}
 	
 }

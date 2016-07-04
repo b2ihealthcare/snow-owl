@@ -35,5 +35,7 @@ public interface TransactionLog extends Closeable {
 	void addOperation(Operation operation) throws IOException;
 	
 	void recoverFromTranslog(IndexWriter writer, JsonDocumentSearcher searcher) throws IOException;
+	
+	void sync() throws IOException;
 
 }
