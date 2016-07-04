@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.index.IndexReader;
@@ -28,12 +29,17 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Doc;
 import com.b2international.index.Hits;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.json.Delete;
 import com.b2international.index.json.Index;
 import com.b2international.index.json.JsonDocumentSearcher;
@@ -42,11 +48,13 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
@@ -54,6 +62,8 @@ import com.google.common.io.Files;
  * @since 5.0
  */
 final class EsTransactionLogTest {
+	
+	private final Logger logger = LoggerFactory.getLogger(EsTransactionLogTest.class);
 	
 	@Doc
 	public static class Data {
@@ -88,6 +98,83 @@ final class EsTransactionLogTest {
 			return Objects.hash(field1, field2);
 		}
 
+	}
+	
+	private final class EsTransactionLogTestAdmin implements LuceneIndexAdmin {
+		
+		private final SearcherManager manager;
+		private final Map<String, Object> settings;
+
+		private EsTransactionLogTestAdmin(final SearcherManager manager) {
+			this.manager = manager;
+			this.settings = ImmutableMap.<String, Object>of(IndexClientFactory.SLOW_LOG_KEY, new SlowLogConfig(Maps.<String, Object>newHashMap()));
+		}
+
+		@Override
+		public Logger log() {
+			return logger;
+		}
+
+		@Override
+		public boolean exists() {
+			return false;
+		}
+
+		@Override
+		public void create() {
+		}
+
+		@Override
+		public void delete() {
+		}
+
+		@Override
+		public <T> void clear(Class<T> type) {
+		}
+
+		@Override
+		public Map<String, Object> settings() {
+			return settings;
+		}
+
+		@Override
+		public Mappings mappings() {
+			return mappings;
+		}
+
+		@Override
+		public String name() {
+			return null;
+		}
+
+		@Override
+		public void optimize(int maxSegments) {
+		}
+
+		@Override
+		public void close() {
+		}
+
+		@Override
+		public ReentrantLock getLock() {
+			return null;
+		}
+
+		@Override
+		public IndexWriter getWriter() {
+			return null;
+		}
+
+		@Override
+		public ReferenceManager<IndexSearcher> getManager() {
+			return manager;
+		}
+
+		@Override
+		public TransactionLog getTransactionlog() {
+			return null;
+		}
+		
 	}
 
 	private final ObjectMapper mapper;
@@ -135,9 +222,10 @@ final class EsTransactionLogTest {
 
 			IndexWriter writer = newIndexWriter(indexPath);
 			SearcherManager manager = newSearcherManager(writer, executor);
-			JsonDocumentSearcher searcher = new JsonDocumentSearcher(manager, mapper, mappings);
+			EsTransactionLogTestAdmin admin = new EsTransactionLogTestAdmin(manager);
+			JsonDocumentSearcher searcher = new JsonDocumentSearcher(admin, mapper);
 
-			tlog = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, Maps.<String, String> newHashMap());
+			tlog = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, Maps.<String, String> newHashMap(), logger);
 
 			final String key = "tl";
 			final Data data = new Data();
@@ -151,7 +239,8 @@ final class EsTransactionLogTest {
 
 			writer2 = newIndexWriter(indexPath);
 			manager2 = newSearcherManager(writer2, executor);
-			searcher2 = new JsonDocumentSearcher(manager2, mapper, mappings);
+			EsTransactionLogTestAdmin admin2 = new EsTransactionLogTestAdmin(manager2);
+			searcher2 = new JsonDocumentSearcher(admin2, mapper);
 
 			tlog.recoverFromTranslog(writer2, searcher2);
 
@@ -181,9 +270,10 @@ final class EsTransactionLogTest {
 
 			IndexWriter writer = newIndexWriter(indexPath);
 			SearcherManager manager = newSearcherManager(writer, executor);
-			JsonDocumentSearcher searcher = new JsonDocumentSearcher(manager, mapper, mappings);
+			EsTransactionLogTestAdmin admin = new EsTransactionLogTestAdmin(manager);
+			JsonDocumentSearcher searcher = new JsonDocumentSearcher(admin, mapper);
 
-			tlog = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, Maps.<String, String> newHashMap());
+			tlog = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, Maps.<String, String> newHashMap(), logger);
 
 			final String key = "tl";
 			final Data data = new Data();
@@ -203,7 +293,8 @@ final class EsTransactionLogTest {
 
 			writer2 = newIndexWriter(indexPath);
 			manager2 = newSearcherManager(writer2, executor);
-			searcher2 = new JsonDocumentSearcher(manager2, mapper, mappings);
+			EsTransactionLogTestAdmin admin2 = new EsTransactionLogTestAdmin(manager2);
+			searcher2 = new JsonDocumentSearcher(admin2, mapper);
 
 			tlog.recoverFromTranslog(writer2, searcher2);
 
@@ -234,9 +325,10 @@ final class EsTransactionLogTest {
 
 			IndexWriter writer = newIndexWriter(indexPath);
 			SearcherManager manager = newSearcherManager(writer, executor);
-			JsonDocumentSearcher searcher = new JsonDocumentSearcher(manager, mapper, mappings);
+			EsTransactionLogTestAdmin admin = new EsTransactionLogTestAdmin(manager);
+			JsonDocumentSearcher searcher = new JsonDocumentSearcher(admin, mapper);
 
-			tlog = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, Maps.<String, String> newHashMap());
+			tlog = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, Maps.<String, String> newHashMap(), logger);
 
 			final String key1 = "tl1";
 			final Data data1 = new Data("field1", "field1");
@@ -292,9 +384,10 @@ final class EsTransactionLogTest {
 
 			writer2 = newIndexWriter(indexPath);
 			manager2 = newSearcherManager(writer2, executor);
-			searcher2 = new JsonDocumentSearcher(manager2, mapper, mappings);
+			EsTransactionLogTestAdmin admin2 = new EsTransactionLogTestAdmin(manager2);
+			searcher2 = new JsonDocumentSearcher(admin2, mapper);
 
-			tlog2 = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, commitData);
+			tlog2 = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, commitData, logger);
 			tlog2.recoverFromTranslog(writer2, searcher2);
 
 			final Query<Data> query1 = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
