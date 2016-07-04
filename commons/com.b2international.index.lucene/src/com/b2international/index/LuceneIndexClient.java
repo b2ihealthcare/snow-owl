@@ -18,7 +18,6 @@ package com.b2international.index;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.json.JsonDocumentSearcher;
 import com.b2international.index.json.JsonDocumentWriter;
-import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -27,14 +26,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public final class LuceneIndexClient implements IndexClient {
 
 	private final LuceneIndexAdmin admin;
-	private final Mappings mappings;
-	// TODO move mapper to factory
 	private final ObjectMapper mapper;
 
-	public LuceneIndexClient(LuceneIndexAdmin admin, ObjectMapper mapper, Mappings mappings) {
+	public LuceneIndexClient(LuceneIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
-		this.mappings = mappings;
 	}
 	
 	@Override
@@ -44,12 +40,12 @@ public final class LuceneIndexClient implements IndexClient {
 	
 	@Override
 	public Writer writer() {
-		return new JsonDocumentWriter(admin.getWriter(), admin.getTransactionlog(), admin.getLock(), admin.getManager(), mapper, mappings);
+		return new JsonDocumentWriter(admin, mapper);
 	}
 	
 	@Override
 	public Searcher searcher() {
-		return new JsonDocumentSearcher(admin.getManager(), mapper, mappings);
+		return new JsonDocumentSearcher(admin, mapper);
 	}
 	
 	@Override

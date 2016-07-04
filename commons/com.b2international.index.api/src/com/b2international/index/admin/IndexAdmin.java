@@ -17,6 +17,8 @@ package com.b2international.index.admin;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+
 import com.b2international.index.mapping.Mappings;
 
 /**
@@ -25,6 +27,13 @@ import com.b2international.index.mapping.Mappings;
  * @since 4.7
  */
 public interface IndexAdmin {
+
+	/**
+	 * Returns the {@link Logger} assigned to this index.
+	 * 
+	 * @return
+	 */
+	Logger log();
 
 	/**
 	 * Returns <code>true</code> if the index already exists, otherwise returns <code>false</code>.
@@ -74,10 +83,12 @@ public interface IndexAdmin {
 	 * Closes the underlying index.
 	 */
 	void close();
-	
+
 	/**
 	 * Optimizes the underlying index until it has less than or equal segments than the supplied maxSegments number.
-	 * @param maxSegments - max number of segments to force on the index
+	 * 
+	 * @param maxSegments
+	 *            - max number of segments to force on the index
 	 */
 	void optimize(int maxSegments);
 

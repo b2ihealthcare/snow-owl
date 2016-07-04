@@ -32,6 +32,7 @@ import org.apache.lucene.search.ReferenceManager;
 
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexException;
+import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
 import com.b2international.index.Writer;
@@ -39,13 +40,13 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.translog.TransactionLog;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Stopwatch;
 
 /**
  * @since 4.7
  */
 public class JsonDocumentWriter implements Writer {
 
+	private final LuceneIndexAdmin admin;
 	private final IndexWriter writer;
 	private final TransactionLog tlog;
 	private final ReferenceManager<IndexSearcher> searchers;
@@ -57,14 +58,15 @@ public class JsonDocumentWriter implements Writer {
 	private boolean withUpdate = false;
 	private AtomicReference<JsonDocumentSearcher> searcher = new AtomicReference<>();
 
-	public JsonDocumentWriter(IndexWriter writer, TransactionLog tlog, ReentrantLock lock, ReferenceManager<IndexSearcher> searchers, ObjectMapper mapper, Mappings mappings) {
-		this.writer = writer;
-		this.tlog = tlog;
-		this.updateLock = lock;
-		this.searchers = searchers;
+	public JsonDocumentWriter(LuceneIndexAdmin admin, ObjectMapper mapper) {
+		this.admin = admin;
+		this.writer = admin.getWriter();
+		this.tlog = admin.getTransactionlog();
+		this.updateLock = admin.getLock();
+		this.searchers = admin.getManager();
+		this.mappings = admin.mappings();
 		this.mapper = mapper;
-		this.mappings = mappings;
-		this.searcher.set(new JsonDocumentSearcher(searchers, mapper, mappings));
+		this.searcher.set(new JsonDocumentSearcher(admin, mapper));
 	}
 	
 	@Override
@@ -87,7 +89,7 @@ public class JsonDocumentWriter implements Writer {
 			updateLock.lock();
 			try {
 				// reopen search for bulk update operations
-				final JsonDocumentSearcher previous = searcher.getAndSet(new JsonDocumentSearcher(searchers, mapper, mappings));
+				final JsonDocumentSearcher previous = searcher.getAndSet(new JsonDocumentSearcher(admin, mapper));
 				previous.close();
 				applyOperations();
 			} catch (Exception e) {

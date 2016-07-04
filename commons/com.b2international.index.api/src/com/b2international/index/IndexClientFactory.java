@@ -39,6 +39,16 @@ public interface IndexClientFactory {
 	String TRANSLOG_SYNC_INTERVAL_KEY = "transloySyncInterval";
 
 	/**
+	 * Configuration key to specify the slf4j Logger instance to use for the index.
+	 */
+	String LOG_KEY = "slf4j.logger";
+	
+	/**
+	 * Configuration key to specify slow log related configuration.
+	 */
+	String SLOW_LOG_KEY = "slowlog";
+
+	/**
 	 * The default commit interval is 15 seconds.
 	 */
 	long DEFAULT_COMMIT_INTERVAL = TimeUnit.SECONDS.toMillis(15L);

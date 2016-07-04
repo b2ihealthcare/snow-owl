@@ -129,7 +129,7 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 			final int totalRevisionsToPurge = searcher.search(Query.builder(revisionType)
 					.selectAll().where(purgeQuery.build()).limit(0).build()).getTotal();
 			if (totalRevisionsToPurge > 0) {
-				System.err.println(String.format("Purging %s number of %s documents...", totalRevisionsToPurge, DocumentMapping.getType(revisionType)));
+				admin().log().info("Purging {} '{}' documents...", totalRevisionsToPurge, DocumentMapping.getType(revisionType));
 				// partition the total hit number by the current threshold
 				final int limit = 10000;
 				int offset = 0;

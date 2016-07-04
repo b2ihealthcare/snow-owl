@@ -43,6 +43,8 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.index.AnalyzerImpls;
 import com.b2international.index.Analyzers;
@@ -51,6 +53,7 @@ import com.b2international.index.IndexException;
 import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.translog.TransactionLog;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
@@ -97,12 +100,25 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		if (!this.settings.containsKey(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY)) {
 			this.settings.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 		}
+		
+		if (!this.settings.containsKey(IndexClientFactory.LOG_KEY)) {
+			this.settings.put(IndexClientFactory.LOG_KEY, LoggerFactory.getLogger(String.format("index.%s", name)));
+		}
+		
+		if (!this.settings.containsKey(IndexClientFactory.SLOW_LOG_KEY)) {
+			this.settings.put(IndexClientFactory.SLOW_LOG_KEY, new SlowLogConfig(this.settings));
+		}
 	}
 	
 	private void ensureOpen() {
 		if (!open.get()) {
 			throw new IllegalStateException("Index is not available");
 		}
+	}
+	
+	@Override
+	public Logger log() {
+		return (Logger) settings().get(IndexClientFactory.LOG_KEY);
 	}
 
 	@Override
@@ -273,10 +289,13 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	public void optimize(int maxSegments) {
 		ensureOpen();
 		try {
+			log().info("Optimizing to max. {} number of segments", maxSegments);
 			writer.forceMerge(maxSegments);
 			writer.commit();
 		} catch (IOException e) {
 			throw new IndexException("Couldn't optimize index " + name(), e);
+		} finally {
+			log().info("Optimization to max. {} number of segments completed", maxSegments);
 		}
 	}
 
