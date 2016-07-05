@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.RevisionGetRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -29,13 +31,22 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
  */
 final class SnomedRefSetGetRequest extends RevisionGetRequest<SnomedReferenceSet> {
 
+	private static final String REFERENCE_SET = "Reference Set";
+
 	protected SnomedRefSetGetRequest() {
-		super("Reference Set");
+		super(REFERENCE_SET);
 	}
 
 	@Override
 	protected SnomedReferenceSet process(BranchContext context, IComponent<String> component, Options expand) {
-		return SnomedConverters.newRefSetConverter(context, expand, locales()).convert((SnomedConceptDocument) component);
+		final SnomedReferenceSet refSet = SnomedConverters.newRefSetConverter(context, expand, locales())
+				.convert((SnomedConceptDocument) component);
+		
+		if (refSet.getStorageKey() != CDOUtils.NO_STORAGE_KEY) {
+			return refSet;
+		} else {
+			throw new ComponentNotFoundException(REFERENCE_SET, component.getId());
+		}
 	}
 	
 	@Override

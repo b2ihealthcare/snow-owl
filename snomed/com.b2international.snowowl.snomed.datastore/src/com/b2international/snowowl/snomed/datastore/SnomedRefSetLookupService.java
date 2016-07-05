@@ -114,16 +114,12 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 					.build(branchPath.getPath())
 					.executeSync(bus);
 			
-			if (refSet.getStorageKey() == CDOUtils.NO_STORAGE_KEY) {
-				return null;
-			} else {
-				final SnomedConceptDocument concept = new SnomedConceptLookupService().getComponent(branchPath, id);
-				return SnomedConceptDocument
-						.builder(concept)
-						.refSet(refSet)
-						.build();
-			}
+			final SnomedConceptDocument concept = new SnomedConceptLookupService().getComponent(branchPath, id);
 			
+			return SnomedConceptDocument
+					.builder(concept)
+					.refSet(refSet)
+					.build();
 		} catch (NotFoundException e) {
 			return null;
 		}
