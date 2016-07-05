@@ -62,18 +62,18 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		if (Revision.class.isAssignableFrom(query.getSelect())) {
+		if (query.getParentType() == null && Revision.class.isAssignableFrom(query.getFrom())) {
 			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
-			query = Query.select(query.getSelect())
+			query = Query.selectPartial(query.getSelect(), query.getFrom())
 					.where(Expressions.builder()
-							.must(query.getWhere())
-							.must(Revision.branchFilter(branch))
-							.build())
-					.sortBy(query.getSortBy())
-					.limit(query.getLimit())
-					.offset(query.getOffset())
-					.withScores(query.isWithScores())
-					.build();
+					.must(query.getWhere())
+					.must(Revision.branchFilter(branch))
+					.build())
+			.sortBy(query.getSortBy())
+			.limit(query.getLimit())
+			.offset(query.getOffset())
+			.withScores(query.isWithScores())
+			.build();
 		} else {
 			checkArgument(Revision.class.isAssignableFrom(query.getParentType()), "Searching non-revision documents require a revision parent type: %s", query);
 			// run a query on the parent documents with nested match on the children
