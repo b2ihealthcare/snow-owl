@@ -28,6 +28,8 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
@@ -108,16 +110,18 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 		SnomedConceptDocument doc = new SnomedConceptLookupService().getComponent(branchPath, id);
 		
 		if (doc != null) {
-			final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
-					.setComponentId(id)
-					.build(branchPath.getPath())
-					.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
-			
-			if (refSet != null) {
+			try {
+				final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
+						.setComponentId(id)
+						.build(branchPath.getPath())
+						.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+				
 				doc = SnomedConceptDocument
 						.builder(doc)
 						.refSet(refSet)
 						.build();
+			} catch (NotFoundException e) {
+				throw new SnowowlRuntimeException(String.format("Couldn't find reference set for identifier concept %s.", id));
 			}
 		}
 		
