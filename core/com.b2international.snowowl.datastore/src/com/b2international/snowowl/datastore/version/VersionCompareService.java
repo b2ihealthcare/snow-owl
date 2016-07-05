@@ -19,11 +19,13 @@ import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
 
 /**
  * Service for comparing the content of a terminology between two given versions.
+ * @deprecated - reimplement using {@link RevisionIndex}
  */
 public interface VersionCompareService {
 

@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.internal.review;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,6 +38,9 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
@@ -46,25 +49,28 @@ import com.b2international.index.Writer;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.index.revision.compare.RevisionCompare;
+import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
-import com.b2international.snowowl.datastore.index.diff.CompareResult;
-import com.b2international.snowowl.datastore.index.diff.NodeDiff;
-import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.index.RevisionDocument.Views.IdOnly;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
-import com.b2international.snowowl.datastore.version.VersionCompareService;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -80,18 +86,27 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final class CreateReviewJob extends Job {
 
 		private final String reviewId;
-		private final VersionCompareConfiguration configuration;
+		private final RevisionIndex index;
+		private final String branchToCompare;
+		private final String branchAsBase;
 
-		private CreateReviewJob(final String reviewId, final VersionCompareConfiguration configuration) {
-			super(MessageFormat.format("Creating review for branch ''{0}''", configuration.getTargetPath().getPath()));
+		private CreateReviewJob(final String reviewId, final RevisionIndex index, final String branchAsBase, final String branchToCompare) {
+			super(MessageFormat.format("Creating review for branch ''{0}''", branchToCompare));
 			this.reviewId = reviewId;
-			this.configuration = configuration;
+			this.index = index;
+			this.branchAsBase = branchAsBase;
+			this.branchToCompare = branchToCompare;
 		}
 
 		@Override
 		protected IStatus run(final IProgressMonitor monitor) {
-			final CompareResult compare = getServiceForClass(VersionCompareService.class).compare(configuration, monitor);
-			createConceptChanges(reviewId, compare);
+			final RevisionCompare compare;
+			if (branchAsBase != null) {
+				compare = index.compare(branchAsBase, branchToCompare); 
+			} else {
+				compare = index.compare(branchToCompare);
+			}
+			createConceptChanges(reviewId, branchToCompare, compare);
 			return Status.OK_STATUS;
 		}
 
@@ -190,8 +205,8 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ReviewManagerImpl.class);
 
-	private final String repositoryId;
 	private final Index store;
+	private final RevisionIndex revisionIndex;
 	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
 	private final StaleHandler staleHandler = new StaleHandler();
 	private final TimerTask cleanupTask = new CleanupTask();
@@ -210,8 +225,8 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	public ReviewManagerImpl(final InternalRepository repository, final ReviewConfiguration config) {
-		this.repositoryId = repository.id();
 		this.store = repository.getIndex();
+		this.revisionIndex = repository.getRevisionIndex();
 
 		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(config.getKeepCurrentMins());
 		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(config.getKeepOtherMins());
@@ -229,11 +244,9 @@ public class ReviewManagerImpl implements ReviewManager {
 			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
 		}
 
-		// Comparison ends with the head commit of the source branch, but we'll have to figure out where to retrieve the starting commit from.
-		final VersionCompareConfiguration.Builder configurationBuilder = VersionCompareConfiguration.builder(repositoryId, false).target(source.branchPath(), false);
-		
-		if (source.parent().equals(target)) { 
-
+		final String branchToCompare;
+		final String branchAsBase;
+		if (source.parent().equals(target)) {
 			/* 
 			 * target is the parent of source 
 			 * source is the child of target
@@ -241,30 +254,48 @@ public class ReviewManagerImpl implements ReviewManager {
 			 * 
 			 * Comparison starts from the base of the child (source) branch.
 			 */
-			configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath()), false);
-
+			branchAsBase = null;
+			branchToCompare = source.path();
 		} else if (target.parent().equals(source)) {
-
 			/* 
 			 * source is the parent of target
 			 * target is the child of source
 			 * review is for changes on parent (source) that will be made visible on child (target) by rebasing
 			 */
-			if (target.state(source) == BranchState.STALE) {
-				// Start from the parent (source) base _as seen from the child (target) branch_, if parent (source) itself has been rebased in the meantime 
-				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath(), target.branchPath()), false);
+			if (target.state(source) == Branch.BranchState.STALE) {
+				throw new UnsupportedOperationException("Not implemented this compare yet");
 			} else {
-				// Start from the child (target) base
-				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(target.branchPath()), false);
+				branchAsBase = target.path();
+				branchToCompare = source.path();
 			}
-
 		} else {
 			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
 		}
 		
-		final VersionCompareConfiguration configuration = configurationBuilder.build();
+//		// Comparison ends with the head commit of the source branch, but we'll have to figure out where to retrieve the starting commit from.
+//		final VersionCompareConfiguration.Builder configurationBuilder = VersionCompareConfiguration.builder(repositoryId, false).target(source.branchPath(), false);
+//		
+//		if (source.parent().equals(target)) { 
+//
+//			configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath()), false);
+//
+//		} else if (target.parent().equals(source)) {
+//
+//			if (target.state(source) == BranchState.STALE) {
+//				// Start from the parent (source) base _as seen from the child (target) branch_, if parent (source) itself has been rebased in the meantime 
+//				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath(), target.branchPath()), false);
+//			} else {
+//				// Start from the child (target) base
+//				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(target.branchPath()), false);
+//			}
+//
+//		} else {
+//			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
+//		}
+//		
+//		final VersionCompareConfiguration configuration = configurationBuilder.build();
 		final String reviewId = UUID.randomUUID().toString();
-		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, configuration);
+		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, revisionIndex, branchAsBase, branchToCompare);
 
 		final ReviewImpl review = ReviewImpl.builder(reviewId.toString(), source, target).build();
 		review.setReviewManager(this);
@@ -311,32 +342,36 @@ public class ReviewManagerImpl implements ReviewManager {
 		});
 	}
 
-	void createConceptChanges(final String id, final CompareResult compare) {
-		final Set<String> newConcepts = newHashSet();
-		final Set<String> changedConcepts = newHashSet();
-		final Set<String> deletedConcepts = newHashSet();
-
-		for (final NodeDiff diff : compare) {
-			switch (diff.getChange()) {
-				case ADDED:
-					newConcepts.add(diff.getId());
-					break;
-				case DELETED:
-					deletedConcepts.add(diff.getId());
-					break;
-				case UNCHANGED:
-					// Nothing to do
-					break;
-				case UPDATED:
-					changedConcepts.add(diff.getId());
-					break;
-				default:
-					throw new IllegalStateException(MessageFormat.format("Unexpected change kind ''{0}''.", diff.getChange()));
+	void createConceptChanges(final String id, final String branch, final RevisionCompare compare) {
+		// TODO concept changes is mutable
+		// TODO non concept changes should be converted to concept changes for API compatibility
+		// TODO add deleted IDs???
+		final ConceptChangesImpl convertedChanges = revisionIndex.read(branch, new RevisionIndexRead<ConceptChangesImpl>() {
+			@Override
+			public ConceptChangesImpl execute(RevisionSearcher searcher) throws IOException {
+				final Set<String> newConcepts = newHashSet();
+				final Set<String> changedConcepts = newHashSet();
+				final Set<String> deletedConcepts = newHashSet();
+				
+				for (final Entry<Class<? extends Revision>, LongSet> newComponents : compare.getNewComponents().entrySet()) {
+					final Hits<IdOnly> ids = searcher.search(Query.selectPartial(RevisionDocument.Views.IdOnly.class, newComponents.getKey())
+							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toSet(newComponents.getValue())))
+							.build());
+					FluentIterable.from(ids).transform(ComponentUtils.<String>getIdFunction()).copyInto(newConcepts);
+				}
+				
+				for (final Entry<Class<? extends Revision>, LongSet> changedComponents : compare.getChangedComponents().entrySet()) {
+					final Hits<IdOnly> ids = searcher.search(Query.selectPartial(RevisionDocument.Views.IdOnly.class, changedComponents.getKey())
+							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toSet(changedComponents.getValue())))
+							.build());
+					FluentIterable.from(ids).transform(ComponentUtils.<String>getIdFunction()).copyInto(changedConcepts);
+				}
+				
+				return new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
 			}
-		}
-
-		final ConceptChangesImpl convertedChanges = new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
-
+		});
+		
+		
 		try {
 			getReview(id);
 			store.write(new IndexWrite<Void>() {
