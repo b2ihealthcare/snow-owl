@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchAnyLong;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getValue;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
@@ -37,6 +40,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -295,6 +299,18 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					.refSetType(refSet.getType())
 					.referencedComponentType(refSet.getReferencedComponentType())
 					.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()));
+		}
+		
+		@JsonIgnore
+		public Builder refSet(final SnomedReferenceSet refSet) {
+			if (!StringUtils.isEmpty(refSet.getMapTargetComponentType())) {
+				mapTargetComponentType(Integer.parseInt(refSet.getMapTargetComponentType()));
+			}
+			
+			return structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()))
+					.refSetType(refSet.getType())
+					.referencedComponentType(getValue(refSet.getReferencedComponentType()))
+					.refSetStorageKey(refSet.getStorageKey());
 		}
 		
 		Builder mapTargetComponentType(int mapTargetComponentType) {
