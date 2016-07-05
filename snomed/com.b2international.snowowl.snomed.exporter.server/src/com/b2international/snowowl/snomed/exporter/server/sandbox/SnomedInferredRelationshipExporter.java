@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -39,10 +38,8 @@ public class SnomedInferredRelationshipExporter extends AbstractSnomedRelationsh
 	
 	@Override
 	protected Query<SnomedRelationshipIndexEntry> getSnapshotQuery() {
-		QueryBuilder<SnomedRelationshipIndexEntry> builder = Query.builder(SnomedRelationshipIndexEntry.class);
 		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
 		commitTimeConditionBuilder.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
-		Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
-		return query;
+		return Query.select(SnomedRelationshipIndexEntry.class).where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
 	}
 }

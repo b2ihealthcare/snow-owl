@@ -288,8 +288,7 @@ public enum SnomedModuleDependencyCollectorService {
 	}
 
 	private Iterable<SnomedRelationshipIndexEntry> getInboundIsARelationships(final RevisionSearcher searcher, final Set<String> destinationIds) throws IOException {
-		final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
-				.selectAll()
+		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 				.where(Expressions.builder()
 						.must(SnomedRelationshipIndexEntry.Expressions.destinationIds(destinationIds))
 						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))

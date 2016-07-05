@@ -871,8 +871,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 	
 	private <T extends RevisionDocument> Iterable<T> getCurrentRevisionsById(RevisionWriter writer, Class<T> type, Set<String> ids) {
-		final Query<T> query = Query.builder(type)
-				.selectAll()
+		final Query<T> query = Query.select(type)
 				.where(RevisionDocument.Expressions.ids(ids))
 				.limit(ids.size())
 				.build();

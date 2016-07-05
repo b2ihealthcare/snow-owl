@@ -72,8 +72,7 @@ public class RefSetMemberLookup {
 			storageKey = index.read(editingContext.getBranch(), new RevisionIndexRead<Long>() {
 				@Override
 				public Long execute(RevisionSearcher index) throws IOException {
-					final Query<SnomedRefSetMemberIndexEntry> query = Query.builder(SnomedRefSetMemberIndexEntry.class)
-							.selectAll()
+					final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
 							.where(SnomedRefSetMemberIndexEntry.Expressions.id(uuid.toString()))
 							.limit(2)
 							.build();

@@ -30,7 +30,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -89,7 +88,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 		try {
 			// get referenced component's (description) ID to description type ID mapping
 			if (languageType) {
-				Query<SnomedDescriptionIndexEntry> allDescriptionsQuery = Query.builder(SnomedDescriptionIndexEntry.class).selectAll()
+				Query<SnomedDescriptionIndexEntry> allDescriptionsQuery = Query.select(SnomedDescriptionIndexEntry.class)
 						.where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
 				Hits<SnomedDescriptionIndexEntry> allDescriptionsHits;
 				allDescriptionsHits = searcher.search(allDescriptionsQuery);
@@ -98,11 +97,10 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 					descriptionIdTypeMap.put(Long.parseLong(snomedDescriptionIndexEntry.getId()), Long.parseLong(snomedDescriptionIndexEntry.getTypeId()));
 				}
 			}
-			QueryBuilder<SnomedRefSetMemberIndexEntry> builder = Query.builder(SnomedRefSetMemberIndexEntry.class);
-
 			// we need every target, limit needs to be set as the default is 50
 			// hits
-			Query<SnomedRefSetMemberIndexEntry> query = builder.selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
+			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+					.where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
 			Hits<SnomedRefSetMemberIndexEntry> hits = searcher.search(query);
 
 			Set<ReferencedComponentIdStatus> referencedComponentIdStatuses = Sets.newHashSet();

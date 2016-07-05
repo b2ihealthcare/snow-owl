@@ -86,8 +86,7 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 		}
 		
 		
-		final Query<SnomedConstraintDocument> query = Query.builder(SnomedConstraintDocument.class)
-				.selectAll()
+		final Query<SnomedConstraintDocument> query = Query.select(SnomedConstraintDocument.class)
 				.where(queryBuilder.build())
 				.offset(offset())
 				.limit(limit())

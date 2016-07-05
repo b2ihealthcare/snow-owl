@@ -93,7 +93,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		
 		// process cascading acceptability changes in unchanged docs
 		if (!descriptionsToBeLoaded.isEmpty()) {
-			final Query<SnomedDescriptionIndexEntry> descriptionsToBeLoadedQuery = Query.builder(SnomedDescriptionIndexEntry.class).selectAll().where(SnomedDocument.Expressions.ids(descriptionsToBeLoaded)).limit(descriptionsToBeLoaded.size()).build();
+			final Query<SnomedDescriptionIndexEntry> descriptionsToBeLoadedQuery = Query.select(SnomedDescriptionIndexEntry.class).where(SnomedDocument.Expressions.ids(descriptionsToBeLoaded)).limit(descriptionsToBeLoaded.size()).build();
 			for (SnomedDescriptionIndexEntry unchangedDescription : searcher.search(descriptionsToBeLoadedQuery)) {
 				final Builder doc = SnomedDescriptionIndexEntry.builder(unchangedDescription);
 				processChanges(doc, unchangedDescription, acceptabilityChangesByDescription.get(unchangedDescription.getId()));

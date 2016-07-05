@@ -104,7 +104,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     }
 
     private Branch getBranch(Integer branchId) {
-    	return getBranchFromStore(Query.builder(InternalBranch.class).selectAll().where(Expressions.match(CDO_BRANCH_ID, branchId)));
+    	return getBranchFromStore(Query.select(InternalBranch.class).where(Expressions.match(CDO_BRANCH_ID, branchId)));
     }
     
     private CDOBranch loadCDOBranch(Integer branchId) {

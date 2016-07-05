@@ -64,8 +64,7 @@ final class CodeSystemVersionSearchRequest extends RevisionSearchRequest<CodeSys
 		
 		final Searcher searcher = context.service(Searcher.class);
 		
-		final Hits<CodeSystemVersionEntry> hits = searcher.search(Query.builder(CodeSystemVersionEntry.class)
-				.selectAll()
+		final Hits<CodeSystemVersionEntry> hits = searcher.search(Query.select(CodeSystemVersionEntry.class)
 				.where(query.build())
 				.offset(offset())
 				.limit(limit())

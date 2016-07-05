@@ -80,8 +80,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
-					.selectAll()
+			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
 							.must(active())
 							.must(typeId(Concepts.IS_A))
@@ -126,8 +125,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-					.selectAll()
+			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(Expressions.builder()
 							.must(active())
 							.must(additionalClause)
@@ -167,8 +165,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-					.selectAll()
+			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(active())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -297,8 +294,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final Query<SnomedRefSetMemberIndexEntry> query = Query.builder(SnomedRefSetMemberIndexEntry.class)
-					.selectAll()
+			final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
 					.where(Expressions.builder()
 							.must(active())
 							.must(referencedComponentIds(LongSets.toStringSet(componentIds)))
@@ -369,8 +365,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		}
 
 		private LongKeyMap<Collection<StatementFragment>> getStatements(final Collection<String> characteristicTypes) {
-			final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
-					.selectAll()
+			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
 							.must(active())
 							.must(characteristicTypeIds(characteristicTypes))

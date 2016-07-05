@@ -288,13 +288,13 @@ public final class SnomedValidationContext {
 
 	private boolean existsInStore(String componentId, ComponentCategory componentCategory) throws IOException {
 		final Class<? extends SnomedDocument> type = SnomedDocument.getType(componentCategory);
-		final Query<? extends SnomedDocument> query = Query.builder(type).selectAll().where(SnomedDocument.Expressions.id(componentId)).limit(0).build();
+		final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.id(componentId)).limit(0).build();
 		return searcher.search(query).getTotal() > 0;
 	}
 	
 	private boolean activeInStore(String componentId, ComponentCategory componentCategory) throws IOException {
 		final Class<? extends SnomedDocument> type = SnomedDocument.getType(componentCategory);
-		final Query<? extends SnomedDocument> query = Query.builder(type).selectAll().where(SnomedDocument.Expressions.id(componentId)).limit(1).build();
+		final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.id(componentId)).limit(1).build();
 		final Hits<? extends SnomedDocument> hits = searcher.search(query);
 		return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).isActive() : false;
 	}

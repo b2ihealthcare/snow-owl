@@ -75,8 +75,7 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 			queryBuilder.must(destinationIds(getCollection(OptionKey.DESTINATION, String.class)));
 		}
 
-		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.builder(SnomedRelationshipIndexEntry.class)
-				.selectAll()
+		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.select(SnomedRelationshipIndexEntry.class)
 				.where(queryBuilder.build())
 				.offset(offset())
 				.limit(limit())

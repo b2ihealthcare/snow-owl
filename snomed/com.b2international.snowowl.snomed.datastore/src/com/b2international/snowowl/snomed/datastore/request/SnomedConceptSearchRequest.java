@@ -268,8 +268,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		}
 		
 		
-		final Hits<SnomedConceptDocument> hits = searcher.search(Query.builder(SnomedConceptDocument.class)
-				.selectAll()
+		final Hits<SnomedConceptDocument> hits = searcher.search(Query.select(SnomedConceptDocument.class)
 				.where(queryExpression)
 				.offset(offset())
 				.limit(limit())

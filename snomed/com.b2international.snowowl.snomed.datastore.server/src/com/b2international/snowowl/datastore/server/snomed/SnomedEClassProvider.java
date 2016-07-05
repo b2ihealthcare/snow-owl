@@ -79,8 +79,7 @@ public class SnomedEClassProvider implements IEClassProvider {
 						}
 					}
 					// if still not found, then try to look for the refset storage key field
-					final Hits<SnomedConceptDocument> hits = index.search(Query.builder(SnomedConceptDocument.class)
-							.selectAll()
+					final Hits<SnomedConceptDocument> hits = index.search(Query.select(SnomedConceptDocument.class)
 							.where(SnomedConceptDocument.Expressions.refSetStorageKey(storageKey))
 							.limit(0)
 							.build());

@@ -69,8 +69,7 @@ public class ConceptIdQueryEvaluator2 implements IQueryEvaluator<LongSet, com.b2
 			final LongSet typeIds = evaluate(clause.getLeft());
 			final LongSet destinationIds = evaluate(clause.getRight());
 
-			final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
-					.selectAll()
+			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
 							.must(SnomedRelationshipIndexEntry.Expressions.active())
 							.must(SnomedRelationshipIndexEntry.Expressions.typeIds(LongSets.toStringSet(typeIds)))
@@ -130,8 +129,7 @@ public class ConceptIdQueryEvaluator2 implements IQueryEvaluator<LongSet, com.b2
 	}
 
 	private LongSet getMatchingConceptIds(Expression expression) {
-		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
+		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 				.where(expression)
 				.limit(Integer.MAX_VALUE)
 				.build();

@@ -52,8 +52,7 @@ final class CodeSystemGetRequest extends BaseResourceRequest<BranchContext, Code
 		queryBuilder.should(CodeSystemEntry.Expressions.shortName(uniqueId));
 		queryBuilder.should(CodeSystemEntry.Expressions.oid(uniqueId));
 		
-		final Query<CodeSystemEntry> query = Query.builder(CodeSystemEntry.class)
-				.selectAll()
+		final Query<CodeSystemEntry> query = Query.select(CodeSystemEntry.class)
 				.where(queryBuilder.build())
 				.limit(2)
 				.build();

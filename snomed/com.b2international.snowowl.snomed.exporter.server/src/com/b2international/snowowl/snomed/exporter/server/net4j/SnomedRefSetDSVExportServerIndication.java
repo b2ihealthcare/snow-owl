@@ -131,9 +131,9 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
 		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 		
-		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
+		QueryBuilder<SnomedConceptDocument> builder = Query.select(SnomedConceptDocument.class);
 
-		final Query<SnomedConceptDocument> query = builder.selectAll().where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
+		final Query<SnomedConceptDocument> query = builder.where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
 		
 		
 		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {

@@ -382,8 +382,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 			@Override
 			public Void execute(RevisionSearcher searcher) throws IOException {
-				final Query<SnomedConceptDocument> allConceptsQuery = Query.builder(SnomedConceptDocument.class)
-						.selectAll()
+				final Query<SnomedConceptDocument> allConceptsQuery = Query.select(SnomedConceptDocument.class)
 						.where(Expressions.matchAll())
 						.limit(Integer.MAX_VALUE)
 						.build();
@@ -409,8 +408,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 
 	private IsAStatementWithId[] getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
-		final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
-				.selectAll()
+		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 				.where(Expressions.builder()
 						.must(SnomedRelationshipIndexEntry.Expressions.active())
 						.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))

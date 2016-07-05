@@ -23,7 +23,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -99,8 +98,6 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		concept.definitionStatus = revisionDocument.isPrimitive() ? "1" : "0";
 		
 		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
-		QueryBuilder<SnomedRefSetMemberIndexEntry> refsetMemberQueryBuilder = Query.builder(SnomedRefSetMemberIndexEntry.class);
-
 		final LanguageSetting languageSetting = ApplicationContext.getInstance().getService(LanguageSetting.class);
 		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
 		
@@ -120,7 +117,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
 					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
-			Query<SnomedRefSetMemberIndexEntry> query = refsetMemberQueryBuilder.selectAll().where(condition).build();
+			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 						
 			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
 			
@@ -135,7 +132,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 				.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
 				.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 		
-		Query<SnomedRefSetMemberIndexEntry> query = refsetMemberQueryBuilder.selectAll().where(condition).build();
+		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 		Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
 		
 		//there should be only one max
@@ -148,7 +145,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 				.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
 				.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 		
-		query = refsetMemberQueryBuilder.selectAll().where(condition).build();
+		query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 		snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
 		
 		//there should be only one max

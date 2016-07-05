@@ -32,7 +32,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -263,14 +262,12 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					@Override
 					public String execute(RevisionSearcher searcher) throws IOException {
 						
-						QueryBuilder<SnomedRelationshipIndexEntry> builder = Query.builder(SnomedRelationshipIndexEntry.class);
-						
 						//we need every target, limit needs to be set as the default is 50 hits
 						ExpressionBuilder condition = Expressions.builder()
 								.must(SnomedRelationshipIndexEntry.Expressions.sourceId(member.getReferencedComponentId()))
 								.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.HAS_SDD_CLASS));
 						
-						Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(condition.build()).limit(1).build();
+						Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class).where(condition.build()).limit(1).build();
 						
 						
 						Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);

@@ -19,7 +19,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -56,7 +55,6 @@ public class SnomedUnpublishedRelationshipExporter extends SnomedStatedRelations
 	 * @returns the query for the full export
 	 */
 	protected Query<SnomedRelationshipIndexEntry> getFullQuery() {
-		QueryBuilder<SnomedRelationshipIndexEntry> builder = Query.builder(SnomedRelationshipIndexEntry.class);
 		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
 		
 		//Select * from table where commitTimes in(,,,)
@@ -68,8 +66,7 @@ public class SnomedUnpublishedRelationshipExporter extends SnomedStatedRelations
 		commitExpression = Expressions.builder().should(commitExpression).should(unpublishedExpression).build();
 			
 		commitTimeConditionBuilder.must(commitExpression);
-		Query<SnomedRelationshipIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
-		return query;
+		return Query.select(SnomedRelationshipIndexEntry.class).where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
 	}
 
 }

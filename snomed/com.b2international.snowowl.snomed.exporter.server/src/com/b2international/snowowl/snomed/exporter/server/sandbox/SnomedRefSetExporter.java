@@ -23,7 +23,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -127,10 +126,9 @@ public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberI
 	@Override
 	protected Query<SnomedRefSetMemberIndexEntry> getSnapshotQuery() {
 		
-		QueryBuilder<SnomedRefSetMemberIndexEntry> builder = Query.builder(SnomedRefSetMemberIndexEntry.class);
 		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
 		commitTimeConditionBuilder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId()))).build();
-		Query<SnomedRefSetMemberIndexEntry> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
+		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
 		return query;
 	}
 	

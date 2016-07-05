@@ -122,8 +122,7 @@ public class ReviewManagerImpl implements ReviewManager {
 				@Override
 				public Void execute(Writer index) throws IOException {
 					final Iterable<Review> affectedReviews = index.searcher().search(
-							Query.builder(Review.class)
-							.selectAll()
+							Query.select(Review.class)
 							.where(Expressions.builder()
 									.must(Expressions.exactMatch(SOURCE_PATH_FIELD, path))
 									.must(Expressions.exactMatch(TARGET_PATH_FIELD, path))
@@ -151,8 +150,7 @@ public class ReviewManagerImpl implements ReviewManager {
 				store.write(new IndexWrite<Void>() {
 					@Override
 					public Void execute(Writer index) throws IOException {
-						final Iterable<Review> affectedReviews = index.searcher().search(Query.builder(Review.class)
-								.selectAll()
+						final Iterable<Review> affectedReviews = index.searcher().search(Query.select(Review.class)
 								.where(Expressions.builder()
 										.should(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis))
 										.should(buildQuery(ReviewStatus.STALE, now - keepOtherMillis))

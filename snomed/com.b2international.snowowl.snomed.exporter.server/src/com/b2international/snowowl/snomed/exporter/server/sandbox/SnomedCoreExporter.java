@@ -30,7 +30,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -157,14 +156,12 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 	 * @returns the query for the full export
 	 */
 	protected Query<T> getFullQuery() {
-		QueryBuilder<T> builder = Query.builder(clazz);
 		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
 		
 		//Select * from table where commitTimes in(,,,)
 		Expression commitExpression = Expressions.matchAnyLong(Revision.COMMIT_TIMESTAMP, commitTimes);
 		commitTimeConditionBuilder.must(commitExpression);
-		Query<T> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(PAGE_SIZE).offset(currentOffset).build();
-		return query;
+		return Query.select(clazz).where(commitTimeConditionBuilder.build()).limit(PAGE_SIZE).offset(currentOffset).build();
 	}
 	
 	protected final String formatEffectiveTime(final Long effectiveTime) {

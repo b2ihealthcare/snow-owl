@@ -59,8 +59,7 @@ public abstract class RevisionGetRequest<R> extends BaseResourceRequest<BranchCo
 	
 	@Override
 	public final R execute(BranchContext context) {
-		final Query<? extends RevisionDocument> query = Query.builder(getType())
-				.selectAll()
+		final Query<? extends RevisionDocument> query = Query.select(getType())
 				.where(RevisionDocument.Expressions.id(componentId))
 				.limit(1)
 				.build();

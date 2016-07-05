@@ -250,8 +250,7 @@ public final class ImportUtil {
 	}
 
 	private IsAStatementWithId[] getStatements(RevisionSearcher searcher, String statedRelationship) throws IOException {
-		final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
-				.selectAll()
+		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 				.where(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(statedRelationship))
 				.limit(Integer.MAX_VALUE)
 				.build();
@@ -269,8 +268,7 @@ public final class ImportUtil {
 	}
 	
 	private LongCollection getConceptIds(RevisionSearcher searcher) throws IOException {
-		final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-				.selectAll()
+		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 				.where(Expressions.matchAll())
 				.limit(Integer.MAX_VALUE)
 				.build();
@@ -370,7 +368,7 @@ public final class ImportUtil {
 		final boolean terminologyExistsBeforeImport = getIndex().read(BranchPathUtils.createMainPath().getPath(), new RevisionIndexRead<Boolean>() {
 			@Override
 			public Boolean execute(RevisionSearcher index) throws IOException {
-				return index.search(Query.builder(SnomedConceptDocument.class).selectAll().where(SnomedConceptDocument.Expressions.id(Concepts.ROOT_CONCEPT)).limit(0).build()).getTotal() > 0;
+				return index.search(Query.select(SnomedConceptDocument.class).where(SnomedConceptDocument.Expressions.id(Concepts.ROOT_CONCEPT)).limit(0).build()).getTotal() > 0;
 			}
 		});
 		final boolean onlyRefSetImportersRegistered = Iterables.all(importers, Predicates.instanceOf(AbstractSnomedRefSetImporter.class));

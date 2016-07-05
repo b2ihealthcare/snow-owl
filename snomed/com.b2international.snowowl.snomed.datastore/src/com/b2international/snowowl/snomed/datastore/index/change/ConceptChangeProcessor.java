@@ -136,8 +136,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		if (!dirtyConceptIds.isEmpty()) {
 			// fetch all dirty concept documents by their ID
-			final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-					.selectAll()
+			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(SnomedConceptDocument.Expressions.ids(dirtyConceptIds))
 					.limit(dirtyConceptIds.size())
 					.build();
@@ -307,8 +306,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		if (sourceNodeIds.isEmpty()) {
 			return Collections.emptyMap();
 		} else {
-			final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-					.selectAll()
+			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(SnomedDocument.Expressions.ids(sourceNodeIds))
 					.limit(sourceNodeIds.size())
 					.build();

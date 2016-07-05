@@ -26,7 +26,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -80,10 +79,8 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 
 		try {
-			QueryBuilder<SnomedRefSetMemberIndexEntry> builder = Query.builder(SnomedRefSetMemberIndexEntry.class);
-
 			// we need every target, limit needs to be set as the default is 50 hits
-			Query<SnomedRefSetMemberIndexEntry> query = builder.selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
+			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
 			Hits<SnomedRefSetMemberIndexEntry> hits;
 			hits = revisionSearcher.search(query);
 

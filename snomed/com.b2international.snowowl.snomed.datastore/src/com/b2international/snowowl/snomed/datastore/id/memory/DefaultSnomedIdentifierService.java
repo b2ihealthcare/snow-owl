@@ -94,7 +94,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		return store.get().read(new IndexRead<Collection<SctId>>() {
 			@Override
 			public Collection<SctId> execute(Searcher index) throws IOException {
-				return ImmutableList.copyOf(index.search(Query.builder(SctId.class).selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build()));
+				return ImmutableList.copyOf(index.search(Query.select(SctId.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build()));
 			}
 		});
 	}

@@ -26,7 +26,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -98,10 +97,8 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 
 			@Override
 			public Collection<MapTargetEntry> execute(RevisionSearcher index) throws IOException {
-				QueryBuilder<SnomedRefSetMemberIndexEntry> builder = Query.builder(SnomedRefSetMemberIndexEntry.class);
-				
 				//we need every target, limit needs to be set as the default is 50 hits
-				Query<SnomedRefSetMemberIndexEntry> query = builder.selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
+				Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
 				Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
 
 				Set<MapTargetEntry> mapTargetEntries = Sets.newHashSet();

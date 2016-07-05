@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
@@ -68,8 +67,7 @@ public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implem
 		if (totalSize == -1 || (currentIndex >= conceptHits.getHits().size()) && currentOffset < totalSize ) {
 			try {
 				RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
-				QueryBuilder<T> builder = Query.builder(clazz);
-				Query<T> query = builder.selectAll().where(Expressions.matchAll()).limit(PAGE_SIZE).offset(currentOffset).build();
+				Query<T> query = Query.select(clazz).where(Expressions.matchAll()).limit(PAGE_SIZE).offset(currentOffset).build();
 				conceptHits = revisionSearcher.search(query);
 				
 				//to avoid getting the size every time

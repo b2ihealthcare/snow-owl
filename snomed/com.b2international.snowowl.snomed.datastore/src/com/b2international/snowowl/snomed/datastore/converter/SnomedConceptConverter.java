@@ -250,8 +250,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 					}
 				}
 				
-				final Query<SnomedConceptDocument> query = Query.builder(SnomedConceptDocument.class)
-						.selectAll()
+				final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 						.where(expression.build())
 						.limit(Integer.MAX_VALUE)
 						.build();

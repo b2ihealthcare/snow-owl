@@ -150,7 +150,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public Collection<? extends Branch> getBranches() {
-		final Collection<InternalBranch> values = search(Query.builder(InternalBranch.class).selectAll().where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build());
+		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build());
 		initialize(values);
 		return values;
 	}
@@ -212,7 +212,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = search(Query.builder(InternalBranch.class).selectAll().where(Expressions.prefixMatch(DocumentMapping._ID, branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
+		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.prefixMatch(DocumentMapping._ID, branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
 		initialize(values);
 		return values;
 	}

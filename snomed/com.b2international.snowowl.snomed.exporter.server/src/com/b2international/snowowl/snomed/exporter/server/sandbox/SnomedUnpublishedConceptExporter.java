@@ -56,7 +56,7 @@ public class SnomedUnpublishedConceptExporter extends SnomedConceptExporter {
 	 * @returns the query for the full export
 	 */
 	protected Query<SnomedConceptDocument> getFullQuery() {
-		QueryBuilder<SnomedConceptDocument> builder = Query.builder(SnomedConceptDocument.class);
+		QueryBuilder<SnomedConceptDocument> builder = Query.select(SnomedConceptDocument.class);
 		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
 		
 		//Select * from table where commitTimes in(,,,)
@@ -68,7 +68,7 @@ public class SnomedUnpublishedConceptExporter extends SnomedConceptExporter {
 		commitExpression = Expressions.builder().should(commitExpression).should(unpublishedExpression).build();
 			
 		commitTimeConditionBuilder.must(commitExpression);
-		Query<SnomedConceptDocument> query = builder.selectAll().where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
+		Query<SnomedConceptDocument> query = builder.where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
 		return query;
 	}
 

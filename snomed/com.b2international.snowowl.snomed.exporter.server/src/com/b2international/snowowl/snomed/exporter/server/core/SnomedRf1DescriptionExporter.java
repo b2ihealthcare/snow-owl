@@ -28,7 +28,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -119,8 +118,6 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 		}
 		
 		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
-		QueryBuilder<SnomedRefSetMemberIndexEntry> refsetMemberQueryBuilder = Query.builder(SnomedRefSetMemberIndexEntry.class);
-		
 		//inactivation status
 		if (!document.isActive()) {
 			
@@ -129,7 +126,7 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
 					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
-			Query<SnomedRefSetMemberIndexEntry> query = refsetMemberQueryBuilder.selectAll().where(condition).build();
+			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 						
 			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
 			

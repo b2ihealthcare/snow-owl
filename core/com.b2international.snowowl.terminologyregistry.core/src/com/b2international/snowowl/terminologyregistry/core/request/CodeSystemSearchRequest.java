@@ -64,8 +64,7 @@ final class CodeSystemSearchRequest extends RevisionSearchRequest<CodeSystems> {
 		
 		final Searcher searcher = context.service(Searcher.class);
 
-		final Hits<CodeSystemEntry> hits = searcher.search(Query.builder(CodeSystemEntry.class)
-				.selectAll()
+		final Hits<CodeSystemEntry> hits = searcher.search(Query.select(CodeSystemEntry.class)
 				.where(query.build())
 				.offset(offset())
 				.limit(limit())

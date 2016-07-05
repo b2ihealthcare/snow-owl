@@ -156,8 +156,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 			sortBy = SortBy.SCORE;
 		}
 
-		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(Query.builder(SnomedDescriptionIndexEntry.class)
-				.selectAll()
+		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(Query.select(SnomedDescriptionIndexEntry.class)
 				.where(queryBuilder.build())
 				.offset(offset)
 				.limit(limit)

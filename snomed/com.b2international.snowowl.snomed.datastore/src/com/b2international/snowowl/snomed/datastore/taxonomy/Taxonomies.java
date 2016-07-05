@@ -17,9 +17,9 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.sourceIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.destinationIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.sourceIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 
 import java.io.IOException;
 
@@ -58,8 +58,7 @@ public final class Taxonomies {
 	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType) {
 		try {
 			final String characteristicTypeId = characteristicType.getConceptId();
-			final Query<SnomedRelationshipIndexEntry> query = Query.builder(SnomedRelationshipIndexEntry.class)
-					.selectAll()
+			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
 							.must(active())
 							.must(typeId(Concepts.IS_A))

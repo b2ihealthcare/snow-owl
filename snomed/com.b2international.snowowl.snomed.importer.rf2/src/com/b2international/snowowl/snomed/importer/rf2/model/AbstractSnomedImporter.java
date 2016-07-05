@@ -383,8 +383,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		return getIndex().read(branch, new RevisionIndexRead<LongValueMap<String>>() {
 			@Override
 			public LongValueMap<String> execute(RevisionSearcher index) throws IOException {
-				final Query<? extends SnomedDocument> query = Query.builder(getType())
-						.selectAll()
+				final Query<? extends SnomedDocument> query = Query.select(getType())
 						.where(getAvailableComponentQuery())
 						.limit(Integer.MAX_VALUE)
 						.build();
