@@ -15,8 +15,6 @@
  */
 package com.b2international.index;
 
-import static com.b2international.index.Fixtures.KEY;
-import static com.b2international.index.Fixtures.KEY2;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 

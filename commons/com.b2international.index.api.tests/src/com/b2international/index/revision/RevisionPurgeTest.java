@@ -58,8 +58,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2"));
 		index().purge(MAIN, Purge.ALL);
 		// only the most recent revision should be available
-		final Iterable<Data> revisions = searchRaw(Query.builder(Data.class)
-				.selectAll()
+		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
 				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
@@ -76,8 +75,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		index().purge(MAIN, Purge.ALL);
 		
 		// both revisions should still remain, because the "MAIN/a" requires the first one
-		final Iterable<Data> revisions = searchRaw(Query.builder(Data.class)
-				.selectAll()
+		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
 				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
@@ -97,8 +95,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		
 		index().purge("MAIN/a", Purge.ALL);
 		
-		final Iterable<Data> revisions = searchRaw(Query.builder(Data.class)
-				.selectAll()
+		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
 				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
@@ -114,8 +111,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		
 		index().purge(MAIN, Purge.LATEST);
 		
-		final Iterable<Data> revisions = searchRaw(Query.builder(Data.class)
-				.selectAll()
+		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
 				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
@@ -132,8 +128,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		
 		index().purge(MAIN, Purge.HISTORY);
 		
-		final Iterable<Data> revisions = searchRaw(Query.builder(Data.class)
-				.selectAll()
+		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
 				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());

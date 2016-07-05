@@ -77,7 +77,7 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, STORAGE_KEY1, first);
 		indexRevision(MAIN, STORAGE_KEY2, second);
 		
-		final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+		final Query<Data> query = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
 		final Iterable<Data> matches = search(MAIN, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(first);
@@ -91,7 +91,7 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, STORAGE_KEY1, first);
 		indexRevision(MAIN, STORAGE_KEY1, second);
 		
-		final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+		final Query<Data> query = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
 		final Iterable<Data> matches = search(MAIN, query);
 		// only second version should match, the first revision should be unaccessible without timestamp
 		assertThat(matches).hasSize(1);

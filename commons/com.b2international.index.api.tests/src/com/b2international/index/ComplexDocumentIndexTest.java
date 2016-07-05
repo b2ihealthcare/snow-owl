@@ -15,8 +15,6 @@
  */
 package com.b2international.index;
 
-import static com.b2international.index.Fixtures.KEY;
-import static com.b2international.index.Fixtures.KEY2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -58,7 +56,7 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 			final DeepData actual = searcher.get(DeepData.class, KEY);
 			assertEquals(data, actual);
 			// try nested query
-			final Query<DeepData> query = Query.builder(DeepData.class).selectAll()
+			final Query<DeepData> query = Query.select(DeepData.class)
 					.where(Expressions.nestedMatch("parentData.nestedData", 
 							Expressions.exactMatch("field2", "field2"))
 							).build();
@@ -84,7 +82,7 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 			final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY);
 			assertEquals(data, actual);
 			// try nested query on collections
-			final Query<MultipleNestedData> query = Query.builder(MultipleNestedData.class).selectAll()
+			final Query<MultipleNestedData> query = Query.select(MultipleNestedData.class)
 					.where(Expressions.nestedMatch("nestedDatas", 
 							Expressions.exactMatch("field2", "field2"))
 							).build();

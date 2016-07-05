@@ -50,12 +50,12 @@ public class NestedDocumentIndexTest extends BaseIndexTest {
 		deleteDocument(ParentData.class, KEY);
 		
 		// query to get parent document, should be none
-		final Query<ParentData> parentDataQuery = Query.builder(ParentData.class).selectAll().where(Expressions.matchAll()).build();
+		final Query<ParentData> parentDataQuery = Query.select(ParentData.class).where(Expressions.matchAll()).build();
 		final Iterable<ParentData> parentDocs = search(parentDataQuery);
 		assertThat(parentDocs).isEmpty();
 		
 		// query to get nested child document, should be none
-		final Query<NestedData> nestedDataQuery = Query.builder(NestedData.class, ParentData.class).selectAll().where(Expressions.matchAll()).build();
+		final Query<NestedData> nestedDataQuery = Query.select(NestedData.class, ParentData.class).where(Expressions.matchAll()).build();
 		final Iterable<NestedData> nestedDocs = search(nestedDataQuery);
 		assertThat(nestedDocs).isEmpty();
 	}
@@ -67,7 +67,7 @@ public class NestedDocumentIndexTest extends BaseIndexTest {
 		indexDocument(KEY, data);
 		indexDocument(KEY2, data2);
 		
-		final Query<ParentData> query = Query.builder(ParentData.class).selectAll().where(Expressions.nestedMatch("nestedData", Expressions.exactMatch("field2", "field2"))).build();
+		final Query<ParentData> query = Query.select(ParentData.class).where(Expressions.nestedMatch("nestedData", Expressions.exactMatch("field2", "field2"))).build();
 		final Iterable<ParentData> matches = search(query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);

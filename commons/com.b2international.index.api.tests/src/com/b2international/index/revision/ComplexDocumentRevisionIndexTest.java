@@ -46,7 +46,7 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, STORAGE_KEY1, data);
 		indexRevision(MAIN, STORAGE_KEY2, data2);
 		
-		final Query<DeeplyNestedData> deeplyNestedQuery = Query.builder(DeeplyNestedData.class).selectAll().where(Expressions.nestedMatch("parentData.nestedData", Expressions.exactMatch("field2", "field2"))).build();
+		final Query<DeeplyNestedData> deeplyNestedQuery = Query.select(DeeplyNestedData.class).where(Expressions.nestedMatch("parentData.nestedData", Expressions.exactMatch("field2", "field2"))).build();
 		final Iterable<DeeplyNestedData> matches = search(MAIN, deeplyNestedQuery);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
@@ -61,7 +61,7 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, STORAGE_KEY1, data);
 		indexRevision(MAIN, STORAGE_KEY2, data2);
 		
-		final Query<NestedData> query = Query.builder(NestedData.class, DeeplyNestedData.class).selectAll().where(Expressions.exactMatch("field2", "field2")).build();
+		final Query<NestedData> query = Query.select(NestedData.class, DeeplyNestedData.class).where(Expressions.exactMatch("field2", "field2")).build();
 		final Iterable<NestedData> matches = search(MAIN, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(nestedData);

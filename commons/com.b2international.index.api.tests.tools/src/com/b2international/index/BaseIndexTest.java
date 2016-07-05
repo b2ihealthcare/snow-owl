@@ -33,6 +33,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class BaseIndexTest {
 
+	protected static final String KEY = "key";
+	protected static final String KEY2 = "key2";
+	
 	private Index index;
 	private IndexClient client;
 	private Mappings mappings;

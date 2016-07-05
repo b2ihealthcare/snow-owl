@@ -60,7 +60,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		final Data updatedDoc = new Data("field1Updated", "field2Updated");
 		indexDocument(KEY, updatedDoc);
 		// execute search so we can see that it really updated the doc and did not create a duplicate
-		final Iterable<Data> matches = search(Query.builder(Data.class).selectAll().where(DocumentMapping.matchId(KEY)).build());
+		final Iterable<Data> matches = search(Query.select(Data.class).where(DocumentMapping.matchId(KEY)).build());
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(updatedDoc);
 	}
@@ -94,7 +94,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		indexDocument(KEY2, data2);
 		
 		// search for field1Changed value, it should return a single doc
-		final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+		final Query<Data> query = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
 		final Iterable<Data> matches = search(query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
@@ -107,7 +107,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		assertEquals(data, getDocument(DataWithMap.class, KEY));
 		
 		
-		final Query<DataWithMap> query = Query.builder(DataWithMap.class).selectAll().where(Expressions.exactMatch("field1", "field1Value")).build();
+		final Query<DataWithMap> query = Query.select(DataWithMap.class).where(Expressions.exactMatch("field1", "field1Value")).build();
 		final Iterable<DataWithMap> matches = search(query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
