@@ -181,8 +181,13 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 		builder
 			.append("Name: ").append(codeSystem.getName()).append("\n")
 			.append("Short name: ").append(codeSystem.getShortName()).append("\n")
-			.append("Code System OID: ").append(codeSystem.getOid()).append("\n")
-			.append("Maintaining organization link: ").append(codeSystem.getOrgLink()).append("\n")
+			.append("Code System OID: ").append(codeSystem.getOid()).append("\n");
+			
+		if (codeSystem.getExtensionOf() != null) {
+			builder.append("Extension of: ").append(codeSystem.getExtensionOf()).append("\n");
+		}
+			
+		builder.append("Maintaining organization link: ").append(codeSystem.getOrgLink()).append("\n")
 			.append("Language: ").append(codeSystem.getLanguage()).append("\n")
 			.append("Last version: ").append(null == service.getVersionId(codeSystem) ? "N/A" : service.getVersionId(codeSystem)).append("\n")
 			.append("Current branch path: ").append(codeSystem.getBranchPath()).append("\n");
