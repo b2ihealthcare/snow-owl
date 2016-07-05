@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.internal.merge;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
 
 import com.b2international.commons.status.Statuses;
@@ -28,12 +27,13 @@ import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob;
 import com.b2international.snowowl.datastore.server.remotejobs.BranchExclusiveRule;
 
 /**
  * @since 4.6
  */
-public abstract class AbstractBranchChangeRemoteJob extends Job {
+public abstract class AbstractBranchChangeRemoteJob extends AbstractRemoteJob {
 
 	public static AbstractBranchChangeRemoteJob create(Repository repository, String source, String target, String commitMessage, String reviewId) {
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
@@ -68,7 +68,7 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 	}
 	
 	@Override
-	protected IStatus run(IProgressMonitor monitor) {
+	protected IStatus runWithListenableMonitor(IProgressMonitor monitor) {
 		
 		merge.start();
 		try {
