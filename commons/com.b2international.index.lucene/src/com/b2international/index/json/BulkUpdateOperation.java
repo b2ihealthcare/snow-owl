@@ -49,7 +49,7 @@ public final class BulkUpdateOperation<T extends WithId> implements Operation {
 	@Override
 	public void execute(IndexWriter writer, Searcher searcher) throws IOException {
 		final DocumentMapping mapping = mappings.getMapping(update.getType());
-		final Query<? extends T> query = Query.builder(update.getType()).selectAll().where(update.getFilter()).limit(Integer.MAX_VALUE).build();
+		final Query<? extends T> query = Query.select(update.getType()).where(update.getFilter()).limit(Integer.MAX_VALUE).build();
 		for (T hit : searcher.search(query)) {
 			final T changed = update.getUpdate().apply(hit);
 			Index op = new Index(changed._id(), changed, mapper, mapping);

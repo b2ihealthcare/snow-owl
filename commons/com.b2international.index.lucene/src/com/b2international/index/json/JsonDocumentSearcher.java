@@ -42,6 +42,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.slowlog.QueryProfiler;
 import com.b2international.index.query.slowlog.SlowLogConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableList;
@@ -94,8 +95,9 @@ public class JsonDocumentSearcher implements Searcher {
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
 		
-		final Class<T> type = query.getType();
-		final org.apache.lucene.search.Query lq = toLuceneQuery(type, query);
+		final Class<T> select = query.getSelect();
+		final Class<?> from = query.getFrom();
+		final org.apache.lucene.search.Query lq = toLuceneQuery(from, query);
 		final int offset = query.getOffset();
 		int limit = query.getLimit();
 		
@@ -130,7 +132,9 @@ public class JsonDocumentSearcher implements Searcher {
 				return new Hits<>(Collections.<T>emptyList(), offset, limit, topDocs.totalHits);
 			} else {
 				profiler.start(Phase.FETCH);
-				final ObjectReader reader = mapper.reader(type);
+				
+				// if select is a different type, then use that as JsonView on from, otherwise select all props
+				final ObjectReader reader = select != from ? mapper.reader(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) : mapper.reader(select);
 				final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 				final String[] ids = new String[scoreDocs.length - offset];
 				final byte[][] sources = new byte[scoreDocs.length - offset][];
@@ -169,12 +173,12 @@ public class JsonDocumentSearcher implements Searcher {
 		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc());
 	}
 
-	private <T> org.apache.lucene.search.Query toLuceneQuery(Class<T> type, Query<T> query) {
+	private org.apache.lucene.search.Query toLuceneQuery(Class<?> select, Query<?> query) {
 		final DocumentMapping mapping;
 		if (query.getParentType() != null) {
-			mapping = mappings.getMapping(query.getParentType()).getNestedMapping(type);
+			mapping = mappings.getMapping(query.getParentType()).getNestedMapping(select);
 		} else {
-			mapping = mappings.getMapping(type);
+			mapping = mappings.getMapping(select);
 		}
 		return new LuceneQueryBuilder(mapping).build(query.getWhere());
 	}

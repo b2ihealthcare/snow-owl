@@ -244,7 +244,7 @@ final class EsTransactionLogTest {
 
 			tlog.recoverFromTranslog(writer2, searcher2);
 
-			final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+			final Query<Data> query = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
 			final Hits<Data> hits = searcher2.search(query);
 
 			if (hits.getTotal() != 1) {
@@ -298,7 +298,7 @@ final class EsTransactionLogTest {
 
 			tlog.recoverFromTranslog(writer2, searcher2);
 
-			final Query<Data> query = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+			final Query<Data> query = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
 			final Hits<Data> hits = searcher2.search(query);
 
 			if (hits.getTotal() != 0) {
@@ -390,25 +390,25 @@ final class EsTransactionLogTest {
 			tlog2 = new EsTransactionLog(indexName, indexPath.resolve("translog"), mapper, mappings, commitData, logger);
 			tlog2.recoverFromTranslog(writer2, searcher2);
 
-			final Query<Data> query1 = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field1")).build();
+			final Query<Data> query1 = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
 			final Hits<Data> hits1 = searcher2.search(query1);
 			if (hits1.getTotal() != 0) {
 				throw new IllegalStateException(String.format("Expected no search hit for data 1, found %d.", hits1.getTotal()));
 			}
 
-			final Query<Data> query2 = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field2")).build();
+			final Query<Data> query2 = Query.select(Data.class).where(Expressions.exactMatch("field1", "field2")).build();
 			final Hits<Data> hits2 = searcher2.search(query2);
 			if (hits2.getTotal() != 0) {
 				throw new IllegalStateException(String.format("Expected no search hit for data 2, found %d.", hits2.getTotal()));
 			}
 
-			final Query<Data> query3 = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field3")).build();
+			final Query<Data> query3 = Query.select(Data.class).where(Expressions.exactMatch("field1", "field3")).build();
 			final Hits<Data> hits3 = searcher2.search(query3);
 			if (hits3.getTotal() != 0) {
 				throw new IllegalStateException(String.format("Expected no search hit for data 3, found %d.", hits3.getTotal()));
 			}
 
-			final Query<Data> query4 = Query.builder(Data.class).selectAll().where(Expressions.exactMatch("field1", "field4")).build();
+			final Query<Data> query4 = Query.select(Data.class).where(Expressions.exactMatch("field1", "field4")).build();
 			final Hits<Data> hits4 = searcher2.search(query4);
 			if (hits4.getTotal() != 1) {
 				throw new IllegalStateException(String.format("Expected one search hit for data 4, found %d.", hits4.getTotal()));
