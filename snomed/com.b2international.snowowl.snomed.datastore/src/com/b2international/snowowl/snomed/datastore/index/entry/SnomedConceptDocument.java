@@ -35,6 +35,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -304,7 +305,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		@JsonIgnore
 		public Builder refSet(final SnomedReferenceSet refSet) {
 			if (!StringUtils.isEmpty(refSet.getMapTargetComponentType())) {
-				mapTargetComponentType(Integer.parseInt(refSet.getMapTargetComponentType()));
+				final int componentType = CoreTerminologyBroker.getInstance()
+						.getTerminologyComponentIdAsInt(refSet.getMapTargetComponentType());
+				mapTargetComponentType(componentType);
 			}
 			
 			return structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()))
