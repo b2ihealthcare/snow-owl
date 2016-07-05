@@ -89,13 +89,19 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 	}
 	
 	@Override
+	public RevisionCompare compare(String branch) {
+		return compare(getParentBranch(branch), getBranch(branch));
+	}
+	
+	@Override
 	public RevisionCompare compare(final String baseBranch, final String compareBranch) {
+		return compare(getBranch(baseBranch), getBranch(compareBranch));
+	}
+	
+	private RevisionCompare compare(final RevisionBranch base, final RevisionBranch compare) {
 		return index.read(new IndexRead<RevisionCompare>() {
 			@Override
 			public RevisionCompare execute(Searcher searcher) throws IOException {
-				final RevisionBranch base = getBranch(baseBranch);
-				final RevisionBranch compare = getBranch(compareBranch);
-				
 				final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
 				final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
 				
@@ -246,6 +252,10 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 
 	private RevisionBranch getBranch(final String branchPath) {
 		return branchProvider.getBranch(branchPath);
+	}
+	
+	private RevisionBranch getParentBranch(final String branchPath) {
+		return branchProvider.getParentBranch(branchPath);
 	}
 	
 	private Set<Class<? extends Revision>> getRevisionTypes() {

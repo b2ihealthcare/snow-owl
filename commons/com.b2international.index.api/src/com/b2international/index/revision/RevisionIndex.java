@@ -65,8 +65,17 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	void purge(String branchPath, Purge purge);
 
 	/**
+	 * Compares the given branch with its parent branch as base. The {@link RevisionCompare} response will contain the difference from the branch
+	 * compared to its parent. The result might contain new, changed, deleted revision storage keys of any revision.
+	 * 
+	 * @param branch
+	 * @return
+	 */
+	RevisionCompare compare(String branch);
+	
+	/**
 	 * Compares the given compare branch with the given base branch. The {@link RevisionCompare} response will contain the difference from the compare
-	 * branch compared to the base. The result might contain new, changed, deleted revision storage keys.
+	 * branch compared to the base. The result might contain new, changed, deleted revision storage keys of any revision.
 	 * 
 	 * @param baseBranch
 	 * @param compareBranch

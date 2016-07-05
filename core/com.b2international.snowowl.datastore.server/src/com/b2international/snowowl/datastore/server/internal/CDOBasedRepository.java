@@ -22,6 +22,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
@@ -78,6 +79,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Ordering;
 import com.google.inject.Provider;
 
 /**
@@ -261,6 +263,16 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 			public RevisionBranch getBranch(String branchPath) {
 				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) branchManager.get().getBranch(branchPath);
 				return new RevisionBranch(branchPath, branch.segmentId(), branch.segments());
+			}
+			
+			@Override
+			public RevisionBranch getParentBranch(String branchPath) {
+				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) branchManager.get().getBranch(branchPath);
+				// compute the current parent segments, rebased parents might have different segment paths
+				final Set<Integer> segments = newHashSet(branch.segments());
+				// remove the child branch segments
+				segments.remove(branch.segmentId());
+				return new RevisionBranch(branch.parent().path(), Ordering.natural().max(segments), segments);
 			}
 
 		});

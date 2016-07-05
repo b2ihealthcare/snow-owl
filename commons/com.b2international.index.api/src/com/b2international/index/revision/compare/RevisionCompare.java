@@ -18,6 +18,7 @@ package com.b2international.index.revision.compare;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
+import java.util.Objects;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
@@ -105,6 +106,22 @@ public final class RevisionCompare {
 	
 	public Map<Class<? extends Revision>, LongSet> getDeletedComponents() {
 		return deletedComponents;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(newComponents, changedComponents, deletedComponents);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (!getClass().equals(obj.getClass())) return false;
+		RevisionCompare other = (RevisionCompare) obj;
+		return Objects.equals(newComponents, other.newComponents)
+				&& Objects.equals(changedComponents, other.changedComponents)
+				&& Objects.equals(deletedComponents, other.deletedComponents);
 	}
 	
 }

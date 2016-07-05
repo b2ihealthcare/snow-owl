@@ -28,4 +28,12 @@ public interface RevisionBranchProvider {
 	 */
 	RevisionBranch getBranch(String branchPath);
 
+	/**
+	 * Returns the RevisionBranch form of the parent of the given branch path.
+	 * 
+	 * @param branchPath
+	 * @return
+	 */
+	RevisionBranch getParentBranch(String branchPath);
+
 }

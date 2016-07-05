@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 public class RevisionBranch {
 	
 	public static final String MAIN_PATH = "MAIN";
+	public static final String SEPARATOR = "/";
 	
 	private final String path;
 	private final int segmentId;

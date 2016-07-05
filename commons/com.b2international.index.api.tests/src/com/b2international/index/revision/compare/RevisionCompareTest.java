@@ -61,6 +61,9 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		assertTrue(compare.getNewComponents().get(Data.class).contains(STORAGE_KEY1));
 		assertTrue(compare.getChangedComponents().isEmpty());
 		assertTrue(compare.getDeletedComponents().isEmpty());
+		// verify that comparing just the branch produces the same result
+		final RevisionCompare compareOnlyBranch = index().compare(branch);
+		assertEquals(compare, compareOnlyBranch);
 	}
 	
 	@Test

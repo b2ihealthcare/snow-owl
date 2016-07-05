@@ -44,6 +44,7 @@ import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 4.7
@@ -65,6 +66,14 @@ public abstract class BaseRevisionIndexTest {
 		@Override
 		public RevisionBranch getBranch(String branchPath) {
 			return branches.get(branchPath);
+		}
+		
+		@Override
+		public RevisionBranch getParentBranch(String branchPath) {
+			final RevisionBranch branch = branches.get(branchPath);
+			final Set<Integer> segments = newHashSet(branch.segments());
+			segments.remove(branch.segmentId());
+			return new RevisionBranch(branchPath.substring(0, branchPath.lastIndexOf(RevisionBranch.SEPARATOR)), Ordering.natural().max(segments), segments);
 		}
 	};
 	
