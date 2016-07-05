@@ -15,7 +15,8 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
@@ -25,6 +26,9 @@ import java.util.Set;
 import com.b2international.index.WithId;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 
@@ -33,6 +37,38 @@ import com.google.common.base.Objects;
  */
 public abstract class Revision implements WithId {
 
+	public static class Views {
+		
+		public static class DocIdOnly implements WithId {
+			private String _id;
+			
+			@Override
+			public String _id() {
+				return _id;
+			}
+			
+			@Override
+			public void set_id(String _id) {
+				this._id = _id;
+			}
+			
+		}
+		
+		public static class StorageKeyOnly {
+			private final long storageKey;
+
+			@JsonCreator
+			public StorageKeyOnly(@JsonProperty("storageKey") long storageKey) {
+				this.storageKey = storageKey;
+			}
+			
+			public long getStorageKey() {
+				return storageKey;
+			}
+			
+		}
+	}
+	
 	public static final String STORAGE_KEY = "storageKey";
 	public static final String BRANCH_PATH = "branchPath";
 	public static final String COMMIT_TIMESTAMP = "commitTimestamp";
@@ -54,6 +90,7 @@ public abstract class Revision implements WithId {
 	}
 	
 	@Override
+	@JsonIgnore
 	public final String _id() {
 		return checkNotNull(_id);
 	}

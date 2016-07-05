@@ -107,30 +107,30 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 				
 				// query all registered revision types for new, changed and deleted components
 				for (Class<? extends Revision> typeToCompare : typesToCompare) {
-					final Query<? extends Revision> newAndChangedQuery = Query.builder(typeToCompare)
-							.selectAll()
+					final Query<Revision.Views.StorageKeyOnly> newAndChangedQuery = Query
+							.selectPartial(Revision.Views.StorageKeyOnly.class, typeToCompare)
 							.where(Revision.branchSegmentFilter(segmentsToCompare))
 							.limit(Integer.MAX_VALUE)
 							.build();
-					final Hits<? extends Revision> newAndChangedHits = searcher.search(newAndChangedQuery);
+					final Hits<Revision.Views.StorageKeyOnly> newAndChangedHits = searcher.search(newAndChangedQuery);
 					final LongSet newAndChangedKeys = PrimitiveSets.newLongOpenHashSet();
-					for (Revision newOrChangedHit : newAndChangedHits) {
+					for (Revision.Views.StorageKeyOnly newOrChangedHit : newAndChangedHits) {
 						newAndChangedKeys.add(newOrChangedHit.getStorageKey());
 					}
 					newAndChangedComponents.put(typeToCompare, newAndChangedKeys);
 					
 					// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
-					final Query<? extends Revision> deletedAndChangedQuery = Query.builder(typeToCompare)
-							.selectAll()
+					final Query<Revision.Views.StorageKeyOnly> deletedAndChangedQuery = Query
+							.selectPartial(Revision.Views.StorageKeyOnly.class, typeToCompare)
 							.where(Expressions.builder()
 									.must(matchAnyInt(Revision.SEGMENT_ID, commonPath))
 									.must(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
 									.build())
 							.limit(Integer.MAX_VALUE)
 							.build();
-					final Hits<? extends Revision> deletedAndChangedHits = searcher.search(deletedAndChangedQuery);
+					final Hits<Revision.Views.StorageKeyOnly> deletedAndChangedHits = searcher.search(deletedAndChangedQuery);
 					final LongSet deletedAndChangedKeys = PrimitiveSets.newLongOpenHashSet();
-					for (Revision deletedOrChangedHit : deletedAndChangedHits) {
+					for (Revision.Views.StorageKeyOnly deletedOrChangedHit : deletedAndChangedHits) {
 						deletedAndChangedKeys.add(deletedOrChangedHit.getStorageKey());
 					}
 					deletedAndChangedComponents.put(typeToCompare, deletedAndChangedKeys);
@@ -213,18 +213,25 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
 			// execute hit count query first
-			final int totalRevisionsToPurge = searcher.search(Query.builder(revisionType)
-					.selectAll().where(purgeQuery.build()).limit(0).build()).getTotal();
+			final int totalRevisionsToPurge = searcher.search(Query
+					.select(revisionType)
+					.where(purgeQuery.build())
+					.limit(0)
+					.build()).getTotal();
 			if (totalRevisionsToPurge > 0) {
 				admin().log().info("Purging {} '{}' documents...", totalRevisionsToPurge, DocumentMapping.getType(revisionType));
 				// partition the total hit number by the current threshold
 				final int limit = 10000;
 				int offset = 0;
 				do {
-					final Hits<? extends Revision> revisionsToPurge = searcher.search(Query.builder(revisionType)
-							.selectAll().where(purgeQuery.build()).offset(offset).limit(limit).build());
+					final Hits<Revision.Views.DocIdOnly> revisionsToPurge = searcher.search(Query
+							.selectPartial(Revision.Views.DocIdOnly.class, revisionType)
+							.where(purgeQuery.build())
+							.offset(offset)
+							.limit(limit)
+							.build());
 					
-					for (Revision hit : revisionsToPurge) {
+					for (Revision.Views.DocIdOnly hit : revisionsToPurge) {
 						writer.remove(revisionType, hit._id());
 					}
 					

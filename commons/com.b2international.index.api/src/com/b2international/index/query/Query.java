@@ -28,15 +28,6 @@ public final class Query<T> {
 	 * @since 4.7
 	 */
 	public interface QueryBuilder<T> {
-		AfterSelectBuilder<T> select(Select select);
-		
-		AfterSelectBuilder<T> selectAll();
-	}
-
-	/**
-	 * @since 4.7
-	 */
-	public interface AfterSelectBuilder<T> {
 		AfterWhereBuilder<T> where(Expression expression);
 	}
 
@@ -55,10 +46,10 @@ public final class Query<T> {
 	
 	private int offset;
 	private int limit;
-	private Select select;
+	private Class<T> select;
+	private Class<?> from;
 	private Expression where;
 	private SortBy sortBy = SortBy.NONE;
-	private Class<T> type;
 	private Class<?> parentType;
 	private boolean withScores;
 
@@ -80,14 +71,6 @@ public final class Query<T> {
 		this.limit = limit;
 	}
 
-	public Select getSelect() {
-		return select;
-	}
-
-	void setSelect(Select select) {
-		this.select = select;
-	}
-
 	public Expression getWhere() {
 		return where;
 	}
@@ -104,12 +87,20 @@ public final class Query<T> {
 		this.sortBy = sortBy;
 	}
 	
-	public Class<T> getType() {
-		return type;
+	public Class<T> getSelect() {
+		return select;
 	}
 	
-	void setType(Class<T> type) {
-		this.type = type;
+	void setSelect(Class<T> select) {
+		this.select = select;
+	}
+	
+	public Class<?> getFrom() {
+		return from;
+	}
+	
+	void setFrom(Class<?> from) {
+		this.from = from;
 	}
 	
 	public Class<?> getParentType() {
@@ -132,7 +123,7 @@ public final class Query<T> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT " + select);
-		sb.append(" FROM " + DocumentMapping.getType(type));
+		sb.append(" FROM " + DocumentMapping.getType(from));
 		sb.append(" WHERE " + where);
 		if (SortBy.NONE != sortBy) {
 			sb.append(" SORT BY " + sortBy);
@@ -147,12 +138,16 @@ public final class Query<T> {
 		return sb.toString();
 	}
 
-	public static <T> QueryBuilder<T> builder(Class<T> documentType) {
-		return new DefaultQueryBuilder<T>(documentType, null);
+	public static <T> QueryBuilder<T> select(Class<T> select) {
+		return selectPartial(select, select);
 	}
 	
-	public static <T> QueryBuilder<T> builder(Class<T> documentType, Class<?> parentScope) {
-		return new DefaultQueryBuilder<T>(documentType, parentScope);
+	public static <T> QueryBuilder<T> selectPartial(Class<T> select, Class<?> from) {
+		return new DefaultQueryBuilder<T>(select, from, null);
+	}
+	
+	public static <T> QueryBuilder<T> select(Class<T> select, Class<?> scope) {
+		return new DefaultQueryBuilder<T>(select, select, scope);
 	}
 
 }

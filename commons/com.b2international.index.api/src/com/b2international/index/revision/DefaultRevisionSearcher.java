@@ -46,7 +46,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	
 	@Override
 	public <T extends Revision> T get(Class<T> type, long storageKey) throws IOException {
-		final Query<T> query = Query.builder(type).selectAll().where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey)).limit(2).build();
+		final Query<T> query = Query.select(type).where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey)).limit(2).build();
 		return Iterables.getOnlyElement(search(query), null);
 	}
 	
@@ -55,17 +55,16 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 		if (Iterables.isEmpty(storageKeys)) {
 			return Collections.emptySet();
 		} else {
-			final Query<T> query = Query.builder(type).selectAll().where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).limit(Iterables.size(storageKeys)).build();
+			final Query<T> query = Query.select(type).where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).limit(Iterables.size(storageKeys)).build();
 			return search(query);
 		}
 	}
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		if (Revision.class.isAssignableFrom(query.getType())) {
+		if (Revision.class.isAssignableFrom(query.getSelect())) {
 			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
-			query = Query.builder(query.getType())
-					.select(query.getSelect())
+			query = Query.select(query.getSelect())
 					.where(Expressions.builder()
 							.must(query.getWhere())
 							.must(Revision.branchFilter(branch))
@@ -78,8 +77,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 		} else {
 			checkArgument(Revision.class.isAssignableFrom(query.getParentType()), "Searching non-revision documents require a revision parent type: %s", query);
 			// run a query on the parent documents with nested match on the children
-			query = Query.builder(query.getType(), query.getParentType())
-					.select(query.getSelect())
+			query = Query.select(query.getSelect(), query.getParentType())
 					.where(Expressions.builder()
 							.must(query.getWhere())
 							.must(Expressions.hasParent(query.getParentType(), Revision.branchFilter(branch)))

@@ -32,12 +32,9 @@ import com.google.common.collect.Maps;
  */
 public class Fixtures {
 
-	public static final String KEY = "key";
-	public static final String KEY2 = "key2";
-	
 	@Doc
 	public static class Data {
-		
+
 		private String field1;
 		private String field2;
 
@@ -63,6 +60,30 @@ public class Fixtures {
 		@Override
 		public int hashCode() {
 			return Objects.hash(field1, field2);
+		}
+		
+	}
+	
+	public static class PartialData {
+		private final String field1;
+
+		@JsonCreator
+		public PartialData(@JsonProperty("field1") String field1) {
+			this.field1 = field1;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			PartialData other = (PartialData) obj;
+			return Objects.equals(field1, other.field1); 
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field1);
 		}
 		
 	}
