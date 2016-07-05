@@ -856,22 +856,16 @@ public class SnomedRf2IndexInitializer extends Job {
 			
 			final Collection<String> mappingRefSetIds = concept.getReferringMappingRefSets();
 			final Collection<String> updatedMappingRefSetIds = getCurrentRefSetMemberships(mappingRefSetIds, mappingRefSetMemberChanges.get(conceptId));
-
-			final SnomedConceptDocument.Builder doc = createConceptDocument(
-					conceptId, 
-					concept.isActive(), 
-					concept.isReleased(), 
-					concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED, 
-					concept.isExhaustive(), 
-					concept.getModuleId(), 
-					updatedRefSetIds,
-					updatedMappingRefSetIds,
-					concept.getEffectiveTime());
 			
-			if (visitedRefSets.containsKey(conceptId)) {
-				doc.refSet(visitedRefSets.get(conceptId));			
-			}
+			final SnomedConceptDocument.Builder doc = SnomedConceptDocument.builder(concept)
+					.referringRefSets(updatedRefSetIds)
+					.referringMappingRefSets(updatedMappingRefSetIds);
 			
+			updateIconId(conceptId, concept.isActive(), doc);
+			// update parents and ancestors
+			new RefSetParentageUpdater(inferredTaxonomyBuilder, identifierConceptIdsForNewRefSets, false).update(conceptId, doc);
+			new RefSetParentageUpdater(statedTaxonomyBuilder, identifierConceptIdsForNewRefSets, true).update(conceptId, doc);
+					
 			indexDocument(writer, conceptStorageKey, doc.build());
 		}
 	}
