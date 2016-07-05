@@ -26,13 +26,16 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -103,9 +106,21 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 	@Override
 	public SnomedConceptDocument getComponent(final IBranchPath branchPath, final String id) {
 		SnomedConceptDocument doc = new SnomedConceptLookupService().getComponent(branchPath, id);
+		
 		if (doc != null) {
-			checkArgument(doc.getRefSetStorageKey() > 0, "Missing reference set storage key on concept document: " + id); 
+			final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
+					.setComponentId(id)
+					.build(branchPath.getPath())
+					.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+			
+			if (refSet != null) {
+				doc = SnomedConceptDocument
+						.builder(doc)
+						.refSet(refSet)
+						.build();
+			}
 		}
+		
 		return doc;
 	}
 
