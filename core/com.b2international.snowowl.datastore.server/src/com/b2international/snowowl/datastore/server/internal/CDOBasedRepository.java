@@ -73,6 +73,8 @@ import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranc
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
+import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
+import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -244,12 +246,13 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 
 	private void initIndex(final ObjectMapper mapper) {
 		final Collection<Class<?>> types = newHashSet();
-		// register the known types others will get registered dynamically
 		types.add(CDOMainBranchImpl.class);
 		types.add(CDOBranchImpl.class);
-		types.add(Review.class);
-		types.add(ConceptChanges.class);
 		types.add(InternalBranch.class);
+		types.add(Review.class);
+		types.add(ReviewImpl.class);
+		types.add(ConceptChanges.class);
+		types.add(ConceptChangesImpl.class);
 		types.add(CodeSystemEntry.class);
 		types.add(CodeSystemVersionEntry.class);
 		types.addAll(getToolingTypes(toolingId));

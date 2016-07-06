@@ -22,7 +22,7 @@ import com.b2international.index.Doc;
  *
  * @since 4.2
  */
-@Doc
+@Doc(type="review")
 public interface Review {
 
 	/**

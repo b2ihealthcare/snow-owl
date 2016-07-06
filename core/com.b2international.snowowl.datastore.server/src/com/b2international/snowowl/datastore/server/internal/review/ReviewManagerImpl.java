@@ -136,16 +136,16 @@ public class ReviewManagerImpl implements ReviewManager {
 			store.write(new IndexWrite<Void>() {
 				@Override
 				public Void execute(Writer index) throws IOException {
-					final Iterable<Review> affectedReviews = index.searcher().search(
-							Query.select(Review.class)
+					final Iterable<ReviewImpl> affectedReviews = index.searcher().search(
+							Query.select(ReviewImpl.class)
 							.where(Expressions.builder()
 									.must(Expressions.exactMatch(SOURCE_PATH_FIELD, path))
 									.must(Expressions.exactMatch(TARGET_PATH_FIELD, path))
 									.build()
 							).build());
 					
-					for (final Review affectedReview : affectedReviews) {
-						Review newReview = updateStatus((ReviewImpl) affectedReview, ReviewStatus.STALE);
+					for (final ReviewImpl affectedReview : affectedReviews) {
+						ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
 						if (newReview != null) {
 							index.put(newReview.id(), newReview);
 						}
@@ -165,7 +165,7 @@ public class ReviewManagerImpl implements ReviewManager {
 				store.write(new IndexWrite<Void>() {
 					@Override
 					public Void execute(Writer index) throws IOException {
-						final Iterable<Review> affectedReviews = index.searcher().search(Query.select(Review.class)
+						final Iterable<ReviewImpl> affectedReviews = index.searcher().search(Query.select(ReviewImpl.class)
 								.where(Expressions.builder()
 										.should(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis))
 										.should(buildQuery(ReviewStatus.STALE, now - keepOtherMillis))
@@ -181,8 +181,8 @@ public class ReviewManagerImpl implements ReviewManager {
 						}
 						
 						index.removeAll(ImmutableMap.of(
-								Review.class, ids,
-								ConceptChanges.class, ids
+								ReviewImpl.class, ids,
+								ConceptChangesImpl.class, ids
 								));
 						
 						index.commit();
@@ -211,7 +211,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final StaleHandler staleHandler = new StaleHandler();
 	private final TimerTask cleanupTask = new CleanupTask();
 
-	private static final long REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
+	private static final long CLEANUP_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
 
 	private final long keepOtherMillis;
 	private final long keepCurrentMillis;
@@ -231,7 +231,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(config.getKeepCurrentMins());
 		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(config.getKeepOtherMins());
 		// Check every minute if there's something to remove
-		Holder.CLEANUP_TIMER.schedule(cleanupTask, REFRESH_INTERVAL, REFRESH_INTERVAL);
+		Holder.CLEANUP_TIMER.schedule(cleanupTask, CLEANUP_INTERVAL, CLEANUP_INTERVAL);
 	}
 	
 	public IHandler<IMessage> getStaleHandler() {
@@ -310,7 +310,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	void updateReviewStatus(final String id, final ReviewStatus newReviewStatus) {
 		try {
 			final ReviewImpl oldReview = (ReviewImpl) getReview(id);
-			final Review newReview = updateStatus(oldReview, newReviewStatus);
+			final ReviewImpl newReview = updateStatus(oldReview, newReviewStatus);
 			if (newReview != null) {
 				putReview(newReview);
 			}
@@ -319,7 +319,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
-	private Review updateStatus(ReviewImpl current, ReviewStatus newStatus) {
+	private ReviewImpl updateStatus(ReviewImpl current, ReviewStatus newStatus) {
 		if (!ReviewStatus.STALE.equals(current.status())) {
 			return ReviewImpl.builder(current)
 					.status(newStatus)
@@ -331,7 +331,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
-	private void putReview(final Review newReview) {
+	private void putReview(final ReviewImpl newReview) {
 		store.write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
@@ -391,7 +391,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		final Review review= store.read(new IndexRead<Review>() {
 			@Override
 			public Review execute(Searcher index) throws IOException {
-				return index.get(Review.class, id);
+				return index.get(ReviewImpl.class, id);
 			}
 		});
 
@@ -408,7 +408,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		final ConceptChanges conceptChanges = store.read(new IndexRead<ConceptChanges>() {
 			@Override
 			public ConceptChanges execute(Searcher index) throws IOException {
-				return index.get(ConceptChanges.class, id);
+				return index.get(ConceptChangesImpl.class, id);
 			}
 		});
 
@@ -424,8 +424,8 @@ public class ReviewManagerImpl implements ReviewManager {
 			@Override
 			public Review execute(Writer index) throws IOException {
 				index.removeAll(ImmutableMap.of(
-						Review.class, Collections.singleton(review.id()),
-						ConceptChanges.class, Collections.singleton(review.id())));
+						ReviewImpl.class, Collections.singleton(review.id()),
+						ConceptChangesImpl.class, Collections.singleton(review.id())));
 				index.commit();
 				return review;
 			}
