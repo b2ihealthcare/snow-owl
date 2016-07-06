@@ -81,7 +81,7 @@ public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 	protected final void addEffectiveTimeClause(SnomedQueryBuilder queryBuilder) {
 		if (containsKey(OptionKey.EFFECTIVE_TIME)) {
 			final Date parsedEffectiveTime = EffectiveTimes.parse(get(OptionKey.EFFECTIVE_TIME, String.class), DateFormats.SHORT);
-			queryBuilder.effectiveTime(parsedEffectiveTime.getTime());
+			queryBuilder.effectiveTime(EffectiveTimes.getEffectiveTime(parsedEffectiveTime));
 		}
 	}
 }
