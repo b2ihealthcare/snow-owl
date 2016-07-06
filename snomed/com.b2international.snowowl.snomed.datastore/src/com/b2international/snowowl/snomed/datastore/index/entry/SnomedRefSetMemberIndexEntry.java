@@ -281,6 +281,38 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression targetComponents(Collection<String> targetComponentIds) {
 			return matchAny(Fields.TARGET_COMPONENT, targetComponentIds);
 		}
+		
+		public static Expression acceptabilityIds(Collection<String> acceptabilityIds) {
+			return matchAny(Fields.ACCEPTABILITY_ID, acceptabilityIds);
+		}
+		
+		public static Expression characteristicTypeIds(Collection<String> characteristicTypeIds) {
+			return matchAny(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeIds);
+		}
+		
+		public static Expression correlationIds(Collection<String> correlationIds) {
+			return matchAny(Fields.CORRELATION_ID, correlationIds);
+		}
+		
+		public static Expression descriptionFormats(Collection<String> descriptionFormats) {
+			return matchAny(Fields.DESCRIPTION_FORMAT, descriptionFormats);
+		}
+		
+		public static Expression mapCategoryIds(Collection<String> mapCategoryIds) {
+			return matchAny(Fields.MAP_CATEGORY_ID, mapCategoryIds);
+		}
+		
+		public static Expression operatorIds(Collection<String> operatorIds) {
+			return matchAny(Fields.OPERATOR_ID, operatorIds);
+		}
+		
+		public static Expression unitIds(Collection<String> unitIds) {
+			return matchAny(Fields.UNIT_ID, unitIds);
+		}
+		
+		public static Expression valueIds(Collection<String> valueIds) {
+			return matchAny(Fields.VALUE_ID, valueIds);
+		}
 
 		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
 			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(new Function<SnomedRefSetType, String>() {

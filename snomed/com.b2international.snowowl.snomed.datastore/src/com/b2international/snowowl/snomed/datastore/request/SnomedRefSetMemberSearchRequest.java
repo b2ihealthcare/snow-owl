@@ -15,16 +15,26 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.acceptabilityIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.correlationIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.descriptionFormats;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.mapCategoryIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.operatorIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referenceSetId;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.targetComponents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.unitIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.valueIds;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
@@ -36,6 +46,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
@@ -120,9 +131,36 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		}
 		
 		if (!propsFilter.isEmpty()) {
-			if (propsFilter.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-				final Collection<String> targetComponentIds = propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class);
-				queryBuilder.must(targetComponents(targetComponentIds));
+			final Set<String> propKeys = newHashSet(propsFilter.keySet());
+			if (propKeys.remove(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)) {
+				queryBuilder.must(acceptabilityIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
+				queryBuilder.must(characteristicTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_CORRELATION_ID)) {
+				queryBuilder.must(correlationIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CORRELATION_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT)) {
+				queryBuilder.must(descriptionFormats(propsFilter.getCollection(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
+				queryBuilder.must(mapCategoryIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_OPERATOR_ID)) {
+				queryBuilder.must(operatorIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_OPERATOR_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
+				queryBuilder.must(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_UNIT_ID)) {
+				queryBuilder.must(unitIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_UNIT_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
+				queryBuilder.must(valueIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class)));
+			}
+			if (!propKeys.isEmpty()) {
+				throw new IllegalQueryParameterException("Unsupported property filter(s), %s", propKeys);
 			}
 		}
 		
