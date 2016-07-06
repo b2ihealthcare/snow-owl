@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,6 +31,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
+import com.b2international.commons.Pair;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.Metadata;
@@ -67,14 +69,17 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
        	
         final CDOBranch cdoMainBranch = repository.getCdoMainBranch();
       	final long baseTimestamp = repository.getBaseTimestamp(cdoMainBranch);
-      	final int segmentId = nextSegmentId();
+      	// assign first segment to MAIN
+      	final int segmentId = segmentIds.getAndIncrement();
 		initBranchStore(new CDOMainBranchImpl(baseTimestamp, repository.getHeadTimestamp(cdoMainBranch), segmentId, ImmutableSet.of(segmentId)));
        	
         registerCommitListener(repository.getCdoRepository());
     }
     
-    private int nextSegmentId() {
-    	return segmentIds.getAndIncrement();
+    private synchronized Pair<Integer, Integer> nextTwoSegments() {
+    	final int newBranchSegment = segmentIds.getAndIncrement();
+    	final int newParentSegment = segmentIds.getAndIncrement();
+    	return Pair.of(newBranchSegment, newParentSegment);
     }
     
     @Override
@@ -87,12 +92,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(branch.getBase().getBranch().getID());
 				long baseTimestamp = repository.getBaseTimestamp(branch);
 				long headTimestamp = repository.getHeadTimestamp(branch);
-				final int segmentId = nextSegmentId();
-				final Set<Integer> segments = newHashSet();
-				segments.add(segmentId);
-				segments.addAll(parent.segments());
-				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), segmentId, segments));
-				registerBranch(parent.withSegmentId(nextSegmentId()));
+				final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();
+				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parent.segments()));
+				registerBranch(parent.withSegmentId(nextTwoSegments.getB()));
 			}
 		}
     }
@@ -212,15 +214,15 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 
     private InternalBranch reopen(InternalBranch parent, String name, Metadata metadata, long baseTimestamp, int id) {
     	final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) parent;
-    	final int segmentId = nextSegmentId();
-    	final Set<Integer> segments = newHashSet();
-    	segments.add(segmentId);
-    	segments.addAll(parentBranch.segments());
-    	
-        final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id, segmentId, segments);
+    	final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();
+    	final Set<Integer> parentSegments = newHashSet();
+    	// all branch should know the segment path to the ROOT
+    	parentSegments.addAll(parentBranch.parentSegments());
+    	parentSegments.addAll(parentBranch.segments());
+        final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
         branch.metadata(metadata);
         registerBranch(branch);
-        registerBranch(parentBranch.withSegmentId(nextSegmentId()));
+        registerBranch(parentBranch.withSegmentId(nextTwoSegments.getB()));
         return branch;
     }
 

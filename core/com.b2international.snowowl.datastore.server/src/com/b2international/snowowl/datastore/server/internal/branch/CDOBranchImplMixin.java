@@ -39,7 +39,9 @@ public abstract class CDOBranchImplMixin implements MetadataHolderMixin {
 
 	@JsonCreator
 	CDOBranchImplMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
-			@JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("deleted") boolean deleted, @JsonProperty("cdobranchId") int cdoBranchId, @JsonProperty("segmentId") int segmentId, @JsonProperty("segments") Collection<Integer> segments) {
+			@JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("deleted") boolean deleted, @JsonProperty("cdobranchId") int cdoBranchId, @JsonProperty("segmentId") int segmentId,
+			@JsonProperty("segments") Collection<Integer> segments, 
+			@JsonProperty("parentSegments") Collection<Integer> parentSegments) {
 	}
 	
 	@JsonProperty
@@ -65,5 +67,8 @@ public abstract class CDOBranchImplMixin implements MetadataHolderMixin {
 	
 	@JsonProperty
 	public abstract Collection<Integer> segments();
+	
+	@JsonProperty
+	public abstract Collection<Integer> parentSegments();
 
 }

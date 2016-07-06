@@ -52,4 +52,7 @@ public abstract class CDOMainBranchImplMixin implements MetadataHolderMixin {
 	@JsonProperty
 	public abstract Collection<Integer> segments();
 	
+	@JsonIgnore
+	public abstract Collection<Integer> parentSegments();
+	
 }

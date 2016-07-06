@@ -265,17 +265,16 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 			@Override
 			public RevisionBranch getBranch(String branchPath) {
 				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) branchManager.get().getBranch(branchPath);
-				return new RevisionBranch(branchPath, branch.segmentId(), branch.segments());
+				final Set<Integer> segments = newHashSet();
+				segments.addAll(branch.segments());
+				segments.addAll(branch.parentSegments());
+				return new RevisionBranch(branchPath, branch.segmentId(), segments);
 			}
 			
 			@Override
 			public RevisionBranch getParentBranch(String branchPath) {
 				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) branchManager.get().getBranch(branchPath);
-				// compute the current parent segments, rebased parents might have different segment paths
-				final Set<Integer> segments = newHashSet(branch.segments());
-				// remove the child branch segments
-				segments.remove(branch.segmentId());
-				return new RevisionBranch(branch.parent().path(), Ordering.natural().max(segments), segments);
+				return new RevisionBranch(branch.parent().path(), Ordering.natural().max(branch.parentSegments()), branch.parentSegments());
 			}
 
 		});

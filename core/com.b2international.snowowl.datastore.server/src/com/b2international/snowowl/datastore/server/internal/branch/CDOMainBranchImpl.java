@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
@@ -46,6 +47,11 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 	@Override
 	public Collection<Integer> segments() {
 		return segments;
+	}
+
+	@Override
+	public Collection<Integer> parentSegments() {
+		return Collections.emptySet();
 	}
 	
 	@Override

@@ -27,6 +27,8 @@ public interface InternalCDOBasedBranch extends InternalBranch {
 	int segmentId();
 	
 	Collection<Integer> segments();
+	
+	Collection<Integer> parentSegments();
 
 	InternalCDOBasedBranch withSegmentId(int segmentId);
 	

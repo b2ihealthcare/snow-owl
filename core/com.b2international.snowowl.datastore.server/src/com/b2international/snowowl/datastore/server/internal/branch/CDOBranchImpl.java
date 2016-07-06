@@ -29,25 +29,27 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	private final int cdoBranchId;
 	private final int segmentId;
 	private final Collection<Integer> segments;
+	private final Collection<Integer> parentSegments;
 
-	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, int cdoBranchId, int segmentId, Collection<Integer> segments) {
-		this(name, parentPath, baseTimestamp, baseTimestamp, cdoBranchId, segmentId, segments);
+	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, int cdoBranchId, int segmentId, Collection<Integer> segments, Collection<Integer> parentSegments) {
+		this(name, parentPath, baseTimestamp, baseTimestamp, cdoBranchId, segmentId, segments, parentSegments);
 	}
 
-	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, int cdoBranchId, int segmentId, Collection<Integer> segments) {
-		this(name, parentPath, baseTimestamp, headTimestamp, false, cdoBranchId, segmentId, segments);
+	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, int cdoBranchId, int segmentId, Collection<Integer> segments, Collection<Integer> parentSegments) {
+		this(name, parentPath, baseTimestamp, headTimestamp, false, cdoBranchId, segmentId, segments, parentSegments);
 	}
 
-	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, int cdoBranchId, int segmentId, Collection<Integer> segments) {
+	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, int cdoBranchId, int segmentId, Collection<Integer> segments, Collection<Integer> parentSegments) {
 		super(name, parentPath, baseTimestamp, headTimestamp, deleted);
 		this.cdoBranchId = cdoBranchId;
 		this.segmentId = segmentId;
-		this.segments = Collections3.toImmutableSet(segments); 
+		this.segments = Collections3.toImmutableSet(segments);
+		this.parentSegments = Collections3.toImmutableSet(parentSegments);
 	}
 	
 	@Override
 	protected CDOBranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
-		return new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted, cdoBranchId, segmentId, segments);
+		return new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted, cdoBranchId, segmentId, segments, parentSegments);
 	}
 	
 	@Override
@@ -58,6 +60,11 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	@Override
 	public Collection<Integer> segments() {
 		return segments;
+	}
+	
+	@Override
+	public Collection<Integer> parentSegments() {
+		return parentSegments;
 	}
 
 	@Override
@@ -71,7 +78,7 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 		builder.add(segmentId);
 		// use previous segments here, the branch got a new segment because a new child branch got opened
 		builder.addAll(segments());
-		return new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), cdoBranchId(), segmentId, builder.build());
+		return new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), cdoBranchId(), segmentId, builder.build(), parentSegments);
 	}
 
 }

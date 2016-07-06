@@ -37,7 +37,7 @@ public class BranchSerializationTest {
 	@Before
 	public void givenBranch() {
 		this.branch = new BranchImpl("name", "parent", 0L, 0L, false);
-		this.cdoBranch = new CDOBranchImpl("name", "parent", 0L, 0L, false, 1, 0, Collections.singleton(0));
+		this.cdoBranch = new CDOBranchImpl("name", "parent", 0L, 0L, false, 1, 0, Collections.singleton(0), Collections.singleton(0));
 	}
 	
 	@Test
@@ -75,7 +75,7 @@ public class BranchSerializationTest {
 	@Test
 	public void serializeCDOBranchImpl() throws Exception {
 		final String json = mapper.writeValueAsString(cdoBranch);
-		assertEquals("{\"type\":\"CDOBranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"segmentId\":0,\"segments\":[0],\"metadata\":{},\"cdoBranchId\":1}", json);
+		assertEquals("{\"type\":\"CDOBranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"segmentId\":0,\"segments\":[0],\"parentSegments\":[0],\"metadata\":{},\"cdoBranchId\":1}", json);
 	}
 	
 	@Test

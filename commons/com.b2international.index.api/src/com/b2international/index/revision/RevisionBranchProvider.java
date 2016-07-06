@@ -29,7 +29,7 @@ public interface RevisionBranchProvider {
 	RevisionBranch getBranch(String branchPath);
 
 	/**
-	 * Returns the RevisionBranch form of the parent of the given branch path.
+	 * Returns the segments for the parent branch of the given branch based on the state when the branch was opened.
 	 * 
 	 * @param branchPath
 	 * @return
