@@ -19,6 +19,7 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.b2international.snowowl.datastore.ICodeSystem.TO_BRANCH_PATH_FUNCTION;
 import static com.google.common.base.Strings.nullToEmpty;
+import static com.google.common.collect.Iterables.filter;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -142,17 +143,21 @@ public class CodeSystemUtils {
 
 
 	
-	public static ICodeSystem findMatchingCodeSystem(String branchPath, String repositoryUuid) {
-		return findMatchingCodeSystem(BranchPathUtils.createPath(branchPath), repositoryUuid);
+	public static ICodeSystem findMatchingCodeSystem(String branchPath, String repositoryUuid, Iterable<ICodeSystem> codeSystems) {
+		return findMatchingCodeSystem(BranchPathUtils.createPath(branchPath), repositoryUuid, codeSystems);
 	}
 	
 	
-	public static ICodeSystem findMatchingCodeSystem(IBranchPath branchPath, String repositoryUuid) {
+	public static ICodeSystem findMatchingCodeSystem(final IBranchPath branchPath, final String repositoryUuid, final Iterable<ICodeSystem> codeSystems) {
 		
-		// branchPath can be: main, task branch, version/tag branch Path, extension branchPath 
-		Iterable<ICodeSystem> codeSystemsInRepository = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), repositoryUuid);
-		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(codeSystemsInRepository, TO_BRANCH_PATH_FUNCTION);
+		Map<String, ICodeSystem> branchPathToCodeSystemMap = Maps.uniqueIndex(filter(codeSystems, new Predicate<ICodeSystem>() {
+			@Override
+			public boolean apply(ICodeSystem input) {
+				return Objects.equal(input.getRepositoryUuid(), repositoryUuid);
+			}
+		}), TO_BRANCH_PATH_FUNCTION);
 
+		// the branchPath can be: main, task branch, version/tag branch Path, extension branchPath 
 		for (IBranchPath path = branchPath; !isMain(path); path = path.getParent()) {
 			if (branchPathToCodeSystemMap.containsKey(path.getPath())) {
 				return branchPathToCodeSystemMap.get(path.getPath());
@@ -160,7 +165,7 @@ public class CodeSystemUtils {
 		}
 
 		// falling back to the repositoryUUID's main code system.
-		return Iterables.find(codeSystemsInRepository, ICodeSystem.IS_MAIN_BRANCH_PATH_PREDICATE, null); 
+		return Iterables.find(codeSystems, ICodeSystem.IS_MAIN_BRANCH_PATH_PREDICATE, null); 
 	}
 	
 	/**
