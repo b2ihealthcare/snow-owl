@@ -630,6 +630,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		this.referencedComponentType = referencedComponentType;
 	}
 
+	@Override
+	public String getContainerId() {
+		return getReferencedComponentId();
+	}
 
 	/**
 	 * @return the referenced component identifier

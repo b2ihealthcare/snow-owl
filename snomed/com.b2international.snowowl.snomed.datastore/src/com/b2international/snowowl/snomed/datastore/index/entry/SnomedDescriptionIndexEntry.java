@@ -388,6 +388,11 @@ public class SnomedDescriptionIndexEntry extends SnomedDocument {
 	}
 	
 	@Override
+	public String getContainerId() {
+		return getConceptId();
+	}
+	
+	@Override
 	@JsonIgnore
 	public String getIconId() {
 		return super.getIconId();

@@ -446,6 +446,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.structural = structural;
 	}
 	
+	@Override
+	public String getContainerId() {
+		return getId();
+	}
+	
 	public long getRefSetStorageKey() {
 		return refSetStorageKey;
 	}

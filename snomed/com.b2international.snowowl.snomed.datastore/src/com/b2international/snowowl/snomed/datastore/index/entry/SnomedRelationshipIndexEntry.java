@@ -45,7 +45,7 @@ import com.google.common.collect.FluentIterable;
  */
 @Doc
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
-public class SnomedRelationshipIndexEntry extends SnomedDocument implements IStatement<String> {
+public final class SnomedRelationshipIndexEntry extends SnomedDocument implements IStatement<String> {
 
 	private static final long serialVersionUID = -7873086925532169024L;
 
@@ -306,6 +306,11 @@ public class SnomedRelationshipIndexEntry extends SnomedDocument implements ISta
 		this.destinationNegated = destinationNegated;
 	}
 
+	@Override
+	public String getContainerId() {
+		return getSourceId();
+	}
+	
 	@Override
 	@JsonIgnore
 	public String getIconId() {
