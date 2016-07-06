@@ -54,13 +54,11 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.compare.RevisionCompare;
-import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.index.RevisionDocument.Views.IdOnly;
+import com.b2international.snowowl.datastore.index.ContainerIdProvider;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -70,18 +68,12 @@ import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.2
  */
 public class ReviewManagerImpl implements ReviewManager {
-
-	private static final String LAST_UPDATED_FIELD = "lastUpdated";
-	private static final String TARGET_PATH_FIELD = "targetPath";
-	private static final String SOURCE_PATH_FIELD = "sourcePath";
-	private static final String STATUS_FIELD = "status";
 
 	private final class CreateReviewJob extends Job {
 
@@ -136,21 +128,25 @@ public class ReviewManagerImpl implements ReviewManager {
 			store.write(new IndexWrite<Void>() {
 				@Override
 				public Void execute(Writer index) throws IOException {
-					final Iterable<ReviewImpl> affectedReviews = index.searcher().search(
+					final Hits<ReviewImpl> affectedReviews = index.searcher().search(
 							Query.select(ReviewImpl.class)
-							.where(Expressions.builder()
-									.must(Expressions.exactMatch(SOURCE_PATH_FIELD, path))
-									.must(Expressions.exactMatch(TARGET_PATH_FIELD, path))
+								.where(Expressions.builder()
+									.must(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
+									.must(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
 									.build()
-							).build());
+								)
+								.limit(Integer.MAX_VALUE)
+								.build());
 					
-					for (final ReviewImpl affectedReview : affectedReviews) {
-						ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
-						if (newReview != null) {
-							index.put(newReview.id(), newReview);
+					if (affectedReviews.getTotal() > 0) {
+						for (final ReviewImpl affectedReview : affectedReviews) {
+							ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
+							if (newReview != null) {
+								index.put(newReview.id(), newReview);
+							}
 						}
+						index.commit();
 					}
-					index.commit();
 					return null;
 				}
 			});
@@ -197,8 +193,8 @@ public class ReviewManagerImpl implements ReviewManager {
 
 		private Expression buildQuery(ReviewStatus status, long beforeTimestamp) {
 			return Expressions.builder()
-					.must(Expressions.exactMatch(STATUS_FIELD, status.toString()))
-					.must(Expressions.matchRange(LAST_UPDATED_FIELD, null, ISO8601Utils.format(new Date(beforeTimestamp))))
+					.must(Expressions.exactMatch(ReviewImpl.Fields.STATUS, status.toString()))
+					.must(Expressions.matchRange(ReviewImpl.Fields.LAST_UPDATED, null, ISO8601Utils.format(new Date(beforeTimestamp))))
 					.build();
 		}
 	}
@@ -263,7 +259,8 @@ public class ReviewManagerImpl implements ReviewManager {
 			 * review is for changes on parent (source) that will be made visible on child (target) by rebasing
 			 */
 			if (target.state(source) == Branch.BranchState.STALE) {
-				throw new UnsupportedOperationException("Not implemented this compare yet");
+				branchAsBase = null;
+				branchToCompare = target.path();
 			} else {
 				branchAsBase = target.path();
 				branchToCompare = source.path();
@@ -344,7 +341,6 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	void createConceptChanges(final String id, final String branch, final RevisionCompare compare) {
 		// TODO concept changes is mutable
-		// TODO non concept changes should be converted to concept changes for API compatibility
 		// TODO add deleted IDs???
 		final ConceptChangesImpl convertedChanges = revisionIndex.read(branch, new RevisionIndexRead<ConceptChangesImpl>() {
 			@Override
@@ -354,17 +350,25 @@ public class ReviewManagerImpl implements ReviewManager {
 				final Set<String> deletedConcepts = newHashSet();
 				
 				for (final Entry<Class<? extends Revision>, LongSet> newComponents : compare.getNewComponents().entrySet()) {
-					final Hits<IdOnly> ids = searcher.search(Query.selectPartial(RevisionDocument.Views.IdOnly.class, newComponents.getKey())
+					final Hits<? extends Revision> hits = searcher.search(Query.select(newComponents.getKey())
 							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toSet(newComponents.getValue())))
 							.build());
-					FluentIterable.from(ids).transform(ComponentUtils.<String>getIdFunction()).copyInto(newConcepts);
+					for (Revision hit : hits) {
+						if (hit instanceof ContainerIdProvider) {
+							newConcepts.add(((ContainerIdProvider) hit).getContainerId());
+						}
+					}
 				}
 				
 				for (final Entry<Class<? extends Revision>, LongSet> changedComponents : compare.getChangedComponents().entrySet()) {
-					final Hits<IdOnly> ids = searcher.search(Query.selectPartial(RevisionDocument.Views.IdOnly.class, changedComponents.getKey())
+					final Hits<? extends Revision> hits = searcher.search(Query.select(changedComponents.getKey())
 							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toSet(changedComponents.getValue())))
 							.build());
-					FluentIterable.from(ids).transform(ComponentUtils.<String>getIdFunction()).copyInto(changedConcepts);
+					for (Revision hit : hits) {
+						if (hit instanceof ContainerIdProvider) {
+							newConcepts.add(((ContainerIdProvider) hit).getContainerId());
+						}
+					}
 				}
 				
 				return new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
