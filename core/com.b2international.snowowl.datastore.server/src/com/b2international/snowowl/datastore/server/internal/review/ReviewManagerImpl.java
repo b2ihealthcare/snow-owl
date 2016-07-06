@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.internal.review;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -238,59 +239,15 @@ public class ReviewManagerImpl implements ReviewManager {
 	public Review createReview(final Branch source, final Branch target) {
 		if (source.path().equals(target.path())) {
 			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
-		}
-
-		final String branchToCompare;
-		final String branchAsBase;
-		if (source.parent().equals(target)) {
-			/* 
-			 * target is the parent of source 
-			 * source is the child of target
-			 * review is for changes on child (source) that will be made visible on parent (target) by merging
-			 * 
-			 * Comparison starts from the base of the child (source) branch.
-			 */
-			branchAsBase = null;
-			branchToCompare = source.path();
-		} else if (target.parent().equals(source)) {
-			/* 
-			 * source is the parent of target
-			 * target is the child of source
-			 * review is for changes on parent (source) that will be made visible on child (target) by rebasing
-			 */
-			if (target.state(source) == Branch.BranchState.STALE) {
-				branchAsBase = null;
-				branchToCompare = target.path();
-			} else {
-				branchAsBase = target.path();
-				branchToCompare = source.path();
-			}
-		} else {
+		} else if (!source.parent().equals(target) && !target.parent().equals(source)){
 			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
 		}
+
+		// the compared branch is always the source branch
+		final String branchToCompare = source.path();
+		// if target is parent of source, then this is a merge review otherwise this is a rebase review
+		final String branchAsBase = source.parent().equals(target) ? null : target.path();
 		
-//		// Comparison ends with the head commit of the source branch, but we'll have to figure out where to retrieve the starting commit from.
-//		final VersionCompareConfiguration.Builder configurationBuilder = VersionCompareConfiguration.builder(repositoryId, false).target(source.branchPath(), false);
-//		
-//		if (source.parent().equals(target)) { 
-//
-//			configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath()), false);
-//
-//		} else if (target.parent().equals(source)) {
-//
-//			if (target.state(source) == BranchState.STALE) {
-//				// Start from the parent (source) base _as seen from the child (target) branch_, if parent (source) itself has been rebased in the meantime 
-//				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(source.branchPath(), target.branchPath()), false);
-//			} else {
-//				// Start from the child (target) base
-//				configurationBuilder.source(BranchPathUtils.convertIntoBasePath(target.branchPath()), false);
-//			}
-//
-//		} else {
-//			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
-//		}
-//		
-//		final VersionCompareConfiguration configuration = configurationBuilder.build();
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, revisionIndex, branchAsBase, branchToCompare);
 
@@ -350,23 +307,43 @@ public class ReviewManagerImpl implements ReviewManager {
 				final Set<String> deletedConcepts = newHashSet();
 				
 				for (final Entry<Class<? extends Revision>, LongSet> newComponents : compare.getNewComponents().entrySet()) {
+					final Set<Long> storageKeys = LongSets.toSet(newComponents.getValue());
 					final Hits<? extends Revision> hits = searcher.search(Query.select(newComponents.getKey())
-							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toSet(newComponents.getValue())))
+							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
+							.limit(storageKeys.size())
 							.build());
+					checkState(storageKeys.size() == hits.getTotal());
 					for (Revision hit : hits) {
 						if (hit instanceof ContainerIdProvider) {
-							newConcepts.add(((ContainerIdProvider) hit).getContainerId());
+							final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
+							if (idProvider.isRoot()) {
+								newConcepts.add(idProvider.getContainerId());
+							}
+						}
+					}
+					// iterate over again and add non root ids
+					for (Revision hit : hits) {
+						if (hit instanceof ContainerIdProvider) {
+							final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
+							final String containerId = idProvider.getContainerId();
+							// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
+							if (!idProvider.isRoot() && !newConcepts.contains(containerId)) {
+								changedConcepts.add(containerId);
+							}
 						}
 					}
 				}
 				
 				for (final Entry<Class<? extends Revision>, LongSet> changedComponents : compare.getChangedComponents().entrySet()) {
+					final Set<Long> storageKeys = LongSets.toSet(changedComponents.getValue());
 					final Hits<? extends Revision> hits = searcher.search(Query.select(changedComponents.getKey())
-							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toSet(changedComponents.getValue())))
+							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
+							.limit(storageKeys.size())
 							.build());
+					checkState(storageKeys.size() == hits.getTotal());
 					for (Revision hit : hits) {
 						if (hit instanceof ContainerIdProvider) {
-							newConcepts.add(((ContainerIdProvider) hit).getContainerId());
+							changedConcepts.add(((ContainerIdProvider) hit).getContainerId());
 						}
 					}
 				}
