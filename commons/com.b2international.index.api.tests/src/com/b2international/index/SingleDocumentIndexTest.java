@@ -55,6 +55,16 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	}
 	
 	@Test
+	public void indexTwoDocumentWithDifferentTypeButWithSameId() throws Exception {
+		final Data doc = new Data();
+		final DataWithMap doc2 = new DataWithMap(ImmutableMap.<String, Object>of("prop1", "value1"));
+		indexDocument(KEY, doc);
+		indexDocument(KEY, doc2);
+		assertEquals(doc, getDocument(Data.class, KEY));
+		assertEquals(doc2, getDocument(DataWithMap.class, KEY));
+	}
+	
+	@Test
 	public void updateDocument() throws Exception {
 		indexDocument();
 		final Data updatedDoc = new Data("field1Updated", "field2Updated");
