@@ -65,7 +65,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
 	SnomedBrowserApiTest.class,
-//	SnomedClassificationApiTest.class,
+	SnomedClassificationApiTest.class,
 	// Java API test cases
 	SnomedBranchRequestTest.class
 })
