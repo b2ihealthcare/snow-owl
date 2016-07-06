@@ -232,7 +232,8 @@ public final class DocumentMapping {
 	}
 
 	public static boolean isNestedDoc(Class<?> fieldType) {
-		return fieldType.isAnnotationPresent(Doc.class) && fieldType.getAnnotation(Doc.class).nested();
+		final Doc doc = getDocAnnotation(fieldType);
+		return doc == null ? false : doc.nested();
 	}
 
 }
