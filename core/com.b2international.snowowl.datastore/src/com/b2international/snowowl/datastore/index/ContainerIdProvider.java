@@ -31,4 +31,7 @@ public interface ContainerIdProvider {
 	@JsonIgnore
 	String getContainerId();
 	
+	@JsonIgnore
+	boolean isRoot();
+	
 }

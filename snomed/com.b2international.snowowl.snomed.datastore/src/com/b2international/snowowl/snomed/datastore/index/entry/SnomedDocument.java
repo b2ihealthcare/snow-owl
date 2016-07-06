@@ -141,6 +141,11 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		this.active = active;
 		this.effectiveTime = effectiveTime;
 	}
+	
+	@Override
+	public boolean isRoot() {
+		return false;
+	}
 
 	/**
 	 * @return {@code true} if the component has already appeared in an RF2 release, {@code false} otherwise

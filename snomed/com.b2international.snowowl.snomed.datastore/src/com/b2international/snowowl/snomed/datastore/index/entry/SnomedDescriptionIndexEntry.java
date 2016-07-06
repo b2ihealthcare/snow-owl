@@ -59,7 +59,7 @@ import com.google.common.collect.ImmutableMap;
  */
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
-public class SnomedDescriptionIndexEntry extends SnomedDocument {
+public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
 

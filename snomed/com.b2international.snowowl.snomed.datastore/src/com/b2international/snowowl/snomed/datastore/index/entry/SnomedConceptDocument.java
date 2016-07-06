@@ -451,6 +451,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return getId();
 	}
 	
+	@Override
+	public boolean isRoot() {
+		return true;
+	}
+	
 	public long getRefSetStorageKey() {
 		return refSetStorageKey;
 	}
