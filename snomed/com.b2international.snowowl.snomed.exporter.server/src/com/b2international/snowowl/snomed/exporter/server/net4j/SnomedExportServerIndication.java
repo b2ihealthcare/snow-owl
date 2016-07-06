@@ -302,7 +302,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			Collection<ICodeSystemVersion> codeSystemVersions = ApplicationContext.getServiceForClass(CodeSystemService.class).getAllTags(SnomedDatastoreActivator.REPOSITORY_UUID);
 			
 			List<String> exportBranchPaths = Lists.newArrayList();
-			ContentSubType subType = exportContext.getContentSubType();
+			final ContentSubType subType = exportContext.getContentSubType();
 			switch (subType) {
 			case DELTA:
 				
