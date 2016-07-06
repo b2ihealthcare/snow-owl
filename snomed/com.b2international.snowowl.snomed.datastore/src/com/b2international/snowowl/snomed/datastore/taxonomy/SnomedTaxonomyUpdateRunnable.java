@@ -66,6 +66,8 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	private final ISnomedTaxonomyBuilder taxonomyBuilder;
 	private final String characteristicTypeId;
 	private final RevisionSearcher searcher;
+	
+	private SnomedTaxonomyBuilderResult taxonomyBuilderResult;
 
 	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, CDOTransaction transaction,
 			ISnomedTaxonomyBuilder taxonomyBuilder, 
@@ -197,7 +199,7 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 			}
 		}
 		LOGGER.info("Rebuilding taxonomic information based on the changes.");
-		taxonomyBuilder.build();
+		this.taxonomyBuilderResult = taxonomyBuilder.build();
 	}
 	
 	/*creates a taxonomy edge instance based on the given SNOMED CT relationship*/
@@ -219,6 +221,10 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 				return relationship.getDestination().getId();
 			}
 		};
+	}
+	
+	public SnomedTaxonomyBuilderResult getTaxonomyBuilderResult() {
+		return taxonomyBuilderResult;
 	}
 	
 	/*creates a taxonomy edge instance based on the given SNOMED CT relationship*/

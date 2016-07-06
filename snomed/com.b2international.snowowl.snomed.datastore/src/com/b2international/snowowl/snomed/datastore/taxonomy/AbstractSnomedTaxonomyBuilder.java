@@ -33,6 +33,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
@@ -86,7 +87,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	}
 	
 	@Override
-	public AbstractSnomedTaxonomyBuilder build() {
+	public SnomedTaxonomyBuilderResult build() {
 		final List<InvalidRelationship> invalidRelationships = Lists.newArrayList();
 
 		// allocate data
@@ -138,6 +139,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			count++;
 		}
 
+		final SnomedTaxonomyBuilderResult result;
 		if (isEmpty(invalidRelationships)) {
 			
 			for (int i = 0; i < conceptCount; i++) {
@@ -161,14 +163,14 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 			}
 			
+			result = new SnomedTaxonomyBuilderResult(Statuses.ok());
 		} else {
-			///throw new IncompleteTaxonomyException(invalidRelationships);
 			LOGGER.warn("Missing concepts from relationships", new IncompleteTaxonomyException(invalidRelationships));
+			result = new SnomedTaxonomyBuilderResult(Statuses.error("Missing concepts from relationships."), invalidRelationships);
 		}
 
 		dirty = false;
-		
-		return this;
+		return result;
 	}
 
 	/*
