@@ -304,6 +304,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		if (!inferredSourceIds.isEmpty()) {
 			final Query<SnomedConceptDocument> inferredSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
 					.where(Expressions.builder()
+							.should(SnomedConceptDocument.Expressions.ids(inferredSourceIds))
 							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIds))
 							.should(SnomedConceptDocument.Expressions.ancestors(inferredSourceIds))
 							.build())
