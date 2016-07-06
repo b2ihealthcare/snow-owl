@@ -66,8 +66,8 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 
 	private Iterator<String> itr;
 
-	public SnomedSubsetMemberExporter(final SnomedExportContext configuration, final String refSetId) {
-		super(configuration, refSetId);
+	public SnomedSubsetMemberExporter(final SnomedExportContext configuration, final String refSetId, final RevisionSearcher revisionSearcher) {
+		super(configuration, refSetId, revisionSearcher);
 		mapper = new Id2Rf1PropertyMapper();
 		languageType = isLanguageType(refSetId);
 		distinctEffectiveTimeSet = PrimitiveSets.newLongOpenHashSet();
@@ -81,8 +81,6 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 
 	private Collection<ReferencedComponentIdStatus> createResultSet() {
 
-		RevisionSearcher searcher = getExportContext().getRevisionSearcher();
-
 		LongKeyLongMap descriptionIdTypeMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 
 		try {
@@ -91,7 +89,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 				Query<SnomedDescriptionIndexEntry> allDescriptionsQuery = Query.select(SnomedDescriptionIndexEntry.class)
 						.where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
 				Hits<SnomedDescriptionIndexEntry> allDescriptionsHits;
-				allDescriptionsHits = searcher.search(allDescriptionsQuery);
+				allDescriptionsHits = revisionSearcher.search(allDescriptionsQuery);
 
 				for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : allDescriptionsHits) {
 					descriptionIdTypeMap.put(Long.parseLong(snomedDescriptionIndexEntry.getId()), Long.parseLong(snomedDescriptionIndexEntry.getTypeId()));
@@ -101,7 +99,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 			// hits
 			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
 					.where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
-			Hits<SnomedRefSetMemberIndexEntry> hits = searcher.search(query);
+			Hits<SnomedRefSetMemberIndexEntry> hits = revisionSearcher.search(query);
 
 			Set<ReferencedComponentIdStatus> referencedComponentIdStatuses = Sets.newHashSet();
 

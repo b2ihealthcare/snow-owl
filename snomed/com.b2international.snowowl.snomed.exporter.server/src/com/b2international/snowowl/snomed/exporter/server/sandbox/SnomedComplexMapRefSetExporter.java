@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -30,9 +30,9 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 	private final boolean extended;
 	
 	public SnomedComplexMapRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedRefSetType type, final boolean extended) {
+			final SnomedRefSetType type, final boolean extended, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		
-		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
+		super(configuration, refSetId, type, revisionSearcher, unpublished);
 		this.extended = extended;
 	}
 	

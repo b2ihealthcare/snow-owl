@@ -48,6 +48,7 @@ public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implem
 	private Hits<T> conceptHits;
 	private Class<T> clazz;
 	private final static int PAGE_SIZE = 100;
+	protected RevisionSearcher revisionSearcher;
 	
 	/**
 	 * 
@@ -55,10 +56,12 @@ public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implem
 	 * @param id2Rf1PropertyMapper 
 	 * @param snomedExportConfiguration 
 	 */
-	public AbstractSnomedRf1Exporter(Class<T> clazz, SnomedExportContext snomedExportConfiguration, Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
-		this.clazz = clazz;
+	public AbstractSnomedRf1Exporter(final Class<T> clazz, final SnomedExportContext snomedExportConfiguration, 
+			final Id2Rf1PropertyMapper id2Rf1PropertyMapper, final RevisionSearcher revisionSearcher) {
+		this.clazz = checkNotNull(clazz, "class");
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.mapper = checkNotNull(mapper, "mapper");
+		this.revisionSearcher = checkNotNull(revisionSearcher);
 	}
 	
 	@Override
@@ -66,7 +69,6 @@ public abstract class AbstractSnomedRf1Exporter<T extends SnomedDocument> implem
 		
 		if (totalSize == -1 || (currentIndex >= conceptHits.getHits().size()) && currentOffset < totalSize ) {
 			try {
-				RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 				Query<T> query = Query.select(clazz).where(Expressions.matchAll()).limit(PAGE_SIZE).offset(currentOffset).build();
 				conceptHits = revisionSearcher.search(query);
 				

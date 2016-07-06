@@ -57,8 +57,9 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 	private boolean complex;
 	private Iterator<String> itr;
 
-	public SnomedCrossMapTargetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
-		super(configuration, refSetId, mapSetSetting);
+	public SnomedCrossMapTargetExporter(final SnomedExportContext configuration, final String refSetId, 
+			final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
+		super(configuration, refSetId, mapSetSetting, revisionSearcher);
 		complex = getMapSetSetting().isComplex();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<MapTargetEntry, String>() {
 			public String apply(final MapTargetEntry input) {
@@ -75,8 +76,6 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 	}
 
 	private Collection<MapTargetEntry> createResultSet() {
-
-		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 
 		try {
 			// we need every target, limit needs to be set as the default is 50 hits

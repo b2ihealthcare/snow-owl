@@ -79,8 +79,9 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 	 * @param configuration export configuration
 	 * @param mapper RF2->RF1 mapper
 	 */
-	public SnomedRf1ConceptExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper) {
-		super(SnomedConceptDocument.class, configuration, mapper);
+	public SnomedRf1ConceptExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, 
+			final RevisionSearcher revisionSearcher) {
+		super(SnomedConceptDocument.class, configuration, mapper, revisionSearcher);
 	}
 	
 	/**
@@ -97,7 +98,6 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		concept.status = revisionDocument.isActive() ? "1" : "0";
 		concept.definitionStatus = revisionDocument.isPrimitive() ? "1" : "0";
 		
-		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 		final LanguageSetting languageSetting = ApplicationContext.getInstance().getService(LanguageSetting.class);
 		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
 		

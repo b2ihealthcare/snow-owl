@@ -21,8 +21,6 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import com.b2international.index.Searcher;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 
@@ -40,9 +38,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private final Date deltaExportStartEffectiveTime;
 	private final Date deltaExportEndEffectiveTime;
 	
-	private RevisionSearcher revisionSearcher;
-	private Searcher searcher;
-
 	private boolean includeUnpublished;
 	// FIXME always false, clients should specify the value
 	private boolean includeMapTargetDescription = false; 
@@ -87,22 +82,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		return deltaExportEndEffectiveTime;
 	}
 	
-	public RevisionSearcher getRevisionSearcher() {
-		return revisionSearcher;
-	}
-
-	public void setRevisionSearcher(RevisionSearcher revisionSearcher) {
-		this.revisionSearcher = revisionSearcher;
-	}
-	
-	public Searcher getSearcher() {
-		return searcher;
-	}
-
-	public void setSearcher(Searcher searcher) {
-		this.searcher = searcher;
-	}
-
 	@Override
 	public boolean includeUnpublished() {
 		return includeUnpublished;

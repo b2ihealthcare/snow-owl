@@ -21,6 +21,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
@@ -40,8 +41,9 @@ public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter im
 	private static final String FILE_NAME_PREFIX = "CrossMapSets";
 	private Iterator<String> itr;
 
-	public SnomedCrossMapSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedMapSetSetting mapSetSetting) {
-		super(configuration, refSetId, mapSetSetting);
+	public SnomedCrossMapSetExporter(final SnomedExportContext configuration, 
+			final String refSetId, final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
+		super(configuration, refSetId, mapSetSetting, revisionSearcher);
 		itr = createResultSet().iterator();
 	}
 

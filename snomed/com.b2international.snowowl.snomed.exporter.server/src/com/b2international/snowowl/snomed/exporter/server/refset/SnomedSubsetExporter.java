@@ -21,6 +21,7 @@ import static java.util.Collections.singletonList;
 import java.util.Date;
 import java.util.Iterator;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -40,8 +41,9 @@ public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 
 	private Iterator<String> itr;
 	
-	public SnomedSubsetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedSubsetMemberExporter memberExporter) {
-		super(configuration,refSetId);
+	public SnomedSubsetExporter(final SnomedExportContext configuration, 
+			final String refSetId, final SnomedSubsetMemberExporter memberExporter, final RevisionSearcher revisionSearcher) {
+		super(configuration,refSetId, revisionSearcher);
 		
 		itr = singletonList(new StringBuilder()
 			.append(getRefSetId())

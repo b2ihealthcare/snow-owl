@@ -19,6 +19,7 @@ import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 
 import java.io.IOException;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -69,8 +70,8 @@ public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1Exporter<Sno
 	 * @param configuration export configuration
 	 * @param mapper RF2->RF1 mapper
 	 */
-	public SnomedRf1RelationshipExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper) {
-		super(SnomedRelationshipIndexEntry.class, configuration, mapper);
+	public SnomedRf1RelationshipExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, final RevisionSearcher revisionSearcher) {
+		super(SnomedRelationshipIndexEntry.class, configuration, mapper, revisionSearcher);
 	}
 	
 	/**

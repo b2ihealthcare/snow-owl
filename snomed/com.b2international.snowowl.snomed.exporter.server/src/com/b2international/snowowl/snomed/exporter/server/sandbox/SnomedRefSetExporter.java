@@ -20,9 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -38,7 +36,6 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.Sets;
 
 /**
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
@@ -50,8 +47,9 @@ public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberI
 
 	private SnomedRefSetType type;
 
-	public SnomedRefSetExporter(final SnomedExportContext configuration, final String refSetId, final SnomedRefSetType type) {
-		super(configuration, SnomedRefSetMemberIndexEntry.class);
+	public SnomedRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
+			final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+		super(configuration, SnomedRefSetMemberIndexEntry.class, revisionSearcher, unpublished);
 		this.refSetId = checkNotNull(refSetId, "refSetId");
 		this.type = checkNotNull(type, "type");
 	}
@@ -123,14 +121,14 @@ public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberI
 		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), refSetName, refSet);
 	}
 
-	@Override
-	protected Query<SnomedRefSetMemberIndexEntry> getSnapshotQuery() {
-		
-		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
-		commitTimeConditionBuilder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId()))).build();
-		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
-		return query;
-	}
+//	@Override
+//	protected Query<SnomedRefSetMemberIndexEntry> getSnapshotQuery() {
+//		
+//		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
+//		commitTimeConditionBuilder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId()))).build();
+//		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
+//		return query;
+//	}
 	
 	/**Returns with the reference set identifier concept ID.*/
 	protected String getRefSetId() {

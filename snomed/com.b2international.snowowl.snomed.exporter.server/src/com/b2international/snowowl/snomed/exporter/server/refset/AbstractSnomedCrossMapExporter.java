@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.File;
 import java.util.Date;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -40,12 +41,14 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 	private final String label;
 	private SnomedExportContext configuration;
 	private String refSetId;
+	protected RevisionSearcher revisionSearcher;
 
 	protected AbstractSnomedCrossMapExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedMapSetSetting mapSetSetting) {
+			final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
 		this.refSetId = checkNotNull(refSetId, "refSetId");
 		this.configuration = checkNotNull(configuration, "configuration");
-		this.mapSetSetting = mapSetSetting;
+		this.mapSetSetting = checkNotNull(mapSetSetting);
+		this.revisionSearcher = checkNotNull(revisionSearcher);
 		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId);
 	}
 

@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.exporter.server.refset;
 import java.io.File;
 import java.util.Collections;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -68,10 +69,12 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	private int referencedComponentType;
 	private SnomedExportContext configuration;
 	private String refSetId;
+	protected RevisionSearcher revisionSearcher;
 
-	protected AbstractSnomedSubsetExporter(final SnomedExportContext configuration, final String refSetId) {
+	protected AbstractSnomedSubsetExporter(final SnomedExportContext configuration, final String refSetId, final RevisionSearcher revisionSearcher) {
 		this.configuration = configuration;
 		this.refSetId = refSetId;
+		this.revisionSearcher = revisionSearcher;
 		referencedComponentType = getReferencedComponentType(refSetId);
 		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId);
 		if (isLanguageType(refSetId)) {

@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 
@@ -27,8 +29,8 @@ import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
  */
 public class SnomedInferredRelationshipExporter extends AbstractSnomedRelationshipExporter {
 
-	public SnomedInferredRelationshipExporter(final SnomedExportContext configuration) {
-		super(configuration);
+	public SnomedInferredRelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+		super(configuration, revisionSearcher, unpublished);
 	}
 	
 	@Override
@@ -37,9 +39,15 @@ public class SnomedInferredRelationshipExporter extends AbstractSnomedRelationsh
 	}
 	
 	@Override
-	protected Query<SnomedRelationshipIndexEntry> getSnapshotQuery() {
-		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
-		commitTimeConditionBuilder.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
-		return Query.select(SnomedRelationshipIndexEntry.class).where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
+	protected Expression getQueryExpression() {
+		if (isUnpublished()) {
+			return Expressions.builder()
+					.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP))
+					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+					.build();
+		} else {
+			return Expressions.builder().mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
+		}
 	}
+	
 }

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
@@ -23,8 +24,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  */
 public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExporter<SnomedRelationshipIndexEntry> {
 
-	protected AbstractSnomedRelationshipExporter(final SnomedExportContext configuration) {
-		super(configuration, SnomedRelationshipIndexEntry.class);
+	protected AbstractSnomedRelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+		super(configuration, SnomedRelationshipIndexEntry.class, revisionSearcher, unpublished);
 	}
 
 	@Override

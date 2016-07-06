@@ -91,8 +91,9 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 	private boolean includeExtendedDescriptionTypes;
 	
 	
-	public SnomedRf1DescriptionExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, final boolean includeExtendedDescriptionTypes) {
-		super(SnomedDescriptionIndexEntry.class, configuration, mapper);
+	public SnomedRf1DescriptionExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, 
+			final boolean includeExtendedDescriptionTypes, final RevisionSearcher revisionSearcher) {
+		super(SnomedDescriptionIndexEntry.class, configuration, mapper, revisionSearcher);
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
 		this.preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
 	}
@@ -117,7 +118,6 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 			description.typeId = getDescriptionType(document.getTypeId());
 		}
 		
-		RevisionSearcher revisionSearcher = getExportContext().getRevisionSearcher();
 		//inactivation status
 		if (!document.isActive()) {
 			

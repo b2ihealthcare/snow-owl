@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import org.eclipse.emf.cdo.view.CDOView;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -77,14 +78,16 @@ public class SnomedRefSetExporterFactory {
 	 * @param newModuleDependencies           
 	 *            set that contains the the new module dependency members
 	 *            
+	 * @param revisionSearcher the searcher to supply the actual artefacts being exported
+	 *            
 	 * @return the reference set exporter instance
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the type based on the reference set identifier concept id
-	 *             cannot be determined, or the resolved reference set is not
-	 *             exportable
+	 *             cannot be determined, or the resolved reference set cannot be exported
 	 */
-	public static SnomedExporter getRefSetExporter(final String refSetId, final SnomedExportContext configuration) {
+	public static SnomedExporter getRefSetExporter(final String refSetId, final SnomedExportContext configuration,
+			final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		
 		CDOView cdoView = null;
 		try {
@@ -98,27 +101,27 @@ public class SnomedRefSetExporterFactory {
 			final SnomedRefSetType type = refSet.getType();
 			switch (type) {
 				case SIMPLE_MAP:
-					return new SnomedSimpleMapRefSetExporter(configuration, refSetId, type, configuration.includeMapTargetDescription());
+					return new SnomedSimpleMapRefSetExporter(configuration, refSetId, type, configuration.includeMapTargetDescription(), revisionSearcher, unpublished);
 				case COMPLEX_MAP: //$FALL-THROUGH$
 				case EXTENDED_MAP:
 					final boolean extended = SnomedRefSetType.EXTENDED_MAP.equals(refSet.getType());
-					return new SnomedComplexMapRefSetExporter(configuration, refSetId, type, extended);
+					return new SnomedComplexMapRefSetExporter(configuration, refSetId, type, extended, revisionSearcher, unpublished);
 				case LANGUAGE:
-					return new SnomedLanguageRefSetExporter(configuration, refSetId, type);
+					return new SnomedLanguageRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 				case QUERY:
-					return new SnomedQueryRefSetExporter(configuration, refSetId, type);
+					return new SnomedQueryRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 				case ATTRIBUTE_VALUE:
-					return new SnomedAttributeValueRefSetExporter(configuration, refSetId, type);
+					return new SnomedAttributeValueRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 				case SIMPLE:
-					return new SnomedRefSetExporter(configuration, refSetId, type);
+					return new SnomedRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 				case DESCRIPTION_TYPE:
-					return new SnomedDescriptionTypeRefSetExporter(configuration, refSetId, type);
+					return new SnomedDescriptionTypeRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 				case CONCRETE_DATA_TYPE:
-					return new SnomedConcreteDomainRefSetExporter(configuration, refSetId, type);
+					return new SnomedConcreteDomainRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 				case ASSOCIATION:
-					return new SnomedAssociationRefSetExporter(configuration, refSetId, type);
+					return new SnomedAssociationRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 				case MODULE_DEPENDENCY:
-					return new SnomedModuleDependencyRefSetExporter(configuration, refSetId, type);
+					return new SnomedModuleDependencyRefSetExporter(configuration, refSetId, type, revisionSearcher, unpublished);
 
 				default:
 					throw new IllegalArgumentException("Unknown reference set type.");
@@ -131,7 +134,8 @@ public class SnomedRefSetExporterFactory {
 	
 	private static final Iterable<SnomedExporter> NULL_EXPORTERS = Collections.<SnomedExporter>singleton(NoopExporter.INSTANCE);
 	
-	public static Iterable<SnomedExporter> getSubsetExporter(final String refSetId, final SnomedExportContext configuration) {
+	public static Iterable<SnomedExporter> getSubsetExporter(final String refSetId, final SnomedExportContext configuration, 
+			final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		CDOView view = null;
 		try {
 			view = createView(configuration.getCurrentBranchPath());
@@ -143,8 +147,8 @@ public class SnomedRefSetExporterFactory {
 			switch (refSet.getType()) {
 				case LANGUAGE: //$FALL-THROUGH$
 				case SIMPLE: 
-					final SnomedSubsetMemberExporter memberExporter = new SnomedSubsetMemberExporter(configuration, refSetId);
-					final SnomedSubsetExporter subsetExporter = new SnomedSubsetExporter(configuration, refSetId, memberExporter);
+					final SnomedSubsetMemberExporter memberExporter = new SnomedSubsetMemberExporter(configuration, refSetId, revisionSearcher);
+					final SnomedSubsetExporter subsetExporter = new SnomedSubsetExporter(configuration, refSetId, memberExporter, revisionSearcher);
 				return Sets.<SnomedExporter>newHashSet(memberExporter, subsetExporter);
 				default: return NULL_EXPORTERS;
 			}
@@ -155,7 +159,7 @@ public class SnomedRefSetExporterFactory {
 	}
 	
 	public static Iterable<SnomedExporter> getCrossMapExporter(final String refSetId, final SnomedExportContext configuration, 
-			final SnomedMapSetSetting mapSetSetting) {
+			final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		
 		if (Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId) || Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId))
 			return NULL_EXPORTERS;
@@ -172,9 +176,9 @@ public class SnomedRefSetExporterFactory {
 				case EXTENDED_MAP: //$FALL-THROUGH$
 				case COMPLEX_MAP: //$FALL-THROUGH$
 				case SIMPLE_MAP: return Sets.<SnomedExporter>newHashSet(
-						new SnomedCrossMapExporter(configuration, refSetId, mapSetSetting),
-						new SnomedCrossMapSetExporter(configuration, refSetId, mapSetSetting),
-						new SnomedCrossMapTargetExporter(configuration, refSetId, mapSetSetting));
+						new SnomedCrossMapExporter(configuration, refSetId, mapSetSetting, revisionSearcher),
+						new SnomedCrossMapSetExporter(configuration, refSetId, mapSetSetting, revisionSearcher),
+						new SnomedCrossMapTargetExporter(configuration, refSetId, mapSetSetting, revisionSearcher));
 				default: return NULL_EXPORTERS;
 			}
 		} finally {

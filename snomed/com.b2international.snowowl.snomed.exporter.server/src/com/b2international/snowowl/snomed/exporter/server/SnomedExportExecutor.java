@@ -109,8 +109,8 @@ public class SnomedExportExecutor {
 		this.temporaryWorkingDirectory = workingDirectory;
 	}
 	
-	public void execute(boolean writeHeader) throws IOException {
-		releaseFilePath = write(writeHeader);
+	public void execute(boolean append) throws IOException {
+		releaseFilePath = write(append);
 	}
 
 	public File getTemporaryFile() {
@@ -126,7 +126,7 @@ public class SnomedExportExecutor {
 		}
 	}
 	
-	private File write(boolean writeHeader) throws IOException {
+	private File write(boolean append) throws IOException {
 		final File releaseFileRelativePath = new File(
 				temporaryWorkingDirectory + 
 				File.separatorChar + 
@@ -142,16 +142,19 @@ public class SnomedExportExecutor {
 		}
 		
 		releaseFileRelativePath.createNewFile();
-
+		
 		FileChannel fileChannel = null;
 		RandomAccessFile randomAccessFile = null;
 
 		try {
-			
 			randomAccessFile = new RandomAccessFile(releaseFileRelativePath, "rw");
 			fileChannel = randomAccessFile.getChannel();
 			
-			if (writeHeader) {
+			//if appended, set the position and omit the header
+			if (append) {
+				final long fileSize = fileChannel.size();
+				fileChannel.position(fileSize);
+			} else {
 				writeFileHeader(fileChannel, snomedExporter.getColumnHeaders());
 			}
 			
@@ -185,9 +188,7 @@ public class SnomedExportExecutor {
 					throw new SnowowlRuntimeException("Error while releasing exporter.", e);
 				}
 			}
-			
 		}
-		
 		return releaseFileRelativePath;
 	}
 	

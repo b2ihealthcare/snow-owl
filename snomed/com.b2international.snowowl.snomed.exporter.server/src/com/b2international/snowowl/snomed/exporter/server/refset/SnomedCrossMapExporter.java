@@ -65,8 +65,8 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 	 * @param mapSetSetting
 	 */
 	public SnomedCrossMapExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedMapSetSetting mapSetSetting) {
-		super(configuration, refSetId, mapSetSetting);
+			final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
+		super(configuration, refSetId, mapSetSetting, revisionSearcher);
 		complex = getMapSetSetting().isComplex();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<MapTargetEntry, String>() {
 			@Override
