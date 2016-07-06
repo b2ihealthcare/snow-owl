@@ -13,34 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server;
+package com.b2international.snowowl.snomed.exporter.server.rf1;
 
+import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedExporter;
-import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1Exporter;
 
 /**
- * Representation of all SNOMED&nbsp;CT RF2 format exporters.
+ * Representation of all SNOMED&nbsp;CT RF1 format exporters.
  * <p>
- * <b>NOTE:&nbsp;</b>implementing clients should not implement {@link SnomedRf1Exporter} as well.
- * </p>  
+ * <b>NOTE:&nbsp;</b>implementing clients should not implement {@link SnomedRf2Exporter} as well.
+ * </p>
  * @see ISnomedExporter
  */
-public interface SnomedRf2Exporter extends SnomedExporter {
+public interface SnomedRf1Exporter extends SnomedExporter {
 
-	/**
-	 * Returns the export context used by the export process
-	 */
-	SnomedExportContext getExportContext();
-	
-	/**
-	 * Returns the scroll size for the query.
-	 * @return paging size
-	 */
-	int getPageSize();
-	
-	/**
-	 * Returns the current offset of the paged query.
-	 * @return current offset
-	 */
-	int getCurrentOffset();
 }

@@ -39,9 +39,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
+import com.b2international.snowowl.snomed.exporter.server.exporter.AbstractSnomedRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedExporter;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
@@ -50,14 +49,10 @@ import com.google.common.base.Supplier;
 /**
  * This class executes the corresponding SNOMED&nbsp;CT specific exporter and writes the result to the given temporary working directory.
  * The subsequent path and filename is got by the specified importer.
- * 
  *
  */
 public class SnomedExportExecutor {
 	
-	/**
-	 * 
-	 */
 	private static final Charset UTF_8 = Charset.forName("UTF-8");
 
 	private static final String RELEASE_BASE_DIRECTORY = "SnomedCT_Release_";

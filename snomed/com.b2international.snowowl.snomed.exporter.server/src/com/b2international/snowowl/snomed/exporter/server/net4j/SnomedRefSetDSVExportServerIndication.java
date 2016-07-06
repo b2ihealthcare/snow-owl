@@ -46,10 +46,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
+import com.b2international.snowowl.snomed.exporter.server.exporter.IRefSetDSVExporter;
+import com.b2international.snowowl.snomed.exporter.server.exporter.MapTypeRefSetDSVExporter;
+import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedSimpleTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
-import com.b2international.snowowl.snomed.exporter.server.refset.IRefSetDSVExporter;
-import com.b2international.snowowl.snomed.exporter.server.refset.MapTypeRefSetDSVExporter;
-import com.b2international.snowowl.snomed.exporter.server.refset.SnomedSimpleTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;

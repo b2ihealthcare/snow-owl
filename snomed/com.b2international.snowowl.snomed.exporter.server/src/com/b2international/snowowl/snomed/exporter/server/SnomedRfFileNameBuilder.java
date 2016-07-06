@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Preconditions;
 
