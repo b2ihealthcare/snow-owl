@@ -74,9 +74,9 @@ import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdateRunnable;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -381,27 +381,33 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
 		index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 			@Override
-			public Void execute(RevisionSearcher searcher) throws IOException {
+			public Void execute(final RevisionSearcher searcher) throws IOException {
 				final Query<SnomedConceptDocument> allConceptsQuery = Query.select(SnomedConceptDocument.class)
 						.where(Expressions.matchAll())
 						.limit(Integer.MAX_VALUE)
 						.build();
+				
 				final Hits<SnomedConceptDocument> allConcepts = searcher.search(allConceptsQuery);
 				final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet(allConcepts.getTotal());
+				
 				for (SnomedConceptDocument concept : allConcepts) {
 					conceptIds.add(Long.parseLong(concept.getId()));
 				}
+				
 				for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
-					try {
-						final IsAStatementWithId[] statements = getActiveStatements(searcher, characteristicTypeId);
-						final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-						new SnomedTaxonomyUpdateRunnable(searcher, transaction, taxonomyBuilder, characteristicTypeId).run();
-					} catch (IncompleteTaxonomyException e) {
-						for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
+					final IsAStatementWithId[] statements = getActiveStatements(searcher, characteristicTypeId);
+					final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
+					final SnomedTaxonomyUpdateRunnable taxonomyRunnable = new SnomedTaxonomyUpdateRunnable(searcher, transaction, taxonomyBuilder, characteristicTypeId);
+					taxonomyRunnable.run();
+					
+					final SnomedTaxonomyBuilderResult result = taxonomyRunnable.getTaxonomyBuilderResult();
+					if (!result.getStatus().isOK()) {
+						for (InvalidRelationship invalidRelationship : result.getInvalidRelationships()) {
 							conflictingItems.put(Long.toString(invalidRelationship.getMissingConceptId()), invalidRelationship);
 						}
 					}
 				}
+				
 				return null;
 			}
 		});

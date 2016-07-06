@@ -39,6 +39,7 @@ import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
@@ -47,6 +48,7 @@ import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Lists;
 
 /**
  * Class for validating the taxonomy of active concepts and active IS_A relationships.
@@ -127,8 +129,10 @@ public class SnomedTaxonomyValidator {
 					builder.applyEdgeChanges(relationshipFilePath);
 				}
 				
-				builder.build();
-					
+				final SnomedTaxonomyBuilderResult result = builder.build();
+				if (!result.getStatus().isOK()) {
+					throw new IncompleteTaxonomyException(Lists.newArrayList(result.getInvalidRelationships()));
+				}
 			} else {
 			
 				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
