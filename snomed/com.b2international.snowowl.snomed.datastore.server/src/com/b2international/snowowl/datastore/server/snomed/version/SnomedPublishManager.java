@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.version;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Map;
@@ -26,6 +27,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -67,7 +69,7 @@ public class SnomedPublishManager extends PublishManager {
 	private final SnomedIdentifiers snomedIdentifiers;
 	
 	private Map<String, SnomedComponent> unpublishedComponentsById;
-	private Set<String> componentIdsToPublish;
+	private Set<String> componentIdsToPublish = newHashSet();
 	private Collection<SnomedModuleDependencyRefSetMember> newModuleDependencyRefSetMembers;
 	
 	public SnomedPublishManager() {
@@ -175,7 +177,7 @@ public class SnomedPublishManager extends PublishManager {
 	
 	@Override
 	public void postCommit() {
-		if (!componentIdsToPublish.isEmpty()) {
+		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
 			snomedIdentifiers.publish(componentIdsToPublish);
 		}
 		super.postCommit();
