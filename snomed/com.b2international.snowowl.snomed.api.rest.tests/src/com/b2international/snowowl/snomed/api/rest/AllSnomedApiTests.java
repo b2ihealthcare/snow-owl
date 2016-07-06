@@ -53,7 +53,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// RESTful API test cases
 	SnomedBranchingApiTest.class,
 	SnomedMergeApiTest.class,
-//	SnomedReviewApiTest.class,
+	SnomedReviewApiTest.class,
 	SnomedVersioningApiTest.class,
 	SnomedImportApiTest.class,
 	SnomedImportApiExamplesTest.class,
