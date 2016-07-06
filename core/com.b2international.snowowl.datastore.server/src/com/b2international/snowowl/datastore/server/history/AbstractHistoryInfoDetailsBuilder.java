@@ -132,11 +132,20 @@ public abstract class AbstractHistoryInfoDetailsBuilder implements HistoryInfoDe
 				final CDORevisionDelta revisionDelta = (CDORevisionDelta) revisionKey;
 				for (final CDOFeatureDelta featureDelta : revisionDelta.getFeatureDeltas()) {
 					if (Type.SET.equals(featureDelta.getType()) && filter(featureDelta.getFeature())) { // TODO: change to instanceof CDOSetFeatureDelta?
-						final CDOObject object = currentView.getObject(revisionKey.getID());
-						final IHistoryInfoDetails details = generateInfoForChangedObject(object, currentView, beforeView, (CDOSetFeatureDelta) featureDelta);
-						if (IHistoryInfoDetails.IGNORED_DETAILS != details) {
-							infoDetails.add(details);
+
+						CDOObject object = CDOUtils.getObjectIfExists(currentView, revisionDelta.getID());
+						
+						if (object == null) {
+							object = CDOUtils.getObjectIfExists(beforeView, revisionDelta.getID());
 						}
+						
+						if (object != null) {
+							final IHistoryInfoDetails details = generateInfoForChangedObject(object, currentView, beforeView, (CDOSetFeatureDelta) featureDelta);
+							if (IHistoryInfoDetails.IGNORED_DETAILS != details) {
+								infoDetails.add(details);
+							}
+						}
+						
 					}
 				}
 			}
