@@ -71,7 +71,7 @@ public class SnomedModuleDependencyRefSetService {
 	 * It should be called before committing the transaction.
 	 * @param transaction the underlying transaction for the SNOMED&nbsp;CT components.
 	 */
-	public void updateModuleDependenciesDuringPreCommit(final CDOTransaction transaction/*, final RevisionIndex index*/) {
+	public void updateModuleDependenciesDuringPreCommit(final CDOTransaction transaction) {
 
 		// We ignore those cases when a new module is created or a component has moved to a module
 		// which hasn't got a MDR member. These cases will be handled at the export as it requires
