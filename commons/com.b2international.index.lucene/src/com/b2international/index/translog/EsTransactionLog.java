@@ -200,9 +200,9 @@ public class EsTransactionLog implements TransactionLog {
 	@Override
 	public void sync() throws IOException {
 		final Stopwatch w = Stopwatch.createStarted();
-		logger.info("Starting translog sync.");
+		logger.trace("Starting translog sync.");
 		translog.sync();
-		logger.info(String.format("Translog sync finished in %s.", w));
+		logger.trace(String.format("Translog sync finished in %s.", w));
 	}
 	
 }
