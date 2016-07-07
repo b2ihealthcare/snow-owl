@@ -124,17 +124,19 @@ public class VersioningService implements IVersioningService {
 	
 	/**branch path to current ICodeSystemVersion supplier map*/
 	private final Map<String, Supplier<ICodeSystemVersion>> codesystemBranchPathToCurrentVersionSuppliers;
-	private final AtomicBoolean locked; 
+	private final AtomicBoolean locked;
+	private ICodeSystem activeCodeSystem; 
 	
 	/**Creates a new versioning service for the given tooling feature.*/
-	public VersioningService(final String toolingId, final String... otherToolingIds) {
+	public VersioningService(ICodeSystem activeCodeSystem, final String toolingId, final String... otherToolingIds) {
+		this.activeCodeSystem = activeCodeSystem;
 		configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
 		codeSystemBranchPathToExistingVersionsMap = initExistingVersions(configuration.getToolingIds());
 		codesystemBranchPathToCurrentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
 		lockContexts = newHashMap();
 		lockTargets = newHashMap();
 		locked = new AtomicBoolean();
-		configuration.setCodeSystemShortName(getActiveCodeSystem().getShortName());
+		configuration.setCodeSystemShortName(activeCodeSystem.getShortName());
 	}
 	
 	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
@@ -486,7 +488,6 @@ public class VersioningService implements IVersioningService {
 		String repositoryUuid = getRepositoryUuid(getPrimaryToolingId());
 		checkNotNull(repositoryUuid, "repositoryUuid");
 
-		ICodeSystem activeCodeSystem = getActiveCodeSystem();
 		if (CompareUtils.isEmpty(codeSystemBranchPathToExistingVersionsMap.get(activeCodeSystem.getBranchPath()))) {
 			
 			if (!ContentAvailabilityInfoManager.INSTANCE.isAvailable(repositoryUuid)) {
@@ -577,8 +578,9 @@ public class VersioningService implements IVersioningService {
 	}
 
 	public ICodeSystem getActiveCodeSystem() {
-		return CodeSystemUtils.findMatchingCodeSystem(getActiveBranchForToolingFeature(getPrimaryToolingId()), getRepositoryUuid(getPrimaryToolingId()));
+		return getActiveCodeSystem();
 	}
+	
 	
 	private TaskManager getTaskManager() {
 		return getServiceForClass(TaskManager.class);
@@ -637,6 +639,4 @@ public class VersioningService implements IVersioningService {
 	private String getToolingName(final String toolingId) {
 		return CoreTerminologyBroker.getInstance().getTerminologyInformation(checkNotNull(toolingId, "toolingId")).getName();
 	}
-	
-	
 }
