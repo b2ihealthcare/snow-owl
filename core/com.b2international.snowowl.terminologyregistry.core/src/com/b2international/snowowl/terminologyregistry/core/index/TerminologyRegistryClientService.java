@@ -54,10 +54,6 @@ public final class TerminologyRegistryClientService {
 		return delegate.getCodeSystemByOid(getBranchPathMap(), codeSystemOID);
 	}
 
-	public Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap() {
-		return delegate.getTerminologyComponentIdCodeSystemMap(getBranchPathMap());
-	}
-
 	public Map<String, Collection<ICodeSystem>> getTerminologyComponentIdWithMultipleCodeSystemsMap() {
 		return delegate.getTerminologyComponentIdWithMultipleCodeSystemsMap(getBranchPathMap());
 	}

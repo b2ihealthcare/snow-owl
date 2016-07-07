@@ -158,6 +158,25 @@ public interface ICodeSystemVersion extends Serializable {
 			return BranchPathUtils.createPath(version.getPath());
 		}
 	};
+	
+	/**Convenient method for transforming a {@link ICodeSystemVersion} into it's parent's
+	 *{@link IBranchPath} instance with the {@link BranchPathUtils#createVersionPath(String)} method. */
+	Function<ICodeSystemVersion, IBranchPath> TO_PARENT_BRANCH_PATH_FUNC = new Function<ICodeSystemVersion, IBranchPath>() {
+		public IBranchPath apply(final ICodeSystemVersion version) {
+			return BranchPathUtils.createPath(version.getParentBranchPath());
+		}
+	};
+	
+	
+	
+	/**Function for extracting the {@link ICodeSystemVersion#getRepositoryUuid()} of the {@link ICodeSystemVersion code system version}.*/
+	Function<ICodeSystemVersion, String> TO_REPOSITORY_UUID_FUNC = new Function<ICodeSystemVersion, String>() {
+		public String apply(final ICodeSystemVersion version) {
+			return version.getRepositoryUuid();
+		}
+	};
+	
+	
 
 	/**Comparator for comparing {@link ICodeSystemVersion versions} via {@link ICodeSystemVersion#getImportDate() import date}s.*/
 	Comparator<ICodeSystemVersion> VERSION_IMPORT_DATE_COMPARATOR = new CodeSystemVersionDateComparator(GET_IMPORT_DATE_FUNC);

@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.datastore;
 
-import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 import static com.b2international.snowowl.core.date.EffectiveTimes.UNSET_EFFECTIVE_TIME;
+import static com.b2international.snowowl.datastore.ICodeSystemVersion.UNVERSIONED;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static java.lang.Long.MAX_VALUE;
+
+import com.google.common.base.Predicate;
 
 /**
  * Utility class for the
@@ -30,11 +32,12 @@ public abstract class LatestCodeSystemVersionUtils {
 	/**
 	 * Creates a fake {@link ICodeSystemVersion} representing the HEAD in the given repository.
 	 * @param repositoryUuid the repository UUID.
+	 * @param branchPath: on which branch the code system version is created, eg.: on an extension branch.
 	 * @return a fake version representing the HEAD in the repository.
 	 */
-	public static ICodeSystemVersion createLatestCodeSystemVersion(final String repositoryUuid) {
+	public static ICodeSystemVersion createLatestCodeSystemVersion(final String repositoryUuid, final String branchPath) {
 
-		return new CodeSystemVersionEntry(MAX_VALUE, MAX_VALUE, UNSET_EFFECTIVE_TIME, LATEST_VERSION, MAIN_BRANCH, MAIN_BRANCH, NO_STORAGE_KEY, repositoryUuid) {
+		return new CodeSystemVersionEntry(MAX_VALUE, MAX_VALUE, UNSET_EFFECTIVE_TIME, LATEST_VERSION, UNVERSIONED, branchPath, NO_STORAGE_KEY, repositoryUuid, BranchPathUtils.createPath(branchPath).lastSegment()) {
 			
 			private static final long serialVersionUID = 3431197771869140761L;
 
@@ -46,6 +49,25 @@ public abstract class LatestCodeSystemVersionUtils {
 		
 	}
 	
+	
+	/**
+	 * Shorthand for {@link #createLatestCodeSystemVersion(String, String)}
+	 * @param codeSystem
+	 * @return
+	 */
+	public static ICodeSystemVersion createLatestCodeSystemVersion(ICodeSystem codeSystem) {
+		return createLatestCodeSystemVersion(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath());
+	}
+	
+	private static class LatestCodeSystemVersionPredicate implements Predicate<ICodeSystemVersion> {
+
+		@Override
+		public boolean apply(ICodeSystemVersion input) {
+			return isLatestVersion(input);
+		}
+		
+	}
+	
 	/**
 	 * Returns {@code true} if the version is a fake {@link ICodeSystemVersion} implementation
 	 * representing the HEAD in the repository.
@@ -53,7 +75,11 @@ public abstract class LatestCodeSystemVersionUtils {
 	 * @return {@code true} if the argument is the latest version, otherwise {@code false}
 	 */
 	public static boolean isLatestVersion(final ICodeSystemVersion version) {
-		return MAIN_BRANCH.equals(version.getVersionId());
+		return UNVERSIONED.equals(version.getVersionId());
+	}
+	
+	public static Predicate<ICodeSystemVersion> latestCodeSystemVersionPredicate()  {
+		return new LatestCodeSystemVersionPredicate();
 	}
 
 }

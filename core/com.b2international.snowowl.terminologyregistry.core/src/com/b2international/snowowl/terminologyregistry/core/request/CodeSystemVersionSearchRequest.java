@@ -28,6 +28,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionEntryBuilder;
+import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.collect.Lists;
 
 /**
@@ -89,7 +91,8 @@ final class CodeSystemVersionSearchRequest extends SearchRequest<CodeSystemVersi
 
 	private Query createQuery() {
 		final BooleanQuery query = new BooleanQuery();
-
+		query.add(new PrefixQuery(new Term(TerminologyRegistryIndexConstants.VERSION_VERSION_ID)), Occur.MUST);
+		
 		if (!StringUtils.isEmpty(codeSystemShortName)) {
 			final TermQuery systemShortNameQuery = new TermQuery(new Term(VERSION_SYSTEM_SHORT_NAME, codeSystemShortName));
 			query.add(systemShortNameQuery, Occur.MUST);

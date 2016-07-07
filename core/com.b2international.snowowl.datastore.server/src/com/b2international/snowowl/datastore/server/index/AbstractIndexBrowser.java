@@ -116,10 +116,6 @@ public abstract class AbstractIndexBrowser<E extends IIndexEntry> implements Int
 		return new TerminologyRegistryServiceWrapper(service).getCodeSystemByOid(branchPath, codeSystemOid);
 	}
 
-	@Override
-	public Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap(final IBranchPath branchPath) {
-		return new TerminologyRegistryServiceWrapper(service).getTerminologyComponentIdCodeSystemMap(branchPath);
-	}
 
 	@Override
 	public Map<String, Collection<ICodeSystem>> getTerminologyComponentIdWithMultipleCodeSystemsMap(final IBranchPath branchPath) {

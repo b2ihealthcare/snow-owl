@@ -28,6 +28,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
@@ -39,6 +40,7 @@ import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
+import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.collect.Lists;
 
 /**
@@ -88,6 +90,8 @@ final class CodeSystemSearchRequest extends SearchRequest<CodeSystems> {
 	private Query createQuery() {
 		final BooleanQuery query = new BooleanQuery();
 
+		query.add(new PrefixQuery(new Term(TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME)), Occur.MUST);
+		
 		if (!StringUtils.isEmpty(shortName)) {
 			final TermQuery shortNameQuery = new TermQuery(new Term(SYSTEM_SHORT_NAME, shortName));
 			query.add(shortNameQuery, Occur.MUST);

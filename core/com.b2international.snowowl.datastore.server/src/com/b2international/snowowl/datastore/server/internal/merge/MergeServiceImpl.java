@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
 import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.cache.Cache;
@@ -48,6 +49,8 @@ public class MergeServiceImpl implements MergeService {
 	public Merge enqueue(String source, String target, String commitMessage, String reviewId) {
 		AbstractBranchChangeRemoteJob job = AbstractBranchChangeRemoteJob.create(repository, source, target, commitMessage, reviewId);
 		merges.put(job.getMerge().getId(), job);
+		
+		RemoteJobUtils.configureProperties(job, "", "", job.getMerge().getId()); // TODO: pass initiator user's name, and command ID.
 		job.schedule();
 		return job.getMerge();
 	}

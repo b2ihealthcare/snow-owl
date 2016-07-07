@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import static com.b2international.snowowl.datastore.ICodeSystem.TO_SNOW_OWL_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.index.IndexUtils.isEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptySet;
@@ -51,7 +52,7 @@ import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVe
 import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 import com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 /**
@@ -369,40 +370,8 @@ public class TerminologyRegistryServiceWrapper implements InternalTerminologyReg
 	}
 
 	@Override
-	public Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap(final IBranchPath branchPath) {
-		
-		final Collection<ICodeSystem> set = getCodeSystems(branchPath);
-		final Map<String, ICodeSystem> $ = Maps.newHashMap();
-		
-		for (final ICodeSystem entry : set) {
-			// TODO(afeher): handle LCS and UMLS
-			$.put(entry.getSnowOwlId(), entry);
-		}
-		
-		return Collections.unmodifiableMap($);
-	}
-
-	@Override
 	public Map<String, Collection<ICodeSystem>> getTerminologyComponentIdWithMultipleCodeSystemsMap(final IBranchPath branchPath) {
-		
-		final Collection<ICodeSystem> set = getCodeSystems(branchPath);
-		final Map<String, Collection<ICodeSystem>> $ = Maps.newHashMap();
-		
-		for (final ICodeSystem entry : set) {
-			
-			if ($.containsKey(entry.getSnowOwlId())) {
-				
-				$.get(entry.getSnowOwlId()).add(entry);
-				
-			} else {
-				
-				$.put(entry.getSnowOwlId(), Lists.newArrayList(entry));
-				
-			}
-			
-		}
-
-		return Collections.unmodifiableMap($);
+		return Multimaps.index(getCodeSystems(branchPath), TO_SNOW_OWL_ID_FUNCTION).asMap();
 	}
 
 	@Override

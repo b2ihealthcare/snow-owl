@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.version;
 import static com.b2international.commons.status.Statuses.serializableOk;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
+import static com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils.createLatestCodeSystemVersion;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CONFIGURE_VERSION;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
@@ -63,8 +64,11 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.DatastoreActivator;
+import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
+import com.b2international.snowowl.datastore.TerminologyRegistryService;
+import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -79,7 +83,7 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.datastore.validation.TimeValidator;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -111,36 +115,46 @@ public class VersioningService implements IVersioningService {
 	
 	
 	private final PublishOperationConfiguration configuration;
-	private final Map<String, Collection<ICodeSystemVersion>> existingVersions;
+	
+	
+	private final Map<String, Collection<ICodeSystemVersion>> codeSystemBranchPathToExistingVersionsMap;
+
 	private Map<String, DatastoreLockContext> lockContexts;
 	private Map<String, SingleRepositoryAndBranchLockTarget> lockTargets;
-	private final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers;
-	private final AtomicBoolean locked; 
+	
+	/**branch path to current ICodeSystemVersion supplier map*/
+	private final Map<String, Supplier<ICodeSystemVersion>> codesystemBranchPathToCurrentVersionSuppliers;
+	private final AtomicBoolean locked;
+	private ICodeSystem activeCodeSystem; 
 	
 	/**Creates a new versioning service for the given tooling feature.*/
-	public VersioningService(final String toolingId, final String... otherToolingIds) {
+	public VersioningService(ICodeSystem activeCodeSystem, final String toolingId, final String... otherToolingIds) {
+		this.activeCodeSystem = activeCodeSystem;
 		configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
-		existingVersions = initExistingVersions(configuration.getToolingIds());
-		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
+		codeSystemBranchPathToExistingVersionsMap = initExistingVersions(configuration.getToolingIds());
+		codesystemBranchPathToCurrentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
 		lockContexts = newHashMap();
 		lockTargets = newHashMap();
 		locked = new AtomicBoolean();
+		configuration.setCodeSystemShortName(activeCodeSystem.getShortName());
 	}
 	
 	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
 		this.configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
-		this.existingVersions = existingVersions;
-		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
+		this.codeSystemBranchPathToExistingVersionsMap = existingVersions;
+		codesystemBranchPathToCurrentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
 		lockContexts = newHashMap();
 		lockTargets = newHashMap();
 		locked = new AtomicBoolean();
 	}
 
 	@Override
-	public Collection<ICodeSystemVersion> getExistingVersions(final String toolingId) {
-		checkNotNull(toolingId, "toolingId");
-		return existingVersions.get(toolingId);
+	public Collection<ICodeSystemVersion> getExistingVersions(final ICodeSystem codeSystem) {
+		checkNotNull(codeSystem, "codeSystem");
+		return codeSystemBranchPathToExistingVersionsMap.get(codeSystem.getBranchPath());
 	}
+
+	
 
 	@Override
 	public IStatus configureNewVersionId(final String versionId, final boolean ignoreValidation) {
@@ -154,13 +168,19 @@ public class VersioningService implements IVersioningService {
 			return Statuses.error(String.format("Version name '%s' is reserved word.", versionId));
 		}
 		
+		// tooling -> codeSystem: 1 - *
+		// codeSystem -> codeSystemVersion: 1 - *
 		for (final String toolingId : getToolingIds()) {
-			if (!ignoreValidation) {
-				final Collection<String> existingVersions = Collections2.transform(VersioningService.this.getExistingVersions(toolingId), IVersionCollector.GET_VERSION_NAME_FUNC);
-				if (existingVersions.contains(versionId)) {
-					return Statuses.error("Name should be unique.");
+			for (ICodeSystem codeSystem : getTerminologyRegistryService().getCodeSystems(getTaskManager().getBranchPathMap(), getRepositoryUuid(toolingId))) {
+				
+				if (!ignoreValidation) {
+					final Collection<String> existingVersions = Collections2.transform(getExistingVersions(codeSystem), ICodeSystemVersion.GET_VERSION_ID_FUNC);
+					if (existingVersions.contains(versionId)) {
+						return Statuses.error("Name should be unique.");
+					}
 				}
 			}
+			
 		}
 		configuration.setVersionId(versionId);
 		return okStatus();
@@ -181,11 +201,14 @@ public class VersioningService implements IVersioningService {
 	@Override
 	public IStatus configureEffectiveTime(final Date effectiveTime) {
 		for (final String toolingId : getToolingIds()) {
-			final IStatus status = validateEffectiveTimeForVersion(toolingId, effectiveTime, getVersionId());
-			if (!status.isOK()) {
-				return status;
+			for (ICodeSystem codeSystem : getTerminologyRegistryService().getCodeSystems(getTaskManager().getBranchPathMap(), getRepositoryUuid(toolingId))) {
+				IStatus status = validateEffectiveTimeForVersion(codeSystem, effectiveTime, getVersionId());
+				if (!status.isOK()) {
+					return status;
+				}
 			}
 		}
+		
 		configuration.setEffectiveTime(effectiveTime);
 		return okStatus();
 	}
@@ -200,10 +223,10 @@ public class VersioningService implements IVersioningService {
 	public IStatus tag() {
 		
 		//TODO: this check should be performed within the publishComponents() method
-		final Map<String, Boolean> performTagPerToolingFeatures = shouldPerformTag();
+		final Map<ICodeSystem, Boolean> performTagPerCodeSystem = shouldPerformTag();
 		try {
 			publishComponents();
-			return handleVersioningSuccess(performTagPerToolingFeatures.values().contains(Boolean.TRUE));
+			return handleVersioningSuccess(performTagPerCodeSystem.values().contains(Boolean.TRUE));
 		} catch (final SnowowlServiceException e) {
 			return handleVersioningFailure(e);
 		}
@@ -272,22 +295,22 @@ public class VersioningService implements IVersioningService {
 		return checkNotNull(getFirst(getToolingIds(), null), "No tooling ID was configured for the version process.");
 	}
 
-	private IStatus validateEffectiveTimeForVersion(final String toolingId, final Date effectiveTime, final String versionId) {
+	private IStatus validateEffectiveTimeForVersion(final ICodeSystem codeSystem, final Date effectiveTime, final String versionId) {
 		
-		if (!CoreTerminologyBroker.getInstance().isEffectiveTimeSupported(toolingId)) {
+		if (!CoreTerminologyBroker.getInstance().isEffectiveTimeSupported(codeSystem.getSnowOwlId())) {
 			return okStatus();
 		}
 		
 		
-		if (CompareUtils.isEmpty(existingVersions.get(toolingId))) {
+		if (CompareUtils.isEmpty(codeSystemBranchPathToExistingVersionsMap.get(codeSystem.getBranchPath()))) {
 			return new TimeValidator().validate(effectiveTime);
 		}
 		
-		if (IBranchPath.MAIN_BRANCH.equals(versionId) || BranchPathUtils.isMain(getCurrentBranchPath(toolingId))) {
-			return new TimeValidator(getMostRecentVersionEffectiveDateTime(toolingId)).validate(effectiveTime);
+		if (IBranchPath.MAIN_BRANCH.equals(versionId) || BranchPathUtils.isMain(codeSystem.getBranchPath())) {
+			return new TimeValidator(getMostRecentVersionEffectiveDateTime(codeSystem)).validate(effectiveTime);
 		}
 		
-		final List<ICodeSystemVersion> allTagsWithHead = getAllVersionsWithHead(toolingId);
+		final List<ICodeSystemVersion> allTagsWithHead = getAllVersionsWithHead(codeSystem);
 
 		final ICodeSystemVersion version = checkNotNull(find(allTagsWithHead, new Predicate<ICodeSystemVersion>() {
 			@Override public boolean apply(final ICodeSystemVersion version) {
@@ -299,106 +322,110 @@ public class VersioningService implements IVersioningService {
 		
 	}
 
-	private List<ICodeSystemVersion> getAllVersionsWithHead(final String toolingId) {
-		final List<ICodeSystemVersion> allTagsWithHead = newArrayList(existingVersions.get(toolingId));
-		allTagsWithHead.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(getRepositoryUuid(toolingId)));
+	private List<ICodeSystemVersion> getAllVersionsWithHead(final ICodeSystem codeSystem) {
+		final List<ICodeSystemVersion> allTagsWithHead = newArrayList(codeSystemBranchPathToExistingVersionsMap.get(codeSystem.getBranchPath()));
+		allTagsWithHead.add(0, createLatestCodeSystemVersion(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath()));
 		return allTagsWithHead;
 	}
 	
-	private void checkForChanges(final String toolingId, final IBranchPath branchPath) throws NoChangesException {
-		
-		checkNotNull(toolingId, "toolingId");
+	
+	
+	private void checkForChanges(final ICodeSystem codeSystem, final IBranchPath branchPath) throws NoChangesException {
+		checkNotNull(codeSystem, "codeSystem");
 		String branchPathName = branchPath.getPath();
 		
-		final long lastModificationOnBranch = getLastModificationBranch(toolingId, branchPath);
+		final long lastModificationOnBranch = getLastModificationBranch(codeSystem, branchPath);
 		
 		if (IBranchPath.MAIN_BRANCH.equals(branchPathName)) {
-			branchPathName = IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + getAllVersionsWithHead(toolingId).get(1).getVersionId();
+			branchPathName = IBranchPath.MAIN_BRANCH + IBranchPath.SEPARATOR_CHAR + getAllVersionsWithHead(codeSystem).get(1).getVersionId();
 		} 
 		
-		final long versionBranchCreationTime = getVersionBranchCreationTime(toolingId,  branchPathName);
+		final long versionBranchCreationTime = getVersionBranchCreationTime(codeSystem,  branchPathName);
 		
 		if (lastModificationOnBranch <= versionBranchCreationTime) {
-			throw new NoChangesException(getRepositoryUuid(toolingId));
+			throw new NoChangesException(codeSystem);
 		}
 		
-		final ICodeSystemVersion version = getVersion(toolingId, branchPath.lastSegment());
+		final ICodeSystemVersion version = getVersion(codeSystem, branchPath.lastSegment());
 		if (null == version) {
 			return;
 		}
 		
 		if (null != version && (lastModificationOnBranch <= version.getLastUpdateDate())) {
-			throw new NoChangesException(getRepositoryUuid(toolingId));
+			throw new NoChangesException(codeSystem);
 		}
 	}
 
-	private long getVersionBranchCreationTime(final String toolingId, final String versionPath) {
+	private long getVersionBranchCreationTime(final ICodeSystem codeSystem, final String versionPath) {
 		
 		CDOBranch branch = null;
 		
-		ICDOConnection cdoConnection = getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid(toolingId));
+		ICDOConnection cdoConnection = getServiceForClass(ICDOConnectionManager.class).getByUuid(codeSystem.getRepositoryUuid());
 		
 		if (IBranchPath.MAIN_BRANCH.equals(versionPath)) {
 			branch = cdoConnection.getMainBranch();
 		} else {
 			final IBranchPath versionBranchPath = BranchPathUtils.createPath(versionPath);
 			branch = cdoConnection.getBranch(versionBranchPath);
-			Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath + "' does not exist in '" + getRepositoryUuid(toolingId) + "'.");
+			Preconditions.checkNotNull(branch, "Branch '" + versionBranchPath + "' does not exist in '" + codeSystem.getRepositoryUuid() + "', on code system: '"+codeSystem.getShortName()+"'.");
 		}
 		
 		return branch.getBase().getTimeStamp();
 	}
 	
 	@Nullable 
-	private ICodeSystemVersion getVersion(final String toolingId, final String versionId) {
-		final ICodeSystemVersion version = uniqueIndex(getAllVersionsWithHead(toolingId), new Function<ICodeSystemVersion, String>() {
-			public String apply(final ICodeSystemVersion version) {
-				return checkNotNull(version, "version").getVersionId();
-			}
-		}).get(versionId);
-		return version;
+	private ICodeSystemVersion getVersion(final ICodeSystem codeSystem, final String versionId) {
+		return uniqueIndex(
+					getAllVersionsWithHead(codeSystem), ICodeSystemVersion.GET_VERSION_ID_FUNC)
+						.get(versionId);
 	}
 	
-	private long getMostRecentVersionEffectiveDateTime(final String toolingId) {
-		final List<ICodeSystemVersion> versions = newArrayList(existingVersions.get(toolingId));
+	private long getMostRecentVersionEffectiveDateTime(final ICodeSystem codeSystem) {
+		final List<ICodeSystemVersion> versions = newArrayList(codeSystemBranchPathToExistingVersionsMap.get(codeSystem.getBranchPath()));
 		Collections.sort(versions, Collections.reverseOrder(ICodeSystemVersion.VERSION_EFFECTIVE_DATE_COMPARATOR));
-		return get(versions, 0).getEffectiveDate();
+		return get(versions, 0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(codeSystem)).getEffectiveDate();
 	}
 	
-	private long getLastModificationBranch(final String toolingId, @Nullable final IBranchPath branchPath) {
-		
-		checkNotNull(toolingId, "toolingId");
+	private long getLastModificationBranch(final ICodeSystem codeSystem, @Nullable final IBranchPath branchPath) {
+		checkNotNull(codeSystem, "codeSystem");
 		checkNotNull(branchPath, "branchPath");
-		
-		final String repositoryUuid = getRepositoryUuid(toolingId);
-		ICDOBranchActionManager branchActionManager = getServiceForClass(ICDOBranchActionManager.class);
-		return branchActionManager.getLastCommitTime(repositoryUuid, branchPath);
+		return getServiceForClass(ICDOBranchActionManager.class).getLastCommitTime(codeSystem.getRepositoryUuid(), branchPath);
 	}
 	
 	private HashMap<String, Collection<ICodeSystemVersion>> initExistingVersions(final Iterable<String> toolingIds) {
-		final Map<String , Collection<ICodeSystemVersion>> versions = Maps.newConcurrentMap();
+		final Map<String , Collection<ICodeSystemVersion>> codeVersions = Maps.newConcurrentMap();
 		ConcurrentCollectionUtils.forEach(toolingIds, new Procedure<String>() {
 			protected void doApply(final String toolingId) {
-				versions.put(toolingId, new VersionCollector(toolingId).getVersions());
+				
+				Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), getRepositoryUuid(toolingId));
+				for (ICodeSystem codeSystem : codeSystems) {
+					codeVersions.put(codeSystem.getBranchPath(), getTerminologyRegistryService().getCodeSystemVersions(new UserBranchPathMap(), codeSystem.getShortName()));
+				}
 			}
 		});
-		return newHashMap(versions);
+		return newHashMap(codeVersions);
 	}
 	
 	private Map<String, Supplier<ICodeSystemVersion>> initCurrentVersionSuppliers(final Iterable<String> toolingIds) {
 		final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers = newHashMap();
+		
 		for (final String toolingId : toolingIds) {
-			final String versionIdForTooling = getActiveBranchForToolingFeature(toolingId).lastSegment();
-			currentVersionSuppliers.put(toolingId, memoize(new Supplier<ICodeSystemVersion>() {
-				public ICodeSystemVersion get() {
-					return find(getExistingVersions(toolingId), new Predicate<ICodeSystemVersion>() {
-						public boolean apply(final ICodeSystemVersion codeSystemVersion) {
-							return versionIdForTooling.equals(codeSystemVersion.getVersionId());
-						}
-					}, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(getRepositoryUuid(toolingId)));
-				}
-			}));
+			Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), getRepositoryUuid(toolingId));
+			for (final ICodeSystem codeSystem : codeSystems) {
+				currentVersionSuppliers.put(codeSystem.getBranchPath(), memoize(new Supplier<ICodeSystemVersion>() {
+					@Override
+					public ICodeSystemVersion get() {
+						return find(getAllVersionsWithHead(codeSystem), new Predicate<ICodeSystemVersion>() {
+							@Override
+							public boolean apply(ICodeSystemVersion input) {
+								return Objects.equal(input.getParentBranchPath(), codeSystem.getBranchPath());
+							}
+						}, createLatestCodeSystemVersion(codeSystem));
+					}
+				}));
+			}
 		}
+		
 		return unmodifiableMap(currentVersionSuppliers);
 	}
 
@@ -426,42 +453,48 @@ public class VersioningService implements IVersioningService {
 	}
 	
 	/*
-	 * Checks if the version id for the requested repositories (identified by their tooling id) exists or not.
+	 * Checks if the version id for the requested repositories (identified by their code system) exists or not.
 	 */
-	private Map<String, Boolean> shouldPerformTag() {
-		final Map<String, Boolean> shouldPerformTagPerToolingFeature = newHashMap(); 
+	private Map<ICodeSystem, Boolean> shouldPerformTag() {
+		final Map<ICodeSystem, Boolean> shouldPerformTagPerCodeSystem = newHashMap(); 
 		for (final String toolingId : getToolingIds()) {
-			shouldPerformTagPerToolingFeature.put(toolingId, !tryFind(existingVersions.get(toolingId), new Predicate<ICodeSystemVersion>() {
-				@Override public boolean apply(final ICodeSystemVersion version) {
-					return checkNotNull(version).getVersionId().equals(configuration.getVersionId());
-				}
-			}).isPresent());
+			// TODO FIXME: (endre) should only perform tagging for the necessary codeSystems!!!
+			Collection<ICodeSystem> codeSystems = getTerminologyRegistryService().getCodeSystems(new UserBranchPathMap(), getRepositoryUuid(toolingId));
+			for (ICodeSystem codeSystem : codeSystems) {
+				
+				shouldPerformTagPerCodeSystem.put(codeSystem, !tryFind(codeSystemBranchPathToExistingVersionsMap.get(codeSystem.getBranchPath()), new Predicate<ICodeSystemVersion>() {
+					@Override public boolean apply(final ICodeSystemVersion version) {
+						return checkNotNull(version).getVersionId().equals(configuration.getVersionId());
+					}
+				}).isPresent());
+			}
+			
 		}
-		return shouldPerformTagPerToolingFeature;
+		return shouldPerformTagPerCodeSystem;
 	}
 	
 	private IStatus handleVersionException(final VersioningException e) {
 		final String toolingId = CodeSystemUtils.getSnowOwlToolingId(e.getRepositoryUuid());
 		if (e instanceof NoContentException) {
-			return createErrorStatus(format(NO_CONTENT_TEMPLATE, getToolingName(toolingId))); 
+			return createErrorStatus(format(NO_CONTENT_TEMPLATE, e.getCodeSystem().getShortName())); 
 		} else if (e instanceof NoChangesException) {
-			return createErrorStatus(format(NO_CHANGES_TEMPLATE, getCurrentVersionId(toolingId), getToolingName(toolingId)));
+			return createErrorStatus(format(NO_CHANGES_TEMPLATE, getCurrentVersionId(e.getCodeSystem()), e.getCodeSystem().getShortName()));
 		} else {
 			return createErrorStatus(NO_DETAILS_ERROR_MSG);
 		}
 	}
 
 	private IStatus tryCheckCanCreateNewVersion() throws VersioningException {
-		String toolingId = getPrimaryToolingId();
-		
-		checkNotNull(toolingId, "toolingId");
-		if (CompareUtils.isEmpty(existingVersions.get(toolingId))) {
+		String repositoryUuid = getRepositoryUuid(getPrimaryToolingId());
+		checkNotNull(repositoryUuid, "repositoryUuid");
+
+		if (CompareUtils.isEmpty(codeSystemBranchPathToExistingVersionsMap.get(activeCodeSystem.getBranchPath()))) {
 			
-			if (!ContentAvailabilityInfoManager.INSTANCE.isAvailable(getRepositoryUuid(toolingId))) {
-				throw new NoContentException(getRepositoryUuid(toolingId));
+			if (!ContentAvailabilityInfoManager.INSTANCE.isAvailable(repositoryUuid)) {
+				throw new NoContentException(activeCodeSystem);
 			}
 		} else {
-			checkForChanges(toolingId, getCurrentBranchPath(toolingId));
+			checkForChanges(activeCodeSystem, getCurrentBranchPath(activeCodeSystem));
 		}	
 		return okStatus();
 	}
@@ -470,15 +503,22 @@ public class VersioningService implements IVersioningService {
 		return serializableOk();
 	}
 	
-	private String getCurrentVersionId(final String toolingId) {
-		final Supplier<ICodeSystemVersion> versionIdSupplier = currentVersionSuppliers.get(checkNotNull(toolingId, "toolingId"));
-		return checkNotNull(versionIdSupplier, "Current version ID supplier does not exist for: " + toolingId).get().getVersionId();
+	private String getCurrentVersionId(final ICodeSystem codeSystem) {
+		final Supplier<ICodeSystemVersion> versionIdSupplier = codesystemBranchPathToCurrentVersionSuppliers.get(checkNotNull(codeSystem.getBranchPath(), "codeSystem branchPath"));
+		return checkNotNull(versionIdSupplier, "Current version ID supplier does not exist for: " + codeSystem.getBranchPath()).get().getVersionId();
+	}
+
+	private String getCurrentVersionBranchPath(final ICodeSystem codeSystem) {
+		final Supplier<ICodeSystemVersion> versionIdSupplier = codesystemBranchPathToCurrentVersionSuppliers.get(checkNotNull(codeSystem.getBranchPath(), "codeSystem branchPath"));
+		return checkNotNull(versionIdSupplier, "Current version bra supplier does not exist for: " + codeSystem.getBranchPath()).get().getPath();
 	}
 	
-	//TODO: This is the only access to versioning from the REST API
-	private IBranchPath getCurrentBranchPath(final String toolingId) {
-		checkNotNull(toolingId, "toolingId");
-		return BranchPathUtils.createPath(getCurrentVersionId(toolingId));
+	private IBranchPath getCurrentBranchPath(final ICodeSystem codeSystem) {
+		checkNotNull(codeSystem, "codeSystem");
+		IBranchPath branchPath = BranchPathUtils.createPath(getCurrentVersionBranchPath(codeSystem));
+		if (Objects.equal(BranchPathUtils.trimTaskPart(branchPath).lastSegment(), ICodeSystemVersion.UNVERSIONED))
+			return branchPath.getParent();
+		return branchPath;
 	}
 
 	private void tryReleaseLock() throws OperationLockException {
@@ -537,8 +577,17 @@ public class VersioningService implements IVersioningService {
 		return getTaskManager().getActiveBranch(getRepositoryUuid(checkNotNull(toolingId, "toolingId")));
 	}
 
+	public ICodeSystem getActiveCodeSystem() {
+		return activeCodeSystem;
+	}
+	
+	
 	private TaskManager getTaskManager() {
 		return getServiceForClass(TaskManager.class);
+	}
+	
+	private TerminologyRegistryService getTerminologyRegistryService() {
+		return getServiceForClass(TerminologyRegistryService.class);
 	}
 	
 	private SingleRepositoryAndBranchLockTarget createLockTarget(final String toolingId, final IBranchPath branchPath) {
@@ -590,6 +639,4 @@ public class VersioningService implements IVersioningService {
 	private String getToolingName(final String toolingId) {
 		return CoreTerminologyBroker.getInstance().getTerminologyInformation(checkNotNull(toolingId, "toolingId")).getName();
 	}
-	
-	
 }

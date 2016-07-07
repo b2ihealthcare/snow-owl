@@ -250,11 +250,6 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 	}
 
 	@Override
-	public Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap(final IBranchPath branchPath) {
-		return new TerminologyRegistryServiceWrapper(this).getTerminologyComponentIdCodeSystemMap(branchPath);
-	}
-
-	@Override
 	public Map<String, Collection<ICodeSystem>> getTerminologyComponentIdWithMultipleCodeSystemsMap(final IBranchPath branchPath) {
 		return new TerminologyRegistryServiceWrapper(this).getTerminologyComponentIdWithMultipleCodeSystemsMap(branchPath);
 	}

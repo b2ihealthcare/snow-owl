@@ -108,6 +108,12 @@ public abstract class BranchPathUtils {
 		return getOrCache(ApplicationContext.getInstance().getService(TaskManager.class).getActiveBranch(repositoryId));
 	}
 	
+	
+	public static IBranchPath trimTaskPart(IBranchPath branchPath) {
+		TaskManager taskManager = ApplicationContext.getInstance().getService(TaskManager.class);
+		return taskManager.hasActiveTask() ? branchPath.getParent() : branchPath;
+	}
+	
 	/**
 	 * Returns with the branch path representing the MAIN branch.
 	 * @return the branch path for the MAIN branch.

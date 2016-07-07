@@ -37,10 +37,10 @@ public interface VersionConfiguration {
 	
 	/**
 	 * Returns with the internal state of the configuration as a map where the
-	 * keys are the unique repository IDs and the values are the currently configured {@link ICodeSystemVersion}.
+	 * keys are {@link ICodeSystem}s and the values are the currently configured {@link ICodeSystemVersion}.
 	 * @return the version configuration as a map of repository IDs and the {@link ICodeSystemVersion version}s.
 	 */
-	Map<String, ICodeSystemVersion> getConfiguration();
+	Map<ICodeSystem, ICodeSystemVersion> getConfiguration();
 	
 	/**
 	 * Returns with the configuration as a branch path map.
@@ -73,12 +73,12 @@ public interface VersionConfiguration {
 	boolean isDirty();
 	
 	/**
-	 * Returns with all versions from a repository where the argument belongs to.
+	 * Returns with all {@link ICodeSystemVersion}s from the provided {@link ICodeSystem code system}.
 	 * <br>Version representing the {@link ICodeSystemVersion#INITIAL_STATE 'init'} state will be excluded 
 	 * from the returning list. 
-	 * @param version the version to check. 
-	 * @return all versions in the repository.
+	 * @param codeSystem 
+	 * @return all versions in the codeSystem.
 	 */
-	List<ICodeSystemVersion> getAllVersionsForRepository(final ICodeSystemVersion version);
+	List<ICodeSystemVersion> getAllVersionsForCodeSystem(final ICodeSystem codeSystem);
 	
 }

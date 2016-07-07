@@ -19,6 +19,7 @@ import static com.b2international.commons.collections.Collections3.forEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.PATCHED_PREDICATE;
+import static com.b2international.snowowl.datastore.ICodeSystemVersion.TO_PARENT_BRANCH_PATH_FUNC;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.Lists.newArrayList;
@@ -26,6 +27,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.reverseOrder;
 import static java.util.Collections.synchronizedCollection;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -48,8 +50,11 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 /**
@@ -176,7 +181,7 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 		
 		//no versions (yet)
 		if (1 == versions.size()) {
-			return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid);
+			return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, IBranchPath.MAIN_BRANCH);
 		}
 		
 		IBranchPath branchPath = getUserBranchPathForRepository(userId, repositoryUuid);
@@ -184,20 +189,36 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 		if (BranchPathUtils.isMain(branchPath)) {
 			return versions.get(1); //first not MAIN (most recently created version)
 		}
+		
+		
+		
 
 		final boolean hasActiveTask = null != getTaskStateManager().getActiveTaskId(userId);
 		if (hasActiveTask) {
 			branchPath = branchPath.getParent();
 		}
-		
+
 		final String versionId = branchPath.lastSegment();
 		for (final ICodeSystemVersion version : versions) {
 			if (versionId.equals(version.getVersionId())) {
 				return version;
 			}
 		}
+
+		final String path = branchPath.getPath();
+		boolean userBranchPathIsCodeSystemBranchPath = Iterables.any(versions, new Predicate<ICodeSystemVersion>() {
+			@Override
+			public boolean apply(ICodeSystemVersion input) {
+				return input.getParentBranchPath().equals(path);
+			}
+		});
 		
-		return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid);
+		if (userBranchPathIsCodeSystemBranchPath) {
+			return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, branchPath.getPath());
+		}
+		
+		
+		return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, IBranchPath.MAIN_BRANCH);
 	}
 
 	@Override
@@ -225,10 +246,16 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 	}
 
 	private List<ICodeSystemVersion> getAllTagsWithHead(final String repositoryUuid, final boolean decorateWithPatched) {
-		final List<ICodeSystemVersion> $ = newArrayList(LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid));
+		final List<ICodeSystemVersion> $ = new ArrayList<>(); 
+		
 		final Collection<ICodeSystemVersion> allTags = getAllTags(repositoryUuid);
 		final List<ICodeSystemVersion> versions = Lists.newArrayList(decorateWithPatched ? decorateWithPatchedFlag(repositoryUuid, allTags) : allTags);
-	
+		
+		
+		for (IBranchPath branchPath : Multimaps.index(versions, TO_PARENT_BRANCH_PATH_FUNC).keySet()) {
+			$.add(LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid, branchPath.getPath()));
+		}
+		
 		Collections.sort(versions, reverseOrder(ICodeSystemVersion.VERSION_IMPORT_DATE_COMPARATOR));
 		$.addAll(versions);
 		
