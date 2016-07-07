@@ -111,7 +111,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/**Represents the change set.*/
 	private ICDOCommitChangeSet commitChangeSet;
 
-	private Map<Long, Revision> mappings = newHashMap();
+	private Map<String, Object> rawMappings = newHashMap();
+	private Map<Long, Revision> revisionMappings = newHashMap();
+	
 	private Multimap<Class<? extends Revision>, Long> deletions = HashMultimap.create();
 
 	SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index, final ISnomedIdentifierService identifierService) {
@@ -158,19 +160,9 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			@Override
 			public Void execute(RevisionWriter writer) throws IOException {
 				LOGGER.info("Persisting changes...");
-				for (final CodeSystem newCodeSystem : newCodeSystems) {
-					final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
-					writer.writer().put(Long.toString(entry.getStorageKey()), entry);
-				}
 				
-				for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
-					final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
-					writer.writer().put(Long.toString(entry.getStorageKey()), entry);
-				}
-				
-				for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
-					final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(dirtyCodeSystemVersion).build();
-					writer.writer().put(Long.toString(entry.getStorageKey()), entry);
+				for (Entry<String, Object> doc : rawMappings.entrySet()) {
+					writer.writer().put(doc.getKey(), doc.getValue());
 				}
 				
 				// execute revision updates
@@ -178,7 +170,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					writer.remove(type, Sets.newHashSet(deletions.get(type)));
 				}
 				
-				for (Entry<Long, Revision> doc : mappings.entrySet()) {
+				for (Entry<Long, Revision> doc : revisionMappings.entrySet()) {
 					if (!deletions.containsValue(doc.getKey())) {
 						writer.put(doc.getKey(), doc.getValue());
 					}
@@ -232,6 +224,21 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	/*updates the documents in the indexes based on the dirty, detached and new components.*/
 	private void updateDocuments(RevisionSearcher searcher) throws IOException {
 		LOGGER.info("Processing and updating changes...");
+		
+		for (final CodeSystem newCodeSystem : newCodeSystems) {
+			final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
+			rawMappings.put(Long.toString(entry.getStorageKey()), entry);
+		}
+		
+		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
+			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
+			rawMappings.put(Long.toString(entry.getStorageKey()), entry);
+		}
+		
+		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
+			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(dirtyCodeSystemVersion).build();
+			rawMappings.put(Long.toString(entry.getStorageKey()), entry);
+		}
 		
 		final Set<String> statedSourceIds = Sets.newHashSet();
 		final Set<String> statedDestinationIds = Sets.newHashSet();
@@ -336,7 +343,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			LOGGER.info("Collecting {}...", processor.description());
 			processor.process(commitChangeSet, searcher);
 			// register additions, deletions from the sub processor
-			mappings.putAll(processor.getMappings());
+			revisionMappings.putAll(processor.getMappings());
 			deletions.putAll(processor.getDeletions());
 		}
 
