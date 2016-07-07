@@ -22,25 +22,25 @@ import java.util.Map;
  */
 public class SlowLogConfig {
 
-	private static final String QUERY_WARN_THRESHOLD = "query.warn";
-	private static final String QUERY_INFO_THRESHOLD = "query.info";
-	private static final String QUERY_DEBUG_THRESHOLD = "query.debug";
-	private static final String QUERY_TRACE_THRESHOLD = "query.trace";
+	public static final String QUERY_WARN_THRESHOLD = "query.warn";
+	public static final String QUERY_INFO_THRESHOLD = "query.info";
+	public static final String QUERY_DEBUG_THRESHOLD = "query.debug";
+	public static final String QUERY_TRACE_THRESHOLD = "query.trace";
 	
-	private static final long QUERY_WARN_THRESHOLD_DEFAULT = 400;
-	private static final long QUERY_INFO_THRESHOLD_DEFAULT = 300;
-	private static final long QUERY_DEBUG_THRESHOLD_DEFAULT = 100;
-	private static final long QUERY_TRACE_THRESHOLD_DEFAULT = 50;
+	public static final long QUERY_WARN_THRESHOLD_DEFAULT = 400;
+	public static final long QUERY_INFO_THRESHOLD_DEFAULT = 300;
+	public static final long QUERY_DEBUG_THRESHOLD_DEFAULT = 100;
+	public static final long QUERY_TRACE_THRESHOLD_DEFAULT = 50;
 	
-	private static final String FETCH_WARN_THRESHOLD = "fetch.warn";
-	private static final String FETCH_INFO_THRESHOLD = "fetch.info";
-	private static final String FETCH_DEBUG_THRESHOLD = "fetch.debug";
-	private static final String FETCH_TRACE_THRESHOLD = "fetch.trace";
+	public static final String FETCH_WARN_THRESHOLD = "fetch.warn";
+	public static final String FETCH_INFO_THRESHOLD = "fetch.info";
+	public static final String FETCH_DEBUG_THRESHOLD = "fetch.debug";
+	public static final String FETCH_TRACE_THRESHOLD = "fetch.trace";
 	
-	private static final long FETCH_WARN_THRESHOLD_DEFAULT = 200;
-	private static final long FETCH_INFO_THRESHOLD_DEFAULT = 100;
-	private static final long FETCH_DEBUG_THRESHOLD_DEFAULT = 50;
-	private static final long FETCH_TRACE_THRESHOLD_DEFAULT = 10;
+	public static final long FETCH_WARN_THRESHOLD_DEFAULT = 200;
+	public static final long FETCH_INFO_THRESHOLD_DEFAULT = 100;
+	public static final long FETCH_DEBUG_THRESHOLD_DEFAULT = 50;
+	public static final long FETCH_TRACE_THRESHOLD_DEFAULT = 10;
 	
 	private final Map<String, Object> settings;
 	

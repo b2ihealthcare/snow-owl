@@ -48,6 +48,9 @@ public class RepositoryConfiguration {
 	@NotNull
 	private DatabaseConfiguration databaseConfiguration = new DatabaseConfiguration();
 	
+	@NotNull
+	private IndexConfiguration indexConfiguration = new IndexConfiguration();
+	
 	@Min(0)
 	private long indexTimeout = 30L;
 
@@ -174,6 +177,16 @@ public class RepositoryConfiguration {
 	@JsonProperty("database")
 	public void setDatabaseConfiguration(DatabaseConfiguration databaseConfiguration) {
 		this.databaseConfiguration = databaseConfiguration;
+	}
+	
+	@JsonProperty("index")
+	public IndexConfiguration getIndexConfiguration() {
+		return indexConfiguration;
+	}
+	
+	@JsonProperty("index")
+	public void setIndexConfiguration(IndexConfiguration indexConfiguration) {
+		this.indexConfiguration = indexConfiguration;
 	}
 
 	/**
