@@ -578,7 +578,7 @@ public class VersioningService implements IVersioningService {
 	}
 
 	public ICodeSystem getActiveCodeSystem() {
-		return getActiveCodeSystem();
+		return activeCodeSystem;
 	}
 	
 	
