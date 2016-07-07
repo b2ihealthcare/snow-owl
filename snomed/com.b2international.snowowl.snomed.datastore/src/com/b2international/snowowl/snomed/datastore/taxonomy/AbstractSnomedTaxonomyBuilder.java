@@ -165,7 +165,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			
 			result = new SnomedTaxonomyBuilderResult(Statuses.ok());
 		} else {
-			LOGGER.warn("Missing concepts from relationships", new IncompleteTaxonomyException(invalidRelationships));
+			LOGGER.warn("Missing concepts from relationships");
 			result = new SnomedTaxonomyBuilderResult(Statuses.error("Missing concepts from relationships."), invalidRelationships);
 		}
 
