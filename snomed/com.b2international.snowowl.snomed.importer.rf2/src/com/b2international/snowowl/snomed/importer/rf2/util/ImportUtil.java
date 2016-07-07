@@ -249,9 +249,13 @@ public final class ImportUtil {
 		return new RepositoryState(conceptIds, statedStatements, inferredStatements);
 	}
 
-	private IsAStatementWithId[] getStatements(RevisionSearcher searcher, String statedRelationship) throws IOException {
+	private IsAStatementWithId[] getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
 		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
-				.where(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(statedRelationship))
+				.where(Expressions.builder()
+						.must(SnomedRelationshipIndexEntry.Expressions.active(true))
+						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+						.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+						.build())
 				.limit(Integer.MAX_VALUE)
 				.build();
 		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
