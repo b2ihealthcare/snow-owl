@@ -328,9 +328,9 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 	 * Returns with all data type reference set members referencing a SNOMED&nbsp;CT concept.
 	 * @return all data type reference set members referencing a concept.
 	 */
-	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getConceptConcreteDataTypes() {
+	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getConceptConcreteDataTypes(final boolean ignoreMissingIcondIds) {
 		final IIndexQueryAdapter<SnomedConcreteDataTypeRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByRefSetTypeQuery(CONCEPT);
+				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByRefSetTypeQuery(CONCEPT, ignoreMissingIcondIds);
 		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
 	}
 
@@ -338,9 +338,9 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 	 * Returns with all data type reference set members referencing a SNOMED&nbsp;CT relationship.
 	 * @return all data type reference set members referencing a relationship.
 	 */
-	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getRelationshipConcreteDataTypes() {
+	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getRelationshipConcreteDataTypes(final boolean ignoreMissingIcondIds) {
 		final IIndexQueryAdapter<SnomedConcreteDataTypeRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByRefSetTypeQuery(RELATIONSHIP);
+				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByRefSetTypeQuery(RELATIONSHIP, ignoreMissingIcondIds);
 		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
 	}
 

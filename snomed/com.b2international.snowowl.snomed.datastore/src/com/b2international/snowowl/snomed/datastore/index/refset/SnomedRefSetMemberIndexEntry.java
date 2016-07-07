@@ -170,11 +170,15 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		return Concepts.ROOT_CONCEPT;
 	}
 	
+	public static SnomedRefSetMemberIndexEntry create(final Document doc, @Nullable final IBranchPath branchPath) {
+		return create(doc, branchPath, false);
+	}
+	
 	/**
 	 * (non-API)
 	 * Creates a new reference set member based on the given index document.
 	 */
-	public static SnomedRefSetMemberIndexEntry create(final Document doc, @Nullable final IBranchPath branchPath) {
+	public static SnomedRefSetMemberIndexEntry create(final Document doc, @Nullable final IBranchPath branchPath, boolean ignoreMissingIconId) {
 		Preconditions.checkNotNull(doc, "Document argument cannot be null.");
 		
 		final SnomedRefSetType type = SnomedRefSetType.get(IndexUtils.getIntValue(doc.getField(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE)));
@@ -195,10 +199,10 @@ public class SnomedRefSetMemberIndexEntry extends SnomedIndexEntry implements IC
 		String iconId = doc.get(SnomedIndexBrowserConstants.COMPONENT_ICON_ID);
 		final String mapTargetDescription = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_DESCRIPTION);
 		
-		if (StringUtils.isEmpty(iconId) && null != branchPath) {
-			Object iconIdAsObjact = CoreTerminologyBroker.getInstance().getComponentIconIdProvider(referencedComponentType).getIconId(branchPath, referencedComponentId);
-			if (null != iconIdAsObjact) {
-				iconId = String.valueOf(iconIdAsObjact);
+		if (!ignoreMissingIconId && StringUtils.isEmpty(iconId) && null != branchPath) {
+			Object iconIdAsObject = CoreTerminologyBroker.getInstance().getComponentIconIdProvider(referencedComponentType).getIconId(branchPath, referencedComponentId);
+			if (null != iconIdAsObject) {
+				iconId = String.valueOf(iconIdAsObject);
 			}
 		}
 		

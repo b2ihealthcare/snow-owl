@@ -318,6 +318,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 	public static class SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberIndexQueryAdapter implements Serializable {
 
 		private static final long serialVersionUID = -8340776001873027403L;
+		private boolean ignoreMissingIconIds = false;
 
 		@SuppressWarnings("unchecked")
 		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByStorageKeyQuery(final long storageKey) {
@@ -374,10 +375,10 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		}
 		
 		@SuppressWarnings("unchecked")
-		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByRefSetTypeQuery(final String componentType) {
+		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByRefSetTypeQuery(final String componentType, final boolean ignoreMissingIconIds) {
 			checkNotNull(componentType, "Referenced component type argument cannot be null.");
 			
-			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter() {
+			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter(ignoreMissingIconIds) {
 				private static final long serialVersionUID = -8318912010028083774L;
 				@Override public Query createQuery() {
 					final BooleanQuery query = new BooleanQuery();
@@ -403,8 +404,13 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				}
 			};
 		}
-		
 
+		public SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter() {}
+		
+		public SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter(boolean ignoreMissingIconIds) {
+			this.ignoreMissingIconIds = ignoreMissingIconIds;
+		}
+		
 		/*
 		 * (non-Javadoc)
 		 * @see com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter#buildSearchResult(org.apache.lucene.document.Document, float)
@@ -412,7 +418,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 		@Override
 		public SnomedConcreteDataTypeRefSetMemberIndexEntry buildSearchResult(final Document doc, final IBranchPath branchPath, final float score) {
 			return com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexQueryAdapter.
-					buildSearchResult(new SnomedConcreteDataTypeRefSetMemberIndexEntry(super.buildSearchResult(doc, branchPath, score)), doc);
+					buildSearchResult(new SnomedConcreteDataTypeRefSetMemberIndexEntry(SnomedRefSetMemberIndexEntry.create(doc, branchPath, ignoreMissingIconIds)), doc);
 		}
 		
 	}
