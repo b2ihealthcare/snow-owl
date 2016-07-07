@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.revision.compare;
+package com.b2international.index.revision;
 
 import static org.junit.Assert.*;
 
@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.junit.Test;
 
 import com.b2international.index.revision.BaseRevisionIndexTest;
+import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionFixtures.Data;
 import com.google.common.collect.ImmutableSet;
 

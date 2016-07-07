@@ -37,15 +37,15 @@ import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.revision.RevisionCompare.Builder;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.compare.RevisionCompare;
-import com.b2international.index.revision.compare.RevisionCompare.Builder;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 /**
  * @since 4.7
  */
-public final class DefaultRevisionIndex implements RevisionIndex {
+public final class DefaultRevisionIndex implements InternalRevisionIndex {
 
 	private final Index index;
 	private final RevisionBranchProvider branchProvider;
@@ -67,10 +67,14 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 	
 	@Override
 	public <T> T read(final String branchPath, final RevisionIndexRead<T> read) {
+		return read(getBranch(branchPath), read);
+	}
+	
+	@Override
+	public <T> T read(final RevisionBranch branch, final RevisionIndexRead<T> read) {
 		return index.read(new IndexRead<T>() {
 			@Override
 			public T execute(Searcher index) throws IOException {
-				final RevisionBranch branch = getBranch(branchPath);
 				return read.execute(new DefaultRevisionSearcher(branch, index));
 			}
 		});
@@ -106,7 +110,7 @@ public final class DefaultRevisionIndex implements RevisionIndex {
 				final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
 				
 				final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
-				final Builder result = RevisionCompare.builder();
+				final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath), compare);
 				
 				final Map<Class<? extends Revision>, LongSet> newAndChangedComponents = newHashMap();
 				final Map<Class<? extends Revision>, LongSet> deletedAndChangedComponents = newHashMap();

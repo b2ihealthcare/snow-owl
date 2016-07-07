@@ -17,7 +17,6 @@ package com.b2international.index.revision;
 
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.revision.compare.RevisionCompare;
 
 /**
  * @since 4.7
