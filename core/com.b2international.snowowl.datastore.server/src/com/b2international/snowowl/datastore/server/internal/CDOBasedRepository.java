@@ -35,6 +35,7 @@ import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchProvider;
@@ -57,6 +58,8 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.config.IndexConfiguration;
+import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
@@ -81,6 +84,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Ordering;
 import com.google.inject.Provider;
 
@@ -256,8 +260,8 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		types.add(CodeSystemEntry.class);
 		types.add(CodeSystemVersionEntry.class);
 		types.addAll(getToolingTypes(toolingId));
-		final Map<String, Object> settings = ImmutableMap.<String, Object>of(IndexClientFactory.DIRECTORY, 
-				env.getDataDirectory() + "/indexes");
+		
+		final Map<String, Object> settings = initIndexSettings();
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);
 		final Index index = new DefaultIndex(indexClient);
 		final Provider<BranchManager> branchManager = provider(BranchManager.class);
@@ -284,6 +288,36 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		// initialize the index
 		index.admin().create();
 		
+	}
+
+	private Map<String, Object> initIndexSettings() {
+		final Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
+		builder.put(IndexClientFactory.DIRECTORY, env.getDataDirectory() + "/indexes");
+		
+		final IndexConfiguration config = service(SnowOwlConfiguration.class)
+				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+		
+		builder.put(IndexClientFactory.COMMIT_INTERVAL_KEY, config.getCommitInterval());
+		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getTranslogSyncInterval());
+		
+		final SlowLogConfig slowLog = createSlowLogConfig(config);
+		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);
+		
+		return builder.build();
+	}
+
+	private SlowLogConfig createSlowLogConfig(final IndexConfiguration config) {
+		final Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
+		builder.put(SlowLogConfig.FETCH_DEBUG_THRESHOLD, config.getFetchDebugThreshold());
+		builder.put(SlowLogConfig.FETCH_INFO_THRESHOLD, config.getFetchInfoThreshold());
+		builder.put(SlowLogConfig.FETCH_TRACE_THRESHOLD, config.getFetchTraceThreshold());
+		builder.put(SlowLogConfig.FETCH_WARN_THRESHOLD, config.getFetchWarnThreshold());
+		builder.put(SlowLogConfig.QUERY_DEBUG_THRESHOLD, config.getQueryDebugThreshold());
+		builder.put(SlowLogConfig.QUERY_INFO_THRESHOLD, config.getQueryInfoThreshold());
+		builder.put(SlowLogConfig.QUERY_TRACE_THRESHOLD, config.getQueryTraceThreshold());
+		builder.put(SlowLogConfig.QUERY_WARN_THRESHOLD, config.getQueryWarnThreshold());
+		
+		return new SlowLogConfig(builder.build());
 	}
 
 	private Collection<Class<?>> getToolingTypes(String toolingId) {
