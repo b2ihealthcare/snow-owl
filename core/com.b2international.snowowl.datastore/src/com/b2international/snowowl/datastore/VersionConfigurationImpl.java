@@ -144,7 +144,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 
 	protected Optional<ICodeSystemVersion> tryFindVersion(final String repositoryUuid, final String codeSystemShortName, final String versionId) {
 		return FluentIterable.<ICodeSystemVersion> from(concat(allVersions.values()))
-				.filter(new CVSRepositoryUuidPredicate(repositoryUuid))
+				.filter(new CSVRepositoryUuidPredicate(repositoryUuid))
 				.filter(new CSVShortNamePredicate(codeSystemShortName))
 				.filter(new CSVVersionIdPredicate(versionId)).first();
 	}
@@ -329,11 +329,11 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	}
 
 	
-	private static class CVSRepositoryUuidPredicate implements Predicate<ICodeSystemVersion> {
+	private static class CSVRepositoryUuidPredicate implements Predicate<ICodeSystemVersion> {
 
 		private final String respositoryUuid;
 		
-		public CVSRepositoryUuidPredicate(String repositoryUuid) {
+		public CSVRepositoryUuidPredicate(String repositoryUuid) {
 			this.respositoryUuid = repositoryUuid;
 		}
 
