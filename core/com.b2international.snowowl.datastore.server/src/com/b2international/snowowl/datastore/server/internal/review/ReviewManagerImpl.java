@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server.internal.review;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -39,8 +37,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
@@ -51,10 +47,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.index.revision.compare.RevisionCompare;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -162,7 +156,7 @@ public class ReviewManagerImpl implements ReviewManager {
 				store.write(new IndexWrite<Void>() {
 					@Override
 					public Void execute(Writer index) throws IOException {
-						final Iterable<ReviewImpl> affectedReviews = index.searcher().search(Query.select(ReviewImpl.class)
+						final Hits<ReviewImpl> affectedReviews = index.searcher().search(Query.select(ReviewImpl.class)
 								.where(Expressions.builder()
 										.should(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis))
 										.should(buildQuery(ReviewStatus.STALE, now - keepOtherMillis))
@@ -172,17 +166,20 @@ public class ReviewManagerImpl implements ReviewManager {
 								.limit(Integer.MAX_VALUE)
 								.build());
 						
-						final Set<String> ids = newHashSet();
-						for (Review r : affectedReviews) {
-							ids.add(r.id());
+						
+						if (affectedReviews.getTotal() > 0) {
+							final Set<String> ids = newHashSet();
+							for (Review r : affectedReviews) {
+								ids.add(r.id());
+							}
+						
+							index.removeAll(ImmutableMap.of(
+									ReviewImpl.class, ids,
+									ConceptChangesImpl.class, ids
+									));
+							
+							index.commit();
 						}
-						
-						index.removeAll(ImmutableMap.of(
-								ReviewImpl.class, ids,
-								ConceptChangesImpl.class, ids
-								));
-						
-						index.commit();
 						return null;
 					}
 				});
@@ -297,60 +294,53 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	void createConceptChanges(final String id, final String branch, final RevisionCompare compare) {
-		// TODO concept changes is mutable
-		// TODO add deleted IDs???
-		final ConceptChangesImpl convertedChanges = revisionIndex.read(branch, new RevisionIndexRead<ConceptChangesImpl>() {
-			@Override
-			public ConceptChangesImpl execute(RevisionSearcher searcher) throws IOException {
-				final Set<String> newConcepts = newHashSet();
-				final Set<String> changedConcepts = newHashSet();
-				final Set<String> deletedConcepts = newHashSet();
-				
-				for (final Entry<Class<? extends Revision>, LongSet> newComponents : compare.getNewComponents().entrySet()) {
-					final Set<Long> storageKeys = LongSets.toSet(newComponents.getValue());
-					final Hits<? extends Revision> hits = searcher.search(Query.select(newComponents.getKey())
-							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
-							.limit(storageKeys.size())
-							.build());
-					checkState(storageKeys.size() == hits.getTotal());
-					for (Revision hit : hits) {
-						if (hit instanceof ContainerIdProvider) {
-							final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
-							if (idProvider.isRoot()) {
-								newConcepts.add(idProvider.getContainerId());
-							}
-						}
-					}
-					// iterate over again and add non root ids
-					for (Revision hit : hits) {
-						if (hit instanceof ContainerIdProvider) {
-							final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
-							final String containerId = idProvider.getContainerId();
-							// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
-							if (!idProvider.isRoot() && !newConcepts.contains(containerId)) {
-								changedConcepts.add(containerId);
-							}
-						}
+		final Set<String> newConcepts = newHashSet();
+		final Set<String> changedConcepts = newHashSet();
+		final Set<String> deletedConcepts = newHashSet();
+		
+		// collect new container IDs
+		for (final Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
+			final Hits<? extends Revision> hits = compare.searchNew(Query.select(revisionType).where(Expressions.matchAll()).build());
+			for (Revision hit : hits) {
+				if (hit instanceof ContainerIdProvider) {
+					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
+					if (idProvider.isRoot()) {
+						newConcepts.add(idProvider.getContainerId());
 					}
 				}
-				
-				for (final Entry<Class<? extends Revision>, LongSet> changedComponents : compare.getChangedComponents().entrySet()) {
-					final Set<Long> storageKeys = LongSets.toSet(changedComponents.getValue());
-					final Hits<? extends Revision> hits = searcher.search(Query.select(changedComponents.getKey())
-							.where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
-							.limit(storageKeys.size())
-							.build());
-					checkState(storageKeys.size() == hits.getTotal());
-					for (Revision hit : hits) {
-						if (hit instanceof ContainerIdProvider) {
-							changedConcepts.add(((ContainerIdProvider) hit).getContainerId());
-						}
-					}
-				}
-				
-				return new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
 			}
-		});
+			// iterate over again and add non root ids
+			for (Revision hit : hits) {
+				if (hit instanceof ContainerIdProvider) {
+					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
+					final String containerId = idProvider.getContainerId();
+					// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
+					if (!idProvider.isRoot() && !newConcepts.contains(containerId)) {
+						changedConcepts.add(containerId);
+					}
+				}
+			}
+		}
+		
+		for (final Class<? extends Revision> revisionType : compare.getChangedRevisionTypes()) {
+			final Hits<? extends Revision> hits = compare.searchChanged(Query.select(revisionType).where(Expressions.matchAll()).build());
+			for (Revision hit : hits) {
+				if (hit instanceof ContainerIdProvider) {
+					changedConcepts.add(((ContainerIdProvider) hit).getContainerId());
+				}
+			}
+		}
+		
+		for (final Class<? extends Revision> revisionType : compare.getDeletedRevisionTypes()) {
+			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
+			for (Revision hit : hits) {
+				if (hit instanceof ContainerIdProvider) {
+					deletedConcepts.add(((ContainerIdProvider) hit).getContainerId());
+				}
+			}
+		}
+		
+		final ConceptChangesImpl convertedChanges = new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
 		
 		
 		try {

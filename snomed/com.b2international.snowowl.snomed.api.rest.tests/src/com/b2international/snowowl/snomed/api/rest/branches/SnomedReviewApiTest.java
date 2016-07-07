@@ -200,7 +200,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			.body("newConcepts", hasItem(c2))
 			.body("changedConcepts", hasItem(DISEASE))
 			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
-			.body("deletedConcepts", equalTo(ImmutableList.of(c1)));
+			.body("deletedConcepts", hasItem(c1));
 	}
 	
 	@Test
@@ -239,7 +239,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			.body("newConcepts", hasItem(c2))
 			.body("changedConcepts", hasItem(DISEASE))
 			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
-			.body("deletedConcepts", equalTo(ImmutableList.of(c1)));
+			.body("deletedConcepts", hasItem(c1));
 	}
 	
 	@Test
