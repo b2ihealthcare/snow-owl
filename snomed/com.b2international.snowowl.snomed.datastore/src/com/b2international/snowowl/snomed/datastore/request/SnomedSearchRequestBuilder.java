@@ -19,6 +19,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -49,7 +50,11 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	}
 	
 	public final B filterByEffectiveTime(String effectiveTime) {
-		return filterByEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT).getTime());
+		if (CompareUtils.isEmpty(effectiveTime)) {
+			return getSelf(); 
+		} else {
+			return filterByEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT).getTime());
+		}
 	}
 	
 	public final B filterByEffectiveTime(long effectiveTime) {
