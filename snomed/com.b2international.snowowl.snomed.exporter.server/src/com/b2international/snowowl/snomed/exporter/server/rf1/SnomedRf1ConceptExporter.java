@@ -38,10 +38,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
 /**
- * RF1 exporter for SNOMED&nbsp;CT concepts.
+ * RF2 exporter for SNOMED&nbsp;CT concepts.
+ *
  */
-public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedConceptDocument> {
-	
+public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<SnomedConceptDocument> {
+
 	/**
 	 * Line in the Concept RF1 file
 	 */
@@ -72,52 +73,43 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		}
 	}
 	
-	/**
-	 * Constructor
-	 * @param configuration export configuration
-	 * @param mapper RF2->RF1 mapper
-	 */
-	public SnomedRf1ConceptExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, 
-			final RevisionSearcher revisionSearcher) {
-		super(SnomedConceptDocument.class, configuration, mapper, revisionSearcher);
+	public SnomedRf1ConceptExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+		super(configuration, SnomedConceptDocument.class, revisionSearcher, unpublished);
 	}
+
 	
-	/**
-	 * @param snomedConceptDocument
-	 * @return
-	 * @throws IOException 
-	 */
 	@Override
-	protected String convertToRF1(SnomedConceptDocument revisionDocument) throws IOException {
-		
+	public String convertToString(SnomedConceptDocument doc) {
 		Rf1Concept concept = new Rf1Concept();
 		
-		concept.id = revisionDocument.getId();
-		concept.status = revisionDocument.isActive() ? "1" : "0";
-		concept.definitionStatus = revisionDocument.isPrimitive() ? "1" : "0";
+		concept.id = doc.getId();
+		concept.status = doc.isActive() ? "1" : "0";
+		concept.definitionStatus = doc.isPrimitive() ? "1" : "0";
 		
 		final LanguageSetting languageSetting = ApplicationContext.getInstance().getService(LanguageSetting.class);
 		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
 		
+		try {
 		//fsn
 		ISnomedConcept snomedConcept = SnomedRequests.prepareGetConcept()
-			.setComponentId(revisionDocument.getId())
+			.setComponentId(doc.getId())
 			.setLocales(languageSetting.getLanguagePreference())
 			.setExpand("fsn()").build(getExportContext().getCurrentBranchPath().getPath()).executeSync(eventBus);
 		
 		concept.fsn = snomedConcept.getFsn().getTerm();
 		
 		//inactivation status
-		if (!revisionDocument.isActive()) {
+		if (!doc.isActive()) {
 			
 			Expression condition = Expressions.builder()
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(revisionDocument.getId())))
+					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
 					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
 					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
 			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 						
-			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
+			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys;
+				snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
 			
 			//there should be only one max
 			for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
@@ -126,12 +118,12 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		}
 		
 		Expression condition = Expressions.builder()
-				.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(revisionDocument.getId())))
+				.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
 				.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
 				.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 		
 		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
-		Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
+		Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
 		
 		//there should be only one max
 		for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
@@ -139,18 +131,21 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		}
 		
 		condition = Expressions.builder()
-				.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(revisionDocument.getId())))
+				.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
 				.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
 				.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 		
 		query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
-		snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
+		snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
 		
 		//there should be only one max
 		for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
 			concept.snomedRt = snomedRefSetMemberIndexEntry.getTargetComponent();
 		}
 		return concept.toString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override
@@ -162,7 +157,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 	public String[] getColumnHeaders() {
 		return SnomedReleaseFileHeaders.RF1_CONCEPT_HEADER;
 	}
-
+	
 	/*returns with a number indicating the status of a concept for RF1 publication.*/
 	private String getConceptStatus(final String stringValue) {
 		//magic mapping between RF1 and RF2 statuses
@@ -171,8 +166,9 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1Exporter<SnomedCo
 		} else if ("0".equals(stringValue)) {
 			return "1";
 		} else {
-			return Preconditions.checkNotNull(mapper.getConceptStatusProperty(stringValue));
+			Id2Rf1PropertyMapper id2Rf1PropertyMapper = getExportContext().getId2Rf1PropertyMapper();
+			return Preconditions.checkNotNull(id2Rf1PropertyMapper.getConceptStatusProperty(stringValue));
 		}
 	}
-	
+
 }

@@ -31,21 +31,22 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
 /**
- * RF1 exporter for SNOMED&nbsp;CT descriptions.
+ * RF2 export implementation for SNOMED&nbsp;CT description.
+ *
  */
-public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<SnomedDescriptionIndexEntry>  {
-	
+public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1CoreExporter<SnomedDescriptionIndexEntry> {
+
 	/**
 	 * Line in the Description RF1 file
 	 */
@@ -82,51 +83,51 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRf1DescriptionExporter.class);
 	
-	private SnomedExportContext configuration;
 	private Id2Rf1PropertyMapper mapper;
-	private String preferredLanguageId;
 	private final Set<String> undefinedDescriptionTypeIds = Sets.newHashSet();
+	private String preferredLanguageId;
 	private boolean includeExtendedDescriptionTypes;
 	
-	
-	public SnomedRf1DescriptionExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, 
-			final boolean includeExtendedDescriptionTypes, final RevisionSearcher revisionSearcher) {
-		super(SnomedDescriptionIndexEntry.class, configuration, mapper, revisionSearcher);
+	public SnomedRf1DescriptionExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, 
+			final boolean unpublished, final boolean includeExtendedDescriptionTypes) {
+		super(configuration, SnomedDescriptionIndexEntry.class, revisionSearcher, unpublished);
+		mapper = configuration.getId2Rf1PropertyMapper();
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
 		this.preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
+		
 	}
 	
-	/**
-	 * @param descriptionIndexEntry
-	 * @return
-	 * @throws IOException 
-	 */
-	protected String convertToRF1(SnomedDescriptionIndexEntry document) throws IOException {
-		
+	@Override
+	public String convertToString(SnomedDescriptionIndexEntry doc) {
 		Rf1Description description = new Rf1Description();
 		
-		description.id = document.getId();
-		description.status = document.isActive() ? "1" : "0";
-		description.conceptId = document.getConceptId();
-		description.term = document.getTerm();
-		description.capitalStatus = document.getCaseSignificanceId();
+		description.id = doc.getId();
+		description.status = doc.isActive() ? "1" : "0";
+		description.conceptId = doc.getConceptId();
+		description.term = doc.getTerm();
+		description.capitalStatus = doc.getCaseSignificanceId();
 		if (includeExtendedDescriptionTypes) {
-			description.typeId = getExtendedDescriptionType(document.getTypeId());
+			description.typeId = getExtendedDescriptionType(doc.getTypeId());
 		} else {
-			description.typeId = getDescriptionType(document.getTypeId());
+			description.typeId = getDescriptionType(doc.getTypeId());
 		}
 		
 		//inactivation status
-		if (!document.isActive()) {
+		if (!doc.isActive()) {
 			
 			Expression condition = Expressions.builder()
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(document.getId())))
+					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
 					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
 					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
 			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 						
-			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = revisionSearcher.search(query);
+			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys;
+			try {
+				snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			
 			//there should be only one max
 			for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
@@ -135,21 +136,16 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 		}
 		
 		//handle preferred terms separately, overriding the initial value
-		Map<String, Acceptability> acceptabilityMap = document.getAcceptabilityMap();
+		Map<String, Acceptability> acceptabilityMap = doc.getAcceptabilityMap();
 		Acceptability acceptability = acceptabilityMap.get(preferredLanguageId);
 		if (Acceptability.PREFERRED == acceptability) {
-			if (!document.getTypeId().equals(Concepts.FULLY_SPECIFIED_NAME) && (!document.getTypeId().equals(Concepts.TEXT_DEFINITION))) {
+			if (!doc.getTypeId().equals(Concepts.FULLY_SPECIFIED_NAME) && (!doc.getTypeId().equals(Concepts.TEXT_DEFINITION))) {
 				
 				//preferred term constant
 				description.typeId = "1";
 			} 
 		}
 		return description.toString();
-	}
-	
-	@Override
-	public String getFileName() {
-		return SnomedRfFileNameBuilder.buildCoreRf1FileName(getType(), configuration);
 	}
 
 	@Override
@@ -159,9 +155,9 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedReleaseFileHeaders.RF1_DESCRIPTION_HEADER;
+		return SnomedRf2Headers.DESCRIPTION_HEADER;
 	}
-
+	
 	/*returns with a number indicating the status of a description for RF1 publication.*/
 	private String getDescriptionStatus(final String stringValue) {
 		if ("1".equals(stringValue)) { //magic mapping between rf1 and rf2 status
@@ -219,4 +215,5 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1Exporter<Snom
 		}
 		return "2"; //everything else is like synonym
 	}
+	
 }

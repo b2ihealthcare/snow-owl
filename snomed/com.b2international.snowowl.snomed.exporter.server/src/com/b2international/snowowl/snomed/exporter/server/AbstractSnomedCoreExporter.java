@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -34,16 +34,14 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 
 /**
  * Base exporter for SNOMED CT concepts, descriptions and relationships.
  * Export is executed based on the requested branchpath where only artefacts visible
  * from the branchpath are exported.
  */
-public abstract class SnomedCoreExporter<T extends SnomedDocument> implements SnomedRf2Exporter {
+public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> implements SnomedExporter {
 
 	//never been queried
 	private int totalSize = -1;
@@ -59,13 +57,11 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 
 	private RevisionSearcher revisionSearcher;
 
-	private boolean unpublished;
-	
-	protected SnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+	protected AbstractSnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, 
+			final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.clazz = checkNotNull(clazz, "clazz");
 		this.revisionSearcher = checkNotNull(revisionSearcher, "revisionSearcher");
-		this.unpublished = checkNotNull(unpublished, "unpublished");
 	}
 	
 	@Override
@@ -108,7 +104,7 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 		}
 		
 		T revisionIndexEntry = conceptHits.getHits().get(currentIndex++);
-		return transform(revisionIndexEntry);
+		return convertToString(revisionIndexEntry);
 	}
 	
 	/**
@@ -147,57 +143,69 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 		}
 		
 		//add unpublished constraint
-		if (isUnpublished()) {
+		if (exportContext.includeUnpublished()) {
 			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 		}		
 		
+		//add whatever else subclasses would add
+		appendExpressionConstraint(builder);
+		
 		//if both null, it means unpublished which is handled outside of this class (default builder is matchAll)
 		return builder.build();
+	}
+
+	/**
+	 * Append the last constraint to the builder passed in.
+	 * 
+	 * @param builder
+	 */
+	protected void appendExpressionConstraint(ExpressionBuilder builder) {
+		//do nothing
 	}
 
 	protected final String formatEffectiveTime(final Long effectiveTime) {
 		return EffectiveTimes.format(effectiveTime, DateFormats.SHORT, exportContext.getUnsetEffectiveTimeLabel());
 	}
 	
-	@Override
+	/**
+	 * Returns the scroll size for the query.
+	 * @return paging size
+	 */
 	public int getPageSize() {
 		return PAGE_SIZE;
 	}
 	
-	@Override
+	/**
+	 * Returns the current offset of the paged query.
+	 * @return current offset
+	 */
 	public int getCurrentOffset() {
 		return currentOffset;
 	}
 	
 	/**
 	 * Transforms the SNOMED CT document index representation argument into a serialized line of 
-	 * attributes.
+	 * attributes as specified in the RF1 or RF2 format.
 	 * @param the SNOMED CT document to transform.
 	 * @return a string as a serialized line in the export file.
 	 */
-	public abstract String transform(final T snomedDocument);
+	public abstract String convertToString(final T snomedDocument);
 	
 	@Override
 	public SnomedExportContext getExportContext() {
 		return exportContext;
 	}
 	
-	@Override
-	public String getRelativeDirectory() {
-		return RF2_CORE_RELATIVE_DIRECTORY;
+	/**
+	 * Returns the revision searcher used by this exporter.
+	 * @return
+	 */
+	public RevisionSearcher getRevisionSearcher() {
+		return revisionSearcher;
 	}
 	
-	@Override
-	public String getFileName() {
-		return SnomedRfFileNameBuilder.buildCoreRf2FileName(getType(), exportContext);
-	}
-	
-	public boolean isUnpublished() {
-		return unpublished;
-	}
-
 	@Override
 	public void close() throws Exception {
 	}
-	
+
 }

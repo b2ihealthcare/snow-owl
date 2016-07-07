@@ -56,20 +56,19 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
+import com.b2international.snowowl.snomed.exporter.server.ExportFormat;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContextImpl;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportExecutor;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRefSetExporterFactory;
-import com.b2international.snowowl.snomed.exporter.server.exporter.NoopExporter;
-import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedConceptExporter;
-import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedDescriptionExporter;
-import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedExporter;
-import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedInferredRelationshipExporter;
-import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedStatedRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapper;
-import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1ConceptExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1DescriptionExporter;
-import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1RelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.NoopExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedInferredRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2ConceptExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2DescriptionExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedStatedRelationshipExporter;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -195,13 +194,15 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		clientNamespace = in.readUTF();
 		
 		exportContext = new SnomedExportContextImpl(
+				ExportFormat.RF2,
 				branchPath, 
 				releaseType, 
 				unsetEffectiveTimeLabel,
 				deltaExportStartEffectiveTime, 
 				deltaExportEndEffectiveTime,
 				includeUnpublished,
-				modulesToExport);
+				modulesToExport,
+				new Id2Rf1PropertyMapper());
 		
 		LogUtils.logExportActivity(LOGGER, userId, branchPath, 
 				MessageFormat.format("SNOMED CT export{0}requested.", coreComponentExport ? " with core components " : " "));
@@ -459,7 +460,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		
 		logActivity("Publishing SNOMED CT concepts into RF2 format.");
 		
-		SnomedExporter conceptExporter = new SnomedConceptExporter(context, revisionSearcher, false);
+		SnomedExporter conceptExporter = new SnomedRf2ConceptExporter(context, revisionSearcher, false);
 		new SnomedExportExecutor(conceptExporter, workingDirectory, clientNamespace).execute(false);
 		
 		if (monitor.isCanceled()) {
@@ -469,7 +470,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT description into RF2 format.");
-		SnomedExporter descriptionExporter = new SnomedDescriptionExporter(context, revisionSearcher, false);
+		SnomedExporter descriptionExporter = new SnomedRf2DescriptionExporter(context, revisionSearcher, false);
 		new SnomedExportExecutor(descriptionExporter, workingDirectory, clientNamespace).execute(false);
 		
 		if (monitor.isCanceled()) {
@@ -494,10 +495,10 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		
 		if (includeRf1) {
 			
-			final Id2Rf1PropertyMapper mapper = new Id2Rf1PropertyMapper();
+			exportContext.setExportFormat(ExportFormat.RF1);
 			
 			logActivity("Publishing SNOMED CT concepts into RF1 format.");
-			conceptExporter = new SnomedRf1ConceptExporter(context, mapper, revisionSearcher);
+			conceptExporter = new SnomedRf2ConceptExporter(context, revisionSearcher, false);
 			new SnomedExportExecutor(conceptExporter, workingDirectory, clientNamespace).execute(false);
 			
 			if (monitor.isCanceled()) {
@@ -507,7 +508,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Publishing SNOMED CT descriptions into RF1 format.");
-			descriptionExporter = new SnomedRf1DescriptionExporter(context, mapper, includeExtendedDescriptionTypes, revisionSearcher);
+			descriptionExporter = new SnomedRf1DescriptionExporter(context, revisionSearcher, false, includeExtendedDescriptionTypes);
 			final SnomedExportExecutor exportExecutor = new SnomedExportExecutor(descriptionExporter, workingDirectory, clientNamespace);
 			exportExecutor.execute(true);
 			
@@ -522,7 +523,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Publishing SNOMED CT relationships into RF1 format.");
-			relationshipExporter = new SnomedRf1RelationshipExporter(context, mapper, revisionSearcher);
+			relationshipExporter = new SnomedInferredRelationshipExporter(context, revisionSearcher, false);
 			new SnomedExportExecutor(relationshipExporter, workingDirectory, clientNamespace).execute(false);
 			
 			if (monitor.isCanceled()) {
@@ -537,7 +538,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			final RevisionSearcher revisionSearcher, final boolean append, final OMMonitor monitor) throws IOException {
 		
 		logActivity("Publishing SNOMED CT unpublished concepts into RF2 format.");
-		SnomedExporter unpublishedConceptExporter = new SnomedConceptExporter(context, revisionSearcher, true);
+		SnomedExporter unpublishedConceptExporter = new SnomedRf2ConceptExporter(context, revisionSearcher, true);
 		new SnomedExportExecutor(unpublishedConceptExporter, workingDirectory, clientNamespace).execute(append);
 		
 		if (monitor.isCanceled()) {
@@ -547,7 +548,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT unpublished descriptions into RF2 format.");
-		SnomedExporter unpublishedDescriptionExporter = new SnomedDescriptionExporter(context, revisionSearcher, true);
+		SnomedExporter unpublishedDescriptionExporter = new SnomedRf2DescriptionExporter(context, revisionSearcher, true);
 		new SnomedExportExecutor(unpublishedDescriptionExporter, workingDirectory, clientNamespace).execute(append);
 		
 		if (monitor.isCanceled()) {

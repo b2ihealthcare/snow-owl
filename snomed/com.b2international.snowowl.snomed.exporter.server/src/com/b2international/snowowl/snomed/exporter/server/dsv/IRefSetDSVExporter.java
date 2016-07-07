@@ -13,18 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.rf1;
+package com.b2international.snowowl.snomed.exporter.server.dsv;
 
-import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
-import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedExporter;
+import java.io.File;
+
+import org.eclipse.net4j.util.om.monitor.OMMonitor;
+
+import com.b2international.snowowl.core.api.SnowowlServiceException;
 
 /**
- * Representation of all SNOMED&nbsp;CT RF1 format exporters.
- * <p>
- * <b>NOTE:&nbsp;</b>implementing clients should not implement {@link SnomedRf2Exporter} as well.
- * </p>
- * @see ISnomedExporter
+ * Common interface for reference set DSV exporters.
  */
-public interface SnomedRf1Exporter extends SnomedExporter {
-
+public interface IRefSetDSVExporter {
+	
+	/**
+	 * Executes the DSV export process.
+	 * @param monitor
+	 * @return
+	 * @throws SnowowlServiceException
+	 */
+	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException;
 }

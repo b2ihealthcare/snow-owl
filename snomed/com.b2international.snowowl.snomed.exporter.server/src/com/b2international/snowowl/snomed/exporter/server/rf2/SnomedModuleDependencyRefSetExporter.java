@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
-
-import static com.google.common.base.Strings.nullToEmpty;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -24,35 +22,28 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED CT concrete domain reference set exporter.
+ * SNOMED CT module dependency reference set exporter.
  */
-public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
+public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
 
-	public SnomedConcreteDomainRefSetExporter(final SnomedExportContext configuration, 
-			final String refSetId, final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+	public SnomedModuleDependencyRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
+			final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		super(configuration, refSetId, type, revisionSearcher, unpublished);
 	}
 	
 	@Override
-	public String transform(SnomedRefSetMemberIndexEntry doc) {
-		
+	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(super.transform(doc));
+		sb.append(super.convertToString(doc));
 		sb.append(HT);
-		sb.append(doc.getUnitId());
+		sb.append(formatEffectiveTime(doc.getSourceEffectiveTime())); 
 		sb.append(HT);
-		sb.append(doc.getOperatorId());
-		sb.append(HT);
-		sb.append(nullToEmpty(doc.getAttributeName()));
-		sb.append(HT);
-		sb.append(doc.getValue()); //the direct value
-		sb.append(HT);
-		sb.append(nullToEmpty(doc.getCharacteristicTypeId()));
+		sb.append(formatEffectiveTime(doc.getTargetEffectiveTime()));
 		return sb.toString();
 	}
 	
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER_WITH_LABEL;
+		return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
 	}
 }

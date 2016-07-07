@@ -17,19 +17,18 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 
-import java.io.IOException;
-
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
 /**
- * RF1 exporter for SNOMED&nbsp;CT relationships.
+ * Exporter for SNOMED CT relationships.
  */
-public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1Exporter<SnomedRelationshipIndexEntry> {
-	
+public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1CoreExporter<SnomedRelationshipIndexEntry> {
+
 	/**
 	 * Line in the Relationship RF1 file
 	 */
@@ -63,43 +62,34 @@ public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1Exporter<Sno
 		}
 	}
 	
-	/**
-	 * Constructor
-	 * @param configuration export configuration
-	 * @param mapper RF2->RF1 mapper
-	 */
-	public SnomedRf1RelationshipExporter(final SnomedExportContext configuration, final Id2Rf1PropertyMapper mapper, final RevisionSearcher revisionSearcher) {
-		super(SnomedRelationshipIndexEntry.class, configuration, mapper, revisionSearcher);
+	Id2Rf1PropertyMapper mapper;
+	
+	protected SnomedRf1RelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+		super(configuration, SnomedRelationshipIndexEntry.class, revisionSearcher, unpublished);
+		mapper = configuration.getId2Rf1PropertyMapper();
 	}
 	
-	/**
-	 * @param snomedConceptDocument
-	 * @return
-	 * @throws IOException 
-	 */
 	@Override
-	protected String convertToRF1(SnomedRelationshipIndexEntry revisionDocument) throws IOException {
-		
+	public String convertToString(SnomedRelationshipIndexEntry doc) {
 		Rf1Relationship relationship = new Rf1Relationship();
 		
-		relationship.id = revisionDocument.getId();
-		relationship.sourceId = revisionDocument.getSourceId();
-		relationship.typeId = revisionDocument.getTypeId();
-		relationship.destinationId = revisionDocument.getDestinationId();
-		relationship.characteristicTypeId = revisionDocument.getCharacteristicTypeId();
-		relationship.group = String.valueOf(revisionDocument.getGroup());
+		relationship.id = doc.getId();
+		relationship.sourceId = doc.getSourceId();
+		relationship.typeId = doc.getTypeId();
+		relationship.destinationId = doc.getDestinationId();
+		relationship.characteristicTypeId = doc.getCharacteristicTypeId();
+		relationship.group = String.valueOf(doc.getGroup());
 		
 		return relationship.toString();
-	}
-	
-	@Override
-	public ComponentExportType getType() {
-		return ComponentExportType.RELATIONSHIP;
 	}
 
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedReleaseFileHeaders.RF1_RELATIONSHIP_HEADER;
+		return SnomedRf2Headers.RELATIONSHIP_HEADER;
 	}
 
+	@Override
+	public ComponentExportType getType() {
+		return ComponentExportType.RELATIONSHIP;
+	}
 }

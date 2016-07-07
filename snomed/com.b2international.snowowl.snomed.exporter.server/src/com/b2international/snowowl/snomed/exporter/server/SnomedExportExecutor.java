@@ -27,7 +27,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.snomed.exporter.server.exporter.SnomedExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 import com.google.common.base.Joiner;
 
 

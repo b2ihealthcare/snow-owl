@@ -13,38 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
 /**
- * RF2 exporter for SNOMED CT stated relationships only.
+ * RF2 exporter for all SNOMED CT relationships except stated ones.
  */
-public class SnomedStatedRelationshipExporter extends AbstractSnomedRelationshipExporter {
+public class SnomedInferredRelationshipExporter extends SnomedRf2RelationshipExporter {
 
-	public SnomedStatedRelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+	public SnomedInferredRelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		super(configuration, revisionSearcher, unpublished);
 	}
 	
 	@Override
 	public ComponentExportType getType() {
-		return ComponentExportType.STATED_RELATIONSHIP;
+		return ComponentExportType.RELATIONSHIP;
 	}
 	
 	@Override
-	protected Expression getQueryExpression() {
-		
-		return Expressions.builder()
-			.must(super.getQueryExpression())
-			.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP))
-			.build();
+	protected void appendExpressionConstraint(ExpressionBuilder builder) {
+		builder.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
 	}
+
 }

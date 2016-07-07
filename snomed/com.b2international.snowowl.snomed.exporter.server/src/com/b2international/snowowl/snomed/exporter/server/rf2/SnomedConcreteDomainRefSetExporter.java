@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
@@ -24,44 +24,35 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED CT complex and extended map type reference set exporter.
+ * SNOMED CT concrete domain reference set exporter.
  */
-public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
+public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 
-	private final boolean extended;
-	
-	public SnomedComplexMapRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedRefSetType type, final boolean extended, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		
+	public SnomedConcreteDomainRefSetExporter(final SnomedExportContext configuration, 
+			final String refSetId, final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		super(configuration, refSetId, type, revisionSearcher, unpublished);
-		this.extended = extended;
 	}
 	
 	@Override
-	public String transform(SnomedRefSetMemberIndexEntry doc) {
+	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
+		
 		final StringBuilder sb = new StringBuilder();
-		sb.append(super.transform(doc));
+		sb.append(super.convertToString(doc));
 		sb.append(HT);
-		sb.append(doc.getMapGroup());
+		sb.append(doc.getUnitId());
 		sb.append(HT);
-		sb.append(doc.getMapPriority());
+		sb.append(doc.getOperatorId());
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getMapRule()));
+		sb.append(nullToEmpty(doc.getAttributeName()));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getMapAdvice()));
+		sb.append(doc.getValue()); //the direct value
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getMapTarget()));
-		sb.append(HT);
-		sb.append(doc.getCorrelationId());
-		if (extended) {
-			sb.append(HT);
-			sb.append(nullToEmpty(doc.getMapCategoryId()));
-		}
+		sb.append(nullToEmpty(doc.getCharacteristicTypeId()));
 		return sb.toString();
 	}
 	
 	@Override
 	public String[] getColumnHeaders() {
-		return extended ? SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER : SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
+		return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER_WITH_LABEL;
 	}
 }

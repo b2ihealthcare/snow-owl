@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
@@ -45,9 +45,9 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 	}
 
 	@Override
-	public String transform(SnomedRefSetMemberIndexEntry doc) {
+	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(super.transform(doc));
+		sb.append(super.convertToString(doc));
 		sb.append(HT);
 		sb.append(doc.getMapTarget());
 		if (includeMapTargetDescription) {

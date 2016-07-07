@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
 /**
- * RF2 exporter for SNOMED CT relationships.
+ * Exporter for SNOMED CT relationships.
  */
-public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExporter<SnomedRelationshipIndexEntry> {
+public class SnomedRf2RelationshipExporter extends AbstractSnomedRf2CoreExporter<SnomedRelationshipIndexEntry> {
 
-	protected AbstractSnomedRelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+	protected SnomedRf2RelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		super(configuration, SnomedRelationshipIndexEntry.class, revisionSearcher, unpublished);
 	}
-
+	
 	@Override
-	public String transform(final SnomedRelationshipIndexEntry doc) {
+	public String convertToString(final SnomedRelationshipIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(doc.getId());
 		sb.append(HT);
@@ -57,5 +58,10 @@ public abstract class AbstractSnomedRelationshipExporter extends SnomedCoreExpor
 	@Override
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.RELATIONSHIP_HEADER;
+	}
+
+	@Override
+	public ComponentExportType getType() {
+		return ComponentExportType.RELATIONSHIP;
 	}
 }

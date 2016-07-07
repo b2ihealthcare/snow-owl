@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -53,7 +53,7 @@ public enum NoopExporter implements SnomedExporter {
 	public String getRelativeDirectory() {
 		throw new UnsupportedOperationException("Implementation error.");
 	}
-
+	
 	@Override
 	public String getFileName() {
 		throw new UnsupportedOperationException("Implementation error.");
@@ -78,5 +78,5 @@ public enum NoopExporter implements SnomedExporter {
 	public Iterator<String> iterator() {
 		return this;
 	}
-	
+
 }

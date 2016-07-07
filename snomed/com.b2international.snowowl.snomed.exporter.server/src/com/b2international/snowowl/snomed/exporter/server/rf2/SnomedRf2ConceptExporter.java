@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_DEFINED;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -29,14 +28,14 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  * RF2 exporter for SNOMED&nbsp;CT concepts.
  *
  */
-public class SnomedConceptExporter extends SnomedCoreExporter<SnomedConceptDocument> {
+public class SnomedRf2ConceptExporter extends AbstractSnomedRf2CoreExporter<SnomedConceptDocument> {
 
-	public SnomedConceptExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		super(checkNotNull(configuration, "configuration"), SnomedConceptDocument.class, revisionSearcher, unpublished);
+	public SnomedRf2ConceptExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+		super(configuration, SnomedConceptDocument.class, revisionSearcher, unpublished);
 	}
 
 	@Override
-	public String transform(final SnomedConceptDocument doc) {
+	public String convertToString(final SnomedConceptDocument doc) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(doc.getId());
 		sb.append(HT);

@@ -28,13 +28,14 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 
 /**
  * Abstract map set RF1 exporter for SNOMED&nbsp;CT simple map type and complex map type reference sets.
  * @see SnomedRf1Exporter
  * @see AbstractSnomedRefSetExporter
  */
-public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporter {
+public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 	
 	private final SnomedMapSetSetting mapSetSetting;
 	private final String label;

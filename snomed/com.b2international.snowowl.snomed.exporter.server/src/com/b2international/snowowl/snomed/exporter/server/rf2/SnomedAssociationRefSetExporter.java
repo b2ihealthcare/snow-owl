@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -22,26 +22,26 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED CT attribute value reference set exporter.
+ * SNOMED CT association reference set exporter.
  */
-public class SnomedAttributeValueRefSetExporter extends SnomedRefSetExporter {
+public class SnomedAssociationRefSetExporter extends SnomedRefSetExporter {
 
-	public SnomedAttributeValueRefSetExporter(final SnomedExportContext configuration, 
-			final String refSetId, final SnomedRefSetType type,  final RevisionSearcher revisionSearcher, final boolean unpublished) {
+	public SnomedAssociationRefSetExporter(final SnomedExportContext configuration, 
+			final String refSetId, final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		super(configuration, refSetId, type, revisionSearcher, unpublished);
 	}
 	
 	@Override
-	public String transform(SnomedRefSetMemberIndexEntry doc) {
+	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(super.transform(doc));
+		sb.append(super.convertToString(doc));
 		sb.append(HT);
-		sb.append(doc.getValueId());
+		sb.append(doc.getTargetComponent());
 		return sb.toString();
 	}
 	
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedRf2Headers.ATTRIBUTE_VALUE_TYPE_HEADER;
+		return SnomedRf2Headers.ASSOCIATION_TYPE_HEADER;
 	}
 }

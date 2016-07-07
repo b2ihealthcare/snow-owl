@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapper;
 
 /**
  * Wraps the export context for the SNOMED&nbsp;CT 
@@ -30,6 +31,18 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
  */
 public interface SnomedExportContext {
 
+	/**
+	 * Returns the export format requested
+	 * @return export format
+	 */
+	ExportFormat getExportFormat();
+	
+	/**
+	 * Sets the export format
+	 * @param exportFormat
+	 */
+	void setExportFormat(ExportFormat exportFormat);
+	
 	/**
 	 * Returns with the current branch path of the client who 
 	 * triggered the export. 
@@ -79,5 +92,11 @@ public interface SnomedExportContext {
 	 * @return set of module ids representing the modules to be exported
 	 */
 	Set<String> getModulesToExport();
+	
+	/**
+	 * Returns the property mapper used to map ids to RF1 properties.
+	 * @return
+	 */
+	Id2Rf1PropertyMapper getId2Rf1PropertyMapper();
 
 }

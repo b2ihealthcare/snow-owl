@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
@@ -35,7 +34,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -45,7 +43,7 @@ import com.google.common.collect.Sets;
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
  *
  */
-public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberIndexEntry> implements SnomedRf2Exporter {
+public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRefSetMemberIndexEntry> implements SnomedExporter {
 
 	private final String refSetId;
 
@@ -57,9 +55,14 @@ public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberI
 		this.refSetId = checkNotNull(refSetId, "refSetId");
 		this.type = checkNotNull(type, "type");
 	}
+	
+	@Override
+	protected void appendExpressionConstraint(ExpressionBuilder builder) {
+		builder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())));
+	}
 
 	@Override
-	public String transform(final SnomedRefSetMemberIndexEntry doc) {
+	public String convertToString(final SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(doc.getId());
 		sb.append(HT);
@@ -125,22 +128,9 @@ public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberI
 		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), refSetName, refSet);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.exporter.server.exporter.SnomedCoreExporter#getQueryExpression()
-	 */
-	@Override
-	protected Expression getQueryExpression() {
-		
-		Expression unpublishedExpression = Expressions.builder()
-			.must(super.getQueryExpression())
-			.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())))
-			.build();
-		return unpublishedExpression;
-	}
-	
 	/**Returns with the reference set identifier concept ID.*/
 	protected String getRefSetId() {
 		return refSetId;
 	}
+
 }

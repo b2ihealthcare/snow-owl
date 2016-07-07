@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapper;
 
 /**
  * Export context for the SNOMED CT export process.
@@ -44,15 +44,21 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	
 	//the modules to export
 	private Set<String> moduleIds;
-
-	public SnomedExportContextImpl(final IBranchPath currentBranchPath,
+	
+	private Id2Rf1PropertyMapper id2Rf1PropertyMapper;
+	private ExportFormat exportFormat;
+	
+	public SnomedExportContextImpl(final ExportFormat exportFormat, 
+			final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
 			@Nullable final Date deltaExportStartEffectiveTime, 
 			@Nullable final Date deltaExportEndEffectiveTime,
 			final boolean includeUnpublished,
-			final Set<String> moduleIds) {
+			final Set<String> moduleIds,
+			final Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
 
+		this.exportFormat = checkNotNull(exportFormat, "exportFormat");
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
@@ -60,6 +66,17 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
 		this.includeUnpublished = includeUnpublished;
 		this.moduleIds = moduleIds;
+		this.id2Rf1PropertyMapper = id2Rf1PropertyMapper;
+	}
+	
+	@Override
+	public ExportFormat getExportFormat() {
+		return exportFormat;
+	}
+	
+	@Override
+	public void setExportFormat(ExportFormat exportFormat) {
+		this.exportFormat = exportFormat;
 	}
 
 	@Override
@@ -105,5 +122,10 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	public Set<String> getModulesToExport() {
 		return moduleIds;
 	}
-	
+
+	@Override
+	public Id2Rf1PropertyMapper getId2Rf1PropertyMapper() {
+		return id2Rf1PropertyMapper;
+	}
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
-
-import java.io.File;
-
-import org.eclipse.net4j.util.om.monitor.OMMonitor;
-
-import com.b2international.snowowl.core.api.SnowowlServiceException;
+package com.b2international.snowowl.snomed.exporter.server;
 
 /**
- * Common interface for reference set DSV exporters.
+ * Enum to represent the export format.
  */
-public interface IRefSetDSVExporter {
+public enum ExportFormat {
 	
-	/**
-	 * Executes the DSV export process.
-	 * @param monitor
-	 * @return
-	 * @throws SnowowlServiceException
-	 */
-	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException;
+	RF1,
+	RF2
 }

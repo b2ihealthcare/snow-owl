@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
@@ -29,14 +25,16 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  * RF2 export implementation for SNOMED&nbsp;CT description.
  *
  */
-public class SnomedDescriptionExporter extends SnomedCoreExporter<SnomedDescriptionIndexEntry> {
+public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<SnomedDescriptionIndexEntry> {
 
-	public SnomedDescriptionExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+	
+	public SnomedRf2DescriptionExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		super(configuration, SnomedDescriptionIndexEntry.class, revisionSearcher, unpublished);
+		
 	}
-
+	
 	@Override
-	public String transform(final SnomedDescriptionIndexEntry doc) {
+	public String convertToString(final SnomedDescriptionIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(doc.getId());
 		sb.append(HT);

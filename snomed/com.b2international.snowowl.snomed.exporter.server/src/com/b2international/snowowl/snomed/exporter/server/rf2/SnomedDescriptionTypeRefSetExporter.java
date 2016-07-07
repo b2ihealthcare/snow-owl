@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.exporter;
+package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -22,28 +22,28 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED CT module dependency reference set exporter.
+ * SNOMED CT description format type reference set exporter.
  */
-public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
+public class SnomedDescriptionTypeRefSetExporter extends SnomedRefSetExporter {
 
-	public SnomedModuleDependencyRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
+	public SnomedDescriptionTypeRefSetExporter(final SnomedExportContext configuration, 
+			final String refSetId, final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
 		super(configuration, refSetId, type, revisionSearcher, unpublished);
 	}
 	
 	@Override
-	public String transform(SnomedRefSetMemberIndexEntry doc) {
+	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(super.transform(doc));
+		sb.append(super.convertToString(doc));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getSourceEffectiveTime())); 
+		sb.append(doc.getDescriptionFormat());
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getTargetEffectiveTime()));
+		sb.append(doc.getDescriptionLength());
 		return sb.toString();
 	}
 	
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
+		return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
 	}
 }

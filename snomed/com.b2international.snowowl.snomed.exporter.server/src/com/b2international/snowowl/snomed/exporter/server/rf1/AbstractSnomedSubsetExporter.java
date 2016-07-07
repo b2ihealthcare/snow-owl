@@ -30,6 +30,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -37,7 +38,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  * @see SnomedRf1Exporter
  * @see AbstractSnomedRefSetExporter
  */
-public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter {
+public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 
 	/**
 	 * Returns {@code true} if the exported subset is a language type SNOMED&nbsp;CT reference set. Otherwise it returns with {@code false}.

@@ -105,5 +105,4 @@ public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 	@Override
 	public void close() throws Exception {
 	}
-	
 }
