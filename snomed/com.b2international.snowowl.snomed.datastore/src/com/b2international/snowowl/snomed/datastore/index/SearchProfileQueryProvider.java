@@ -28,13 +28,11 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.interest.ISearchProfileManager;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfile;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileInterest;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileRule;
-import com.google.common.base.Preconditions;
 
 /**
  * Class for providing index queries based on the {@link SearchProfile} associated for a user.
@@ -82,7 +80,6 @@ public abstract class SearchProfileQueryProvider {
 			if (!SearchProfileInterest.AVERAGE.equals(interest)) {
 				
 				final String conceptId = rule.getContextId();
-				final Long conceptIdLong = Long.valueOf(conceptId);
 				
 				switch (rule.getDomain()) {
 				
@@ -209,8 +206,7 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_NAMESPACE:
 						
-						// TODO fetch namespace from conceptID's term
-						final Expression namespaceQuery = SnomedConceptDocument.Expressions.namespace();
+						final Expression namespaceQuery = SnomedConceptDocument.Expressions.namespace(conceptId);
 						
 						switch (interest) {
 							
