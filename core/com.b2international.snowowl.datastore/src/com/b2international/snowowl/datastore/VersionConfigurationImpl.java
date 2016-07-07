@@ -176,14 +176,13 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	
 	@Override
 	public boolean isSingleton(final ICodeSystemVersion version) {
-		for (Entry<ICodeSystem, List<ICodeSystemVersion>> entry : allVersions.entrySet()) {
-			List<ICodeSystemVersion> versions = entry.getValue();
-			if (versions.contains(version)) {
-				return versions.size() <= 1;
-			}
-		}
+		Map<ICodeSystem, List<ICodeSystemVersion>> singleCodeSystemToVersionsMap = filterVersionsMapForMatchingCodeSystems(version.getRepositoryUuid(), version);
 		
-		throw new IllegalArgumentException("Unable to find containing Code system for version: " + version.getPath()); 
+		if (singleCodeSystemToVersionsMap.isEmpty())
+			return true;
+		
+		List<ICodeSystemVersion> codeSystemVersions = Iterables.getOnlyElement(singleCodeSystemToVersionsMap.values());
+		return codeSystemVersions.size() <= 1;
 	}
 
 	@Override
@@ -235,7 +234,7 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		for (ICodeSystem codeSystem : codeSystems) {
 			ImmutableList<ICodeSystemVersion> list = FluentIterable.<ICodeSystemVersion> from(codeSystemVersions)
 															.filter(new CSVRepositoryUuidPredicate(codeSystem.getRepositoryUuid()))
-															.filter(new CSVRepositoryUuidPredicate(codeSystem.getShortName()))
+															.filter(new CSVShortNamePredicate(codeSystem.getShortName()))
 														.toList();
 			allVersionsFromServer.put(codeSystem, list);
 		}
