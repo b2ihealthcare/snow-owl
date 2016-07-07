@@ -65,6 +65,7 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter<SnomedDescript
 	protected Expression getQueryExpression() {
 		if (isUnpublished()) {
 			Expression unpublishedExpression = Expressions.builder()
+					.must(super.getQueryExpression())
 					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)).build();
 			return unpublishedExpression;
 		} else {

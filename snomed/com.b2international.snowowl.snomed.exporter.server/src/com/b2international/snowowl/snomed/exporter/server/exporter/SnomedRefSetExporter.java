@@ -20,8 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -29,6 +33,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -37,6 +42,7 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.Sets;
 
 /**
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
@@ -122,14 +128,28 @@ public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberI
 		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), refSetName, refSet);
 	}
 
-//	@Override
-//	protected Query<SnomedRefSetMemberIndexEntry> getSnapshotQuery() {
-//		
-//		ExpressionBuilder commitTimeConditionBuilder = Expressions.builder();
-//		commitTimeConditionBuilder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId()))).build();
-//		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(commitTimeConditionBuilder.build()).limit(getPageSize()).offset(getCurrentOffset()).build();
-//		return query;
-//	}
+
+	/* (non-Javadoc)
+	 * @see com.b2international.snowowl.snomed.exporter.server.exporter.SnomedCoreExporter#getQueryExpression()
+	 */
+	@Override
+	protected Expression getQueryExpression() {
+		
+		if (isUnpublished()) {
+			Expression unpublishedExpression = Expressions.builder()
+					.must(super.getQueryExpression())
+					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())))
+					.build();
+			return unpublishedExpression;
+		} else {
+			Expression publishedExpression = Expressions.builder()
+					.must(super.getQueryExpression())
+					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())))
+					.build();
+			return publishedExpression;
+		}
+	}
 	
 	/**Returns with the reference set identifier concept ID.*/
 	protected String getRefSetId() {

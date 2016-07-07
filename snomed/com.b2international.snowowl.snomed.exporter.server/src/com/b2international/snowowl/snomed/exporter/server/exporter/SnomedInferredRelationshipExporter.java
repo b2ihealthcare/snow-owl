@@ -45,9 +45,13 @@ public class SnomedInferredRelationshipExporter extends AbstractSnomedRelationsh
 			return Expressions.builder()
 					.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP))
 					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+					.must(super.getQueryExpression())
 					.build();
 		} else {
-			return Expressions.builder().mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
+			return Expressions.builder()
+					.must(super.getQueryExpression())
+					.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP))
+					.build();
 		}
 	}
 	

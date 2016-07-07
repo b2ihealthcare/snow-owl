@@ -18,16 +18,21 @@ package com.b2international.snowowl.snomed.exporter.server.exporter;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
@@ -48,7 +53,7 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 	private Hits<T> conceptHits;
 	private Class<T> clazz;
 	private SnomedExportContext exportContext;
-
+	
 	//scroll page size for the query
 	private final static int PAGE_SIZE = 100;
 
@@ -60,7 +65,7 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.clazz = checkNotNull(clazz, "clazz");
 		this.revisionSearcher = checkNotNull(revisionSearcher, "revisionSearcher");
-		this.unpublished = checkNotNull(unpublished, "unpublished");;
+		this.unpublished = checkNotNull(unpublished, "unpublished");
 	}
 	
 	@Override
@@ -112,7 +117,35 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 	 * @return
 	 */
 	protected Expression getQueryExpression() {
-		return Expressions.matchAll();
+		
+		ExpressionBuilder builder = Expressions.builder();
+		
+		if (exportContext.getContentSubType() == ContentSubType.DELTA) {
+			Date deltaExportStartEffectiveTime = exportContext.getDeltaExportStartEffectiveTime();
+			Date deltaExportEndEffectiveTime = exportContext.getDeltaExportEndEffectiveTime();
+			
+			if (deltaExportStartEffectiveTime != null || deltaExportEndEffectiveTime != null) {
+				long from = 0l;
+				long to = Long.MAX_VALUE;
+				
+				if (deltaExportStartEffectiveTime != null) {
+					from = deltaExportStartEffectiveTime.getTime();
+				} 
+				
+				if (deltaExportEndEffectiveTime != null) {
+					to = deltaExportEndEffectiveTime.getTime();
+				}
+				return SnomedDocument.Expressions.effectiveTime(from, to);
+			}
+		} 
+		
+		Set<String> modulesToExport = exportContext.getModulesToExport();
+		if (!CompareUtils.isEmpty(modulesToExport)) {
+			builder.must(SnomedDocument.Expressions.modules(modulesToExport));
+		}
+		
+		//if both null, it means unpublished which is handled outside of this class (default builder is matchAll)
+		return builder.build();
 	}
 
 	protected final String formatEffectiveTime(final Long effectiveTime) {

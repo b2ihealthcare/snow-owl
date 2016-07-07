@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.exporter.server;
 
 import java.util.Date;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -72,5 +73,11 @@ public interface SnomedExportContext {
 	 * @return
 	 */
 	boolean includeMapTargetDescription();
+	
+	/**
+	 * Returns the set of module Ids to be exported.
+	 * @return set of module ids representing the modules to be exported
+	 */
+	Set<String> getModulesToExport();
 
 }

@@ -18,11 +18,13 @@ package com.b2international.snowowl.snomed.exporter.server;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.google.common.collect.Sets;
 
 /**
  * Export context for the SNOMED CT export process.
@@ -39,13 +41,17 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private boolean includeUnpublished;
 	// FIXME always false, clients should specify the value
 	private boolean includeMapTargetDescription = false; 
+	
+	//the modules to export
+	private Set<String> moduleIds;
 
 	public SnomedExportContextImpl(final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
 			@Nullable final Date deltaExportStartEffectiveTime, 
 			@Nullable final Date deltaExportEndEffectiveTime,
-			final boolean includeUnpublished) {
+			final boolean includeUnpublished,
+			final Set<String> moduleIds) {
 
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
@@ -53,6 +59,7 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
 		this.includeUnpublished = includeUnpublished;
+		this.moduleIds = moduleIds;
 	}
 
 	@Override
@@ -92,6 +99,11 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	@Override
 	public boolean includeMapTargetDescription() {
 		return includeMapTargetDescription;
+	}
+	
+	@Override
+	public Set<String> getModulesToExport() {
+		return moduleIds;
 	}
 	
 }
