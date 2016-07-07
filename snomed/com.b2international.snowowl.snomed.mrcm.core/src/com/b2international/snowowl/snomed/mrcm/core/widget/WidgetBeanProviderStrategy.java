@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.mrcm.core.widget;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -214,6 +213,7 @@ public abstract class WidgetBeanProviderStrategy {
 		
 		// Create and populate instance beans for matching models
 		for (final SnomedDescription description : getDescriptions()) {
+			
 			if (!description.isActive()) {
 				continue;
 			}
@@ -222,22 +222,24 @@ public abstract class WidgetBeanProviderStrategy {
 			final String typeId = description.getTypeId();
 			final String term = description.getTerm();
 			final boolean released = description.isReleased();
+			
+			boolean preferred;
+			
+			if (descriptionPreferabilityMap.containsKey(descriptionId)) {
+				// the description should show up as preferred on the UI if it is preferred in the currently selected lang refset and it's type is not FSN nor TEXT DEF
+				final Multimap<String, String> acceptabilityMap = descriptionPreferabilityMap.get(descriptionId);
+				Collection<String> preferredInLanguageRefsetIds = acceptabilityMap.get(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
+				preferred = !Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId) && preferredInLanguageRefsetIds.contains(selectedLanguageRefSetIdRef.get());
+			} else {
+				preferred = false;
+			}
 
-			checkState(descriptionPreferabilityMap.containsKey(descriptionId));
-			final Multimap<String, String> acceptabilityMap = descriptionPreferabilityMap.get(descriptionId);
-			
-			CaseSignificance caseSensitivity = description.getCaseSensitivity();
-			
 			final DescriptionWidgetModel matchingModel = conceptWidgetModel.getDescriptionContainerModel().getFirstMatching(typeId);
-			
-			// the description should show up as preferred on the UI if it is preferred in the currently selected lang refset and it's type is not FSN nor TEXT DEF
-			final boolean preferred = !Concepts.FULLY_SPECIFIED_NAME.equals(typeId)	&& !Concepts.TEXT_DEFINITION.equals(typeId)
-					&& acceptabilityMap.get(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED).contains(selectedLanguageRefSetIdRef.get());
 			final DescriptionWidgetBean matchingBean = new DescriptionWidgetBean(cwb, matchingModel, Long.parseLong(descriptionId), released, preferred);
 			
 			matchingBean.setSelectedType(typeId);
 			matchingBean.setTerm(term);
-			matchingBean.setCaseSensitivity(caseSensitivity);
+			matchingBean.setCaseSensitivity(description.getCaseSensitivity());
 			
 			result.add(matchingBean);
 			
@@ -318,6 +320,14 @@ public abstract class WidgetBeanProviderStrategy {
 	/*returns with the lightweight representation of the SNOMED CT concept identifier by the specified ID*/
 	abstract protected SnomedConceptIndexEntry getConcept(final String conceptId);
 	
+	/**
+	 * Returns a map where the unique keys are the description ids and the values are the acceptability maps. The acceptability map's keys are the
+	 * acceptability ids and the values are the language reference set ids. 
+	 * E.g.: <description id> -> <acceptabilityId1> -> <language reference set id1> 
+	 * 							 					-> <language reference set id2>
+	 * 							 <acceptabilityId2> -> <language reference set id3>
+	 * @return
+	 */
 	abstract protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap();
 	
 	abstract protected Collection<SnomedDescription> getDescriptions();
