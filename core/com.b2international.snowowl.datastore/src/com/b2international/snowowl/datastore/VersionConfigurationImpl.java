@@ -48,6 +48,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -230,7 +231,15 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	 * @return a mapping between repository UUIDs and all versions.
 	 */
 	protected Map<ICodeSystem, List<ICodeSystemVersion>> getAllVersions(List<ICodeSystem> codeSystems, List<ICodeSystemVersion> codeSystemVersions) {
-		final Map<ICodeSystem, List<ICodeSystemVersion>> allVersionsFromServer = getTerminologyRegistryService().getAllVersion();
+		final Map<ICodeSystem, List<ICodeSystemVersion>> allVersionsFromServer = Maps.newHashMap();
+		for (ICodeSystem codeSystem : codeSystems) {
+			ImmutableList<ICodeSystemVersion> list = FluentIterable.<ICodeSystemVersion> from(codeSystemVersions)
+															.filter(new CSVRepositoryUuidPredicate(codeSystem.getRepositoryUuid()))
+															.filter(new CSVRepositoryUuidPredicate(codeSystem.getShortName()))
+														.toList();
+			allVersionsFromServer.put(codeSystem, list);
+		}
+		
 		//it might happen that server has for example UMLS store but client does not have dependency
 		//hence connection for UMLS.
 		final Collection<String> availableTerminologyRepositoriesOnClient =  getServiceForClass(ICDOConnectionManager.class).uuidKeySet();
