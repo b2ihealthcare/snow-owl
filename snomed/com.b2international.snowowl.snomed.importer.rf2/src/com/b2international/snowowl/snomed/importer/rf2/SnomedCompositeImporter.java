@@ -63,7 +63,10 @@ import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedCodeSystemFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
+import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
@@ -286,7 +289,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		inferredTaxonomyBuilder.applyNodeChanges(conceptFilePath);
 		inferredTaxonomyBuilder.applyEdgeChanges(relationshipFilePath);
-		inferredTaxonomyBuilder.build();
+		final SnomedTaxonomyBuilderResult inferredTaxonomyResult = inferredTaxonomyBuilder.build();
 		
 		if (null == statedTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
@@ -295,7 +298,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		statedTaxonomyBuilder.applyNodeChanges(conceptFilePath);
 		statedTaxonomyBuilder.applyEdgeChanges(statedRelationshipFilePath);
-		statedTaxonomyBuilder.build();
+		final SnomedTaxonomyBuilderResult statedTaxonomyResult = statedTaxonomyBuilder.build();
+		
+		if (!inferredTaxonomyResult.getStatus().isOK() || !statedTaxonomyResult.getStatus().isOK()) {
+			throw new IncompleteTaxonomyException(ImmutableList.<InvalidRelationship> builder()
+					.addAll(inferredTaxonomyResult.getInvalidRelationships())
+					.addAll(statedTaxonomyResult.getInvalidRelationships())
+					.build());
+		}
 		
 		final Set<String> synonymAndDescendants = LongSets.toStringSet(inferredTaxonomyBuilder.getAllDescendantNodeIds(Concepts.SYNONYM));
 		synonymAndDescendants.add(Concepts.SYNONYM);
