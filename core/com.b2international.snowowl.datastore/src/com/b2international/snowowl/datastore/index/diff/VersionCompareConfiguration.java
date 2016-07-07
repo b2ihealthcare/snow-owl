@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
 
 /**
  * Represents a version compare configuration with a source and a target {@link IBranchPath branch path} and a repository UUID.
@@ -63,6 +64,8 @@ public class VersionCompareConfiguration implements Serializable {
 		}
 		
 		public Builder source(final ICodeSystemVersion version) {
+			if (LatestCodeSystemVersionUtils.isLatestVersion(version))
+				return source(BranchPathUtils.createPath(version.getParentBranchPath()), false);
 			return source(BranchPathUtils.createPath(version.getPath()), version.isPatched());
 		}
 
@@ -78,6 +81,8 @@ public class VersionCompareConfiguration implements Serializable {
 		}
 		
 		public Builder target(final ICodeSystemVersion version) {
+			if (LatestCodeSystemVersionUtils.isLatestVersion(version))
+				return target(BranchPathUtils.createPath(version.getParentBranchPath()), false);
 			return target(BranchPathUtils.createPath(version.getPath()), version.isPatched());
 		}
 		
