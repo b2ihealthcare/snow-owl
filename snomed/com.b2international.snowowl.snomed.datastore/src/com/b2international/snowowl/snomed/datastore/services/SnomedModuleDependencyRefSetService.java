@@ -31,15 +31,27 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.Revision.Views.StorageKeyOnly;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -59,7 +71,7 @@ public class SnomedModuleDependencyRefSetService {
 	 * It should be called before committing the transaction.
 	 * @param transaction the underlying transaction for the SNOMED&nbsp;CT components.
 	 */
-	public void updateModuleDependenciesDuringPreCommit(final CDOTransaction transaction) {
+	public void updateModuleDependenciesDuringPreCommit(final CDOTransaction transaction/*, final RevisionIndex index*/) {
 
 		// We ignore those cases when a new module is created or a component has moved to a module
 		// which hasn't got a MDR member. These cases will be handled at the export as it requires
@@ -73,10 +85,18 @@ public class SnomedModuleDependencyRefSetService {
 		moduleIds.addAll(getModuleIdsFromDetachedObjects(changeSetData.getDetachedObjects(), transaction));
 		moduleIds.addAll(getModuleIdsFromChangedObjects(changeSetData.getChangedObjects(), transaction));
 		
+		final RevisionIndex index = ApplicationContext.getInstance().getService(RepositoryManager.class)
+				.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+		
 		// search for members where the module/referenced component ID equals to the collected ID
 		// and the source/target effective time is set
 		for (final String moduleId : moduleIds) {
-			final LongSet storageKeys = getPublishedModuleDependencyMembers(branchPath, moduleId);
+			final LongSet storageKeys = index.read(branchPath.getPath(), new RevisionIndexRead<LongSet>() {
+				@Override
+				public LongSet execute(RevisionSearcher searcher) throws IOException {
+					return getPublishedModuleDependencyMembers(branchPath, moduleId, searcher);
+				}
+			});
 			
 			for (final LongIterator iterator = storageKeys.iterator(); iterator.hasNext();) {
 				final long storageKey = iterator.next();
@@ -96,42 +116,50 @@ public class SnomedModuleDependencyRefSetService {
 		}
 	}
 	
-	
+	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId, RevisionSearcher searcher) {
+		try {
+			final Expression expression = createPublishedMembersQueryExpression(moduleId);
+			final Query<Revision.Views.StorageKeyOnly> query = Query
+					.selectPartial(Revision.Views.StorageKeyOnly.class, SnomedRefSetMemberIndexEntry.class)
+					.where(expression)
+					.limit(Integer.MAX_VALUE)
+					.build();
+			
+			final Hits<StorageKeyOnly> hits = searcher.search(query);
+			final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
+			
+			for (final StorageKeyOnly storageKey : hits) {
+				storageKeys.add(storageKey.getStorageKey());
+			}
+			
+			return storageKeys;
+		} catch (IOException e) {
+			throw new IndexException("Error while querying module dependency refset members.", e);
+		}
+	}
 
-	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId) {
-		System.err.println("SnomedModuleDependencyRefSetService.getPublishedModuleDependencyMembers() -> TODO reimplement me");
-		return PrimitiveSets.newLongOpenHashSet();
-//		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-//		Preconditions.checkNotNull(id, "ID argument cannot be null.");
-//		final BooleanQuery sourceModuleQuery = new BooleanQuery(true);
-//		sourceModuleQuery.add(SnomedMappings.newQuery().module(id).matchAll(), Occur.MUST);
-//		sourceModuleQuery.add(SnomedMappings.newQuery().memberSourceEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
-//		
-//		final BooleanQuery targetModuleQuery = new BooleanQuery(true);
-//		targetModuleQuery.add(SnomedMappings.newQuery().memberReferencedComponentId(id).matchAll(), Occur.MUST);
-//		targetModuleQuery.add(SnomedMappings.newQuery().memberTargetEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).matchAll(), Occur.MUST_NOT);
-//		
-//		final Query moduleQuery = SnomedMappings.newQuery().and(sourceModuleQuery).and(targetModuleQuery).matchAny();
-//		final Query query = SnomedMappings.newQuery().memberRefSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE).and(moduleQuery).matchAll();
-//		
-//		final DocIdCollector collector = DocIdCollector.create(service.maxDoc(branchPath));
-//		service.search(branchPath, query, collector);
-//		
-//		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
-//
-//		try {
-//			final DocIdsIterator iterator = collector.getDocIDs().iterator();
-//			
-//			while (iterator.next()) {
-//				final int docID = iterator.getDocID();
-//				final Document doc = service.document(branchPath, docID, SnomedMappings.fieldsToLoad().storageKey().build());
-//				storageKeys.add(Mappings.storageKey().getValue(doc));
-//			}
-//		} catch (final IOException e) {
-//			throw new IndexException("Error while querying module dependency reference set members.", e);
-//		}
-//
-//		return storageKeys;		
+	private Expression createPublishedMembersQueryExpression(final String moduleId) {
+		final Expression sourceExpression = Expressions
+				.builder()
+				.must(SnomedRefSetMemberIndexEntry.Expressions.module(moduleId))
+				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.sourceEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.build();
+		
+		final Expression targetExpression = Expressions
+				.builder()
+				.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentId(moduleId))
+				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.targetEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.build();
+		
+		return Expressions
+				.builder()
+				.must(Expressions
+						.builder()
+						.should(sourceExpression)
+						.should(targetExpression)
+						.build())
+				.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE))
+				.build();
 	}
 
 	/*

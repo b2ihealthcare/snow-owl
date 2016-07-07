@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
@@ -269,9 +270,17 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 
 	public static final class Expressions extends SnomedDocument.Expressions {
+		
+		public static Expression referenceSetId(String referenceSetId) {
+			return exactMatch(Fields.REFERENCE_SET_ID, referenceSetId);
+		}
 
 		public static Expression referenceSetId(Collection<String> referenceSetIds) {
 			return matchAny(Fields.REFERENCE_SET_ID, referenceSetIds);
+		}
+		
+		public static Expression referencedComponentId(String referencedComponentId) {
+			return exactMatch(Fields.REFERENCED_COMPONENT_ID, referencedComponentId);
 		}
 
 		public static Expression referencedComponentIds(Collection<String> referencedComponentIds) {
@@ -313,7 +322,15 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression valueIds(Collection<String> valueIds) {
 			return matchAny(Fields.VALUE_ID, valueIds);
 		}
-
+		
+		public static Expression sourceEffectiveTime(long effectiveTime) {
+			return exactMatch(Fields.SOURCE_EFFECTIVE_TIME, effectiveTime);
+		}
+		
+		public static Expression targetEffectiveTime(long effectiveTime) {
+			return exactMatch(Fields.TARGET_EFFECTIVE_TIME, effectiveTime);
+		}
+		
 		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
 			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(new Function<SnomedRefSetType, String>() {
 				@Override
@@ -687,16 +704,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	public SnomedRefSetType getReferenceSetType() {
 		return referenceSetType;
 	}
-
-	@Override
-	public String toString() {
-		// XXX refset type specific toString???
-		return toStringHelper()
-				.add("referencedComponentId", referencedComponentId)
-				.add("referenceSetType", referenceSetType)
-				.add("referencedComponentType", referencedComponentType)
-				.toString();
-	}
 	
 	@JsonIgnore
 	@SuppressWarnings("unchecked")
@@ -879,4 +886,5 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 	}
 	
+
 }
