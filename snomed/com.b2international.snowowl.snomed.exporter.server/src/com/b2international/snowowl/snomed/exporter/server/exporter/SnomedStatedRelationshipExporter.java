@@ -42,16 +42,9 @@ public class SnomedStatedRelationshipExporter extends AbstractSnomedRelationship
 	@Override
 	protected Expression getQueryExpression() {
 		
-		if (isUnpublished()) {
-			return Expressions.builder()
-					.must(super.getQueryExpression())
-					.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP))
-					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-					.build();
-		} else {
-			return Expressions.builder()
-					.must(super.getQueryExpression())
-					.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP)).build();
-		}
+		return Expressions.builder()
+			.must(super.getQueryExpression())
+			.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP))
+			.build();
 	}
 }

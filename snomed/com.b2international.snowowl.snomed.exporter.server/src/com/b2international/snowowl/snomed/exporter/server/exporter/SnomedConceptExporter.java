@@ -19,13 +19,9 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
@@ -52,18 +48,6 @@ public class SnomedConceptExporter extends SnomedCoreExporter<SnomedConceptDocum
 		sb.append(HT);
 		sb.append(doc.isPrimitive() ? PRIMITIVE : FULLY_DEFINED);
 		return sb.toString();
-	}
-
-	protected Expression getQueryExpression() {
-		if (isUnpublished()) {
-			Expression unpublishedExpression = Expressions.builder()
-					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-					.must(super.getQueryExpression())
-					.build();
-			return unpublishedExpression;
-		} else {
-			return super.getQueryExpression();
-		}
 	}
 
 	@Override

@@ -58,21 +58,6 @@ public class SnomedDescriptionExporter extends SnomedCoreExporter<SnomedDescript
 		return sb.toString();
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedCoreExporter#getQueryExpression()
-	 */
-	@Override
-	protected Expression getQueryExpression() {
-		if (isUnpublished()) {
-			Expression unpublishedExpression = Expressions.builder()
-					.must(super.getQueryExpression())
-					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)).build();
-			return unpublishedExpression;
-		} else {
-			return super.getQueryExpression();
-		}
-	}
-	
 	@Override
 	public ComponentExportType getType() {
 		return ComponentExportType.DESCRIPTION;

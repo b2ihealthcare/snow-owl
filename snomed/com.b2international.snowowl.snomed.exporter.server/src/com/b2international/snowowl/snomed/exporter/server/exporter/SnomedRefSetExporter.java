@@ -22,10 +22,8 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -33,7 +31,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -135,20 +132,11 @@ public class SnomedRefSetExporter extends SnomedCoreExporter<SnomedRefSetMemberI
 	@Override
 	protected Expression getQueryExpression() {
 		
-		if (isUnpublished()) {
-			Expression unpublishedExpression = Expressions.builder()
-					.must(super.getQueryExpression())
-					.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())))
-					.build();
-			return unpublishedExpression;
-		} else {
-			Expression publishedExpression = Expressions.builder()
-					.must(super.getQueryExpression())
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())))
-					.build();
-			return publishedExpression;
-		}
+		Expression unpublishedExpression = Expressions.builder()
+			.must(super.getQueryExpression())
+			.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())))
+			.build();
+		return unpublishedExpression;
 	}
 	
 	/**Returns with the reference set identifier concept ID.*/

@@ -120,6 +120,7 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 		
 		ExpressionBuilder builder = Expressions.builder();
 		
+		//Delta export effective time range constraint
 		if (exportContext.getContentSubType() == ContentSubType.DELTA) {
 			Date deltaExportStartEffectiveTime = exportContext.getDeltaExportStartEffectiveTime();
 			Date deltaExportEndEffectiveTime = exportContext.getDeltaExportEndEffectiveTime();
@@ -139,10 +140,16 @@ public abstract class SnomedCoreExporter<T extends SnomedDocument> implements Sn
 			}
 		} 
 		
+		//module constraint
 		Set<String> modulesToExport = exportContext.getModulesToExport();
 		if (!CompareUtils.isEmpty(modulesToExport)) {
 			builder.must(SnomedDocument.Expressions.modules(modulesToExport));
 		}
+		
+		//add unpublished constraint
+		if (isUnpublished()) {
+			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+		}		
 		
 		//if both null, it means unpublished which is handled outside of this class (default builder is matchAll)
 		return builder.build();
