@@ -155,7 +155,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedReleaseFileHeaders.RF1_CONCEPT_HEADER;
+		return SnomedRf1ReleaseFileHeaders.RF1_CONCEPT_HEADER;
 	}
 	
 	/*returns with a number indicating the status of a concept for RF1 publication.*/

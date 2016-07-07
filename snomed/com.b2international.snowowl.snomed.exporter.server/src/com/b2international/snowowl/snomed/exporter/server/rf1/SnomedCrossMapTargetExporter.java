@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf1;
 
-import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedReleaseFileHeaders.RF1_CROSS_MAP_TARGETS_HEADER;
+import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1ReleaseFileHeaders.RF1_CROSS_MAP_TARGETS_HEADER;
 
 import java.io.IOException;
 import java.util.Collection;

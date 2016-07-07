@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 /**
  * Constant collecting SNOMED&nbsp;CT RF1 headers for exporting.
  */
-public final class SnomedReleaseFileHeaders {
+public final class SnomedRf1ReleaseFileHeaders {
 	
 	public static final String[] RF1_CONCEPT_HEADER = new String[] { "CONCEPTID", "CONCEPTSTATUS", "FULLYSPECIFIEDNAME", "CTV3ID", "SNOMEDID", "ISPRIMITIVE" };
 	public static final String[] RF1_DESCRIPTION_HEADER = new String[] { "DESCRIPTIONID", "DESCRIPTIONSTATUS", "CONCEPTID", "TERM", "INITIALCAPITALSTATUS", "DESCRIPTIONTYPE", "LANGUAGECODE" };
@@ -29,7 +29,7 @@ public final class SnomedReleaseFileHeaders {
 	public static final String[] RF1_SUBSETS_HEADER = new String[] { "SUBSETID", "SUBSETORIGINALID", "SUBSETVERSION", "SUBSETNAME", "SUBSETTYPE", "LANGUAGECODE", "REALMID", "CONTEXTID" };
 	public static final String[] RF1_SUBSET_MEMBERS_HEADER = new String[] { "SUBSETID", "MEMBERID", "MEMBERSTATUS", "LINKEDID" };
 	
-	private SnomedReleaseFileHeaders() {
+	private SnomedRf1ReleaseFileHeaders() {
 		//suppress instantiation
 	}
 }

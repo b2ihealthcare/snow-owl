@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf1;
 
-import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedReleaseFileHeaders.RF1_SUBSETS_HEADER;
+import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1ReleaseFileHeaders.RF1_SUBSETS_HEADER;
 import static java.util.Collections.singletonList;
 
 import java.util.Date;

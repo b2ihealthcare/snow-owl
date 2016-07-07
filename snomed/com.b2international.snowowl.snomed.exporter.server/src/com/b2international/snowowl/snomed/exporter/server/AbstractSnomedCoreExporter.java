@@ -146,7 +146,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		}
 		
 		//add unpublished constraint
-		if (isOnlyUnpublished()) {
+		if (onlyUnpublished) {
 			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 		} 
 		
