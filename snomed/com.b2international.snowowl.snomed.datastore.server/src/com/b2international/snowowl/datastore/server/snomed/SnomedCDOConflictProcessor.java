@@ -52,6 +52,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
@@ -382,16 +383,16 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 			@Override
 			public Void execute(final RevisionSearcher searcher) throws IOException {
-				final Query<SnomedConceptDocument> allConceptsQuery = Query.select(SnomedConceptDocument.class)
+				final Query<RevisionDocument.Views.IdOnly> allConceptsQuery = Query.selectPartial(RevisionDocument.Views.IdOnly.class, SnomedConceptDocument.class)
 						.where(Expressions.matchAll())
 						.limit(Integer.MAX_VALUE)
 						.build();
 				
-				final Hits<SnomedConceptDocument> allConcepts = searcher.search(allConceptsQuery);
+				final Hits<RevisionDocument.Views.IdOnly> allConcepts = searcher.search(allConceptsQuery);
 				final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet(allConcepts.getTotal());
 				
-				for (SnomedConceptDocument concept : allConcepts) {
-					conceptIds.add(Long.parseLong(concept.getId()));
+				for (RevisionDocument.Views.IdOnly conceptId : allConcepts) {
+					conceptIds.add(Long.parseLong(conceptId.getId()));
 				}
 				
 				for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
