@@ -23,16 +23,22 @@ import java.io.Serializable;
 public class ReindexResult implements Serializable {
 	
 	private final long failedCommitTimestamp;
+	private final int processedCommits;
+	private final int skippedCommits;
 	
-	ReindexResult(final long failedCommitTimestamp) {
+	ReindexResult(final long failedCommitTimestamp, final int processedCommits, final int skippedCommits) {
 		this.failedCommitTimestamp = failedCommitTimestamp;
+		this.processedCommits = processedCommits;
+		this.skippedCommits = skippedCommits;
 	}
 	
 	public String getMessage() {
 		if (failedCommitTimestamp == -1) {
-			return "Reindex successfully completed.";
+			return String.format("Reindex successfully completed. Processed %d commits.", processedCommits);
 		} else {
-			return String.format("Reindex failed at commit %d. See log for details.", failedCommitTimestamp);
+			return String.format(
+					"Reindex failed at commit %d. See log for details. Processed %d and skipped %d commits.",
+					failedCommitTimestamp, processedCommits, skippedCommits);
 		}
 	}
 	

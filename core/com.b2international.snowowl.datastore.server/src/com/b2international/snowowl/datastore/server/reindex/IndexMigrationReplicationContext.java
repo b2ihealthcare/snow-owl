@@ -57,6 +57,8 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	
 	private TreeMap<Long, CDOBranch> branchesByBasetimestamp = new TreeMap<>();
 	
+	private int skippedCommits = 0;
+	private int processedCommits = 0;
 	private long failedCommitTimestamp = -1;
 
 	IndexMigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session) {
@@ -68,6 +70,11 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	@Override
 	public void handleCommitInfo(final CDOCommitInfo commitInfo) {
+		if (failedCommitTimestamp != -1) {
+			skippedCommits++;
+			return;
+		}
+		
 		final long commitTimestamp = commitInfo.getTimeStamp();
 		
 		Entry<Long, CDOBranch> branchToReplicate = branchesByBasetimestamp.floorEntry(commitTimestamp);
@@ -168,6 +175,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			@Override
 			public void failCommit(long timestamp) {
 				failedCommitTimestamp = timestamp;
+				skippedCommits++;
 			}
 			
 			@Override 
@@ -199,6 +207,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			commitContext.write(new Monitor());
 			commitContext.commit(new Monitor());
 			success = true;
+			processedCommits++;
 		} finally {
 			commitContext.postCommit(success);
 			transaction.close();
@@ -237,6 +246,14 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	
 	public long getFailedCommitTimestamp() {
 		return failedCommitTimestamp;
+	}
+	
+	public int getSkippedCommits() {
+		return skippedCommits;
+	}
+	
+	public int getProcessedCommits() {
+		return processedCommits;
 	}
 
 }

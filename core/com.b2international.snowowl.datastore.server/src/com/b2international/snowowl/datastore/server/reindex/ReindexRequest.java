@@ -46,7 +46,8 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, ReindexResult
 			//right now index is fully recreated
 			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, -1, 0, session);
 			cdoRepository.replicate(replicationContext);
-			return new ReindexResult(replicationContext.getFailedCommitTimestamp());
+			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),
+					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits());
 		} finally {
 			StoreThreadLocal.release();
 			session.close();
