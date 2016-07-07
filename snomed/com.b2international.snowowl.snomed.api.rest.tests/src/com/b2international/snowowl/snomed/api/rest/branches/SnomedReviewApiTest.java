@@ -27,6 +27,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenDescriptionRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
@@ -477,7 +478,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		assertReviewCurrent(reviewId);
 		
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		final String id = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, id);
 		
 		whenRetrievingReviewWithId(reviewId)
 		.then()
