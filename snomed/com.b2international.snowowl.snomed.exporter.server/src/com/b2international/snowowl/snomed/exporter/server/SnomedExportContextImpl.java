@@ -38,7 +38,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private final Date deltaExportStartEffectiveTime;
 	private final Date deltaExportEndEffectiveTime;
 	
-	private boolean includeUnpublished;
 	// FIXME always false, clients should specify the value
 	private boolean includeMapTargetDescription = false; 
 	
@@ -54,7 +53,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 			final String unsetEffectiveTimeLabel,
 			@Nullable final Date deltaExportStartEffectiveTime, 
 			@Nullable final Date deltaExportEndEffectiveTime,
-			final boolean includeUnpublished,
 			final Set<String> moduleIds,
 			final Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
 
@@ -64,7 +62,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
-		this.includeUnpublished = includeUnpublished;
 		this.moduleIds = moduleIds;
 		this.id2Rf1PropertyMapper = id2Rf1PropertyMapper;
 	}
@@ -102,15 +99,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	@Override
 	@Nullable public Date getDeltaExportEndEffectiveTime() {
 		return deltaExportEndEffectiveTime;
-	}
-	
-	@Override
-	public boolean includeUnpublished() {
-		return includeUnpublished;
-	}
-	
-	public void setIncludeUnpublished(boolean includeUnpublished) {
-		this.includeUnpublished = includeUnpublished;
 	}
 	
 	@Override

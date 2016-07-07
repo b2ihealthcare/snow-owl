@@ -57,11 +57,14 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 
 	private RevisionSearcher revisionSearcher;
 
+	private boolean onlyUnpublished;
+
 	protected AbstractSnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, 
-			final RevisionSearcher revisionSearcher, final boolean unpublished) {
+			final RevisionSearcher revisionSearcher, final boolean onlyUnpublished) {
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.clazz = checkNotNull(clazz, "clazz");
 		this.revisionSearcher = checkNotNull(revisionSearcher, "revisionSearcher");
+		this.onlyUnpublished = onlyUnpublished;
 	}
 	
 	@Override
@@ -143,9 +146,9 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		}
 		
 		//add unpublished constraint
-		if (exportContext.includeUnpublished()) {
+		if (isOnlyUnpublished()) {
 			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
-		}		
+		} 
 		
 		//add whatever else subclasses would add
 		appendExpressionConstraint(builder);
@@ -161,6 +164,10 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	 */
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
 		//do nothing
+	}
+	
+	public boolean isOnlyUnpublished() {
+		return onlyUnpublished;
 	}
 
 	protected final String formatEffectiveTime(final Long effectiveTime) {

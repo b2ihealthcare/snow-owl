@@ -76,12 +76,6 @@ public interface SnomedExportContext {
 	String getUnsetEffectiveTimeLabel();
 	
 	/**
-	 * Returns true if unpublished artefacts should be part of the export
-	 * @return
-	 */
-	boolean includeUnpublished();
-
-	/**
 	 * In case of SIMPLE MAP reference sets include or not the map target description column.
 	 * @return
 	 */

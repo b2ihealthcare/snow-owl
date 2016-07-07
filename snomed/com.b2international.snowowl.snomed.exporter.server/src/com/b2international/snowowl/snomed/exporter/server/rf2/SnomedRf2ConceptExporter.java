@@ -30,8 +30,8 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedRf2ConceptExporter extends AbstractSnomedRf2CoreExporter<SnomedConceptDocument> {
 
-	public SnomedRf2ConceptExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		super(configuration, SnomedConceptDocument.class, revisionSearcher, unpublished);
+	public SnomedRf2ConceptExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean onlyUnpublished) {
+		super(configuration, SnomedConceptDocument.class, revisionSearcher, onlyUnpublished);
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class SnomedRf2ConceptExporter extends AbstractSnomedRf2CoreExporter<Snom
 		sb.append(doc.isPrimitive() ? PRIMITIVE : FULLY_DEFINED);
 		return sb.toString();
 	}
-
+	
 	@Override
 	public ComponentExportType getType() {
 		return ComponentExportType.CONCEPT;

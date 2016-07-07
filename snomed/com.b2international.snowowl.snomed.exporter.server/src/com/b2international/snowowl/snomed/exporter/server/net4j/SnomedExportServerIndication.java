@@ -200,7 +200,6 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				unsetEffectiveTimeLabel,
 				deltaExportStartEffectiveTime, 
 				deltaExportEndEffectiveTime,
-				includeUnpublished,
 				modulesToExport,
 				new Id2Rf1PropertyMapper());
 		
@@ -412,7 +411,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 						return null;
 					}
 				});
-			} else if (exportContext.includeUnpublished()) {
+			} else if (includeUnpublished) {
 				revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 					@Override
 					public Void execute(RevisionSearcher revisionSearcher) throws IOException {

@@ -35,7 +35,8 @@ public class Rf2ImporterCommandProvider implements CommandProvider {
 			new ListLanguageRefSetsCommand(),
 			new ImportZipCommand(),
 			new ImportRefSetCommand(),
-			new ImportRefSetSubsetCommand());
+			new ImportRefSetSubsetCommand(),
+			new ExportCommand());
 	
 	@Override
 	public String getHelp() {
