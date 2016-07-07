@@ -76,28 +76,27 @@ public class SnomedHierarchy {
 	 * @return the new incremental taxonomy builder instance.
 	 */
 	public static SnomedHierarchy forBranch(final IBranchPath branchPath) {
-		
-		final AtomicReference<long[]> conceptIdsReference = new AtomicReference<long[]>();
-		final AtomicReference<IsAStatement[]> statementsReference = new AtomicReference<IsAStatement[]>();
-		
-		final Runnable getConceptsRunnable = new Runnable() {
-			@Override public void run() {
-				final LongCollection conceptIds = getAllActiveConceptIds(branchPath);
-				conceptIds.trimToSize();
-				conceptIdsReference.set(conceptIds.toArray());
-			}
-		};
-		
-		final Runnable getStatementsRunnable = new Runnable() {
-			@Override public void run() {
-				final IsAStatement[] statements = getActiveStatements(branchPath, StatementCollectionMode.NO_IDS);
-				statementsReference.set(statements);
-			}
-		};
-		
-		ForkJoinUtils.runInParallel(getStatementsRunnable, getConceptsRunnable);
-		return new SnomedHierarchy(conceptIdsReference.get(), statementsReference.get());
-		
+		throw new UnsupportedOperationException("Unsupported API, make it deprecated or remove it if not required by other services");
+//		final AtomicReference<long[]> conceptIdsReference = new AtomicReference<long[]>();
+//		final AtomicReference<IsAStatement[]> statementsReference = new AtomicReference<IsAStatement[]>();
+//		
+//		final Runnable getConceptsRunnable = new Runnable() {
+//			@Override public void run() {
+//				final LongCollection conceptIds = getAllActiveConceptIds(branchPath);
+//				conceptIds.trimToSize();
+//				conceptIdsReference.set(conceptIds.toArray());
+//			}
+//		};
+//		
+//		final Runnable getStatementsRunnable = new Runnable() {
+//			@Override public void run() {
+//				final IsAStatement[] statements = getActiveStatements(branchPath, StatementCollectionMode.NO_IDS);
+//				statementsReference.set(statements);
+//			}
+//		};
+//		
+//		ForkJoinUtils.runInParallel(getStatementsRunnable, getConceptsRunnable);
+//		return new SnomedHierarchy(conceptIdsReference.get(), statementsReference.get());
 	}
 	
 	public SnomedHierarchy(final long[] conceptIds, final IsAStatement[] statements) {

@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -332,7 +333,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		
 		prepareTaxonomyBuilders(searcher, statedConceptIds, inferredConceptIds);
 		
-		final Collection<ChangeSetProcessor> changeSetProcessors = newHashSet();
+		final Collection<ChangeSetProcessor> changeSetProcessors = newArrayList();
 		changeSetProcessors.add(new ConceptChangeProcessor(SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy));
 		changeSetProcessors.add(new DescriptionChangeProcessor());
 		changeSetProcessors.add(new RelationshipChangeProcessor());

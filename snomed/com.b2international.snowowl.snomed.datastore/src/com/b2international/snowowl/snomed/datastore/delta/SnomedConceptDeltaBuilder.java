@@ -35,12 +35,12 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.util.AdapterUtil;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentTextProvider;
+import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
@@ -387,8 +387,9 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	
 	@Override
 	protected String getParentIdFromTerminologyBrowser(String id) {
-		final LongSet ancestorIds = getSuperTypeIds(getBranchPath(), Long.parseLong(id));
-		return CompareUtils.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
+		throw new UnsupportedOperationException("Unsupported API, refactor task review and branch management");
+//		final LongSet ancestorIds = getSuperTypeIds(getBranchPath(), Long.parseLong(id));
+//		return CompareUtils.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
 	}
 	
 	@Override
@@ -406,6 +407,11 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	@Override
 	protected short getTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+	}
+	
+	@Override
+	protected ITerminologyBrowser<? extends IIndexEntry, String> getTerminologyBrowser() {
+		throw new UnsupportedOperationException("Unsupported API, refactor task review and branch management");
 	}
 	
 	@Override

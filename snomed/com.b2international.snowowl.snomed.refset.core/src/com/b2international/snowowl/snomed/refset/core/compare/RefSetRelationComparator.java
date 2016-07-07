@@ -146,7 +146,8 @@ public class RefSetRelationComparator {
 		}
 
 		private boolean isRelated(SnomedConceptDocument refComponentId, SnomedConceptDocument id) {
-			return RelationTester.isRelated(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), statements);
+			throw new UnsupportedOperationException("Unsupported API, refactor refset relation comparation");
+//			return RelationTester.isRelated(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), statements);
 		}
 	}
 }

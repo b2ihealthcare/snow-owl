@@ -108,11 +108,11 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	}
 
 	private long getConceptStorageKey(final CDOView sourceView, final CDOView targetView, final NodeDiff diff) {
-		return getTerminologyBrowser().getStorageKey(getBranchPath(sourceView, targetView, diff), diff.getId());
+		throw new UnsupportedOperationException("Not implemented yet, should not be called");
 	}
 
 	private long getRefSetStorageKey(final CDOView sourceView, final CDOView targetView, final NodeDiff diff) {
-		return getRefSetBrowser().getStorageKey(getBranchPath(sourceView, targetView, diff), diff.getId());
+		throw new UnsupportedOperationException("Not implemented yet, should not be called");
 	}
 
 	private NodeDiffImpl createConceptDiff(final NodeDiff diff, final long refSetStorageKey) {
@@ -167,29 +167,29 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	}
 
 	private Collection<NodeDelta> compareRefSetByMembers(final IBranchPath sourcePath, final IBranchPath targetPath, final NodeDiff diff) {
-		
-		final Set<SnomedRefSetMemberIndexEntry> sourceMembers = toSet(getRefSetMembers(sourcePath, diff.getId()));
-		final Set<SnomedRefSetMemberIndexEntry> targetMembers = toSet(getRefSetMembers(targetPath, diff.getId()));
-		
-		final SetDifference<SnomedRefSetMemberFragment> difference = compare(sourceMembers, targetMembers, SnomedRefSetMemberIndexEntry.EQUIVALENCE);
-		
-		final Set<SnomedRefSetMemberFragment> newOrChangedMembers = newHashSet(difference.entriesOnlyOnRight());
-		final Collection<NodeDelta> memberChanges = newArrayList();
-		
-		for (final SnomedRefSetMemberFragment member : difference.entriesOnlyOnLeft()) {
-			if (newOrChangedMembers.contains(member)) {
-				memberChanges.add(createMemberStatusChangeDelta(member, targetPath));
-				newOrChangedMembers.remove(member);
-			} else {
-				memberChanges.add(createMemberDeletedChangeDelta(member, diff, sourcePath));
-			}
-		}
-		
-		for (final SnomedRefSetMemberFragment newMember : newOrChangedMembers) {
-			memberChanges.add(createMemberAddedChangeDelta(newMember, diff, targetPath));
-		}
-		
-		return memberChanges;
+		throw new UnsupportedOperationException("Not implemented yet, should not be called");
+//		final Set<SnomedRefSetMemberIndexEntry> sourceMembers = toSet(getRefSetMembers(sourcePath, diff.getId()));
+//		final Set<SnomedRefSetMemberIndexEntry> targetMembers = toSet(getRefSetMembers(targetPath, diff.getId()));
+//		
+//		final SetDifference<SnomedRefSetMemberFragment> difference = compare(sourceMembers, targetMembers, SnomedRefSetMemberIndexEntry.EQUIVALENCE);
+//		
+//		final Set<SnomedRefSetMemberFragment> newOrChangedMembers = newHashSet(difference.entriesOnlyOnRight());
+//		final Collection<NodeDelta> memberChanges = newArrayList();
+//		
+//		for (final SnomedRefSetMemberFragment member : difference.entriesOnlyOnLeft()) {
+//			if (newOrChangedMembers.contains(member)) {
+//				memberChanges.add(createMemberStatusChangeDelta(member, targetPath));
+//				newOrChangedMembers.remove(member);
+//			} else {
+//				memberChanges.add(createMemberDeletedChangeDelta(member, diff, sourcePath));
+//			}
+//		}
+//		
+//		for (final SnomedRefSetMemberFragment newMember : newOrChangedMembers) {
+//			memberChanges.add(createMemberAddedChangeDelta(newMember, diff, targetPath));
+//		}
+//		
+//		return memberChanges;
 	}
 
 	private NodeDelta createMemberAddedChangeDelta(final SnomedRefSetMemberFragment member, final NodeDiff refSetDiff, final IBranchPath targetPath) {
@@ -386,7 +386,8 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	}
 	
 	private boolean isRegularRefSet(final IBranchPath branchPath, final long refSetStorageKey) {
-		return getRefSetBrowser().isRegularRefSet(branchPath, refSetStorageKey);
+		throw new UnsupportedOperationException("Not implemented yet, should not be called");
+//		return getRefSetBrowser().isRegularRefSet(branchPath, refSetStorageKey);
 	}
 	
 	private boolean exists(final long conceptStorageKey) {
