@@ -17,9 +17,12 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Set;
 
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -57,6 +60,15 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 			return exactMatch(Fields.MODULE_ID, moduleId);
 		}
 		
+		/**
+		 * Returns the expression that matches any of the modules passed in
+		 * @param modules
+		 * @return expression
+		 */
+		public static Expression modules(Set<String> modules) {
+			return matchAny(Fields.MODULE_ID, modules);
+		}
+
 		public static final Expression released() {
 			return match(Fields.RELEASED, true);
 		}
@@ -72,6 +84,7 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		public static final Expression effectiveTime(long from, long to) {
 			return matchRange(Fields.EFFECTIVE_TIME, from, to);
 		}
+
 
 	}
 
