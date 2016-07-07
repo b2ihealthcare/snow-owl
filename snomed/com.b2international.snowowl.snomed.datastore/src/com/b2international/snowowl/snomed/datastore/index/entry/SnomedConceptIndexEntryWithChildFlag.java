@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.google.common.base.Objects.ToStringHelper;
 
 /**
  * Adds a boolean to {@link SnomedConceptDocument} to indicate whether the concept has children.
@@ -55,4 +56,11 @@ public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptDocument 
 	public boolean hasChildren() {
 		return hasChildren;
 	}
+	
+	@Override
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("hasChildren", hasChildren);
+	}
+	
 }

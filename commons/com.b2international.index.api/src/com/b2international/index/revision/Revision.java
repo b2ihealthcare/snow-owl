@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
 
 
 /**
@@ -136,15 +137,18 @@ public abstract class Revision implements WithId {
 	}
 	
 	@Override
-	public String toString() {
+	public final String toString() {
+		return doToString().toString();
+	}
+	
+	protected ToStringHelper doToString() {
 		return Objects.toStringHelper(this)
 				.add("_id", _id)
 				.add(STORAGE_KEY, storageKey)
 				.add(Revision.BRANCH_PATH, branchPath)
 				.add(Revision.COMMIT_TIMESTAMP, commitTimestamp)
 				.add(Revision.SEGMENT_ID, segmentId)
-				.add(Revision.REPLACED_INS, replacedIns)
-				.toString();
+				.add(Revision.REPLACED_INS, replacedIns);
 	}
 
 	public static Expression branchFilter(RevisionBranch branch) {

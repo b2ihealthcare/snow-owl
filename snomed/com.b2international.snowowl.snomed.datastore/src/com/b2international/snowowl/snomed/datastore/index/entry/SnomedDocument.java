@@ -220,4 +220,13 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		}
 	}
 	
+	@Override
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("moduleId", moduleId)
+				.add("released", released)
+				.add("active", active)
+				.add("effectiveTime", effectiveTime);
+	}
+
 }

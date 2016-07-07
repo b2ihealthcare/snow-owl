@@ -49,6 +49,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -568,6 +569,25 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	@JsonIgnore
 	public String getTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.PREDICATE_TYPE;
+	}
+
+	@Override
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("type", type)
+				.add("descriptionTypeId", descriptionTypeId)
+				.add("dataTypeLabel", dataTypeLabel)
+				.add("dataTypeName", dataTypeName)
+				.add("dataType", dataType)
+				.add("relationshipTypeExpression", relationshipTypeExpression)
+				.add("relationshipValueExpression", relationshipValueExpression)
+				.add("groupRule", groupRule)
+				.add("domain", domain)
+				.add("minCardinality", minCardinality)
+				.add("maxCardinality", maxCardinality)
+				.add("selfIds", selfIds)
+				.add("descendantIds", descendantIds)
+				.add("refSetIds", refSetIds);
 	}
 
 }

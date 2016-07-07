@@ -51,6 +51,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
+import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -521,13 +522,22 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	}
 	
 	@Override
-	public String toString() {
-		return toStringHelper()
-				.add(Fields.PRIMITIVE, primitive)
-				.add(Fields.EXHAUSTIVE, exhaustive)
-				.add(Fields.REFSET_TYPE, refSetType)
-				.add(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentType)
-				.toString();
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("primitive", primitive)
+				.add("exhaustive", exhaustive)
+				.add("refSetType", refSetType)
+				.add("referencedComponentType", referencedComponentType)
+				.add("mapTargetComponentType", mapTargetComponentType)
+				.add("structural", structural)
+				.add("refSetStorageKey", refSetStorageKey)
+				.add("parents", parents)
+				.add("ancestors", ancestors)
+				.add("statedParents", statedParents)
+				.add("statedAncestors", statedAncestors)
+				.add("doi", doi)
+				.add("referringRefSets", referringRefSets)
+				.add("referringMappingRefSets", referringMappingRefSets);
 	}
 
 }

@@ -62,6 +62,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
+import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -704,7 +705,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	public SnomedRefSetType getReferenceSetType() {
 		return referenceSetType;
 	}
-	
+
 	@JsonIgnore
 	@SuppressWarnings("unchecked")
 	public <T> T getValueAs() {
@@ -886,5 +887,35 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 	}
 	
+	@Override
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("referencedComponentId", referencedComponentId)
+				.add("referenceSetId", referenceSetId)
+				.add("referenceSetType", referenceSetType)
+				.add("referencedComponentType", referencedComponentType)
+				.add("targetComponent", targetComponent)
+				.add("valueId", valueId)
+				.add("dataType", dataType)
+				.add("attributeName", attributeName)
+				.add("value", value)
+				.add("operatorId", operatorId)
+				.add("characteristicTypeId", characteristicTypeId)
+				.add("unitId", unitId)
+				.add("descriptionLength", descriptionLength)
+				.add("descriptionFormat", descriptionFormat)
+				.add("acceptabilityId", acceptabilityId)
+				.add("sourceEffectiveTime", sourceEffectiveTime)
+				.add("targetEffectiveTime", targetEffectiveTime)
+				.add("mapTarget", mapTarget)
+				.add("mapTargetDescription", mapTargetDescription)
+				.add("mapCategoryId", mapCategoryId)
+				.add("correlationId", correlationId)
+				.add("mapAdvice", mapAdvice)
+				.add("mapRule", mapRule)
+				.add("mapGroup", mapGroup)
+				.add("mapPriority", mapPriority)
+				.add("query", query);
+	}
 
 }

@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -479,18 +480,18 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 	public boolean isFsn() {
 		return Concepts.FULLY_SPECIFIED_NAME.equals(getTypeId());
 	}
-
+	
 	@Override
-	public String toString() {
-		return toStringHelper()
+	protected ToStringHelper doToString() {
+		return super.doToString()
 				.add("conceptId", conceptId)
 				.add("languageCode", languageCode)
 				.add("term", term)
 				.add("typeId", typeId)
 				.add("caseSignificanceId", caseSignificanceId)
-				.add("preferredIn", preferredIn)
 				.add("acceptableIn", acceptableIn)
-				.toString();
+				.add("preferredIn", preferredIn)
+				.add("typeLabel", typeLabel);
 	}
 
 }

@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
+import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -422,19 +423,18 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 	public boolean isDestinationNegated() {
 		return destinationNegated;
 	}
-
+	
 	@Override
-	public String toString() {
-		return toStringHelper()
+	protected ToStringHelper doToString() {
+		return super.doToString()
 				.add("sourceId", sourceId)
-				.add("typeId", getTypeId())
+				.add("typeId", typeId)
 				.add("destinationId", destinationId)
 				.add("characteristicTypeId", characteristicTypeId)
 				.add("modifierId", modifierId)
 				.add("group", group)
 				.add("unionGroup", unionGroup)
-				.add("destinationNegated", destinationNegated)
-				.toString();
+				.add("destinationNegated", destinationNegated);
 	}
 
 }

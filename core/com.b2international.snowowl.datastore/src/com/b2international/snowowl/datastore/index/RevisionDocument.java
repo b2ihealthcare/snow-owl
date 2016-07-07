@@ -35,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
 
 /**
  * @since 4.7
@@ -191,13 +192,17 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 	}
 	
 	@Override
-	public String toString() {
-		return String.format("%02.2f - %s [%d]", id, label);
-	}
-	
-	@Override
 	public final int hashCode() {
 		return Objects.hashCode(_id());
+	}
+
+	@Override
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("id", id)
+				.add("label", label)
+				.add("iconId", iconId)
+				.add("score", score);
 	}
 
 	@Override
@@ -217,5 +222,5 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 	public CDOID cdoID() {
 		return CDOIDUtil.createLong(getStorageKey());
 	}
-
+	
 }

@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.exactMatch;
 
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.google.common.base.Objects.ToStringHelper;
 
 /**
  * @since 4.7
@@ -74,4 +75,10 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 		return namespace;
 	}
 	
+	@Override
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("namespace", namespace);
+	}
+
 }
