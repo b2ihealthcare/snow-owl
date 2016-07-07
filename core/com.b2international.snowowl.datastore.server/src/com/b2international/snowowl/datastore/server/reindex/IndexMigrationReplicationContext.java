@@ -56,6 +56,8 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	private final InternalSession replicatorSession;
 	
 	private TreeMap<Long, CDOBranch> branchesByBasetimestamp = new TreeMap<>();
+	
+	private long failedCommitTimestamp = -1;
 
 	IndexMigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session) {
 		this.context = context;
@@ -164,9 +166,8 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			}
 			
 			@Override
-			public void failCommit(long timeStamp) {
-				//interrupt the replication process when a commit fails
-				throw new RuntimeException("Commit with timestamp " + timeStamp +" failed.  Check the log file for details.");
+			public void failCommit(long timestamp) {
+				failedCommitTimestamp = timestamp;
 			}
 			
 			@Override 
@@ -232,6 +233,10 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	@Override
 	public boolean handleLockArea(LockArea area) {
 		return false;
+	}
+	
+	public long getFailedCommitTimestamp() {
+		return failedCommitTimestamp;
 	}
 
 }

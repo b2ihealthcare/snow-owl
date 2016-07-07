@@ -27,6 +27,7 @@ import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.b2international.snowowl.datastore.server.reindex.ReindexResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -131,10 +132,13 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			interpreter.println("RepositoryId parameter is required");
 			return;
 		}
-		ReindexRequest.builder(repositoryId)
+		
+		final ReindexResult result = ReindexRequest.builder(repositoryId)
 			.create()
 			.execute(getBus())
 			.getSync();
+		
+		interpreter.println(result.getMessage());
 	}
 
 	private static IEventBus getBus() {

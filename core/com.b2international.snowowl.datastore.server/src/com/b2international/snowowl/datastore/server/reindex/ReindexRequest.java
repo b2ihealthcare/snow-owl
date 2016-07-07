@@ -27,12 +27,12 @@ import com.b2international.snowowl.datastore.server.internal.InternalRepository;
  * @since 4.7
  */
 @SuppressWarnings("restriction")
-public class ReindexRequest extends BaseRequest<RepositoryContext, Boolean> {
+public class ReindexRequest extends BaseRequest<RepositoryContext, ReindexResult> {
 
 	ReindexRequest() {}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
+	public ReindexResult execute(RepositoryContext context) {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		
 		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
@@ -44,17 +44,18 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, Boolean> {
 			StoreThreadLocal.setSession(session);
 			//for partial replication get the last branch id and commit time from the index
 			//right now index is fully recreated
-			cdoRepository.replicate(new IndexMigrationReplicationContext(context, -1, 0, session));
+			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, -1, 0, session);
+			cdoRepository.replicate(replicationContext);
+			return new ReindexResult(replicationContext.getFailedCommitTimestamp());
 		} finally {
 			StoreThreadLocal.release();
 			session.close();
 		}
-		return Boolean.TRUE;
 	}
 
 	@Override
-	protected Class<Boolean> getReturnType() {
-		return Boolean.class;
+	protected Class<ReindexResult> getReturnType() {
+		return ReindexResult.class;
 	}
 
 	public static ReindexRequestBuilder builder(String repositoryId) {
