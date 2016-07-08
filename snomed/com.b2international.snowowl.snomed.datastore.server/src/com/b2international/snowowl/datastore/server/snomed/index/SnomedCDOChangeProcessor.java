@@ -322,14 +322,13 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 			for (SnomedConceptDocument inferredSourceConcept : searcher.search(inferredSourceConceptsQuery)) {
 				inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
 			}
-			
-			for (Concept newConcept : commitChangeSet.getNewComponents(Concept.class)) {
-				long longId = Long.parseLong(newConcept.getId());
-				statedConceptIds.add(longId);
-				inferredConceptIds.add(longId);
-			}
 		}
 		
+		for (Concept newConcept : commitChangeSet.getNewComponents(Concept.class)) {
+			long longId = Long.parseLong(newConcept.getId());
+			statedConceptIds.add(longId);
+			inferredConceptIds.add(longId);
+		}
 		
 		prepareTaxonomyBuilders(searcher, statedConceptIds, inferredConceptIds);
 		
