@@ -34,6 +34,7 @@ import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDeltaVisitor;
 import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOMoveFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -220,8 +221,13 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				@Override
 				public boolean apply(Concept input) {
 					final DirtyConceptFeatureDeltaVisitor visitor = new DirtyConceptFeatureDeltaVisitor();
-					commitChangeSet.getRevisionDeltas().get(input.cdoID()).accept(visitor);
-					return visitor.hasAllowedChanges();
+					final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(input.cdoID());
+					if (revisionDelta != null) {
+						revisionDelta.accept(visitor);
+						return visitor.hasAllowedChanges();
+					} else {
+						return false;
+					}
 				}
 			}).transform(GET_CONCEPT_ID).copyInto(dirtyConceptIds);
 

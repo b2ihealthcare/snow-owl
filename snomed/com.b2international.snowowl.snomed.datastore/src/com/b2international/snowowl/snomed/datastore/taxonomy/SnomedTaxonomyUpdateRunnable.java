@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EClass;
 import org.slf4j.Logger;
@@ -189,7 +190,11 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		}
 		
 		for (final Concept dirtyConcept : dirtyConcepts) {
-			final boolean statusChange = commitChangeSet.getRevisionDeltas().get(dirtyConcept.cdoID()).getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE) != null;
+			final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(dirtyConcept.cdoID());
+			if (revisionDelta == null) {
+				continue;
+			}
+			final boolean statusChange = revisionDelta.getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE) != null;
 			if (statusChange) {
 				if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
 					//nothing can be dirty and new at the same time
