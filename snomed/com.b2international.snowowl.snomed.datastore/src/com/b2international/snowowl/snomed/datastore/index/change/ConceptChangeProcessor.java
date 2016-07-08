@@ -185,9 +185,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.effectiveTime(concept != null ? getEffectiveTime(concept) : currentVersion.getEffectiveTime())
 			.moduleId(concept != null ? concept.getModule().getId() : currentVersion.getModuleId())
 			.exhaustive(concept != null ? concept.isExhaustive() : currentVersion.isExhaustive())
-			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive())
-	//		.relevant() // TODO register change type
-			;
+			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive());
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(id);

@@ -189,12 +189,15 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		}
 		
 		for (final Concept dirtyConcept : dirtyConcepts) {
-			if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
-				//nothing can be dirty and new at the same time
-				taxonomyBuilder.removeNode(createNode(dirtyConcept.getId(), true));
-			} else { //consider reverting inactivation
-				if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
-					taxonomyBuilder.addNode(createNode(dirtyConcept));
+			final boolean statusChange = commitChangeSet.getRevisionDeltas().get(dirtyConcept.cdoID()).getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE) != null;
+			if (statusChange) {
+				if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
+					//nothing can be dirty and new at the same time
+					taxonomyBuilder.removeNode(createNode(dirtyConcept.getId(), true));
+				} else { //consider reverting inactivation
+					if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
+						taxonomyBuilder.addNode(createNode(dirtyConcept));
+					}
 				}
 			}
 		}
