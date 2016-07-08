@@ -37,6 +37,8 @@ import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.net4j.util.om.monitor.Monitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
@@ -49,6 +51,8 @@ import com.b2international.snowowl.datastore.server.DelegatingTransaction;
  */
 @SuppressWarnings("restriction")
 class IndexMigrationReplicationContext implements CDOReplicationContext {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(IndexMigrationReplicationContext.class);
 
 	private final RepositoryContext context;
 	private final long initialLastCommitTime;
@@ -88,7 +92,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			// replicate all branches created before the current commit
 			do {
 				final CDOBranch branch = branchToReplicate.getValue();
-				System.err.println("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
+				LOGGER.info("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
 				context.service(BranchReplicator.class).replicateBranch(branch);
 				branchesByBasetimestamp.remove(branchToReplicate.getKey());
 				
@@ -100,7 +104,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			optimize();
 		}
 		
-		System.err.println("Replicating commit: " + commitInfo.getComment() + " at " + commitTimestamp);
+		LOGGER.info("Replicating commit: " + commitInfo.getComment() + " at " + commitTimestamp);
 		
 		final InternalRepository repository = replicatorSession.getManager().getRepository();
 		final InternalCDORevisionManager revisionManager = repository.getRevisionManager();
