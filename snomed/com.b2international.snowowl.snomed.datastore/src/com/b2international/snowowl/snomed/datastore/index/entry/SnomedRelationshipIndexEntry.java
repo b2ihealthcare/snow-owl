@@ -22,12 +22,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -35,6 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
@@ -159,6 +162,48 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 		
 		public static Expression destinationNegated() {
 			return match(Fields.DESTINATION_NEGATED, true);
+		}
+		
+	}
+	
+	public static final class Views extends RevisionDocument.Views {
+		
+		public static class StatementWithId extends RevisionDocument.Views.IdOnly {
+
+			private final String sourceId;
+			private final String destinationId;
+
+			@JsonCreator
+			public StatementWithId(@JsonProperty("id") final String id, @JsonProperty("sourceId") final String sourceId, @JsonProperty("destinationId") final String destinationId) {
+				super(id);
+				this.sourceId = sourceId;
+				this.destinationId = destinationId;
+			}
+			
+			public String getSourceId() {
+				return sourceId;
+			}
+			
+			public String getDestinationId() {
+				return destinationId;
+			}
+			
+			@Override
+			public int hashCode() {
+				return Objects.hash(getId(), getSourceId(), getDestinationId());
+			}
+			
+			@Override
+			public boolean equals(Object obj) {
+				if (this == obj) return true;
+				if (obj == null) return false;
+				if (getClass() != obj.getClass()) return false;
+				final StatementWithId other = (StatementWithId) obj;
+				return Objects.equals(getId(), other.getId())
+						&& Objects.equals(getSourceId(), other.getSourceId())
+						&& Objects.equals(getDestinationId(), other.getDestinationId());
+			}
+			
 		}
 		
 	}

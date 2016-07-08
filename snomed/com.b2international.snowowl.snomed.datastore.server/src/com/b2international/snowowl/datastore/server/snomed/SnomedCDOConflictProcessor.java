@@ -69,9 +69,7 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -396,7 +394,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 				}
 				
 				for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
-					final IsAStatementWithId[] statements = getActiveStatements(searcher, characteristicTypeId);
+					final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statements = getActiveStatements(searcher, characteristicTypeId);
 					final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
 					final SnomedTaxonomyUpdateRunnable taxonomyRunnable = new SnomedTaxonomyUpdateRunnable(searcher, transaction, taxonomyBuilder, characteristicTypeId);
 					taxonomyRunnable.run();
@@ -414,8 +412,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		});
 	}
 
-	private IsAStatementWithId[] getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
-		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+	private Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
 				.where(Expressions.builder()
 						.must(SnomedRelationshipIndexEntry.Expressions.active())
 						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
@@ -423,17 +421,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 						.build())
 				.limit(Integer.MAX_VALUE)
 				.build();
-		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
-		final IsAStatementWithId[] statements = new SnomedIsAStatementWithId[hits.getTotal()];
-		int i = 0; 
-		for (SnomedRelationshipIndexEntry relationship : hits) {
-			final long relationshipId = Long.parseLong(relationship.getId());
-			final long sourceId = Long.parseLong(relationship.getSourceId());
-			final long destinationId = Long.parseLong(relationship.getDestinationId());
-			statements[i] = new SnomedIsAStatementWithId(sourceId, destinationId, relationshipId);
-			i++;
-		}
-		return statements;
+		return searcher.search(query).getHits();
 	}
 
 	@Override

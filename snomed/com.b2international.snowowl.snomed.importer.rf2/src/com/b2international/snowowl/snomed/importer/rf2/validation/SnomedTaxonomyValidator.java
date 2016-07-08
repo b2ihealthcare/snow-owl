@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
@@ -65,7 +65,7 @@ public class SnomedTaxonomyValidator {
 	// current store state
 	private final String characteristicType;
 	private final LongCollection conceptIds;
-	private final IsAStatementWithId[] statements;
+	private final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statements;
 
 	public SnomedTaxonomyValidator(final ImportConfiguration configuration,
 			final RepositoryState repositoryState,

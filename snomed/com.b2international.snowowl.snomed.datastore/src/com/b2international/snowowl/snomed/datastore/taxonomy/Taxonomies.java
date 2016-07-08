@@ -35,8 +35,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
-import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
@@ -58,7 +56,7 @@ public final class Taxonomies {
 	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType) {
 		try {
 			final String characteristicTypeId = characteristicType.getConceptId();
-			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+			final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
 							.must(active())
 							.must(typeId(Concepts.IS_A))
@@ -68,17 +66,10 @@ public final class Taxonomies {
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
-			final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
+			final Hits<SnomedRelationshipIndexEntry.Views.StatementWithId> hits = searcher.search(query);
 			
-			final IsAStatementWithId[] statements = new SnomedIsAStatementWithId[hits.getTotal()];
-			int i = 0;
-			for (SnomedRelationshipIndexEntry hit : hits) {
-				statements[i] = new SnomedIsAStatementWithId(Long.parseLong(hit.getSourceId()), Long.parseLong(hit.getDestinationId()), Long.parseLong(hit.getId()));
-				i++;
-			}
-			
-			final ISnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
-			final ISnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, statements);
+			final ISnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
+			final ISnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
 			oldTaxonomy.build();
 			new SnomedTaxonomyUpdateRunnable(searcher, commitChangeSet, newTaxonomy, characteristicTypeId).run();
 			final Pair<LongSet, LongSet> diff = newTaxonomy.difference(oldTaxonomy);

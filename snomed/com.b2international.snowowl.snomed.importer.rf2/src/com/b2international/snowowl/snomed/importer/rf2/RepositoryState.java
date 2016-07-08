@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2;
 
+import java.util.Collection;
+
 import com.b2international.collections.longs.LongCollection;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * Class which can hold certain parts of the current state of the SNOMED CT terminology in memory.
@@ -25,10 +27,10 @@ import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 public final class RepositoryState {
 
 	private final LongCollection conceptIds;
-	private final IsAStatementWithId[] statedStatements;
-	private final IsAStatementWithId[] inferredStatements;
+	private final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statedStatements;
+	private final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> inferredStatements;
 
-	public RepositoryState(LongCollection conceptIds, IsAStatementWithId[] statedStatements, IsAStatementWithId[] inferredStatements) {
+	public RepositoryState(LongCollection conceptIds, Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statedStatements, Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> inferredStatements) {
 		this.conceptIds = conceptIds;
 		this.statedStatements = statedStatements;
 		this.inferredStatements = inferredStatements;
@@ -38,11 +40,11 @@ public final class RepositoryState {
 		return conceptIds;
 	}
 	
-	public IsAStatementWithId[] getInferredStatements() {
+	public Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getInferredStatements() {
 		return inferredStatements;
 	}
 	
-	public IsAStatementWithId[] getStatedStatements() {
+	public Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getStatedStatements() {
 		return statedStatements;
 	}
 	

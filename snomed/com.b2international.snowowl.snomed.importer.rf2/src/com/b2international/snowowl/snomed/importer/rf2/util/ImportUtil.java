@@ -86,10 +86,8 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedIsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -244,13 +242,13 @@ public final class ImportUtil {
 
 	private RepositoryState loadRepositoryState(RevisionSearcher searcher) throws IOException {
 		final LongCollection conceptIds = getConceptIds(searcher);
-		final IsAStatementWithId[] statedStatements = getStatements(searcher, Concepts.STATED_RELATIONSHIP);
-		final IsAStatementWithId[] inferredStatements = getStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
+		final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statedStatements = getStatements(searcher, Concepts.STATED_RELATIONSHIP);
+		final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> inferredStatements = getStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
 		return new RepositoryState(conceptIds, statedStatements, inferredStatements);
 	}
 
-	private IsAStatementWithId[] getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
-		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+	private Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
 				.where(Expressions.builder()
 						.must(SnomedRelationshipIndexEntry.Expressions.active(true))
 						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
@@ -258,17 +256,7 @@ public final class ImportUtil {
 						.build())
 				.limit(Integer.MAX_VALUE)
 				.build();
-		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
-		final IsAStatementWithId[] statements = new SnomedIsAStatementWithId[hits.getTotal()];
-		int i = 0;
-		for (SnomedRelationshipIndexEntry hit : hits) {
-			final long relationshipId = Long.parseLong(hit.getId());
-			final long sourceId = Long.parseLong(hit.getSourceId());
-			final long destinationId = Long.parseLong(hit.getDestinationId());
-			statements[i] = new SnomedIsAStatementWithId(sourceId, destinationId, relationshipId);
-			i++;
-		}
-		return statements;
+		return searcher.search(query).getHits();
 	}
 	
 	private LongCollection getConceptIds(RevisionSearcher searcher) throws IOException {

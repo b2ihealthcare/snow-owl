@@ -32,7 +32,6 @@ import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
 import com.b2international.snowowl.snomed.datastore.taxonomy.AbstractSnomedTaxonomyBuilder;
 import com.google.common.base.Preconditions;
 
@@ -66,7 +65,6 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 
 	/**
 	 * Map for storing active IS_A type SNOMED CT relationship representations. Keys are the unique relationship identifiers.
-	 * <br>For values see: {@link IsAStatementWithId}.
 	 */
 	private LongKeyMap<long[]> edges;
 	private String characteristicTypeId;
