@@ -36,4 +36,9 @@ public class CustomScoreExpression implements Expression {
 		return scoreFunction;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("CUSTOM SCORE(%s)", expression);
+	}
+	
 }

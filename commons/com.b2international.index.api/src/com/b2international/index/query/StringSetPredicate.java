@@ -20,22 +20,10 @@ import java.util.Set;
 /**
  * @since 4.7
  */
-public final class StringSetPredicate extends Predicate {
-
-	private final Set<String> values;
+public final class StringSetPredicate extends SetPredicate<String> {
 
 	StringSetPredicate(String field, Set<String> values) {
-		super(field);
-		this.values = values;
+		super(field, values);
 	}
-	
-	public Set<String> values() {
-		return values;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("ANY%s", values);
-	}
-	
+
 }

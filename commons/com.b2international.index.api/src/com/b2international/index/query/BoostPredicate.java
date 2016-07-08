@@ -36,4 +36,9 @@ public final class BoostPredicate implements Expression {
 		return boost;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("BOOST(%s)", expression);
+	}
+	
 }

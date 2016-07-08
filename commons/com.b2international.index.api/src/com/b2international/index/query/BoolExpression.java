@@ -59,4 +59,41 @@ public final class BoolExpression implements Expression {
 		return filterClauses;
 	}
 	
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("BOOL(");
+		
+		append("MUST", mustClauses, builder);
+		append("MUST NOT", mustNotClauses, builder);
+		append("SHOULD", shouldClauses, builder);
+		append("FILTER", filterClauses, builder);
+		
+		builder.append(")");
+		
+		return builder.toString();
+	}
+
+	private void append(final String name, final List<Expression> expressions, final StringBuilder builder) {
+		if (!expressions.isEmpty()) {
+			if (builder.length() > 5) {
+				builder.append(", ");
+			}
+			
+			builder.append(String.format("%s(", name));
+			
+			int i = 0;
+			for (final Expression expression : expressions) {
+				builder.append(expression);
+				i++;
+				
+				if (i != expressions.size()) {
+					builder.append(", ");
+				}
+			}
+			
+			builder.append(")");
+		}
+	}
+	
 }

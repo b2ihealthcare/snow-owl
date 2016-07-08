@@ -15,29 +15,13 @@
  */
 package com.b2international.index.query;
 
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
-
 /**
  * @since 4.7
  */
-public class LongSetPredicate extends Predicate {
-
-	private final Set<Long> values;
+public class LongSetPredicate extends SetPredicate<Long> {
 
 	LongSetPredicate(String field, Iterable<Long> values) {
-		super(field);
-		this.values = ImmutableSet.copyOf(values);
+		super(field, values);
 	}
-	
-	public Set<Long> values() {
-		return values;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("ANY%s", values);
-	}
-	
+
 }

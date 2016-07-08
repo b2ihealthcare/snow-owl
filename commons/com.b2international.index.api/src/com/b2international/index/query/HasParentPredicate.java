@@ -36,4 +36,9 @@ public class HasParentPredicate implements Expression {
 		return parentType;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("HAS PARENT(%s)", expression);
+	}
+	
 }
