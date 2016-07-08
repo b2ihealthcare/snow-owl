@@ -24,9 +24,16 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
  * @since 4.7
  */
 public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, RepositoryContext, ReindexResult> {
+	
+	private long failedCommitTimestamp = -1;
 
 	ReindexRequestBuilder(String repositoryId) {
 		super(repositoryId);
+	}
+	
+	public ReindexRequestBuilder setFailedCommitTimestamp(long failedCommitTimestamp) {
+		this.failedCommitTimestamp = failedCommitTimestamp;
+		return this;
 	}
 	
 	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
@@ -36,7 +43,10 @@ public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<Re
 
 	@Override
 	protected Request<RepositoryContext, ReindexResult> doBuild() {
-		return new ReindexRequest();
+		final ReindexRequest req = new ReindexRequest();
+		req.setFailedCommitTimestamp(failedCommitTimestamp);
+		
+		return req;
 	}
 
 }

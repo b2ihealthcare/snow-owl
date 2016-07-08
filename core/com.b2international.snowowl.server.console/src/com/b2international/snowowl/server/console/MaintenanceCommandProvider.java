@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
@@ -27,6 +28,7 @@ import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.b2international.snowowl.datastore.server.reindex.ReindexRequestBuilder;
 import com.b2international.snowowl.datastore.server.reindex.ReindexResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
@@ -44,7 +46,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		buffer.append("---Snow Owl commands---\n");
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
-		buffer.append("\tsnowowl reindex [repositoryId] - reindexes the content for the given repository ID\n");
+		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp]- reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
 		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
 		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
 		return buffer.toString();
@@ -133,10 +135,17 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		final ReindexResult result = ReindexRequest.builder(repositoryId)
-			.create()
-			.execute(getBus())
-			.getSync();
+		final ReindexRequestBuilder req = ReindexRequest.builder(repositoryId);
+		
+		final String failedCommitTimestamp = interpreter.nextArgument();
+		if (!StringUtils.isEmpty(failedCommitTimestamp)) {
+			req.setFailedCommitTimestamp(Long.parseLong(failedCommitTimestamp));
+		}
+		
+		final ReindexResult result = req
+				.create()
+				.execute(getBus())
+				.getSync();
 		
 		interpreter.println(result.getMessage());
 	}
