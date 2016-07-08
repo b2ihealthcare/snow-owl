@@ -805,6 +805,63 @@ repository:
     password: admin
 --------------------------
 
+==== Index
+[cols="3*", options="header"]
+|===
+|Name
+|Default
+|Description
+
+|commitInterval
+|`15000`
+|The hard commit interval of an index in milliseconds.
+
+|translogSyncInterval
+|`5000`
+|The sync interval of the transaction log in milliseconds.
+
+|queryWarnThreshold
+|`400`
+|The threshold of the warn log when querying data.
+
+|queryInfoThreshold
+|`300`
+|The threshold of the info log when querying data.
+
+|queryDebugThreshold
+|`100`
+|The threshold of the debug log when querying data.
+
+|queryTraceThreshold
+|`50`
+|The threshold of the trace log when querying data.
+
+|fetchWarnThreshold
+|`200`
+|The threshold of the warn log when fetching data.
+
+|fetchInfoThreshold
+|`100`
+|The threshold of the info log when fetching data.
+
+|fetchDebugThreshold
+|`50`
+|The threshold of the debug log when fetching data.
+
+|fetchTraceThreshold
+|`10`
+|The threshold of the trace log when fetching data.
+|===
+
+--------------------------
+repository:
+  index:
+    commitInterval: 5000
+    translogSyncInterval: 1000
+    queryWarnThreshold: 400
+    fetchInfoThreshold: 100
+--------------------------
+
 ==== RPC
 
 RPC is a custom protocol implementation used to solve request-response based communication between a client and a server.
