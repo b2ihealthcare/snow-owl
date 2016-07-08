@@ -19,6 +19,7 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
+import static com.google.common.collect.Maps.newHashMap;
 import static java.util.UUID.randomUUID;
 
 import java.io.IOException;
@@ -300,6 +301,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
 		final ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
 	
+		final Map<Long, ChangeConcept> changeConceptCache = newHashMap();
 		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>() {
 			@Override 
 			protected void handleAddedSubject(final long conceptId, final StatementFragment addedSubject) {
@@ -313,15 +315,15 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 			private void registerEntry(final long conceptId, final StatementFragment subject, final Nature changeNature) {
 				
-				final ChangeConcept sourceComponent = createChangeConcept(branchPath, conceptId);
-				final ChangeConcept typeComponent = createChangeConcept(branchPath, subject.getTypeId());
-				final ChangeConcept destinationComponent = createChangeConcept(branchPath, subject.getDestinationId());
+				final ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, conceptId);
+				final ChangeConcept typeComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getTypeId());
+				final ChangeConcept destinationComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getDestinationId());
 				
 				final long modifierId = subject.isUniversal() 
 						? LongConcepts.UNIVERSAL_RESTRICTION_MODIFIER_ID
 						: LongConcepts.EXISTENTIAL_RESTRICTION_MODIFIER_ID;
 				
-				final ChangeConcept modifierComponent = createChangeConcept(branchPath, modifierId);
+				final ChangeConcept modifierComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, modifierId);
 				
 				final RelationshipChangeEntry entry = new RelationshipChangeEntry(
 						changeNature, 
@@ -340,7 +342,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				
 				for (final ConcreteDomainFragment concreteDomainElementIndexEntry : relationshipConcreteDomainElements) {
 					
-					final ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(
+					final ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(changeConceptCache,
 							branchPath, 
 							concreteDomainElementIndexEntry);
 					
@@ -369,11 +371,11 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			}
 	
 			private void registerEntry(final long conceptId, final ConcreteDomainFragment subject, final Nature changeNature) {
-				final ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(
+				final ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(changeConceptCache,
 						branchPath, 
 						subject);
 				
-				final ChangeConcept sourceComponent = createChangeConcept(
+				final ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache,
 						branchPath, 
 						conceptId);
 				
@@ -396,31 +398,37 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		return convertedChanges;
 	}
 
-	private ChangeConcept createChangeConcept(final IBranchPath branchPath, final long id) {
-		return SnomedRequests.prepareGetConcept()
-			.setComponentId(Long.toString(id))
-			.build(branchPath.getPath())
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-			.then(new Function<ISnomedConcept, ChangeConcept>() {
-				@Override
-				public ChangeConcept apply(ISnomedConcept input) {
-					return new ChangeConcept(id, Long.parseLong(input.getIconId()));
-				}
-			})
-			.fail(new Function<Throwable, ChangeConcept>() {
-				@Override
-				public ChangeConcept apply(Throwable input) {
-					return new ChangeConcept(id, Long.parseLong(Concepts.ROOT_CONCEPT));
-				}
-			})
-			.getSync();
+	private ChangeConcept getOrCreateChangeConcept(final Map<Long, ChangeConcept> changeConceptCache, final IBranchPath branchPath, final long id) {
+		if (changeConceptCache.containsKey(id)) {
+			return changeConceptCache.get(id); 
+		} else {
+			final ChangeConcept concept = SnomedRequests.prepareGetConcept()
+					.setComponentId(Long.toString(id))
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(new Function<ISnomedConcept, ChangeConcept>() {
+						@Override
+						public ChangeConcept apply(ISnomedConcept input) {
+							return new ChangeConcept(id, Long.parseLong(input.getIconId()));
+						}
+					})
+					.fail(new Function<Throwable, ChangeConcept>() {
+						@Override
+						public ChangeConcept apply(Throwable input) {
+							return new ChangeConcept(id, Long.parseLong(Concepts.ROOT_CONCEPT));
+						}
+					})
+					.getSync();
+			changeConceptCache.put(id, concept);
+			return concept;
+		}
 	}
 
-	private ConcreteDomainElement createConcreteDomainElement(final IBranchPath branchPath, final ConcreteDomainFragment fragment) {
+	private ConcreteDomainElement createConcreteDomainElement(final Map<Long, ChangeConcept> changeConceptCache, final IBranchPath branchPath, final ConcreteDomainFragment fragment) {
 		
 		final ChangeConcept unitConcept = (ConcreteDomainFragment.UNSET_UOM_ID == fragment.getUomId()) 
 				? null
-				: createChangeConcept(branchPath, fragment.getUomId());
+				: getOrCreateChangeConcept(changeConceptCache, branchPath, fragment.getUomId());
 		
 		final ConcreteDomainElement concreteDomainElement = new ConcreteDomainElement(
 				fragment.getLabel(), 

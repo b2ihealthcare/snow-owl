@@ -38,7 +38,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDeletionPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
@@ -75,7 +74,6 @@ public class EquivalentConceptMerger {
 
 	private final SnomedEditingContext editingContext;
 	private final List<LongSet> equivalenciesToFix;
-	private final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
 	
 	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongSet> equivalenciesToFix) {
 		this.editingContext = editingContext;
@@ -170,7 +168,7 @@ public class EquivalentConceptMerger {
 			
 			for (final LongIterator itr = equivalentSet.iterator(); itr.hasNext(); /* empty */) {
 				final long conceptId = itr.next();
-				final Concept concept = lookupService.getComponent(Long.toString(conceptId), editingContext.getTransaction());
+				final Concept concept = editingContext.lookup(Long.toString(conceptId), Concept.class);
 				conceptsToRemove.add(concept);
 			}
 			

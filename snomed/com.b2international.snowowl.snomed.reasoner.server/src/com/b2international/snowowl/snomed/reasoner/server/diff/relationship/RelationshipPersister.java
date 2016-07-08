@@ -43,7 +43,6 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	private final Concept existentialRelationshipConcept;
 	private final Concept universalRelationshipConcept;
 	private final SnomedEditingContext context;
-	private final Map<Long, Concept> relationshipTypeConcepts;
 	private final Nature nature;
 	
 	private final Collection<String> relationshipIds = Sets.newHashSet();
@@ -51,10 +50,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	public RelationshipPersister(final SnomedEditingContext context, final Nature nature) {
 		this.context = context;
 		this.nature = nature;
-		inferredRelationshipConcept = context.lookup(Concepts.INFERRED_RELATIONSHIP, Concept.class);
-		existentialRelationshipConcept = context.lookup(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, Concept.class);
-		universalRelationshipConcept = context.lookup(Concepts.UNIVERSAL_RESTRICTION_MODIFIER, Concept.class);
-		relationshipTypeConcepts = Maps.newHashMap();
+		this.inferredRelationshipConcept = context.lookup(Concepts.INFERRED_RELATIONSHIP, Concept.class);
+		this.existentialRelationshipConcept = context.lookup(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, Concept.class);
+		this.universalRelationshipConcept = context.lookup(Concepts.UNIVERSAL_RESTRICTION_MODIFIER, Concept.class);
 	}
 
 	@Override
@@ -80,20 +78,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		final String namespace = SnomedIdentifiers.create(sourceConceptId).getNamespace();
 		final Concept module = sourceConcept.getModule();
 		
-		final Concept typeConcept;
-		final long typeId = addedEntry.getTypeId();
-		
-		if (relationshipTypeConcepts.containsKey(typeId)) {
-			
-			typeConcept = relationshipTypeConcepts.get(typeId);
-			
-		} else {
-			
-			typeConcept = context.lookup(Long.toString(typeId), Concept.class);
-			relationshipTypeConcepts.put(typeId, typeConcept);
-			
-		}
-		
+		final Concept typeConcept = context.lookup(Long.toString(addedEntry.getTypeId()), Concept.class);
 		final Concept destinationConcept = context.lookup(Long.toString(addedEntry.getDestinationId()), Concept.class);
 		
 		final Relationship newRel = context.buildEmptyRelationship(namespace);
