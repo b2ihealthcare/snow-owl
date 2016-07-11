@@ -54,6 +54,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -463,14 +464,15 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 	 */
 	@JsonIgnore
 	public Map<String, Acceptability> getAcceptabilityMap() {
-		final ImmutableMap.Builder<String, Acceptability> builder = ImmutableMap.builder();
+		// TODO check reindex vm argument
+		final Map<String, Acceptability> result = Maps.newHashMap();
 		for (String acceptableIn : this.acceptableIn) {
-			builder.put(acceptableIn, Acceptability.ACCEPTABLE);
+			result.put(acceptableIn, Acceptability.ACCEPTABLE);
 		}
 		for (String preferredIn : this.preferredIn) {
-			builder.put(preferredIn, Acceptability.PREFERRED);
+			result.put(preferredIn, Acceptability.PREFERRED);
 		}
-		return builder.build();
+		return result;
 	}
 	
 	/**
