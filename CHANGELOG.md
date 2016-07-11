@@ -1,6 +1,103 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.0.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 5.0.0.
+
+#### Datasets created before 5.0.0
+Snow Owl v5.0.0 no longer supports nested index directory format. The new format is flat, branches do not have their own directories under the corresponding terminology repository's root index folder. Branching and revision information are coded into each document and each terminology component has multiple documents in the index, which is called `revision index`. Also with the new index format, Snow Owl moved from Lucene v4.9.0 to Lucene v5.5.0.
+
+To support migration of incompatible datasets, Snow Owl v5.0.0 comes with a reindex command, which can be used to create the new index for any dataset based on the contents of the SQL database. See updated Admin Command Reference (TODO links) for details.
+
+#### Java API changes
+Due to index format changes, public APIs (generic and/or SNOMED CT terminology related) that used the old format, become obsolete, and either marked with deprecated or have been completely removed. See the affected public APIs in the Removed section. 
+
+### Added
+- Maintenance commands:
+ * `snowowl reindex <repositoryId> <failedCommitTimestamp>` - Reindexes the currently available database content from scratch, or from the specified commitTimestamp (if a previously initiated reindex process has failed at some point)
+ * `snowowl optimize <repositoryId> <maxSegments>` - Optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)
+ * `snowowl purge <repositoryId> <branchPath> <purgeStrategy>` - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is `LATEST`, available strategies are `ALL`, `LATEST`, `HISTORY`)
+- New search options for SNOMED CT Reference Set Members:
+ * `acceptabilityId`
+ * `characteristicTypeId`
+ * `correlationId`
+ * `descriptionFormat`
+ * `mapCategoryId`
+ * `operatorId`
+ * `targetComponent`
+ * `unitId`
+ * `valueId`
+- New `revisionCache` configuration option in `repository` section. Enables/Disables CDO revision cache based on its value (default value is `true`).
+- New `index` configuration options under `repository` section:
+ * `commitInterval` - the interval in milliseconds, which specifies how often flush and sync index changes to disk (default is `15000`, 15 seconds, minimum allowed value is `1000`, 1 second)
+ * `translogSyncInterval` - the interval in milliseconds, which specifies how often the transaction log flushes its changes to disk (default is `5000`, 5 seconds, minimum allowed value is `1000`, 1 second)
+ * `queryWarnThreshold` - threshold in milliseconds, which specifies when to log a WARN level message in the log file about a slow query (default value is `400`)
+ * `queryInfoThreshold` - threshold in milliseconds, which specifies when to log an INFO level message in the log file about a slow query (default value is `300`)
+ * `queryDebugThreshold` - threshold in milliseconds, which specifies when to log a DEBUG level message in the log file about a slow query (default value is `100`)
+ * `queryTraceThreshold` - threshold in milliseconds, which specifies when to log a TRACE level message in the log file about a slow query (default value is `50`)
+ * `fetchWarnThreshold` - threshold in milliseconds, which specifies when to log a WARN level message in the log file about a slow fetch (default value is `200`)
+ * `fetchInfoThreshold` - threshold in milliseconds, which specifies when to log an INFO level message in the log file about a slow fetch (default value is `100`)
+ * `fetchDebugThreshold` - threshold in milliseconds, which specifies when to log a DEBUG level message in the log file about a slow fetch (default value is `50`)
+ * `fetchTraceThreshold` - threshold in milliseconds, which specifies when to log a TRACE level message in the log file about a slow fetch (default value is `10`)
+- New modules:
+ * `com.b2international.index.api` - Generic Index API module
+ * `com.b2international.index.lucene` - Lucene based implementation of Generic Index API module
+ * `com.b2international.index.api.tests` - Generic test cases to verify implementation modules of the Index API module
+ * `com.b2international.index.api.tests.tools` - Useful utility classes when writing Index API based test cases
+ * `com.b2international.collections.jackson` - Jackson ser/deser module for `com.b2international.collections.api` module
+
+### Changed
+- Improved change processing performance by loading only the relevant revisions from the index
+- Review API changes (TODO)
+ 
+### Removed
+- Deprecated public SNOMED CT APIs that have been replaced by the new Request based APIs
+ * `SnomedTerminologyBrowser`
+ * `SnomedStatementBrowser`
+ * `SnomedPredicateBrowser`
+ * `SnomedComponentService`
+ * `SnomedTaxonomyService`
+- Configuration options:
+ * `indexTimeout` configuration has been removed, because the new index API uses a single index instead of many
+
+## 4.7.0
+
+TODO copy from extension branch when merging flat index to develop
+
+## 4.6.0
+
+### Added
+- All references set member properties are supported (using RF2 property names)
+- Support for rebase queueing
+ * `GET` `/merges` - returns all merges happened since the start of the server ()
+ * `GET` `/merges/:id` - return a merge by its identifier
+ * `POST` `/merges` - creates and starts a new merge between two branch points
+ * `DELETE` `/merges/:id` - deletes a merge object by its identifier
+- Expansion support improvements
+ * Expand `targetComponent` on association reference set members
+ * Expand `members` of any SNOMED CT core component (Concept, Description, Relationship) (eq. `expand=members()`)
+ * Support `stated` and `inferred` expansion of `descendants` and `ancestors` (both Java and REST API)
+- Representations (Java and REST API)
+ * New `iconId` property on SNOMED CT model components (not available in JSON representations)
+ * New, expandable `typeConcept` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+ * New, expandable `sourceConcept` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+ * New, expandable `destinationConcept` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+ * New, expandable `type` object property on SNOMED CT Relationships (by default only `id` is available on the object)
+
+### Changed
+- REST API property changes
+ * `targetComponentId` changed to `targetComponent` (became nested object, expandable)
+- Search improvements (Java API only, no REST support yet)
+ * Support for fuzzy matching
+ * Support for parsed terms
+ * Support for DOI based scoring (using a default DOI file, not configurable yet)
+ * Support for search profiles
+- The type of the `group` property changed from `byte` to `int` to support greater than `127` values
+- Using time based rolling policy with 90 days worth of history instead of fixed window with size restriction
+
 ## 4.5.0
 
 ### Added
