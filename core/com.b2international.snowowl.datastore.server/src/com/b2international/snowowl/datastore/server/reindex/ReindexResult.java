@@ -40,7 +40,7 @@ public class ReindexResult implements Serializable {
 		} else {
 			return String.format(
 					"Reindex failed at commit %d. See log for details. Processed %d and skipped %d commits. Reason: %s.",
-					failedCommitTimestamp, processedCommits, skippedCommits, exception.getMessage());
+					failedCommitTimestamp, processedCommits, skippedCommits, exception != null ? exception.getMessage() : "Check logs for details.");
 		}
 	}
 	
