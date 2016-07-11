@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespace;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
@@ -224,7 +223,6 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(term);
 				if (category == ComponentCategory.CONCEPT) {
 					conceptScoreMap.put(term, Float.MAX_VALUE);
-					queryBuilder.should(id(term));
 				}
 			} catch (IllegalArgumentException e) {
 				// ignored
