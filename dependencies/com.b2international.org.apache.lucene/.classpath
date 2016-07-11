@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-backward-codecs-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-codecs-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-core-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
