@@ -66,6 +66,8 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	private int processedCommits = 0;
 	private long failedCommitTimestamp = -1;
 
+	private Exception exception;
+
 	IndexMigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session) {
 		this.context = context;
 		this.initialBranchId = initialBranchId;
@@ -111,12 +113,15 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 		try {
 			LOGGER.info("Replicating commit: " + commitInfo.getComment() + " at " + commitInfo.getBranch().getName() + "@" + commitTimestamp);	
 		} catch (DBException e) {
+			skippedCommits++;
+			
 			if (e.getMessage().startsWith("Branch with ID")) {
 				LOGGER.warn("Skipping commit with missing branch: " + commitInfo.getComment() + " at " + commitInfo.getBranch().getID() + "@" + commitTimestamp);
-				skippedCommits++;
 				return;
+			} else {
+				failedCommitTimestamp = commitTimestamp;
+				this.exception = e;
 			}
-			throw e;
 		}
 		
 		final InternalRepository repository = replicatorSession.getManager().getRepository();
@@ -271,6 +276,10 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	
 	public int getProcessedCommits() {
 		return processedCommits;
+	}
+	
+	public Exception getException() {
+		return exception;
 	}
 
 }

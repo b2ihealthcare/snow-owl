@@ -25,11 +25,13 @@ public class ReindexResult implements Serializable {
 	private final long failedCommitTimestamp;
 	private final int processedCommits;
 	private final int skippedCommits;
+	private final Exception exception;
 	
-	ReindexResult(final long failedCommitTimestamp, final int processedCommits, final int skippedCommits) {
+	ReindexResult(final long failedCommitTimestamp, final int processedCommits, final int skippedCommits, final Exception exception) {
 		this.failedCommitTimestamp = failedCommitTimestamp;
 		this.processedCommits = processedCommits;
 		this.skippedCommits = skippedCommits;
+		this.exception = exception;
 	}
 	
 	public String getMessage() {
@@ -37,8 +39,8 @@ public class ReindexResult implements Serializable {
 			return String.format("Reindex successfully completed. Processed %d and skipped %d commits.", processedCommits, skippedCommits);
 		} else {
 			return String.format(
-					"Reindex failed at commit %d. See log for details. Processed %d and skipped %d commits.",
-					failedCommitTimestamp, processedCommits, skippedCommits);
+					"Reindex failed at commit %d. See log for details. Processed %d and skipped %d commits. Reason: %s.",
+					failedCommitTimestamp, processedCommits, skippedCommits, exception.getMessage());
 		}
 	}
 	

@@ -68,7 +68,7 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, ReindexResult
 			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, maxCdoBranchId, failedCommitTimestamp - 1, session);
 			cdoRepository.replicate(replicationContext);
 			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),
-					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits());
+					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
 		} finally {
 			StoreThreadLocal.release();
 			session.close();
