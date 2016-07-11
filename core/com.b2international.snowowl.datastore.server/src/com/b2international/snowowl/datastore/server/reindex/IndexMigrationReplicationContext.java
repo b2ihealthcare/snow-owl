@@ -26,6 +26,7 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.lock.IDurableLockingManager.LockArea;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.server.DelegatingRepository;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.CDOReplicationContext;
@@ -170,6 +171,11 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 					 */
 					@Override
 					public InternalCDORevision getRevisionByVersion(CDOID id, CDOBranchVersion branchVersion, int referenceChunk, boolean loadOnDemand) {
+						// first revisions are hidden
+						if (!(branchVersion instanceof CDORevisionDelta) && branchVersion.getBranch().getID() == commitInfo.getBranch().getID() && branchVersion.getVersion() == CDOBranchVersion.FIRST_VERSION) {
+							return null;
+						}
+						
 						InternalCDORevision revisionByVersion = super.getRevisionByVersion(id, branchVersion, referenceChunk, loadOnDemand);
 						
 						InternalCDORevision copiedRevision = revisionByVersion.copy();
