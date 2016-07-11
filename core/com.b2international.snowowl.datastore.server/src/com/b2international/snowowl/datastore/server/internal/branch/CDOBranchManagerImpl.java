@@ -73,6 +73,16 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
       	final int segmentId = segmentIds.getAndIncrement();
 		initBranchStore(new CDOMainBranchImpl(baseTimestamp, repository.getHeadTimestamp(cdoMainBranch), segmentId, ImmutableSet.of(segmentId)));
        	
+		int maxExistingSegment = segmentId;
+		for (Branch branch : getBranches()) {
+			if (branch instanceof InternalCDOBasedBranch) {
+				final int branchSegmentId = ((InternalCDOBasedBranch) branch).segmentId();
+				if (branchSegmentId > maxExistingSegment) {
+					maxExistingSegment = branchSegmentId;
+				}
+			}
+		}
+		segmentIds.set(maxExistingSegment+1);
         registerCommitListener(repository.getCdoRepository());
     }
     
@@ -93,7 +103,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				long baseTimestamp = repository.getBaseTimestamp(branch);
 				long headTimestamp = repository.getHeadTimestamp(branch);
 				final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();
-				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parent.segments()));
+				final Set<Integer> parentSegments = newHashSet();
+		    	// all branch should know the segment path to the ROOT
+		    	parentSegments.addAll(parent.parentSegments());
+		    	parentSegments.addAll(parent.segments());
+				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments));
 				registerBranch(parent.withSegmentId(nextTwoSegments.getB()));
 			}
 		}
