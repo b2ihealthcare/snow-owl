@@ -36,6 +36,7 @@ import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.net4j.db.DBException;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,30 +82,42 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 		
 		final long commitTimestamp = commitInfo.getTimeStamp();
 		
-		Entry<Long, CDOBranch> branchToReplicate = branchesByBasetimestamp.floorEntry(commitTimestamp);
-		if (branchToReplicate != null) {
-			// before creating the branch, execute a purge on the current segment
+		Entry<Long, CDOBranch> lastBranchToReplicateBeforeCommit = branchesByBasetimestamp.floorEntry(commitTimestamp);
+		if (lastBranchToReplicateBeforeCommit != null) {
+			// get the first entry and use the base of that branch for purge
+			Entry<Long, CDOBranch> currentBranchToReplicate = branchesByBasetimestamp.firstEntry();
+			
+			// before creating the branches, execute a purge on the current segment
 			PurgeRequest.builder(context.id())
-				.setBranchPath(branchToReplicate.getValue().getBase().getBranch().getPathName())
+				.setBranchPath(currentBranchToReplicate.getValue().getBase().getBranch().getPathName())
 				.build()
 				.execute(context);
 			
-			// replicate all branches created before the current commit
+			// replicate all branches created before the current commit in order
 			do {
-				final CDOBranch branch = branchToReplicate.getValue();
+				final CDOBranch branch = currentBranchToReplicate.getValue();
 				LOGGER.info("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
 				context.service(BranchReplicator.class).replicateBranch(branch);
-				branchesByBasetimestamp.remove(branchToReplicate.getKey());
+				branchesByBasetimestamp.remove(currentBranchToReplicate.getKey());
 				
-				// if there are more branches to create at this point
-				branchToReplicate = branchesByBasetimestamp.floorEntry(commitTimestamp);
-			} while (branchToReplicate != null);
+				// check if there are more branches to create until this point
+				currentBranchToReplicate = branchesByBasetimestamp.firstEntry();
+			} while (currentBranchToReplicate != null && currentBranchToReplicate.getKey() <= lastBranchToReplicateBeforeCommit.getKey());
 			
 			// optimize index after branch creations
 			optimize();
 		}
 		
-		LOGGER.info("Replicating commit: " + commitInfo.getComment() + " at " + commitTimestamp);
+		try {
+			LOGGER.info("Replicating commit: " + commitInfo.getComment() + " at " + commitInfo.getBranch().getName() + "@" + commitTimestamp);	
+		} catch (DBException e) {
+			if (e.getMessage().startsWith("Branch with ID")) {
+				LOGGER.warn("Skipping commit with missing branch: " + commitInfo.getComment() + " at " + commitInfo.getBranch().getID() + "@" + commitTimestamp);
+				skippedCommits++;
+				return;
+			}
+			throw e;
+		}
 		
 		final InternalRepository repository = replicatorSession.getManager().getRepository();
 		final InternalCDORevisionManager revisionManager = repository.getRevisionManager();
@@ -220,7 +233,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	}
 
 	private void optimize() {
-		OptimizeRequest.builder(context.id()).setMaxSegments(1).build().execute(context);
+		OptimizeRequest.builder(context.id()).setMaxSegments(8).build().execute(context);
 	}
 
 	@Override
