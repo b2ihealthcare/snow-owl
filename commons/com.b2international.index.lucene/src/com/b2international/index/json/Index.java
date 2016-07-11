@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexWriter;
@@ -192,16 +193,20 @@ public final class Index implements Operation {
 				fieldType = Reflections.getType(mapping.getField(name));
 			} else {
 				if (docValues) {
-					doc.add(new NumericDocValuesField(name, node.longValue()));
+					if (isFloat(fieldType)) {
+						doc.add(new FloatDocValuesField(name, node.floatValue()));	
+					} else if (isLong(fieldType) || isInt(fieldType) || isShort(fieldType)) {
+						doc.add(new NumericDocValuesField(name, node.longValue()));
+					}
 				}
 			}
-			if (fieldType == Long.class || fieldType == long.class || LongCollection.class.isAssignableFrom(fieldType)) {
+			if (isLong(fieldType)) {
 				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
-			} else if (fieldType == Float.class || fieldType == float.class || FloatCollection.class.isAssignableFrom(fieldType)) {
+			} else if (isFloat(fieldType)) {
 				Fields.searchOnlyFloatField(name).addTo(doc, node.floatValue());
-			} else if (fieldType == Integer.class || fieldType == int.class || IntCollection.class.isAssignableFrom(fieldType)) {
+			} else if (isInt(fieldType)) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
-			} else if (fieldType == Short.class || fieldType == short.class) {
+			} else if (isShort(fieldType)) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
 			} else {
 				throw new UnsupportedOperationException("Unsupported number type: " + fieldType + " for field: " + name);
@@ -210,6 +215,22 @@ public final class Index implements Operation {
 		default:
 			break;
 		}
+	}
+
+	private boolean isFloat(Class<?> fieldType) {
+		return fieldType == Float.class || fieldType == float.class || FloatCollection.class.isAssignableFrom(fieldType);
+	}
+
+	private boolean isLong(Class<?> fieldType) {
+		return fieldType == Long.class || fieldType == long.class || LongCollection.class.isAssignableFrom(fieldType);
+	}
+	
+	private boolean isInt(Class<?> fieldType) {
+		return fieldType == Integer.class || fieldType == int.class || IntCollection.class.isAssignableFrom(fieldType);
+	}
+	
+	private boolean isShort(Class<?> fieldType) {
+		return fieldType == Short.class || fieldType == short.class;
 	}
 
 }
