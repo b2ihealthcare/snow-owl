@@ -204,6 +204,11 @@ public final class LuceneQueryBuilder {
 			query.add(deque.pop(), Occur.SHOULD);
 		}
 		
+		for (Expression filter : bool.filterClauses()) {
+			visit(filter);
+			query.add(deque.pop(), Occur.FILTER);
+		}
+		
 		if (!bool.shouldClauses().isEmpty()) {
 			query.setMinimumNumberShouldMatch(bool.minShouldMatch());
 		}
