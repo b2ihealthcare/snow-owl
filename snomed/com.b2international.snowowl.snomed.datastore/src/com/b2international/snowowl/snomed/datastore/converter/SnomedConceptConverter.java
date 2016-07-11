@@ -238,17 +238,19 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				
 				final ExpressionBuilder expression = Expressions.builder();
 				expression.must(active());
+				final ExpressionBuilder descendantFilter = Expressions.builder();
 				if (stated) {
-					expression.must(statedParents(conceptIds));
+					descendantFilter.should(statedParents(conceptIds));
 					if (!direct) {
-						expression.must(statedAncestors(conceptIds));
+						descendantFilter.should(statedAncestors(conceptIds));
 					}
 				} else {
-					expression.must(parents(conceptIds));
+					descendantFilter.should(parents(conceptIds));
 					if (!direct) {
-						expression.must(ancestors(conceptIds));
+						descendantFilter.should(ancestors(conceptIds));
 					}
 				}
+				expression.must(descendantFilter.build());
 				
 				final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 						.where(expression.build())
