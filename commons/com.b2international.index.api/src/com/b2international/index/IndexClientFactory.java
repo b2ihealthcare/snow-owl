@@ -36,7 +36,7 @@ public interface IndexClientFactory {
 	 */
 	String COMMIT_INTERVAL_KEY = "commitInterval";
 	
-	String TRANSLOG_SYNC_INTERVAL_KEY = "transloySyncInterval";
+	String TRANSLOG_SYNC_INTERVAL_KEY = "translogSyncInterval";
 
 	/**
 	 * Configuration key to specify the slf4j Logger instance to use for the index.
