@@ -34,7 +34,7 @@ public class ReindexResult implements Serializable {
 	
 	public String getMessage() {
 		if (failedCommitTimestamp == -1) {
-			return String.format("Reindex successfully completed. Processed %d commits.", processedCommits);
+			return String.format("Reindex successfully completed. Processed %d and skipped %d commits.", processedCommits, skippedCommits);
 		} else {
 			return String.format(
 					"Reindex failed at commit %d. See log for details. Processed %d and skipped %d commits.",
