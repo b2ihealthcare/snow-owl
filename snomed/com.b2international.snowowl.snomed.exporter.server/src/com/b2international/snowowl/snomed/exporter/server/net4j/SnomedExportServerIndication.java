@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
@@ -363,6 +363,10 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				break;
 			}
 			
+			if (exportBranchPaths.isEmpty() && !isUnpublishedExport(subType)) {
+				throw new BadRequestException("No branch paths were found for the export.");
+			}
+			
 			Collections.sort(exportBranchPaths);
 			for (String versionBranchPath : exportBranchPaths) {
 				
@@ -449,6 +453,11 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		return null;
 	}
 	
+	private boolean isUnpublishedExport(final ContentSubType subType) {
+		return includeUnpublished
+				|| (subType == ContentSubType.DELTA && deltaExportStartEffectiveTime == null && deltaExportEndEffectiveTime == null);
+	}
+
 	private void executeCoreExport(final String workingDirectory, final SnomedExportContext context, final RevisionSearcher revisionSearcher, final OMMonitor monitor) throws IOException {
 
 		if (monitor.isCanceled()) {
@@ -650,11 +659,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		try {
 			return EffectiveTimes.parse(dateInRF2Format, SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
 		} catch (SnowowlRuntimeException e) {
-			if (e.getCause() instanceof ParseException) {
-				return null;
-			} else {
-				throw e;
-			}
+			LOGGER.error(String.format("Couldn't parse RF2 date %s.", dateInRF2Format), e);
+			throw new BadRequestException("Couldn't parse RF2 date %s.", dateInRF2Format);
 		}
 	}
 	
