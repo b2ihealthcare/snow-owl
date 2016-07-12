@@ -37,8 +37,8 @@ import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.revision.RevisionCompare.Builder;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
@@ -47,6 +47,7 @@ import com.google.common.collect.Sets;
  */
 public final class DefaultRevisionIndex implements InternalRevisionIndex {
 
+	private static final int PURGE_LIMIT = 100000;
 	private final Index index;
 	private final RevisionBranchProvider branchProvider;
 
@@ -231,14 +232,13 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			if (totalRevisionsToPurge > 0) {
 				admin().log().info("Purging {} '{}' documents...", totalRevisionsToPurge, DocumentMapping.getType(revisionType));
 				// partition the total hit number by the current threshold
-				final int limit = 10000;
 				int offset = 0;
 				do {
 					final Hits<Revision.Views.DocIdOnly> revisionsToPurge = searcher.search(Query
 							.selectPartial(Revision.Views.DocIdOnly.class, revisionType)
 							.where(purgeQuery.build())
 							.offset(offset)
-							.limit(limit)
+							.limit(PURGE_LIMIT)
 							.build());
 					
 					for (Revision.Views.DocIdOnly hit : revisionsToPurge) {
@@ -246,7 +246,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					}
 					
 					// register processed items in the offset, and check if we reached the limit, if yes break
-					offset += limit;
+					offset += PURGE_LIMIT;
 					// commit the batch
 					writer.commit();
 				} while (offset <= totalRevisionsToPurge);
