@@ -596,6 +596,12 @@ osgi>snowowl reindex snomedStore
 osgi>snowowl optimize snomedStore 6
 ....
 
+`snowowl purge <repositoryId> <branchPath> <purgeStrategy>` optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST, available strategies are ALL, LATEST, HISTORY)
+
+....
+osgi>snowowl purge snomedStore MAIN/2016-01-31 ALL
+....
+
 == Session management
 
 === Display connected users and session identifiers
