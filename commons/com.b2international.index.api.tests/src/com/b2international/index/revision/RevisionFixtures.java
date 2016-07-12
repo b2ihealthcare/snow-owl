@@ -92,6 +92,48 @@ public class RevisionFixtures {
 					.add("doi", doi)
 					.add("score", score);
 		}
+		
+	}
+	
+	@Doc
+	public static class BooleanData extends Data {
+
+		private final boolean active;
+
+		@JsonCreator
+		public BooleanData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2,
+				@JsonProperty("value") final boolean active) {
+			super(field1, field2);
+			this.active = active;
+		}
+		
+		public boolean isActive() {
+			return active;
+		}
+		
+	}
+	
+	@Doc
+	public static class RangeData extends Data {
+		
+		private final int from;
+		private final int to;
+
+		@JsonCreator
+		public RangeData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2, @JsonProperty("from") final int from, @JsonProperty("to") final int to) {
+			super(field1, field2);
+			this.from = from;
+			this.to = to;
+		}
+		
+		public int getFrom() {
+			return from;
+		}
+		
+		public int getTo() {
+			return to;
+		}
+		
 	}
 	
 	@Doc
