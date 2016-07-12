@@ -42,6 +42,7 @@ import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
@@ -95,6 +96,8 @@ public final class LuceneQueryBuilder {
 	private void visit(Expression expression) {
 		if (expression instanceof MatchAll) {
 			deque.push(new MatchAllDocsQuery());
+		} else if (expression instanceof MatchNone) {
+			deque.push(new MatchNoDocsQuery());
 		} else if (expression instanceof StringPredicate) {
 			StringPredicate predicate = (StringPredicate) expression;
 			visit(predicate);
