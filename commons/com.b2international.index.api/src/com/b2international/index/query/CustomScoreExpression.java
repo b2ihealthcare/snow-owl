@@ -22,10 +22,12 @@ public class CustomScoreExpression implements Expression {
 
 	private final ScoreFunction scoreFunction;
 	private final Expression expression;
+	private final boolean strict;
 
-	CustomScoreExpression(Expression expression, ScoreFunction scoreFunction) {
+	CustomScoreExpression(Expression expression, ScoreFunction scoreFunction, boolean strict) {
 		this.expression = expression;
 		this.scoreFunction = scoreFunction;
+		this.strict = strict;
 	}
 	
 	public Expression expression() {
@@ -34,6 +36,10 @@ public class CustomScoreExpression implements Expression {
 	
 	public ScoreFunction func() {
 		return scoreFunction;
+	}
+	
+	public boolean isStrict() {
+		return strict;
 	}
 	
 	@Override

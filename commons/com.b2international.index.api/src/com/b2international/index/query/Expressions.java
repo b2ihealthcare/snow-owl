@@ -201,7 +201,11 @@ public class Expressions {
 	}
 
 	public static Expression customScore(Expression query, ScoreFunction func) {
-		return new CustomScoreExpression(query, func);
+		return customScore(query, func, false);
+	}
+	
+	public static Expression customScore(Expression query, ScoreFunction func, boolean strict) {
+		return new CustomScoreExpression(query, func, strict);
 	}
 
 }

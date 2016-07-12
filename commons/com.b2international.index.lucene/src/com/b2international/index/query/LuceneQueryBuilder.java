@@ -143,7 +143,9 @@ public final class LuceneQueryBuilder {
 		final Expression inner = expression.expression();
 		visit(inner);
 		final Query innerQuery = deque.pop();
-		deque.push(new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func()))));
+		final CustomScoreQuery query = new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())));
+		query.setStrict(expression.isStrict());
+		deque.push(query);
 	}
 	
 	private ValueSource visit(final ScoreFunction func) {
