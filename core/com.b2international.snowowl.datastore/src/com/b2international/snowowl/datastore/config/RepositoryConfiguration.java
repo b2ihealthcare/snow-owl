@@ -52,9 +52,6 @@ public class RepositoryConfiguration {
 	private IndexConfiguration indexConfiguration = new IndexConfiguration();
 	
 	@Min(0)
-	private long indexTimeout = 30L;
-
-	@Min(0)
 	@Max(100)
 	private int numberOfWorkers = 3 * Runtime.getRuntime().availableProcessors();
 	
@@ -128,25 +125,6 @@ public class RepositoryConfiguration {
 		return HostAndPort.fromParts(getHost(), getPort());
 	}
 
-	/**
-	 * @return the timeout in minutes after an index service is closed if the
-	 *         associated branch is left unattended (no queries are run against
-	 *         it and/or no documents are updated).
-	 */
-	@JsonProperty
-	public long getIndexTimeout() {
-		return indexTimeout;
-	}
-
-	/**
-	 * @param indexTimeout
-	 *            the indexTimeout to set
-	 */
-	@JsonProperty
-	public void setIndexTimeout(long indexTimeout) {
-		this.indexTimeout = indexTimeout;
-	}
-	
 	/**
 	 * @return the number of workers threads per repository
 	 */

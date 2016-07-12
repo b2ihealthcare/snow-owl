@@ -739,17 +739,12 @@ authentication:
 |revisionCache
 |`true`
 |Enable CDO revision cache to keep data returned from the database.
-
-|indexTimeout
-|`240`
-|The timeout in minutes after indexes will be closed if they are not in use anymore.
 |===
 
 --------------------------
 repository:
   host: 0.0.0.0
   port: 2036
-  indexTimeout: 240
 --------------------------
 
 ==== Database
