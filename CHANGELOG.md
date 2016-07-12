@@ -13,7 +13,12 @@ Snow Owl v5.0.0 no longer supports nested index directory format. The new format
 To support migration of incompatible datasets, Snow Owl v5.0.0 comes with a reindex command, which can be used to create the new index for any dataset based on the contents of the SQL database. See updated Admin Command Reference (TODO links) for details.
 
 #### Java API changes
-Due to index format changes, public APIs (generic and/or SNOMED CT terminology related) that used the old format, become obsolete, and either marked with deprecated or have been completely removed. See the affected public APIs in the Removed section. 
+Due to index format changes, public APIs (generic and/or SNOMED CT terminology related) - that used the old format - become obsolete, and either marked with deprecated annotation or have been completely removed. See the affected public APIs in the Removed section. 
+
+#### Review API changes
+In general the `Review API` still works the same way as in the `4.x` versions, but the new, changed, deleted concept ID sets might contain non-Concept identifiers when a member of a `Relationship/Description` changes, but the corresponding `Relationship/Description` does not. It is recommended to fetch the container `SNOMED CT Concept` identifier by querying the *source* branch for the new or changed Relationship/Descriptions, and extracting the SNOMED CT Concept identifier from either the conceptId or sourceId properties. Querying deleted revisions from the tip of a branch is currently not supported, see next section. 
+
+With this change and limited capabilities, Snow Owl will no longer support the current version of the `Review API` starting from the next release (`5.1.0`), and it will replace it with a more generic `Branch Compare API`. This new API will return the new/changed/deleted document identifiers directly without trying to be smart and replace the document identifier with the corresponding container (root resource, like the `SNOMED CT Concept`) component identifier. API consumers will be responsible for fetching and computing the final compare result based on the actual changes between the branches, if they would like to still show the review in the scope of a `SNOMED CT Concept`. This enables `Snow Owl` to use the same `Branch Compare API` for different terminology implementations and the API will provide access points to query the proper revision of new/changed/deleted components (currently it only supports the latest revision, which returns `HTTP 404 Not Found` for deleted components).
 
 ### Added
 - Maintenance commands:
@@ -51,7 +56,6 @@ Due to index format changes, public APIs (generic and/or SNOMED CT terminology r
 
 ### Changed
 - Improved change processing performance by loading only the relevant revisions from the index
-- Review API changes (TODO)
  
 ### Removed
 - Deprecated public SNOMED CT APIs that have been replaced by the new Request based APIs
@@ -61,7 +65,7 @@ Due to index format changes, public APIs (generic and/or SNOMED CT terminology r
  * `SnomedComponentService`
  * `SnomedTaxonomyService`
 - Configuration options:
- * `indexTimeout` configuration has been removed, because the new index API uses a single index instead of many
+ * `indexTimeout` configuration has been removed, because the new index API uses a single index and it does not require disposal of branch specific Index Readers/Writers
 
 ## 4.7.0
 
