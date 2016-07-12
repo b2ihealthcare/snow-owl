@@ -16,22 +16,27 @@
 package com.b2international.index.revision;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 
+import org.assertj.core.api.Condition;
 import org.junit.Test;
 
+import com.b2international.index.query.DualScoreFunction;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.ScoredData;
 import com.google.common.collect.ImmutableList;
 
 public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(Data.class, ScoredData.class);
 	}
 	
 	@Test
@@ -96,6 +101,37 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		// only second version should match, the first revision should be unaccessible without timestamp
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(second);
+	}
+	
+	
+	@Test
+	public void searchWithCustomScore() throws Exception {
+		final ScoredData first = new ScoredData("field1", "field2", 1.0f);
+		final ScoredData second = new ScoredData("field1", "field2.2", 2.0f);
+		
+		indexRevision(MAIN, STORAGE_KEY1, first);
+		indexRevision(MAIN, STORAGE_KEY2, second);
+		
+		final Query<ScoredData> query = Query.select(ScoredData.class).where(Expressions.customScore(Expressions.exactMatch("field1", "field1"),
+				new DualScoreFunction<String, Float>("ScoreFunction", "field1", "doi") {
+					@Override
+					protected float compute(String field1, Float doi) {
+						return doi;
+					}
+				}, true))
+				.withScores(true)
+				.build();
+		
+		final Iterable<ScoredData> matches = search(MAIN, query);
+		
+		assertThat(matches).hasSize(2);
+		assertThat(matches).contains(first, second);
+		assertThat(matches).are(new Condition<ScoredData>() {
+			@Override
+			public boolean matches(ScoredData input) {
+				return input.getScore() == input.getDoi();
+			}
+		});
 	}
 	
 	@Test

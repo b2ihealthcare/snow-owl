@@ -18,8 +18,10 @@ package com.b2international.index.revision;
 import java.util.Objects;
 
 import com.b2international.index.Doc;
+import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects.ToStringHelper;
 
 /**
  * @since 4.7
@@ -55,6 +57,41 @@ public class RevisionFixtures {
 			return Objects.hash(field1, field2);
 		}
 		
+	}
+	
+	@Doc
+	public static class ScoredData extends Data implements WithScore {
+		
+		private float score = 0.0f;
+		private final float doi;
+
+		@JsonCreator
+		public ScoredData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2,
+				@JsonProperty("doi") final float doi) {
+			super(field1, field2);
+			this.doi = doi;
+		}
+		
+		@Override
+		public float getScore() {
+			return score;
+		}
+
+		@Override
+		public void setScore(float score) {
+			this.score = score;
+		}
+		
+		public float getDoi() {
+			return doi;
+		}
+
+		@Override
+		protected ToStringHelper doToString() {
+			return super.doToString()
+					.add("doi", doi)
+					.add("score", score);
+		}
 	}
 	
 	@Doc
