@@ -69,6 +69,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.GetResultRespo
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -143,12 +144,13 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final TopDocs docs = searcher.search(query, null, docsToRetrieve, Sort.INDEXORDER, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
+			final ObjectReader reader = objectMapper.reader(ClassificationRun.class);
 			for (int i = 0; i < scoreDocs.length; i++) {
 				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_BRANCH_PATH, FIELD_SOURCE));
 				
 				final String branchPath = sourceDocument.get(FIELD_BRANCH_PATH);
 				final String source = sourceDocument.get(FIELD_SOURCE);
-				final ClassificationRun run = objectMapper.reader(ClassificationRun.class).readValue(source);
+				final ClassificationRun run = reader.readValue(source);
 				
 				run.setStatus(ClassificationStatus.STALE);
 				
@@ -430,10 +432,11 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final TopDocs docs = searcher.search(query, null, docsToRetrieve, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
+			final ObjectReader reader = objectMapper.reader(sourceClass);
 			for (int i = offset; i < docsToRetrieve && i < scoreDocs.length; i++) {
 				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_SOURCE));
 				final String source = sourceDocument.get(FIELD_SOURCE);
-				final T deserializedSource = objectMapper.reader(sourceClass).readValue(source);
+				final T deserializedSource = reader.readValue(source);
 				resultBuilder.add(deserializedSource);
 			}
 
