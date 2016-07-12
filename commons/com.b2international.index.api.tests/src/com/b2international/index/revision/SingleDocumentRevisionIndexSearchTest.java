@@ -26,6 +26,7 @@ import com.b2international.index.query.DualScoreFunction;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionFixtures.AnalyzedData;
 import com.b2international.index.revision.RevisionFixtures.BooleanData;
 import com.b2international.index.revision.RevisionFixtures.Data;
 import com.b2international.index.revision.RevisionFixtures.RangeData;
@@ -40,7 +41,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class, ScoredData.class, BooleanData.class, RangeData.class);
+		return ImmutableList.<Class<?>>of(Data.class, ScoredData.class, BooleanData.class, RangeData.class, AnalyzedData.class);
 	}
 	
 	@Test
@@ -219,6 +220,34 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(first);
+	}
+	
+	@Test
+	public void searchWithMatchTextAny() {
+		final Data first = new Data("a", "field2");
+		final Data second = new Data("b", "field2");
+		
+		indexRevision(MAIN, STORAGE_KEY1, first);
+		indexRevision(MAIN, STORAGE_KEY2, second);
+		
+		final Query<Data> query = Query.select(Data.class).where(Expressions.matchTextAny("field1", "a b")).build();
+		final Iterable<Data> matches = search(MAIN, query);
+		
+		assertThat(matches).hasSize(2);
+		assertThat(matches).containsAll(Lists.newArrayList(first, second));
+	}
+	
+	@Test
+	public void searchWithMatchTextFuzzy() {
+		final Data data = new Data("field1", "field2");
+		
+		indexRevision(MAIN, STORAGE_KEY1, data);
+		
+		final Query<Data> query = Query.select(Data.class).where(Expressions.matchTextFuzzy("field1", "field2")).build();
+		final Iterable<Data> matches = search(MAIN, query);
+		
+		assertThat(matches).hasSize(1);
+		assertThat(matches).containsOnly(data);
 	}
 	
 }

@@ -17,6 +17,7 @@ package com.b2international.index.revision;
 
 import java.util.Objects;
 
+import com.b2international.index.Analyzed;
 import com.b2international.index.Doc;
 import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -55,6 +56,37 @@ public class RevisionFixtures {
 		@Override
 		public int hashCode() {
 			return Objects.hash(field1, field2);
+		}
+		
+	}
+	
+	@Doc
+	public static class AnalyzedData extends Revision {
+		
+		@Analyzed
+		private final String field;
+		
+		@JsonCreator
+		public AnalyzedData(@JsonProperty("field") final String field) {
+			this.field = field;
+		}
+		
+		public String getField() {
+			return field;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			AnalyzedData other = (AnalyzedData) obj;
+			return Objects.equals(field, other.field); 
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field);
 		}
 		
 	}
