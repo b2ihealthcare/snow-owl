@@ -122,7 +122,7 @@ public class JsonDocumentSearcher implements Searcher {
 				if (maxDoc <= 0 || limit < 1) {
 					topDocs = new TopFieldDocs(0, null, null, 0);
 				} else {
-					topDocs = searcher.search(lq, numDocsToRetrieve(offset, limit), toSort(query.getSortBy()), true, false);
+					topDocs = searcher.search(lq, numDocsToRetrieve(offset, limit), toSort(query.getSortBy()), query.isWithScores(), false);
 				}
 			}
 			profiler.end(Phase.QUERY);
