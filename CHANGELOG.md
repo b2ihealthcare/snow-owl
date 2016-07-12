@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 5.0.0.
 
 #### Datasets created before 5.0.0
-Snow Owl v5.0.0 no longer supports nested index directory format. The new format is flat, branches do not have their own directories under the corresponding terminology repository's root index folder. Branching and revision information are coded into each document and each terminology component has multiple documents in the index, which is called `revision index`. Also with the new index format, Snow Owl moved from Lucene v4.9.0 to Lucene v5.5.0.
+Snow Owl v5.0.0 no longer supports nested index directory format. The new format is flat, branches do not have their own directories under the corresponding terminology repository's root index folder. Branching and revision information are coded into each document and each terminology component has multiple documents in the index, which is called `revision index` and the documents are `revisions`. Additionally with the new index format, Snow Owl moved from Lucene v4.9.0 to v5.5.0. Indexes, that still use the old index API, but depend on the new Lucene version, should be accessible and readable by Lucene v5.5.0.
 
 To support migration of incompatible datasets, Snow Owl v5.0.0 comes with a reindex command, which can be used to create the new index for any dataset based on the contents of the SQL database. See updated Admin Command Reference (TODO links) for details.
 
