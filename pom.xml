@@ -575,7 +575,7 @@
 			<repositories>
 				<repository>
 					<id>xtext</id>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/</url>
+					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.8.4/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
