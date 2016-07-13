@@ -66,8 +66,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 			@Override
 			public ConceptChangeProcessor execute(RevisionSearcher searcher) throws IOException {
 				final ICDOCommitChangeSet commitChangeSet = createChangeSet();
-				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredChangedConceptIds);
-				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedChangedConceptIds);
+				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredChangedConceptIds, true);
+				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedChangedConceptIds, true);
 				final ConceptChangeProcessor processor = new ConceptChangeProcessor(availableImages, statedTaxonomy, inferredTaxonomy);
 				processor.process(commitChangeSet, searcher);
 				return processor;

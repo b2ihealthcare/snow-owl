@@ -64,6 +64,16 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			return getNodeId(i);
 		}
 	};
+
+	private boolean checkCycles = true;
+	
+	public void setCheckCycles(boolean checkCycles) {
+		this.checkCycles = checkCycles;
+	}
+	
+	public boolean isCheckCycles() {
+		return checkCycles;
+	}
 	
 	@Override
 	public boolean isDirty() {
@@ -431,7 +441,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(count);
 		for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
 			long convertedId = function.apply(i);
-			if (convertedId == conceptId) {
+			if (convertedId == conceptId && checkCycles) {
 				throw new CycleDetectedException("Concept " + conceptId + " would introduce a cycle in the ISA graph (loop).");
 			}
 			$.add(convertedId);
@@ -449,7 +459,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		final long conceptIdLong = Long.parseLong(conceptId);
 		for (final int i : internalIds) {
 			long convertedId = function.apply(i);
-			if (conceptIdLong == convertedId) {
+			if (conceptIdLong == convertedId && checkCycles ) {
 				throw new CycleDetectedException("Concept " + conceptId + " would introduce a cycle in the ISA graph (loop).");
 			}
 			$.add(convertedId);

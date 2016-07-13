@@ -50,9 +50,11 @@ import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
@@ -61,10 +63,12 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
@@ -427,17 +431,21 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		LOGGER.info("Retrieving taxonomic information from store.");
 		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
 		
+		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final String reindexFeature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
+		final boolean checkCycles = features.exists(reindexFeature) ? !features.check(reindexFeature) : true;
+		
 		final Runnable inferredRunnable = CDOServerUtils.withAccessor(new Runnable() {
 			@Override
 			public void run() {
-				inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredConceptIds);
+				inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredConceptIds, checkCycles);
 			}
 		}, accessor);
 		
 		final Runnable statedRunnable = CDOServerUtils.withAccessor(new Runnable() {
 			@Override
 			public void run() {
-				statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedConceptIds);
+				statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedConceptIds, checkCycles);
 			}
 		}, accessor);
 		
