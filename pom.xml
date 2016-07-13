@@ -560,6 +560,11 @@
 			</dependencies>
 			<repositories>
 				<repository>
+					<id>emf</id>
+					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.10.x/core/S201501230452/</url>
+					<layout>p2</layout>
+				</repository>
+				<repository>
 					<id>xtext</id>
 					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/</url>
 					<layout>p2</layout>
@@ -585,18 +590,13 @@
 					<layout>p2</layout>
 				</repository>
 				<repository>
-					<id>jnario</id>
-					<url>http://jnario.org/updates/releases/</url>
-					<layout>p2</layout>
-				</repository>
-				<repository>
 					<id>jetty</id>
 					<url>http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.3.v20120522</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
 					<id>emf.compare</id>
-					<url>http://download.eclipse.org/modeling/emf/compare/updates/releases</url>
+					<url>http://download.eclipse.org/modeling/emf/compare/updates/releases/3.0/R201408191310/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
