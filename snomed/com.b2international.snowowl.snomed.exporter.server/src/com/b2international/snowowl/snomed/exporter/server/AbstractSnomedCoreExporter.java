@@ -53,7 +53,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	private SnomedExportContext exportContext;
 	
 	//scroll page size for the query
-	private final static int PAGE_SIZE = 100;
+	private final static int PAGE_SIZE = 100000;
 
 	private RevisionSearcher revisionSearcher;
 
