@@ -15,10 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.impl.traceability;
 
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
+import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 
 /**
  * CDO change processor factory responsible to create {@link SnomedTraceabilityChangeProcessor traceability change processors} for the SNOMED CT terminology.
@@ -29,14 +36,28 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
-		return ICDOChangeProcessor.NULL_IMPL; 
 		// SNOMED CT import is in progress
-//		if (ApplicationContext.getInstance().exists(ImportIndexServerService.class)) {
-//		} else {
-//			final SnomedIndexUpdater indexService = ApplicationContext.getServiceForClass(SnomedIndexUpdater.class);
-//			final boolean collectSystemChanges = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).isCollectSystemChanges();
-//			return new SnomedTraceabilityChangeProcessor(indexService, branchPath, collectSystemChanges);
-//		}
+		if (isImportInProgress() || isReindexInProgress()) {
+			return ICDOChangeProcessor.NULL_IMPL;
+		} else {
+			final RevisionIndex index = ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+			final boolean collectSystemChanges = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).isCollectSystemChanges();
+			return new SnomedTraceabilityChangeProcessor(index, branchPath, collectSystemChanges);
+		}
+	}
+
+	private boolean isImportInProgress() {
+		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final String feature = SnomedDatastoreActivator.REPOSITORY_UUID + ".import";
+		
+		return features.exists(feature) && features.check(feature);
+	}
+
+	private boolean isReindexInProgress() {
+		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final String feature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
+		
+		return features.exists(feature) && features.check(feature);
 	}
 
 	@Override
