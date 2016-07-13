@@ -20,14 +20,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.SCGStandaloneSetup;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
-import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Lists;
 
 /**
@@ -36,12 +33,10 @@ import com.google.common.collect.Lists;
 public class SubsumptionTesterTest {
 
 	private void testExpressionSubsumption(Expression predicate, Expression candidate, boolean expectedResult) {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptDocument,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
 		List<Long> iterationTimesInNanoseconds = Lists.newArrayList();
 		for (int i=0; i<TestUtils.TEST_ITERATION_COUNT; i++) {
 			long iterationStart = System.nanoTime();
-			SubsumptionTester subsumptionTest = new SubsumptionTester(recursiveTerminologyBrowser);
+			SubsumptionTester subsumptionTest = new SubsumptionTester(Branch.MAIN_PATH);
 			boolean subsumed = subsumptionTest.isSubsumed(predicate, candidate);
 			long iterationEnd = System.nanoTime();
 			Assert.assertEquals(expectedResult, subsumed);

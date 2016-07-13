@@ -28,16 +28,13 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.semanticengine.normalform.AttributeNormalizer;
 import com.b2international.snowowl.semanticengine.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.test.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 public class AttributeNormalizerTest {
 
@@ -45,10 +42,7 @@ public class AttributeNormalizerTest {
 
 	@Before
 	public void beforeTest() {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptDocument, String> recursiveTerminologyBrowser = 
-				new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(terminologyBrowser);
-		attributeNormalizer = new AttributeNormalizer(recursiveTerminologyBrowser);
+		attributeNormalizer = new AttributeNormalizer(Branch.MAIN_PATH);
 	}
 	
 	@Test

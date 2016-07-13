@@ -20,14 +20,11 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.SCGStandaloneSetup;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.semanticengine.normalform.ScgExpressionNormalFormGenerator;
 import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
-import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Lists;
 
 /**
@@ -314,14 +311,12 @@ public class NormalFormGeneratorTest {
 	 */
 	private void testNormalFormGenerator(Expression originalExpression, Expression expectedLongNormalFormExpression, 
 			Expression expectedShortNormalFormExpression) {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptDocument,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
 		
 		Expression longNormalFormTestOriginalExpression = originalExpression;
 		List<Long> iterationTimesInNanoseconds = Lists.newArrayList();
 		for (int i=0; i<TestUtils.TEST_ITERATION_COUNT; i++) {
 			long iterationStart = System.nanoTime();
-			ScgExpressionNormalFormGenerator normalFormGenerator = new ScgExpressionNormalFormGenerator(recursiveTerminologyBrowser);
+			ScgExpressionNormalFormGenerator normalFormGenerator = new ScgExpressionNormalFormGenerator(Branch.MAIN_PATH);
 			Expression longNormalFormExpression = normalFormGenerator.getLongNormalForm(longNormalFormTestOriginalExpression);
 			long iterationEnd = System.nanoTime();
 			TestUtils.assertExpressionsEqual("Long normal form expression does not match,", expectedLongNormalFormExpression, longNormalFormExpression);
@@ -334,7 +329,7 @@ public class NormalFormGeneratorTest {
 		iterationTimesInNanoseconds = Lists.newArrayList();
 		for (int i=0; i<TestUtils.TEST_ITERATION_COUNT; i++) {
 			long iterationStart = System.nanoTime();
-			ScgExpressionNormalFormGenerator normalFormGenerator = new ScgExpressionNormalFormGenerator(recursiveTerminologyBrowser);
+			ScgExpressionNormalFormGenerator normalFormGenerator = new ScgExpressionNormalFormGenerator(Branch.MAIN_PATH);
 			Expression shortNormalFormExpression = normalFormGenerator.getShortNormalForm(shortNormalFormTestOriginalExpression);
 			long iterationEnd = System.nanoTime();
 			TestUtils.assertExpressionsEqual("Short normal form expression does not match,", expectedShortNormalFormExpression, shortNormalFormExpression);

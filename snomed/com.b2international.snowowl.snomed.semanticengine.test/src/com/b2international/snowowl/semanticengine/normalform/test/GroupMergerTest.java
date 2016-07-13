@@ -27,7 +27,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.Group;
@@ -37,9 +37,6 @@ import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.test.SnomedConcepts;
 import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
 import com.b2international.snowowl.semanticengine.utils.ScgBuilderUtils;
-import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 public class GroupMergerTest {
 	
@@ -47,9 +44,7 @@ public class GroupMergerTest {
 
 	@Before
 	public void beforeTest() {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptDocument, String> recursiveTerminologyBrowser = new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(terminologyBrowser);
-		attributeGroupMerger = new GroupMerger(new SubsumptionTester(recursiveTerminologyBrowser));
+		attributeGroupMerger = new GroupMerger(new SubsumptionTester(Branch.MAIN_PATH));
 	}
 	
 	@Test

@@ -26,16 +26,13 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.semanticengine.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.normalform.ConceptDefinitionAttributeRedundancyFilter;
 import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.test.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 public class ConceptDefinitionAttributeRedundancyFilterTest {
 
@@ -43,10 +40,7 @@ public class ConceptDefinitionAttributeRedundancyFilterTest {
 
 	@Before
 	public void beforeTest() {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptDocument, String> recursiveTerminologyBrowser = 
-				new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(terminologyBrowser);
-		subsumptionTester = new SubsumptionTester(recursiveTerminologyBrowser);
+		subsumptionTester = new SubsumptionTester(Branch.MAIN_PATH);
 	}
 	
 	@Test

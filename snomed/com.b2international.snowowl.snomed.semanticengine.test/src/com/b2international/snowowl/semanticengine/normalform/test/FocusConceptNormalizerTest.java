@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
@@ -49,7 +50,7 @@ public class FocusConceptNormalizerTest {
 	public void beforeTest() {
 		SnomedClientTerminologyBrowser snomedTerminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 		terminologyBrowser = new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(snomedTerminologyBrowser);
-		focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
+		focusConceptNormalizer = new FocusConceptNormalizer(Branch.MAIN_PATH);
 	}
 	
 	@Test
