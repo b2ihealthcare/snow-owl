@@ -17,7 +17,7 @@ Bundle-ClassPath: .,
  lib/lucene-suggest-5.5.0.jar,
  lib/lucene-backward-codecs-5.5.0.jar
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.management,
  org.osgi.framework;version="1.6.0",
  org.slf4j;version="1.7.2"
