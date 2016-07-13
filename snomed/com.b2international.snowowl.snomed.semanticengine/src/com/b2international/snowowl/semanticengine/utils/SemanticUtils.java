@@ -25,7 +25,6 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.commons.tree.emf.EObjectWalker;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.AttributeValue;
 import com.b2international.snowowl.dsl.scg.Concept;
@@ -119,24 +118,6 @@ public final class SemanticUtils {
 		return expression.getAttributes().isEmpty() && 
 				expression.getGroups().isEmpty() && 
 				expression.getConcepts().size() == 1;
-	}
-	
-	/**
-	 * Attempts to look up and return a concept with the specified ID from the specified {@link IClientTerminologyBrowser}.
-	 * If no such concept can be found in the terminology browser, it throws an {@link IllegalArgumentException}.
-	 * 
-	 * @param <C>
-	 * @param <K>
-	 * @param terminologyBrowser
-	 * @param conceptId
-	 * @return the concept with the specified ID
-	 * @throws IllegalArgumentException if no such concept exists in the specified terminology browser
-	 */
-	public static <C, K> C getAndCheckConceptById(IClientTerminologyBrowser<C, K> terminologyBrowser, K conceptId) {
-		C focusConceptMini = terminologyBrowser.getConcept(conceptId);
-		if (focusConceptMini == null)
-			throw new IllegalArgumentException("Can't find concept with ID: " + conceptId);
-		return focusConceptMini;
 	}
 	
 	/**

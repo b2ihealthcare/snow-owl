@@ -25,7 +25,6 @@ import java.util.Set;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.AttributeValue;
 import com.b2international.snowowl.dsl.scg.Concept;
@@ -43,10 +42,10 @@ import com.google.common.collect.Ordering;
  */
 public class ScgExpressionNormalFormGenerator implements ExpressionNormalFormGenerator {
 	
-	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
+	private final String branchPath;
 
-	public ScgExpressionNormalFormGenerator(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
-		this.terminologyBrowser = terminologyBrowser;
+	public ScgExpressionNormalFormGenerator(String branchPath) {
+		this.branchPath = branchPath;
 	}
 
 	/**
@@ -55,18 +54,18 @@ public class ScgExpressionNormalFormGenerator implements ExpressionNormalFormGen
 	public Expression getLongNormalForm(Expression originalExpression) {
 		// expression focus concepts	
 		Collection<Concept> focusConcepts = originalExpression.getConcepts();
-		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
+		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(branchPath);
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(focusConcepts);
 		
 		// expression refinements
 		List<Group> expressionAttributeGroups = originalExpression.getGroups();
 		List<Attribute> expressionUngroupedAttributes = originalExpression.getAttributes();
-		AttributeNormalizer attributeNormalizer = new AttributeNormalizer(terminologyBrowser);
+		AttributeNormalizer attributeNormalizer = new AttributeNormalizer(branchPath);
 		ConceptDefinition normalizedExpressionRefinements = attributeNormalizer.normalizeAttributes(expressionAttributeGroups, 
 				expressionUngroupedAttributes);
 		
 		// merge refinements
-		RefinementsMerger refinementsMerger = new RefinementsMerger(terminologyBrowser);
+		RefinementsMerger refinementsMerger = new RefinementsMerger(branchPath);
 		ConceptDefinition mergedRefinements = refinementsMerger.mergeRefinements(normalizedFocusConcepts, normalizedExpressionRefinements);
 		
 		// create expression
@@ -171,7 +170,7 @@ public class ScgExpressionNormalFormGenerator implements ExpressionNormalFormGen
 	
 	private void deriveShortNormalFormNoRecursion(Expression expression) {
 		Collection<Concept> primitiveFocusConcepts = expression.getConcepts();
-		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
+		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(branchPath);
 		FocusConceptNormalizationResult normalizationResult = focusConceptNormalizer.normalizeFocusConcepts(primitiveFocusConcepts);
 		
 		/* 5.5.1.3	Removed redundant attributes and groups

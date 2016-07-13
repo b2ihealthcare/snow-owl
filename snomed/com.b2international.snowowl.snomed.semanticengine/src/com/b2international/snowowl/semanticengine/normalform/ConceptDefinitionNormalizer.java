@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.AttributeValue;
 import com.b2international.snowowl.dsl.scg.Concept;
@@ -34,10 +32,8 @@ import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -57,10 +53,12 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public class ConceptDefinitionNormalizer {
 
+	private final String branchPath;
 	private final ScgExpressionNormalFormGenerator normalFormGenerator;
 	
-	public ConceptDefinitionNormalizer(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
-		this.normalFormGenerator = new ScgExpressionNormalFormGenerator(terminologyBrowser);
+	public ConceptDefinitionNormalizer(String branchPath) {
+		this.branchPath = branchPath;
+		this.normalFormGenerator = new ScgExpressionNormalFormGenerator(branchPath);
 	}
 	
 	/**
@@ -82,7 +80,7 @@ public class ConceptDefinitionNormalizer {
 					.filterByActive(true)
 					.filterByType(Concepts.IS_A)
 					.filterBySource(focusConcept.getId())
-					.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+					.build(branchPath)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {
