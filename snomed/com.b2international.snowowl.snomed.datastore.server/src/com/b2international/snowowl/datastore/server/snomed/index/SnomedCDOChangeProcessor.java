@@ -203,7 +203,8 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	
 	@Override
 	public String getChangeDescription() {
-		return "TODO";
+		return String.format("Updated documents %d, deleted documents %d.", 
+				revisionMappings.size() + rawMappings.size(), deletions.values().size());
 	}
 
 	@Override
