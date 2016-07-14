@@ -12,7 +12,7 @@
 	</parent>
 	
 	<properties>
-		<build.qualifier>${maven.build.timestamp}</build.qualifier>
+		<build.qualifier>${forceContextQualifier}</build.qualifier>
 		<build.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${build.qualifier}</build.version>
 	</properties>
 	
