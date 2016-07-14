@@ -18,8 +18,8 @@ package com.b2international.snowowl.datastore.server.snomed.version;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
@@ -28,7 +28,11 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -53,7 +57,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Publish manager for SNOMED&nbsp;CT ontology.
@@ -68,7 +71,6 @@ public class SnomedPublishManager extends PublishManager {
 
 	private final SnomedIdentifiers snomedIdentifiers;
 	
-	private Map<String, SnomedComponent> unpublishedComponentsById;
 	private Set<String> componentIdsToPublish = newHashSet();
 	private Collection<SnomedModuleDependencyRefSetMember> newModuleDependencyRefSetMembers;
 	
@@ -90,7 +92,6 @@ public class SnomedPublishManager extends PublishManager {
 					@Override
 					public LongSet apply(BulkResponse input) {
 						// index all unpublished components by its unique ID and storageKey
-						final ImmutableMap.Builder<String, SnomedComponent> unpublishedComponentsById = ImmutableMap.builder();
 						final LongSet unpublishedStorageKeys = PrimitiveSets.newLongOpenHashSet();
 						for (CollectionResource<?> hits : input.getResponses(CollectionResource.class)) {
 							for (Object hit : hits) {
@@ -101,12 +102,10 @@ public class SnomedPublishManager extends PublishManager {
 										// if core component mark ID as publishable
 										componentIdsToPublish.add(id);
 									}
-									unpublishedComponentsById.put(id, component);
 									unpublishedStorageKeys.add(((SnomedComponent) hit).getStorageKey());
 								}
 							}
 						}
-						SnomedPublishManager.this.unpublishedComponentsById = unpublishedComponentsById.build();
 						return unpublishedStorageKeys;
 					}
 				})
@@ -164,7 +163,15 @@ public class SnomedPublishManager extends PublishManager {
 
 	private void collectModuleDependencyChanges(final LongSet storageKeys) {
 		LOGGER.info("Collecting module dependency changes...");
-		newModuleDependencyRefSetMembers = SnomedModuleDependencyCollectorService.INSTANCE.collectModuleMembers(unpublishedComponentsById);
+		newModuleDependencyRefSetMembers = ApplicationContext.getServiceForClass(RepositoryManager.class)
+			.get(getRepositoryUuid())
+			.service(RevisionIndex.class)
+			.read(getBranchPathForPublication().getPath(), new RevisionIndexRead<Collection<SnomedModuleDependencyRefSetMember>>() {
+				@Override
+				public Collection<SnomedModuleDependencyRefSetMember> execute(RevisionSearcher searcher) throws IOException {
+					return SnomedModuleDependencyCollectorService.INSTANCE.collectModuleMembers(searcher, getTransaction(), storageKeys);
+				}
+			});
 		LOGGER.info("Collecting module dependency changes successfully finished.");
 	}
 
