@@ -682,7 +682,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	@Override
 	public String getContainerId() {
-		return getReferencedComponentId();
+		// XXX hack to make IHTSDO merge review API tests pass and work as before in 4.5
+		if (getReferenceSetType() == SnomedRefSetType.MODULE_DEPENDENCY) {
+			return null;
+		} else {
+			return getReferencedComponentId();
+		}
 	}
 
 	/**
