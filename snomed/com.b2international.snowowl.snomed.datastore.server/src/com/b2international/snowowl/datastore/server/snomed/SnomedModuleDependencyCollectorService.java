@@ -50,6 +50,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -62,6 +63,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -218,7 +220,7 @@ public enum SnomedModuleDependencyCollectorService {
 	}
 
 	private void tryCreateMemberIfNotEmpty(long sourceModule, String dependsOnConceptId) {
-		if (!Strings.isNullOrEmpty(dependsOnConceptId)) {
+		if (!Strings.isNullOrEmpty(dependsOnConceptId) && SnomedIdentifiers.getComponentCategory(dependsOnConceptId) == ComponentCategory.CONCEPT) {
 			tryCreateMember(sourceModule, getConceptModuleMapping().get(Long.parseLong(dependsOnConceptId)));
 		}
 	}
