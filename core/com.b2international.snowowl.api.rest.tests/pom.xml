@@ -52,6 +52,26 @@
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
+								<id>com.b2international.index.lucene</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.collections.fastutil</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.datastore.comp46</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.datastore.server.comp46</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
 								<id>com.sun.el</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
