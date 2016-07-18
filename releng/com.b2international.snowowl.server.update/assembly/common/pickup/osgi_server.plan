@@ -9,7 +9,13 @@
         <artifact type="bundle" name="org.eclipse.equinox.security" version="1.1.1"/>
         <artifact type="bundle" name="org.eclipse.core.net" version="1.2.100.I20110511-0800"/>
 
+		<artifact type="bundle" name="com.b2international.collections.api" version="0.0.0"/>
+		<artifact type="bundle" name="com.b2international.collections.fastutil" version="0.0.0"/>
+		
+		<artifact type="bundle" name="com.b2international.index.api" version="0.0.0"/>
+		<artifact type="bundle" name="com.b2international.index.lucene" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.org.apache.lucene" version="0.0.0"/>
+		
         <artifact type="bundle" name="com.b2international.snowowl.core" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.authentication" version="0.0.0"/>
 
@@ -17,6 +23,7 @@
         <artifact type="bundle" name="com.b2international.snowowl.authentication.file" version="0.0.0"/>
         <!--<artifact type="bundle" name="com.b2international.snowowl.authentication.ldap" version="0.0.0"/>-->
         <artifact type="bundle" name="com.b2international.snowowl.datastore" version="0.0.0"/>
+		<artifact type="bundle" name="com.b2international.snowowl.datastore.comp46" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.authorization.server" version="0.0.0"/>
 
         <!-- Add reasoner implementation bundles here before reasoner.server bundle, so they will be picked up during init -->
@@ -26,6 +33,7 @@
         <artifact type="bundle" name="com.b2international.snowowl.snomed.exporter.server" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.snomed.mrcm.core.server" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.datastore.server" version="0.0.0"/>
+		<artifact type="bundle" name="com.b2international.snowowl.datastore.server.comp46" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.server.console" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.terminologyregistry.core.server" version="0.0.0"/>
 
