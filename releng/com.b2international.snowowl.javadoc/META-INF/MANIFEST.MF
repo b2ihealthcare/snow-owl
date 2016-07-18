@@ -50,4 +50,6 @@ Require-Bundle: com.b2international.commons,
  com.b2international.snowowl.snomed.semanticengine,
  com.b2international.snowowl.snomed.semanticengine.simpleast,
  com.b2international.snowowl.snomed.validation,
- com.b2international.snowowl.snomed.validation.constraints
+ com.b2international.snowowl.snomed.validation.constraints,
+ com.b2international.snowowl.snomed.reasoner,
+ com.b2international.snowowl.snomed.reasoner.server

@@ -49,6 +49,17 @@
 			<id>site</id>
 			<modules>
 				<module>com.b2international.snowowl.server.update</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>javadoc</id>
+			<activation>
+				<property>
+					<name>javadoc</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<modules>
 				<module>com.b2international.snowowl.javadoc</module>
 			</modules>
 		</profile>
