@@ -580,6 +580,11 @@
 					<layout>p2</layout>
 				</repository>
 				<repository>
+					<id>xtend_xpand</id>
+					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/xpand/R201306110406</url>
+					<layout>p2</layout>
+				</repository>
+				<repository>
 					<id>xtext</id>
 					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.8.4/</url>
 					<layout>p2</layout>
