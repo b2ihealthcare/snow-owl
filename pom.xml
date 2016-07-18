@@ -31,7 +31,6 @@
 		<module>snomed</module>
 		<module>tests</module>
 		<module>releng</module>
-		<module>documentation</module>
 	</modules>
 
 	<build>
@@ -630,6 +629,18 @@
 				</repository>
 			</repositories>
 		</profile>
+		<profile>
+      		<id>docs</id>
+      		<activation>
+      			<property>
+					<name>docs</name>
+					<value>true</value>      			
+      			</property>
+      		</activation>
+      		<modules>
+      			<module>documentation</module>
+      		</modules>
+    	</profile>
 	</profiles>
 
 	<distributionManagement>
