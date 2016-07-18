@@ -575,6 +575,11 @@
 					<layout>p2</layout>
 				</repository>
 				<repository>
+					<id>mwe</id>
+					<url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.8.1/</url>
+					<layout>p2</layout>
+				</repository>
+				<repository>
 					<id>3.8</id>
 					<url>http://download.eclipse.org/eclipse/updates/3.8</url>
 					<layout>p2</layout>
