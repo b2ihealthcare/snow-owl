@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.net4j;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -157,7 +155,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	protected void indicating(ExtendedDataInputStream in, OMMonitor monitor) throws Exception {
 
 		userId = in.readUTF();
-		branchPath = createPath(in.readUTF());
+		branchPath = BranchPathUtils.createPath(in.readUTF());
 		
 		String deltaExportStartEffectiveTimeString = in.readUTF();
 		String deltaExportEndEffectiveTimeString = in.readUTF();
@@ -340,7 +338,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				Collection<String> versionBranchPaths = Collections2.transform(filteredVersions, new Function<ICodeSystemVersion, String>() {
 					@Override
 					public String apply(ICodeSystemVersion input) {
-						return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), input.getVersionId()).getPath(); 
+						return input.getPath(); 
 					}
 				});
 				exportBranchPaths = Lists.newArrayList(versionBranchPaths);
@@ -354,7 +352,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 
 					@Override
 					public String apply(ICodeSystemVersion input) {
-						return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), input.getVersionId()).getPath(); 
+						return input.getPath(); 
 					}
 				});
 				exportBranchPaths = Lists.newArrayList(versionBranchPaths);

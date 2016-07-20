@@ -17,13 +17,20 @@ package com.b2international.snowowl.datastore.server.snomed.merge.rules;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
@@ -31,14 +38,14 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
-import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdateRunnable;
 import com.google.common.collect.ImmutableList;
 
@@ -47,46 +54,79 @@ import com.google.common.collect.ImmutableList;
  */
 public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeConflictRule {
 
+	private final RevisionIndex index;
+
+	public SnomedInvalidTaxonomyMergeConflictRule(RevisionIndex index) {
+		this.index = index;
+	}
+	
 	@Override
-	public Collection<MergeConflict> validate(CDOTransaction transaction) {
-		
+	public Collection<MergeConflict> validate(final CDOTransaction transaction) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		final ApplicationContext context = ApplicationContext.getInstance();
-		final LongCollection conceptIds = context.getService(SnomedTerminologyBrowser.class).getAllConceptIds(branchPath);
-		
-		List<MergeConflict> conflicts = newArrayList();
-		
-		for (StatementCollectionMode mode : ImmutableList.of(StatementCollectionMode.STATED_ISA_ONLY, StatementCollectionMode.INFERRED_ISA_ONLY)) {
-			try {
-				final IsAStatementWithId[] statements = context.getService(SnomedStatementBrowser.class).getActiveStatements(branchPath, mode);
-				final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
-				new SnomedTaxonomyUpdateRunnable(transaction, taxonomyBuilder, mode.getCharacteristicType()).run();
-			} catch (IncompleteTaxonomyException e) {
-				for (InvalidRelationship invalidRelationship : e.getInvalidRelationships()) {
+		return index.read(branchPath.getPath(), new RevisionIndexRead<List<MergeConflict>>() {
+			@Override
+			public List<MergeConflict> execute(final RevisionSearcher searcher) throws IOException {
+				final Query<RevisionDocument.Views.IdOnly> allConceptsQuery = Query.selectPartial(RevisionDocument.Views.IdOnly.class, SnomedConceptDocument.class)
+						.where(Expressions.matchAll())
+						.limit(Integer.MAX_VALUE)
+						.build();
+				
+				final Hits<RevisionDocument.Views.IdOnly> allConcepts = searcher.search(allConceptsQuery);
+				final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet(allConcepts.getTotal());
+				
+				for (RevisionDocument.Views.IdOnly conceptId : allConcepts) {
+					conceptIds.add(Long.parseLong(conceptId.getId()));
+				}
+				
+				final List<MergeConflict> conflicts = newArrayList();
+				
+				for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
+					final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statements = getActiveStatements(searcher, characteristicTypeId);
+					final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
+					final SnomedTaxonomyUpdateRunnable taxonomyRunnable = new SnomedTaxonomyUpdateRunnable(searcher, transaction, taxonomyBuilder, characteristicTypeId);
+					taxonomyRunnable.run();
 					
-					String relationshipId = String.valueOf(invalidRelationship.getRelationshipId());
-					String sourceId = String.valueOf(invalidRelationship.getSourceId());
-					String destinationId = String.valueOf(invalidRelationship.getDestinationId());
-					
-					ConflictingAttribute attribute;
-					
-					if (invalidRelationship.getMissingConcept() == MissingConcept.SOURCE) {
-						attribute = ConflictingAttributeImpl.builder().property("sourceId").value(sourceId).build();
-					} else {
-						attribute = ConflictingAttributeImpl.builder().property("destinationId").value(destinationId).build();
+					final SnomedTaxonomyBuilderResult result = taxonomyRunnable.getTaxonomyBuilderResult();
+					if (!result.getStatus().isOK()) {
+						for (InvalidRelationship invalidRelationship : result.getInvalidRelationships()) {
+							
+							String relationshipId = String.valueOf(invalidRelationship.getRelationshipId());
+							String sourceId = String.valueOf(invalidRelationship.getSourceId());
+							String destinationId = String.valueOf(invalidRelationship.getDestinationId());
+							
+							ConflictingAttribute attribute;
+							
+							if (invalidRelationship.getMissingConcept() == MissingConcept.SOURCE) {
+								attribute = ConflictingAttributeImpl.builder().property("sourceId").value(sourceId).build();
+							} else {
+								attribute = ConflictingAttributeImpl.builder().property("destinationId").value(destinationId).build();
+							}
+							
+							conflicts.add(MergeConflictImpl.builder()
+								.componentId(relationshipId)
+								.componentType("Relationship")
+								.conflictingAttribute(attribute)
+								.type(ConflictType.HAS_INACTIVE_REFERENCE)
+								.build());
+						}
 					}
-					
-					conflicts.add(MergeConflictImpl.builder()
-						.componentId(relationshipId)
-						.componentType("Relationship")
-						.conflictingAttribute(attribute)
-						.type(ConflictType.HAS_INACTIVE_REFERENCE)
-						.build());
-				}	
+				}
+				
+				return conflicts;
 			}
-		}
-		
-		return conflicts;
+		});
+	}
+	
+	private Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
+				.where(Expressions.builder()
+						.must(SnomedRelationshipIndexEntry.Expressions.active())
+						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+						.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+						.build())
+				.limit(Integer.MAX_VALUE)
+				.build();
+		return searcher.search(query).getHits();
 	}
 
 }

@@ -32,11 +32,11 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
+import com.b2international.snowowl.snomed.api.impl.SnomedReleases;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionDowngradeTest;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionUpgradeTest;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionVersioningTest;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;

@@ -28,6 +28,7 @@ import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.text.MessageFormat.format;
 import static org.eclipse.core.runtime.Status.OK_STATUS;
 import static org.eclipse.core.runtime.SubMonitor.convert;
@@ -37,6 +38,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -319,13 +321,11 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					.prepareSearchCodeSystemVersion();
 			
 			if (toolingId.equals(configuration.getPrimaryToolingId())) {
-				requestBuilder.setCodeSystemShortName(shortName);
+				requestBuilder.filterByCodeSystemShortName(shortName);
 			}
 			
-			final List<ICodeSystemVersion> versions = requestBuilder
-					.build(IBranchPath.MAIN_BRANCH)
-					.executeSync(getEventBus())
-					.getItems();
+			final Set<ICodeSystemVersion> versions = newHashSet();
+			versions.addAll(requestBuilder.build(IBranchPath.MAIN_BRANCH).executeSync(getEventBus()).getItems());
 			
 			existingVersions.put(toolingId, versions);
 		}

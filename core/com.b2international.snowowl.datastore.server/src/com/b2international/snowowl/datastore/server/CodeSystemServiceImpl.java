@@ -46,6 +46,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -109,7 +110,8 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 		}
 		
 		if (isTagged(repositoryUuid, branchPath)) {
-			final CDOBranch branch = checkNotNull(getConnection(repositoryUuid).getBranch(branchPath), "Branch " + branchPath + "does not exist in '" + repositoryUuid + "'");
+			final CDOBranch cdoBranch = getConnection(repositoryUuid).getBranch(branchPath);
+			final CDOBranch branch = checkNotNull(cdoBranch, "Branch " + branchPath + " does not exist in '" + repositoryUuid + "'");
 			final boolean patched = Long.MIN_VALUE != CDOServerUtils.getLastCommitTime(branch);
 			if (patched) {
 				patchedBranchesCache.add(repositoryUuidAndBranchPair);

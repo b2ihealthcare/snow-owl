@@ -17,16 +17,19 @@ package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.Collections;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
 import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
@@ -49,7 +52,12 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 	public void execute(final CommandInterpreter interpreter) {
 		
 		// TODO should make this command branch path aware as well
-		boolean isTerminologyAvailable = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).isTerminologyAvailable(BranchPathUtils.createMainPath());
+		boolean isTerminologyAvailable = SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.setComponentIds(Collections.singleton(Concepts.ROOT_CONCEPT))
+				.build(Branch.MAIN_PATH)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 		
 		if (!isTerminologyAvailable) {
 			interpreter.println("SNOMED CT terminology is not present, a core release has to be imported first.");

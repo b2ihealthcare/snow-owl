@@ -196,7 +196,7 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 			.append("Description: ").append(codeSystemVersion.getDescription()).append("\n")
 			.append("Effective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.DEFAULT)).append("\n")
 			.append("Creation date: ").append(EffectiveTimes.format(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
-			.append("Last update: ").append(codeSystemVersion.getLastUpdateDate() > 0 ? EffectiveTimes.format(codeSystemVersion.getLastUpdateDate(), DateFormats.DEFAULT) : "-").append("\n")
+			.append("Last update: ").append(codeSystemVersion.getLatestUpdateDate() > 0 ? EffectiveTimes.format(codeSystemVersion.getLatestUpdateDate(), DateFormats.DEFAULT) : "-").append("\n")
 			.append("Version branch path: ").append(codeSystemVersion.getPath()).append("\n")
 			.append("Parent branch path: ").append(codeSystemVersion.getParentBranchPath()).append("\n")
 			.append("Repository id: ").append(codeSystemVersion.getRepositoryUuid()).append("\n");

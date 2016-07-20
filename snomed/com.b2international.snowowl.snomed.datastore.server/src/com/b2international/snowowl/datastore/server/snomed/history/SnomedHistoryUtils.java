@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -26,10 +25,11 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -69,10 +69,11 @@ public abstract class SnomedHistoryUtils {
 		
 		checkArgument(CDOUtils.checkObject(concept));
 		
-		final ISnomedComponentService componentService = ApplicationContext.getServiceForClass(ISnomedComponentService.class);
+		// TODO this code belongs to the client where lang.refset preference is actually available
+		final LanguageSetting langSetting = ApplicationContext.getServiceForClass(LanguageSetting.class);
 		Optional<Description> preferredTerm = FluentIterable.from(concept.getDescriptions()).firstMatch(new Predicate<Description>() {
 			@Override public boolean apply(Description input) {
-				return componentService.isPreferred(createPath(concept), input);
+				return SnomedModelExtensions.isPreferred(input, langSetting.getLanguagePreference().get(0).getLanguageRefSetId());
 			}
 		});
 		

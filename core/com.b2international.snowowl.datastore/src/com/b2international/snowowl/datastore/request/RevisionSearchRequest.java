@@ -36,10 +36,6 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
  */
 public abstract class RevisionSearchRequest<B> extends BaseResourceRequest<BranchContext, B> {
 
-	enum OptionKey {
-		EXPAND
-	}
-	
 	@Min(0)
 	private int offset;
 	

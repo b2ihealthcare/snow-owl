@@ -29,6 +29,7 @@ import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.request.AbstractBranchChangeRequest;
 import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.6
@@ -62,7 +63,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 					}
 				});
 			} catch (BranchMergeException e) {
-				throw new ConflictException("Cannot rebase target '%s' on source '%s'.", target.path(), source.path(), e);
+				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);
 			} catch (OperationLockException e) {
 				throw new ConflictException("Lock exception caught while rebasing target '%s' on source '%s'. %s", target.path(), source.path(), e.getMessage());
 			} catch (InterruptedException e) {

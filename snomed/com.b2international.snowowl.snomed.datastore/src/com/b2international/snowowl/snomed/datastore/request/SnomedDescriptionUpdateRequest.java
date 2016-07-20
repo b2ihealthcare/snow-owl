@@ -21,7 +21,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -86,12 +85,12 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 			} else {
 				if (description.isReleased()) {
 					long start = new Date().getTime();
-					final IBranchPath branchPath = getLatestReleaseBranch(context);
+					final String branchPath = getLatestReleaseBranch(context);
 					final IEventBus bus = context.service(IEventBus.class);
 					final ISnomedDescription releasedDescription = SnomedRequests
 						.prepareGetDescription()
 						.setComponentId(getComponentId())
-						.build(branchPath.getPath())
+						.build(branchPath)
 						.executeSync(bus);
 	
 					if (!isDifferentToPreviousRelease(description, releasedDescription)) {

@@ -27,17 +27,22 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * @since 4.7
@@ -48,7 +53,16 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 	public Collection<MergeConflict> validate(CDOTransaction transaction) {
 
 		final IBranchPath branchPath = BranchPathUtils.createPath(transaction);
-		final Set<String> synonymAndDescendantIds = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
+		final Set<String> synonymAndDescendantIds = SnomedRequests.prepareGetSynonyms()
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 		final Set<SnomedLanguageRefSetMember> membersToRemove = newHashSet();
 
 		List<MergeConflict> conflicts = newArrayList();
@@ -135,5 +149,5 @@ public class SnomedLanguageRefsetMembersMergeConflictRule extends AbstractSnomed
 
 		return conflicts;
 	}
-
+	
 }

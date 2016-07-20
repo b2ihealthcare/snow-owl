@@ -24,8 +24,10 @@ import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
@@ -174,4 +176,40 @@ public class SnomedModelExtensions {
 	public static boolean isNewObject(final CDOObject object) {
 		return CDOUtils.isUnpersisted(object) || null == object.cdoID() || object.cdoID().isTemporary();
 	}
+	
+	public static boolean isPreferred(Description description, String languageRefSetId) {
+		if (null == description) {
+			return false;
+		}
+		
+		if (!CDOUtils.checkObject(description)) {
+			return false;
+		}
+
+		if (!description.isActive()) { //inactive description cannot be preferred
+			return false;
+		}
+		
+		// TODO fixme, this is NOT true, FSNs can be preferred in a lang.refset, exactly one FSN is allowed to be set to preferred in a lang.refset
+		if (SnomedConstants.Concepts.FULLY_SPECIFIED_NAME.equals(description.getType().getId())) { //FSN cannot be preferred term
+			return false;
+		}
+		
+		for (final SnomedLanguageRefSetMember languageMember : description.getLanguageRefSetMembers()) {
+			if (languageMember.isActive()) { //active language reference set member
+				
+				if (languageRefSetId.equals(languageMember.getRefSet().getIdentifierId())) { //language is relevant for the configured one
+					
+					if (SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(languageMember.getAcceptabilityId())
+							&& languageMember.getRefSetIdentifierId().equals(languageRefSetId)) { //language member is preferred
+						return true;
+					}
+				}
+				
+			}
+		}
+
+		return false;
+	}
+	
 }

@@ -22,10 +22,10 @@ import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundExce
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 
 /**
  * @since 4.7

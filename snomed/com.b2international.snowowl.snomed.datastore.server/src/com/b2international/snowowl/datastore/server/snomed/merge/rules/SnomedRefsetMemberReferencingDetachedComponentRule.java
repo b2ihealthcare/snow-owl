@@ -142,5 +142,34 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 
 		return conflicts;
 	}
+	
+//	private void postProcessRefSetMembers(CDOTransaction transaction, Builder<String, Object> conflictingItems) {
+//		final Set<String> detachedMemberIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, SnomedRefSetMember.class)).transform(new Function<SnomedRefSetMember, String>() {
+//			@Override
+//			public String apply(SnomedRefSetMember input) {
+//				return input.getUuid();
+//			}
+//		}).toSet();
+//		final Set<String> detachedCoreComponentIds = FluentIterable.from(ComponentUtils2.getDetachedObjects(transaction, Component.class)).transform(new Function<Component, String>() {
+//			@Override
+//			public String apply(Component input) {
+//				return input.getId();
+//			}
+//		}).toSet();
+//		if (!detachedCoreComponentIds.isEmpty()) {
+//			final SnomedReferenceSetMembers membersReferencingDetachedComponents = SnomedRequests
+//					.prepareSearchMember()
+//					.filterByReferencedComponent(detachedCoreComponentIds)
+//					.setLimit(detachedCoreComponentIds.size())
+//					.build(BranchPathUtils.createPath(transaction).getPath())
+//					.executeSync(ApplicationContext.getInstance().getService(IEventBus.class));
+//			
+//			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
+//				if (!detachedMemberIds.contains(member.getId())) {
+//					conflictingItems.put(member.getReferencedComponent().getId(), new GenericConflict("Member '%s' is referencing detached component '%s'", member.getId(), member.getReferencedComponent().getId())); 
+//				}
+//			}
+//		}
+//	}
 
 }

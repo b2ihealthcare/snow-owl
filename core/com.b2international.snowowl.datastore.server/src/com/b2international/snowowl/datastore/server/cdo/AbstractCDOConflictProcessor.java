@@ -123,11 +123,6 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		return Iterables.filter(targetMap.values(), InternalCDORevision.class);
 	}
 
-	
-	@Override
-	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap) {
-	}
-	
 	@Override
 	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {

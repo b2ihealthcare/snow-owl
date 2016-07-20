@@ -147,10 +147,13 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 			throw new BadRequestException("Can't merge branch '%s' onto itself.", path());
 		}
 		
-		if (changesFrom.state() == BranchState.FORWARD) {
+		final BranchState changesFromState = changesFrom.state();
+		if (changesFromState == BranchState.FORWARD) {
 			return branchManager.merge((BranchImpl) changesFrom, this, commitMessage);
 		} else {
-			throw new BranchMergeException("Only source in the FORWARD state can merged.");
+			System.err.println(path() + " - " + state());
+			System.err.println(changesFrom.path() + " - " + changesFromState);
+			throw new BranchMergeException("Branch %s should be in the FORWARD state to be merged into %s. It's currently %s", changesFrom.path(), path(), changesFromState);
 		}
 	}
 

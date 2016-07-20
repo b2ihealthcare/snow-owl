@@ -19,11 +19,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.List;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +34,9 @@ import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
+import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
+import com.b2international.index.Writer;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.revision.DefaultRevisionIndex;
@@ -362,15 +362,22 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 		try (final CDOEditingContext editingContext = contextFactory.createEditingContext(BranchPathUtils.createMainPath())) {
 			final List<CodeSystem> codeSystems = editingContext.getCodeSystems();
 			
-			for (final CodeSystem codeSystem : codeSystems) {
-				getIndexUpdater().index(BranchPathUtils.createMainPath(), new CodeSystemIndexMappingStrategy(codeSystem));
-				
-				for (final CodeSystemVersion codeSystemVersion : codeSystem.getCodeSystemVersions()) {
-					getIndexUpdater().index(BranchPathUtils.createMainPath(), new CodeSystemVersionIndexMappingStrategy(codeSystemVersion));
+			getIndex().write(new IndexWrite<Void>() {
+				@Override
+				public Void execute(Writer index) throws IOException {
+					for (final CodeSystem codeSystem : codeSystems) {
+						final CodeSystemEntry entry = CodeSystemEntry.builder(codeSystem).build();
+						index.put(Long.toString(entry.getStorageKey()), entry);
+						
+						for (final CodeSystemVersion codeSystemVersion : codeSystem.getCodeSystemVersions()) {
+							final CodeSystemVersionEntry versionEntry = CodeSystemVersionEntry.builder(codeSystemVersion).build();
+							index.put(Long.toString(versionEntry.getStorageKey()), versionEntry);
+						}
+					}
+					index.commit();
+					return null;
 				}
-			}
-			
-			getIndexUpdater().commit(BranchPathUtils.createMainPath());
+			});
 		}
 	}
 	

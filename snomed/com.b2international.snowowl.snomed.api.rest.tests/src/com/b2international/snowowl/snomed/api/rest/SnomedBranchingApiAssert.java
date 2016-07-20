@@ -238,12 +238,12 @@ public abstract class SnomedBranchingApiAssert {
 	
 	public static void assertBranchCanBeMerged(final IBranchPath source, final IBranchPath target, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(source, target, commitComment)));
-		waitForMergeJob(id).then().assertThat().body("status", equalTo("COMPLETED"));
+		waitForMergeJob(id).then().log().ifValidationFails().assertThat().body("status", equalTo("COMPLETED"));
 	}
 
 	public static void assertBranchCanBeRebased(final IBranchPath branchPath, final String commitComment) {
 		String id = lastPathSegment(getMergeJobId(whenMergingOrRebasingBranches(branchPath.getParent(), branchPath, commitComment)));
-		waitForMergeJob(id).then().assertThat().body("status", equalTo("COMPLETED"));
+		waitForMergeJob(id).then().log().ifValidationFails().assertThat().body("status", equalTo("COMPLETED"));
 	}
 
 	public static Response assertMergeJobFails(final IBranchPath source, final IBranchPath target, final String commitComment) {

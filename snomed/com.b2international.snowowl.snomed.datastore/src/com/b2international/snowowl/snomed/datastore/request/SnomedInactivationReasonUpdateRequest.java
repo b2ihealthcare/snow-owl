@@ -93,8 +93,8 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 		@Override
 		public String load(final TransactionContext context) throws Exception {
 			final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
-			final List<ICodeSystemVersion> allVersions = registryService.getAllVersion(context.id());
-			final ICodeSystemVersion systemVersion = allVersions.get(0);
+			final List<ICodeSystemVersion> allVersions = registryService.getAllVersion().get(context.id());
+			final ICodeSystemVersion systemVersion = allVersions.get(1);
 			final IBranchPath branchPath = ICodeSystemVersion.TO_BRANCH_PATH_FUNC.apply(systemVersion);
 			return branchPath.getPath();
 		}

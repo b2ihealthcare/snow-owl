@@ -55,6 +55,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.version.IPublishManager;
@@ -62,12 +63,12 @@ import com.b2international.snowowl.datastore.version.IPublishOperationConfigurat
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionBuilder;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 
 /**
@@ -255,12 +256,12 @@ public abstract class PublishManager implements IPublishManager {
 	private boolean couldCreateVersion(final IPublishOperationConfiguration configuration) {
 		return new CodeSystemRequests(getRepositoryUuid())
 				.prepareSearchCodeSystemVersion()
-				.setCodeSystemShortName(configuration.getCodeSystemShortName())
-				.setVersionId(configuration.getVersionId())
+				.setLimit(0)
+				.filterByCodeSystemShortName(configuration.getCodeSystemShortName())
+				.filterByVersionId(configuration.getVersionId())
 				.build(IBranchPath.MAIN_BRANCH)
-				.executeSync(getEventBus())
-				.getItems()
-				.isEmpty();
+				.execute(getEventBus())
+				.getSync().getTotal() == 0;
 	}
 	
 	private IBranchPath getParentBranchPath() {
@@ -296,13 +297,14 @@ public abstract class PublishManager implements IPublishManager {
 
 	@Nullable
 	private ICodeSystemVersion getVersion(final IPublishOperationConfiguration configuration) {
-		final Collection<ICodeSystemVersion> versions = new CodeSystemRequests(getRepositoryUuid())
+		final CodeSystemVersions versions = new CodeSystemRequests(getRepositoryUuid())
 				.prepareSearchCodeSystemVersion()
-				.setCodeSystemShortName(configuration.getCodeSystemShortName())
-				.setVersionId(configuration.getVersionId())
+				.setLimit(2)
+				.filterByCodeSystemShortName(configuration.getCodeSystemShortName())
+				.filterByVersionId(configuration.getVersionId())
 				.build(IBranchPath.MAIN_BRANCH)
-				.executeSync(getEventBus())
-				.getItems();
+				.execute(getEventBus())
+				.getSync();
 		
 		return Iterables.getOnlyElement(versions, null);
 	}

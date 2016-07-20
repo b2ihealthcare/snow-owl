@@ -61,22 +61,22 @@ public class SnomedExtensionUpgradeTest extends ExtensionTest {
 		assertB2iExtensionExistsWithDefaults();
 		
 		final IBranchPath b2iBranchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		final IBranchPath branchPath = createBranchOnNewVersion(INT_SHORT_NAME);
+		final IBranchPath upgradeBranchPath1 = createBranchOnNewVersion(INT_SHORT_NAME);
 		
-		assertBranchCanBeMerged(b2iBranchPath, branchPath, "Upgrade B2I extension.");
+		assertBranchCanBeMerged(b2iBranchPath, upgradeBranchPath1, "Upgrade B2I extension.");
 		
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String conceptId = assertComponentCreated(branchPath, CONCEPT, requestBody);
+		final String conceptId = assertComponentCreated(upgradeBranchPath1, CONCEPT, requestBody);
 		
-		final IBranchPath branchPath2 = createBranchOnNewVersion(INT_SHORT_NAME);
+		final IBranchPath upgradeBranchPath2 = createBranchOnNewVersion(INT_SHORT_NAME);
 		
-		assertBranchCanBeMerged(branchPath, branchPath2, "Upgrade B2I extension with new concept on extension branch.");
+		assertBranchCanBeMerged(upgradeBranchPath1, upgradeBranchPath2, "Upgrade B2I extension with new concept on extension branch.");
 		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", branchPath2.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", branchPath2.getPath());
+		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", upgradeBranchPath2.getPath(), "repositoryUuid", "snomedStore"));
+		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", upgradeBranchPath2.getPath());
 		
-		assertConceptExists(branchPath, conceptId);
-		assertConceptExists(branchPath2, conceptId);
+		assertConceptExists(upgradeBranchPath1, conceptId);
+		assertConceptExists(upgradeBranchPath2, conceptId);
 	}
 	
 	@Test

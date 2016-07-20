@@ -41,7 +41,7 @@ public class CodeSystem implements ICodeSystem {
 				.citation(input.getCitation())
 				.branchPath(input.getBranchPath())
 				.iconPath(input.getIconPath())
-				.terminologyId(input.getSnowOwlId())
+				.terminologyId(input.getTerminologyComponentId())
 				.repositoryUuid(input.getRepositoryUuid())
 				.extensionOf(input.getExtensionOf());
 	}

@@ -23,15 +23,13 @@ import javax.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * @since 4.5
@@ -89,12 +87,15 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 			} else {
 				if (relationship.isReleased()) {
 					long start = new Date().getTime();
-					final IBranchPath branchPath = getLatestReleaseBranch(context);
-					final SnomedStatementBrowser statementBrowser = context.service(SnomedStatementBrowser.class);
-					final SnomedRelationshipIndexEntry releasedRelationship = statementBrowser.getStatement(branchPath, getComponentId());
+					final String branchPath = getLatestReleaseBranch(context);
+					final ISnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship()
+							.setComponentId(getComponentId())
+							.build(branchPath)
+							.execute(context.service(IEventBus.class))
+							.getSync();
 	
 					if (!isDifferentToPreviousRelease(relationship, releasedRelationship)) {
-						relationship.setEffectiveTime(EffectiveTimes.parse(releasedRelationship.getEffectiveTime()));
+						relationship.setEffectiveTime(releasedRelationship.getEffectiveTime());
 					}
 					LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 				}
@@ -104,15 +105,15 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 		return null;
 	}
 	
-	private boolean isDifferentToPreviousRelease(Relationship relationship, SnomedRelationshipIndexEntry releasedRelationship) {
+	private boolean isDifferentToPreviousRelease(Relationship relationship, ISnomedRelationship releasedRelationship) {
 		if (releasedRelationship.isActive() != relationship.isActive()) return true;
 		if (!releasedRelationship.getModuleId().equals(relationship.getModule().getId())) return true;
-		if (!releasedRelationship.getValueId().equals(relationship.getDestination().getId())) return true;
+		if (!releasedRelationship.getDestinationId().equals(relationship.getDestination().getId())) return true;
 		if (releasedRelationship.getGroup() != relationship.getGroup()) return true;
 		if (releasedRelationship.getUnionGroup() != relationship.getUnionGroup()) return true;
-		if (!releasedRelationship.getAttributeId().equals(relationship.getType().getId())) return true;
+		if (!releasedRelationship.getTypeId().equals(relationship.getType().getId())) return true;
 		if (!releasedRelationship.getCharacteristicType().getConceptId().equals(relationship.getCharacteristicType().getId())) return true;
-		if (!releasedRelationship.getModifierId().equals(relationship.getModifier().getId())) return true;
+		if (!releasedRelationship.getModifier().getConceptId().equals(relationship.getModifier().getId())) return true;
 		
 		return false;
 	}

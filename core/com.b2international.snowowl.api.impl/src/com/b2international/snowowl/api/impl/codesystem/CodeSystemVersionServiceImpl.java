@@ -16,6 +16,7 @@
 package com.b2international.snowowl.api.impl.codesystem;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Date;
@@ -38,6 +39,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
@@ -113,13 +115,13 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			throw new CodeSystemNotFoundException(shortName);
 		}
 		
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = new CodeSystemRequests(codeSystem.getRepositoryUuid())
+		final CodeSystemVersions versions = new CodeSystemRequests(codeSystem.getRepositoryUuid())
 				.prepareSearchCodeSystemVersion()
-				.setCodeSystemShortName(shortName)
-				.setVersionId(versionId)
+				.filterByCodeSystemShortName(shortName)
+				.filterByVersionId(versionId)
 				.build(IBranchPath.MAIN_BRANCH)
-				.executeSync(getEventBus())
-				.getItems();
+				.execute(getEventBus())
+				.getSync();
 		
 		final com.b2international.snowowl.datastore.ICodeSystemVersion version = Iterables.getOnlyElement(versions, null);
 		if (version == null) {
@@ -196,12 +198,15 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 	}
 
 	private Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> getCodeSystemVersions(final String shortName, final String repositoryId) {
-		return new CodeSystemRequests(repositoryId)
+		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> result = newHashSet();
+		result.addAll(new CodeSystemRequests(repositoryId)
 				.prepareSearchCodeSystemVersion()
-				.setCodeSystemShortName(shortName)
+				.filterByCodeSystemShortName(shortName)
 				.build(IBranchPath.MAIN_BRANCH)
-				.executeSync(getEventBus())
-				.getItems();
+				.execute(getEventBus())
+				.getSync()
+				.getItems());
+		return result;
 	}
 	
 	private IEventBus getEventBus() {

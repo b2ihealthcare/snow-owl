@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -76,7 +77,6 @@ import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionBuilder;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -143,7 +143,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		CodeSystemEntry releaseEntry = getCodeSystemEntry(importContext.getCodeSystemShortName(), importContext.getCodeSystemOID());
 		existingVersions = FluentIterable.from(new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.prepareSearchCodeSystemVersion()
-			.setCodeSystemShortName(releaseEntry.getShortName())
+			.filterByCodeSystemShortName(releaseEntry.getShortName())
 			.build(IBranchPath.MAIN_BRANCH)
 			.executeSync(getEventBus())
 			.getItems()).transform(new Function<ICodeSystemVersion, String>() {

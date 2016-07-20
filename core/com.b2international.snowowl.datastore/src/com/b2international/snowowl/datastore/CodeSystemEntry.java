@@ -76,7 +76,9 @@ public class CodeSystemEntry implements ICodeSystem {
 				.iconPath(codeSystem.getIconPath())
 				.terminologyComponentId(codeSystem.getTerminologyComponentId())
 				.storageKey(CDOUtils.isTransient(codeSystem) ? CDOUtils.NO_STORAGE_KEY : CDOIDUtils.asLong(codeSystem.cdoID()))
-				.repositoryUuid(codeSystem.getRepositoryUuid());
+				.repositoryUuid(codeSystem.getRepositoryUuid())
+				.branchPath(codeSystem.getBranchPath())
+				.extensionOf(codeSystem.getExtensionOf() == null ? null : codeSystem.getExtensionOf().getShortName());
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")

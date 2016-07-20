@@ -21,24 +21,22 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
@@ -90,11 +88,14 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 			} else {
 				if (concept.isReleased()) {
 					long start = new Date().getTime();
-					final IBranchPath branchPath = getLatestReleaseBranch(context);
-					final SnomedTerminologyBrowser terminologyBrowser = context.service(SnomedTerminologyBrowser.class);
-					final SnomedConceptIndexEntry releasedConcept = terminologyBrowser.getConcept(branchPath, getComponentId());	
+					final String branchPath = getLatestReleaseBranch(context);
+					final ISnomedConcept releasedConcept = SnomedRequests.prepareGetConcept()
+							.setComponentId(getComponentId())
+							.build(branchPath)
+							.execute(context.service(IEventBus.class))
+							.getSync();
 					if (!isDifferentToPreviousRelease(concept, releasedConcept)) {
-						concept.setEffectiveTime(EffectiveTimes.parse(releasedConcept.getEffectiveTime()));
+						concept.setEffectiveTime(releasedConcept.getEffectiveTime());
 					}
 					LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 				}
@@ -104,10 +105,10 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		return null;
 	}
 
-	private boolean isDifferentToPreviousRelease(Concept concept, SnomedConceptIndexEntry releasedConcept) {
+	private boolean isDifferentToPreviousRelease(Concept concept, ISnomedConcept releasedConcept) {
 		if (releasedConcept.isActive() != concept.isActive()) return true;
 		if (!releasedConcept.getModuleId().equals(concept.getModule().getId())) return true;
-		if (releasedConcept.isPrimitive() != concept.isPrimitive()) return true;
+		if (!releasedConcept.getDefinitionStatus().getConceptId().equals(concept.getDefinitionStatus().getId())) return true;
 		return false;
 	}
 

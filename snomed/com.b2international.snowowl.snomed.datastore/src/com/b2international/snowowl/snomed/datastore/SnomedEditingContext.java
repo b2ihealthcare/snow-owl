@@ -37,6 +37,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONY
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
+import static com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions.isPreferred;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyList;
 import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
@@ -223,44 +224,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		})));
 		
 		return newConcept;
-	}
-	
-	public boolean isPreferred(Description description, String languageReferenceSet) {
-		if (null == description) {
-			LOGGER.warn("SNOMED CT description cannot be referenced. Description was null.");
-			return false;
-		}
-		
-		if (!CDOUtils.checkObject(description)) {
-			LOGGER.warn("Description cannot be referenced. Description ID: " + CDOUtils.getAttribute(description, SnomedPackage.eINSTANCE.getComponent_Id(), String.class));
-			return false;
-		}
-
-		if (!description.isActive()) { //inactive description cannot be preferred
-			return false;
-		}
-		
-		final String languageRefSetId = getLanguageRefSetId();
-		
-		if (SnomedConstants.Concepts.FULLY_SPECIFIED_NAME.equals(description.getType().getId())) { //FSN cannot be preferred term
-			return false;
-		}
-		
-		for (final SnomedLanguageRefSetMember languageMember : description.getLanguageRefSetMembers()) {
-			if (languageMember.isActive()) { //active language reference set member
-				
-				if (languageRefSetId.equals(languageMember.getRefSet().getIdentifierId())) { //language is relevant for the configured one
-					
-					if (SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(languageMember.getAcceptabilityId())
-							&& languageMember.getRefSetIdentifierId().equals(languageRefSetId)) { //language member is preferred
-						return true;
-					}
-				}
-				
-			}
-		}
-
-		return false;
 	}
 	
 	/**

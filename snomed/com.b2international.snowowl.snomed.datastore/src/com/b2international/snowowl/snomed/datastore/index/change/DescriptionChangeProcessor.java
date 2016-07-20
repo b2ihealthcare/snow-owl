@@ -126,8 +126,8 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 	private void collectChanges(Collection<RefSetMemberChange> changes, Collection<String> refSetIds) {
 		for (final RefSetMemberChange change : changes) {
 			switch (change.getChangeKind()) {
-				case ADDED:
-					refSetIds.add(change.getRefSetId());
+				case REMOVED:
+					refSetIds.remove(change.getRefSetId());
 					break;
 				default:
 					break;
@@ -136,8 +136,8 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		
 		for (final RefSetMemberChange change : changes) {
 			switch (change.getChangeKind()) {
-				case REMOVED:
-					refSetIds.remove(change.getRefSetId());
+				case ADDED:
+					refSetIds.add(change.getRefSetId());
 					break;
 				default:
 					break;

@@ -15,6 +15,15 @@
  */
 package com.b2international.snowowl.api.rest;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_CITATION;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LINK;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_OID;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
@@ -22,11 +31,12 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.api.japi.codesystem.CodeSystemRequestTest;
 import com.b2international.snowowl.api.rest.auth.BasicAuthenticationTest;
 import com.b2international.snowowl.api.rest.codesystem.CodeSystemApiTest;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.store.SnomedReleases;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -47,5 +57,16 @@ public class AllSnowOwlApiTests {
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnowOwlApiTests.class, "rest-configuration.yml")))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
-			.around(new SnomedContentRule(SnomedReleases.newSnomedInternationalRelease(), Resources.Snomed.MINI_RF2_INT, ContentSubType.FULL));
+			.around(new SnomedContentRule(CodeSystem.builder()
+					.name(SNOMED_INT_NAME)
+					.shortName(SNOMED_INT_SHORT_NAME)
+					.oid(SNOMED_INT_OID)
+					.primaryLanguage(SNOMED_INT_LANGUAGE)
+					.organizationLink(SNOMED_INT_LINK)
+					.citation(SNOMED_INT_CITATION)
+					.branchPath(IBranchPath.MAIN_BRANCH)
+					.iconPath(SNOMED_INT_ICON_PATH)
+					.repositoryUuid("snomedStore")
+					.terminologyId(TERMINOLOGY_ID)
+					.build(), Resources.Snomed.MINI_RF2_INT, ContentSubType.FULL));
 }

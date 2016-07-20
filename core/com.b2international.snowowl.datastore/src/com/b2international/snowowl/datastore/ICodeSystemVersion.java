@@ -123,11 +123,6 @@ public interface ICodeSystemVersion extends Serializable {
 	 */
 	String getRepositoryUuid();
 	
-	/**
-	 * Returns with the short name of the container code system.
-	 */
-	String getCodeSystemShortName();
-	
 	/**Predicate producing {@code true} output only and if only the processed {@link ICodeSystemVersion version}
 	 * is {@link ICodeSystemVersion#isPatched() patched}. Otherwise {@code false}.*/
 	Predicate<ICodeSystemVersion> PATCHED_PREDICATE = new Predicate<ICodeSystemVersion>() {

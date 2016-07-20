@@ -108,7 +108,7 @@ public class CodeSystemRequestTest {
 	@Test
 	public void searchCodeSystem() {
 		final CodeSystems codeSystems = requests.prepareSearchCodeSystem()
-			.setShortName(SNOMEDCT)
+			.filterByShortName(SNOMEDCT)
 			.build(BRANCH)
 			.executeSync(bus);
 		
