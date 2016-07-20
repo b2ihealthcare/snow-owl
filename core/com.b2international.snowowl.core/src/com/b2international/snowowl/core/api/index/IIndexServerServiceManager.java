@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.api.index;
 
 /**
  * Collects index server services by repository.
+ * @deprecated - As of 4.7 release, nested index services are not supported
  */
 public interface IIndexServerServiceManager {
 

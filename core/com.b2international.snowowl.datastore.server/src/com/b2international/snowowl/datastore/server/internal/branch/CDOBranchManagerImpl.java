@@ -16,10 +16,12 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Deque;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
@@ -31,6 +33,9 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
+import com.b2international.commons.Pair;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -45,57 +50,72 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
-import com.b2international.snowowl.datastore.store.Store;
-import com.b2international.snowowl.datastore.store.query.QueryBuilder;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.
  *
  * @since 4.1
  */
-public class CDOBranchManagerImpl extends BranchManagerImpl {
+public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchReplicator {
 
     private static final String CDO_BRANCH_ID = "cdoBranchId";
 
 	private final InternalRepository repository;
+	private final AtomicInteger segmentIds = new AtomicInteger(0);
 	
-    public CDOBranchManagerImpl(final InternalRepository repository, final Store<InternalBranch> branchStore) {
-        super(branchStore);
+    public CDOBranchManagerImpl(final InternalRepository repository) {
+        super(repository.getIndex());
         this.repository = repository;
-       	branchStore.configureSearchable(CDO_BRANCH_ID);
        	
-       	CDOBranch cdoMainBranch = repository.getCdoMainBranch();
-		initBranchStore(new CDOMainBranchImpl(repository.getBaseTimestamp(cdoMainBranch), repository.getHeadTimestamp(cdoMainBranch)));
+        final CDOBranch cdoMainBranch = repository.getCdoMainBranch();
+      	final long baseTimestamp = repository.getBaseTimestamp(cdoMainBranch);
+      	// assign first segment to MAIN
+      	final int segmentId = segmentIds.getAndIncrement();
+		initBranchStore(new CDOMainBranchImpl(baseTimestamp, repository.getHeadTimestamp(cdoMainBranch), segmentId, ImmutableSet.of(segmentId)));
        	
-        registerCommitListener(repository.getCdoRepository());
-    }
-
-    @Override
-	protected void doInitBranchStore(final InternalBranch main) {
-		super.doInitBranchStore(main);
-		
-		Deque<CDOBranch> workQueue = new ArrayDeque<CDOBranch>();
-		workQueue.add(repository.getCdoBranchManager().getMainBranch());
-		
-		while (!workQueue.isEmpty()) {
-			CDOBranch current = workQueue.pollFirst();
-			
-			if (!current.isMainBranch()) {
-				final Branch branch = getBranch(current.getID());
-
-				if (branch == null) {
-					long baseTimestamp = repository.getBaseTimestamp(current);
-					long headTimestamp = repository.getHeadTimestamp(current);
-					registerBranch(new CDOBranchImpl(current.getName(), current.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, current.getID()));
+		int maxExistingSegment = segmentId;
+		for (Branch branch : getBranches()) {
+			if (branch instanceof InternalCDOBasedBranch) {
+				final int branchSegmentId = ((InternalCDOBasedBranch) branch).segmentId();
+				if (branchSegmentId > maxExistingSegment) {
+					maxExistingSegment = branchSegmentId;
 				}
 			}
-			
-			workQueue.addAll(ImmutableSortedSet.copyOf(current.getBranches()));
 		}
-	}
+		segmentIds.set(maxExistingSegment+1);
+        registerCommitListener(repository.getCdoRepository());
+    }
+    
+    private synchronized Pair<Integer, Integer> nextTwoSegments() {
+    	final int newBranchSegment = segmentIds.getAndIncrement();
+    	final int newParentSegment = segmentIds.getAndIncrement();
+    	return Pair.of(newBranchSegment, newParentSegment);
+    }
+    
+    @Override
+    public void replicateBranch(org.eclipse.emf.cdo.common.branch.CDOBranch branch) {
+		if (!branch.isMainBranch()) {
+			// if content already available with this cdoBranchId then skip
+			final Branch existingBranch = getBranch(branch.getID());
+			
+			if (existingBranch == null) {
+				final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(branch.getBase().getBranch().getID());
+				long baseTimestamp = repository.getBaseTimestamp(branch);
+				long headTimestamp = repository.getHeadTimestamp(branch);
+				final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();
+				final Set<Integer> parentSegments = newHashSet();
+		    	// all branch should know the segment path to the ROOT
+		    	parentSegments.addAll(parent.parentSegments());
+		    	parentSegments.addAll(parent.segments());
+				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments));
+				registerBranch(parent.withSegmentId(nextTwoSegments.getB()));
+			}
+		}
+    }
 
     CDOBranch getCDOBranch(Branch branch) {
         checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
@@ -104,7 +124,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     private Branch getBranch(Integer branchId) {
-    	return getBranchFromStore(QueryBuilder.newQuery().match(CDO_BRANCH_ID, branchId.toString()).build());
+    	return getBranchFromStore(Query.select(InternalBranch.class).where(Expressions.match(CDO_BRANCH_ID, branchId)));
     }
     
     private CDOBranch loadCDOBranch(Integer branchId) {
@@ -206,14 +226,24 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
         final CDOBranchPath cdoBranchPath = new CDOBranchPath(childCDOBranch);
 
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
-        repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath);
+        // XXX compatibility with 4.6.x terminologies, 4.7.x terminologies should not have index updater
+        if (repository.getIndexUpdater() != null) {
+        	repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath);
+        }
 		return reopen(parent, name, metadata, timeStamp, childCDOBranch.getID());
     }
 
     private InternalBranch reopen(InternalBranch parent, String name, Metadata metadata, long baseTimestamp, int id) {
-        final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id);
+    	final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) parent;
+    	final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();
+    	final Set<Integer> parentSegments = newHashSet();
+    	// all branch should know the segment path to the ROOT
+    	parentSegments.addAll(parentBranch.parentSegments());
+    	parentSegments.addAll(parentBranch.segments());
+        final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
         branch.metadata(metadata);
         registerBranch(branch);
+        registerBranch(parentBranch.withSegmentId(nextTwoSegments.getB()));
         return branch;
     }
 

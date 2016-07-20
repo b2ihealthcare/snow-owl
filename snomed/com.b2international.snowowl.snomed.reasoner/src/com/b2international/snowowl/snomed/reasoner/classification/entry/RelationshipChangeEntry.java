@@ -24,8 +24,8 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 
 	private static final long serialVersionUID = 1L;
 
-	private final byte group;
-	private final byte unionGroup;
+	private final int group;
+	private final int unionGroup;
 	private final ChangeConcept modifier;
 	private final boolean destinationNegated;
 
@@ -45,8 +45,8 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 			final ChangeConcept source, 
 			final ChangeConcept type,
 			final ChangeConcept destination, 
-			final byte group, 
-			final byte unionGroup, 
+			final int group, 
+			final int unionGroup, 
 			final ChangeConcept modifier,
 			final boolean destinationNegated) {
 
@@ -61,14 +61,14 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 	/**
 	 * @return the relationship group
 	 */
-	public byte getGroup() {
+	public int getGroup() {
 		return group;
 	}
 
 	/**
 	 * @return the relationship union group
 	 */
-	public byte getUnionGroup() {
+	public int getUnionGroup() {
 		return unionGroup;
 	}
 

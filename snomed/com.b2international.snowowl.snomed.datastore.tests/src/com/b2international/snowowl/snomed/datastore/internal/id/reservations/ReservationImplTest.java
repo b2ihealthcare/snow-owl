@@ -20,12 +20,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Test;
 
+import com.b2international.index.Index;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.store.MemStore;
-import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
@@ -34,9 +36,10 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.util.Providers;
 
 /**
  * @since 4.0
@@ -53,15 +56,15 @@ public class ReservationImplTest {
 	
 	@Test
 	public void whenReservingRangeOfIDs_ThenItShouldConflictWithAllIDsInThatRangeIncludingBoundaries() throws Exception {
-		final Store<SctId> store = new MemStore<>();
-		final ISnomedIdentiferReservationService reservations = new SnomedIdentifierReservationServiceImpl();
-		final ISnomedIdentifierService identifierService = new DefaultSnomedIdentifierService(store, new ItemIdGenerationStrategy() {
+		final Index store = Indexes.createIndex(UUID.randomUUID().toString(), new ObjectMapper(), new Mappings(SctId.class));
+		store.admin().create();
+		final ISnomedIdentifierService identifierService = new DefaultSnomedIdentifierService(Providers.of(store), new ItemIdGenerationStrategy() {
 			int counter = 200;
 			@Override
 			public String generateItemId() {
 				return String.valueOf(counter++);
 			}
-		}, reservations, new SnomedIdentifierConfiguration());
+		}, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
 		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
 		final Set<ComponentCategory> components = Collections.singleton(ComponentCategory.CONCEPT);
 		final Reservation range = Reservations.range(200, 300, null, components);
@@ -70,6 +73,7 @@ public class ReservationImplTest {
 			final SnomedIdentifier identifier = SnomedIdentifiers.create(id);
 			assertTrue(range.includes(identifier));
 		}
+		store.admin().delete();
 	}
 	
 }

@@ -35,6 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
@@ -42,6 +46,7 @@ import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetCo
 import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMapper;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -56,6 +61,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.inject.Provider;
 
 /**
  * An {@link ICDOConflictProcessor} implementation handling conflicts specific to the SNOMED CT terminology model.
@@ -97,13 +103,19 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	private boolean isRebase;
 
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newSourceRevisionIdToFeatureIdMap;
-
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newTargetRevisionIdToFeatureIdMap;
+
+	private final RevisionIndex index;
+	private final Provider<IEventBus> bus;
 
 	public SnomedCDOConflictProcessor() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, RELEASED_ATTRIBUTE_MAP);
+		this.bus = SnowOwlApplication.INSTANCE.getEnviroment().provider(IEventBus.class);
+		this.index = ApplicationContext.getServiceForClass(RepositoryManager.class)
+				.get(getRepositoryUuid())
+				.service(RevisionIndex.class);
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -116,7 +128,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	 */
 	@Override
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
-
 		if (isRebase) {
 			Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget);
 			
@@ -201,7 +212,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		
 		return super.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
 	}
-
+	
 	@Override
 	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
@@ -329,5 +340,4 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return null;
 	}
 
-	
 }

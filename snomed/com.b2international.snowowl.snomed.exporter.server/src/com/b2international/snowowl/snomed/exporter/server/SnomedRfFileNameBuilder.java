@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Preconditions;
 
@@ -37,7 +36,7 @@ import com.google.common.base.Preconditions;
  */
 public class SnomedRfFileNameBuilder {
 
-	public static String buildCoreRf1FileName(final ComponentExportType type, final SnomedExportConfiguration configuration) {
+	public static String buildCoreRf1FileName(final ComponentExportType type, final SnomedExportContext configuration) {
 		return new StringBuilder("sct1_")
 				.append(String.valueOf(type))
 				.append("s_")
@@ -48,7 +47,7 @@ public class SnomedRfFileNameBuilder {
 				.toString();
 	}
 
-	public static String buildCoreRf2FileName(final ComponentExportType type, final SnomedExportConfiguration configuration) {
+	public static String buildCoreRf2FileName(final ComponentExportType type, final SnomedExportContext configuration) {
 		return new StringBuilder("sct2_")
 				.append(String.valueOf(type))
 				.append("_")
@@ -64,7 +63,7 @@ public class SnomedRfFileNameBuilder {
 	/*
 	 * return the transient effective time if set, otherwise today's date
 	 */
-	private static String getReleaseDate(final SnomedExportConfiguration config) {
+	private static String getReleaseDate(final SnomedExportContext config) {
 		String releaseDate = getExportTime();
 		if (!config.getUnsetEffectiveTimeLabel().isEmpty() && !config.getUnsetEffectiveTimeLabel().equals(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
 			releaseDate = config.getUnsetEffectiveTimeLabel();
@@ -72,11 +71,11 @@ public class SnomedRfFileNameBuilder {
 		return releaseDate;
 	}
 
-	public static String buildRefSetFileName(final SnomedExportConfiguration configuration, final String refSetName, final SnomedRefSet refSet) {
+	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedRefSet refSet) {
 		return buildRefSetFileName(configuration, refSetName, refSet, false);
 	}
 
-	public static String buildRefSetFileName(final SnomedExportConfiguration configuration, final String refSetName, final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
+	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
 		return new StringBuilder("der2_")
 				.append(getPrefix(refSet, includeMapTargetDescription))
 				.append("Refset_")

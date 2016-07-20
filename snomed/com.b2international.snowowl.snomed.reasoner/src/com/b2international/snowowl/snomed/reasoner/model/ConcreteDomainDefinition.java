@@ -55,7 +55,7 @@ public final class ConcreteDomainDefinition implements Definition, Serializable 
 	 * @param fragment the fragment to gather information from (may not be {@code null})
 	 */
 	public ConcreteDomainDefinition(final ConcreteDomainFragment fragment) {
-		this(fragment.getLabel().utf8ToString(), fragment.getUomId(), fragment.getValue().utf8ToString(),
+		this(fragment.getLabel(), fragment.getUomId(), fragment.getValue(),
 				ConcreteDomainDefinition.getOWL2Datatype(fragment.getDataType()));
 	}
 

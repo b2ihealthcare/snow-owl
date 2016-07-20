@@ -15,28 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Sets.newHashSet;
-import static java.lang.Long.parseLong;
 
 import java.util.Collection;
 
-import com.b2international.collections.longs.LongCollections;
-import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -48,23 +41,18 @@ import com.google.common.base.Supplier;
  */
 final class ComponentIdUniquenessValidator {
 	
-	private static final int NEW_COMPONENT_COUNT_THRESHOLD = 1_000;
 	private final SnomedEditingContext editingContext;
 	private final Collection<String> newComponentIdsInTransaction;
-	private final IBranchPath branchPath;
 	private final Supplier<Iterable<SnomedRefSet>> newRefSetsSupplier;
-	private final LongSet existingCoreComponentIds;
 
 	/*package*/ ComponentIdUniquenessValidator(final SnomedEditingContext editingContext) {
 		this.editingContext = checkNotNull(editingContext, "editingContext");
-		branchPath = createPath(check(this.editingContext.getTransaction()));
 		newComponentIdsInTransaction = newHashSet();
 		newRefSetsSupplier = memoize(new Supplier<Iterable<SnomedRefSet>>() {
 			public Iterable<SnomedRefSet> get() {
 				return filter(editingContext.getTransaction().getNewObjects().values(), SnomedRefSet.class);
 			}
 		});
-		existingCoreComponentIds = initExistingCoreComponentIds();
 	}
 	
 	/**
@@ -152,26 +140,13 @@ final class ComponentIdUniquenessValidator {
 		return !newComponentIdsInTransaction.contains(newComponentId);
 	}
 
-	private LongSet initExistingCoreComponentIds() {
-		final int newObjectsCount = editingContext.getTransaction().getNewObjects().size();
-		if (newObjectsCount > NEW_COMPONENT_COUNT_THRESHOLD) {
-			return getServiceForClass(ISnomedComponentService.class).getAllCoreComponentIds(branchPath);
-		} else {
-			return LongCollections.emptySet();
-		}
-	}
-	
 	/**
 	 * Returns {@code true} if the component ID is unique, no component with this ID exist in the database.
 	 * @param componentId the component identifier
 	 * @return {@code true} if the id is unique for the component. Otherwise returns with {@code false}.
 	 */
 	private boolean isUniqueInDatabase(final String componentId) {
-		if (CompareUtils.isEmpty(existingCoreComponentIds)) {
-			return getServiceForClass(SnomedTerminologyBrowser.class).isUniqueId(branchPath, componentId);
-		} else {
-			return !existingCoreComponentIds.contains(parseLong(componentId));
-		}
+		return !ApplicationContext.getInstance().getService(ISnomedIdentiferReservationService.class).isReserved(componentId);
 	}
 	
 }

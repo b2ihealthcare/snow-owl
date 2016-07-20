@@ -17,12 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Collection;
 
-import org.apache.lucene.document.Document;
-
-import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.mapping.IndexField;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.HashMultiset;
@@ -31,31 +26,23 @@ import com.google.common.collect.Multiset;
 /**
  * @since 4.3
  */
-public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
+public class ReferenceSetMembershipUpdater {
 
-	private Collection<RefSetMemberChange> memberChanges;
+	private final Collection<String> currentReferringRefSets;
+	private final Collection<String> currentReferringMappingRefSets;
+	private final Collection<RefSetMemberChange> memberChanges;
 
-	public ReferenceSetMembershipUpdater(String componentId, Collection<RefSetMemberChange> memberChanges) {
-		super(componentId);
+	public ReferenceSetMembershipUpdater(Collection<RefSetMemberChange> memberChanges, Collection<String> currentReferringRefSets, Collection<String> currentReferringMappingRefSets) {
 		this.memberChanges = memberChanges;
+		this.currentReferringRefSets = currentReferringRefSets;
+		this.currentReferringMappingRefSets = currentReferringMappingRefSets;
 	}
 
-	@Override
-	public void doUpdate(SnomedDocumentBuilder doc) {
-		Document document = doc.build();
-		final IndexField<Long> referringRefSetId = SnomedMappings.conceptReferringRefSetId();
-		final IndexField<Long> referringMappingRefSetId = SnomedMappings.conceptReferringMappingRefSetId();
-		
+	public void update(SnomedConceptDocument.Builder doc) {
 		// get reference set membership fields
-		final Multiset<Long> referencingRefSetIds = HashMultiset.create(referringRefSetId.getValues(document));
+		final Multiset<String> referencingRefSetIds = HashMultiset.create(currentReferringRefSets);
 		// get reference set mapping membership fields
-		final Multiset<Long> mappingReferencingRefSetIds = HashMultiset.create(referringMappingRefSetId.getValues(document));
-		
-		// remove all fields
-		doc.removeAll(referringRefSetId);
-		
-		// mapping fields as well
-		doc.removeAll(referringMappingRefSetId);
+		final Multiset<String> mappingReferencingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
 		
 		// merge reference set membership with the changes extracted from the transaction, if any.
 		for (final RefSetMemberChange change : memberChanges) {
@@ -91,13 +78,8 @@ public class ReferenceSetMembershipUpdater extends DocumentUpdaterBase<SnomedDoc
 		}
 		
 		// re-add reference set membership fields
-		for (final long refSetId : referencingRefSetIds) {
-			doc.conceptReferringRefSetId(refSetId);
-		}
-		
+		doc.referringRefSets(referencingRefSetIds);
 		// re-add mapping reference set membership fields
-		for (final long refSetId : mappingReferencingRefSetIds) {
-			doc.conceptReferringMappingRefSetId(refSetId);
-		}
+		doc.referringMappingRefSets(mappingReferencingRefSetIds);
 	}
 }

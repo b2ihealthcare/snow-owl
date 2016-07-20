@@ -16,48 +16,39 @@
 package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.3
  */
-public class IconIdUpdater extends SnomedDocumentUpdaterBase {
+public class IconIdUpdater {
 	
+	private final ISnomedTaxonomyBuilder inferredTaxonomy;
 	private final ISnomedTaxonomyBuilder statedTaxonomy;
 	private final Collection<String> availableImages;
-	private final boolean active;
 	
-	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, Component component, Collection<String> availableImages) {
-		this(inferredTaxonomy, statedTaxonomy, component.getId(), component.isActive(), availableImages);
-	}
-	
-	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, String conceptId, boolean active, Collection<String> availableImages) {
-		super(inferredTaxonomy, conceptId);
+	public IconIdUpdater(ISnomedTaxonomyBuilder inferredTaxonomy, ISnomedTaxonomyBuilder statedTaxonomy, Collection<String> availableImages) {
+		this.inferredTaxonomy = inferredTaxonomy;
 		this.statedTaxonomy = statedTaxonomy;
-		this.active = active;
 		this.availableImages = availableImages;
 	}
 	
-	@Override
-	public final void doUpdate(SnomedDocumentBuilder doc) {
-		final Long iconIdLong = Long.valueOf(getIconId(getComponentId(), active));
-		doc.iconId(iconIdLong);
+	public void update(String id, boolean active, SnomedConceptDocument.Builder doc) {
+		doc.iconId(getIconId(id, active));
 	}
-
+	
 	protected String getIconId(String conceptId, boolean active) {
 		String iconId = null;
 		if (active) {
 			// TODO do not set the iconId to the one in the taxonomyBuilder if the concept is inactive
 			// we may have to need a ref to the concept itself or at least know the active flag
-			final ISnomedTaxonomyBuilder inferredTaxonomy = getTaxonomyBuilder();
-			if (inferredTaxonomy.containsNode(conceptId)) {
-				iconId = getParentIcon(conceptId, inferredTaxonomy);
-			}
+			iconId = getParentIcon(conceptId, inferredTaxonomy);
 			// try to use the stated form to get the ID
 			if (iconId == null) {
 				iconId = getParentIcon(conceptId, statedTaxonomy);
@@ -68,22 +59,28 @@ public class IconIdUpdater extends SnomedDocumentUpdaterBase {
 	}
 	
 	private String getParentIcon(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
-		if (componentId == null) {
+		if (componentId == null || !taxonomyBuilder.containsNode(componentId)) {
 			return null;
 		}
 		if (taxonomyBuilder.getAllAncestorNodeIds(componentId).contains(Long.valueOf(componentId))) {
 			throw new CycleDetectedException("Concept " + componentId + " would introduce a cycle in the ISA graph (loop).");
 		}
-		return getParentFrom(componentId, taxonomyBuilder);
+		final Set<String> visitedNodes = Sets.newHashSet();
+		return getParentFrom(componentId, taxonomyBuilder, visitedNodes);
 	}
 	
-	private String getParentFrom(final String conceptId, ISnomedTaxonomyBuilder taxonomyBuilder) {
-		if (taxonomyBuilder.getAncestorNodeIds(conceptId).size() == 0) {
+	private String getParentFrom(final String conceptId, ISnomedTaxonomyBuilder taxonomyBuilder, final Set<String> visitedNodes) {
+		if (visitedNodes.add(conceptId)) {
+			if (taxonomyBuilder.getAncestorNodeIds(conceptId).size() == 0) {
+				return null;
+			}
+			if (this.availableImages.contains(conceptId)) {
+				return conceptId;
+			}
+			return getParentFrom(Long.toString(taxonomyBuilder.getAncestorNodeIds(conceptId).iterator().next()), taxonomyBuilder, visitedNodes);
+		} else {
+			// if we reached an already visited node, then skip and return null
 			return null;
 		}
-		if (this.availableImages.contains(conceptId)) {
-			return conceptId;
-		}
-		return getParentFrom(Long.toString(taxonomyBuilder.getAncestorNodeIds(conceptId).iterator().next()), taxonomyBuilder);
 	}
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="com.b2international.snowowl.datastore.serviceConfigJob">
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.server.personalization.PreviousPicksConfigJob"
+            id="com.b2international.snowowl.datastore.server.serviceconfig.PreviousPicksConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.server.personalization.BookmarksConfigJob"
+            id="com.b2international.snowowl.datastore.server.serviceconfig.BookmarksConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.server.index.diff.IndexDifferServiceConfigJob"
+            id="com.b2international.snowowl.datastore.server.index.diff.IndexDifferServiceConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.server.tasks.TaskStateManagerConfigJob"
+            id="com.b2international.snowowl.datastore.server.serviceconfig.TaskStateManagerConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+   </extension>
+</plugin>

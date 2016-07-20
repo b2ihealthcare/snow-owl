@@ -26,15 +26,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SnomedIdentifierConfiguration {
 
 	public enum IdGenerationStrategy {
-		MEMORY, // Memory based service
-		INDEX, // Index based service
+		EMBEDDED,
 		CIS // Component Identifier Service (IHTSDO) based service
 	}
 
 	public static final int DEFAULT_ID_GENERATION_ATTEMPTS = 1000;
 
 	@JsonProperty(value = "strategy", required = false)
-	private IdGenerationStrategy strategy = IdGenerationStrategy.INDEX;
+	private IdGenerationStrategy strategy = IdGenerationStrategy.EMBEDDED;
 	@JsonProperty(value = "cisBaseUrl", required = false)
 	private String cisBaseUrl;
 	@JsonProperty(value = "cisContextRoot", required = false)

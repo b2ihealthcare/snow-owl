@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DescriptionWidgetModel;
 import com.google.common.collect.Iterables;
 
@@ -46,15 +46,14 @@ public class DescriptionWidgetBean extends LeafWidgetBean {
 	 * 
 	 * @deprecated
 	 */
-	public static final SnomedConceptIndexEntry PREFERRED_TERM_PLACEHOLDER = SnomedConceptIndexEntry.builder()
+	public static final SnomedConceptDocument PREFERRED_TERM_PLACEHOLDER = SnomedConceptDocument.builder()
 			.id("225857101000154102") 
 			.iconId(Concepts.SYNONYM)
 			.moduleId(Concepts.MODULE_SCT_CORE)
-			.storageKey(0L)
 			.active(true)
 			.released(true)
 			.primitive(true)
-			.effectiveTimeLong(EffectiveTimes.parse("2013-07-31").getTime())
+			.effectiveTime(EffectiveTimes.parse("2013-07-31").getTime())
 			.build();
 
 	/** The property name of the {@link #getSelectedType() selectedType} property. */

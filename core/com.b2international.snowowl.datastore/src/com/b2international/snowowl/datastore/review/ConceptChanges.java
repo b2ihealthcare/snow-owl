@@ -17,9 +17,12 @@ package com.b2international.snowowl.datastore.review;
 
 import java.util.Set;
 
+import com.b2international.index.Doc;
+
 /**
  * @since 4.2
  */
+@Doc(type="conceptchanges")
 public interface ConceptChanges {
 
 	/**

@@ -20,8 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Iterator;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
@@ -40,17 +40,17 @@ abstract public class DataTypeUtils {
 	 * @param predicates the predicates applicable for the concept
 	 * @return the human readable name of the concrete domain type predicate.
 	 */
-	public static String getDataTypePredicateLabel(final String dataTypeName, final Iterable<PredicateIndexEntry> predicates) {
+	public static String getDataTypePredicateLabel(final String dataTypeName, final Iterable<SnomedConstraintDocument> predicates) {
 		
 		checkNotNull(dataTypeName, "Data type name argument cannot be null.");
 		
-		final Iterable<PredicateIndexEntry> applicablePredicates = Iterables.filter(predicates, new Predicate<PredicateIndexEntry>() {
-			@Override public boolean apply(final PredicateIndexEntry predicateMini) {
+		final Iterable<SnomedConstraintDocument> applicablePredicates = Iterables.filter(predicates, new Predicate<SnomedConstraintDocument>() {
+			@Override public boolean apply(final SnomedConstraintDocument predicateMini) {
 				return PredicateType.DATATYPE.equals(predicateMini.getType()) && dataTypeName.equals(predicateMini.getDataTypeName());
 			}
 		});
 		
-		final Iterator<PredicateIndexEntry> applicablePredicatesIterator = applicablePredicates.iterator();
+		final Iterator<SnomedConstraintDocument> applicablePredicatesIterator = applicablePredicates.iterator();
 		
 		if (!applicablePredicatesIterator.hasNext()) {
 			return getDefaultDataTypeLabel(dataTypeName);

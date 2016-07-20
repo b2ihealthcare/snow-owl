@@ -15,87 +15,62 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import java.util.Objects;
-
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollections;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.snowowl.datastore.index.mapping.IndexField;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
-import com.google.common.base.Strings;
 
 /**
  * @since 4.3
  */
-public class ParentageUpdater extends SnomedDocumentUpdaterBase {
+public class ParentageUpdater {
 
-	private String fieldSuffix;
+	private final ISnomedTaxonomyBuilder taxonomyBuilder;
+	private final boolean stated;
 
-	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId) {
-		this(taxonomyBuilder, conceptId, null);
+	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, boolean stated) {
+		this.taxonomyBuilder = taxonomyBuilder;
+		this.stated = stated;
 	}
 	
-	public ParentageUpdater(ISnomedTaxonomyBuilder taxonomyBuilder, String conceptId, String fieldSuffix) {
-		super(taxonomyBuilder, conceptId);
-		this.fieldSuffix = Strings.nullToEmpty(fieldSuffix);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(getComponentId(), getClass(), this.fieldSuffix);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (super.equals(obj)) {
-			ParentageUpdater other = (ParentageUpdater) obj;
-			return Objects.equals(fieldSuffix, other.fieldSuffix);
-		}
-		return false;
-	}
-
-	@Override
-	public final void doUpdate(SnomedDocumentBuilder doc) {
-		// throw out any parent or ancestor fields
-		final IndexField<Long> parentField = SnomedMappings.parent(fieldSuffix);
-		final IndexField<Long> ancestorField = SnomedMappings.ancestor(fieldSuffix);
+	public void update(final String id, SnomedConceptDocument.Builder doc) {
+		LongSet parents = PrimitiveSets.newLongOpenHashSet(getParentIds(id));
+		LongSet ancestors = PrimitiveSets.newLongOpenHashSet(getAncestorIds(id));
 		
-		parentField.removeAll(doc);
-		ancestorField.removeAll(doc);
-		
-		final LongCollection parentIds = getParentIds(getComponentId());
-		final LongCollection ancestorIds = getAncestorIds(getComponentId());
-		final LongIterator parentIdIterator = parentIds.iterator();
-		final LongIterator ancestorIdIterator = ancestorIds.iterator();
-		// index ROOT_ID
-		if (!parentIdIterator.hasNext()) {
-			doc.addToDoc(parentField, SnomedMappings.ROOT_ID);
+		// index/add ROOT_ID if parentIds are empty
+		if (parents.isEmpty()) {
+			parents.add(SnomedConceptDocument.ROOT_ID);
 		} else {
-			doc.addToDoc(ancestorField, SnomedMappings.ROOT_ID);
+			ancestors.add(SnomedConceptDocument.ROOT_ID);
 		}
-		// index parentage info
-		while (parentIdIterator.hasNext()) {
-			doc.addToDoc(parentField, parentIdIterator.next());
-		}
-		while (ancestorIdIterator.hasNext()) {
-			doc.addToDoc(ancestorField, ancestorIdIterator.next());
+
+		if (stated) {
+			doc.statedParents(parents);
+			doc.statedAncestors(ancestors);
+		} else {
+			doc.parents(parents);
+			doc.ancestors(ancestors);
 		}
 	}
 
 	protected LongCollection getParentIds(final String conceptId) {
-		if (getTaxonomyBuilder().containsNode(conceptId)) {
-			return getTaxonomyBuilder().getAncestorNodeIds(conceptId);
+		if (taxonomyBuilder.containsNode(conceptId)) {
+			return taxonomyBuilder.getAncestorNodeIds(conceptId);
 		}
 		return LongCollections.emptySet();
 	}
 
 	protected LongCollection getAncestorIds(final String conceptId) {
-		if (getTaxonomyBuilder().containsNode(conceptId)) {
-			return getTaxonomyBuilder().getAllIndirectAncestorNodeIds(conceptId);
+		if (taxonomyBuilder.containsNode(conceptId)) {
+			return taxonomyBuilder.getAllIndirectAncestorNodeIds(conceptId);
 		}
 		return LongCollections.emptySet();
+	}
+	
+	protected ISnomedTaxonomyBuilder getTaxonomyBuilder() {
+		return taxonomyBuilder;
 	}
 
 }

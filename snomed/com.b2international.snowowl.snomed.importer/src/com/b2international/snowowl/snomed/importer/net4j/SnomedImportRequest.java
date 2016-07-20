@@ -28,8 +28,7 @@ import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * 
@@ -171,23 +170,18 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 	protected SnomedImportResult confirming(final ExtendedDataInputStream in, final OMMonitor monitor) throws Exception {
 		
 		final int visitedConceptCount = in.readInt();
-		final int visitedRefSetCount = in.readInt();
 		final int validationDefectCount = in.readInt();
 		
-		monitor.begin(visitedConceptCount + visitedRefSetCount + validationDefectCount);
+		monitor.begin(visitedConceptCount + validationDefectCount);
 		
 		try {
 
 			final SnomedImportResult result = new SnomedImportResult();
-			final ClassLoader indexEntryLoader = SnomedConceptIndexEntry.class.getClassLoader();
+			final ClassLoader indexEntryLoader = SnomedConceptDocument.class.getClassLoader();
 			final ClassLoader validationDefectLoader = SnomedValidationDefect.class.getClassLoader();
 			
 			for (int i = 0; i < visitedConceptCount; i++) {
-				result.getVisitedConcepts().add((SnomedConceptIndexEntry) in.readObject(indexEntryLoader));
-			}
-			
-			for (int i = 0; i < visitedRefSetCount; i++) {
-				result.getVisitedRefSets().add((SnomedRefSetIndexEntry) in.readObject(indexEntryLoader));
+				result.getVisitedConcepts().add((SnomedConceptDocument) in.readObject(indexEntryLoader));
 			}
 			
 			for (int i = 0; i < validationDefectCount; i++) {

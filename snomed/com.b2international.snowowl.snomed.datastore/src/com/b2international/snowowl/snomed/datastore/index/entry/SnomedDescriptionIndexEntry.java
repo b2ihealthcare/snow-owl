@@ -15,34 +15,53 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchTextAll;
+import static com.b2international.index.query.Expressions.matchTextAllPrefix;
+import static com.b2international.index.query.Expressions.matchTextFuzzy;
+import static com.b2international.index.query.Expressions.matchTextParsed;
+import static com.b2international.index.query.Expressions.matchTextPhrase;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import org.apache.lucene.document.Document;
-
-import com.b2international.commons.BooleanUtils;
-import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
+import com.b2international.index.Doc;
+import com.b2international.index.compat.TextConstants;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import com.google.common.base.Splitter;
+import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * A transfer object representing a SNOMED CT description.
  */
-public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements IComponent<String>, IIndexEntry, Serializable {
+@Doc
+@JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
+public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
 
@@ -50,35 +69,9 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		return new Builder();
 	}
 	
-	public static Builder builder(final Document doc) {
-		final Builder builder = builder()
-				.id(SnomedMappings.id().getValueAsString(doc)) 
-				.term(SnomedMappings.descriptionTerm().getValue(doc)) 
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.languageCode(SnomedMappings.descriptionLanguageCode().getValue(doc))
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-				.typeId(SnomedMappings.descriptionType().getValueAsString(doc))
-				.conceptId(SnomedMappings.descriptionConcept().getValueAsString(doc))
-				.caseSignificanceId(SnomedMappings.descriptionCaseSignificance().getValueAsString(doc))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
-		
-		final Iterable<String> preferredRefSetIds = SnomedMappings.descriptionPreferredReferenceSetId().getValuesAsStringList(doc);
-		for (final String preferredRefSetId : preferredRefSetIds) {
-			builder.acceptability(preferredRefSetId, Acceptability.PREFERRED);
-		}
-		
-		final Iterable<String> acceptableRefSetIds = SnomedMappings.descriptionAcceptableReferenceSetId().getValuesAsStringList(doc);
-		for (final String acceptableRefSetId : acceptableRefSetIds) {
-			builder.acceptability(acceptableRefSetId, Acceptability.ACCEPTABLE);
-		}
-		
-		return builder;
-	}
-	
 	public static Builder builder(final ISnomedDescription input) {
 		final Builder builder = builder()
+				.storageKey(input.getStorageKey())
 				.id(input.getId())
 				.term(input.getTerm()) 
 				.moduleId(input.getModuleId())
@@ -88,11 +81,12 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 				.typeId(input.getTypeId())
 				.conceptId(input.getConceptId())
 				.caseSignificanceId(input.getCaseSignificance().getConceptId())
-				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
-		if (input.getScore() != null) {
-			builder.score(input.getScore());
-		}
+		// TODO add back scoring
+//		if (input.getScore() != null) {
+//			builder.score(input.getScore());
+//		}
 		
 		if (input.getType() != null && input.getType().getPt() != null) {
 			builder.typeLabel(input.getType().getPt().getTerm());
@@ -107,17 +101,39 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	
 	public static Builder builder(Description description) {
 		return builder()
+				.storageKey(CDOIDUtils.asLong(description.cdoID()))
 				.id(description.getId()) 
 				.term(description.getTerm())
 				.moduleId(description.getModule().getId())
-				.storageKey(CDOUtils.getStorageKey(description))
 				.released(description.isReleased()) 
 				.active(description.isActive()) 
 				.typeId(description.getType().getId()) 
 				.caseSignificanceId(description.getCaseSignificance().getId()) 
 				.conceptId(description.getConcept().getId())
 				.languageCode(description.getLanguageCode())
-				.effectiveTimeLong(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+	}
+	
+	/**
+	 * Creates a new {@link Builder} from the given {@link SnomedDescriptionIndexEntry}. The acceptability map is not copied over to the
+	 * {@link Builder} instance, if you need that, manually modify the returned {@link Builder} to represent the desired acceptability state.
+	 * 
+	 * @param doc
+	 * @return
+	 */
+	public static Builder builder(SnomedDescriptionIndexEntry doc) {
+		return builder()
+				.storageKey(doc.getStorageKey())
+				.id(doc.getId())
+				.term(doc.getTerm())
+				.moduleId(doc.getModuleId())
+				.released(doc.isReleased())
+				.active(doc.isActive())
+				.typeId(doc.getTypeId())
+				.caseSignificanceId(doc.getCaseSignificanceId())
+				.conceptId(doc.getConceptId())
+				.languageCode(doc.getLanguageCode())
+				.effectiveTime(doc.getEffectiveTime());
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<ISnomedDescription> descriptions) {
@@ -129,7 +145,105 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		}).toList();
 	}
 
-	public static class Builder extends AbstractBuilder<Builder> {
+	public final static class Fields extends SnomedDocument.Fields {
+		public static final String CONCEPT_ID = SnomedRf2Headers.FIELD_CONCEPT_ID;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String CASE_SIGNIFICANCE_ID = SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID;
+		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
+		public static final String LANGUAGE_CODE = SnomedRf2Headers.FIELD_LANGUAGE_CODE;
+		public static final String PREFERRED_IN = "preferredIn";
+		public static final String ACCEPTABLE_IN = "acceptableIn";
+	}
+	
+	public final static class Expressions extends SnomedDocument.Expressions {
+		
+		private Expressions() {
+		}
+
+		public static Expression fuzzy(String term) {
+			final Splitter tokenSplitter = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).omitEmptyStrings();
+			final ExpressionBuilder fuzzyQuery = com.b2international.index.query.Expressions.builder();
+			int tokenCount = 0;
+
+			for (final String token : tokenSplitter.split(term)) {
+				fuzzyQuery.should(matchTextFuzzy(Fields.TERM, token));
+				++tokenCount;
+			}
+
+			final int minShouldMatch = Math.max(1, tokenCount - 2);
+			fuzzyQuery.setMinimumNumberShouldMatch(minShouldMatch);
+			
+			return fuzzyQuery.build();
+		}
+		
+		public static Expression exactTerm(String term) {
+			return matchTextPhrase(Fields.TERM, term);
+		}
+		
+		public static Expression allTermPrefixesPresent(String term) {
+			return matchTextAllPrefix(Fields.TERM, term);
+		}
+		
+		public static Expression allTermsPresent(String term) {
+			return matchTextAll(Fields.TERM, term, Analyzers.NON_BOOKEND);
+		}
+		
+		public static Expression parsedTerm(String term) {
+			return matchTextParsed(Fields.TERM, term);
+		}
+		
+		public static Expression concept(String conceptId) {
+			return concepts(Collections.singleton(conceptId));
+		}
+		
+		public static Expression concepts(Collection<String> conceptIds) {
+			return matchAny(Fields.CONCEPT_ID, conceptIds);
+		}
+		
+		public static Expression type(String typeId) {
+			return types(Collections.singleton(typeId));
+		}
+		
+		public static Expression types(Collection<String> typeIds) {
+			return matchAny(Fields.TYPE_ID, typeIds);
+		}
+		
+		public static Expression caseSignificance(String caseSignificanceId) {
+			return caseSignificances(Collections.singleton(caseSignificanceId));
+		}
+		
+		public static Expression caseSignificances(Collection<String> caseSignificanceIds) {
+			return matchAny(Fields.CASE_SIGNIFICANCE_ID, caseSignificanceIds);
+		}
+		
+		public static Expression acceptableIn(String languageReferenceSetId) {
+			return acceptableIn(Collections.singleton(languageReferenceSetId));
+		}
+		
+		public static Expression preferredIn(String languageReferenceSetId) {
+			return preferredIn(Collections.singleton(languageReferenceSetId));
+		}
+		
+		public static Expression acceptableIn(Collection<String> languageReferenceSetIds) {
+			return matchAny(Fields.ACCEPTABLE_IN, languageReferenceSetIds);
+		}
+		
+		public static Expression preferredIn(Collection<String> languageReferenceSetIds) {
+			return matchAny(Fields.PREFERRED_IN, languageReferenceSetIds);
+		}
+		
+		public static Expression languageCode(String languageCode) {
+			return exactMatch(Fields.LANGUAGE_CODE, languageCode);
+		}
+		
+		public static Expression languageCodes(Collection<String> languageCodes) {
+			return matchAny(Fields.LANGUAGE_CODE, languageCodes);
+		}
+		
+	}
+	
+	@JsonPOJOBuilder(withPrefix="")
+	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String term;
 		private String conceptId;
@@ -137,8 +251,10 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		private String typeId;
 		private String typeLabel;
 		private String caseSignificanceId;
-		private final ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder = ImmutableMap.builder();
+		private Set<String> acceptableIn = newHashSet();
+		private Set<String> preferredIn = newHashSet();
 
+		@JsonCreator
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
@@ -150,7 +266,6 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 
 		public Builder term(final String term) {
 			this.term = term;
-			label(term);
 			return getSelf();
 		}
 
@@ -179,76 +294,110 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			return getSelf();
 		}
 		
+		public Builder acceptableIn(final Set<String> acceptableIn) {
+			this.acceptableIn = acceptableIn;
+			return getSelf();
+		}
+		
+		public Builder preferredIn(final Set<String> preferredIn) {
+			this.preferredIn = preferredIn;
+			return getSelf();
+		}
+		
 		public Builder acceptability(final String languageRefSetId, final Acceptability acceptability) {
-			this.acceptabilityMapBuilder.put(languageRefSetId, acceptability);
+			switch (acceptability) {
+			case ACCEPTABLE:
+				this.acceptableIn.add(languageRefSetId);
+				break;
+			case PREFERRED:
+				this.preferredIn.add(languageRefSetId);
+				break;
+			default: throw new UnsupportedOperationException("Not implemented: " + acceptability);
+			}
 			return getSelf();
 		}
 		
 		public Builder acceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
-			this.acceptabilityMapBuilder.putAll(acceptabilityMap);
+			for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
+				acceptability(entry.getKey(), entry.getValue());
+			}
 			return getSelf();
+		}
+		
+		@Override
+		public Builder label(String label) {
+			throw new IllegalStateException("Use term() builder method instead to set the label property");
 		}
 
 		public SnomedDescriptionIndexEntry build() {
-			return new SnomedDescriptionIndexEntry(id,
-					label,
-					score,
-					storageKey, 
+			final SnomedDescriptionIndexEntry doc = new SnomedDescriptionIndexEntry(id,
+					term,
 					moduleId,
 					released, 
 					active, 
-					effectiveTimeLong, 
+					effectiveTime, 
 					conceptId, 
 					languageCode,
 					term,
 					typeId,
 					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
-					acceptabilityMapBuilder.build());
+					preferredIn, acceptableIn);
+			doc.setBranchPath(branchPath);
+			doc.setCommitTimestamp(commitTimestamp);
+			doc.setStorageKey(storageKey);
+			doc.setReplacedIns(replacedIns);
+			doc.setSegmentId(segmentId);
+			return doc;
 		}
 	}
 
 	private final String conceptId;
 	private final String languageCode;
+	
+	@Analyzed
 	private final String term;
+	
 	private final String typeId;
 	private final String caseSignificanceId;
-	private final ImmutableMap<String, Acceptability> acceptabilityMap;
+	private final Set<String> acceptableIn;
+	private final Set<String> preferredIn;
 	private final String typeLabel;
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
-			final float score, 
-			final long storageKey, 
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
-			final long effectiveTimeLong, 
+			final long effectiveTime, 
 			final String conceptId,
 			final String languageCode,
 			final String term,
 			final String typeId,
 			final String typeLabel,
 			final String caseSignificanceId,
-			final ImmutableMap<String, Acceptability> acceptabilityMap) {
+			final Set<String> preferredIn, final Set<String> acceptableIn) {
 
-		super(id,
-				label,
-				typeId, // XXX: iconId is the same as typeId 
-				score, 
-				storageKey, 
-				moduleId, 
-				released, 
-				active, 
-				effectiveTimeLong);
-
+		super(id, label, typeId /* XXX: iconId is the same as typeId*/, moduleId, released, active, effectiveTime);
 		this.conceptId = checkNotNull(conceptId, "Description concept identifier may not be null.");
 		this.languageCode = checkNotNull(languageCode, "Description language code may not be null.");
 		this.term = checkNotNull(term, "Description term may not be null.");
 		this.typeId = checkNotNull(typeId, "Description type identifier may not be null.");
 		this.typeLabel = typeLabel;
 		this.caseSignificanceId = checkNotNull(caseSignificanceId, "Description case significance identifier may not be null.");
-		this.acceptabilityMap = checkNotNull(acceptabilityMap, "Description acceptability map may not be null."); 
+		this.preferredIn = preferredIn == null ? Collections.<String>emptySet() : preferredIn;
+		this.acceptableIn = acceptableIn == null ? Collections.<String>emptySet() : acceptableIn;
+	}
+	
+	@Override
+	public String getContainerId() {
+		return getConceptId();
+	}
+	
+	@Override
+	@JsonIgnore
+	public String getIconId() {
+		return super.getIconId();
 	}
 
 	/**
@@ -282,6 +431,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	/**
 	 * @return the label of the description type concept
 	 */
+	@JsonIgnore
 	public String getTypeLabel() {
 		return typeLabel;
 	}
@@ -289,43 +439,61 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	/**
 	 * @return the case significance concept identifier
 	 */
-	public String getCaseSignificance() {
+	public String getCaseSignificanceId() {
 		return caseSignificanceId;
+	}
+	
+	/**
+	 * Returns the language reference set identifiers where this description is preferred.
+	 * @return
+	 */
+	public Set<String> getPreferredIn() {
+		return preferredIn;
+	}
+	
+	/**
+	 * Returns the language reference set identifiers where this description is acceptable.
+	 * @return
+	 */
+	public Set<String> getAcceptableIn() {
+		return acceptableIn;
 	}
 	
 	/**
 	 * @return the map of active acceptability values for the description, keyed by language reference set identifier
 	 */
-	public ImmutableMap<String, Acceptability> getAcceptabilityMap() {
-		return acceptabilityMap;
+	@JsonIgnore
+	public Map<String, Acceptability> getAcceptabilityMap() {
+		// TODO check reindex vm argument
+		final Map<String, Acceptability> result = Maps.newHashMap();
+		for (String acceptableIn : this.acceptableIn) {
+			result.put(acceptableIn, Acceptability.ACCEPTABLE);
+		}
+		for (String preferredIn : this.preferredIn) {
+			result.put(preferredIn, Acceptability.PREFERRED);
+		}
+		return result;
 	}
 	
 	/**
 	 * @return <code>true</code> if this description is a fully specified name, <code>false</code> otherwise.
 	 */
+	@JsonIgnore
 	public boolean isFsn() {
 		return Concepts.FULLY_SPECIFIED_NAME.equals(getTypeId());
 	}
-
+	
 	@Override
-	public String toString() {
-		return Objects.toStringHelper(this)
-				.add("id", id)
-				.add("label", label)
-				.add("iconId", iconId)
-				.add("moduleId", moduleId)
-				.add("score", score)
-				.add("storageKey", storageKey)
-				.add("released", released)
-				.add("active", active)
-				.add("effectiveTime", effectiveTimeLong)
+	protected ToStringHelper doToString() {
+		return super.doToString()
 				.add("conceptId", conceptId)
 				.add("languageCode", languageCode)
 				.add("term", term)
 				.add("typeId", typeId)
 				.add("caseSignificanceId", caseSignificanceId)
-				.add("acceptabilityMap", acceptabilityMap)
-				.toString();
+				.add("acceptableIn", acceptableIn)
+				.add("preferredIn", preferredIn)
+				.add("typeLabel", typeLabel);
 	}
 
 }

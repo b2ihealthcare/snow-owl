@@ -18,16 +18,12 @@ package com.b2international.snowowl.snomed.reasoner.server.diff.relationship;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
@@ -46,11 +42,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	private final Concept inferredRelationshipConcept;
 	private final Concept existentialRelationshipConcept;
 	private final Concept universalRelationshipConcept;
-	private final SnomedConceptLookupService conceptLookupService;
-	private final SnomedRelationshipLookupService relationshipLookupService;
-	private final CDOTransaction transaction;
 	private final SnomedEditingContext context;
-	private final Map<Long, Concept> relationshipTypeConcepts;
 	private final Nature nature;
 	
 	private final Collection<String> relationshipIds = Sets.newHashSet();
@@ -58,17 +50,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	public RelationshipPersister(final SnomedEditingContext context, final Nature nature) {
 		this.context = context;
 		this.nature = nature;
-		
-		conceptLookupService = new SnomedConceptLookupService();
-		relationshipLookupService = new SnomedRelationshipLookupService();
-		
-		transaction = context.getTransaction();
-		
-		inferredRelationshipConcept = conceptLookupService.getComponent(Concepts.INFERRED_RELATIONSHIP, transaction);
-		existentialRelationshipConcept = conceptLookupService.getComponent(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, transaction);
-		universalRelationshipConcept = conceptLookupService.getComponent(Concepts.UNIVERSAL_RESTRICTION_MODIFIER, transaction);
-		
-		relationshipTypeConcepts = Maps.newHashMap();
+		this.inferredRelationshipConcept = context.lookup(Concepts.INFERRED_RELATIONSHIP, Concept.class);
+		this.existentialRelationshipConcept = context.lookup(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, Concept.class);
+		this.universalRelationshipConcept = context.lookup(Concepts.UNIVERSAL_RESTRICTION_MODIFIER, Concept.class);
 	}
 
 	@Override
@@ -90,25 +74,12 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		}
 
 		final String sourceConceptId = Long.toString(conceptId);
-		final Concept sourceConcept = conceptLookupService.getComponent(sourceConceptId, transaction);
+		final Concept sourceConcept = context.lookup(sourceConceptId, Concept.class);
 		final String namespace = SnomedIdentifiers.create(sourceConceptId).getNamespace();
 		final Concept module = sourceConcept.getModule();
 		
-		final Concept typeConcept;
-		final long typeId = addedEntry.getTypeId();
-		
-		if (relationshipTypeConcepts.containsKey(typeId)) {
-			
-			typeConcept = relationshipTypeConcepts.get(typeId);
-			
-		} else {
-			
-			typeConcept = conceptLookupService.getComponent(Long.toString(typeId), transaction);
-			relationshipTypeConcepts.put(typeId, typeConcept);
-			
-		}
-		
-		final Concept destinationConcept = conceptLookupService.getComponent(Long.toString(addedEntry.getDestinationId()), transaction);
+		final Concept typeConcept = context.lookup(Long.toString(addedEntry.getTypeId()), Concept.class);
+		final Concept destinationConcept = context.lookup(Long.toString(addedEntry.getDestinationId()), Concept.class);
 		
 		final Relationship newRel = context.buildEmptyRelationship(namespace);
 		
@@ -126,7 +97,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		newRel.setModule(module);
 		
 		if (addedEntry.getStatementId() != -1L) {
-			final Relationship originalRel = relationshipLookupService.getComponent(Long.toString(addedEntry.getStatementId()), transaction);
+			final Relationship originalRel = context.lookup(Long.toString(addedEntry.getStatementId()), Relationship.class);
 			
 			for (final SnomedConcreteDataTypeRefSetMember originalMember : originalRel.getConcreteDomainRefSetMembers()) {
 

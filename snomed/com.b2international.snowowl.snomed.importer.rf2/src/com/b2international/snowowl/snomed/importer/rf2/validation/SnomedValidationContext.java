@@ -34,30 +34,28 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.importer.ImportException;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
+import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.google.common.base.Charsets;
 import com.google.common.base.Predicates;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
@@ -69,13 +67,6 @@ import com.google.common.collect.Ordering;
  */
 public final class SnomedValidationContext {
 	
-	private final Supplier<LongSet> descriptionIdSupplier = Suppliers.memoize(new Supplier<LongSet>() {
-		@Override public LongSet get() {
-			return ApplicationContext.getInstance().getService(IClientSnomedComponentService.class).getAllDescriptionIds();
-		}
-	});
-	
-	
 	private final Multimap<DefectType, String> defects = LinkedHashMultimap.create();
 	private final ImportConfiguration configuration;
 	private final List<AbstractSnomedValidator> releaseFileValidators = Lists.newArrayList();
@@ -85,15 +76,20 @@ public final class SnomedValidationContext {
 	private final String requestingUserId;
 	private final IBranchPath branchPath;
 	private final Logger logger;
-	private final SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
-	private final SnomedDescriptionLookupService descriptionLookupService = new SnomedDescriptionLookupService();
-	private final SnomedRelationshipLookupService relationshipLookupService = new SnomedRelationshipLookupService();
 	private final Set<String> effectiveTimes = newHashSet();
+	private final RevisionSearcher searcher;
+	private final RepositoryState repositoryState;
 	
-	public SnomedValidationContext(String requestingUserId, final ImportConfiguration configuration, Logger logger) {
+	public SnomedValidationContext(final RevisionSearcher searcher, 
+			final String requestingUserId, 
+			final ImportConfiguration configuration, 
+			final Logger logger,
+			final RepositoryState repositoryState) {
+		this.searcher = searcher;
 		this.logger = logger;
 		this.requestingUserId = requestingUserId;
 		this.configuration = configuration;
+		this.repositoryState = repositoryState;
 		this.branchPath = BranchPathUtils.createPath(configuration.getBranchPath());
 		try {
 			addReleaseFilesForValidating();
@@ -235,8 +231,8 @@ public final class SnomedValidationContext {
 
 		final Collection<SnomedValidationDefect> validationResult = newHashSet();
 		
-		validationResult.addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.INFERRED_ISA_ONLY).validate());
-		validationResult.addAll(new SnomedTaxonomyValidator(branchPath, configuration, StatementCollectionMode.STATED_ISA_ONLY).validate());
+		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
+		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
 		
 		for (DefectType type : this.defects.keySet()) {
 			final Collection<String> messages = this.defects.get(type);
@@ -255,20 +251,26 @@ public final class SnomedValidationContext {
 	}
 
 	/*package*/ boolean isComponentExists(String componentId, ComponentCategory componentCategory) {
-		boolean exists = componentStatus.containsKey(componentId);
-		
-		if (!exists) {
-			exists = existsInStore(componentId, componentCategory);
+		if (componentStatus.containsKey(componentId)) {
+			return true;
+		} else {
+			try {
+				return existsInStore(componentId, componentCategory);
+			} catch (IOException e) {
+				throw new SnowowlRuntimeException(e);
+			}
 		}
-		
-		return exists;
 	}
 
 	/*package*/ boolean isComponentActive(String componentId, ComponentCategory category) {
 		if (componentStatus.containsKey(componentId)) {
 			return componentStatus.get(componentId);
 		} else {
-			return activeInStore(componentId, category);
+			try {
+				return activeInStore(componentId, category);
+			} catch (IOException e) {
+				throw new SnowowlRuntimeException(e);
+			}
 		}
 	}
 	
@@ -284,22 +286,17 @@ public final class SnomedValidationContext {
 		return SnomedIdentifiers.getIdentifierValidator(category);
 	}
 
-	private boolean existsInStore(String componentId, ComponentCategory componentCategory) {
-		switch (componentCategory) {
-		case CONCEPT: return conceptLookupService.exists(branchPath, componentId);
-		case DESCRIPTION: return descriptionIdSupplier.get().contains(Long.parseLong(componentId));
-		case RELATIONSHIP: return relationshipLookupService.exists(branchPath, componentId);
-		default: throw new UnsupportedOperationException("Cannot get lookup service for " + componentCategory);
-		}
+	private boolean existsInStore(String componentId, ComponentCategory componentCategory) throws IOException {
+		final Class<? extends SnomedDocument> type = SnomedDocument.getType(componentCategory);
+		final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.id(componentId)).limit(0).build();
+		return searcher.search(query).getTotal() > 0;
 	}
 	
-	private boolean activeInStore(String componentId, ComponentCategory componentCategory) {
-		switch (componentCategory) {
-		case CONCEPT: return conceptLookupService.getComponent(branchPath, componentId).isActive();
-		case DESCRIPTION: return descriptionLookupService.getComponent(branchPath, componentId).isActive();
-		case RELATIONSHIP: return relationshipLookupService.getComponent(branchPath, componentId).isActive();
-		default: throw new UnsupportedOperationException("Cannot get lookup service for " + componentCategory);
-		}
+	private boolean activeInStore(String componentId, ComponentCategory componentCategory) throws IOException {
+		final Class<? extends SnomedDocument> type = SnomedDocument.getType(componentCategory);
+		final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.id(componentId)).limit(1).build();
+		final Hits<? extends SnomedDocument> hits = searcher.search(query);
+		return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).isActive() : false;
 	}
 	
 }

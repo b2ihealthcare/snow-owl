@@ -27,7 +27,7 @@ public abstract class SnomedRefSetMemberIndexEntryFunctions {
 	public static final Function<SnomedRefSetMemberIndexEntry, String> EXTRACT_REFSET_ID = new Function<SnomedRefSetMemberIndexEntry, String>() {
 		@Override
 		public String apply(final SnomedRefSetMemberIndexEntry entry) {
-			return entry.getRefSetIdentifierId();
+			return entry.getReferenceSetId();
 		}
 	};
 

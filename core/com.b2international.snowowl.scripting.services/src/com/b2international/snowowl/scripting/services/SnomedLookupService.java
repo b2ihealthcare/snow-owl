@@ -15,15 +15,10 @@
  */
 package com.b2international.snowowl.scripting.services;
 
-import java.util.Collection;
-import java.util.List;
-
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService;
 
 /**
@@ -61,16 +56,6 @@ public class SnomedLookupService implements ISnomedLookupService {
 	@Override
 	public String[] getDescriptionTerms(final long conceptId, final long descriptionTypeConceptId) {
 		return delegate.getDescriptionTerms(conceptId, descriptionTypeConceptId);
-	}
-
-	@Override
-	public boolean isPreferredTermExists(final long conceptId) {
-		return delegate.isPreferredTermExists(conceptId);
-	}
-
-	@Override
-	public String getPreferredTerm(final long conceptId) {
-		return delegate.getPreferredTerm(conceptId);
 	}
 
 	@Override
@@ -114,11 +99,6 @@ public class SnomedLookupService implements ISnomedLookupService {
 	}
 
 	@Override
-	public List<IComponent<String>> getDescriptionsWithPreferredTerm(final String conceptId, final String descriptionTypeId, final boolean duplicatePreferredTerm) {
-		return delegate.getDescriptionsWithPreferredTerm(conceptId, descriptionTypeId, duplicatePreferredTerm);
-	}
-
-	@Override
 	public Concept getConcept(final long conceptId) {
 		return delegate.getConcept(conceptId);
 	}
@@ -153,102 +133,4 @@ public class SnomedLookupService implements ISnomedLookupService {
 		return delegate.generateNewRelationshipId();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllDescriptionsForConcept(java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllDescriptionsForConcept(final String conceptId) {
-		return delegate.getAllDescriptionsForConcept(conceptId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllDescriptionsForConcept(final String conceptId, final String languageRefSetId) {
-		return delegate.getAllDescriptionsForConcept(conceptId, languageRefSetId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getDescriptionsForConcept(final String conceptId, final String descriptionTypeId) {
-		return delegate.getDescriptionsForConcept(conceptId, descriptionTypeId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getDescriptionsForConcept(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getDescriptionsForConcept(final String conceptId, final String descriptionTypeId, final String languageRefSetId) {
-		return delegate.getDescriptionsForConcept(conceptId, descriptionTypeId, languageRefSetId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPrferredTermForConcept(java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreferredTermForConcept(final String conceptId) {
-		return delegate.getPreferredTermForConcept(conceptId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPrferredTermForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreferredTermForConcept(final String conceptId, final String languageRefSetId) {
-		return delegate.getPreferredTermForConcept(conceptId, languageRefSetId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllAcceptedDescriptionsForConcept(java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllAcceptedDescriptionsForConcept(final String conceptId) {
-		return delegate.getAllAcceptedDescriptionsForConcept(conceptId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllAcceptedDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllAcceptedDescriptionsForConcept(final String conceptId, final String languageRefSetId) {
-		return delegate.getAllAcceptedDescriptionsForConcept(conceptId, languageRefSetId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAcceptedDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAcceptedDescriptionsForConcept(final String conceptId, final String descriptionTypeId) {
-		return delegate.getAcceptedDescriptionsForConcept(conceptId, descriptionTypeId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAcceptedDescriptionsForConcept(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAcceptedDescriptionsForConcept(final String conceptId, final String descriptionTypeId, final String languageRefSetId) {
-		return delegate.getAcceptedDescriptionsForConcept(conceptId, descriptionTypeId, languageRefSetId);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPreviousPreferredTerm(java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreviousPreferredTerm(final String conceptId) {
-		return delegate.getPreviousPreferredTerm(conceptId);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPreviousPreferredTerm(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreviousPreferredTerm(final String conceptId, final String previousVersionId) {
-		return delegate.getPreviousPreferredTerm(conceptId, previousVersionId);
-	}
-	
 }

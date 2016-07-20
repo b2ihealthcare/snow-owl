@@ -28,19 +28,24 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
  * Lookup service implementation for SNOMED CT reference sets.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible
  */
 public class SnomedRefSetLookupService extends AbstractLookupService<String, SnomedRefSet, CDOView> {
 
@@ -57,7 +62,7 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 	public SnomedRefSet getComponent(final String identifierConceptId, final CDOView view) {
 		checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null or empty.");
 
-		final long refSetStorageKey = getRefSetBrowser().getStorageKey(BranchPathUtils.createPath(view), identifierConceptId);
+		final long refSetStorageKey = getStorageKey(BranchPathUtils.createPath(view), identifierConceptId);
 		CDOObject cdoObject = null;
 
 		notFoundRefSetLoop:
@@ -100,17 +105,30 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 	}
 
 	@Override
-	public SnomedRefSetIndexEntry getComponent(final IBranchPath branchPath, final String id) {
-		return getRefSetBrowser().getRefSet(branchPath, id);
+	public SnomedConceptDocument getComponent(final IBranchPath branchPath, final String id) {
+		try {
+			final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
+			final SnomedReferenceSet refSet = SnomedRequests
+					.prepareGetReferenceSet()
+					.setComponentId(id)
+					.build(branchPath.getPath())
+					.executeSync(bus);
+			
+			final SnomedConceptDocument concept = new SnomedConceptLookupService().getComponent(branchPath, id);
+			
+			return SnomedConceptDocument
+					.builder(concept)
+					.refSet(refSet)
+					.build();
+		} catch (NotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		return getRefSetBrowser().getStorageKey(branchPath, id);
-	}
-
-	private SnomedRefSetBrowser getRefSetBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
+		final SnomedConceptDocument component = getComponent(branchPath, id);
+		return component != null ? component.getRefSetStorageKey() : CDOUtils.NO_STORAGE_KEY;
 	}
 
 	@Override

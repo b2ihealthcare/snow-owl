@@ -85,5 +85,9 @@ public enum CharacteristicType implements ConceptEnum {
 
 		throw new IllegalArgumentException(MessageFormat.format("No characteristic type value found for identifier ''{0}''.", conceptId));
 	}
+
+	public boolean isDefining() {
+		return this == DEFINING_RELATIONSHIP || this == INFERRED_RELATIONSHIP || this == STATED_RELATIONSHIP;
+	}
 	
 }

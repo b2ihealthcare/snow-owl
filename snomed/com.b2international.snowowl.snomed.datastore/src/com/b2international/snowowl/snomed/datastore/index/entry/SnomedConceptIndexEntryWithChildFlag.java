@@ -15,30 +15,37 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentWithChildFlag;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.google.common.base.Objects.ToStringHelper;
 
 /**
- * Adds a boolean to {@link SnomedConceptIndexEntry} to indicate whether the concept has children.
+ * Adds a boolean to {@link SnomedConceptDocument} to indicate whether the concept has children.
  */
-public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptIndexEntry implements IComponentWithChildFlag<String> {
+public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptDocument implements IComponentWithChildFlag<String> {
 
 	private static final long serialVersionUID = -3327828639334867594L;
 
 	private final boolean hasChildren;
 
-	public SnomedConceptIndexEntryWithChildFlag(final SnomedConceptIndexEntry conceptIndexEntry, final boolean hasChildren) {
+	public SnomedConceptIndexEntryWithChildFlag(final SnomedConceptDocument conceptIndexEntry, final boolean hasChildren) {
 
 		super(conceptIndexEntry.getId(), 
 				conceptIndexEntry.getLabel(),
 				conceptIndexEntry.getIconId(), 
-				conceptIndexEntry.getScore(), 
-				conceptIndexEntry.getStorageKey(),
 				conceptIndexEntry.getModuleId(),
 				conceptIndexEntry.isReleased(),
 				conceptIndexEntry.isActive(),
-				conceptIndexEntry.getEffectiveTimeAsLong(),
+				conceptIndexEntry.getEffectiveTime(),
+				conceptIndexEntry.getNamespace(),
 				conceptIndexEntry.isPrimitive(),
-				conceptIndexEntry.isExhaustive());
+				conceptIndexEntry.isExhaustive(),
+				null, 
+				CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, 
+				CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, 
+				CDOUtils.NO_STORAGE_KEY, 
+				false);
 
 		this.hasChildren = hasChildren;
 	}
@@ -49,4 +56,11 @@ public class SnomedConceptIndexEntryWithChildFlag extends SnomedConceptIndexEntr
 	public boolean hasChildren() {
 		return hasChildren;
 	}
+	
+	@Override
+	protected ToStringHelper doToString() {
+		return super.doToString()
+				.add("hasChildren", hasChildren);
+	}
+	
 }

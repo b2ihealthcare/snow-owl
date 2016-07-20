@@ -15,21 +15,133 @@
  */
 package com.b2international.snowowl.datastore;
 
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 
-import java.io.Serializable;
-
+import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Iterables;
 
 /**
  * CDO independent representation of a {@link CodeSystemVersion}.
  */
-	
-public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion {
-	private static final long serialVersionUID = 5948841680432090865L;
+@Doc
+@JsonDeserialize(builder = CodeSystemVersionEntry.Builder.class)
+public class CodeSystemVersionEntry implements ICodeSystemVersion {
 
+	public static class Fields {
+		public static final String IMPORT_DATE = "importDate";
+		public static final String EFFECTIVE_DATE = "effectiveDate";
+		public static final String DESCRIPTION = "description";
+		public static final String VERSION_ID = "versionId";
+		public static final String LATEST_UPDATE_DATE = "latestUpdateDate";
+		public static final String STORAGE_KEY = "storageKey";
+		public static final String REPOSITORY_UUID = "repositoryUuid";
+		public static final String CODE_SYSTEM_SHORT_NAME = "codeSystemShortName";
+	}
+
+	public static class Expressions {
+
+		public static Expression versionId(String versionId) {
+			return exactMatch(Fields.VERSION_ID, versionId);
+		}
+
+		public static Expression shortName(String shortName) {
+			return exactMatch(Fields.CODE_SYSTEM_SHORT_NAME, shortName);
+		}
+		
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static Builder builder(CodeSystemVersion version) {
+		final String codeSystemShortName = version.getCodeSystem().getShortName();
+		return builder()
+				.storageKey(CDOIDUtils.asLong(version.cdoID()))
+				.versionId(version.getVersionId())
+				.description(version.getDescription())
+				.effectiveDate(EffectiveTimes.getEffectiveTime(version.getEffectiveDate()))
+				.importDate(Dates.getTime(version.getImportDate()))
+				.latestUpdateDate(EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()))
+				.repositoryUuid(version.getCodeSystem().getRepositoryUuid())
+				.codeSystemShortName(codeSystemShortName);
+	}
+	
+	@JsonPOJOBuilder(withPrefix="")
+	public static class Builder {
+		
+		private long importDate;
+		private long effectiveDate;
+		private String description;
+		private String versionId;
+		private long latestUpdateDate;
+		private boolean patched;
+		private long storageKey;
+		private String repositoryUuid;
+		private String codeSystemShortName;
+		
+		public Builder description(String description) {
+			this.description = description;
+			return this;
+		}
+		
+		public Builder effectiveDate(long effectiveDate) {
+			this.effectiveDate = effectiveDate;
+			return this;
+		}
+		
+		public Builder importDate(long importDate) {
+			this.importDate = importDate;
+			return this;
+		}
+		
+		public Builder latestUpdateDate(long latestUpdateDate) {
+			this.latestUpdateDate = latestUpdateDate;
+			return this;
+		}
+		
+		public Builder patched(boolean patched) {
+			this.patched = patched;
+			return this;
+		}
+		
+		public Builder repositoryUuid(String repositoryUuid) {
+			this.repositoryUuid = repositoryUuid;
+			return this;
+		}
+		
+		public Builder storageKey(long storageKey) {
+			this.storageKey = storageKey;
+			return this;
+		}
+		
+		public Builder versionId(String versionId) {
+			this.versionId = versionId;
+			return this;
+		}
+		
+		public Builder codeSystemShortName(String codeSystemShortName) {
+			this.codeSystemShortName = codeSystemShortName;
+			return this;
+		}
+		
+		public CodeSystemVersionEntry build() {
+			return new CodeSystemVersionEntry(importDate, effectiveDate, latestUpdateDate, description, versionId, patched, storageKey,
+					repositoryUuid, codeSystemShortName);
+		}
+		
+	}
+	
 	private final long importDate;
 	private final long effectiveDate;
 	private final String description;
@@ -40,32 +152,33 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 	private final long storageKey;
 	private final String repositoryUuid;
 	private final String codeSystemShortName;
-
-	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, final String description,
-			final String versionId, final String parentBranchPath, final long storageKey, final String repositoryUuid) {
-		this(importDate, effectiveDate, latestUpdateDate, nullToEmpty(description), checkNotNull(versionId, "versionId"),
-				checkNotNull(parentBranchPath), false, storageKey, checkNotNull(repositoryUuid, "repositoryUuid"), null);
-	}
 	
-	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, final String description,
-			final String versionId, final String parentBranchPath, final long storageKey, final String repositoryUuid, final String codeSystemShortName) {
-		this(importDate, effectiveDate, latestUpdateDate, nullToEmpty(description), checkNotNull(versionId, "versionId"),
-				checkNotNull(parentBranchPath), false, storageKey, checkNotNull(repositoryUuid, "repositoryUuid"), codeSystemShortName);
-	}
-
-	public CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate, final String description,
-			final String versionId, final String parentBranchPath, final boolean patched, final long storageKey,
-			final String repositoryUuid, final String codeSystemShortName) {
+	private CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
+			final String description, final String versionId, final String parentBranchPath, final boolean patched, final long storageKey, final String repositoryUuid, 
+			final String codeSystemShortName) {
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;
+		this.codeSystemShortName = codeSystemShortName;
 		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
 		this.description = nullToEmpty(description);
 		this.versionId = checkNotNull(versionId, "versionId");
 		this.parentBranchPath = parentBranchPath;
 		this.patched = patched;
 		this.storageKey = storageKey;
-		this.codeSystemShortName = codeSystemShortName;
+	}
+	
+	@Override
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	/**
+	 * @param patched
+	 * @deprecated - use {@link #builder()} to construct immutable version entry with patch flag set to true 
+	 */
+	public void setPatched(boolean patched) {
+		this.patched = patched;
 	}
 
 	@Override
@@ -99,7 +212,7 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 	}
 
 	@Override
-	public long getLastUpdateDate() {
+	public long getLatestUpdateDate() {
 		return latestUpdateDate;
 	}
 
@@ -113,24 +226,6 @@ public class CodeSystemVersionEntry implements Serializable, ICodeSystemVersion 
 		return repositoryUuid;
 	}
 	
-	@Override
-	public String getCodeSystemShortName() {
-		return codeSystemShortName;
-	}
-	
-	/**
-	 * (non-API)
-	 * 
-	 * Sets the patched flag on the code system version to {@code true}.
-	 */
-	public void setPatched() {
-		this.patched = true;
-	}
-	
-	/**
-	 * Returns the full path of this version including the MAIN prefix as well as the version tag.
-	 * @return
-	 */
 	@Override
 	public String getPath() {
 		return parentBranchPath + IBranchPath.SEPARATOR_CHAR + versionId;

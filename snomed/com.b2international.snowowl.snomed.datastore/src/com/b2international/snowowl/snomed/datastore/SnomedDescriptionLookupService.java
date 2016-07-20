@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.List;
-
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -24,29 +22,32 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
- * Lookup service implementation for SNOMED CT descriptions. 
+ * Lookup service implementation for SNOMED CT descriptions.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible 
  */
 public class SnomedDescriptionLookupService extends AbstractLookupService<String, Description, CDOView> {
 
 	@Override
 	public Description getComponent(final String descriptionId, final CDOView view) {
 
-		final long descriptionStorageKey = getComponentService().getDescriptionStorageKey(BranchPathUtils.createPath(view), descriptionId);
+		final IBranchPath branchPath = BranchPathUtils.createPath(view);
+		final long descriptionStorageKey = getStorageKey(branchPath, descriptionId);
 		CDOObject cdoObject = null;
 
 		notFoundDescriptionLoop: 
@@ -81,24 +82,28 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 
 	@Override
 	public SnomedDescriptionIndexEntry getComponent(final IBranchPath branchPath, final String id) {
-		final IIndexQueryAdapter<SnomedDescriptionIndexEntry> adapter = new SnomedDescriptionReducedQueryAdapter(id, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_ID);
-		final List<SnomedDescriptionIndexEntry> search = getIndexService().search(branchPath, adapter, 1);
-		return Iterables.getOnlyElement(search, null);
+		try {
+			return SnomedRequests.prepareGetDescription()
+					.setComponentId(id)
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(new Function<ISnomedDescription, SnomedDescriptionIndexEntry>() {
+						@Override
+						public SnomedDescriptionIndexEntry apply(ISnomedDescription input) {
+							return SnomedDescriptionIndexEntry.builder(input).build();
+						}
+					}).getSync();
+		} catch (NotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		return getComponentService().getDescriptionStorageKey(branchPath, id);
+		final SnomedDescriptionIndexEntry component = getComponent(branchPath, id);
+		return component != null ? component.getStorageKey() : CDOUtils.NO_STORAGE_KEY;
 	}
 
-	private ISnomedComponentService getComponentService() {
-		return ApplicationContext.getInstance().getService(ISnomedComponentService.class);
-	}
-
-	private SnomedIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-	
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

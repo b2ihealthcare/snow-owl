@@ -15,16 +15,11 @@
  */
 package com.b2international.snowowl.snomed.refset.core.services;
 
-import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
 import org.eclipse.emf.cdo.view.CDOView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
@@ -34,9 +29,7 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.base.Preconditions;
 
 /**
  * Component name provider implementation for SNOMED CT reference set members.
@@ -98,22 +91,8 @@ public enum SnomedRefSetMemberNameProvider implements IComponentNameProvider {
 	
 	@Override
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
-		
-		final Pair<String, String> labelPair = getServiceForClass(ISnomedComponentService.class).getMemberLabel(branchPath, componentId);
-		final StringBuffer sb = new StringBuffer();
-		sb.append(labelPair.getA());
-		if (!isEmpty(labelPair.getB())) {
-			sb.append(" - ");
-			sb.append(labelPair.getB());
-		}
-		return sb.toString();
+		LOGGER.warn("UNSUPPORTED getMemberLabel(): " + componentId);
+		return componentId;
 	}
 
-	// TODO
-	@Override
-	public ComponentIdAndLabel getComponentIdAndLabel(IBranchPath branchPath, long storageKey) {
-		return null;
-	}
 }

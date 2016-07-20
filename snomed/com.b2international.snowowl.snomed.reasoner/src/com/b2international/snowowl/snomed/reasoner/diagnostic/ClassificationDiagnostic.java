@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.core.markers.MarkerAttributeIdValuePair;
 import com.b2international.snowowl.core.markers.MarkerManager;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
@@ -147,7 +147,7 @@ public class ClassificationDiagnostic implements IDiagnostic {
 		}));
 		
 		for (final AbstractEquivalenceSet set : equivalentConcepts) {
-			for (final SnomedConceptIndexEntry conceptEntry: set.getConcepts()) {
+			for (final ISnomedConcept conceptEntry: set.getConcepts()) {
 				//if the problem already marked do delete it and create a new one
 				final ComponentIdentifierPair<String> pair = ComponentIdentifierPair.<String>create(SnomedTerminologyComponentConstants.CONCEPT, conceptEntry.getId());
 				if (markersMap.containsKey(pair)) {

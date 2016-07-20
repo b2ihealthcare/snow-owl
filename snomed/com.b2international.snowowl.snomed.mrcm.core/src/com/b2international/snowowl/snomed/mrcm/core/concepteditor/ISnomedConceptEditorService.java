@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTy
 
 /**
  * Server-side interface for SNOMED CT concept editor related services.
- * 
+ * @deprecated - no proper multi language support available in this service
  */
 public interface ISnomedConceptEditorService {
 

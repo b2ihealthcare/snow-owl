@@ -18,6 +18,8 @@ package com.b2international.snowowl.datastore.server.internal;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 
+import com.b2international.index.Index;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -25,7 +27,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
 /**
- * @since 4.1 
+ * @since 4.1
  */
 public interface InternalRepository extends Repository {
 
@@ -34,8 +36,16 @@ public interface InternalRepository extends Repository {
 	CDOBranchManager getCdoBranchManager();
 
 	CDOBranch getCdoMainBranch();
-	
+
+	/**
+	 * @deprecated As of 4.7 release, {@link IIndexUpdater} and nested index is not supported, use {@link #getIndex()} or {@link #getRevisionIndex()}
+	 *             to store revisions or plain objects.
+	 */
 	IIndexUpdater<?> getIndexUpdater();
+
+	Index getIndex();
+
+	RevisionIndex getRevisionIndex();
 
 	ICDORepository getCdoRepository();
 

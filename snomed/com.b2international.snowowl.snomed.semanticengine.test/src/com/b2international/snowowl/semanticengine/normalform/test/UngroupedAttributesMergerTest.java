@@ -35,14 +35,14 @@ import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
 import com.b2international.snowowl.semanticengine.utils.ScgBuilderUtils;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 public class UngroupedAttributesMergerTest {
 	
 	@Test
 	public void testMergeSingleConceptDefinition() {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptIndexEntry,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
+		RecursiveTerminologyBrowser<SnomedConceptDocument,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
 		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(recursiveTerminologyBrowser));
 		
 		Attribute findingSiteLungStructure = ScgBuilderUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);

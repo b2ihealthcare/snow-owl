@@ -41,32 +41,11 @@ public interface IClientStatementBrowser<C, S, K> {
 	List<S> getOutboundStatements(final C concept);
 	
 	/**
-	 * Returns the list of all statements for the specified concept.
-	 * @param concept
-	 * @return the list of all statements for the specified concept
-	 */
-	List<S> getStatements(final C concept);
-	
-	/**
-	 * Returns all known statements. 
-	 * @return all known statements
-	 */
-	List<S> getAllStatements();
-
-	/**
 	 * Returns the statement with the specified unique identifier.
 	 * @param id
 	 * @return the statement with the specified unique identifier
 	 */
 	S getStatement(final K id);
-	
-	/**
-	 * Returns the list of all statements for a specified concept identified by its ID.
-	 * 
-	 * @param conceptId the unique ID of the concept.
-	 * @return the list of all statements for the specified concept
-	 */
-	List<S> getStatementsById(final K conceptId);
 	
 	/**
 	 * Returns the list of inbound statements for a specified concept identified by its unique ID.

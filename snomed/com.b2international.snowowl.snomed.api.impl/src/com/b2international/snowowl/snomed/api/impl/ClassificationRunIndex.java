@@ -37,13 +37,14 @@ import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 
+import com.b2international.index.lucene.Fields;
+import com.b2international.index.lucene.QueryBuilderBase.QueryBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.index.mapping.QueryBuilderBase.QueryBuilder;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
@@ -58,17 +59,17 @@ import com.b2international.snowowl.snomed.api.impl.domain.classification.Equival
 import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConceptSet;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponseChanges;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -93,7 +94,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	public void trimIndex(int maximumResultsToKeep) throws IOException {
-		final Query query = Mappings.newQuery()
+		final Query query = Fields.newQuery()
 				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.matchAll();
 		
@@ -113,14 +114,14 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	
 	public void invalidateClassificationRuns() throws IOException {
 		
-		final Query statusQuery = Mappings.newQuery()
+		final Query statusQuery = Fields.newQuery()
 				.field(FIELD_STATUS, ClassificationStatus.COMPLETED.name())
 				.field(FIELD_STATUS, ClassificationStatus.RUNNING.name())
 				.field(FIELD_STATUS, ClassificationStatus.SAVING_IN_PROGRESS.name())
 				.field(FIELD_STATUS, ClassificationStatus.SCHEDULED.name())
 				.matchAny();
 		
-		final Query query = Mappings.newQuery()
+		final Query query = Fields.newQuery()
 				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.and(statusQuery)
 				.matchAll();
@@ -143,12 +144,13 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final TopDocs docs = searcher.search(query, null, docsToRetrieve, Sort.INDEXORDER, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
+			final ObjectReader reader = objectMapper.reader(ClassificationRun.class);
 			for (int i = 0; i < scoreDocs.length; i++) {
 				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_BRANCH_PATH, FIELD_SOURCE));
 				
 				final String branchPath = sourceDocument.get(FIELD_BRANCH_PATH);
 				final String source = sourceDocument.get(FIELD_SOURCE);
-				final ClassificationRun run = objectMapper.reader(ClassificationRun.class).readValue(source);
+				final ClassificationRun run = reader.readValue(source);
 				
 				run.setStatus(ClassificationStatus.STALE);
 				
@@ -165,7 +167,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	public List<IClassificationRun> getAllClassificationRuns(final StorageRef storageRef, final String userId) throws IOException {
-		final Query query = Mappings.newQuery()
+		final Query query = Fields.newQuery()
 				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.field(FIELD_USER_ID, userId)
 				.field(FIELD_BRANCH_PATH, storageRef.getBranchPath())
@@ -190,18 +192,17 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	private void upsertClassificationRunNoCommit(final IBranchPath branchPath, final ClassificationRun classificationRun) throws IOException {
+		final Document updatedDocument = new Document();
 		
-		final Document updatedDocument = Mappings.doc()
-				.searchOnlyField(FIELD_CLASS, ClassificationRun.class.getSimpleName())
-				.searchOnlyField(FIELD_ID, classificationRun.getId())
-				.searchOnlyField(FIELD_STATUS, classificationRun.getStatus().name())
-				.field(FIELD_CREATION_DATE, classificationRun.getCreationDate().getTime())
-				.field(FIELD_USER_ID, classificationRun.getUserId())
-				.field(FIELD_BRANCH_PATH, branchPath.getPath())
-				.storedOnly(FIELD_SOURCE, objectMapper.writer().writeValueAsString(classificationRun))
-				.build();
-
-		final Query query = Mappings.newQuery()
+		Fields.searchOnlyStringField(FIELD_CLASS).addTo(updatedDocument, ClassificationRun.class.getSimpleName());
+		Fields.searchOnlyStringField(FIELD_ID).addTo(updatedDocument, classificationRun.getId());
+		Fields.searchOnlyStringField(FIELD_STATUS).addTo(updatedDocument, classificationRun.getStatus().name());
+		Fields.longField(FIELD_CREATION_DATE).addTo(updatedDocument, classificationRun.getCreationDate().getTime());
+		Fields.stringField(FIELD_USER_ID).addTo(updatedDocument, classificationRun.getUserId());
+		Fields.stringField(FIELD_BRANCH_PATH).addTo(updatedDocument, branchPath.getPath());
+		Fields.storedOnlyStringField(FIELD_SOURCE).addTo(updatedDocument, objectMapper.writer().writeValueAsString(classificationRun));
+		
+		final Query query = Fields.newQuery()
 				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.field(FIELD_ID, classificationRun.getId())
 				.matchAll();
@@ -248,18 +249,16 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		upsertClassificationRun(branchPath, classificationRun);
 	}
 
-	private SnomedRelationshipIndexEntry getSnomedRelationshipIndexEntry(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
-		SnomedRelationshipIndexEntry foundRelationshipIndexEntry = null;
-		final Long sourceId = relationshipChange.getSource().getId();
-		final List<SnomedRelationshipIndexEntry> relationshipIndexEntries = getIndexService().search(branchPath, new SnomedRelationshipIndexQueryAdapter(sourceId.toString(), SnomedRelationshipIndexQueryAdapter.SEARCH_SOURCE_ID));
-		for (SnomedRelationshipIndexEntry relationshipIndexEntry : relationshipIndexEntries) {
-			if (relationshipIndexEntry.getValueId().equals(relationshipChange.getDestination().getId().toString())
-				&& relationshipIndexEntry.getAttributeId().equals(relationshipChange.getType().getId().toString())
-				&& relationshipIndexEntry.getGroup() == relationshipChange.getGroup()) {
-				foundRelationshipIndexEntry = relationshipIndexEntry;
-			}
-		}
-		return foundRelationshipIndexEntry;
+	private ISnomedRelationship getRelationship(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
+		return Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
+				.setLimit(1)
+				.filterBySource(relationshipChange.getSource().getId().toString())
+				.filterByDestination(relationshipChange.getDestination().getId().toString())
+				.filterByType(relationshipChange.getType().getId().toString())
+				.filterByGroup(relationshipChange.getGroup())
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync(), null);
 	}
 
 	public void deleteClassificationData(final String classificationId) throws IOException {
@@ -280,7 +279,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		for (final AbstractEquivalenceSet equivalenceSet : equivalenceSets) {
 
 			final List<IEquivalentConcept> convertedEquivalentConcepts = newArrayList();
-			for (final SnomedConceptIndexEntry equivalentEntry : equivalenceSet.getConcepts()) {
+			for (final ISnomedConcept equivalentEntry : equivalenceSet.getConcepts()) {
 				addEquivalentConcept(convertedEquivalentConcepts, equivalentEntry);
 			}
 
@@ -307,8 +306,8 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			if (changeNature == ChangeNature.INFERRED) {
 				characteristicTypeId = Concepts.INFERRED_RELATIONSHIP;
 			} else {
-				final SnomedRelationshipIndexEntry snomedRelationshipIndexEntry = getSnomedRelationshipIndexEntry(branchPath, relationshipChange);
-				characteristicTypeId = snomedRelationshipIndexEntry.getCharacteristicTypeId();
+				final ISnomedRelationship existingRelationship = getRelationship(branchPath, relationshipChange);
+				characteristicTypeId = existingRelationship.getCharacteristicType().getConceptId();
 				if (changeNature == ChangeNature.REDUNDANT && characteristicTypeId.equals(Concepts.STATED_RELATIONSHIP)) {
 					classificationIssueFlags.setRedundantStatedFound(true);
 				}
@@ -329,7 +328,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		return classificationIssueFlags;
 	}
 
-	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final SnomedConceptIndexEntry equivalentEntry) {
+	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final ISnomedConcept equivalentEntry) {
 		final EquivalentConcept convertedConcept = new EquivalentConcept();
 		convertedConcept.setId(equivalentEntry.getId());
 		convertedEquivalentConcepts.add(convertedConcept);
@@ -369,22 +368,21 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 
 	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId, final long creationDate,
 			final Class<T> clazz, String componentId, final T value) throws IOException {
-
-		final Document updateDocument = Mappings.doc()
-				.searchOnlyField(FIELD_CLASS, clazz.getSimpleName())
-				.searchOnlyField(FIELD_ID, id.toString())
-				.searchOnlyField(FIELD_USER_ID, userId)
-				.searchOnlyField(FIELD_CREATION_DATE, creationDate)
-				.searchOnlyField(FIELD_BRANCH_PATH, branchPath.getPath())
-				.searchOnlyField(FIELD_COMPONENT_ID, componentId)
-				.storedOnly(FIELD_SOURCE, objectMapper.writer().writeValueAsString(value))
-				.build();
-
-		writer.addDocument(updateDocument);
+		final Document doc = new Document();
+		
+		Fields.searchOnlyStringField(FIELD_CLASS).addTo(doc, clazz.getSimpleName());
+		Fields.searchOnlyStringField(FIELD_ID).addTo(doc, id.toString());
+		Fields.searchOnlyStringField(FIELD_USER_ID).addTo(doc, userId);
+		Fields.searchOnlyLongField(FIELD_CREATION_DATE).addTo(doc, creationDate);
+		Fields.searchOnlyStringField(FIELD_BRANCH_PATH).addTo(doc, branchPath.getPath());
+		Fields.searchOnlyStringField(FIELD_COMPONENT_ID).addTo(doc, componentId);
+		Fields.storedOnlyStringField(FIELD_SOURCE).addTo(doc, objectMapper.writer().writeValueAsString(value));
+				
+		writer.addDocument(doc);
 	}
 
 	private Document getClassificationRunDocument(final UUID id) throws IOException {
-		final Query query = Mappings.newQuery()
+		final Query query = Fields.newQuery()
 				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.field(FIELD_ID, id.toString())
 				.matchAll();
@@ -392,7 +390,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	}
 
 	private Query createClassQuery(final String className, final String classificationId, final StorageRef storageRef, String componentId, final String userId) {
-		final QueryBuilder query = Mappings.newQuery()
+		final QueryBuilder query = Fields.newQuery()
 				.field(FIELD_CLASS, className)
 				.field(FIELD_ID, classificationId)
 				.field(FIELD_USER_ID, userId)
@@ -437,10 +435,11 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final TopDocs docs = searcher.search(query, null, docsToRetrieve, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
+			final ObjectReader reader = objectMapper.reader(sourceClass);
 			for (int i = offset; i < docsToRetrieve && i < scoreDocs.length; i++) {
 				final Document sourceDocument = searcher.doc(scoreDocs[i].doc, ImmutableSet.of(FIELD_SOURCE));
 				final String source = sourceDocument.get(FIELD_SOURCE);
-				final T deserializedSource = objectMapper.reader(sourceClass).readValue(source);
+				final T deserializedSource = reader.readValue(source);
 				resultBuilder.add(deserializedSource);
 			}
 
@@ -493,10 +492,6 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 				manager.release(searcher);
 			}
 		}
-	}
-
-	private static SnomedIndexService getIndexService() {
-		return ApplicationContext.getServiceForClass(SnomedIndexService.class);
 	}
 
 	private class ClassificationIssueFlags {

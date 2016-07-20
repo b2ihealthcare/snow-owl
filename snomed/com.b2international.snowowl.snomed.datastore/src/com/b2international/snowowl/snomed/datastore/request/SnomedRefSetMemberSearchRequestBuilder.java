@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.datastore.request.SearchRequest;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest.OptionKey;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -32,7 +32,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRe
 	}
 	
 	@Override
-	protected SearchRequest<SnomedReferenceSetMembers> createSearch() {
+	protected RevisionSearchRequest<SnomedReferenceSetMembers> createSearch() {
 		return new SnomedRefSetMemberSearchRequest();
 	}
 	
@@ -58,6 +58,10 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRe
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByProps(Options memberProps) {
 		return addOption(OptionKey.PROPS, memberProps);
+	}
+
+	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(String type) {
+		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, type);
 	}
 	
 }

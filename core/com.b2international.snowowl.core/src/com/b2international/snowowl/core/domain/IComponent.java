@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.domain;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 
 /**
@@ -49,4 +50,10 @@ public interface IComponent extends Serializable {
 	 * @return {@code true} if the component has already been released as part of a version, {@code false} otherwise
 	 */
 	Boolean isReleased();
+	
+	/**
+	 * @deprecated - figure out how to remove storage key from domain representation classes, currently required for CDO object lookups on server/client side
+	 */
+	@JsonIgnore
+	long getStorageKey();
 }

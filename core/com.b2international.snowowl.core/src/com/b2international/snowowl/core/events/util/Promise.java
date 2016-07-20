@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
@@ -52,8 +53,8 @@ public final class Promise<T> extends AbstractFuture<T> {
 			throw new SnowowlRuntimeException(e);
 		} catch (ExecutionException e) {
 			final Throwable cause = e.getCause();
-			if (cause instanceof RuntimeException) {
-				throw (RuntimeException) cause;
+			if (cause instanceof ApiException) {
+				throw (ApiException) cause;
 			}
 			throw new SnowowlRuntimeException(cause);
 		}
@@ -75,8 +76,8 @@ public final class Promise<T> extends AbstractFuture<T> {
 			throw new SnowowlRuntimeException(e);
 		} catch (ExecutionException e) {
 			final Throwable cause = e.getCause();
-			if (cause instanceof RuntimeException) {
-				throw (RuntimeException) cause;
+			if (cause instanceof ApiException) {
+				throw (ApiException) cause;
 			}
 			throw new SnowowlRuntimeException(cause);
 		}

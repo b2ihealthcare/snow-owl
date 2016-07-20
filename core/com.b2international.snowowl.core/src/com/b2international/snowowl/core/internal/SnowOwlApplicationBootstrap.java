@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.MetricsConfiguration;
 import com.b2international.snowowl.core.events.metrics.RequestMetrics;
+import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.login.LoginConfiguration;
 import com.b2international.snowowl.core.markers.MarkerManager;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
@@ -58,6 +59,9 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 		} else {
 			env.services().registerService(Metrics.class, Metrics.NOOP);
 		}
+		
+		// TODO support initial values for feature toggles
+		env.services().registerService(FeatureToggles.class, new FeatureToggles());
 	}
 
 	@Override

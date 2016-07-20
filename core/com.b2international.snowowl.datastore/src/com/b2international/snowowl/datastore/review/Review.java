@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.datastore.review;
 
+import com.b2international.index.Doc;
 
 /**
  * Represents a terminology review comparing changes on branches.
  *
  * @since 4.2
  */
+@Doc(type="review")
 public interface Review {
 
 	/**

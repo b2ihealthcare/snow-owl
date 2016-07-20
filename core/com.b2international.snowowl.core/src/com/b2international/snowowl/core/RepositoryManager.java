@@ -20,7 +20,7 @@ import java.util.Collection;
 /**
  * @since 4.5
  */
-public interface RepositoryManager {
+public interface RepositoryManager extends IDisposableService {
 
 	/**
 	 * Returns a {@link Repository} with the given repository ID.

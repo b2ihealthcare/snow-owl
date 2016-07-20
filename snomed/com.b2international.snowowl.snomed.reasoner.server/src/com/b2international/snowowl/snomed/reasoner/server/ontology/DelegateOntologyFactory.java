@@ -24,11 +24,15 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyFactory;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
-import uk.ac.manchester.cs.owl.owlapi.EmptyInMemOWLOntologyFactory;
-
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
+
+import uk.ac.manchester.cs.owl.owlapi.EmptyInMemOWLOntologyFactory;
 
 /**
  * 
@@ -50,11 +54,15 @@ public class DelegateOntologyFactory extends EmptyInMemOWLOntologyFactory implem
 		final URI relativeUri = SnomedOntologyUtils.BASE_IRI.toURI().relativize(documentIRI.toURI());
 		final String path = relativeUri.getPath();
 		final IBranchPath branchPath = BranchPathUtils.createPath(path);
-        final DelegateOntology ont = new DelegateOntology(getOWLOntologyManager(), ontologyID, branchPath);
+        final DelegateOntology ont = new DelegateOntology(getOWLOntologyManager(), ontologyID, branchPath, getIndex());
         handler.ontologyCreated(ont);
         return ont;
 	}
 	
+	private RevisionIndex getIndex() {
+		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+	}
+
 	@Override
 	public OWLOntology loadOWLOntology(final OWLOntologyDocumentSource documentSource, final OWLOntologyCreationHandler handler) throws OWLOntologyCreationException {
 		return createOWLOntology(new OWLOntologyID(documentSource.getDocumentIRI()), documentSource.getDocumentIRI(), handler);

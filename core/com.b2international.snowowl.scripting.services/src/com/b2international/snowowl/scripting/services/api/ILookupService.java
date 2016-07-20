@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * 
@@ -44,7 +44,7 @@ public interface ILookupService {
 
 	IComponent<Concept> getConceptComponent(long conceptId);
 	
-	SnomedConceptIndexEntry getConceptMini(long conceptId);
+	SnomedConceptDocument getConceptMini(long conceptId);
 	
 	Relationship getRelationship(long relationshipId);
 	

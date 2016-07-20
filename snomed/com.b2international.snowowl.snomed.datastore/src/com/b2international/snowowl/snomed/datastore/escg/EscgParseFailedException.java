@@ -15,26 +15,24 @@
  */
 package com.b2international.snowowl.snomed.datastore.escg;
 
-import org.apache.lucene.search.BooleanQuery;
-
 /**
- * Runtime exception representing a lack of feature when attempting to parse
- * ESCG expression to the corresponding {@link BooleanQuery}.
- * <p>This exception is thrown by {@link IndexQueryQueryEvaluator}. If occurs, clients
- * should attempt to resolve ESCG evaluation with {@link ConceptIdQueryEvaluator2} service.
+ * Runtime exception representing a lack of feature when attempting to parse ESCG expression.
+ * <p>
+ * This exception is thrown by {@link IndexQueryQueryEvaluator}. If occurs, clients should attempt to resolve ESCG evaluation with
+ * {@link ConceptIdQueryEvaluator2} service.
  */
 public class EscgParseFailedException extends IllegalArgumentException {
 
 	private static final long serialVersionUID = -4816591631985579635L;
 
-	/**Sole constructor.*/
+	/** Sole constructor. */
 	public EscgParseFailedException() {
 		super();
 	}
-	
-	/**Creates a new exception with the message argument.*/
+
+	/** Creates a new exception with the message argument. */
 	public EscgParseFailedException(final String message) {
 		super(message);
 	}
-	
+
 }

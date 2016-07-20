@@ -15,22 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
 import java.util.List;
 
-import org.apache.lucene.search.Filter;
-
-import com.b2international.commons.functions.StringToLongFunction;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.request.SearchRequest;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
 /**
  * @since 4.5
  */
-public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
+public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 
 	enum OptionKey {
 		
@@ -50,38 +44,45 @@ public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 		MODULE,
 		
 		/**
-		 * Component effective time to match
+		 * Filter components by effective time starting from this value, inclusive.
 		 */
-		EFFECTIVE_TIME
+		EFFECTIVE_TIME_START,
+		
+		/**
+		 * Filter components by effective time ending with this value, inclusive.
+		 */
+		EFFECTIVE_TIME_END
 	}
 	
 	protected SnomedSearchRequest() {}
 	
-	protected List<Long> languageRefSetIds() {
-		return getList(OptionKey.LANGUAGE_REFSET, Long.class);
+	protected List<String> languageRefSetIds() {
+		return getList(OptionKey.LANGUAGE_REFSET, String.class);
 	}
-	
+
 	@Override
-	protected Filter createComponentIdFilter() {
-		return SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(componentIds()));
+	protected String getIdField() {
+		return "id";
 	}
 	
-	protected final void addModuleClause(SnomedQueryBuilder queryBuilder) {
+	protected final void addModuleClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.MODULE)) {
-			queryBuilder.module(getString(OptionKey.MODULE));
+			queryBuilder.must(SnomedDocument.Expressions.module(getString(OptionKey.MODULE)));
 		}
 	}
 
-	protected final void addActiveClause(SnomedQueryBuilder queryBuilder) {
+	protected final void addActiveClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
-			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+			queryBuilder.must(SnomedDocument.Expressions.active(getBoolean(OptionKey.ACTIVE)));
 		}
 	}
 	
-	protected final void addEffectiveTimeClause(SnomedQueryBuilder queryBuilder) {
-		if (containsKey(OptionKey.EFFECTIVE_TIME)) {
-			final Date parsedEffectiveTime = EffectiveTimes.parse(get(OptionKey.EFFECTIVE_TIME, String.class), DateFormats.SHORT);
-			queryBuilder.effectiveTime(EffectiveTimes.getEffectiveTime(parsedEffectiveTime));
+	protected final void addEffectiveTimeClause(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
+			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
+			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
+			queryBuilder.must(SnomedDocument.Expressions.effectiveTime(from, to));
 		}
 	}
+	
 }

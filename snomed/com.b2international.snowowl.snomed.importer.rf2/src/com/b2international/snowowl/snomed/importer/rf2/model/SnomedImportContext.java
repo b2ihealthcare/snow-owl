@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -36,7 +37,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.ComponentLook
 import com.b2international.snowowl.snomed.importer.rf2.util.EffectiveTimeBaseTransactionAggregatorSupplier;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Supplier;
 
 /**
@@ -48,7 +48,7 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 
 	private ComponentLookup<Component> componentLookup;
 	private ComponentLookup<SnomedRefSet> refSetLookup;
-	private RefSetMemberLookup<SnomedRefSetMember> refSetMemberLookup;
+	private RefSetMemberLookup refSetMemberLookup;
 
 	private String userId;
 	private String commitMessage;
@@ -71,6 +71,11 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 
 	private String codeSystemShortName;
 	private String codeSystemOID;
+	private final RevisionIndex index;
+
+	public SnomedImportContext(RevisionIndex index) {
+		this.index = index;
+	}
 
 	@Override
 	public void close() throws Exception {
@@ -175,7 +180,7 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	 * 
 	 * @return the reference set member lookup map
 	 */
-	public RefSetMemberLookup<SnomedRefSetMember> getRefSetMemberLookup() {
+	public RefSetMemberLookup getRefSetMemberLookup() {
 		return refSetMemberLookup;
 	}
 
@@ -216,9 +221,9 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	public void setEditingContext(final SnomedEditingContext editingContext) {
 		this.editingContext = checkNotNull(editingContext, "Editing context argument may not be null.");
 
-		componentLookup = new ComponentLookup<Component>(editingContext, Component.class);
-		refSetLookup = new ComponentLookup<SnomedRefSet>(editingContext, SnomedRefSet.class);
-		refSetMemberLookup = new RefSetMemberLookup<SnomedRefSetMember>(editingContext);
+		componentLookup = new ComponentLookup<Component>(index, editingContext, Component.class);
+		refSetLookup = new ComponentLookup<SnomedRefSet>(index, editingContext, SnomedRefSet.class);
+		refSetMemberLookup = new RefSetMemberLookup(index, editingContext);
 	}
 
 	/**

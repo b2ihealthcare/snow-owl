@@ -28,20 +28,16 @@ import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -342,7 +338,7 @@ public class SnomedInactivationPlan {
 				getReferencedComponentIdentifierPair(component), 
 				SnomedRefSetEditingContext.createConceptTypePair(Concepts.CONCEPT_NON_CURRENT), 
 				moduleId,
-				getRefSet(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR));
+				context.lookup(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR, SnomedRefSet.class));
 	}
 
 	/*creates and returns with the concept inactivation indicator reference set member*/
@@ -352,7 +348,7 @@ public class SnomedInactivationPlan {
 				getReferencedComponentIdentifierPair(component), 
 				SnomedRefSetEditingContext.createConceptTypePair(reason.getInactivationReasonConceptId()), 
 				moduleId,
-				getRefSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR));
+				context.lookup(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR, SnomedRefSet.class));
 	}
 
 	/*returns true if the inactivation reason is retired*/
@@ -362,17 +358,9 @@ public class SnomedInactivationPlan {
 	
 	/*returns with the SNOMED CT historical association reference set associated with the current inactivation plan.*/
 	private SnomedStructuralRefSet getHistoricalRefSet(final InactivationReason reason) {
-		return (SnomedStructuralRefSet) getRefSet(reason.getAssociatedRefSetId());
+		return context.lookup(reason.getAssociatedRefSetId(), SnomedStructuralRefSet.class);
 	}
 
-	/*returns with the SNOMED CT reference set identified by its identifier concept ID*/
-	private SnomedRefSet getRefSet(final String refSetId) {
-		
-		final ILookupService<String, SnomedRefSet, CDOView> lookupService = CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.REFSET);
-		final SnomedRefSet refSet = lookupService.getComponent(refSetId, context.getTransaction());
-		return refSet;
-	}
-	
 	/*creates the historical association reference set member based on the specified component*/
 	private SnomedAssociationRefSetMember createAssociationMember(final CDOObject component, final String targetComponentId, final InactivationReason reason) {
 

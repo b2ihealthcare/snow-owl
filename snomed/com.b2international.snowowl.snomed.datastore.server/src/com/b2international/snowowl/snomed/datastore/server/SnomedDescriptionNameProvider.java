@@ -15,16 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.server;
 
-import com.b2international.snowowl.datastore.server.index.AbstractIndexNameProvider;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedDescriptionNameProvider;
 
 /**
  * Component name provider implementation for SNOMED CT descriptions.
  */
-public class SnomedDescriptionNameProvider extends AbstractIndexNameProvider implements ISnomedDescriptionNameProvider {
+public class SnomedDescriptionNameProvider implements ISnomedDescriptionNameProvider {
 
-	public SnomedDescriptionNameProvider(SnomedIndexService service) {
-		super(service);
+	@Override
+	public String getComponentLabel(IBranchPath branchPath, String componentId) {
+		return SnomedRequests.prepareGetDescription().setComponentId(componentId).build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync().getTerm();
 	}
+
 }

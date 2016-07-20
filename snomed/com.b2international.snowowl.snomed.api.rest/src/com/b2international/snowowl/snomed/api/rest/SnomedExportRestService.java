@@ -188,7 +188,8 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 				configuration.getBranchPath(),
 				configuration.getNamespaceId(), configuration.getModuleIds(),
 				configuration.getDeltaStartEffectiveTime(), configuration.getDeltaEndEffectiveTime(),
-				configuration.getTransientEffectiveTime());
+				configuration.getTransientEffectiveTime(),
+				configuration.includeUnpublished());
 
 		return conf;
 	}

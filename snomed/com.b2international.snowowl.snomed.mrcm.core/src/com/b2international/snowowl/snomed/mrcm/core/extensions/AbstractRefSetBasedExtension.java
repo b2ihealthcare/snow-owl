@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IExecutableExtension;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedTerminologyBrowserProvider.SnomedRefSetBrowserProvider;
 
 /**
@@ -39,11 +38,11 @@ public abstract class AbstractRefSetBasedExtension implements IConceptExtension,
 
 	@Override
 	public boolean handlesConcept(final Concept concept) {
-		final SnomedClientRefSetBrowser refSetBrowser = SnomedRefSetBrowserProvider.getRefSetBrowser(concept);
+		final SnomedRefSetBrowserProvider refSetBrowser = SnomedRefSetBrowserProvider.create(concept);
 		return handlesConceptId(refSetBrowser, concept.getId());
 	}
 
-	protected boolean handlesConceptId(final SnomedClientRefSetBrowser refSetBrowser, final String conceptId) {
+	protected boolean handlesConceptId(final SnomedRefSetBrowserProvider refSetBrowser, final String conceptId) {
 		return refSetBrowser.isReferenced(refSetId, conceptId);
 	}
 }

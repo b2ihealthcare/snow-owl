@@ -21,6 +21,7 @@ import static com.b2international.commons.exceptions.Exceptions.extractCause;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
@@ -30,6 +31,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -49,6 +51,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import org.eclipse.xtext.util.Pair;
+import org.eclipse.xtext.util.Tuples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,6 +102,8 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * Underlying CDO transaction.
 	 */
 	protected final CDOTransaction transaction;
+	
+	private final Map<Pair<String, Class<?>>, EObject> resolvedObjectsById = newHashMap();
 
 	/**
 	 * @param ePackage - the primary ePackage of this editing context
@@ -197,11 +203,16 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		} else if (CodeSystem.class.isAssignableFrom(type)) {
 			return (T) getCodeSystem(componentId);
 		}
-		
+
+		final Pair<String, Class<?>> key = Tuples.<String, Class<?>>pair(componentId, type);
+		if (resolvedObjectsById.containsKey(key)) {
+			return type.cast(resolvedObjectsById.get(key));
+		}
 		final T component = getComponentLookupService(type).getComponent(componentId, getTransaction());
 		if (null == component) {
 			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
 		}
+		resolvedObjectsById.put(key, component);
 		return component;
 	}
 	
@@ -302,6 +313,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	@Override
 	public void close() {
+		resolvedObjectsById.clear();
 		transaction.close();
 	}
 	

@@ -18,7 +18,6 @@ package com.b2international.snowowl.terminologyregistry.core.index;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 
 import java.util.Collection;
-import java.util.Map;
 
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
@@ -52,14 +51,6 @@ public final class TerminologyRegistryClientService {
 
 	public ICodeSystem getCodeSystemByOid(final String codeSystemOID) {
 		return delegate.getCodeSystemByOid(getBranchPathMap(), codeSystemOID);
-	}
-
-	public Map<String, ICodeSystem> getTerminologyComponentIdCodeSystemMap() {
-		return delegate.getTerminologyComponentIdCodeSystemMap(getBranchPathMap());
-	}
-
-	public Map<String, Collection<ICodeSystem>> getTerminologyComponentIdWithMultipleCodeSystemsMap() {
-		return delegate.getTerminologyComponentIdWithMultipleCodeSystemsMap(getBranchPathMap());
 	}
 
 	public String getTerminologyComponentIdByShortName(final String codeSystemShortName) {

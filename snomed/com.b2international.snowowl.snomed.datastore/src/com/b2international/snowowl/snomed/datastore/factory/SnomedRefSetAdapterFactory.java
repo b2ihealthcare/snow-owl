@@ -21,14 +21,11 @@ import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry.Builder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
 /**
  * Adapter factory implementation for SNOMED CT reference sets.
@@ -36,37 +33,32 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 public class SnomedRefSetAdapterFactory extends TypeSafeAdapterFactory {
 
 	public SnomedRefSetAdapterFactory() {
-		super(IComponent.class, SnomedRefSetIndexEntry.class);
+		super(IComponent.class, SnomedConceptDocument.class);
 	}
 
 	@Override
 	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
 
-		if (adaptableObject instanceof SnomedRefSetIndexEntry) {
+		if (adaptableObject instanceof SnomedConceptDocument) {
 			return adapterType.cast(adaptableObject);
 		} 
 
 		if (adaptableObject instanceof SnomedRefSet) {
 			final SnomedRefSet refSet = (SnomedRefSet) adaptableObject;
 			final Concept identifierConcept = new SnomedConceptLookupService().getComponent(refSet.getIdentifierId(), refSet.cdoView());
-			final SnomedRefSetIndexEntry refSetIndexEntry;
+			final SnomedConceptDocument refSetIndexEntry;
 			
 			if (FSMUtil.isClean(refSet) && FSMUtil.isClean(identifierConcept) && !refSet.cdoRevision().isHistorical() && !identifierConcept.cdoRevision().isHistorical()) {
 				refSetIndexEntry = new SnomedRefSetLookupService().getComponent(BranchPathUtils.createPath(refSet), refSet.getIdentifierId());
 			} else {
-				final Builder builder = SnomedRefSetIndexEntry.builder()
+				refSetIndexEntry = SnomedConceptDocument.builder()
 						.id(refSet.getIdentifierId()) 
 						.iconId(refSet.getIdentifierId()) // XXX: An IconProvider might give an exact value here, but this is OK
 						.moduleId(identifierConcept.getModule().getId())
-						.storageKey(CDOIDUtils.asLongSafe(refSet.cdoID()))
 						.active(identifierConcept.isActive())
 						.released(identifierConcept.isReleased())
-						.effectiveTimeLong(identifierConcept.isSetEffectiveTime() ? identifierConcept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
-						.type(refSet.getType()) 
-						.referencedComponentType(refSet.getReferencedComponentType())
-						.structural(refSet instanceof SnomedStructuralRefSet);
-				
-				refSetIndexEntry = builder.build();
+						.effectiveTime(identifierConcept.isSetEffectiveTime() ? identifierConcept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.refSet(refSet).build();
 			}
 
 			return adapterType.cast(refSetIndexEntry);

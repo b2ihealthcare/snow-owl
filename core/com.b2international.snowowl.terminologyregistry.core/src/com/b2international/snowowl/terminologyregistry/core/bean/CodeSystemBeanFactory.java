@@ -97,7 +97,7 @@ public class CodeSystemBeanFactory {
 				codeSystem.getOrgLink(), 
 				codeSystem.getLanguage(),
 				codeSystem.getCitation(), 
-				codeSystem.getSnowOwlId(),
+				codeSystem.getTerminologyComponentId(),
 				UNSPECIFIED_CODE_SYSTEM_VERSION,
 				getVersions(codeSystemShortName));
 	}

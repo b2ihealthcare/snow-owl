@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.refset.derivation.AbstractSnomedRefSetDerivator;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -77,21 +77,21 @@ public class SnomedSimpleMapRefSetSubTypeDerivator extends AbstractSnomedRefSetD
 			collectedIdSet.add(componentId);
 			markedMap.put(componentId, SubTypeMarker.CALCULATED);
 			
-			Collection<SnomedConceptIndexEntry> subTypes = browser.getAllSubTypes(browser.getConcept(componentId));
+			Collection<SnomedConceptDocument> subTypes = browser.getAllSubTypes(browser.getConcept(componentId));
 			
 			//	filter out inactive subtypes, we don't care about them
-			Collection<SnomedConceptIndexEntry> activeSubTypes = Collections2.filter(subTypes, new Predicate<SnomedConceptIndexEntry>() {
+			Collection<SnomedConceptDocument> activeSubTypes = Collections2.filter(subTypes, new Predicate<SnomedConceptDocument>() {
 				@Override
-				public boolean apply(SnomedConceptIndexEntry conceptMini) {
+				public boolean apply(SnomedConceptDocument conceptMini) {
 					return conceptMini.isActive();
 				}
 			});
 			
 			// collect the ids only
-			Collection<String> collectedIds = Collections2.transform(activeSubTypes, new Function<SnomedConceptIndexEntry, String>() {
+			Collection<String> collectedIds = Collections2.transform(activeSubTypes, new Function<SnomedConceptDocument, String>() {
 
 				@Override
-				public String apply(SnomedConceptIndexEntry conceptMini) {
+				public String apply(SnomedConceptDocument conceptMini) {
 					return conceptMini.getId();
 				}
 			});

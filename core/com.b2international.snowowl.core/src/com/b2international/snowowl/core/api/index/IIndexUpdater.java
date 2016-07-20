@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
  * Interface for the index update service. You can add, delete or update the index based on the newly persisted element.
  * 
  * @param E the {@link IIndexEntry} subtype this index service uses
- * 
+ * @deprecated - As of 4.7 release, nested index services are not supported
  */
 public interface IIndexUpdater<E extends IIndexEntry> extends IIndexService<E> {
 	

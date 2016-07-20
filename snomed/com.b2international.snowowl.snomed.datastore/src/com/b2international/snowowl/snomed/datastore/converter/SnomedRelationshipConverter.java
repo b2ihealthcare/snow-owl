@@ -61,10 +61,11 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 	@Override
 	protected ISnomedRelationship toResource(final SnomedRelationshipIndexEntry input) {
 		final SnomedRelationship result = new SnomedRelationship();
+		result.setStorageKey(input.getStorageKey());
 		result.setActive(input.isActive());
 		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicTypeId()));
 		result.setDestinationNegated(input.isDestinationNegated());
-		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTimeAsLong()));
+		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setGroup(input.getGroup());
 		result.setId(input.getId());
 		result.setModifier(toRelationshipModifier(input.isUniversal()));
@@ -74,10 +75,10 @@ final class SnomedRelationshipConverter extends BaseSnomedComponentConverter<Sno
 		result.setRefinability(RelationshipRefinability.OPTIONAL);
 		result.setReleased(input.isReleased());
 		result.setUnionGroup(input.getUnionGroup());
-		result.setDestination(new SnomedConcept(input.getValueId()));
-		result.setSource(new SnomedConcept(input.getObjectId()));
-		result.setType(new SnomedConcept(input.getAttributeId()));
-		result.setScore(input.getScore());
+		result.setDestination(new SnomedConcept(input.getDestinationId()));
+		result.setSource(new SnomedConcept(input.getSourceId()));
+		result.setType(new SnomedConcept(input.getTypeId()));
+//		result.setScore(input.getScore());
 		return result;
 	}
 	

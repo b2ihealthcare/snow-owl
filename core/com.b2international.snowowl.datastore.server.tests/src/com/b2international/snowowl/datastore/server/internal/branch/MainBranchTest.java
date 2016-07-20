@@ -25,6 +25,8 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.1
@@ -34,7 +36,7 @@ public class MainBranchTest {
 	private BranchManagerImpl manager;
 	private MainBranchImpl main;
 	private MainBranchImpl mainWithTimestamp;
-	private BranchSerializer serializer;
+	private ObjectMapper serializer = JsonSupport.getDefaultObjectMapper();
 
 	@Before
 	public void before() {
@@ -44,7 +46,6 @@ public class MainBranchTest {
 		when(manager.getBranch(main.path())).thenReturn(main);
 		mainWithTimestamp = new MainBranchImpl(5L);
 		mainWithTimestamp.setBranchManager(manager);
-		serializer = new BranchSerializer();
 	}
 
 	@Test

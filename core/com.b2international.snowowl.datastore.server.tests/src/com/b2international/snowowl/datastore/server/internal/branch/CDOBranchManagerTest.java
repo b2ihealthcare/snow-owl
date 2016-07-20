@@ -15,21 +15,27 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.b2international.index.Index;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -39,7 +45,7 @@ import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLock
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
-import com.b2international.snowowl.datastore.store.MemStore;
+import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 
 /**
  * @since 4.1
@@ -56,6 +62,7 @@ public class CDOBranchManagerTest {
 	
 	private InternalRepository repository;
 	private ServiceProvider context;
+	private Index store;
 	
 	@Before
 	public void givenCDOBranchManager() {
@@ -70,8 +77,11 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
+		store = Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(), new Mappings(CDOMainBranchImpl.class, CDOBranchImpl.class, InternalBranch.class));
+		store.admin().create();
+		when(repository.getIndex()).thenReturn(store);
 		
-		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>());
+		manager = new CDOBranchManagerImpl(repository);
 		main = (CDOMainBranchImpl) manager.getMainBranch();
 		
 		context = mock(ServiceProvider.class);
@@ -87,6 +97,11 @@ public class CDOBranchManagerTest {
 		
 		when(repositoryContextProvider.get(context, repository.id())).thenReturn(repositoryContext);
 		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
+	}
+	
+	@After
+	public void after() {
+		store.admin().delete();
 	}
 	
 	@Test
@@ -131,4 +146,54 @@ public class CDOBranchManagerTest {
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());
 	}
+	
+	@Test
+	public void whenCreatingBranchThenAssignNewSegmentsToParentAndChild() throws Exception {
+		final InternalCDOBasedBranch a = (InternalCDOBasedBranch) main.createChild("a");
+		final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) a.parent();
+		assertThat(a.segmentId()).isEqualTo(1);
+		assertThat(a.segments()).containsOnly(1);
+		assertThat(a.parentSegments()).containsOnly(0);
+		
+		assertThat(parent.segmentId()).isEqualTo(2);
+		assertThat(parent.segments()).containsOnly(0, 2);
+		assertThat(parent.parentSegments()).isEmpty();
+	}
+	
+	@Test
+	public void whenRebasingChildBranchReassignSegments() throws Exception {
+		final Branch a = main.createChild("a");
+		// make a commit on MAIN
+		manager.handleCommit((InternalBranch) a.parent(), clock.getTimeStamp());
+		// rebase child
+		final InternalCDOBasedBranch rebasedA = (InternalCDOBasedBranch) a.rebase(a.parent(), "Rebase A");
+		final InternalCDOBasedBranch parentAfterRebase = (InternalCDOBasedBranch) rebasedA.parent();
+		assertThat(rebasedA.segmentId()).isEqualTo(3);
+		assertThat(rebasedA.segments()).containsOnly(3);
+		assertThat(rebasedA.parentSegments()).containsOnly(0, 2);
+		
+		assertThat(parentAfterRebase.segmentId()).isEqualTo(4);
+		assertThat(parentAfterRebase.segments()).containsOnly(0, 2, 4);
+		assertThat(parentAfterRebase.parentSegments()).isEmpty();
+	}
+	
+	@Test
+	public void whenCreatingDeepBranchAssignCorrectSegments() throws Exception {
+		final InternalCDOBasedBranch c = (InternalCDOBasedBranch) main.createChild("a").createChild("b").createChild("c");
+		
+		final InternalCDOBasedBranch a = (InternalCDOBasedBranch) manager.getBranch("MAIN/a");
+		assertThat(a.segmentId()).isEqualTo(4);
+		assertThat(a.segments()).containsOnly(4, 1);
+		assertThat(a.parentSegments()).containsOnly(0);
+
+		final InternalCDOBasedBranch b = (InternalCDOBasedBranch) manager.getBranch("MAIN/a/b");
+		assertThat(b.segmentId()).isEqualTo(6);
+		assertThat(b.segments()).containsOnly(6, 3);
+		assertThat(b.parentSegments()).containsOnly(0, 1);
+		
+		assertThat(c.segmentId()).isEqualTo(5);
+		assertThat(c.segments()).containsOnly(5);
+		assertThat(c.parentSegments()).containsOnly(0, 1, 3);
+	}
+	
 }

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.index;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
@@ -26,6 +24,7 @@ import com.google.common.collect.Iterables;
 
 /**
  * {@link IIndexServerServiceManager} implementation.
+ * @deprecated
  */
 public enum IndexServerServiceManager implements IIndexServerServiceManager {
 
@@ -34,12 +33,12 @@ public enum IndexServerServiceManager implements IIndexServerServiceManager {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <E extends IIndexEntry> IIndexUpdater<E> getByUuid(final String repositoryUuid) {
-		return checkNotNull(Iterables.tryFind(getServices(), new Predicate<IIndexUpdater>() {
+		return Iterables.tryFind(getServices(), new Predicate<IIndexUpdater>() {
 			@Override
 			public boolean apply(IIndexUpdater input) {
 				return repositoryUuid.equals(input.getRepositoryUuid());
 			}
-		}).orNull(), "Cannot find index service for repository: %s", repositoryUuid);
+		}).orNull();
 	}
 	
 	private Iterable<IIndexUpdater> getServices() {

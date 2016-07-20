@@ -15,26 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
-
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
-import com.google.common.base.Function;
-import com.google.common.base.Splitter;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.snomed.mrcm.util.MrcmSwitch;
 
 /**
  * Utility class for concept model predicates and its subclasses.
@@ -65,6 +56,48 @@ public abstract class PredicateUtils {
 	 */
 	public static final String OR = "OR";
 
+	public static void collectDomainIds(ConceptSetDefinition domain, final Set<String> selfIds, final Set<String> descendantIds, final Set<String> refSetIds) {
+		new MrcmSwitch<ConceptSetDefinition>() {
+			@Override
+			public ConceptSetDefinition caseHierarchyConceptSetDefinition(HierarchyConceptSetDefinition domain) {
+				final String focusConceptId = domain.getFocusConceptId();
+				switch (domain.getInclusionType()) {
+					case SELF:
+						selfIds.add(focusConceptId);
+						break;
+					case DESCENDANT:
+						descendantIds.add(focusConceptId);
+						break;
+					case SELF_OR_DESCENDANT:
+						selfIds.add(focusConceptId);
+						descendantIds.add(focusConceptId);
+						break;
+					default: throw new UnsupportedOperationException(domain.getInclusionType().toString());
+				}
+				return domain;
+			}
+			
+			@Override
+			public ConceptSetDefinition caseEnumeratedConceptSetDefinition(EnumeratedConceptSetDefinition domain) {
+				selfIds.addAll(domain.getConceptIds());
+				return domain;
+			}
+			
+			@Override
+			public ConceptSetDefinition caseReferenceSetConceptSetDefinition(ReferenceSetConceptSetDefinition domain) {
+				refSetIds.add(domain.getRefSetIdentifierConceptId());
+				return domain;
+			}
+			
+			@Override
+			public ConceptSetDefinition caseCompositeConceptSetDefinition(CompositeConceptSetDefinition domain) {
+				for (ConceptSetDefinition childDomain : domain.getChildren()) {
+					collectDomainIds(childDomain, selfIds, descendantIds, refSetIds);
+				}
+				return domain;
+			}
+		}.doSwitch(domain);
+	}
 	
 	/**
 	 * Builds an ESCG expression that represents the specified concept set definition.
@@ -76,9 +109,7 @@ public abstract class PredicateUtils {
 	 * 
 	 */
 	public static String getEscgExpression(final ConceptSetDefinition conceptSetDefinition) {
-		
 		if (conceptSetDefinition instanceof HierarchyConceptSetDefinition) {
-			
 			final HierarchyConceptSetDefinition hierarchyConceptSetDefinition = (HierarchyConceptSetDefinition)conceptSetDefinition;
 			
 			switch (hierarchyConceptSetDefinition.getInclusionType()) {
@@ -95,25 +126,19 @@ public abstract class PredicateUtils {
 				default: 
 					throw new IllegalArgumentException("Unknown inclusion type: " + hierarchyConceptSetDefinition.getInclusionType());
 			}
-			
 		} else if (conceptSetDefinition instanceof ReferenceSetConceptSetDefinition) {
-			
 			final ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition = (ReferenceSetConceptSetDefinition) conceptSetDefinition;
 			return new StringBuilder("^").append(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId()).toString();
-			
 		} else if (conceptSetDefinition instanceof RelationshipConceptSetDefinition) {
-			
 			final RelationshipConceptSetDefinition relationshipConceptSetDefinition = (RelationshipConceptSetDefinition) conceptSetDefinition;
 
-			final StringBuilder resultBuilder = new StringBuilder("<<");
+			final StringBuilder resultBuilder = new StringBuilder(SELF_OR_DESCENDANT);
 			resultBuilder.append(Concepts.ROOT_CONCEPT);
 			resultBuilder.append(":");
 			resultBuilder.append(relationshipConceptSetDefinition.getTypeConceptId());
 			resultBuilder.append("=");
 			resultBuilder.append(relationshipConceptSetDefinition.getDestinationConceptId());
-			
 			return resultBuilder.toString();
-			
 		} else if (conceptSetDefinition instanceof EnumeratedConceptSetDefinition) {
 			
 			final EnumeratedConceptSetDefinition enumeratedConceptSetDefinition = (EnumeratedConceptSetDefinition) conceptSetDefinition;
@@ -145,116 +170,46 @@ public abstract class PredicateUtils {
 		
 	}
 	
-	public static Set<ConstraintDomain> processConstraintDomain(final long storageKey, final ConceptSetDefinition domain) {
+//	public static Set<ConstraintDomain> processConstraintDomain(final long storageKey, final ConceptSetDefinition domain) {
+//
+//		final Set<ConstraintDomain> $ = Sets.newHashSet();
+//		
+//		if (domain instanceof HierarchyConceptSetDefinition) {
+//			
+//			final HierarchyConceptSetDefinition hierarchyConceptSetDefinition = (HierarchyConceptSetDefinition) domain;
+//			final Long focusConceptId = Long.valueOf(hierarchyConceptSetDefinition.getFocusConceptId());
+//			final HierarchyInclusionType inclusionType = hierarchyConceptSetDefinition.getInclusionType();
+//			$.add(new ConstraintDomain(focusConceptId, inclusionType.name(), storageKey));
+//			
+//		} else if (domain instanceof ReferenceSetConceptSetDefinition) {
+//			
+//			final ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition = (ReferenceSetConceptSetDefinition) domain;
+//			final long refSetIdentifierConceptId = Long.valueOf(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId());
+//			$.add(new ConstraintDomain(refSetIdentifierConceptId, REFSET_PREDICATE_KEY_PREFIX, storageKey));
+//			
+//		} else if (domain instanceof RelationshipConceptSetDefinition) {
+//			
+//			final RelationshipConceptSetDefinition relationshipConceptSetDefinition = (RelationshipConceptSetDefinition) domain;
+//			final long destinationConceptId = Long.valueOf(relationshipConceptSetDefinition.getDestinationConceptId());
+//			$.add(new ConstraintDomain(destinationConceptId, relationshipConceptSetDefinition.getTypeConceptId(), storageKey));
+//			
+//		} else if (domain instanceof EnumeratedConceptSetDefinition) {
+//			
+//			final EnumeratedConceptSetDefinition enumeratedConceptSetDefinition = (EnumeratedConceptSetDefinition) domain;
+//			for (final String conceptId : enumeratedConceptSetDefinition.getConceptIds()) {
+//				final long id = Long.valueOf(conceptId);
+//				$.add(new ConstraintDomain(id, HierarchyInclusionType.SELF.name(), storageKey));
+//			}
+//			
+//		} else if (domain instanceof CompositeConceptSetDefinition) {
+//			final CompositeConceptSetDefinition compositeConceptSetDefinition = (CompositeConceptSetDefinition) domain;
+//			for (ConceptSetDefinition childConceptSetDefinition : compositeConceptSetDefinition.getChildren()) {
+//				$.addAll(processConstraintDomain(storageKey, childConceptSetDefinition));
+//			}
+//		}
+//		return $;
+//	}
 
-		final Set<ConstraintDomain> $ = Sets.newHashSet();
-		
-		if (domain instanceof HierarchyConceptSetDefinition) {
-			
-			final HierarchyConceptSetDefinition hierarchyConceptSetDefinition = (HierarchyConceptSetDefinition) domain;
-			final Long focusConceptId = Long.valueOf(hierarchyConceptSetDefinition.getFocusConceptId());
-			final HierarchyInclusionType inclusionType = hierarchyConceptSetDefinition.getInclusionType();
-			$.add(new ConstraintDomain(focusConceptId, inclusionType.name(), storageKey));
-			
-		} else if (domain instanceof ReferenceSetConceptSetDefinition) {
-			
-			final ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition = (ReferenceSetConceptSetDefinition) domain;
-			final long refSetIdentifierConceptId = Long.valueOf(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId());
-			$.add(new ConstraintDomain(refSetIdentifierConceptId, REFSET_PREDICATE_KEY_PREFIX, storageKey));
-			
-		} else if (domain instanceof RelationshipConceptSetDefinition) {
-			
-			final RelationshipConceptSetDefinition relationshipConceptSetDefinition = (RelationshipConceptSetDefinition) domain;
-			final long destinationConceptId = Long.valueOf(relationshipConceptSetDefinition.getDestinationConceptId());
-			$.add(new ConstraintDomain(destinationConceptId, relationshipConceptSetDefinition.getTypeConceptId(), storageKey));
-			
-		} else if (domain instanceof EnumeratedConceptSetDefinition) {
-			
-			final EnumeratedConceptSetDefinition enumeratedConceptSetDefinition = (EnumeratedConceptSetDefinition) domain;
-			for (final String conceptId : enumeratedConceptSetDefinition.getConceptIds()) {
-				final long id = Long.valueOf(conceptId);
-				$.add(new ConstraintDomain(id, HierarchyInclusionType.SELF.name(), storageKey));
-			}
-			
-		} else if (domain instanceof CompositeConceptSetDefinition) {
-			final CompositeConceptSetDefinition compositeConceptSetDefinition = (CompositeConceptSetDefinition) domain;
-			for (ConceptSetDefinition childConceptSetDefinition : compositeConceptSetDefinition.getChildren()) {
-				$.addAll(processConstraintDomain(storageKey, childConceptSetDefinition));
-			}
-		}
-		return $;
-	}
-
-	/**
-	 * POJO for storing constraint domain information.
-	 */
-	public static final class ConstraintDomain {
-		
-		private final long componentId;
-		private final String predicateKey;
-		private long storageKey;
-
-		private ConstraintDomain(final long componentId, final String predicateKeySuffix, final long storageKey) {
-			this.componentId = componentId;
-			this.storageKey = storageKey;
-			this.predicateKey = String.format("%s#%s", storageKey, predicateKeySuffix);
-		}
-		
-		public long getStorageKey() {
-			return storageKey;
-		}
-
-		/**Returns with the component ID.*/
-		public long getComponentId() {
-			return componentId;
-		}
-
-		/**Returns with the predicate key.*/
-		public String getPredicateKey() {
-			return predicateKey;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + (int) (componentId ^ (componentId >>> 32));
-			result = prime * result + (int) (storageKey ^ (storageKey >>> 32));
-			return result;
-		}
-
-		@Override
-		public boolean equals(final Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof ConstraintDomain))
-				return false;
-			final ConstraintDomain other = (ConstraintDomain) obj;
-			if (componentId != other.componentId)
-				return false;
-			if (storageKey != other.storageKey) 
-				return false;
-			return true;
-		}
-		
-		public static Collection<ConstraintDomain> of(final Document conceptDoc) {
-			final Long componentId = SnomedMappings.id().getValue(conceptDoc);
-			final List<String> values = SnomedMappings.componentReferringPredicate().getValues(conceptDoc);
-			return FluentIterable.from(values).transform(new Function<String, ConstraintDomain>() {
-				@Override 
-				public ConstraintDomain apply(final String predicateKey) {
-					final List<String> segments = Splitter.on(PREDICATE_SEPARATOR).limit(2).splitToList(predicateKey);
-					final long storageKey = Long.parseLong(segments.get(0));
-					final String predicateKeySuffix = segments.get(1);
-					return new ConstraintDomain(componentId, predicateKeySuffix, storageKey);
-				}
-			}).toList();
-		}
-		
-	}
-	
 	/**
 	 * Enumeration for concept set definition type.
 	 */
@@ -283,5 +238,5 @@ public abstract class PredicateUtils {
 	}
 	
 	private PredicateUtils() { /*suppress instantiation*/ }
-	
+
 }

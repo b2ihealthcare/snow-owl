@@ -37,21 +37,19 @@ import com.b2international.snowowl.semanticengine.normalform.FocusConceptNormali
 import com.b2international.snowowl.semanticengine.normalform.FocusConceptNormalizer;
 import com.b2international.snowowl.semanticengine.test.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 public class FocusConceptNormalizerTest {
 
 	private FocusConceptNormalizer focusConceptNormalizer;
-	private RecursiveTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private RecursiveTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 	
 	@Before
 	public void beforeTest() {
 		SnomedClientTerminologyBrowser snomedTerminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		terminologyBrowser = new RecursiveTerminologyBrowser<SnomedConceptIndexEntry, String>(snomedTerminologyBrowser);
-		focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser,
-				ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class));
+		terminologyBrowser = new RecursiveTerminologyBrowser<SnomedConceptDocument, String>(snomedTerminologyBrowser);
+		focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
 	}
 	
 	@Test
@@ -60,7 +58,7 @@ public class FocusConceptNormalizerTest {
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(expression.getConcepts());
 		
 		// fracture of bone
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.FRACTURE_OF_BONE);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.FRACTURE_OF_BONE);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 
 		Attribute associatedMorphologyAttribute = buildAttribute(SnomedConcepts.ASSOCIATED_MORPHOLOGY, SnomedConcepts.FRACTURE);
@@ -75,7 +73,7 @@ public class FocusConceptNormalizerTest {
 		Expression expression = buildExpression(buildConcept(SnomedConcepts.FOOT_PAIN));
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(expression.getConcepts());
 		
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.PAIN);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.PAIN);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 		
 		Attribute findingSiteFootStructure = buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.FOOT_STRUCTURE);
@@ -88,7 +86,7 @@ public class FocusConceptNormalizerTest {
 		Expression expression = buildExpression(buildConcept(SnomedConcepts.SALPINGO_OOPHORECTOMY));
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(expression.getConcepts());
 		
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.EXCISION_OF_PELVIS);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.EXCISION_OF_PELVIS);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 		
 		Attribute methodExcisionAction1 = buildAttribute(SnomedConcepts.METHOD, SnomedConcepts.EXCISION_ACTION);
@@ -109,7 +107,7 @@ public class FocusConceptNormalizerTest {
 		Expression expression = buildExpression(buildConcept(SnomedConcepts.AUSCULTATION));
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(expression.getConcepts());
 		
-		SnomedConceptIndexEntry expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.AUSCULTATION);
+		SnomedConceptDocument expectedFocusConcept = terminologyBrowser.getConcept(SnomedConcepts.AUSCULTATION);
 		assertEquals(Collections.singletonList(expectedFocusConcept), normalizedFocusConcepts.filteredPrimitiveSuperTypes);
 		
 		Attribute methodAuscultationAction = buildAttribute(SnomedConcepts.METHOD, SnomedConcepts.AUSCULTATION_ACTION);

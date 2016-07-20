@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.snomed.version;
 import static com.b2international.commons.StringUtils.capitalizeFirstLetter;
 import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.commons.StringUtils.lowerCaseFirstLetter;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.index.diff.NodeDelta.NULL_IMPL;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
@@ -49,10 +48,11 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.index.diff.FeatureChange;
 import com.b2international.snowowl.datastore.index.diff.NodeDelta;
 import com.b2international.snowowl.datastore.server.version.NodeDeltaDiffProcessor;
@@ -60,11 +60,16 @@ import com.b2international.snowowl.emf.compare.diff.AttributeDiff;
 import com.b2international.snowowl.emf.compare.diff.ReferenceDiff;
 import com.b2international.snowowl.emf.compare.diff.SingleValueAttributeDiff;
 import com.b2international.snowowl.emf.compare.diff.SingleValueReferenceDiff;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -74,7 +79,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 /**
@@ -385,6 +393,10 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		
 	}
 	
+	private String getConceptLabel(IBranchPath branchPath, String componentId) {
+		return componentId;
+	}
+
 	private NodeDelta createInactivatableAssociationChangedDelta(final ReferenceDiff diff) {
 		return createInactivatableAssociationChangedDelta((SnomedAssociationRefSetMember) diff.getValue(), isAddition(diff));
 	}
@@ -545,8 +557,8 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			return createIgnoredDelta();
 		}
 		
-		final String[] descriptionProperties = getReferencedDescriptionProperties(member);
-		final String descriptionTypeId = descriptionProperties[1];
+		final SnomedDescriptionIndexEntry description = getReferencedDescriptionProperties(member);
+		final String descriptionTypeId = description.getTypeId();
 		
 		if (isFsn(descriptionTypeId)) {
 			return createIgnoredDelta();
@@ -556,7 +568,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			return createIgnoredDelta();
 		}
 		
-		final String conceptId = descriptionProperties[0];
+		final String conceptId = description.getConceptId();
 		
 		final String oldPt = getConceptLabel(getBranchPath(sourceView), conceptId);
 		final String newPt = getConceptLabel(getBranchPath(targetView), conceptId);
@@ -587,8 +599,8 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		return FULLY_SPECIFIED_NAME.equals(descriptionTypeId);
 	}
 
-	private String[] getReferencedDescriptionProperties(final SnomedLanguageRefSetMember member) {
-		return getComponentService().getDescriptionProperties(getBranchPath(member), member.getReferencedComponentId());
+	private SnomedDescriptionIndexEntry getReferencedDescriptionProperties(final SnomedLanguageRefSetMember member) {
+		return new SnomedDescriptionLookupService().getComponent(getBranchPath(member), member.getReferencedComponentId());
 	}
 
 	private boolean couldBePreferredTerm(final SnomedLanguageRefSetMember member, final String descriptionTypeId) {
@@ -596,7 +608,19 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 	}
 
 	private Set<String> getAllPreferredDescriptionIds(final SnomedLanguageRefSetMember member) {
-		return getComponentService().getAvailablePreferredTermIds(getBranchPath(member));
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByActive(true)
+				.filterByAncestor(Concepts.SYNONYM)
+				.build(getBranchPath(member).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 	}
 
 	private String getComponentLabel(final EObject component) {
@@ -610,7 +634,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			final Relationship relationship = (Relationship) component;
 			
 			final String negation = relationship.isDestinationNegated() ? " NOT " : "";
-			final String[] labels = getRelationshipLabels(component, relationship);
+			final String[] labels = new String[]{relationship.getSource().getId(), relationship.getType().getId(), relationship.getDestination().getId()};
 			final StringBuilder sb = new StringBuilder();
 			sb.append(labels[0]);
 			sb.append(" - ");
@@ -630,26 +654,18 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		}
 	}
 
-	private String getConceptLabel(final IBranchPath branchPath, final String conceptId) {
-		return getLabels(branchPath, conceptId)[0];
+	static String getMemberLabel(final SnomedRefSetMember member) {
+		return getMemberLabel(member.getReferencedComponentId(), member instanceof SnomedSimpleMapRefSetMember ? ((SnomedSimpleMapRefSetMember) member).getMapTargetComponentId() : null);
 	}
 	
-	private String getMemberLabel(final SnomedRefSetMember member) {
-		final Pair<String, String> labelPair = getComponentService().getMemberLabel(getBranchPath(member), member.getUuid());
+	static String getMemberLabel(final String referencedComponentLabel, final String mapTargetLabel) {
 		final StringBuffer sb = new StringBuffer();
-		sb.append(labelPair.getA());
-		if (!isEmpty(labelPair.getB())) {
+		sb.append(referencedComponentLabel);
+		if (!isEmpty(mapTargetLabel)) {
 			sb.append(" - ");
-			sb.append(labelPair.getB());
+			sb.append(mapTargetLabel);
 		}
 		return sb.toString();
-	}
-	
-	private String[] getRelationshipLabels(final EObject component, final Relationship relationship) {
-		return getLabels(getBranchPath(component), 
-				relationship.getSource().getId(), 
-				relationship.getType().getId(), 
-				relationship.getDestination().getId());
 	}
 	
 	private short getTerminologyComponentId(final EObject component) {
@@ -662,14 +678,6 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		} else {
 			throw new IllegalArgumentException("Unknown component type of: " + component);
 		}
-	}
-	
-	private String[] getLabels(final IBranchPath branchPath, final String... ids) {
-		return getComponentService().getLabels(branchPath, ids);
-	}
-	
-	private ISnomedComponentService getComponentService() {
-		return getServiceForClass(ISnomedComponentService.class);
 	}
 	
 	private IBranchPath getBranchPath(final CDOView view) {

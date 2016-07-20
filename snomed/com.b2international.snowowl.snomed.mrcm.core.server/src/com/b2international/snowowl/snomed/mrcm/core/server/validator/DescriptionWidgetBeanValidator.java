@@ -15,13 +15,16 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.FullySpecifiedNameUniquenessValidator;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DescriptionWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
@@ -33,12 +36,6 @@ import com.google.common.collect.Iterables;
  */
 public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidator {
 
-	private SnomedTerminologyBrowser browser;
-
-	public DescriptionWidgetBeanValidator(SnomedTerminologyBrowser browser) {
-		this.browser = browser;
-	}
-	
 	@Override
 	public void validate(IBranchPath branch, ConceptWidgetBean concept, ValidationStatusReporter reporter) {
 		int numberOfFsns = 0;
@@ -51,7 +48,7 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 					reporter.error(description, "Fully specified name should be specified.");
 				} else {
 					//check fsn uniqueness for unpersisted concept.
-					if (null == browser.getConcept(branch, concept.getConceptId())) {
+					if (!exists(branch, concept.getConceptId())) {
 						final IStatus status = new FullySpecifiedNameUniquenessValidator().validate(description.getTerm());
 						if (!status.isOK()) {
 							reporter.error(description, status.getMessage());	
@@ -72,6 +69,15 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 		if (numberOfPreferredTerms != 1) {
 			reporter.error(concept, "Concept should have one active preferred synonym.");
 		}
+	}
+
+	static boolean exists(IBranchPath branchPath, String conceptId) {
+		return SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.setComponentIds(Collections.singleton(conceptId))
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 	}
 	
 }

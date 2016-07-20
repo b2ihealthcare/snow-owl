@@ -22,9 +22,8 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -35,21 +34,15 @@ import com.google.common.collect.Sets;
  */
 public class RelationTester {
 
-	private final SnomedClientStatementBrowser statementBrowser;
-
-	public RelationTester(SnomedClientStatementBrowser statementBrowser) {
-		this.statementBrowser = statementBrowser;
-	}
-
-	public boolean isRelated(String predicateId, String candidateId) {
+	public boolean isRelated(String branch, String predicateId, String candidateId) {
 		Set<String> visited = Sets.newHashSet();
 		visited.add(candidateId);
-		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
+		for (ISnomedRelationship relationship : LinkageRefSetGenerator.getOutboundStatementsById(branch, candidateId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
-			if (!Concepts.IS_A.equals(relationship.getAttributeId())) {
-				if (predicateId.equals(relationship.getValueId())) {
+			if (!Concepts.IS_A.equals(relationship.getTypeId())) {
+				if (predicateId.equals(relationship.getDestinationId())) {
 					return true;
-				} else if (isRelated(predicateId, relationship.getValueId(), relationship.getAttributeId(), visited)) {
+				} else if (isRelated(branch, predicateId, relationship.getDestinationId(), relationship.getTypeId(), visited)) {
 					return true;
 				}
 			}
@@ -57,15 +50,15 @@ public class RelationTester {
 		return false;
 	}
 
-	public boolean isRelated(String predicateId, String candidateId, String relationshipTypeId) {
-		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
+	public boolean isRelated(String branch, String predicateId, String candidateId, String relationshipTypeId) {
+		for (ISnomedRelationship relationship : LinkageRefSetGenerator.getActiveOutboundStatements(branch, candidateId, relationshipTypeId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
-			if (relationshipTypeId.equals(relationship.getAttributeId())) {
+			if (relationshipTypeId.equals(relationship.getTypeId())) {
 				Set<String> visited = Sets.newHashSet();
 				visited.add(candidateId);
-				if (predicateId.equals(relationship.getValueId())) {
+				if (predicateId.equals(relationship.getDestinationId())) {
 					return true;
-				} else if (isRelated(predicateId, relationship.getValueId(), relationshipTypeId, visited)) {
+				} else if (isRelated(branch, predicateId, relationship.getDestinationId(), relationshipTypeId, visited)) {
 					return true;
 				}
 			}
@@ -73,17 +66,17 @@ public class RelationTester {
 		return false;
 	}
 
-	public boolean isRelated(String predicateId, String candidateId, String relationshipTypeId, Set<String> visitedIds) {
+	public boolean isRelated(String branch, String predicateId, String candidateId, String relationshipTypeId, Set<String> visitedIds) {
 		if (!visitedIds.add(candidateId)) {
 			return false;
 		}
 		
-		for (SnomedRelationshipIndexEntry relationship : statementBrowser.getOutboundStatementsById(candidateId)) {
-			if (relationshipTypeId.equals(relationship.getAttributeId())) {
-				String relationshipTargetId = relationship.getValueId();
+		for (ISnomedRelationship relationship : LinkageRefSetGenerator.getActiveOutboundStatements(branch, candidateId, relationshipTypeId)) {
+			if (relationshipTypeId.equals(relationship.getTypeId())) {
+				String relationshipTargetId = relationship.getDestinationId();
 				if (predicateId.equals(relationshipTargetId)) {
 					return true;
-				} else if (isRelated(predicateId, relationshipTargetId, relationshipTypeId, visitedIds)) {
+				} else if (isRelated(branch, predicateId, relationshipTargetId, relationshipTypeId, visitedIds)) {
 					return true;
 				}
 			}

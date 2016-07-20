@@ -30,6 +30,10 @@ public class SnomedIsAStatement implements IsAStatement, Serializable {
 	private final long sourceId;
 	private final long destinationId;
 
+	public SnomedIsAStatement(final String sourceId, final String destinationId) {
+		this(Long.parseLong(sourceId), Long.parseLong(destinationId));
+	}
+	
 	/**
 	 * Creates a new pair of IDs representing the bare minimum of a SNOMED&nbsp;CT IS_A relationships.
 	 * @param sourceId the source concept ID.

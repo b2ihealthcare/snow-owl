@@ -33,6 +33,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
 import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
@@ -63,6 +64,16 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			return getNodeId(i);
 		}
 	};
+
+	private boolean checkCycles = true;
+	
+	public void setCheckCycles(boolean checkCycles) {
+		this.checkCycles = checkCycles;
+	}
+	
+	public boolean isCheckCycles() {
+		return checkCycles;
+	}
 	
 	@Override
 	public boolean isDirty() {
@@ -86,7 +97,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	}
 	
 	@Override
-	public AbstractSnomedTaxonomyBuilder build() {
+	public SnomedTaxonomyBuilderResult build() {
 		final List<InvalidRelationship> invalidRelationships = Lists.newArrayList();
 
 		// allocate data
@@ -138,6 +149,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			count++;
 		}
 
+		final SnomedTaxonomyBuilderResult result;
 		if (isEmpty(invalidRelationships)) {
 			
 			for (int i = 0; i < conceptCount; i++) {
@@ -161,13 +173,14 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 			}
 			
+			result = new SnomedTaxonomyBuilderResult(Statuses.ok());
 		} else {
-			throw new IncompleteTaxonomyException(invalidRelationships);
+			LOGGER.warn("Missing concepts from relationships");
+			result = new SnomedTaxonomyBuilderResult(Statuses.error("Missing concepts from relationships."), invalidRelationships);
 		}
 
 		dirty = false;
-		
-		return this;
+		return result;
 	}
 
 	/*
@@ -404,10 +417,12 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		final BitSet ancestorInternalIds = new BitSet(conceptCount);
 	
 		// ancestors == supertypes of this concept's direct parents
-		for (final int directParent : ancestors[id]) {
-			collectAncestors(directParent, ancestorInternalIds);
+		int[] internalId = ancestors[id];
+		if (internalId != null) {
+			for (final int directParent : internalId) {
+				collectAncestors(directParent, ancestorInternalIds);
+			}
 		}
-	
 		return processElements(Long.parseLong(conceptId), processingFunction, ancestorInternalIds);		
 	}
 
@@ -426,7 +441,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		final LongSet $ = PrimitiveSets.newLongOpenHashSetWithExpectedSize(count);
 		for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
 			long convertedId = function.apply(i);
-			if (convertedId == conceptId) {
+			if (convertedId == conceptId && checkCycles) {
 				throw new CycleDetectedException("Concept " + conceptId + " would introduce a cycle in the ISA graph (loop).");
 			}
 			$.add(convertedId);
@@ -444,7 +459,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		final long conceptIdLong = Long.parseLong(conceptId);
 		for (final int i : internalIds) {
 			long convertedId = function.apply(i);
-			if (conceptIdLong == convertedId) {
+			if (conceptIdLong == convertedId && checkCycles ) {
 				throw new CycleDetectedException("Concept " + conceptId + " would introduce a cycle in the ISA graph (loop).");
 			}
 			$.add(convertedId);

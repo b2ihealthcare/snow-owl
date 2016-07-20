@@ -108,11 +108,11 @@ public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
 
 		out.writeUTF(model.getUserId());
 		out.writeUTF(model.getClientBranch().getPath());
-		out.writeBoolean(model.isDeltaExport());
 		out.writeUTF(convertDateToRF2String(model.getDeltaExportStartEffectiveTime()));
 		out.writeUTF(convertDateToRF2String(model.getDeltaExportEndEffectiveTime()));
 		out.writeInt(model.getReleaseType().getValue());
 		out.writeUTF(model.getUnsetEffectiveTimeLabel());
+		out.writeBoolean(model.includeUnpublised());
 		out.writeBoolean(model.isExportToRf1());
 		out.writeBoolean(model.isExtendedDescriptionTypesForRf1());
 		final boolean coreComponentsToExport = model.isCoreComponentsToExport();

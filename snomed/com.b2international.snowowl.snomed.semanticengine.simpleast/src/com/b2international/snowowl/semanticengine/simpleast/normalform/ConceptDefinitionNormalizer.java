@@ -22,10 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
@@ -50,12 +55,9 @@ import com.b2international.snowowl.snomed.dsl.query.queryast.ecoreastFactory;
 public class ConceptDefinitionNormalizer {
 
 	private final SimpleAstExpressionNormalFormGenerator normalFormGenerator;
-	private final SnomedClientStatementBrowser statementBrowser;
 	
-	public ConceptDefinitionNormalizer(SnomedClientTerminologyBrowser terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
-		this.statementBrowser = statementBrowser;
-		this.normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser, statementBrowser);
-		
+	public ConceptDefinitionNormalizer(SnomedClientTerminologyBrowser terminologyBrowser) {
+		this.normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser);
 	}
 	
 	/**
@@ -70,27 +72,33 @@ public class ConceptDefinitionNormalizer {
 			 * 1. get defining attributes
 			 * 2. normalizeAttributes(defining attributes)
 			 */
-			Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(focusConcept.getConceptId());
-			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (!relationship.getAttributeId().equals(QueryAstUtils.IS_A)) {
-					int relationshipGroup = relationship.getGroup();
-					AttributeClause attribute = ecoreastFactory.eINSTANCE.createAttributeClause();
-					ConceptRef name = ecoreastFactory.eINSTANCE.createConceptRef();
-					name.setConceptId(relationship.getAttributeId());
-					attribute.setLeft(name);
-					ConceptRef value = ecoreastFactory.eINSTANCE.createConceptRef();
-					value.setConceptId(relationship.getValueId());
-					
-					RValue normalizedValueExpression = normalFormGenerator.getLongNormalForm(value);
-					if (normalizedValueExpression instanceof ConceptRef) {
-						attribute.setRight(normalizedValueExpression);
-					} else {
-						SubExpression subExpression = ecoreastFactory.eINSTANCE.createSubExpression();
-						subExpression.setValue(normalizedValueExpression);
-						attribute.setRight(subExpression);
-					}
-					putAttributeInAttributeClauseGroupMap(attribute, relationshipGroup, attributeGroupMap);
+			
+			final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true)
+					.filterByType(Concepts.IS_A)
+					.filterBySource(focusConcept.getConceptId())
+					.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
+			for (ISnomedRelationship relationship : outboundRelationships) {
+				int relationshipGroup = relationship.getGroup();
+				AttributeClause attribute = ecoreastFactory.eINSTANCE.createAttributeClause();
+				ConceptRef name = ecoreastFactory.eINSTANCE.createConceptRef();
+				name.setConceptId(relationship.getTypeId());
+				attribute.setLeft(name);
+				ConceptRef value = ecoreastFactory.eINSTANCE.createConceptRef();
+				value.setConceptId(relationship.getDestinationId());
+				
+				RValue normalizedValueExpression = normalFormGenerator.getLongNormalForm(value);
+				if (normalizedValueExpression instanceof ConceptRef) {
+					attribute.setRight(normalizedValueExpression);
+				} else {
+					SubExpression subExpression = ecoreastFactory.eINSTANCE.createSubExpression();
+					subExpression.setValue(normalizedValueExpression);
+					attribute.setRight(subExpression);
 				}
+				putAttributeInAttributeClauseGroupMap(attribute, relationshipGroup, attributeGroupMap);
 			}
 			conceptDefinitionMap.put(focusConcept, attributeGroupMap);
 		}

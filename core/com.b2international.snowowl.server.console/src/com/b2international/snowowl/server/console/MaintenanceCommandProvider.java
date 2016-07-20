@@ -17,60 +17,53 @@ package com.b2international.snowowl.server.console;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.common.CDOCommonRepository.State;
-import org.eclipse.emf.cdo.internal.server.syncing.RepositorySynchronizer;
-import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.session.CDOSessionConfiguration;
-import org.eclipse.emf.cdo.session.CDOSessionConfigurationFactory;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
+import com.b2international.commons.StringUtils;
+import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
+import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
+import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
+import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.b2international.snowowl.datastore.server.reindex.ReindexRequestBuilder;
+import com.b2international.snowowl.datastore.server.reindex.ReindexResult;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
 /**
  * OSGI command contribution with Snow Owl maintenance type commands.
- *
  */
 public class MaintenanceCommandProvider implements CommandProvider {
 
-	/**
-	 * 
-	 */
 	private static final String DEFAULT_BRANCH_PREFIX = "|---";
 	private static final String DEFAULT_INDENT = "    ";
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
 	private static final String LISTREPOSITORIES_COMMAND = "listrepositories";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
 	private static final String CHECKSERVICES_COMMAND = "checkservices";
-	private static final String RECREATEINDEX = "recreateindex";
 
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
 		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
-		buffer.append(
-				"\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
+		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system.\n");
 		buffer.append("\tsnowowl listbranches [repository] - prints all the branches in the system for a repository.\n");
-		buffer.append(
-				"\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namspace URI\n");
-		buffer.append("\tsnowowl recreateindex - recreates the index from the CDO store.");
+		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp]- reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
+		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
+		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
 		return buffer.toString();
 	}
 
@@ -83,32 +76,51 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	 */
 	public void _snowowl(CommandInterpreter interpreter) throws InterruptedException {
 		String cmd = interpreter.nextArgument();
+		try {
+			if (CHECKSERVICES_COMMAND.equals(cmd)) {
+				checkServices(interpreter);
+				return;
+			}
 
-		if (CHECKSERVICES_COMMAND.equals(cmd)) {
-			checkServices(interpreter);
-			return;
-		}
+			if (DBCREATEINDEX_COMMAND.equals(cmd)) {
+				createDbIndex(interpreter);
+				return;
+			}
 
-		if (DBCREATEINDEX_COMMAND.equals(cmd)) {
-			createDbIndex(interpreter);
-			return;
-		}
+			if (LISTREPOSITORIES_COMMAND.equals(cmd)) {
+				listRepositories(interpreter);
+				return;
+			}
 
-		if (LISTREPOSITORIES_COMMAND.equals(cmd)) {
-			listRepositories(interpreter);
-			return;
-		}
+			if (LISTBRANCHES_COMMAND.equals(cmd)) {
+				listBranches(interpreter);
+				return;
+			}
 
-		if (LISTBRANCHES_COMMAND.equals(cmd)) {
-			listBranches(interpreter);
-			return;
+			if ("reindex".equals(cmd)) {
+				reindex(interpreter);
+				return;
+			}
+			
+			if ("optimize".equals(cmd)) {
+				optimize(interpreter);
+				return; 
+			}
+			
+			if ("purge".equals(cmd)) {
+				purge(interpreter);
+				return;
+			}
+			
+			interpreter.println(getHelp());
+		} catch (Exception ex) {
+			if (Strings.isNullOrEmpty(ex.getMessage())) {
+				interpreter.println("Something went wrong during the processing of your request.");
+				ex.printStackTrace();
+			} else {
+				interpreter.println(ex.getMessage());
+			}
 		}
-
-		if (RECREATEINDEX.equals(cmd)) {
-			executeRecreateIndex(interpreter);
-			return;
-		}
-		interpreter.println(getHelp());
 	}
 
 	public synchronized void createDbIndex(CommandInterpreter interpreter) {
@@ -118,6 +130,88 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		} else {
 			interpreter.println("Namespace URI should be specified.");
 		}
+	}
+
+	private void purge(CommandInterpreter interpreter) {
+		final String repositoryId = interpreter.nextArgument();
+		
+		if (Strings.isNullOrEmpty(repositoryId)) {
+			interpreter.println("RepositoryId parameter is required");
+			return;
+		}
+		
+		final String branchPath = interpreter.nextArgument();
+		
+		if (Strings.isNullOrEmpty(branchPath)) {
+			interpreter.print("BranchPath parameter is required");
+			return;
+		}
+		
+		
+		final String purgeArg = interpreter.nextArgument();
+		final Purge purge = Strings.isNullOrEmpty(purgeArg) ? Purge.LATEST : Purge.valueOf(purgeArg);
+		if (purge == null) {
+			interpreter.print("Invalid purge parameter. Select one of " + Joiner.on(",").join(Purge.values()));
+			return;
+		}
+		
+		PurgeRequest.builder(repositoryId)
+			.setBranchPath(branchPath)
+			.setPurge(purge)
+			.create()
+			.execute(getBus())
+			.getSync();
+	}
+
+	private void reindex(CommandInterpreter interpreter) {
+		final String repositoryId = interpreter.nextArgument();
+		
+		if (Strings.isNullOrEmpty(repositoryId)) {
+			interpreter.println("RepositoryId parameter is required");
+			return;
+		}
+		
+		final ReindexRequestBuilder req = ReindexRequest.builder(repositoryId);
+		
+		final String failedCommitTimestamp = interpreter.nextArgument();
+		if (!StringUtils.isEmpty(failedCommitTimestamp)) {
+			req.setFailedCommitTimestamp(Long.parseLong(failedCommitTimestamp));
+		}
+		
+		final ReindexResult result = req
+				.create()
+				.execute(getBus())
+				.getSync();
+		
+		interpreter.println(result.getMessage());
+	}
+
+	private static IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
+	private void optimize(CommandInterpreter interpreter) {
+		final String repositoryId = interpreter.nextArgument();
+		if (Strings.isNullOrEmpty(repositoryId)) {
+			interpreter.println("RepositoryId parameter is required.");
+			return;
+		}
+		
+		// default max segments is 1
+		int maxSegments = 1;
+		final String maxSegmentsArg = interpreter.nextArgument();
+		if (!Strings.isNullOrEmpty(maxSegmentsArg)) {
+			maxSegments = Integer.parseInt(maxSegmentsArg);
+		}
+
+		// TODO convert this to a request
+		interpreter.println("Optimizing index to max. " + maxSegments + " number of segments...");
+		OptimizeRequest.builder(repositoryId)
+			.setMaxSegments(maxSegments)
+			.create()
+			.execute(getBus())
+			.getSync();
+		interpreter.println("Index optimization completed.");
 	}
 
 	public synchronized void listRepositories(CommandInterpreter interpreter) {
@@ -165,51 +259,14 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		return indent;
 	}
 
-	public synchronized void checkServices(CommandInterpreter interpreter) {
-
-		interpreter.println("Checking core services...");
-
+	public synchronized void checkServices(CommandInterpreter ci) {
+		ci.println("Checking core services...");
 		try {
-			Collection<ServiceRegistryEntry<?>> services = ApplicationContext.getInstance().checkServices();
-			for (ServiceRegistryEntry<?> entry : services) {
-				interpreter.println(String.format("Interface: %s : %s", entry.getServiceInterface(), entry.getImplementation()));
-			}
-			interpreter.println("Core services are registered properly and available for use.");
-		} catch (final SnowowlRuntimeException e) {
-			interpreter.printStackTrace(e);
+			ApplicationContext.getInstance().checkServices();
+			ci.println("Core services are registered properly and available for use.");
+		} catch (final Throwable t) {
+			ci.print("Error: " + t.getMessage());
 		}
-	}
-
-	@SuppressWarnings("restriction")
-	public synchronized void executeRecreateIndex(CommandInterpreter interpreter) throws InterruptedException {
-
-		String repositoryName = "snomedStore";
-
-		ICDOConnectionManager connectionManager = ApplicationContext.getServiceForClass(ICDOConnectionManager.class);
-
-		RepositorySynchronizer synchronizer = new RepositorySynchronizer();
-		ICDOConnection cdoConnection = connectionManager.getByUuid(repositoryName);
-		final CDONet4jSessionConfiguration sessionConfiguration = cdoConnection.getSessionConfiguration();
-		synchronizer.setRemoteSessionConfigurationFactory(new CDOSessionConfigurationFactory() {
-
-			@Override
-			public CDOSessionConfiguration createSessionConfiguration() {
-				return sessionConfiguration;
-			}
-		});
-
-		// replicate commits as opposed to raw lines
-		synchronizer.setRawReplication(false);
-		SnowOwlDummyInternalRepository localRepository = new SnowOwlDummyInternalRepository();
-		synchronizer.setLocalRepository(localRepository);
-		synchronizer.activate();
-
-		// do the work, wait until it finishes
-		do {
-			Thread.sleep(10000);
-		} while (localRepository.getState() == State.ONLINE);
-
-		synchronizer.deactivate();
 	}
 
 	private boolean isValidRepositoryName(String repositoryName, CommandInterpreter interpreter) {

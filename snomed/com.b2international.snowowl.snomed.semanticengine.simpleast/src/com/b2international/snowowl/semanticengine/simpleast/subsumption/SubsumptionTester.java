@@ -19,22 +19,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.lucene.search.Query;
-
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -57,9 +54,9 @@ public class SubsumptionTester {
 	private static final String CONCEPT_ID_SUBJECT_RELATIONSHIP_CONTEXT = "408732007";
 	private static final String CONCEPT_ID_SAME_AS = "168666000";
 	private static final String CONCEPT_ID_REPLACED_BY = "370124000";
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 	
-	public SubsumptionTester(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser) {
+	public SubsumptionTester(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
 	}
 
@@ -201,8 +198,8 @@ public class SubsumptionTester {
 	 * @return
 	 */
 	public boolean isSubsumed(ConceptRef predicate, ConceptRef candidate) {
-		SnomedConceptIndexEntry candidateConceptMini = terminologyBrowser.getConcept(candidate.getConceptId());
-		SnomedConceptIndexEntry predicateConceptMini = terminologyBrowser.getConcept(predicate.getConceptId());
+		SnomedConceptDocument candidateConceptMini = terminologyBrowser.getConcept(candidate.getConceptId());
+		SnomedConceptDocument predicateConceptMini = terminologyBrowser.getConcept(predicate.getConceptId());
 		return isSubsumed(predicateConceptMini, candidateConceptMini);
 	}
 	
@@ -233,19 +230,25 @@ public class SubsumptionTester {
 	 * 		</ul>
 	 * </ol>
 	 * 
-	 * @param predicate	the predicate {@link SnomedConceptIndexEntry}
-	 * @param candidate	the candidate {@link SnomedConceptIndexEntry}
+	 * @param predicate	the predicate {@link SnomedConceptDocument}
+	 * @param candidate	the candidate {@link SnomedConceptDocument}
 	 * @return
 	 */
-	public boolean isSubsumed(SnomedConceptIndexEntry predicate, SnomedConceptIndexEntry candidate) {
+	public boolean isSubsumed(SnomedConceptDocument predicate, SnomedConceptDocument candidate) {
 		if (!candidate.isActive()) {
 			String replacementConceptId = null;
-			SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-			SnomedConceptIndexEntry conceptMini = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(candidate.getId());
-			Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(conceptMini.getId());
-			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (relationship.getAttributeId().equals(CONCEPT_ID_SAME_AS) || relationship.getAttributeId().equals(CONCEPT_ID_REPLACED_BY)) {
-					replacementConceptId = relationship.getValueId();
+			
+			final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true)
+					.filterBySource(candidate.getId())
+					.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
+			//for (int i = 0; i < outgoingRelationships.length; i++) {
+			for (ISnomedRelationship relationship : outboundRelationships) {
+				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
+					replacementConceptId = relationship.getDestinationId();
 					break;
 				}
 			}
@@ -255,7 +258,7 @@ public class SubsumptionTester {
 				return false;
 			}
 			
-			SnomedConceptIndexEntry replacementCandidateConcept = terminologyBrowser.getConcept(replacementConceptId);
+			SnomedConceptDocument replacementCandidateConcept = terminologyBrowser.getConcept(replacementConceptId);
 			candidate = replacementCandidateConcept;
 		}
 		
@@ -263,8 +266,8 @@ public class SubsumptionTester {
 			return true;
 		}
 		
-		Collection<SnomedConceptIndexEntry> allSuperTypes = terminologyBrowser.getAllSuperTypes(terminologyBrowser.getConcept(candidate.getId()));
-		for (SnomedConceptIndexEntry conceptMini : allSuperTypes) {
+		Collection<SnomedConceptDocument> allSuperTypes = terminologyBrowser.getAllSuperTypes(terminologyBrowser.getConcept(candidate.getId()));
+		for (SnomedConceptDocument conceptMini : allSuperTypes) {
 			if (conceptMini.getId().equals(predicate.getId())) {
 				return true;
 			}
@@ -300,8 +303,8 @@ public class SubsumptionTester {
 	 * 		</ul>
 	 * </ol>
 	 * 
-	 * @param predicateId	the predicate {@link SnomedConceptIndexEntry}
-	 * @param candidateId	the candidate {@link SnomedConceptIndexEntry}
+	 * @param predicateId	the predicate {@link SnomedConceptDocument}
+	 * @param candidateId	the candidate {@link SnomedConceptDocument}
 	 * @param hierarchy represents the hierarchy between the active concepts
 	 * @return
 	 */
@@ -313,17 +316,18 @@ public class SubsumptionTester {
 			
 			long replacementConceptId = -1L;
 			
-			final SnomedRelationshipReplacedByOrSameAsQueryAdapter adapter = new SnomedRelationshipReplacedByOrSameAsQueryAdapter(candidateId);			
-			
-			final Collection<SnomedRelationshipIndexEntry> entires = ApplicationContext.getInstance().getService(SnomedClientIndexService.class).search(adapter, 1);
-			
-			if (!CompareUtils.isEmpty(entires)) {
-				
-				final SnomedRelationshipIndexEntry entry = entires.iterator().next();
-				replacementConceptId = Long.parseLong(entry.getValueId());
-				candidateIdCopy = replacementConceptId;
-				
-			}
+			// FIXME follow historical association members if the concept is inactive
+//			final SnomedRelationshipReplacedByOrSameAsQueryAdapter adapter = new SnomedRelationshipReplacedByOrSameAsQueryAdapter(candidateId);			
+//			
+//			final Collection<SnomedRelationshipIndexEntry> entires = ApplicationContext.getInstance().getService(SnomedClientIndexService.class).search(adapter, 1);
+//			
+//			if (!CompareUtils.isEmpty(entires)) {
+//				
+//				final SnomedRelationshipIndexEntry entry = entires.iterator().next();
+//				replacementConceptId = Long.parseLong(entry.getValueId());
+//				candidateIdCopy = replacementConceptId;
+//				
+//			}
 			
 			// if no replacement concept found, the candidate is not considered subsumed
 			if (-1L == replacementConceptId) {
@@ -538,31 +542,6 @@ public class SubsumptionTester {
 			return false;
 		
 		return true;
-	}
-	
-	// FIXME: I think there are no relationships with SAME AS or REPLACED BY types any more
-	public static final class SnomedRelationshipReplacedByOrSameAsQueryAdapter extends SnomedRelationshipIndexQueryAdapter {
-		
-		private final long candidateId;
-
-		public SnomedRelationshipReplacedByOrSameAsQueryAdapter(long candidateId) {
-			super("@ignored", -1);
-			this.candidateId = candidateId;
-		}
-
-		private static final long serialVersionUID = 1L;
-
-		@Override public Query createQuery() {
-			// type concept: same as or replaced by
-			final Query types = SnomedMappings.newQuery().relationshipType(CONCEPT_ID_SAME_AS).relationshipType(CONCEPT_ID_REPLACED_BY).matchAny();
-			return SnomedMappings.newQuery()
-					.relationship()
-						.active()
-						.relationshipSource(candidateId)
-						.and(types)
-					.matchAll();
-		};
-		
 	}
 	
 }

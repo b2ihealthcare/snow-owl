@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.datastore.request.SearchRequest;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
@@ -34,7 +34,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	}
 
 	@Override
-	protected SearchRequest<SnomedReferenceSets> createSearch() {
+	protected RevisionSearchRequest<SnomedReferenceSets> createSearch() {
 		return new SnomedRefSetSearchRequest();
 	}
 	
@@ -53,7 +53,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		if (CoreTerminologyBroker.UNSPECIFIED.equals(referencedComponentType)) {
 			return getSelf();
 		}
-		final int referencedComponentTypeAsInt = (int) CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType);
+		final int referencedComponentTypeAsInt = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType);
 		return filterByReferencedComponentType(referencedComponentTypeAsInt);
 	}
 	

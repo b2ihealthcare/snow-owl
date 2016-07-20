@@ -41,10 +41,10 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.IClientSnomedComponentValidationService;
 import com.b2international.snowowl.snomed.validation.diagnostic.SnomedRefSetDiagnostic;
@@ -67,11 +67,11 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 	private static final String MISSING_REFERENCED_DESCRIPTION = "The reference set member is referring to a non-existing description %s";
 	private static final String MISSING_REFERENCED_RELATIONSHIP = "The reference set member is referring to a non-existing relationship %s";
 
-	private final SnomedRefSetIndexEntry refSetEntry;
+	private final SnomedReferenceSet refSet;
 
-	public ValidateRefSetJob(final String name, final Object family, final SnomedRefSetIndexEntry refSetEntry) {
+	public ValidateRefSetJob(final String name, final Object family, final SnomedReferenceSet refSet) {
 		super(name, family);
-		this.refSetEntry = refSetEntry;
+		this.refSet = refSet;
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 		final List<SnomedReferenceSetMember> members = SnomedRequests
 				.prepareSearchMember()
 				.all()
-				.filterByRefSet(refSetEntry.getId())
+				.filterByRefSet(refSet.getId())
 				.setLocales(getLocales())
 				.build(getBranch())
 				.executeSync(getBus())
@@ -88,16 +88,15 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Validating reference set members...", members.size());
 
 		try {
-			switch (refSetEntry.getReferencedComponentType()) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+			switch (refSet.getReferencedComponentType()) {
+			case SnomedTerminologyComponentConstants.CONCEPT:
 				return validateConceptMembers(members, subMonitor);
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+			case SnomedTerminologyComponentConstants.DESCRIPTION:
 				return validateDescriptionMembers(subMonitor, members);
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+			case SnomedTerminologyComponentConstants.RELATIONSHIP:
 				return validateRelationshipMembers(subMonitor, members);
 			default:
-				// TODO: This component type cannot be validated here. What to
-				// do?
+				// TODO: This component type cannot be validated here. What to do?
 				return Status.OK_STATUS;
 			}
 		} finally {
@@ -169,8 +168,8 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 			// Run concept validation for members here
 			final IClientSnomedComponentValidationService validationService = ApplicationContext
 					.getServiceForClass(IClientSnomedComponentValidationService.class);
-			final ValidateConceptsJob<SnomedConceptIndexEntry, String> validateConceptsJob = new ValidateConceptsJob<SnomedConceptIndexEntry, String>(
-					"", family, SnomedConceptIndexEntry.fromConcepts(uniqueConcepts), validationService);
+			final ValidateConceptsJob<SnomedConceptDocument, String> validateConceptsJob = new ValidateConceptsJob<SnomedConceptDocument, String>(
+					"", family, SnomedConceptDocument.fromConcepts(uniqueConcepts), validationService);
 
 			subMonitor.setWorkRemaining(uniqueConcepts.size());
 			validateConceptsJob.run(subMonitor.newChild(uniqueConcepts.size()));
@@ -304,7 +303,7 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 
 			final MarkerManager markerManager = ApplicationContext.getServiceForClass(MarkerManager.class);
 			final SnomedRefSetDiagnostic summaryDiagnostic = new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, "", errors);
-			markerManager.createValidationMarkerOnComponent(refSetEntry, summaryDiagnostic);
+			markerManager.createValidationMarkerOnComponent(refSet, summaryDiagnostic);
 		}
 
 		setValue(errorCount);

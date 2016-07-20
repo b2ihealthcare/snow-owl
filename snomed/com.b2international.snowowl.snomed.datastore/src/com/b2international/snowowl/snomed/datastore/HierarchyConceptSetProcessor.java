@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.google.common.collect.Iterators;
 
@@ -31,31 +31,31 @@ import com.google.common.collect.Iterators;
  */
 public class HierarchyConceptSetProcessor extends ConceptSetProcessor<HierarchyConceptSetDefinition> {
 
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 
-	public HierarchyConceptSetProcessor(HierarchyConceptSetDefinition conceptSetDefinition, IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser) {
+	public HierarchyConceptSetProcessor(HierarchyConceptSetDefinition conceptSetDefinition, IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
 		super(conceptSetDefinition);
 		this.terminologyBrowser = terminologyBrowser;
 	}
 	
 	@Override
-	public Iterator<SnomedConceptIndexEntry> getConcepts() {
+	public Iterator<SnomedConceptDocument> getConcepts() {
 		if (conceptSetDefinition.getFocusConceptId() == null) {
 			System.out.println("Null focus concept ID for: " + conceptSetDefinition);
-			return Iterators.<SnomedConceptIndexEntry>emptyIterator();
+			return Iterators.<SnomedConceptDocument>emptyIterator();
 		}
 		
-		SnomedConceptIndexEntry focusConcept = terminologyBrowser.getConcept(conceptSetDefinition.getFocusConceptId());
+		SnomedConceptDocument focusConcept = terminologyBrowser.getConcept(conceptSetDefinition.getFocusConceptId());
 		
 		if (focusConcept == null) {
-			return Iterators.<SnomedConceptIndexEntry>emptyIterator();
+			return Iterators.<SnomedConceptDocument>emptyIterator();
 		}
 			
 		switch (conceptSetDefinition.getInclusionType()) {
 			case SELF:
 				return Iterators.singletonIterator(focusConcept);
 			case DESCENDANT:
-				Collection<SnomedConceptIndexEntry> allSubTypes = terminologyBrowser.getAllSubTypes(focusConcept);
+				Collection<SnomedConceptDocument> allSubTypes = terminologyBrowser.getAllSubTypes(focusConcept);
 				return allSubTypes.iterator();
 			case SELF_OR_DESCENDANT:
 				allSubTypes = terminologyBrowser.getAllSubTypes(focusConcept);
@@ -66,7 +66,7 @@ public class HierarchyConceptSetProcessor extends ConceptSetProcessor<HierarchyC
 	}
 	
 	@Override
-	public boolean contains(SnomedConceptIndexEntry concept) {
+	public boolean contains(SnomedConceptDocument concept) {
 		final String focusConceptId = conceptSetDefinition.getFocusConceptId();
 		
 		//if the rule applies to the whole SNOMED CT terminology
@@ -79,7 +79,7 @@ public class HierarchyConceptSetProcessor extends ConceptSetProcessor<HierarchyC
 			return false;
 		}
 		
-		SnomedConceptIndexEntry focusConcept = terminologyBrowser.getConcept(focusConceptId);
+		SnomedConceptDocument focusConcept = terminologyBrowser.getConcept(focusConceptId);
 		
 		if (focusConcept == null) {
 			return false;

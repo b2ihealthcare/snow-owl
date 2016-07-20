@@ -21,11 +21,19 @@ import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.google.common.base.Function;
 
 /**
  * @since 4.5
  */
 public interface SnomedReferenceSetMember extends SnomedComponent {
+
+	Function<SnomedReferenceSetMember, String> GET_REFERENCED_COMPONENT_ID = new Function<SnomedReferenceSetMember, String>() {
+		@Override
+		public String apply(SnomedReferenceSetMember input) {
+			return input.getReferencedComponent().getId();
+		}
+	};
 
 	/**
 	 * @return the containing reference set's type

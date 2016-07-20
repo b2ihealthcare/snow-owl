@@ -16,7 +16,7 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.SearchRequest;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 
 /**
@@ -31,18 +31,18 @@ public final class CodeSystemSearchRequestBuilder extends SearchRequestBuilder<C
 		super(repositoryId);
 	}
 
-	public CodeSystemSearchRequestBuilder setShortName(final String shortName) {
+	public CodeSystemSearchRequestBuilder filterByShortName(final String shortName) {
 		this.shortName = shortName;
 		return this.getSelf();
 	}
 
-	public CodeSystemSearchRequestBuilder setOid(final String oid) {
+	public CodeSystemSearchRequestBuilder filterByOid(final String oid) {
 		this.oid = oid;
 		return this.getSelf();
 	}
 
 	@Override
-	protected SearchRequest<CodeSystems> createSearch() {
+	protected RevisionSearchRequest<CodeSystems> createSearch() {
 		final CodeSystemSearchRequest req = new CodeSystemSearchRequest();
 		req.setShortName(shortName);
 		req.setOid(oid);

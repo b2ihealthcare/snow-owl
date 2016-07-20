@@ -15,27 +15,23 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.destinationIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.sourceIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
+
 import java.io.IOException;
-import java.util.List;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
-
-import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
@@ -46,71 +42,51 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		SOURCE,
 		TYPE,
 		DESTINATION,
-		CHARACTERISTIC_TYPE;
+		CHARACTERISTIC_TYPE, 
+		// TODO implement group based filtering
+		GROUP
 	}
 	
 	SnomedRelationshipSearchRequest() {}
 
 	@Override
 	protected SnomedRelationships doExecute(BranchContext context) throws IOException {
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
-		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().relationship();
+		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
+		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TYPE)) {
-			queryBuilder.relationshipType(getString(OptionKey.TYPE));
+			queryBuilder.must(typeId(getString(OptionKey.TYPE)));
 		}
 		
 		if (containsKey(OptionKey.CHARACTERISTIC_TYPE)) {
-			queryBuilder.relationshipCharacteristicType(getString(OptionKey.CHARACTERISTIC_TYPE));
+			queryBuilder.must(characteristicTypeId(getString(OptionKey.CHARACTERISTIC_TYPE)));
 		}
-		
-		final BooleanFilter filter = new BooleanFilter();
-		
-		addComponentIdFilter(filter);
 
 		if (containsKey(OptionKey.SOURCE)) {
-			addFilterClause(filter, createSourceIdFilter(), Occur.MUST);
+			queryBuilder.must(sourceIds(getCollection(OptionKey.SOURCE, String.class)));
 		}
 		
 		if (containsKey(OptionKey.DESTINATION)) {
-			addFilterClause(filter, createDestinationIdFilter(), Occur.MUST);
+			queryBuilder.must(destinationIds(getCollection(OptionKey.DESTINATION, String.class)));
 		}
 
-		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
-		final int totalHits = getTotalHits(searcher, query);
+		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.select(SnomedRelationshipIndexEntry.class)
+				.where(queryBuilder.build())
+				.offset(offset())
+				.limit(limit())
+				.build());
+		final int totalHits = hits.getTotal();
 		
 		if (limit() < 1 || totalHits < 1) {
 			return new SnomedRelationships(offset(), limit(), totalHits);
 		}
 		
-		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), Sort.INDEXORDER, false, false);
-		if (topDocs.scoreDocs.length < 1) {
-			return new SnomedRelationships(offset(), limit(), topDocs.totalHits);
-		}
-		
-		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final ImmutableList.Builder<SnomedRelationshipIndexEntry> relationshipsBuilder = ImmutableList.builder();
-		
-		for (int i = offset(); i < scoreDocs.length; i++) {
-			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedRelationshipIndexEntry indexEntry = SnomedRelationshipIndexEntry.builder(doc).build();
-			relationshipsBuilder.add(indexEntry);
-		}
-
-		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(relationshipsBuilder.build(), offset(), limit(), topDocs.totalHits);
-	}
-
-	private Filter createSourceIdFilter() {
-		final List<Long> sourceIds = StringToLongFunction.copyOf(getCollection(OptionKey.SOURCE, String.class));
-		return SnomedMappings.relationshipSource().createTermsFilter(sourceIds);
-	}
-	
-	private Filter createDestinationIdFilter() {
-		final List<Long> sourceIds = StringToLongFunction.copyOf(getCollection(OptionKey.DESTINATION, String.class));
-		return SnomedMappings.relationshipDestination().createTermsFilter(sourceIds);
+		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), totalHits);
 	}
 
 	@Override

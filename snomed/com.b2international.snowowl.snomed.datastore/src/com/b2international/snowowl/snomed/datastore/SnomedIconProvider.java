@@ -33,17 +33,15 @@ import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.ComponentIconProvider;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
@@ -84,10 +82,6 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 		return instance;
 	}
 
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-	}
-
 	@Override
 	public void refresh() {
 	}
@@ -108,12 +102,12 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			return getIconComponentId(String.valueOf(source), branchPath);
 		} else if (source instanceof String) {
 			return getIconComponentId((String) source, branchPath);
-		} else if (source instanceof AbstractIndexEntry) {
+		} else if (source instanceof RevisionDocument) {
 			// SNOMED Description entry sometimes contains false iconId (probably a bug in the indexing), so using the type
 			if (source instanceof SnomedDescriptionIndexEntry) {
 				return getIconComponentId(((SnomedDescriptionIndexEntry) source).getTypeId(), branchPath);
 			}
-			return ((AbstractIndexEntry) source).getIconId();
+			return ((RevisionDocument) source).getIconId();
 		} else if (source instanceof IComponent<?>) {
 			return ((IComponent<?>) source).getId() == null ? null : getIconId(((IComponent<?>) source).getId(), branchPath);
 		} else if (source instanceof Concept) {
@@ -153,8 +147,8 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			resolved = getExactFile((String)source);
 		} else if (source instanceof Long) {
 			resolved = getExactFile(String.valueOf(source));
-		} else if (source instanceof AbstractIndexEntry) {
-			resolved = getExactFile(((AbstractIndexEntry) source).getIconId());
+		} else if (source instanceof RevisionDocument) {
+			resolved = getExactFile(((RevisionDocument) source).getIconId());
 		}
 		return resolved;
 	}
@@ -173,7 +167,7 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 	};
 	
 	public String getIconComponentId(String componentId, final IBranchPath branchPath) {
-		if (getTerminologyBrowser() == null || componentId == null) {
+		if (componentId == null) {
 			return null;
 		}
 		
@@ -196,13 +190,6 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			return iconId;
 		}
 		
-		/* 
-		 * Option 3: We know that the entry is non-null, but no icon ID is set for some reason. Use the component identifier 
-		 * to find the first parent which has an icon available.
-		 * 
-		 * The last step might return componentId itself.
-		 */
-		iconId = getParentFrom(componentId, readAvailableImageNames(), branchPath);
 		return iconId;
 	}
 	
@@ -235,34 +222,8 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 		return imageConceptIds;
 	}
 
-	private String getParentFrom(final String conceptId, final Collection<String> parentIds, final IBranchPath branchPath) {
-		if (getTerminologyBrowser().getSuperTypeCountById(branchPath, conceptId) == 0) {
-			return conceptId;
-		}
-		
-		if (parentIds.contains(conceptId)) {
-			return conceptId;
-		}
-		
-		final String firstParentId = Iterables.getFirst(getTerminologyBrowser().getSuperTypeIds(branchPath, conceptId), null);
-		return getParentFrom(firstParentId, parentIds, branchPath);
-	}
-	
 	private IconIdProvider<String> getIndexEntry(String componentId, final IBranchPath branchPath) {
-		final short tcv = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(componentId);
-		switch (tcv) {
-		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-			return getTerminologyBrowser().getConcept(branchPath, componentId);
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-			return new SnomedDescriptionLookupService().getComponent(branchPath, componentId);
-		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-			return getStatementBrowser().getStatement(branchPath, componentId);
-		}
-		throw new IllegalArgumentException("Unsupported component type '" + tcv + "' for ID: " + componentId);
-	}
-
-	private SnomedStatementBrowser getStatementBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
+		throw new UnsupportedOperationException("TODO refactor icon providers");
 	}
 
 	/** @return the File pointing at the icon .png for the specified concept */

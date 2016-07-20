@@ -73,9 +73,9 @@ public final class SnomedRelationship {
 	
 	public SnomedRelationship(final SnomedRelationshipIndexEntry relationship) {
 		id = relationship.getId();
-		typeId = relationship.getAttributeId();
+		typeId = relationship.getTypeId();
 		characteristicTypeId = relationship.getCharacteristicTypeId();
-		destinationId = relationship.getValueId();
+		destinationId = relationship.getDestinationId();
 		group = relationship.getGroup();
 		active = relationship.isActive();
 		released = relationship.isReleased();

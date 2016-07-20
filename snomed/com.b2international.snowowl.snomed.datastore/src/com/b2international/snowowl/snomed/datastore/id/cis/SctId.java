@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import java.util.Collection;
 
+import com.b2international.index.Doc;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * 
  * @since 4.5
  */
+@Doc
 public class SctId {
 
 	private String sctid;

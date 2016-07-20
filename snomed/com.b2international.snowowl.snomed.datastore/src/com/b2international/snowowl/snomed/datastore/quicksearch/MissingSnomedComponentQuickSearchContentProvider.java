@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.quicksearch;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EPackage;
 
+import com.b2international.index.compat.Highlighting;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
@@ -28,11 +30,12 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -46,9 +49,8 @@ public class MissingSnomedComponentQuickSearchContentProvider extends AbstractQu
 			final SnomedIdentifier identifier = SnomedIdentifiers.create(queryExpression);
 			if (ComponentCategory.CONCEPT.equals(identifier.getComponentCategory())) {
 				final IBranchPath branchPath = getBranchPath(branchPathMap);
-				final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getServiceChecked(SnomedTerminologyBrowser.class);
 				
-				if (terminologyBrowser.exists(branchPath, queryExpression)) {
+				if (exists(branchPath.getPath(), queryExpression)) {
 					return new QuickSearchContentResult();
 				}
 				
@@ -56,8 +58,8 @@ public class MissingSnomedComponentQuickSearchContentProvider extends AbstractQu
 						Concepts.ROOT_CONCEPT, 
 						queryExpression, 
 						false,
-						getMatchRegions(queryExpression, queryExpression),
-						getSuffixes(queryExpression, queryExpression));
+						Highlighting.getMatchRegions(queryExpression, queryExpression),
+						Highlighting.getSuffixes(queryExpression, queryExpression));
 				
 				return new QuickSearchContentResult(1, ImmutableList.of(singleResult));
 			}
@@ -65,6 +67,15 @@ public class MissingSnomedComponentQuickSearchContentProvider extends AbstractQu
 			// ignore invalid SNOMED CT IDs and return empty result
 		}
 		return new QuickSearchContentResult();
+	}
+
+	private boolean exists(String branch, String id) {
+		return SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.setComponentIds(Collections.singleton(id))
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 	}
 
 	@Override

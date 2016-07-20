@@ -27,24 +27,32 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
+import com.b2international.snowowl.snomed.exporter.server.dsv.IRefSetDSVExporter;
+import com.b2international.snowowl.snomed.exporter.server.dsv.MapTypeRefSetDSVExporter;
+import com.b2international.snowowl.snomed.exporter.server.dsv.SnomedSimpleTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
-import com.b2international.snowowl.snomed.exporter.server.refset.IRefSetDSVExporter;
-import com.b2international.snowowl.snomed.exporter.server.refset.MapTypeRefSetDSVExporter;
-import com.b2international.snowowl.snomed.exporter.server.refset.SnomedSimpleTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
 
 /**
  * This class receives requests from client side and depending the user request
@@ -110,7 +118,6 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 			
 			result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components to delimiter separated files.");
 		}
-		
 		sendResult(out, result, response);
 		
 		if (null != response) {
@@ -120,11 +127,34 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 	
 	private IRefSetDSVExporter getRefSetExporter() {
 		IBranchPath branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
-		final SnomedRefSetIndexEntry refSet = new SnomedRefSetLookupService().getComponent(branchPath, exportSetting.getRefSetId());
+		
+		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+		
+		QueryBuilder<SnomedConceptDocument> builder = Query.select(SnomedConceptDocument.class);
+
+		final Query<SnomedConceptDocument> query = builder.where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
+		
+		
+		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
+
+			@Override
+			public SnomedConceptDocument execute(RevisionSearcher searcher) throws IOException {
+				
+				Hits<SnomedConceptDocument> snomedConceptDocuments = searcher.search(query);
+				Optional<SnomedConceptDocument> first = FluentIterable.<SnomedConceptDocument>from(snomedConceptDocuments).first();
+				if (first.isPresent()) {
+					return first.get();
+				} else {
+					throw new IllegalArgumentException("Could not find reference set with id: " + exportSetting.getRefSetId());
+				}
+			}
+		});
+		
 		IRefSetDSVExporter exporter = null;
-		if (SnomedRefSetType.SIMPLE.equals(refSet.getType())) {
+		if (SnomedRefSetType.SIMPLE.equals(refsetConcept.getRefSetType())) {
 			exporter = new SnomedSimpleTypeRefSetDSVExporter(exportSetting);
-		} else if (SnomedRefSetUtil.isMapping(refSet.getType())) {
+		} else if (SnomedRefSetUtil.isMapping(refsetConcept.getRefSetType())) {
 			exporter = new MapTypeRefSetDSVExporter(exportSetting);
 		}
 		return exporter;

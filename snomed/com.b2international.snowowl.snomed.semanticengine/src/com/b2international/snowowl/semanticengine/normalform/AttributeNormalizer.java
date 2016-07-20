@@ -27,8 +27,7 @@ import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * The value of every attribute specified in the expression refinement (including grouped 
@@ -44,12 +43,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
  */
 public class AttributeNormalizer {
 	
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
 	private final ScgExpressionNormalFormGenerator normalFormGenerator;
 	
-	public AttributeNormalizer(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
-		this.terminologyBrowser = terminologyBrowser;
-		normalFormGenerator = new ScgExpressionNormalFormGenerator(terminologyBrowser, statementBrowser);
+	public AttributeNormalizer(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
+		normalFormGenerator = new ScgExpressionNormalFormGenerator(terminologyBrowser);
 	}
 
 	/**

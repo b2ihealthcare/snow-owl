@@ -26,14 +26,10 @@ import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.google.common.base.Preconditions;
 
 /**
@@ -80,29 +76,27 @@ public class SnomedHierarchy {
 	 * @return the new incremental taxonomy builder instance.
 	 */
 	public static SnomedHierarchy forBranch(final IBranchPath branchPath) {
-		
-		final AtomicReference<long[]> conceptIdsReference = new AtomicReference<long[]>();
-		final AtomicReference<IsAStatement[]> statementsReference = new AtomicReference<IsAStatement[]>();
-		
-		final Runnable getConceptsRunnable = new Runnable() {
-			@Override public void run() {
-				final LongCollection conceptIds = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getAllActiveConceptIds(branchPath);
-				conceptIds.trimToSize();
-				conceptIdsReference.set(conceptIds.toArray());
-			}
-		};
-		
-		final Runnable getStatementsRunnable = new Runnable() {
-			@Override public void run() {
-				final SnomedStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
-				final IsAStatement[] statements = statementBrowser.getActiveStatements(branchPath, StatementCollectionMode.NO_IDS);
-				statementsReference.set(statements);
-			}
-		};
-		
-		ForkJoinUtils.runInParallel(getStatementsRunnable, getConceptsRunnable);
-		return new SnomedHierarchy(conceptIdsReference.get(), statementsReference.get());
-		
+		throw new UnsupportedOperationException("Unsupported API, make it deprecated or remove it if not required by other services");
+//		final AtomicReference<long[]> conceptIdsReference = new AtomicReference<long[]>();
+//		final AtomicReference<IsAStatement[]> statementsReference = new AtomicReference<IsAStatement[]>();
+//		
+//		final Runnable getConceptsRunnable = new Runnable() {
+//			@Override public void run() {
+//				final LongCollection conceptIds = getAllActiveConceptIds(branchPath);
+//				conceptIds.trimToSize();
+//				conceptIdsReference.set(conceptIds.toArray());
+//			}
+//		};
+//		
+//		final Runnable getStatementsRunnable = new Runnable() {
+//			@Override public void run() {
+//				final IsAStatement[] statements = getActiveStatements(branchPath, StatementCollectionMode.NO_IDS);
+//				statementsReference.set(statements);
+//			}
+//		};
+//		
+//		ForkJoinUtils.runInParallel(getStatementsRunnable, getConceptsRunnable);
+//		return new SnomedHierarchy(conceptIdsReference.get(), statementsReference.get());
 	}
 	
 	public SnomedHierarchy(final long[] conceptIds, final IsAStatement[] statements) {

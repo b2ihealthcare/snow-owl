@@ -102,7 +102,7 @@ public final class ConceptDefinition extends AnnotatedDefinition implements Seri
 	 * @param group the group identifier for the relationship (must be 0)
 	 * @param unionGroup the union group identifier for the relationship (may not be negative)
 	 */
-	public void addNeverGroupedDefinition(final RelationshipDefinition definition, final byte group, final byte unionGroup) {
+	public void addNeverGroupedDefinition(final RelationshipDefinition definition, final int group, final int unionGroup) {
 		checkArgument(0 == group, "Can't add never grouped relationship definition with non-zero group.");
 		checkArgument(0 <= unionGroup, "Union group may not be negative (was %s).", unionGroup);
 
@@ -117,7 +117,7 @@ public final class ConceptDefinition extends AnnotatedDefinition implements Seri
 	 * @param group the group identifier for the relationship (may not be negative)
 	 * @param unionGroup the union group identifier for the relationship (may not be negative)
 	 */
-	public void addGroupDefinition(final RelationshipDefinition definition, final byte group, final byte unionGroup) {
+	public void addGroupDefinition(final RelationshipDefinition definition, final int group, final int unionGroup) {
 		checkArgument(0 <= group, "Group may not be negative (was %s).", group);
 		checkArgument(0 <= unionGroup, "Union group may not be negative (was %s).", unionGroup);
 
@@ -126,11 +126,11 @@ public final class ConceptDefinition extends AnnotatedDefinition implements Seri
 		targetNode.addRelationshipDefinition(definition);
 	}
 
-	private DefinitionNode getGroupSubNode(final RelationshipDefinition definition, final byte group, final Node targetNode) {
+	private DefinitionNode getGroupSubNode(final RelationshipDefinition definition, final int group, final Node targetNode) {
 		return (0 < group) ? targetNode.getSubNode(new NonZeroGroupKey(group)) : targetNode.getSubNode(ZeroGroupKey.INSTANCE);
 	}
 
-	private DefinitionNode getUnionGroupSubNode(final byte unionGroup, final DefinitionNode targetNode) {
+	private DefinitionNode getUnionGroupSubNode(final int unionGroup, final DefinitionNode targetNode) {
 		return (0 < unionGroup) ? targetNode.getSubNode(new UnionGroupKey(unionGroup)) : targetNode;
 	}
 

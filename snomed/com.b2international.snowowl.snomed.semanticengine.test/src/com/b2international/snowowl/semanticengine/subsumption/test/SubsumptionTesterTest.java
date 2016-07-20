@@ -27,7 +27,7 @@ import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.test.utils.TestUtils;
 import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.Lists;
 
 /**
@@ -37,7 +37,7 @@ public class SubsumptionTesterTest {
 
 	private void testExpressionSubsumption(Expression predicate, Expression candidate, boolean expectedResult) {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		RecursiveTerminologyBrowser<SnomedConceptIndexEntry,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
+		RecursiveTerminologyBrowser<SnomedConceptDocument,String> recursiveTerminologyBrowser = RecursiveTerminologyBrowser.create(terminologyBrowser);
 		List<Long> iterationTimesInNanoseconds = Lists.newArrayList();
 		for (int i=0; i<TestUtils.TEST_ITERATION_COUNT; i++) {
 			long iterationStart = System.nanoTime();

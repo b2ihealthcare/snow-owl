@@ -17,11 +17,12 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.util.Iterator;
 
-import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 
 /**
@@ -31,46 +32,28 @@ import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
  */
 public class RelationshipConceptSetProcessor extends ConceptSetProcessor<RelationshipConceptSetDefinition> {
 
-	private static final class SnomedRelationshipIndexQueryAdapterExtension extends SnomedRelationshipIndexQueryAdapter {
-
-		private static final long serialVersionUID = 1L;
-		
-		private final String typeId;
-
-		private final String destinationId;
-
-		private SnomedRelationshipIndexQueryAdapterExtension(final String sourceId, final String typeId, final String destinationId) {
-			super(sourceId, SEARCH_SOURCE_ID | SEARCH_ACTIVE_RELATIONSHIPS_ONLY);
-			this.typeId = typeId;
-			this.destinationId = destinationId;
-		}
-
-		@Override
-		protected IndexQueryBuilder createIndexQueryBuilder() {
-			return super.createIndexQueryBuilder()
-					.require(SnomedMappings.newQuery().relationshipType(typeId).relationshipDestination(destinationId).matchAll());
-		}
-	}
-
-	private final SnomedClientIndexService indexService;
-
-	public RelationshipConceptSetProcessor(final RelationshipConceptSetDefinition conceptSetDefinition, final SnomedClientIndexService indexService) {
+	public RelationshipConceptSetProcessor(final RelationshipConceptSetDefinition conceptSetDefinition) {
 		super(conceptSetDefinition);
-		this.indexService = indexService;
 	}
 	
 	@Override
-	public Iterator<SnomedConceptIndexEntry> getConcepts() {
+	public Iterator<SnomedConceptDocument> getConcepts() {
 		throw new UnsupportedOperationException("Relationship-based concept sets are not allowed in predicates, only domains.");
 	}
 	
 	@Override
-	public boolean contains(final SnomedConceptIndexEntry concept) {
-		
-		final SnomedRelationshipIndexQueryAdapterExtension adapter = new SnomedRelationshipIndexQueryAdapterExtension(concept.getId(),
-				conceptSetDefinition.getTypeConceptId(),
-				conceptSetDefinition.getDestinationConceptId());
-		
-		return indexService.getHitCount(adapter) > 0;
+	public boolean contains(final SnomedConceptDocument concept) {
+		final String sourceId = concept.getId();
+		final String typeId = conceptSetDefinition.getTypeConceptId();
+		final String destinationId = conceptSetDefinition.getDestinationConceptId();
+		return SnomedRequests.prepareSearchRelationship()
+				.setLimit(0)
+				.filterByActive(true)
+				.filterBySource(sourceId)
+				.filterByType(typeId)
+				.filterByDestination(destinationId)
+				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 	}
 }

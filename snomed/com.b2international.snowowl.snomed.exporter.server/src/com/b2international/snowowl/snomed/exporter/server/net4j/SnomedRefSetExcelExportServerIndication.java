@@ -21,7 +21,7 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.datastore.server.importer.ITerminologyExporter;
 import com.b2international.snowowl.datastore.server.net4j.AbstractExportIndication;
-import com.b2international.snowowl.snomed.exporter.server.refset.SnomedSimpleTypeRefSetExcelExporter;
+import com.b2international.snowowl.snomed.exporter.server.dsv.SnomedSimpleTypeRefSetExcelExporter;
 
 /**
  * The server-side signal handler when exporting simple type reference set to Excel format.
@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.exporter.server.refset.SnomedSimpleTyp
 public class SnomedRefSetExcelExportServerIndication extends AbstractExportIndication {
 
 	private String refSetId;
-	private short referencedComponentType;
 
 	public SnomedRefSetExcelExportServerIndication(SignalProtocol<?> protocol) {
 		super(protocol, Net4jProtocolConstants.SNOMED_EXPORT_REFSET_TO_EXCEL_SIGNAL);
@@ -40,15 +39,12 @@ public class SnomedRefSetExcelExportServerIndication extends AbstractExportIndic
 	
 	@Override
 	protected void postIndicating(ExtendedDataInputStream in) throws Exception {
-
 		refSetId = in.readUTF();
-		referencedComponentType = in.readShort();
-		
 	}
 
 	@Override
 	protected ITerminologyExporter getExporter() {
-		return new SnomedSimpleTypeRefSetExcelExporter(getUserId(), getBranchPath(), refSetId, referencedComponentType);
+		return new SnomedSimpleTypeRefSetExcelExporter(getUserId(), getBranchPath(), refSetId);
 	}
 
 }

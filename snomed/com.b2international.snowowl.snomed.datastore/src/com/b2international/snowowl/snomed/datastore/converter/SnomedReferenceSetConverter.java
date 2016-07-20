@@ -25,14 +25,14 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * @since 4.5
  */
-final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<SnomedRefSetIndexEntry, SnomedReferenceSet, SnomedReferenceSets> {
+final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<SnomedConceptDocument, SnomedReferenceSet, SnomedReferenceSets> {
 	
 	protected SnomedReferenceSetConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -72,21 +72,32 @@ final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<Sno
 	}
 	
 	@Override
-	public SnomedReferenceSet toResource(SnomedRefSetIndexEntry entry) {
+	public SnomedReferenceSet toResource(SnomedConceptDocument entry) {
 		final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
+		refset.setStorageKey(entry.getRefSetStorageKey());
 		refset.setId(entry.getId());
-		refset.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTimeAsLong()));
+		refset.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTime()));
 		refset.setActive(entry.isActive());
 		refset.setReleased(entry.isReleased());
 		refset.setModuleId(entry.getModuleId());
 		refset.setIconId(entry.getIconId());
-		final short referencedComponentType = entry.getReferencedComponentType();
-		refset.setReferencedComponent(getReferencedComponentType(referencedComponentType));
-		refset.setType(entry.getType());
+		refset.setScore(entry.getScore());
+		final int referencedComponentType = entry.getReferencedComponentType();
+		if (referencedComponentType > 0) {
+			refset.setReferencedComponentType(getReferencedComponentType(referencedComponentType));
+		}
+		final int mapTargetComponentType = entry.getMapTargetComponentType();
+		if (mapTargetComponentType > 0) {
+			refset.setMapTargetComponentType(getReferencedComponentType(mapTargetComponentType));
+		}
+		refset.setType(entry.getRefSetType());
+		if (refset.getType() == null) {
+			System.err.println();
+		}
 		return refset;
 	}
 
-	private String getReferencedComponentType(final short referencedComponentType) {
-		return CoreTerminologyBroker.getInstance().getComponentInformation(referencedComponentType).getId();
+	private String getReferencedComponentType(final int referencedComponentType) {
+		return CoreTerminologyBroker.getInstance().getComponentInformation((short) referencedComponentType).getId();
 	}
 }

@@ -35,13 +35,13 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.util.AdapterUtil;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentTextProvider;
+import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
+import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -50,7 +50,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder;
 import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -60,8 +59,7 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -389,42 +387,37 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	
 	@Override
 	protected String getParentIdFromTerminologyBrowser(String id) {
-		final LongSet ancestorIds = getTerminologyBrowser().getSuperTypeIds(getBranchPath(), Long.parseLong(id));
-		return CompareUtils.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
+		throw new UnsupportedOperationException("Unsupported API, refactor task review and branch management");
+//		final LongSet ancestorIds = getSuperTypeIds(getBranchPath(), Long.parseLong(id));
+//		return CompareUtils.isEmpty(ancestorIds) ? null : Long.toString(ancestorIds.iterator().next());
 	}
 	
 	@Override
-	protected AbstractIndexEntry getIndexEntryFromCdoObject(String ancestorId) {
+	protected IIndexEntry getIndexEntryFromCdoObject(String ancestorId) {
 		
 		final Concept concept = createLookupService().getComponent(ancestorId, getCurrentView());
 
 		if (null == concept) {
 			return null;
 		} else {
-			return AdapterUtil.adapt(concept, SnomedConceptIndexEntry.class);
+			return AdapterUtil.adapt(concept, SnomedConceptDocument.class);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder#getTerminologyBrowser()
-	 */
-	@Override
-	protected SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder#getTerminologyComponentId()
-	 */
 	@Override
 	protected short getTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 	}
 	
 	@Override
-	protected AbstractIndexEntry getIndexEntryFromTerminologyBrowser(final String id) {
-		final SnomedConceptIndexEntry concept = (SnomedConceptIndexEntry) super.getIndexEntryFromTerminologyBrowser(id);
-		return SnomedConceptIndexEntry.builder(concept).label(getConceptLabel(id, getCurrentView())).build();
+	protected ITerminologyBrowser<? extends IIndexEntry, String> getTerminologyBrowser() {
+		throw new UnsupportedOperationException("Unsupported API, refactor task review and branch management");
+	}
+	
+	@Override
+	protected IIndexEntry getIndexEntryFromTerminologyBrowser(final String id) {
+		final SnomedConceptDocument concept = (SnomedConceptDocument) super.getIndexEntryFromTerminologyBrowser(id);
+		return SnomedConceptDocument.builder(concept).label(getConceptLabel(id, getCurrentView())).build();
 	}
 	
 	/**

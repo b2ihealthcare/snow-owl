@@ -20,9 +20,10 @@ package com.b2international.snowowl.core.domain;
  */
 public abstract class BaseComponent implements IComponent {
 
+	private long storageKey;
 	private String id;
 	private Boolean released;
-
+	
 	@Override
 	public String getId() {
 		return id;
@@ -32,6 +33,11 @@ public abstract class BaseComponent implements IComponent {
 	public Boolean isReleased() {
 		return released;
 	}
+	
+	@Override
+	public long getStorageKey() {
+		return storageKey;
+	}
 
 	public void setId(final String id) {
 		this.id = id;
@@ -40,4 +46,12 @@ public abstract class BaseComponent implements IComponent {
 	public void setReleased(final boolean released) {
 		this.released = released;
 	}
+	
+	/**
+	 * @deprecated - see {@link IComponent#getStorageKey()}
+	 */
+	public void setStorageKey(long storageKey) {
+		this.storageKey = storageKey;
+	}
+	
 }

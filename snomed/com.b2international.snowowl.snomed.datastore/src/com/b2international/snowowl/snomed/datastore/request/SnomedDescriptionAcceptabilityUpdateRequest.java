@@ -21,6 +21,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
@@ -45,6 +48,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
 /**
@@ -61,8 +65,8 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<Tran
 		@Override
 		public String load(TransactionContext context) throws Exception {
 			final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
-			final List<ICodeSystemVersion> allVersions = registryService.getAllVersion(context.id());
-			final ICodeSystemVersion systemVersion = allVersions.get(0);
+			final List<ICodeSystemVersion> allVersions = registryService.getAllVersion().get(context.id());
+			final ICodeSystemVersion systemVersion = allVersions.get(1);
 			final IBranchPath branchPath = ICodeSystemVersion.TO_BRANCH_PATH_FUNC.apply(systemVersion);
 			return branchPath.getPath();
 		}
@@ -115,9 +119,9 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<Tran
 	}
 	
 	private void updateAcceptabilityMap(final TransactionContext context, final Description description, Map<String, Acceptability> acceptabilityMap) {
-		
 		final List<SnomedLanguageRefSetMember> existingMembers = newArrayList(description.getLanguageRefSetMembers());
 		final Map<String, Acceptability> newLanguageMembersToCreate = newHashMap(acceptabilityMap);
+		final Set<String> synonymAndDescendantIds = getSynonymAndDescendantIds(context);
 
 		// check if there are existing matches
 		for (SnomedLanguageRefSetMember existingMember : existingMembers) {
@@ -217,6 +221,11 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<Tran
 		} else {
 			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on association member {} already unset, not updating.", existingMember.getUuid()); }
 		}
+	}
+	
+	private Set<String> getSynonymAndDescendantIds(TransactionContext context) {
+		final SnomedConcepts concepts = SnomedRequests.prepareGetSynonyms().build().execute(context);
+		return FluentIterable.from(concepts).transform(IComponent.ID_FUNCTION).toSet();
 	}
 	
 	private void updateOtherPreferredDescriptions(final TransactionContext context, final Description preferredDescription, final String languageRefSetId) {

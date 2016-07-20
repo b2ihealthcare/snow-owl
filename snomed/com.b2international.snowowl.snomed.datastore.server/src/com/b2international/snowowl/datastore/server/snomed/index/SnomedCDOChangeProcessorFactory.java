@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
-import com.b2international.snowowl.datastore.server.snomed.index.init.ImportIndexServerService;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
@@ -35,17 +35,9 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
 		final ApplicationContext context = ApplicationContext.getInstance();
-		
-		//SNOMED CT import is in progress
-		if (context.exists(ImportIndexServerService.class)) {
-			return new SnomedImportCDOChangeProcessor(context.getService(ImportIndexServerService.class), branchPath); 
-		}
-		
-		final SnomedIndexUpdater indexService = context.getService(SnomedIndexUpdater.class);
-		final SnomedTerminologyBrowser terminologyBrowser = context.getService(SnomedTerminologyBrowser.class);
-		final SnomedStatementBrowser statementBrowser = context.getService(SnomedStatementBrowser.class);
+		final RevisionIndex index = context.getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 		final ISnomedIdentifierService identifierService = context.getService(ISnomedIdentifierService.class);
-		return new SnomedCDOChangeProcessor(branchPath, terminologyBrowser, statementBrowser, identifierService, indexService);
+		return new SnomedCDOChangeProcessor(branchPath, index, identifierService);
 	}
 
 	@Override

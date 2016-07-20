@@ -16,10 +16,16 @@
 package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
@@ -30,15 +36,19 @@ import com.google.common.collect.ImmutableList;
  */
 public final class DefaultRepositoryManager implements RepositoryManager {
 
+	private static final Logger LOG = LoggerFactory.getLogger(RepositoryManager.class);
 	private final ConcurrentMap<String, Repository> repositories = new ConcurrentHashMap<>();
+	private AtomicBoolean disposed = new AtomicBoolean(false);
 	
 	@Override
 	public Repository get(String repositoryId) {
+		checkState(!isDisposed(), "Repository Manager is not available");
 		return repositories.get(repositoryId);
 	}
 
 	@Override
 	public Collection<Repository> repositories() {
+		checkState(!isDisposed(), "Repository Manager is not available");
 		return ImmutableList.copyOf(repositories.values());
 	}
 	
@@ -48,8 +58,26 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 		repositories.put(repositoryId, repository);
 	}
 	
-	public RepositoryBuilder prepareCreate(String repositoryId) {
-		return new RepositoryBuilder(this, repositoryId);
+	public RepositoryBuilder prepareCreate(String repositoryId, String toolingId) {
+		return new RepositoryBuilder(this, repositoryId, toolingId);
+	}
+	
+	@Override
+	public void dispose() {
+		if (disposed.compareAndSet(false, true)) {
+			for (Repository repository : repositories.values()) {
+				try {
+					repository.close();
+				} catch (IOException e) {
+					LOG.error("Failed to close repository: " + repository.id(), e);
+				}
+			}
+		}
+	}
+	
+	@Override
+	public boolean isDisposed() {
+		return disposed.get();
 	}
 
 }

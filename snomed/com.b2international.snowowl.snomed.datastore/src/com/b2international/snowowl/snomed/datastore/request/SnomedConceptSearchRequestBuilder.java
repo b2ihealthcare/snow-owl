@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.datastore.request.SearchRequest;
+import java.util.Collection;
+import java.util.Set;
+
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 
 /**
@@ -64,6 +67,16 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder filterByParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentId);
 	}
+	
+	/**
+	 * Filter matches to have any of the specified parent identifier amongst the direct inferred super types.
+	 * 
+	 * @param parentId
+	 * @return
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByParents(Set<String> parentIds) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentIds);
+	}
 
 	/**
 	 * Filter matches to have the specified parent identifier amongst the direct stated super types.
@@ -73,6 +86,16 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentId);
+	}
+	
+	/**
+	 * Filter matches to have the specified parent identifier amongst the direct stated super types.
+	 * 
+	 * @param parentId
+	 * @return
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByStatedParents(Set<String> parentIds) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentIds);
 	}
 
 	/**
@@ -84,6 +107,16 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	public final SnomedConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorId);
 	}
+	
+	/**
+	 * Filter matches to have any of the specified ancestor identifier amongst the inferred super types (including direct as well).
+	 * 
+	 * @param ancestorIds
+	 * @return
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByAncestors(Collection<String> ancestorIds) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorIds);
+	}
 
 	/**
 	 * Filter matches to have the specified ancestor identifier amongst the stated super types (including direct as well).
@@ -93,6 +126,16 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorId);
+	}
+	
+	/**
+	 * Filter matches to have any of the specified ancestor identifier amongst the stated super types (including direct as well).
+	 * 
+	 * @param ancestorId
+	 * @return
+	 */
+	public final SnomedConceptSearchRequestBuilder filterByStatedAncestors(Set<String> ancestorIds) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorIds);
 	}
 
 	/**
@@ -117,7 +160,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 	}
 
 	@Override
-	protected SearchRequest<SnomedConcepts> createSearch() {
+	protected RevisionSearchRequest<SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();
 	}
 

@@ -15,24 +15,22 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.widget;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.google.common.collect.Sets.newHashSet;
-
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.LongArrayTransformedToSet;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeContainerWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
@@ -45,8 +43,12 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.LowerBound;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.UpperBound;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 /**
  */
@@ -57,11 +59,11 @@ public class ConceptModelConstraintToWidgetModelConverter {
 	 * @param predicateMinis the predicates stored in store representing the SNOMED CT concept attribute constraints.
 	 * @return concept widget bean for the form editor.
 	 */
-	public static ConceptWidgetModel processConstraints(IBranchPath path, final Collection<PredicateIndexEntry> predicateMinis) {
+	public static ConceptWidgetModel processConstraints(IBranchPath path, final Collection<SnomedConstraintDocument> predicateMinis) {
 		return internalProcessConstraints(path, predicateMinis);
 	}
 	
-	private static ConceptWidgetModel internalProcessConstraints(final IBranchPath branchPath, final Collection<PredicateIndexEntry> predicateMinis) {
+	private static ConceptWidgetModel internalProcessConstraints(final IBranchPath branchPath, final Collection<SnomedConstraintDocument> predicateMinis) {
 		
 		final List<DescriptionWidgetModel> descriptionWidgetModels = newSynchronizedList();
 		final List<DataTypeWidgetModel> dataTypeWidgetModels = newSynchronizedList();
@@ -70,7 +72,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final List<RelationshipGroupWidgetModel> relationshipGroupWidgetModels = newSynchronizedList();
 		
 		final List<Runnable> runnables = Lists.newArrayList();
-		for (final PredicateIndexEntry predicateIndexEntry : predicateMinis) {
+		for (final SnomedConstraintDocument predicateIndexEntry : predicateMinis) {
 			runnables.add(new Runnable() { @Override public void run() {
 				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicateIndexEntry);
 			}});
@@ -82,8 +84,20 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		//otherwise we can get the wildcard when calling e.g.: com.b2international.snowowl.snomed.mrcm.core.widget.model.DescriptionContainerWidgetModel.getFirstMatching(String)
 		descriptionWidgetModels.add(DescriptionWidgetModel.createUnsanctionedModel());
 		
+		final SnomedConstraints dataTypeConstraints = SnomedRequests.prepareSearchConstraint()
+				.all()
+				.filterByType(SnomedConstraintDocument.PredicateType.DATATYPE)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		
+		final Multimap<DataType, String> labelsByType = HashMultimap.create();
+		for (SnomedConstraintDocument constraint : dataTypeConstraints) {
+			labelsByType.put(constraint.getDataType(), constraint.getDataTypeLabel());
+		}
+		
 		for (DataType type : DataType.values()) {
-			dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(branchPath, type));
+			dataTypeWidgetModels.add(DataTypeWidgetModel.createUnsanctionedModel(type, labelsByType.get(type)));
 		}
 		
 		ForkJoinUtils.runInParallel(
@@ -115,7 +129,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 	
 	private static void processAttributeConstraint(final IBranchPath branchPath, final List<DescriptionWidgetModel> descriptionWidgetModels, final List<DataTypeWidgetModel> dataTypeWidgetModels,
 			final List<WidgetModel> singleGroupRelationshipWidgetModels, final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels,
-			final PredicateIndexEntry predicate) {
+			final SnomedConstraintDocument predicate) {
 		switch (predicate.getType()) {
 			case DATATYPE:
 				processConcreteDomainElementPredicate(predicate, dataTypeWidgetModels);
@@ -128,7 +142,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		}
 	}
 
-	private static void processDescriptionPredicate(final PredicateIndexEntry predicate, final List<DescriptionWidgetModel> descriptionWidgetModels) {
+	private static void processDescriptionPredicate(final SnomedConstraintDocument predicate, final List<DescriptionWidgetModel> descriptionWidgetModels) {
 		
 		final LowerBound lowerBound = predicate.isRequired() ? LowerBound.REQUIRED : LowerBound.OPTIONAL;
 		final UpperBound upperBound = predicate.isMultiple() ? UpperBound.MULTIPLE : UpperBound.SINGLE;
@@ -136,15 +150,15 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final DescriptionWidgetModel descriptionWidgetModel = DescriptionWidgetModel.createRegularModel(
 				lowerBound, 
 				upperBound, 
-				getIds(predicate.getDescriptionTypeId()));
+				Collections.singleton(predicate.getDescriptionTypeId()));
 		descriptionWidgetModels.add(descriptionWidgetModel);
 	}
 
-	private static void processConcreteDomainElementPredicate(final PredicateIndexEntry predicate, final List<DataTypeWidgetModel> dataTypeWidgetModels) {
+	private static void processConcreteDomainElementPredicate(final SnomedConstraintDocument predicate, final List<DataTypeWidgetModel> dataTypeWidgetModels) {
 		final LowerBound lowerBound = predicate.isRequired() ? LowerBound.REQUIRED : LowerBound.OPTIONAL;
 		final UpperBound upperBound = predicate.isMultiple()? UpperBound.MULTIPLE : UpperBound.SINGLE;
 		final DataTypeWidgetModel dataTypeWidgetModel = DataTypeWidgetModel.createRegularModel(lowerBound, upperBound, 
-				predicate.getDataTypeName(), predicate.getDataTypeType());
+				predicate.getDataTypeName(), predicate.getDataType());
 		dataTypeWidgetModels.add(dataTypeWidgetModel);
 	}
 
@@ -155,7 +169,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 	 * @param multiple
 	 * @param strength
 	 */
-	private static void processRelationshipPredicate(final IBranchPath branchPath, final PredicateIndexEntry predicate, final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels, 
+	private static void processRelationshipPredicate(final IBranchPath branchPath, final SnomedConstraintDocument predicate, final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels, 
 			final List<WidgetModel> singleGroupedRelationshipWidgetModels) {
 
 		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(predicate.getType()), "Predicate type was not a relationship type but " + predicate.getType());
@@ -165,9 +179,9 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		
 
 		final RelationshipWidgetModel relationshipWidgetModel = RelationshipWidgetModel.createRegularModel(lowerBound, upperBound, branchPath, 
-				newHashSet(getTaxonomyService().evaluateEscg(branchPath, predicate.getRelationshipTypeExpression())),
+				getMatchingConceptIds(branchPath, predicate.getRelationshipTypeExpression()),
 				predicate.getRelationshipValueExpression(),
-				newHashSet(getTaxonomyService().evaluateEscg(branchPath, predicate.getCharacteristicTypeExpression())));
+				getMatchingConceptIds(branchPath, predicate.getCharacteristicTypeExpression()));
 		
 		switch (predicate.getGroupRule()) {
 			case SINGLE_GROUP: 
@@ -186,19 +200,23 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		
 	}
 
-	private static Set<String> getIds(final long... ids) {
-		if (CompareUtils.isEmpty(ids)) {
-			return Collections.emptySet();
-		}
-		Arrays.sort(ids);
-		return new LongArrayTransformedToSet(ids);
+	private static Set<String> getMatchingConceptIds(IBranchPath branchPath, String expression) {
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByEscg(expression)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 	}
-	
+
 	private static <T> List<T> newSynchronizedList() {
 		return Collections.synchronizedList(Lists.<T>newArrayList());
 	}
 	
-	private static SnomedTaxonomyService getTaxonomyService() {
-		return getServiceForClass(SnomedTaxonomyService.class);
-	}
 }

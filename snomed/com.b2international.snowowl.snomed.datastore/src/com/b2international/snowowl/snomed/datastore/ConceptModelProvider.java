@@ -21,8 +21,7 @@ import java.util.Set;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorClientService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.services.ConceptSetProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
@@ -47,29 +46,25 @@ public enum ConceptModelProvider implements IConceptModelProvider {
 	INSTANCE;
 	
 	@Override
-	public Set<ConstraintBase> getAllConstraints(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser, final SnomedClientRefSetBrowser refSetBrowser) {
-		final SnomedConceptIndexEntry concept = terminologyBrowser.getConcept(conceptId);
+	public Set<ConstraintBase> getAllConstraints(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser) {
+		final SnomedConceptDocument concept = terminologyBrowser.getConcept(conceptId);
 		final IEscgQueryEvaluatorClientService evaluatorService = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorClientService.class);
-		final SnomedClientIndexService indexService = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		return getMatchingConstraints(concept, conceptModel.getConstraints(), evaluatorService, terminologyBrowser, refSetBrowser, indexService);
+		return getMatchingConstraints(concept, conceptModel.getConstraints(), evaluatorService, terminologyBrowser);
 	}
 
 	@Override
-	public Set<ConstraintBase> getConstraintsForValidation(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser, final SnomedClientRefSetBrowser refSetBrowser) {
-		final SnomedConceptIndexEntry concept = terminologyBrowser.getConcept(conceptId);
+	public Set<ConstraintBase> getConstraintsForValidation(final ConceptModel conceptModel, final String conceptId, final SnomedClientTerminologyBrowser terminologyBrowser) {
+		final SnomedConceptDocument concept = terminologyBrowser.getConcept(conceptId);
 		final Predicate<ConstraintBase> filterPredicate = Predicates.and(
 				new ActiveConceptModelComponentPredicate(), 
 				new ConstraintFormIsApplicableForValidationPredicate());
 		final Set<ConstraintBase> filteredConstraints = Sets.newHashSet(Iterables.filter(conceptModel.getConstraints(), filterPredicate));
 		final IEscgQueryEvaluatorClientService evaluatorService = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorClientService.class);
-		final SnomedClientIndexService indexService = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		return getMatchingConstraints(concept, filteredConstraints, evaluatorService, terminologyBrowser, refSetBrowser, indexService);
+		return getMatchingConstraints(concept, filteredConstraints, evaluatorService, terminologyBrowser);
 	}
 
-	private Set<ConstraintBase> getMatchingConstraints(final SnomedConceptIndexEntry concept, final Iterable<ConstraintBase> constraints, IEscgQueryEvaluatorClientService evaluatorService, 
-			final SnomedClientTerminologyBrowser terminologyBrowser, 
-			final SnomedClientRefSetBrowser refSetBrowser, 
-			final SnomedClientIndexService indexService) {
+	private Set<ConstraintBase> getMatchingConstraints(final SnomedConceptDocument concept, final Iterable<ConstraintBase> constraints, IEscgQueryEvaluatorClientService evaluatorService, 
+			final SnomedClientTerminologyBrowser terminologyBrowser) {
 		
 		final Iterator<ConstraintBase> matchingConstraints = ConcurrentCollectionUtils.filter(constraints.iterator(), new Predicate<ConstraintBase>() {
 			@Override public boolean apply(final ConstraintBase constraint) {
@@ -81,7 +76,7 @@ public enum ConceptModelProvider implements IConceptModelProvider {
 					if (null == domainConceptSetDefinition) {
 						return false;
 					}
-					boolean contains = ConceptSetProcessorFactory.createProcessor(domainConceptSetDefinition, terminologyBrowser, refSetBrowser, indexService).contains(concept);
+					boolean contains = ConceptSetProcessorFactory.createProcessor(domainConceptSetDefinition, terminologyBrowser).contains(concept);
 					if (contains) {
 						return true;
 					}

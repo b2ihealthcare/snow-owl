@@ -231,12 +231,13 @@ public abstract class CDOUtils {
 	 * @param cdoId the unique CDO ID of the object as long. 
 	 * @return the CDO object if found. May return with {@code null} if the object was not found with the specified CDO ID.
 	 */
+	@SuppressWarnings("unchecked")
 	@Nullable
-	public static CDOObject getObjectIfExists(@Nonnull final CDOView view, final long cdoId) {
+	public static <T extends CDOObject> T getObjectIfExists(@Nonnull final CDOView view, final long cdoId) {
 		checkNotNull(view, "CDO view argument cannot be null.");
 		checkState(!view.isClosed(), "CDO view was closed.");
 		try {
-			return view.getObject(CDOIDUtil.createLong(cdoId));
+			return (T) view.getObject(CDOIDUtil.createLong(cdoId));
 		} catch (final ObjectNotFoundException ex) {
 			return null;
 		}

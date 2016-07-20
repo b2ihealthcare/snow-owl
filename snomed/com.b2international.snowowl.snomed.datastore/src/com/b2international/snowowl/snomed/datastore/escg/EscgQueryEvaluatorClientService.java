@@ -15,16 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.escg;
 
-import java.util.Collection;
-
-import org.apache.lucene.search.BooleanQuery;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.ActiveBranchPathAwareService;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * {@link IEscgQueryEvaluatorClientService ESCG query evaluator client service} implementation, which delegates calls 
@@ -40,24 +36,10 @@ public class EscgQueryEvaluatorClientService extends ActiveBranchPathAwareServic
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> evaluate(final String queryExpression) {
-		return wrappedService.evaluate(getBranchPath(), queryExpression);
-	}
-
-	@Override
-	public BooleanQuery evaluateBooleanQuery(final String queryExpression) {
-		return wrappedService.evaluateBooleanQuery(getBranchPath(), queryExpression);
-	}
-
-	@Override
 	public LongCollection evaluateConceptIds(final String queryExpression) {
 		return wrappedService.evaluateConceptIds(getBranchPath(), queryExpression);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.BranchPathAwareService#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

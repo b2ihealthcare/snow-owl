@@ -36,14 +36,14 @@ public class UnionGroupKey implements DefinitionNodeKey, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final byte number;
+	private final int number;
 
 	/**
 	 * Creates a new {@link UnionGroupKey} instance with the specified arguments.
 	 * 
 	 * @param number the union group number
 	 */
-	public UnionGroupKey(final byte number) {
+	public UnionGroupKey(final int number) {
 		checkArgument(number > 0, "number must be a non-negative value");
 		this.number = number;
 	}

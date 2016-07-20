@@ -15,13 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
+import java.util.Collection;
+
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.snowowl.snomed.datastore.IsAStatementWithId;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Preconditions;
 
 /**
@@ -54,25 +57,26 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 
 	/**
 	 * Map for storing active IS_A type SNOMED CT relationship representations. Keys are the unique relationship identifiers.
-	 * <br>For values see: {@link IsAStatementWithId}.
 	 */
 	private LongKeyMap<long[]> edges;
 
 	private SnomedTaxonomyBuilder() {}
 	
-	public SnomedTaxonomyBuilder(final LongCollection conceptIds, final IsAStatementWithId[] isAStatements) {
+	public SnomedTaxonomyBuilder(final LongCollection conceptIds, final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> isAStatements) {
 		nodes = new LongBidiMapWithInternalId(conceptIds.size());
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /**/) {
 			final long id = itr.next();
-			nodes.put(id, id);
+			if (id != SnomedConceptDocument.ROOT_ID) {
+				nodes.put(id, id);
+			}
 		}
 		
-		edges = isAStatements.length > 0 
-				? PrimitiveMaps.<long[]>newLongKeyOpenHashMapWithExpectedSize(isAStatements.length) 
+		edges = isAStatements.size() > 0 
+				? PrimitiveMaps.<long[]>newLongKeyOpenHashMapWithExpectedSize(isAStatements.size()) 
 				: PrimitiveMaps.<long[]>newLongKeyOpenHashMap();
 
-		for (final IsAStatementWithId statement : isAStatements) {
-			edges.put(statement.getRelationshipId(), new long[] { statement.getDestinationId(), statement.getSourceId() });
+		for (final SnomedRelationshipIndexEntry.Views.StatementWithId statement : isAStatements) {
+			edges.put(Long.parseLong(statement.getId()), new long[] { Long.parseLong(statement.getDestinationId()), Long.parseLong(statement.getSourceId()) });
 		}
 		
 		setDirty(true);

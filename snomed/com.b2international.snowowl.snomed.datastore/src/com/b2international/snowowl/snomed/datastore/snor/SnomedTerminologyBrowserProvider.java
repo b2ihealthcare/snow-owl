@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -37,11 +39,9 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -113,12 +113,12 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+	public Collection<SnomedConceptDocument> getRootConcepts() {
 		return delegate.getRootConcepts();
 	}
 
 	@Override
-	public SnomedConceptIndexEntry getConcept(final String key) {
+	public SnomedConceptDocument getConcept(final String key) {
 		if (conceptId.equals(key)) {
 			return getConcept();
 		}
@@ -127,7 +127,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSuperTypes(final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getSuperTypes(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
 			return Lists.newArrayList(Iterables.transform(parentIds, new ConceptIdToSnomedConceptIndexEntryFromDelegateFunction()));
 		}
@@ -135,7 +135,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypes(final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getSubTypes(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
 			return Collections.emptyList();
 		} else if (parentIds.contains(concept.getId())) {
@@ -146,7 +146,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public int getSuperTypeCount(final SnomedConceptIndexEntry concept) {
+	public int getSuperTypeCount(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
 			return 1;
 		}
@@ -154,7 +154,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public int getAllSuperTypeCount(final SnomedConceptIndexEntry concept) {
+	public int getAllSuperTypeCount(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
 			int delegateAllSuperTypeCount = 0;
 			for (final String parentId : parentIds) {
@@ -166,7 +166,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public int getSubTypeCount(final SnomedConceptIndexEntry concept) {
+	public int getSubTypeCount(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
 			return 0;
 		} else if (parentIds.contains(concept.getId())) {
@@ -177,7 +177,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public int getAllSubTypeCount(final SnomedConceptIndexEntry concept) {
+	public int getAllSubTypeCount(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
 			return 0;
 		} else if (parentIds.contains(concept.getId())) {
@@ -189,15 +189,15 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSuperTypes(final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getAllSuperTypes(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
-			final Collection<SnomedConceptIndexEntry> superTypes = Sets.newHashSet();
+			final Collection<SnomedConceptDocument> superTypes = Sets.newHashSet();
 			for (final String parentId : parentIds) {
 				superTypes.addAll(delegate.getAllSuperTypes(delegate.getConcept(parentId)));
 			}
-			final Set<SnomedConceptIndexEntry> concepts = new HashSet<SnomedConceptIndexEntry>(superTypes.size() + 1);
+			final Set<SnomedConceptDocument> concepts = new HashSet<SnomedConceptDocument>(superTypes.size() + 1);
 			concepts.addAll(Collections2.transform(parentIds, new ConceptIdToSnomedConceptIndexEntryFromDelegateFunction()));
-			for (final SnomedConceptIndexEntry conceptMini : superTypes) {
+			for (final SnomedConceptDocument conceptMini : superTypes) {
 				concepts.add(conceptMini);
 			}
 			return concepts; 
@@ -206,28 +206,28 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypes(final SnomedConceptIndexEntry concept) {
+	public Collection<SnomedConceptDocument> getAllSubTypes(final SnomedConceptDocument concept) {
 		if (conceptId.equals(concept.getId())) {
 			return Collections.emptySet();
 		} else if (parentIds.contains(concept.getId())) {
-			final Collection<SnomedConceptIndexEntry> allSubTypes = delegate.getAllSubTypes(concept);
-			final Set<SnomedConceptIndexEntry> concepts = new HashSet<SnomedConceptIndexEntry>(allSubTypes.size() + 1);
+			final Collection<SnomedConceptDocument> allSubTypes = delegate.getAllSubTypes(concept);
+			final Set<SnomedConceptDocument> concepts = new HashSet<SnomedConceptDocument>(allSubTypes.size() + 1);
 			concepts.add(getConcept());
-			for (final SnomedConceptIndexEntry conceptMini : allSubTypes) {
+			for (final SnomedConceptDocument conceptMini : allSubTypes) {
 				concepts.add(conceptMini);
 			}
 			return concepts;
 		} else {
-			final Collection<SnomedConceptIndexEntry> allSubTypes = delegate.getAllSubTypes(concept);
-			final Set<SnomedConceptIndexEntry> concepts = new HashSet<SnomedConceptIndexEntry>(allSubTypes.size() + 1);
+			final Collection<SnomedConceptDocument> allSubTypes = delegate.getAllSubTypes(concept);
+			final Set<SnomedConceptDocument> concepts = new HashSet<SnomedConceptDocument>(allSubTypes.size() + 1);
 			for (final String parentId : parentIds) {
-				final SnomedConceptIndexEntry parent = getConcept(parentId);
+				final SnomedConceptDocument parent = getConcept(parentId);
 				if (null == parent) { //parent has been deleted meanwhile
 					return allSubTypes;
 				}
 				if (allSubTypes.contains(parent)) {
 					concepts.add(getConcept());
-					for (final SnomedConceptIndexEntry conceptMini : allSubTypes) {
+					for (final SnomedConceptDocument conceptMini : allSubTypes) {
 						concepts.add(conceptMini);
 					}
 				}
@@ -237,18 +237,17 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	/*returns with the concept as a singleton collection instance*/
-	private Iterable<SnomedConceptIndexEntry> getConceptAsIterable() {
+	private Iterable<SnomedConceptDocument> getConceptAsIterable() {
 		return Collections.singleton(getConcept());
 	}
 
 	/*adapts the underlying CDO concept to a lighter representation and returns with it*/
-	private SnomedConceptIndexEntry getConcept() {
-		return (SnomedConceptIndexEntry) CoreTerminologyBroker.getInstance().adapt(concept);
+	private SnomedConceptDocument getConcept() {
+		return (SnomedConceptDocument) CoreTerminologyBroker.getInstance().adapt(concept);
 	}
 
 	private SnomedTerminologyBrowserProvider(final Concept concept, final Set<String> parentIds) {
-		super(ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class), 
-				ApplicationContext.getInstance().getServiceChecked(IEventBus.class),
+		super(ApplicationContext.getInstance().getServiceChecked(IEventBus.class),
 				SnowOwlApplication.INSTANCE.getEnviroment().provider(LanguageSetting.class));
 		this.concept = Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
 		this.parentIds = Preconditions.checkNotNull(parentIds, "Parent concept ID cannot be null.");
@@ -257,7 +256,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public boolean isSuperTypeOf(final SnomedConceptIndexEntry superType, final SnomedConceptIndexEntry subType) {
+	public boolean isSuperTypeOf(final SnomedConceptDocument superType, final SnomedConceptDocument subType) {
 		return isSuperTypeOfById(superType.getId(), subType.getId());
 	}
 
@@ -274,31 +273,31 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 	
 	@Override
-	public List<SnomedConceptIndexEntry> getSubTypesAsList(final SnomedConceptIndexEntry concept) {
+	public List<SnomedConceptDocument> getSubTypesAsList(final SnomedConceptDocument concept) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSuperTypesById(final String id) {
+	public Collection<SnomedConceptDocument> getSuperTypesById(final String id) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypesById(final String id) {
+	public Collection<SnomedConceptDocument> getSubTypesById(final String id) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSuperTypesById(final String id) {
+	public Collection<SnomedConceptDocument> getAllSuperTypesById(final String id) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypesById(final String id) {
+	public Collection<SnomedConceptDocument> getAllSubTypesById(final String id) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
 	}
@@ -328,7 +327,7 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	}
 
 	@Override
-	public SnomedConceptIndexEntry getTopLevelConcept(final SnomedConceptIndexEntry concept) {
+	public SnomedConceptDocument getTopLevelConcept(final SnomedConceptDocument concept) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Not implemented.");
 	}
@@ -341,9 +340,9 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	/**
 	 *
 	 */
-	private final class ConceptIdToSnomedConceptIndexEntryFromDelegateFunction implements Function<String, SnomedConceptIndexEntry> {
+	private final class ConceptIdToSnomedConceptIndexEntryFromDelegateFunction implements Function<String, SnomedConceptDocument> {
 		@Override
-		public SnomedConceptIndexEntry apply(final String input) {
+		public SnomedConceptDocument apply(final String input) {
 			return delegate.getConcept(input);
 		}
 	}
@@ -352,32 +351,23 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 	 * SNOMED&nbsp;CT reference set hierarchy browser handling reference set membership for unpersisted SNOMED&nbsp;CT concepts.
 	 * @see SnomedRefSetBrowser
 	 */
-	public final static class SnomedRefSetBrowserProvider extends SnomedClientRefSetBrowser {
+	public final static class SnomedRefSetBrowserProvider {
 
-		public static SnomedClientRefSetBrowser getRefSetBrowser(final Concept concept) {
-			CDOUtils.check(concept);
-			if (concept.cdoView().isDirty()) {
-				return new SnomedRefSetBrowserProvider(concept);
-			} else {
-				return ApplicationContext.getServiceForClass(SnomedClientRefSetBrowser.class);
-			}
+		public static SnomedRefSetBrowserProvider create(final Concept concept) {
+			return new SnomedRefSetBrowserProvider(concept);
 		}
 		
-		private String conceptId;
+		private final String conceptId;
 		private final Set<String> refSetIds;
-		private SnomedClientRefSetBrowser delegate;
+		private final IBranchPath branchPath;
 
 		/**
 		 * @param wrapperService
 		 */
 		private SnomedRefSetBrowserProvider(final Concept concept) {
-			super(ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class), 
-					SnowOwlApplication.INSTANCE.getEnviroment().provider(SnomedClientTerminologyBrowser.class),
-					ApplicationContext.getInstance().getService(IEventBus.class),
-					SnowOwlApplication.INSTANCE.getEnviroment().provider(LanguageSetting.class));
 			this.refSetIds = Sets.newHashSet();
-			Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
-			this.conceptId = Preconditions.checkNotNull(concept.getId(), "SNOMED CT concept ID cannot be null.");
+			this.conceptId = concept.getId();
+			this.branchPath = BranchPathUtils.createPath(concept.cdoView());
 			
 			// Save a snapshot from the new members from the transaction
 			final Iterable<SnomedRefSetMember> newRefSetMembers = ImmutableList.copyOf(ComponentUtils2.getNewObjects(concept.cdoView(), SnomedRefSetMember.class));
@@ -390,24 +380,25 @@ public class SnomedTerminologyBrowserProvider extends SnomedClientTerminologyBro
 					this.refSetIds.add(newRefSetMember.getRefSetIdentifierId());
 				}
 			}
-			
-			this.delegate = getRefSetBrowser();
 		}
 
-		private static SnomedClientRefSetBrowser getRefSetBrowser() {
-			return ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.b2international.snowowl.snomed.datastore.AbstractClientRefSetBrowser#isReferenced(java.lang.Object, java.lang.Object)
-		 */
-		@Override
 		public boolean isReferenced(final String refSetId, final String componentId) {
 			if (conceptId.equals(componentId)) {
-				return refSetIds.contains(refSetId) || delegate.isReferenced(refSetId, componentId);
+				return refSetIds.contains(refSetId) || isReferencedInStore(refSetId, componentId);
 			} else {
-				return delegate.isReferenced(refSetId, componentId);
+				return isReferencedInStore(refSetId, componentId);
 			}
+		}
+
+		private boolean isReferencedInStore(String referenceSetId, String referencedComponentId) {
+			return SnomedRequests.prepareSearchMember()
+					.setLimit(0)
+					.filterByActive(true)
+					.filterByReferencedComponent(referencedComponentId)
+					.filterByRefSet(referenceSetId)
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync().getTotal() > 0;
 		}
 	}
 }

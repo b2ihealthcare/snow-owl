@@ -15,60 +15,51 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 
-import org.apache.lucene.document.Document;
-
-import com.b2international.commons.BooleanUtils;
-import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
+import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 
 /**
  * A transfer object representing a SNOMED CT description.
  */
-public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IStatement<String>, IComponent<String>, IIndexEntry, Serializable {
+@Doc
+@JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
+public final class SnomedRelationshipIndexEntry extends SnomedDocument implements IStatement<String> {
 
 	private static final long serialVersionUID = -7873086925532169024L;
 
 	public static Builder builder() {
 		return new Builder();
 	}
-	
-	public static Builder builder(final Document doc) {
-		return builder()
-				.id(SnomedMappings.id().getValueAsString(doc))
-				.sourceId(SnomedMappings.relationshipSource().getValueAsString(doc))
-				.typeId(SnomedMappings.relationshipType().getValueAsString(doc))
-				.destinationId(SnomedMappings.relationshipDestination().getValueAsString(doc))
-				.characteristicTypeId(SnomedMappings.relationshipCharacteristicType().getValueAsString(doc))
-				.group(SnomedMappings.relationshipGroup().getValue(doc))
-				.unionGroup(SnomedMappings.relationshipUnionGroup().getValue(doc))
-				.active(BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)))
-				.released(BooleanUtils.valueOf(SnomedMappings.released().getValue(doc)))
-				.modifierId(BooleanUtils.valueOf(SnomedMappings.relationshipUniversal().getValue(doc)) ? Concepts.UNIVERSAL_RESTRICTION_MODIFIER : Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
-				.destinationNegated(BooleanUtils.valueOf(SnomedMappings.relationshipDestinationNegated().getValue(doc)))
-				.moduleId(SnomedMappings.module().getValueAsString(doc))
-				.storageKey(Mappings.storageKey().getValue(doc))
-				.effectiveTimeLong(SnomedMappings.effectiveTime().getValue(doc));
-	}
-	
+
 	public static Builder builder(final ISnomedRelationship input) {
 		final Builder builder = builder()
+				.storageKey(input.getStorageKey())
 				.id(input.getId())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
@@ -81,19 +72,19 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.modifierId(input.getModifier().getConceptId())
 				.destinationNegated(input.isDestinationNegated())
 				.moduleId(input.getModuleId())
-				.effectiveTimeLong(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
 		
-		if (input.getScore() != null) {
-			builder.score(input.getScore());
-		}
+//		if (input.getScore() != null) {
+//			builder.score(input.getScore());
+//		}
 		
 		return builder;
 	}
 	
 	public static Builder builder(Relationship relationship) {
 		return builder()
+				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
 				.id(relationship.getId())
-				.storageKey(CDOUtils.getStorageKey(relationship))
 				.active(relationship.isActive())
 				.sourceId(relationship.getSource().getId())
 				.typeId(relationship.getType().getId())
@@ -105,7 +96,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 				.modifierId(relationship.getModifier().getId())
 				.destinationNegated(relationship.isDestinationNegated())
 				.moduleId(relationship.getModule().getId())
-				.effectiveTimeLong(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+				.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	}
 	
 	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<ISnomedRelationship> relationships) {
@@ -116,8 +107,120 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 			}
 		}).toSet();
 	}
+	
+	public static final class Expressions extends SnomedDocument.Expressions {
+		
+		private Expressions() {}
+		
+		public static Expression sourceId(String sourceId) {
+			return sourceIds(Collections.singleton(sourceId));
+		}
 
-	public static class Builder extends AbstractBuilder<Builder> {
+		public static Expression sourceIds(Collection<String> sourceIds) {
+			return matchAny(Fields.SOURCE_ID, sourceIds);
+		}
+		
+		public static Expression typeId(String typeId) {
+			return typeIds(Collections.singleton(typeId));
+		}
+
+		public static Expression typeIds(Collection<String> typeIds) {
+			return matchAny(Fields.TYPE_ID, typeIds);
+		}
+		
+		public static Expression destinationId(String destinationId) {
+			return destinationIds(Collections.singleton(destinationId));
+		}
+
+		public static Expression destinationIds(Collection<String> destinationIds) {
+			return matchAny(Fields.DESTINATION_ID, destinationIds);
+		}
+		
+		public static Expression characteristicTypeId(String characteristicTypeId) {
+			return characteristicTypeIds(Collections.singleton(characteristicTypeId));
+		}
+
+		public static Expression characteristicTypeIds(Collection<String> characteristicTypeIds) {
+			return matchAny(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeIds);
+		}
+		
+		public static Expression modifierId(String modifierId) {
+			return modifierIds(Collections.singleton(modifierId));
+		}
+
+		public static Expression modifierIds(Collection<String> modifierIds) {
+			return matchAny(Fields.MODIFIER_ID, modifierIds);
+		}
+		
+		public static Expression group(int group) {
+			return match(Fields.GROUP, group);
+		}
+		
+		public static Expression unionGroup(int unionGroup) {
+			return match(Fields.UNION_GROUP, unionGroup);
+		}
+		
+		public static Expression destinationNegated() {
+			return match(Fields.DESTINATION_NEGATED, true);
+		}
+		
+	}
+	
+	public static final class Views extends RevisionDocument.Views {
+		
+		public static class StatementWithId extends RevisionDocument.Views.IdOnly {
+
+			private final String sourceId;
+			private final String destinationId;
+
+			@JsonCreator
+			public StatementWithId(@JsonProperty("id") final String id, @JsonProperty("sourceId") final String sourceId, @JsonProperty("destinationId") final String destinationId) {
+				super(id);
+				this.sourceId = sourceId;
+				this.destinationId = destinationId;
+			}
+			
+			public String getSourceId() {
+				return sourceId;
+			}
+			
+			public String getDestinationId() {
+				return destinationId;
+			}
+			
+			@Override
+			public int hashCode() {
+				return Objects.hash(getId(), getSourceId(), getDestinationId());
+			}
+			
+			@Override
+			public boolean equals(Object obj) {
+				if (this == obj) return true;
+				if (obj == null) return false;
+				if (getClass() != obj.getClass()) return false;
+				final StatementWithId other = (StatementWithId) obj;
+				return Objects.equals(getId(), other.getId())
+						&& Objects.equals(getSourceId(), other.getSourceId())
+						&& Objects.equals(getDestinationId(), other.getDestinationId());
+			}
+			
+		}
+		
+	}
+	
+	public static final class Fields extends SnomedDocument.Fields {
+		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
+		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
+		public static final String GROUP = "group"; // XXX different than RF2 header
+		public static final String UNION_GROUP = "unionGroup";
+		public static final String DESTINATION_NEGATED = "destinationNegated";
+	}
+
+	@JsonPOJOBuilder(withPrefix="")
+	public static class Builder extends SnomedDocumentBuilder<Builder> {
 
 		private String sourceId;
 		private String typeId;
@@ -130,6 +233,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 
 		private boolean destinationNegated;
 		
+		@JsonCreator
 		private Builder() {
 			// Disallow instantiation outside static method
 		}
@@ -180,14 +284,12 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		}
 
 		public SnomedRelationshipIndexEntry build() {
-			return new SnomedRelationshipIndexEntry(id,
+			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(id,
 					label,
-					score, 
-					storageKey, 
 					moduleId, 
 					released, 
 					active, 
-					effectiveTimeLong, 
+					effectiveTime, 
 					sourceId, 
 					typeId, 
 					destinationId, 
@@ -196,10 +298,17 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 					group, 
 					unionGroup, 
 					destinationNegated);
+			doc.setBranchPath(branchPath);
+			doc.setCommitTimestamp(commitTimestamp);
+			doc.setStorageKey(storageKey);
+			doc.setReplacedIns(replacedIns);
+			doc.setSegmentId(segmentId);
+			return doc;
 		}
 	}
 
 	private final String sourceId;
+	private final String typeId;
 	private final String destinationId;
 	private final String characteristicTypeId;
 	private final String modifierId;
@@ -209,8 +318,6 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 
 	private SnomedRelationshipIndexEntry(final String id, 
 			final String label,
-			final float score, 
-			final long storageKey, 
 			final String moduleId, 
 			final boolean released,
 			final boolean active, 
@@ -227,8 +334,6 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		super(id, 
 				label,
 				typeId, // XXX: iconId is the same as typeId 
-				score, 
-				storageKey, 
 				moduleId, 
 				released, 
 				active, 
@@ -238,6 +343,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 		checkArgument(unionGroup >= 0, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
 
 		this.sourceId = checkNotNull(sourceId, "Relationship source identifier may not be null.");
+		this.typeId = checkNotNull(typeId, "Relationship type identifier may not be null.");
 		this.destinationId = checkNotNull(destinationId, "Relationship destination identifier may not be null.");
 		this.characteristicTypeId = checkNotNull(characteristicTypeId, "Relationship characteristic type identifier may not be null.");
 		this.modifierId = checkNotNull(modifierId, "Relationship modifier identifier may not be null.");
@@ -247,17 +353,28 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	}
 
 	@Override
-	public String getObjectId() {
+	public String getContainerId() {
+		return getSourceId();
+	}
+	
+	@Override
+	@JsonIgnore
+	public String getIconId() {
+		return super.getIconId();
+	}
+	
+	@Override
+	public String getSourceId() {
 		return sourceId;
 	}
 
 	@Override
-	public String getAttributeId() {
-		return getIconId(); // XXX: aliased to icon identifier in constructor
+	public String getTypeId() {
+		return typeId;
 	}
 
 	@Override
-	public String getValueId() {
+	public String getDestinationId() {
 		return destinationId;
 	}
 
@@ -271,6 +388,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#DEFINING_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isDefining() {
 		return Concepts.DEFINING_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -278,6 +396,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#INFERRED_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isInferred() {
 		return Concepts.INFERRED_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -285,6 +404,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#STATED_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isStated() {
 		return Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -292,6 +412,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the characteristic type id is equal to {@link Concepts#ADDITIONAL_RELATIONSHIP}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isAdditional() {
 		return Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId);
 	}
@@ -306,6 +427,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the modifier id is equal to {@link Concepts#UNIVERSAL_RESTRICTION_MODIFIER}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isUniversal() {
 		return Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(modifierId);
 	}
@@ -313,6 +435,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return {@code true} if the modifier id is equal to {@link Concepts#EXISTENTIAL_RESTRICTION_MODIFIER}, {@code false} otherwise
 	 */
+	@JsonIgnore
 	public boolean isExistential() {
 		return Concepts.EXISTENTIAL_RESTRICTION_MODIFIER.equals(modifierId);
 	}
@@ -320,6 +443,7 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	/**
 	 * @return the {@link CharacteristicType} value for this relationship, based on the stored characteristic type identifier
 	 */
+	@JsonIgnore
 	public CharacteristicType getCharacteristicType() {
 		return CharacteristicType.getByConceptId(characteristicTypeId);
 	}
@@ -344,19 +468,18 @@ public class SnomedRelationshipIndexEntry extends SnomedIndexEntry implements IS
 	public boolean isDestinationNegated() {
 		return destinationNegated;
 	}
-
+	
 	@Override
-	public String toString() {
-		return toStringHelper()
+	protected ToStringHelper doToString() {
+		return super.doToString()
 				.add("sourceId", sourceId)
-				.add("typeId", getAttributeId())
+				.add("typeId", typeId)
 				.add("destinationId", destinationId)
 				.add("characteristicTypeId", characteristicTypeId)
 				.add("modifierId", modifierId)
 				.add("group", group)
 				.add("unionGroup", unionGroup)
-				.add("destinationNegated", destinationNegated)
-				.toString();
+				.add("destinationNegated", destinationNegated);
 	}
 
 }

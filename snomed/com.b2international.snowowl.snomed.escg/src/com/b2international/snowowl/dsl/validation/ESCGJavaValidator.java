@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.dsl.validation;
 
-import java.util.List;
-
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
@@ -28,17 +26,15 @@ import com.b2international.snowowl.dsl.escg.EscgPackage;
 import com.b2international.snowowl.dsl.escg.NumericalAssignment;
 import com.b2international.snowowl.dsl.escg.NumericalAssignmentGroup;
 import com.b2international.snowowl.dsl.escg.RefSet;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedConceptIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * Java validator to register custom validation rules to be checked.
@@ -139,15 +135,9 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final SnomedClientRefSetBrowser browser  = ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
-		
-		if (null == browser) {
-			return;
-		}
-		
 		try {
 			
-			boolean refSetExists = browser.getRefSet(refSet.getId()) != null;
+			boolean refSetExists = ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class).getConcept(refSet.getId()) != null;
 
 			// Concept id is not valid if the concept id length is less then 6 or longer then 18 -> should't be existed at all -> don't show 2 error messages
 			if (refSet.getId().length() < 6 || refSet.getId().length() > 18) {
@@ -197,28 +187,27 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 
 	private void checkNonMatchingTerm(String id, String term, EAttribute termAttribute) {
 		
-		SnomedClientIndexService indexSearcher = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
+		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+				.setComponentId(id)
+				.setExpand("descriptions(),pt()")
+				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 		
-		if (null == indexSearcher) {
+		if (concept.getPt() != null && concept.getPt().getTerm().equals(term)) {
 			return;
 		}
-
-		String conceptPreferredTerm = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), id);
 		
-		if (term.equals(conceptPreferredTerm)) {
-			return;
-		}
-		
-		SnomedDescriptionIndexQueryAdapter queryAdapter = SnomedDescriptionIndexQueryAdapter.createFindByConceptIds(id);
-		List<SnomedDescriptionIndexEntry> result = indexSearcher.search(queryAdapter);
-		
-		for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : result) {
-			if (snomedDescriptionIndexEntry.getTerm().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getTypeId())) {
-				warning("This is the fully specified name, not the preferred term.", termAttribute, NON_MATCHING_TERM);
-				return;
-			} else if (snomedDescriptionIndexEntry.getTerm().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getTypeId())) {
-				warning("This is a synonym, not the preferred term.", termAttribute, NON_MATCHING_TERM);
-				return;
+		for (ISnomedDescription description : concept.getDescriptions()) {
+			if (description.getTerm().equals(term)) {
+				if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
+					warning("This is the fully specified name, not the preferred term.", termAttribute, NON_MATCHING_TERM);
+					return;
+				} else if (Concepts.SYNONYM.equals(description.getTypeId())) {
+					warning("This is a synonym, not the preferred term.", termAttribute, NON_MATCHING_TERM);
+					return;
+				}
 			}
 		}
 		
@@ -231,18 +220,9 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		SnomedClientIndexService indexSearcher = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		SnomedConceptFullQueryAdapter queryBuilder = new SnomedConceptFullQueryAdapter(concept.getId(), SnomedConceptIndexQueryAdapter.SEARCH_BY_CONCEPT_ID);
-		
-		if (null == indexSearcher) {
-			return;
-		}
-		
-		List<SnomedConceptIndexEntry> result = indexSearcher.search(queryBuilder, 1);
-		if (result != null && result.size() > 0) {
-			if (!result.get(0).isActive()) {	// there shouldn't be more than 1 concept id in the search result
-				warning("Concept is not active", EscgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
-			}
+		final SnomedConceptDocument entry = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(concept.getId());
+		if (entry != null && !entry.isActive()) {
+			warning("Concept is inactive", EscgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}
 	}
 	

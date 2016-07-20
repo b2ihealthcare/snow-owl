@@ -22,9 +22,8 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -37,12 +36,10 @@ import com.google.common.collect.Lists;
  */
 public class SimpleAstExpressionNormalFormGenerator {
 	
-	private final SnomedClientStatementBrowser statementBrowser;
 	private final SnomedClientTerminologyBrowser terminologyBrowser;
 
-	public SimpleAstExpressionNormalFormGenerator(SnomedClientTerminologyBrowser terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
+	public SimpleAstExpressionNormalFormGenerator(SnomedClientTerminologyBrowser terminologyBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
-		this.statementBrowser = statementBrowser;
 	}
 
 	/**
@@ -51,7 +48,7 @@ public class SimpleAstExpressionNormalFormGenerator {
 	public RValue getLongNormalForm(RValue originalExpression) {
 		// expression focus concepts	
 		Collection<ConceptRef> focusConcepts = QueryAstUtils.getFocusConcepts(originalExpression);
-		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser, statementBrowser);
+		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(focusConcepts);
 		
 		// expression refinements
@@ -65,7 +62,7 @@ public class SimpleAstExpressionNormalFormGenerator {
 			expressionAttributeClauseLists.add(attributeClauseList);
 		}
 		
-		AttributeNormalizer attributeNormalizer = new AttributeNormalizer(terminologyBrowser, statementBrowser);
+		AttributeNormalizer attributeNormalizer = new AttributeNormalizer(terminologyBrowser);
 		ConceptDefinition normalizedExpressionRefinements = attributeNormalizer.normalizeAttributes(expressionAttributeClauseLists, 
 				ungroupedExpressionAttributes);
 		
@@ -75,7 +72,7 @@ public class SimpleAstExpressionNormalFormGenerator {
 		
 		// create expression
 		List<String> focusConceptIds = Lists.newArrayList();
-		for (SnomedConceptIndexEntry conceptMini : normalizedFocusConcepts.filteredPrimitiveSuperTypes) {
+		for (SnomedConceptDocument conceptMini : normalizedFocusConcepts.filteredPrimitiveSuperTypes) {
 			focusConceptIds.add(conceptMini.getId());
 		}
 		return QueryAstUtils.buildExpression(focusConceptIds, 

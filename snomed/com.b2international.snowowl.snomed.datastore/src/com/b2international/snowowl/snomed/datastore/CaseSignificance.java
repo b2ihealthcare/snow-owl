@@ -133,6 +133,6 @@ public enum CaseSignificance {
 	 * @return the case significance enumeration.
 	 */
 	public static CaseSignificance getForDescriptionIndexEntry(final SnomedDescriptionIndexEntry description) {
-		return getById(description.getCaseSignificance());
+		return getById(description.getCaseSignificanceId());
 	}
 }

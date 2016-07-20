@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.mrcm.core.concepteditor;
 
 /**
  * Client-side interface for SNOMED CT concept editor related services.
- * 
+ * @deprecated - reimplement concept widget model related services
  */
 public interface IClientSnomedConceptEditorService {
 	

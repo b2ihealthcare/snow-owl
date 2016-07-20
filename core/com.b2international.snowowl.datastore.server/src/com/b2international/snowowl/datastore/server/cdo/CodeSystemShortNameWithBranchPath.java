@@ -35,7 +35,7 @@ import com.google.common.cache.LoadingCache;
  * Wraps a code system short name as a string and a {@link IBranchPath branch path} associated with the current terminology metadata repository.
  * <p><b>NOTE:&nbsp;</b> Since terminology metadata cannot vary on VD and MS authoring tasks, clients should stick to the parent branch of any actual VD/MS branches.
  * <br><b>NOTE:&nbsp;</b>Equals and has code is calculated by the wrapped code system short name.
- *
+ * @deprecated - UNSUPPORTED
  */
 public class CodeSystemShortNameWithBranchPath {
 

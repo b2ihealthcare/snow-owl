@@ -15,25 +15,24 @@
  */
 package com.b2international.snowowl.snomed.datastore.index;
 
+import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.interest.ISearchProfileManager;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfile;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileInterest;
 import com.b2international.snowowl.snomed.datastore.index.interest.SearchProfileRule;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.google.common.base.Preconditions;
 
 /**
  * Class for providing index queries based on the {@link SearchProfile} associated for a user.
@@ -42,12 +41,9 @@ public abstract class SearchProfileQueryProvider {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SearchProfileQueryProvider.class);
 	
-	@Nullable public static BooleanQuery provideQuery(final IBranchPath branchPath, final String userId) {
+	@Nullable public static Expression provideQuery(final String userId) {
 		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-
 		if (null == userId) {
-			
 			return null; //user ID is not specified
 			//assuming no search profile 
 		}
@@ -73,7 +69,7 @@ public abstract class SearchProfileQueryProvider {
 			
 		}
 		
-		BooleanQuery searchProfileQuery = null;
+		final ExpressionBuilder searchProfileQuery = Expressions.builder();
 		
 		for (final SearchProfileRule rule : rules) {
 		
@@ -84,38 +80,32 @@ public abstract class SearchProfileQueryProvider {
 			if (!SearchProfileInterest.AVERAGE.equals(interest)) {
 				
 				final String conceptId = rule.getContextId();
-				final Long conceptIdLong = Long.valueOf(conceptId);
-				
-				if (null == searchProfileQuery) {
-					searchProfileQuery = new BooleanQuery(true);
-				}
 				
 				switch (rule.getDomain()) {
 				
 					case DESCENDANTS_OF_CONCEPT:
 						
-						final Query descendantQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
+						final Expression descendantQuery = Expressions.builder()
+								.should(SnomedConceptDocument.Expressions.parents(Collections.singleton(conceptId)))
+								.should(SnomedConceptDocument.Expressions.ancestors(Collections.singleton(conceptId)))
+								.build();
 						
 						switch (interest) {
 	
 							case BELOW_AVERAGE: //$FALL-THROUGH$
 							case ABOVE_AVERAGE:
 								
-								searchProfileQuery.add(decorateQuery(descendantQuery, interest), Occur.SHOULD);
+								searchProfileQuery.should(decorateQuery(descendantQuery, interest));
 								break;
 								
 							case EXCLUDE:
-								
 								//exclude
-								searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);
+								searchProfileQuery.mustNot(descendantQuery);
 								break;
-								
 							case AVERAGE:
-								
 								throw new IllegalStateException("Interest must not be average.");
 								
 							default:
-								
 								throw new IllegalArgumentException("Unknown interest type: " + interest);
 								
 						}
@@ -124,20 +114,19 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_MODULE:
 						
-						final Query moduleQuery = SnomedMappings.newQuery().module(conceptId).matchAll();
+						final Expression moduleQuery = SnomedConceptDocument.Expressions.module(conceptId);
 	
 						switch (interest) {
 	
 							case BELOW_AVERAGE: //$FALL-THROUGH$
 							case ABOVE_AVERAGE:
 								
-								searchProfileQuery.add(decorateQuery(moduleQuery, interest), Occur.SHOULD);
+								searchProfileQuery.should(decorateQuery(moduleQuery, interest));
 								break;
 								
 							case EXCLUDE:
-								
 								//exclude
-								searchProfileQuery.add(moduleQuery, Occur.MUST_NOT);
+								searchProfileQuery.mustNot(moduleQuery);
 								break;
 								
 							case AVERAGE:
@@ -155,20 +144,20 @@ public abstract class SearchProfileQueryProvider {
 						
 					case MAPPING_SOURCE_CONCEPTS:
 						
-						final Query mappingQuery = SnomedMappings.conceptReferringMappingRefSetId().toQuery(conceptIdLong);
+						final Expression mappingQuery = SnomedConceptDocument.Expressions.referringMappingRefSet(conceptId);
 						
 						switch (interest) {
 							
 							case BELOW_AVERAGE: //$FALL-THROUGH$
 							case ABOVE_AVERAGE:
 								
-								searchProfileQuery.add(decorateQuery(mappingQuery, interest), Occur.SHOULD);
+								searchProfileQuery.should(decorateQuery(mappingQuery, interest));
 								break;
 								
 							case EXCLUDE:
 								
 								//exclude
-								searchProfileQuery.add(mappingQuery, Occur.MUST_NOT);
+								searchProfileQuery.mustNot(mappingQuery);
 								break;
 								
 							case AVERAGE:
@@ -186,20 +175,20 @@ public abstract class SearchProfileQueryProvider {
 						
 					case REFERENCE_SET_MEMBERS:
 						
-						final Query refSetQuery = SnomedMappings.conceptReferringRefSetId().toQuery(conceptIdLong);
+						final Expression refSetQuery = SnomedConceptDocument.Expressions.referringRefSet(conceptId);
 						
 						switch (interest) {
 							
 							case BELOW_AVERAGE: //$FALL-THROUGH$
 							case ABOVE_AVERAGE:
 								
-								searchProfileQuery.add(decorateQuery(refSetQuery, interest), Occur.SHOULD);
+								searchProfileQuery.should(decorateQuery(refSetQuery, interest));
 								break;
 								
 							case EXCLUDE:
 								
 								//exclude
-								searchProfileQuery.add(refSetQuery, Occur.MUST_NOT);
+								searchProfileQuery.mustNot(refSetQuery);
 								break;
 								
 							case AVERAGE:
@@ -217,20 +206,20 @@ public abstract class SearchProfileQueryProvider {
 						
 					case WITHIN_A_NAMESPACE:
 						
-						final Query namespaceQuery = SnomedMappings.conceptNamespaceId().toQuery(conceptIdLong);
+						final Expression namespaceQuery = SnomedConceptDocument.Expressions.namespace(conceptId);
 						
 						switch (interest) {
 							
 							case BELOW_AVERAGE: //$FALL-THROUGH$
 							case ABOVE_AVERAGE:
 								
-								searchProfileQuery.add(decorateQuery(namespaceQuery, interest), Occur.SHOULD);
+								searchProfileQuery.should(decorateQuery(namespaceQuery, interest));
 								break;
 								
 							case EXCLUDE:
 								
 								//exclude
-								searchProfileQuery.add(namespaceQuery, Occur.MUST_NOT);
+								searchProfileQuery.mustNot(namespaceQuery);
 								break;
 								
 							case AVERAGE:
@@ -257,103 +246,103 @@ public abstract class SearchProfileQueryProvider {
 		
 	
 		
-		return searchProfileQuery;
+		return searchProfileQuery.build();
 		
 	}
 	
-	public static BooleanQuery provideExclusionQuery(final IBranchPath branchPath, final String userId) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-
-		if (null == userId) {
-			
-			return null; //user ID is not specified
-			//assuming no search profile 
-		}
-		
-		final SearchProfile profile = getSearchProfile(userId);
-		
-		//search profile does not exist for user
-		if (null == profile) {
-			
-			LOGGER.info("Search profile is not available for user: " + userId);
-			
-			return null;
-			
-		}
-		
-		final Set<SearchProfileRule> rules = profile.getRules();
-		
-		if (CompareUtils.isEmpty(rules)) {
-			
-			LOGGER.info("No search rules were found for user: " + userId);
-			
-			return null; 
-			
-		}
-		
-		BooleanQuery searchProfileQuery = null;
-		
-		for (final SearchProfileRule rule : rules) {
-		
-		
-			final SearchProfileInterest interest = rule.getInterest();
-			
-			//in case of average not much we can do
-			if (SearchProfileInterest.EXCLUDE.equals(interest)) {
-				
-				final String conceptId = rule.getContextId();
-				final Long conceptIdLong = Long.valueOf(conceptId);
-				
-				if (null == searchProfileQuery) {
-					searchProfileQuery = new BooleanQuery(true);
-				}
-				
-				switch (rule.getDomain()) {
-				
-					case DESCENDANTS_OF_CONCEPT:
-						
-						final Query descendantQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
-						searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);
-						
-						break; //break 'descendants of concept' domain
-						
-					case WITHIN_A_MODULE:
-	
-						final Query moduleQuery = SnomedMappings.newQuery().module(conceptId).matchAll();
-						searchProfileQuery.add(moduleQuery, Occur.MUST_NOT);
-						
-						break; //break 'within a module' domain
-						
-					case MAPPING_SOURCE_CONCEPTS:
-						
-						final Query mappingQuery = SnomedMappings.conceptReferringMappingRefSetId().toQuery(conceptIdLong);
-						searchProfileQuery.add(mappingQuery, Occur.MUST_NOT);
-						
-						break; //break 'mapping source concept' domain
-						
-					case REFERENCE_SET_MEMBERS:
-						
-						final Query refSetQuery = SnomedMappings.conceptReferringRefSetId().toQuery(conceptIdLong);
-						searchProfileQuery.add(refSetQuery, Occur.MUST_NOT);
-						
-						break; //break 'reference set members query' domain
-						
-					case WITHIN_A_NAMESPACE:
-						
-						final Query namespaceQuery = SnomedMappings.conceptNamespaceId().toQuery(conceptIdLong);
-						searchProfileQuery.add(namespaceQuery, Occur.MUST_NOT);
-						
-						break; //break 'within a namespace' domain
-						
-					default:
-						
-						throw new IllegalArgumentException("Unknown domain: " + rule.getDomain());
-				}
-			}
-		}
-		
-		return searchProfileQuery;
-	}
+//	public static Expression provideExclusionQuery(final IBranchPath branchPath, final String userId) {
+//		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
+//
+//		if (null == userId) {
+//			
+//			return null; //user ID is not specified
+//			//assuming no search profile 
+//		}
+//		
+//		final SearchProfile profile = getSearchProfile(userId);
+//		
+//		//search profile does not exist for user
+//		if (null == profile) {
+//			
+//			LOGGER.info("Search profile is not available for user: " + userId);
+//			
+//			return null;
+//			
+//		}
+//		
+//		final Set<SearchProfileRule> rules = profile.getRules();
+//		
+//		if (CompareUtils.isEmpty(rules)) {
+//			
+//			LOGGER.info("No search rules were found for user: " + userId);
+//			
+//			return null; 
+//			
+//		}
+//		
+//		BooleanQuery searchProfileQuery = null;
+//		
+//		for (final SearchProfileRule rule : rules) {
+//		
+//		
+//			final SearchProfileInterest interest = rule.getInterest();
+//			
+//			//in case of average not much we can do
+//			if (SearchProfileInterest.EXCLUDE.equals(interest)) {
+//				
+//				final String conceptId = rule.getContextId();
+//				final Long conceptIdLong = Long.valueOf(conceptId);
+//				
+//				if (null == searchProfileQuery) {
+//					searchProfileQuery = new BooleanQuery(true);
+//				}
+//				
+//				switch (rule.getDomain()) {
+//				
+//					case DESCENDANTS_OF_CONCEPT:
+//						
+//						final Query descendantQuery = SnomedMappings.newQuery().parent(conceptId).ancestor(conceptId).matchAny();
+//						searchProfileQuery.add(descendantQuery, Occur.MUST_NOT);
+//						
+//						break; //break 'descendants of concept' domain
+//						
+//					case WITHIN_A_MODULE:
+//	
+//						final Query moduleQuery = SnomedMappings.newQuery().module(conceptId).matchAll();
+//						searchProfileQuery.add(moduleQuery, Occur.MUST_NOT);
+//						
+//						break; //break 'within a module' domain
+//						
+//					case MAPPING_SOURCE_CONCEPTS:
+//						
+//						final Query mappingQuery = SnomedMappings.conceptReferringMappingRefSetId().toQuery(conceptIdLong);
+//						searchProfileQuery.add(mappingQuery, Occur.MUST_NOT);
+//						
+//						break; //break 'mapping source concept' domain
+//						
+//					case REFERENCE_SET_MEMBERS:
+//						
+//						final Query refSetQuery = SnomedMappings.conceptReferringRefSetId().toQuery(conceptIdLong);
+//						searchProfileQuery.add(refSetQuery, Occur.MUST_NOT);
+//						
+//						break; //break 'reference set members query' domain
+//						
+//					case WITHIN_A_NAMESPACE:
+//						
+//						final Query namespaceQuery = SnomedMappings.conceptNamespaceId().toQuery(conceptIdLong);
+//						searchProfileQuery.add(namespaceQuery, Occur.MUST_NOT);
+//						
+//						break; //break 'within a namespace' domain
+//						
+//					default:
+//						
+//						throw new IllegalArgumentException("Unknown domain: " + rule.getDomain());
+//				}
+//			}
+//		}
+//		
+//		return searchProfileQuery;
+//	}
 	
 	/*returns with the active search profile associated */
 	@Nullable private static SearchProfile getSearchProfile(final String userId) {
@@ -366,7 +355,7 @@ public abstract class SearchProfileQueryProvider {
 	}
 	
 	/*boosts the queries is the interest is either above or below average.*/
-	private static Query decorateQuery(final Query query, final SearchProfileInterest interest) {
+	private static Expression decorateQuery(final Expression query, final SearchProfileInterest interest) {
 		
 		switch (interest) {
 			
@@ -375,9 +364,7 @@ public abstract class SearchProfileQueryProvider {
 				
 			case ABOVE_AVERAGE: //$FALL-THROUGH$
 			case BELOW_AVERAGE:
-				query.setBoost(interest.getScaleFactor());
-				return query;
-		
+				return Expressions.boost(query, interest.getScaleFactor());
 			case EXCLUDE:
 				LOGGER.warn("Cannot decorate 'Exclude' interest.");
 				return query;

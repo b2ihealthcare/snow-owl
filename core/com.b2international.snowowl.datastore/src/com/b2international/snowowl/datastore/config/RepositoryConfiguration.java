@@ -48,9 +48,9 @@ public class RepositoryConfiguration {
 	@NotNull
 	private DatabaseConfiguration databaseConfiguration = new DatabaseConfiguration();
 	
-	@Min(0)
-	private long indexTimeout = 30L;
-
+	@NotNull
+	private IndexConfiguration indexConfiguration = new IndexConfiguration();
+	
 	@Min(0)
 	@Max(100)
 	private int numberOfWorkers = 3 * Runtime.getRuntime().availableProcessors();
@@ -58,6 +58,8 @@ public class RepositoryConfiguration {
 	@Min(10)
 	@Max(1000)
 	private int mergeMaxResults = 100;
+
+	private boolean revisionCacheEnabled = true;
 	
 	/**
 	 * Returns whether the communication used by the persistance layer is done
@@ -124,25 +126,6 @@ public class RepositoryConfiguration {
 	}
 
 	/**
-	 * @return the timeout in minutes after an index service is closed if the
-	 *         associated branch is left unattended (no queries are run against
-	 *         it and/or no documents are updated).
-	 */
-	@JsonProperty
-	public long getIndexTimeout() {
-		return indexTimeout;
-	}
-
-	/**
-	 * @param indexTimeout
-	 *            the indexTimeout to set
-	 */
-	@JsonProperty
-	public void setIndexTimeout(long indexTimeout) {
-		this.indexTimeout = indexTimeout;
-	}
-	
-	/**
 	 * @return the number of workers threads per repository
 	 */
 	@JsonProperty
@@ -172,6 +155,16 @@ public class RepositoryConfiguration {
 	@JsonProperty("database")
 	public void setDatabaseConfiguration(DatabaseConfiguration databaseConfiguration) {
 		this.databaseConfiguration = databaseConfiguration;
+	}
+	
+	@JsonProperty("index")
+	public IndexConfiguration getIndexConfiguration() {
+		return indexConfiguration;
+	}
+	
+	@JsonProperty("index")
+	public void setIndexConfiguration(IndexConfiguration indexConfiguration) {
+		this.indexConfiguration = indexConfiguration;
 	}
 
 	/**
@@ -210,6 +203,16 @@ public class RepositoryConfiguration {
 		properties.put("user", getDatabaseConfiguration().getUsername());
 		properties.put("password", getDatabaseConfiguration().getPassword());
 		return properties.build();
+	}
+
+	@JsonProperty("revisionCache")
+	public boolean isRevisionCacheEnabled() {
+		return revisionCacheEnabled ;
+	}
+	
+	@JsonProperty("revisionCache")
+	public void setRevisionCacheEnabled(boolean revisionCacheEnabled) {
+		this.revisionCacheEnabled = revisionCacheEnabled;
 	}
 
 }

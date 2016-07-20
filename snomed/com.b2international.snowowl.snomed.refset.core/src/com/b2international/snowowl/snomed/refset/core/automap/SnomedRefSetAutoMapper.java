@@ -32,7 +32,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
@@ -91,11 +91,11 @@ public class SnomedRefSetAutoMapper {
 					request.setLimit(limit);
 					
 					final SnomedConcepts concepts = request.build(branchPath).executeSync(eventBus);
-					List<SnomedConceptIndexEntry> candidates = SnomedConceptIndexEntry.fromConcepts(concepts);
+					List<SnomedConceptDocument> candidates = SnomedConceptDocument.fromConcepts(concepts);
 					
 					if (candidates.isEmpty()) {
 						final SnomedConcepts fuzzyConcepts = request.withFuzzySearch().build(branchPath).executeSync(eventBus);
-						final List<SnomedConceptIndexEntry> fuzzyCandidates = SnomedConceptIndexEntry.fromConcepts(fuzzyConcepts);
+						final List<SnomedConceptDocument> fuzzyCandidates = SnomedConceptDocument.fromConcepts(fuzzyConcepts);
 						
 						if (fuzzyCandidates.isEmpty()) {
 							continue;
@@ -104,7 +104,7 @@ public class SnomedRefSetAutoMapper {
 						candidates = fuzzyCandidates;
 					}
 					
-					final Optional<SnomedConceptIndexEntry> candidate = getCandidate(candidates, entry.getKey());
+					final Optional<SnomedConceptDocument> candidate = getCandidate(candidates, entry.getKey());
 					
 					if (candidate.isPresent()) {
 						resolvedValues.put(entry.getKey(), candidate.get().getId());
@@ -128,7 +128,7 @@ public class SnomedRefSetAutoMapper {
 		return collectedValues;
 	}
 	
-	protected Optional<SnomedConceptIndexEntry> getCandidate(final Collection<SnomedConceptIndexEntry> candidates, final int rowIndex) {
+	protected Optional<SnomedConceptDocument> getCandidate(final Collection<SnomedConceptDocument> candidates, final int rowIndex) {
 		return FluentIterable.from(candidates).first();
 	}
 

@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -235,20 +236,24 @@ public class CoreTerminologyBroker {
 			return classes;
 		}
 
-		final String componentId = getTerminologyComponentId(terminologyComponentId);
+		final Set<String> representationClasses = getClassesForComponentId(getTerminologyComponentId(terminologyComponentId));
+		
+		for (String representationClass : representationClasses) {
+			SHORT_TO_CLASS_CACHE.put(terminologyComponentId, representationClass);
+		}
+		return SHORT_TO_CLASS_CACHE.get(terminologyComponentId);
+	}
 
+	public synchronized Set<String> getClassesForComponentId(final String componentId) {
+		final Set<String> representationClasses = newHashSet();
 		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {
 
 			if (componentId.equals(String.valueOf(element.getAttribute(TERMINOLOGY_COMPONENT_ID_ATTRIBUTE)))) {
-
-				final String representationClass = element.getAttribute(CLASS_ATTRIBUTE);
-				SHORT_TO_CLASS_CACHE.put(terminologyComponentId, representationClass);
-
+				representationClasses.add(element.getAttribute(CLASS_ATTRIBUTE));
 			}
 
 		}
-
-		return SHORT_TO_CLASS_CACHE.get(terminologyComponentId);
+		return representationClasses;
 	}
 
 	/*

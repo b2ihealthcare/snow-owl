@@ -15,21 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.datastore.request.GetRequest;
-import com.b2international.snowowl.datastore.request.GetRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionGetRequest;
+import com.b2international.snowowl.datastore.request.RevisionGetRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionGetRequestBuilder extends GetRequestBuilder<SnomedDescriptionGetRequestBuilder, ISnomedDescription> {
+public final class SnomedDescriptionGetRequestBuilder extends RevisionGetRequestBuilder<SnomedDescriptionGetRequestBuilder, ISnomedDescription> {
 
 	SnomedDescriptionGetRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
 
 	@Override
-	protected GetRequest<ISnomedDescription> createGet() {
+	protected RevisionGetRequest<ISnomedDescription> createGet() {
 		return new SnomedDescriptionGetRequest();
 	}
 

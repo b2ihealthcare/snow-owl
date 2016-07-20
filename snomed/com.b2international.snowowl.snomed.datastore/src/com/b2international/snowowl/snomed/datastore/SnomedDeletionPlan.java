@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,25 +23,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
  * A DTO about the projected outcome of a delete operation in SNOMED CT.
- * 
  */
 public class SnomedDeletionPlan {
 
@@ -54,9 +40,6 @@ public class SnomedDeletionPlan {
 
 	// keep deletedItems sorted by type for nicer display to the user
 	private final Set<CDOObject> deletedItems = new TreeSet<CDOObject>(ComponentUtils2.CDO_OBJECT_COMPARATOR);
-	
-	//keep terminology component identifier and component identifier identifying the deleted objects
-	private final Set<ComponentIdentifierPair<String>> deletedComponents = Sets.newHashSet();
 	
 	/** @return the reason why the delete plan is rejected, for example if a concept cannot be deleted once it was released. */
 	public List<String> getRejectionReasons() {
@@ -82,14 +65,6 @@ public class SnomedDeletionPlan {
 	}
 	
 	/**
-	 * Returns with a copy of the deleted components represented as {@link ComponentIdentifierPair identifier pair} instances.
-	 * @return a set of component identifier pairs. Generally another representation of the components marked for deletion.
-	 */
-	public Set<ComponentIdentifierPair<String>> getDeletedComponentIdentifiers() {
-		return Collections.unmodifiableSet(deletedComponents);
-	}
-
-	/**
 	 * Marks an component for deletion.
 	 * @param cdoObject the component to delete.
 	 */
@@ -106,62 +81,7 @@ public class SnomedDeletionPlan {
 	}
 	
 	private void internalMarkForDeletion(final Collection<? extends CDOObject> items) {
-		for (final EObject object : items) {
-			final ComponentIdentifierPair<String> pair = createIdentifierPair(object);
-			if (null == pair) //e.g.: concrete domain elements
-				continue;
-			
-			if (object instanceof SnomedRefSet) {
-				final SnomedRefSet refSet = (SnomedRefSet) object;
-				//reference set member is containment in a reference set, we do not have to remove them but the associated markers have to be removed
-				//we run a query, get members and generated component identifier pairs to identify the reference set members
-				for (final SnomedRefSetMemberIndexEntry member : getMembers(refSet)) {
-					deletedComponents.add(ComponentIdentifierPair.<String>create(REFSET_MEMBER, member.getId()));
-				}
-			}
-			deletedComponents.add(pair);
-		}
 		deletedItems.addAll(items);
-	}
-	
-	private List<SnomedRefSetMemberIndexEntry> getMembers(final SnomedRefSet refSet) {
-		int memberCount = getMemberCount(refSet);
-		return memberCount > 0
-			? getIndexService().search(createMembersQuery(refSet), memberCount)
-			: Lists.<SnomedRefSetMemberIndexEntry>newArrayList();
-	}
-	
-	private int getMemberCount(final SnomedRefSet refSet) {
-		
-		if (refSet instanceof SnomedRegularRefSet) {
-			return ((SnomedRegularRefSet) refSet).getMembers().size();
-		} else {
-			// Don't have any better guess for the expected number of results in structural reference sets
-			return Integer.MAX_VALUE; 
-		}
-	}
-	
-	private SnomedRefSetMemberIndexQueryAdapter createMembersQuery(final SnomedRefSet refSet) {
-		return new SnomedRefSetMemberIndexQueryAdapter(refSet.getIdentifierId(), null);
-	}
-	
-	private SnomedClientIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-	}
-	
-	private ComponentIdentifierPair<String> createIdentifierPair(final Object object) {
-		final IComponent<?> component = CoreTerminologyBroker.getInstance().adapt(object);
-		if (null == component)
-			return null;
-		final String terminologyComponentId = getTerminolgyComponentId(object);
-		return createIdentifierPair(component, terminologyComponentId);
-	}
-	
-	private ComponentIdentifierPair<String> createIdentifierPair(final IComponent<?> component, final String terminologyComponentId) {
-		return ComponentIdentifierPair.<String>create(terminologyComponentId, String.valueOf(component.getId()));
-	}
-	private String getTerminolgyComponentId(final Object object) {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(object);
 	}
 	
 	public Collection<Description> getDirtyDescriptions() {

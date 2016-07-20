@@ -15,17 +15,13 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
 
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
@@ -39,20 +35,13 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDomainFragment> {
 
 	private final SnomedRefSetEditingContext refSetEditingContext;
-	private final CDOTransaction cdoTransaction;
 	private final Concept moduleConcept;
-	private final SnomedConceptLookupService conceptLookupService;
-	private final SnomedRefSetLookupService refSetLookupService;
 	private final Nature nature;
 	
 	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature) {
 		this.nature = nature;
-		
-		refSetEditingContext = context.getRefSetEditingContext();
-		cdoTransaction = context.getTransaction();
-		moduleConcept = context.getDefaultModuleConcept();
-		conceptLookupService = new SnomedConceptLookupService();
-		refSetLookupService = new SnomedRefSetLookupService();
+		this.refSetEditingContext = context.getRefSetEditingContext();
+		this.moduleConcept = context.getDefaultModuleConcept();
 	}
 
 	@Override
@@ -73,21 +62,20 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 			return;
 		}
 
-		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = (SnomedConcreteDataTypeRefSet) refSetLookupService.getComponent(
-				Long.toString(addedEntry.getRefSetId()), cdoTransaction);
+		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = refSetEditingContext.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
 		
 		final ComponentIdentifierPair<String> componentPair = ComponentIdentifierPair.create(SnomedTerminologyComponentConstants.CONCEPT, Long.toString(conceptId));
 		final SnomedConcreteDataTypeRefSetMember refSetMember = refSetEditingContext.createConcreteDataTypeRefSetMember(
 				componentPair,
 				nullIfUnset(addedEntry.getUomId()),
 				Concepts.CD_EQUAL,
-				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue().utf8ToString()), 
+				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue()), 
 				Concepts.INFERRED_RELATIONSHIP, 
-				addedEntry.getLabel().utf8ToString(), 
+				addedEntry.getLabel(), 
 				moduleConcept.getId(), 
 				concreteDataTypeRefSet);
 		
-		final Concept referencedComponent = conceptLookupService.getComponent(componentPair.getComponentId(), cdoTransaction);
+		final Concept referencedComponent = refSetEditingContext.lookup(componentPair.getComponentId(), Concept.class);
 		referencedComponent.getConcreteDomainRefSetMembers().add(refSetMember);
 	}
 

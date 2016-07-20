@@ -15,17 +15,36 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Collection;
+import java.util.Set;
+
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 import com.b2international.snowowl.datastore.request.Merging;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.Reviews;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.5
@@ -35,6 +54,10 @@ public abstract class SnomedRequests {
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 
 	private SnomedRequests() {
+	}
+	
+	public static SnomedConstraintSearchRequestBuilder prepareSearchConstraint() {
+		return new SnomedConstraintSearchRequestBuilder(REPOSITORY_ID);
 	}
 	
 	public static SnomedConceptSearchRequestBuilder prepareSearchConcept() {
@@ -172,4 +195,64 @@ public abstract class SnomedRequests {
 	public static SnomedRepositoryBulkReadRequestBuilder prepareBulkRead() {
 		return new SnomedRepositoryBulkReadRequestBuilder(REPOSITORY_ID);
 	}
+
+	/**
+	 * Returns all SYNONYM concept ids including all subtypes of {@value Concepts#SYNONYM}.
+	 * @return
+	 */
+	public static SnomedConceptSearchRequestBuilder prepareGetSynonyms() {
+		return prepareSearchConcept().all().filterByActive(true).filterByEscg("<<"+Concepts.SYNONYM);
+	}
+
+	/**
+	 * Returns all applicable predicates for the given selfIds, ruleParentIds (+fetched ancestorIds), refSetIds. 
+	 * @param branch - the branch to query for the constraints
+	 * @param selfIds - set of SNOMED CT identifiers to use for getting self rules
+	 * @param ruleParentIds - set of parent IDs to use for getting the descendant rules, also fetches and applies all ancestors of these
+	 * @param refSetIds - optional reference set identifiers to match
+	 * @return
+	 */
+	public static Promise<Collection<SnomedConstraintDocument>> prepareGetApplicablePredicates(final String branch, final Set<String> selfIds, final Set<String> ruleParentIds, final Set<String> refSetIds) {
+		// query constraint domains three times, on for each concept domain set
+		final IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
+		return SnomedRequests.prepareSearchConcept()
+			.all()
+			.setComponentIds(ruleParentIds)
+			.build(branch)
+			.execute(bus)
+			.then(new Function<SnomedConcepts, Set<String>>() {
+				@Override
+				public Set<String> apply(SnomedConcepts input) {
+					final Set<String> descendantDomainIds = newHashSet();
+					for (ISnomedConcept concept : input) {
+						descendantDomainIds.add(concept.getId());
+						// add parents and ancestors of the concept as well
+						descendantDomainIds.addAll(ISnomedConcept.GET_ANCESTORS.apply(concept));
+					}
+					return descendantDomainIds;
+				}
+			})
+			.then(new Function<Set<String>, Collection<SnomedConstraintDocument>>() {
+				@Override
+				public Collection<SnomedConstraintDocument> apply(Set<String> descendantDomainIds) {
+					return SnomedRequests.prepareBulkRead()
+						.setBody(BulkRequest.<BranchContext>create()
+								.add(SnomedRequests.prepareSearchConstraint().filterBySelfIds(selfIds))
+								.add(SnomedRequests.prepareSearchConstraint().filterByDescendantIds(descendantDomainIds))
+								.add(SnomedRequests.prepareSearchConstraint().filterByRefSetIds(refSetIds)))
+						.build(branch)
+						.execute(bus)
+						.then(new Function<BulkResponse, Collection<SnomedConstraintDocument>>() {
+							@Override
+							public Collection<SnomedConstraintDocument> apply(BulkResponse input) {
+								return ImmutableSet.copyOf(Iterables.concat(input.getResponses(SnomedConstraints.class)));
+							}
+						})
+						.getSync();
+				}
+			});
+	}
+
+	
+	
 }

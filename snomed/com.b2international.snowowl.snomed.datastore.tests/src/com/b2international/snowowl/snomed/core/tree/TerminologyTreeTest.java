@@ -15,22 +15,23 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -39,10 +40,10 @@ import com.google.common.collect.Multimap;
  */
 public class TerminologyTreeTest {
 
-	private static final String N1 = "1";
-	private static final String N2 = "2";
-	private static final String N3 = "3";
-	private static final String N4 = "4";
+	private static final String N1 = generateConceptId();
+	private static final String N2 = generateConceptId();
+	private static final String N3 = generateConceptId();
+	private static final String N4 = generateConceptId();
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getNodeThrowsExceptionIfDoesNotExist() throws Exception {
@@ -72,7 +73,7 @@ public class TerminologyTreeTest {
 		final TerminologyTree tree = new TestTree()
 				.addNode(N1, true)
 				.build();
-		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
+		final SnomedConceptDocument n1 = tree.getNode(N1);
 		assertThat(tree.getProximalPrimitiveParents(N1)).containsOnly(n1);
 	}
 	
@@ -82,7 +83,7 @@ public class TerminologyTreeTest {
 				.addNode(N1, true, null, newHashSet(N2))
 					.addNode(N2, false, newHashSet(N1))
 				.build();
-		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
+		final SnomedConceptDocument n1 = tree.getNode(N1);
 		assertThat(tree.getProximalPrimitiveParents(N2)).containsOnly(n1);
 	}
 	
@@ -93,8 +94,8 @@ public class TerminologyTreeTest {
 				.addNode(N2, true, null, newHashSet(N3))
 					.addNode(N3, false, newHashSet(N1, N2))
 				.build();
-		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
-		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
+		final SnomedConceptDocument n1 = tree.getNode(N1);
+		final SnomedConceptDocument n2 = tree.getNode(N2);
 		assertThat(tree.getProximalPrimitiveParents(N3)).containsOnly(n1, n2);
 	}
 	
@@ -105,7 +106,7 @@ public class TerminologyTreeTest {
 					.addNode(N2, false, newHashSet(N1), newHashSet(N3))
 						.addNode(N3, false, newHashSet(N2))
 				.build();
-		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
+		final SnomedConceptDocument n1 = tree.getNode(N1);
 		assertThat(tree.getProximalPrimitiveParents(N3)).containsOnly(n1);
 	}
 	
@@ -116,7 +117,7 @@ public class TerminologyTreeTest {
 					.addNode(N2, true, newHashSet(N1), newHashSet(N3))
 						.addNode(N3, false, newHashSet(N2))
 				.build();
-		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
+		final SnomedConceptDocument n2 = tree.getNode(N2);
 		assertThat(tree.getProximalPrimitiveParents(N3)).containsOnly(n2);
 	}
 	
@@ -128,7 +129,7 @@ public class TerminologyTreeTest {
 						.addNode(N3, false, newHashSet(N2), newHashSet(N4))
 					.addNode(N4, false, newHashSet(N3, N1))
 				.build();
-		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
+		final SnomedConceptDocument n2 = tree.getNode(N2);
 		assertThat(tree.getProximalPrimitiveParents(N4)).containsOnly(n2);
 	}
 	
@@ -140,11 +141,11 @@ public class TerminologyTreeTest {
 						.addNode(N3, true, newHashSet(N2), newHashSet(N4))
 					.addNode(N4, false, newHashSet(N3, N1))
 				.build();
-		final SnomedConceptIndexEntry n3 = tree.getNode(N3);
+		final SnomedConceptDocument n3 = tree.getNode(N3);
 		assertThat(tree.getProximalPrimitiveParents(N4)).containsOnly(n3);
 		
-		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
-		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
+		final SnomedConceptDocument n1 = tree.getNode(N1);
+		final SnomedConceptDocument n2 = tree.getNode(N2);
 		assertThat(tree.getProximalPrimitiveParentIds(newArrayList(n3, n1, n2))).containsOnly(N3);
 	}
 	
@@ -157,16 +158,16 @@ public class TerminologyTreeTest {
 					.addNode(N4, false, newHashSet(N3, N2))
 				.build();
 		
-		final SnomedConceptIndexEntry n2 = tree.getNode(N2);
-		final SnomedConceptIndexEntry n3 = tree.getNode(N3);
+		final SnomedConceptDocument n2 = tree.getNode(N2);
+		final SnomedConceptDocument n3 = tree.getNode(N3);
 		assertThat(tree.getProximalPrimitiveParents(N4)).containsOnly(n3, n2);
 		
-		final SnomedConceptIndexEntry n1 = tree.getNode(N1);
+		final SnomedConceptDocument n1 = tree.getNode(N1);
 		assertThat(tree.getProximalPrimitiveParentIds(newArrayList(n1, n3, n2))).containsOnly(N3, N2);
 	}
 	
 	private static class TestTree {
-		private final Map<String, SnomedConceptIndexEntry> items = newHashMap();
+		private final Map<String, SnomedConceptDocument> items = newHashMap();
 		private final Multimap<String, String> subTypes = HashMultimap.create();
 		private final Multimap<String, String> superTypes = HashMultimap.create();
 		
@@ -187,10 +188,15 @@ public class TerminologyTreeTest {
 		}
 		
 		public TestTree addNode(String nodeId, boolean primitive, Set<String> parents, Set<String> children) {
-			// TODO replace mock with real object
-			final SnomedConceptIndexEntry entry = Mockito.mock(SnomedConceptIndexEntry.class);
-			when(entry.getId()).thenReturn(nodeId);
-			when(entry.isPrimitive()).thenReturn(primitive);
+			final SnomedConceptDocument entry = SnomedConceptDocument.builder()
+					.id(nodeId)
+					.iconId(Concepts.ROOT_CONCEPT)
+					.active(true)
+					.moduleId(Concepts.MODULE_ROOT)
+					.primitive(primitive)
+					.build();
+					
+			entry.set_id(UUID.randomUUID().toString());
 			items.put(nodeId, entry);
 			if (parents != null) {
 				superTypes.putAll(nodeId, parents);

@@ -15,76 +15,81 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil.getRefSetMemberClass;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.get;
 
-import java.util.Set;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.eclipse.emf.ecore.EClass;
 
-import com.b2international.snowowl.datastore.index.AbstractIndexService;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.b2international.snowowl.datastore.server.EClassProvider;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.IEClassProvider;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * {@link IEClassProvider EClass provider} for SNOMED&nbsp;CT ontology.
  */
-public class SnomedEClassProvider extends EClassProvider {
+public class SnomedEClassProvider implements IEClassProvider {
 
-	private static final Set<String> FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().type().memberRefSetType().storageKey().build();
+	private static final Map<Class<? extends Revision>, EClass> SUPPORTED_TYPES = ImmutableMap.<Class<? extends Revision>, EClass>builder()
+			.put(SnomedConceptDocument.class, SnomedPackage.Literals.CONCEPT)
+			.put(SnomedDescriptionIndexEntry.class, SnomedPackage.Literals.DESCRIPTION)
+			.put(SnomedRelationshipIndexEntry.class, SnomedPackage.Literals.RELATIONSHIP)
+			.put(SnomedConstraintDocument.class, MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT)
+			.put(SnomedRefSetMemberIndexEntry.class, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER)
+			.build();
+			
 	
 	@Override
-	protected EClass extractEClass(Document doc) {
-		throw new UnsupportedOperationException("Storage Key is required to determine correct EClass");
-	}
-	
-	@Override
-	protected EClass extractEClass(final Document doc, long storageKey) {
-		final IndexableField[] indexableFields = Mappings.type().getFields(doc);
-		if (indexableFields.length == 0) {//component type is not stored for reference set members
-			return getRefSetMemberClass(get(SnomedMappings.memberRefSetType().getValue(doc)));
-		} else if (indexableFields.length == 1) {
-			final int intValue = indexableFields[0].numericValue().intValue();
-			switch (intValue) {
-			case CONCEPT_NUMBER: return SnomedPackage.Literals.CONCEPT;
-			case DESCRIPTION_NUMBER: return SnomedPackage.Literals.DESCRIPTION;
-			case RELATIONSHIP_NUMBER: return SnomedPackage.Literals.RELATIONSHIP;
-			case PREDICATE_TYPE_ID: return MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT;
-			}
-		} else {
-			// TODO implement proper type and storagekey match
-			final long conceptStorageKey = Mappings.storageKey().getValue(doc);
-			if (storageKey == conceptStorageKey) {
-				return SnomedPackage.Literals.CONCEPT;
-			} else {
-				return SnomedRefSetPackage.Literals.SNOMED_REF_SET;
-			}
-		}
-		return null;
-	}
-
-	@Override
-	protected AbstractIndexService<?> getServerService() {
-		return (AbstractIndexService<?>) getServiceForClass(SnomedIndexService.class);
-	}
-
-	@Override
-	protected Set<String> getFieldsToLoad() {
-		return FIELDS_TO_LOAD;
+	public EClass getEClass(IBranchPath branchPath, final long storageKey) {
+		return ApplicationContext.getServiceForClass(RepositoryManager.class)
+			.get(getRepositoryUuid())
+			.service(RevisionIndex.class)
+			.read(branchPath.getPath(), new RevisionIndexRead<EClass>() {
+				@Override
+				public EClass execute(RevisionSearcher index) throws IOException {
+					for (Entry<Class<? extends Revision>, EClass> entry : SUPPORTED_TYPES.entrySet()) {
+						final Revision rev = index.get(entry.getKey(), storageKey);
+						if (rev != null) {
+							final EClass value = entry.getValue();
+							if (SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER == value) {
+								final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) rev;
+								return getRefSetMemberClass(member.getReferenceSetType());
+							} else {
+								return value;
+							}
+						}
+					}
+					// if still not found, then try to look for the refset storage key field
+					final Hits<SnomedConceptDocument> hits = index.search(Query.select(SnomedConceptDocument.class)
+							.where(SnomedConceptDocument.Expressions.refSetStorageKey(storageKey))
+							.limit(0)
+							.build());
+					if (hits.getTotal() > 0) {
+						return SnomedRefSetPackage.Literals.SNOMED_REF_SET;
+					} else {
+						return null;
+					}
+				}
+			});
 	}
 	
 	@Override

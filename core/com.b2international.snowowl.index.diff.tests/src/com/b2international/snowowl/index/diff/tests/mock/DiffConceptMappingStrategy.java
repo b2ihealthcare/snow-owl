@@ -19,10 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.lucene.document.Document;
 
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.index.AbstractIndexMappingStrategy;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
-import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase.DocumentBuilder;
 
 /**
  * Abstract superclass creating an indexed document representation from an incoming concept.
@@ -45,18 +44,19 @@ public class DiffConceptMappingStrategy extends AbstractIndexMappingStrategy {
 
 	@Override
 	public Document createDocument() {
-		final DocumentBuilder builder = new DocumentBuilderBase.DocumentBuilder()
-				.id(concept.getId())
-				.label(concept.getLabel())
-				.storageKey(storageKey);
-
+		final Document doc = new Document();
+		Fields.id().addTo(doc, concept.getId());
+		Fields.label().addTo(doc, concept.getLabel());
+		Fields.storageKey().addTo(doc, storageKey);
+		
 		if (relevant) {
-			builder.compareUniqueKey(storageKey);
+			Fields.compareUniqueKey().addTo(doc, storageKey);
 		} else {
-			builder.compareUniqueKey(CDOUtils.NO_STORAGE_KEY).compareIgnoreUniqueKey(storageKey);
+			Fields.compareUniqueKey().addTo(doc, CDOUtils.NO_STORAGE_KEY);
+			Fields.compareIgnoreUniqueKey().addTo(doc, storageKey);
 		}
 
-		return builder.build();
+		return doc;
 	}
 
 	@Override

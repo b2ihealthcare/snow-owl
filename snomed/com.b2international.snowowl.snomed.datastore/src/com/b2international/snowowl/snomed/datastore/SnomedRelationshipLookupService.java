@@ -22,25 +22,32 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
- * Lookup service implementation for SNOMED CT relationships. 
+ * Lookup service implementation for SNOMED CT relationships.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible 
  */
 public class SnomedRelationshipLookupService extends AbstractLookupService<String, Relationship, CDOView> {
 
 	@Override
 	public Relationship getComponent(final String relationshipId, final CDOView view) {
 
-		final long relationshipStorageKey = getStatementBrowser().getStorageKey(BranchPathUtils.createPath(view), relationshipId);
+		final IBranchPath branchPath = BranchPathUtils.createPath(view);
+		final long relationshipStorageKey = getStorageKey(branchPath, relationshipId);
 		CDOObject cdoObject = null;
 
 		notFoundRelationshipLoop: 
@@ -74,18 +81,29 @@ public class SnomedRelationshipLookupService extends AbstractLookupService<Strin
 
 	@Override
 	public SnomedRelationshipIndexEntry getComponent(final IBranchPath branchPath, final String id) {
-		return getStatementBrowser().getStatement(branchPath, id);
+		try {
+			return SnomedRequests.prepareGetRelationship()
+					.setComponentId(id)
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(new Function<ISnomedRelationship, SnomedRelationshipIndexEntry>() {
+						@Override
+						public SnomedRelationshipIndexEntry apply(ISnomedRelationship input) {
+							return SnomedRelationshipIndexEntry.builder(input).build();
+						}
+					})
+					.getSync();
+		} catch (NotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		return getStatementBrowser().getStorageKey(branchPath, id);
+		final SnomedRelationshipIndexEntry component = getComponent(branchPath, id);
+		return component != null ? component.getStorageKey() : CDOUtils.NO_STORAGE_KEY;
 	}
 
-	private SnomedStatementBrowser getStatementBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedStatementBrowser.class);
-	}
-	
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

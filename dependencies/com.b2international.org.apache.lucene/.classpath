@@ -1,29 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lucene-analyzers-common-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-codecs-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-core-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-facet-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-grouping-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-highlighter-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-join-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-memory-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-queries-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-queryparser-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-replicator-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="lucene-suggest-4.9.0.jar" sourcepath="lucene-4.9.0-src.zip"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="lucene_libs/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/httpclient-4.2.3.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/httpcore-4.2.2.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/javax.servlet-3.0.0.v201112011016.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/jetty-continuation-8.1.10.v20130312.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/jetty-http-8.1.10.v20130312.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/jetty-io-8.1.10.v20130312.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/jetty-server-8.1.10.v20130312.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/jetty-servlet-8.1.10.v20130312.jar"/>
-	<classpathentry kind="lib" path="lucene_libs/jetty-util-8.1.10.v20130312.jar"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-codecs-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-core-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-facet-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-grouping-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-highlighter-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-join-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-memory-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-queries-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-queryparser-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-backward-codecs-5.5.0.jar" sourcepath="lib/lucene-5.5.0-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

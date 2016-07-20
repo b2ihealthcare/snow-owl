@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.datastore.review;
 
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.branch.Branch;
 
 /**
  * @since 4.2
  */
+@Doc(type="branchState", nested=true)
 public interface BranchState {
 
 	String path();

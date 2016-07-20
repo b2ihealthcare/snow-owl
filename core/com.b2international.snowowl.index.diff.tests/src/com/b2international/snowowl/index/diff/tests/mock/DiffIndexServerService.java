@@ -35,12 +35,12 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.ints.IntList;
+import com.b2international.index.lucene.Fields;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.index.IndexRead;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.index.IDirectoryManager;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.datastore.server.index.RAMDirectoryManager;
@@ -175,14 +175,14 @@ public class DiffIndexServerService extends IndexServerService<DiffConceptIndexE
 	public Map<String, DiffConcept> getAllDocsAsMap(final IBranchPath branchPath) {
 		return FluentIterable.from(getAllDocs(branchPath))
 				.transform(new Function<Document, DiffConcept>() { @Override public DiffConcept apply(final Document input) {
-					return new DiffConcept(Mappings.id().getValue(input), Mappings.label().getValue(input));
+					return new DiffConcept(Fields.id().getValue(input), Fields.label().getValue(input));
 				}}).uniqueIndex(new Function<DiffConcept, String>() { @Override public String apply(final DiffConcept input) {
 					return input.getId();
 				}});
 	}
 
 	private Query getAllDocsQuery() {
-		return Mappings.id().toExistsQuery();
+		return Fields.id().toExistsQuery();
 	}
 
 	private void indexDocs(final IBranchPath branchPath, final Iterable<DiffConcept> concepts, final boolean relevant) {

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.terminology;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -26,21 +27,25 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.commons.ClassUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 
@@ -60,10 +65,11 @@ public class ComponentLookup<C extends CDOObject> {
 	private final CDOEditingContext editingContext;
 	private final EnumSet<ComponentImportType> initializedComponents = EnumSet.noneOf(ComponentImportType.class);
 	private final Map<String, C> newComponents = Maps.newHashMap();
-
 	private final Class<? extends C> clazz;
+	private final RevisionIndex index;
 	
-	public ComponentLookup(final SnomedEditingContext editingContext, Class<? extends C> clazz) {
+	public ComponentLookup(final RevisionIndex index, final SnomedEditingContext editingContext, Class<? extends C> clazz) {
+		this.index = index;
 		this.editingContext = editingContext;
 		this.clazz = clazz;
 	}
@@ -90,53 +96,34 @@ public class ComponentLookup<C extends CDOObject> {
 	}
 
 	public long getComponentStorageKey(final String componentId) {
-		
-		long storageKey = componentIdMap.get(ImportUtil.parseLong(componentId));
-		
-		if (1 > storageKey) {
-			
-			final IBranchPath branchPath = BranchPathUtils.createPath(editingContext.getTransaction());
-					
-			final short terminologyComponentIdValue = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(componentId);
-			
-			switch (terminologyComponentIdValue) {
-				
-				case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-					
-					if (SnomedRefSet.class == clazz) {
-
-						storageKey = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getStorageKey(branchPath, componentId);
-						
-					} else {
-						
-						storageKey = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getStorageKey(branchPath, componentId);
-					}
-					
-					break;
-					
-				case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-					
-					storageKey = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getDescriptionStorageKey(branchPath, componentId);
-					break;
-					
-				case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-					
-					storageKey = ApplicationContext.getInstance().getService(SnomedStatementBrowser.class).getStorageKey(branchPath, componentId);
-					break;
-				
-				default:
-					
-					throw new IllegalArgumentException("Unknown SNOMED CT component type: " + terminologyComponentIdValue);
+		final long componentIdLong = ImportUtil.parseLong(componentId);
+		if (!componentIdMap.containsKey(componentIdLong)) {
+			try {
+				final long storageKey = getStorageKey(componentId, SnomedIdentifiers.getComponentCategory(componentId));
+				if (CDOUtils.NO_STORAGE_KEY != storageKey) {
+					registerComponentStorageKey(componentId, storageKey);
+				}
+			} catch (Exception e) {
+				throw new SnowowlRuntimeException(e);
 			}
-			
-			if (CDOUtils.NO_STORAGE_KEY != storageKey) {
-				registerComponentStorageKey(componentId, storageKey);
-			}
-			
 		}
-		
-		return storageKey;
-		
+		return componentIdMap.get(componentIdLong);
+	}
+
+	private long getStorageKey(final String componentId, final ComponentCategory componentCategory) throws IOException {
+		return index.read(editingContext.getBranch(), new RevisionIndexRead<Long>() {
+			@Override
+			public Long execute(RevisionSearcher index) throws IOException {
+				final Class<? extends SnomedDocument> type = SnomedDocument.getType(componentCategory);
+				final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.id(componentId)).limit(2).build();
+				final Hits<? extends SnomedDocument> hits = index.search(query);
+				if (SnomedRefSet.class.isAssignableFrom(clazz)) {
+					return hits.getTotal() > 0 ? ClassUtils.checkAndCast(Iterables.getOnlyElement(hits), SnomedConceptDocument.class).getRefSetStorageKey() : CDOUtils.NO_STORAGE_KEY;
+				} else {
+					return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
+				}
+			}
+		});
 	}
 
 	public boolean isInitialized(final ComponentImportType importType) {
@@ -144,7 +131,6 @@ public class ComponentLookup<C extends CDOObject> {
 	}
 
 	public void registerComponentStorageKey(final String componentId, final long storageKey) {
-		
 		final long existingKey = componentIdMap.put(ImportUtil.parseLong(componentId), storageKey);
 		
 		if (existingKey > 0L && existingKey != storageKey) {

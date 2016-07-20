@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -43,7 +43,7 @@ import com.google.common.collect.Multimap;
  * Active relationships must be of unique type within a relationship group.
  * 
  */
-public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends ComponentValidationConstraint<SnomedConceptIndexEntry> {
+public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends ComponentValidationConstraint<SnomedConceptDocument> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptUniqueGroupedRelationshipTypeConstraint";
 	
@@ -92,7 +92,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 	}
 	
 	@Override
-	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptIndexEntry component) {
+	public ComponentValidationDiagnostic validate(final IBranchPath branchPath, final SnomedConceptDocument component) {
 		
 		SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
 			.all()
@@ -129,7 +129,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 		
 	}
 
-	private String createErrorMessage(final SnomedConceptIndexEntry component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
+	private String createErrorMessage(final SnomedConceptDocument component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
 		return String.format("'%s' has a relationship of type '%s' which is non-unique within its group (%s).", component.getLabel(),
 				relationship.getTypeConcept().getPt().getTerm(), relationship.getGroup());
 	}

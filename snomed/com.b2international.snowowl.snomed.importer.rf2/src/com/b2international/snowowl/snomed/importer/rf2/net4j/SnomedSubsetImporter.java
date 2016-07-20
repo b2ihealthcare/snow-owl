@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,6 @@ import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -44,6 +44,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.server.snomed.ImportOnlySnomedTransactionContext;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -52,9 +53,9 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedUnimportedRefSets;
@@ -233,14 +234,14 @@ public class SnomedSubsetImporter {
 
 	// Creates the B2i examples concept
 	private void createB2iExampleConcept(TransactionContext context) {
-		if (null == getTerminologyBrowser().getConcept(branchPath, Concepts.REFSET_B2I_EXAMPLE)) {
+		if (!exists(Concepts.REFSET_B2I_EXAMPLE)) {
 			createConcept(context, Concepts.REFSET_SIMPLE_TYPE, Concepts.REFSET_B2I_EXAMPLE, Concepts.MODULE_B2I_EXTENSION, "B2i examples");
 		}
 	}
 
 	// Creates the KP Convergent Medical Terminology concept
 	private void createKpConvergentMedicalTerminologyConcept(TransactionContext context) {
-		if (null == getTerminologyBrowser().getConcept(branchPath, Concepts.REFSET_KP_CONVERGENT_MEDICAL_TERMINOLOGY)) {
+		if (!exists(Concepts.REFSET_KP_CONVERGENT_MEDICAL_TERMINOLOGY)) {
 			createConcept(context, Concepts.REFSET_B2I_EXAMPLE, Concepts.REFSET_KP_CONVERGENT_MEDICAL_TERMINOLOGY, Concepts.MODULE_B2I_EXTENSION,
 					"KP Convergent Medical Terminology");
 		}
@@ -248,7 +249,7 @@ public class SnomedSubsetImporter {
 	
 	// Creates the CORE Problem List concept
 	private void createCOREProblemListConcept(TransactionContext context) {
-		if (null == getTerminologyBrowser().getConcept(branchPath, Concepts.REFSET_CORE_PROBLEM_LIST_REFERENCE_SETS)) {
+		if (!exists(Concepts.REFSET_CORE_PROBLEM_LIST_REFERENCE_SETS)) {
 			createConcept(context, Concepts.REFSET_B2I_EXAMPLE, Concepts.REFSET_CORE_PROBLEM_LIST_REFERENCE_SETS, Concepts.MODULE_B2I_EXTENSION,
 					"CORE Problem List Reference Sets");
 		}
@@ -256,7 +257,7 @@ public class SnomedSubsetImporter {
 
 	// Creates the Infoway Primary Health Care concept
 	private void createInfowayPrimaryHealthCareConcept(TransactionContext context) throws CommitException {
-		if (null == getTerminologyBrowser().getConcept(branchPath, Concepts.REFSET_INFOWAY_PRIMARY_HEALTH_CARE_REFERENCE_SETS)) {
+		if (!exists(Concepts.REFSET_INFOWAY_PRIMARY_HEALTH_CARE_REFERENCE_SETS)) {
 			createConcept(context, Concepts.REFSET_B2I_EXAMPLE, Concepts.REFSET_INFOWAY_PRIMARY_HEALTH_CARE_REFERENCE_SETS, Concepts.MODULE_B2I_EXTENSION,
 					"Infoway Primary Health Care Reference Sets");
 		}
@@ -373,8 +374,13 @@ public class SnomedSubsetImporter {
 		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
 	}
 	
-	private ITerminologyBrowser<SnomedConceptIndexEntry, String> getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
+	private boolean exists(String conceptId) {
+		return SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.setComponentIds(Collections.singleton(conceptId))
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 	}
 	
 	/*
@@ -462,7 +468,7 @@ public class SnomedSubsetImporter {
 		
 		public void handleNonTxtFileRecord(List<List<String>> content) {
 			for (List<String> rowsList : content) {
-				SnomedConceptIndexEntry concept = getConcept(rowsList.get(idColumnNumber));
+				SnomedConceptDocument concept = getConcept(rowsList.get(idColumnNumber));
 				if (concept != null && importedConceptIds.add(concept.getId())) {
 					createMember(concept);
 				} else {
@@ -472,7 +478,7 @@ public class SnomedSubsetImporter {
 		}
 		
 		private void createMember(List<String> record) {
-			SnomedConceptIndexEntry concept = getConcept(record.get(idColumnNumber));
+			SnomedConceptDocument concept = getConcept(record.get(idColumnNumber));
 			if (concept != null && importedConceptIds.add(concept.getId())) {
 				createMember(concept);
 			} else {
@@ -480,7 +486,7 @@ public class SnomedSubsetImporter {
 			}
 		}
 		
-		private void createUnimportedRefsetMember(List<String> rowsList, SnomedConceptIndexEntry concept) {
+		private void createUnimportedRefsetMember(List<String> rowsList, SnomedConceptDocument concept) {
 			String identifier;
 			if (null != getFullySpecifiedName(rowsList)) {
 				identifier = getFullySpecifiedName(rowsList);
@@ -506,7 +512,7 @@ public class SnomedSubsetImporter {
 			return null;
 		}
 
-		private void createMember(SnomedConceptIndexEntry concept) {
+		private void createMember(SnomedConceptDocument concept) {
 			SnomedComponents.newSimpleMember()
 				.withActive(concept.isActive())
 				.withReferencedComponent(concept.getId())
@@ -515,12 +521,17 @@ public class SnomedSubsetImporter {
 				.addTo(context);
 		}
 
-		private SnomedConceptIndexEntry getConcept(final String conceptId) {
+		private SnomedConceptDocument getConcept(final String conceptId) {
 			if (conceptId.matches("\\d+")) {
-				return getTerminologyBrowser().getConcept(branchPath, conceptId);
+				return getConcept(branchPath, conceptId);
 			} else {
 				return null;
 			}
 		}
+		
+		private SnomedConceptDocument getConcept(IBranchPath branchPath, String conceptId) {
+			return new SnomedConceptLookupService().getComponent(branchPath, conceptId);
+		}
+
 	}
 }

@@ -29,6 +29,7 @@ import com.b2international.snowowl.semanticengine.simpleast.normalform.Attribute
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeNameMatch;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
@@ -51,7 +52,6 @@ public final class QueryAstUtils {
 	  * "procedure context" (2470591017), "temporal context" (2470592012) and "subject relationship context" (2470593019).*/
 	private static final List<String> VALID_CONTEXT_ATTRIBUTE_NAMES = Arrays.asList("246090004", "363589002", 
 			"2470590016", "2470591017", "2470592012", "2470593019"); 
-	public static final String IS_A = "116680003";
 	
 	private QueryAstUtils() { } // suppress default constructor
 
@@ -90,7 +90,7 @@ public final class QueryAstUtils {
 	private static void collectNonIsAAttributes(RValue root, List<AttributeClause> attributes) {
 		if (root instanceof AttributeClause) {
 			AttributeClause attribute = (AttributeClause) root;
-			if (!(getAttributeNameConcept(attribute).getConceptId().equals(IS_A))) {
+			if (!(getAttributeNameConcept(attribute).getConceptId().equals(Concepts.IS_A))) {
 				attributes.add(attribute);
 			}
 		} else if (root instanceof AndClause) {
@@ -136,7 +136,7 @@ public final class QueryAstUtils {
 	public static RValue getAttributeValueExpression(AttributeClause predicate) {
 		RValue right = predicate.getRight();
 		if (right instanceof SubExpression) {
-			return (SubExpression) EcoreUtil.copy(right);
+			return EcoreUtil.copy(right);
 		}
 		RValue expressionValue = EcoreUtil.copy(right);
 		if (right instanceof ConceptRef) {
@@ -325,7 +325,7 @@ public final class QueryAstUtils {
 
 		// focus concepts
 		while (superTypeIterator.hasNext()) {
-			String conceptId = (String) superTypeIterator.next();
+			String conceptId = superTypeIterator.next();
 			root = createAndClause(root, createConceptRef(conceptId));
 		}
 		

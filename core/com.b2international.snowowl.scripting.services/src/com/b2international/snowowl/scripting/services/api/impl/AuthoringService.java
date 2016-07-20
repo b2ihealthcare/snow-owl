@@ -353,7 +353,7 @@ public enum AuthoringService implements IAuthoringService {
 	 */
 	@Nonnull
 	private String getIdentifierConceptId(final DataType dataType) {
-		return checkNotNull(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.get(dataType), "Error while getting identifier concept ID for concrete domain reference set. Type: " + dataType);
+		return checkNotNull(SnomedRefSetUtil.getConcreteDomainRefSetMap().get(dataType), "Error while getting identifier concept ID for concrete domain reference set. Type: " + dataType);
 	}
 
 	/* returns with the unique ID of the default SNOMED CT module concept. */

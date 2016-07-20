@@ -17,6 +17,8 @@ package com.b2international.snowowl.scripting.services.api;
 
 import java.util.List;
 
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+
 /**
  * Representation of a query evaluation service.
  * <p>Available features:
@@ -26,6 +28,7 @@ import java.util.List;
  * </ul>
  * </p>
  * @param <T> type of the results.
+ * @deprecated - use {@link SnomedRequests#prepareSearchConcept()} instead
  */
 public interface IQueryEvaluatorService<T> {
 

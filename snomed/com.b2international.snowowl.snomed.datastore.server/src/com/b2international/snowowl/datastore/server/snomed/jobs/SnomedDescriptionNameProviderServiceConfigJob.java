@@ -15,16 +15,20 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.jobs;
 
+import org.eclipse.net4j.util.container.IPluginContainer;
+
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
-import com.b2international.snowowl.datastore.serviceconfig.IndexServiceTrackingConfigJob;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
+import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.datastore.server.SnomedDescriptionNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedDescriptionNameProvider;
 
 /**
  * Job for initializing and configuring the SNOMED CT description name provider.
  */
-public class SnomedDescriptionNameProviderServiceConfigJob extends IndexServiceTrackingConfigJob<ISnomedDescriptionNameProvider, SnomedIndexService> {
+public class SnomedDescriptionNameProviderServiceConfigJob extends ServiceConfigJob {
 
 	/**
 	 * Creates a new job for SNOMED CT description name provider service initialization.
@@ -34,17 +38,16 @@ public class SnomedDescriptionNameProviderServiceConfigJob extends IndexServiceT
 	}
 
 	@Override
-	protected Class<SnomedIndexService> getIndexServiceClass() {
-		return SnomedIndexService.class;
+	protected boolean initService() throws SnowowlServiceException {
+		if (!isRunningInEmbeddedMode()) {
+			return false;
+		}
+
+		final SnomedDescriptionNameProvider service = new SnomedDescriptionNameProvider();
+		ApplicationContext.getInstance().registerService(ISnomedDescriptionNameProvider.class, service);
+		RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE).registerClassLoader(SnomedDescriptionNameProvider.class, service.getClass().getClassLoader());
+		
+		return true;
 	}
 
-	@Override
-	protected Class<ISnomedDescriptionNameProvider> getTargetServiceClass() {
-		return ISnomedDescriptionNameProvider.class;
-	}
-
-	@Override
-	protected ISnomedDescriptionNameProvider createServiceImplementation(final SnomedIndexService indexService) {
-		return new SnomedDescriptionNameProvider(indexService);
-	}
 }

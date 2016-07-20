@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Jackson Module for Primitive Collections API
+Bundle-SymbolicName: com.b2international.collections.jackson;singleton:=true
+Bundle-Version: 4.7.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.b2international.collections.api,
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.4.5",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.4.5",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.4.5"
+Bundle-Vendor: B2i Healthcare
+Export-Package: com.b2international.collections

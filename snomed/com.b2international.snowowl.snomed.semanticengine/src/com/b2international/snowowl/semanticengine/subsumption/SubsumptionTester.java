@@ -21,17 +21,20 @@ import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.AttributeValue;
 import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgFactory;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * Implementation of the subsumption testing rules described in the document 
@@ -49,9 +52,9 @@ public class SubsumptionTester {
 	private static final String CONCEPT_ID_SUBJECT_RELATIONSHIP_CONTEXT = "408732007";
 	private static final String CONCEPT_ID_SAME_AS = "168666000";
 	private static final String CONCEPT_ID_REPLACED_BY = "370124000";
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 	
-	public SubsumptionTester(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser) {
+	public SubsumptionTester(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
 	}
 
@@ -182,15 +185,20 @@ public class SubsumptionTester {
 	 * @return
 	 */
 	public boolean isSubsumed(Concept predicate, Concept candidate) {
-		SnomedConceptIndexEntry candidateConceptMini = SemanticUtils.getAndCheckConceptById(terminologyBrowser, candidate.getId());
+		SnomedConceptDocument candidateConceptMini = SemanticUtils.getAndCheckConceptById(terminologyBrowser, candidate.getId());
 		if (!candidateConceptMini.isActive()) {
 			String replacementConceptId = null;
-			SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-			SnomedConceptIndexEntry conceptMini = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(candidate.getId());
-			Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(conceptMini.getId());
-			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (relationship.getAttributeId().equals(CONCEPT_ID_SAME_AS) || relationship.getAttributeId().equals(CONCEPT_ID_REPLACED_BY)) {
-					replacementConceptId = relationship.getValueId();
+			final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true)
+					.filterBySource(candidate.getId())
+					.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
+			//for (int i = 0; i < outgoingRelationships.length; i++) {
+			for (ISnomedRelationship relationship : outboundRelationships) {
+				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
+					replacementConceptId = relationship.getDestinationId();
 					break;
 				}
 			}
@@ -208,8 +216,8 @@ public class SubsumptionTester {
 		if (predicate.getId().equals(candidate.getId()))
 			return true;
 		
-		Collection<SnomedConceptIndexEntry> allSuperTypes = terminologyBrowser.getAllSuperTypes(terminologyBrowser.getConcept(candidate.getId()));
-		for (SnomedConceptIndexEntry conceptMini : allSuperTypes) {
+		Collection<SnomedConceptDocument> allSuperTypes = terminologyBrowser.getAllSuperTypes(terminologyBrowser.getConcept(candidate.getId()));
+		for (SnomedConceptDocument conceptMini : allSuperTypes) {
 			if (conceptMini.getId().equals(predicate.getId())) {
 				return true;
 			}

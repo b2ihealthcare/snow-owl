@@ -62,7 +62,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			result.setDescription(input.getDescription());
 			result.setEffectiveDate(toDate(input.getEffectiveDate()));
 			result.setImportDate(toDate(input.getImportDate()));
-			result.setLastModificationDate(toDate(input.getLastUpdateDate()));
+			result.setLastModificationDate(toDate(input.getLatestUpdateDate()));
 			result.setParentBranchPath(input.getParentBranchPath());
 			result.setPatched(input.isPatched());
 			result.setVersion(input.getVersionId());

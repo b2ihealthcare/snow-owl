@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.concepteditor;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -27,11 +27,13 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.core.concepteditor.ISnomedConceptEditorService;
 import com.b2international.snowowl.snomed.mrcm.core.concepteditor.SnomedConceptDetailsBean;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
@@ -42,6 +44,8 @@ import com.b2international.snowowl.snomed.mrcm.core.server.widget.WidgetBeanProv
 import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetModelProvider;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Server-side implementation of the SNOMED CT concept editor service.
@@ -73,109 +77,45 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 		final ConceptWidgetBean widgetBean = widgetBeanProvider.createConceptWidgetBean(new NullProgressMonitor());
 
 		// Retrieve synonym and descendant type IDs
-		final Set<String> synonymAndDescendants = ApplicationContext.getServiceForClass(ISnomedComponentService.class).getSynonymAndDescendantIds(branchPath);
+		final Set<String> synonymAndDescendants = SnomedRequests.prepareGetSynonyms()
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+					}
+				})
+				.getSync();
 		final LongSet synonymAndDescendantIds = PrimitiveSets.newLongOpenHashSet();
 		for (final String synonymAndDescendantId : synonymAndDescendants) {
 			synonymAndDescendantIds.add(Long.parseLong(synonymAndDescendantId));
 		}
 
 		// Retrieve applicable predicates
-		SnomedPredicateBrowser predicateBrowser = ApplicationContext.getServiceForClass(SnomedPredicateBrowser.class);
-		final Collection<PredicateIndexEntry> predicates = predicateBrowser.getPredicates(branchPath, conceptIdString, null);
+		final Collection<SnomedConstraintDocument> predicates = SnomedRequests.prepareGetApplicablePredicates(branchPath.getPath(), Collections.singleton(conceptIdString), getAncestors(branchPath.getPath(), conceptIdString), Collections.<String>emptySet()).getSync();
 
 		// Create regular index entry
-		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
-		final SnomedConceptIndexEntry conceptIndexEntry = terminologyBrowser.getConcept(branchPath, conceptIdString);
+		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptIdString)
+				.setExpand("pt()")
+				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 		
-		checkArgument(conceptIndexEntry != null, "Can't find concept '" + conceptId + "'.");
-
-		final SnomedConceptDetailsBean snomedConceptDetailsBean = new SnomedConceptDetailsBean(conceptIndexEntry.getLabel(), 
-				Long.parseLong(conceptIndexEntry.getIconId()), 
-				widgetBean, 
-				synonymAndDescendantIds, 
-				configuration,
-				predicates);
-
-		return snomedConceptDetailsBean;
+		return new SnomedConceptDetailsBean(
+				concept.getPt() == null ? concept.getId() : concept.getPt().getTerm(),
+				Long.parseLong(concept.getIconId()), widgetBean, synonymAndDescendantIds, configuration, predicates);
+	}
+	
+	private Set<String> getAncestors(String branch, String conceptId) {
+		return SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptId)
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(ISnomedConcept.GET_ANCESTORS)
+				.getSync();
 	}
 
-//	@Override
-//	public SnomedConceptLabelAndIconIdMappings getConceptMappings(final IBranchPath branchPath, final long conceptId, final boolean active) {
-//		
-//		final LongKeyMap conceptIdToLabelMap = PrimitiveCollections.newLongKeyOpenHashMap();
-//		final LongKeyLongMap conceptIdToIconIdMap = PrimitiveCollections.newLongKeyLongOpenHashMap();
-//		final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
-//		
-//		// Self 
-//		final SnomedConceptIndexEntry self = terminologyBrowser.getConcept(branchPath, Long.toString(conceptId));
-//		if (null != self) {
-//			addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, self);
-//		}
-//		
-//		// Language reference set root
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.REFSET_LANGUAGE_TYPE));
-//		
-//		// Inactivation reasons
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.LIMITED));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.DUPLICATE));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.OUTDATED));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.AMBIGUOUS));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.ERRONEOUS));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.MOVED_ELSEWHERE));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.INAPPROPRIATE));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.PENDING_MOVE));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.CONCEPT_NON_CURRENT));
-//		
-//		// Relationship refinability
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.NOT_REFINABLE));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.OPTIONAL_REFINABLE));
-//		addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, Concepts.MANDATORY_REFINABLE));
-//		
-//		// Hierarchies
-//		addAllSubTypesToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser, Concepts.DEFINITION_STATUS_ROOT);
-//		addAllSubTypesToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser, Concepts.CHARACTERISTIC_TYPE);
-//		addAllSubTypesToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser, Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
-//		addAllSubTypesToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser, Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT);
-//		addAllSubTypesToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser, Concepts.MODIFIER_ROOT);
-//		addAllSubTypesToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser, Concepts.MODULE_ROOT);
-//		
-//		// Association reference set targets
-//		if (!active) {
-//			
-//			final String _conceptId = Long.toString(conceptId);
-//			final Collection<String> refSetIds = SnomedRefSetUtil.ASSOCIATION_REFSETS.keySet();
-//			final Collection<SnomedRefSetMemberIndexEntry> members = new SnomedRefSetMembershipLookupService().getMembers(SnomedTerminologyComponentConstants.CONCEPT, 
-//					refSetIds, 
-//					_conceptId);
-//
-//			if (null != members) {
-//				for (final SnomedRefSetMemberIndexEntry entry : members) {
-//					addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, terminologyBrowser.getConcept(branchPath, entry.getTargetComponentId()));
-//				}
-//			}
-//		}
-//		
-//		return new SnomedConceptLabelAndIconIdMappings(conceptIdToLabelMap, conceptIdToIconIdMap);
-//	}
-
-//	private void addAllSubTypesToMaps(final IBranchPath branchPath, final LongKeyMap conceptIdToLabelMap, final LongKeyLongMap conceptIdToIconIdMap, 
-//			final SnomedTerminologyBrowser terminologyBrowser, 
-//			final String conceptId) {
-//		
-//		final SnomedConceptIndexEntry concept = terminologyBrowser.getConcept(branchPath, conceptId);
-//		if (null != concept) {
-//			final Collection<SnomedConceptIndexEntry> subTypes = terminologyBrowser.getAllSubTypes(branchPath, concept);
-//			for (final SnomedConceptIndexEntry conceptIndexEntry : subTypes) {
-//				addToMaps(branchPath, conceptIdToLabelMap, conceptIdToIconIdMap, conceptIndexEntry);
-//			}
-//		}
-//	}
-
-//	private void addToMaps(final IBranchPath branchPath, final LongKeyMap conceptIdToLabelMap, final LongKeyLongMap conceptIdToIconIdMap, final SnomedConceptIndexEntry conceptIndexEntry) {
-//		if (conceptIndexEntry != null) {
-//			final String conceptId = conceptIndexEntry.getId();
-//			conceptIdToIconIdMap.put(Long.valueOf(conceptId), Long.valueOf(conceptIndexEntry.getIconId()));
-//			conceptIdToLabelMap.put(Long.valueOf(conceptId), conceptIndexEntry.getLabel());
-//		}
-//	}
 }

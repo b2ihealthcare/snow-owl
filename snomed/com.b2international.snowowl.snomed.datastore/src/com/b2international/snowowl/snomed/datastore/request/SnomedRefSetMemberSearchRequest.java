@@ -15,38 +15,46 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.acceptabilityIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.correlationIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.descriptionFormats;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.mapCategoryIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.operatorIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referenceSetId;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.targetComponents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.unitIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.valueIds;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.FieldValueFilter;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
-
-import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.functions.StringToLongFunction;
+import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.commons.options.Options;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
+import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
@@ -66,6 +74,11 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		REFERENCED_COMPONENT,
 		
 		/**
+		 * The referenced component type to match
+		 */
+		REFERENCED_COMPONENT_TYPE,
+		
+		/**
 		 * Filter by refset type
 		 */
 		REFSET_TYPE,
@@ -80,82 +93,90 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	
 	@Override
 	protected SnomedReferenceSetMembers doExecute(BranchContext context) throws IOException {
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 
-		final BooleanFilter filter = new BooleanFilter();
 		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
 		final Collection<String> referencedComponentIds = getCollection(OptionKey.REFERENCED_COMPONENT, String.class);
 		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
 		final Options propsFilter = getOptions(OptionKey.PROPS);
 		
+		ExpressionBuilder queryBuilder = Expressions.builder();
+		
+		addActiveClause(queryBuilder);
+		addModuleClause(queryBuilder);
+		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
+		
 		if (!referenceSetIds.isEmpty()) {
 			// if only one refset ID is defined, check if it's an ESCG expression and expand it, otherwise use as is
-			final List<Long> selectedRefSetIds;
+			final List<String> selectedRefSetIds;
 			if (referenceSetIds.size() == 1) {
 				final String escg = Iterables.get(referenceSetIds, 0);
-				final LongCollection matchingConceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(context.branch().branchPath(), escg);
-				selectedRefSetIds = LongSets.toList(matchingConceptIds);
+				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
+				final LongSet matchingConceptIds = new ConceptIdQueryEvaluator2(searcher).evaluate(expression);
+				selectedRefSetIds = LongToStringFunction.copyOf(LongSets.toList(matchingConceptIds));
 			} else {
-				selectedRefSetIds = StringToLongFunction.copyOf(referenceSetIds);
+				selectedRefSetIds = newArrayList(referenceSetIds);
 			}
-			addFilterClause(filter, SnomedMappings.memberRefSetId().createTermsFilter(selectedRefSetIds), Occur.MUST);
+			
+			queryBuilder.must(referenceSetId(selectedRefSetIds));
 		}
 		
 		if (!referencedComponentIds.isEmpty()) {
-			addFilterClause(filter, SnomedMappings.memberReferencedComponentId().createTermsFilter(StringToLongFunction.copyOf(referencedComponentIds)), Occur.MUST);
+			queryBuilder.must(referencedComponentIds(referencedComponentIds));
 		}
 		
 		if (!refSetTypes.isEmpty()) {
-			final ImmutableList<Integer> types = FluentIterable.from(refSetTypes).transform(new Function<SnomedRefSetType, Integer>() {
-				@Override
-				public Integer apply(SnomedRefSetType input) {
-					return input.getValue();
-				}
-			}).toList();
-			
-			addFilterClause(filter, SnomedMappings.memberRefSetType().createTermsFilter(types), Occur.MUST);
+			queryBuilder.must(refSetTypes(refSetTypes));
 		}
 		
 		if (!propsFilter.isEmpty()) {
-			if (propsFilter.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-				final Collection<String> targetComponentIds = propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class);
-				addFilterClause(filter, SnomedMappings.memberTargetComponentId().createTermsFilter(targetComponentIds), Occur.MUST);
+			final Set<String> propKeys = newHashSet(propsFilter.keySet());
+			if (propKeys.remove(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)) {
+				queryBuilder.must(acceptabilityIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
+				queryBuilder.must(characteristicTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_CORRELATION_ID)) {
+				queryBuilder.must(correlationIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CORRELATION_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT)) {
+				queryBuilder.must(descriptionFormats(propsFilter.getCollection(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
+				queryBuilder.must(mapCategoryIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_OPERATOR_ID)) {
+				queryBuilder.must(operatorIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_OPERATOR_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
+				queryBuilder.must(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_UNIT_ID)) {
+				queryBuilder.must(unitIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_UNIT_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
+				queryBuilder.must(valueIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class)));
+			}
+			if (!propKeys.isEmpty()) {
+				throw new IllegalQueryParameterException("Unsupported property filter(s), %s", propKeys);
 			}
 		}
 		
-		addFilterClause(filter, new FieldValueFilter(SnomedMappings.memberReferencedComponentType().fieldName()),Occur.MUST);
-	
-		SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery();
-		addActiveClause(queryBuilder);
-		addModuleClause(queryBuilder);
-		addEffectiveTimeClause(queryBuilder);
-		
-		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.isEmpty() 
-				? new MatchAllDocsQuery() 
-				: queryBuilder.matchAll(), filter));
+		final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+			.where(queryBuilder.build())
+			.offset(offset())
+			.limit(limit())
+			.build();
 
-		final int totalHits = getTotalHits(searcher, query);
-
-		if (limit() < 1 || totalHits < 1) {
-			return new SnomedReferenceSetMembers(offset(), limit(), totalHits);
-		}
-		
-		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), Sort.INDEXORDER, false, false);
-		if (topDocs.scoreDocs.length < 1) {
-			return new SnomedReferenceSetMembers(offset(), limit(), topDocs.totalHits);
+		final Hits<SnomedRefSetMemberIndexEntry> hits = searcher.search(query);
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedReferenceSetMembers(offset(), limit(), hits.getTotal());
+		} else {
+			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
 
-		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final ImmutableList.Builder<SnomedRefSetMemberIndexEntry> memberBuilder = ImmutableList.builder();
-		
-		for (int i = offset(); i < scoreDocs.length; i++) {
-			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedRefSetMemberIndexEntry indexEntry = SnomedRefSetMemberIndexEntry.builder(doc).build();
-			memberBuilder.add(indexEntry);
-		}
-
-		List<SnomedRefSetMemberIndexEntry> members = memberBuilder.build();
-		return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(members, offset(), limit(), topDocs.totalHits);
 	}
 
 	@Override

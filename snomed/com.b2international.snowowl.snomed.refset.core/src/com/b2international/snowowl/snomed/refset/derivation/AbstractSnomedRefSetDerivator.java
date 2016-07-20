@@ -21,36 +21,28 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.search.BooleanQuery;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 /**
@@ -72,7 +64,6 @@ public abstract class AbstractSnomedRefSetDerivator {
 	private Set<String> conceptIds;
 
 	private final SnomedEditingContext context;
-	private final SnomedClientIndexService indexService;
 
 	public AbstractSnomedRefSetDerivator(final String refSetId, final String refSetName, final boolean mapTarget) {
 		this.refSetId = refSetId;
@@ -80,7 +71,6 @@ public abstract class AbstractSnomedRefSetDerivator {
 		this.mapTarget = mapTarget;
 		this.context = new SnomedEditingContext();
 		this.moduleId = context.getDefaultModuleConcept().getId();
-		this.indexService = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
 	}
 	
 	/**
@@ -179,33 +169,34 @@ public abstract class AbstractSnomedRefSetDerivator {
 		final Set<SnomedRefSetMember> refSetMembers = Sets.newHashSet();
 		final SnomedRegularRefSet refSet = createSimpleTypeRefSet(" - descriptions", DESCRIPTION);
 		
-		final Iterable<List<String>> partitions = Iterables.partition(conceptIds, BooleanQuery.getMaxClauseCount());
-		
-		for (final List<String> partition : partitions) {
-			
-			final IIndexQueryAdapter<SnomedDescriptionIndexEntry> adapter = createQueryDescriptionAdapter(Lists.newArrayList(partition));
-			
-			for (final String descriptionId : searchForDescriptionIds(adapter)) {
-				
-				if (isCanceled) {
-					return;
-				}
-				
-				final ComponentIdentifierPair<String> identifierPair = ComponentIdentifierPair.<String>create(DESCRIPTION, descriptionId);
-				final SnomedRefSetMember refSetMember = context.getRefSetEditingContext().createSimpleTypeRefSetMember(identifierPair, moduleId, refSet);
-				
-				refSetMembers.add(refSetMember);
-				
-				monitor.worked(1);
-				isCanceled(monitor);
-				
+		for (ISnomedDescription description : getDescriptions(conceptIds)) {
+			if (isCanceled) {
+				return;
 			}
+			
+			final ComponentIdentifierPair<String> identifierPair = ComponentIdentifierPair.<String>create(DESCRIPTION, description.getId());
+			final SnomedRefSetMember refSetMember = context.getRefSetEditingContext().createSimpleTypeRefSetMember(identifierPair, moduleId, refSet);
+			
+			refSetMembers.add(refSetMember);
+			
+			monitor.worked(1);
+			isCanceled(monitor);
 		}
 		
 		refSet.getMembers().addAll(refSetMembers);
 		commit(parentMonitor);
 	}
 	
+	private SnomedDescriptions getDescriptions(Collection<String> conceptIds) {
+		return SnomedRequests.prepareSearchDescription()
+			.all()
+			.filterByActive(true)
+			.filterByConceptId(conceptIds)
+			.build(context.getBranch())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+	}
+
 	/**
 	 * Derives the relationships from the reference set members.
 	 * 
@@ -213,44 +204,32 @@ public abstract class AbstractSnomedRefSetDerivator {
 	 * @throws SnowowlServiceException
 	 */
 	protected void deriveRelationships(final SubMonitor parentMonitor) throws SnowowlServiceException {
-		
 		final SubMonitor monitor = parentMonitor.newChild(1);
 		monitor.setTaskName("Creating relationship simple type reference set...");
-		monitor.setWorkRemaining(conceptIds.size());
 		
-		final Set<SnomedRefSetMember> refSetMembers = Sets.newHashSet();
 		final SnomedRegularRefSet refSet = createSimpleTypeRefSet(" - relationships", RELATIONSHIP);
 		
-		final SnomedClientStatementBrowser browser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-		final LongKeyMap activeStatements = browser.getAllActiveStatements();
+		final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterBySource(conceptIds)
+				.build(context.getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 		
-		for (final String conceptId : conceptIds) {
-			
+		final Set<SnomedRefSetMember> refSetMembers = Sets.newHashSet();
+		monitor.setWorkRemaining(outboundRelationships.getTotal());
+		for (ISnomedRelationship relationship : outboundRelationships) {
+			isCanceled(monitor);
 			if (isCanceled) {
 				return;
 			}
-
-			Object object = activeStatements.get(Long.parseLong(conceptId));
-
-			if (object instanceof List) {
-
-				@SuppressWarnings("unchecked")
-				final List<StatementFragment> fragments = (List<StatementFragment>) object;
-
-				for (final StatementFragment fragment : fragments) {
-
-					if (conceptIds.contains(Long.toString(fragment.getDestinationId()))) {
-
-						final ComponentIdentifierPair<String> identifierPair = ComponentIdentifierPair.<String>create(RELATIONSHIP, Long.toString(fragment.getStatementId()));
-						final SnomedRefSetMember refSetMember = context.getRefSetEditingContext().createSimpleTypeRefSetMember(identifierPair, moduleId, refSet);
-
-						refSetMembers.add(refSetMember);
-					}
-				}
+			if (conceptIds.contains(relationship.getDestinationId())) {
+				final ComponentIdentifierPair<String> identifierPair = ComponentIdentifierPair.<String>create(RELATIONSHIP, relationship.getId());
+				final SnomedRefSetMember refSetMember = context.getRefSetEditingContext().createSimpleTypeRefSetMember(identifierPair, moduleId, refSet);
+				refSetMembers.add(refSetMember);
 			}
-
 			monitor.worked(1);
-			isCanceled(monitor);
 		}
 		
 		refSet.getMembers().addAll(refSetMembers);
@@ -291,64 +270,34 @@ public abstract class AbstractSnomedRefSetDerivator {
 	}
 	
 	/*
-	 * Creates a query for querying descriptions.
-	 */
-	private SnomedDescriptionContainerQueryAdapter createQueryDescriptionAdapter(final Collection<String> componentIds) {
-		return SnomedDescriptionContainerQueryAdapter.createFindByConceptIds(componentIds);
-	}
-	
-	/*
-	 * Gets the descriptions IDs.
-	 */
-	private Collection<String> searchForDescriptionIds(final IIndexQueryAdapter<SnomedDescriptionIndexEntry> adapter) {
-		return getIndexService().searchUnsortedIds(adapter);
-	}
-	
-	/*
-	 * Gets the index service.
-	 */
-	private SnomedClientIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-	}
-	
-	/*
 	 * Collects the reference set members based on the reference set ID.
 	 */
 	private void collectRefSetMembers(final SubMonitor monitor) {
 		monitor.setTaskName("Collecting reference set members...");
-		
-		final SnomedRefSetMemberIndexQueryAdapter queryAdapter = new SnomedRefSetMemberIndexQueryAdapter(refSetId, "", true);
-		
-		final Set<String> ids = Sets.newHashSet(Collections2.transform(indexService.search(queryAdapter), new Function<SnomedRefSetMemberIndexEntry, String>() {
-			@Override
-			public String apply(SnomedRefSetMemberIndexEntry entry) {
-				if (mapTarget) {
-					return entry.getMapTargetComponentId();
-				} else {
-					return entry.getReferencedComponentId();
-				}
-			}
-		}));
-		
-		final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> browser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		
-		isCanceled(monitor);
-		if (isCanceled) {
-			return;
-		}
-		
-		conceptIds =  Sets.newHashSet(Iterables.filter(ids, new Predicate<String>() {
-			@Override
-			public boolean apply(final String conceptId) {
-				final SnomedConceptIndexEntry concept = browser.getConcept(conceptId);
 
-				if (null != concept && concept.isActive()) {
-					return true;
-				} else {
-					return false;
-				}
-			}
-		}));
+		conceptIds = SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByActive(true)
+				.filterByRefSet(refSetId)
+				// TODO filter referencedComponent/map target by active flag
+				.build(context.getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedReferenceSetMembers, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedReferenceSetMembers input) {
+						return FluentIterable.from(input).transform(new Function<SnomedReferenceSetMember, String>() {
+							@Override
+							public String apply(SnomedReferenceSetMember input) {
+								if (mapTarget) {
+									return (String) input.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
+								} else {
+									return input.getReferencedComponent().getId();
+								}
+							}
+						}).toSet();
+					}
+				})
+				.getSync();
 		
 		monitor.worked(1);
 	}

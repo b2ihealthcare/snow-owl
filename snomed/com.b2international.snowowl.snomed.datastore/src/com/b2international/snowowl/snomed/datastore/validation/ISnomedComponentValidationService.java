@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.validation;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.validation.IComponentValidationService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Server side SNOMED&nbsp;CT component validation service.
@@ -25,6 +25,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptInd
  * The interface only binds its type parameter and serves as an {@link ApplicationContext} service key.
  * 
  */
-public interface ISnomedComponentValidationService extends IComponentValidationService<SnomedConceptIndexEntry> { 
+public interface ISnomedComponentValidationService extends IComponentValidationService<SnomedConceptDocument> { 
 	// Empty interface body
 }

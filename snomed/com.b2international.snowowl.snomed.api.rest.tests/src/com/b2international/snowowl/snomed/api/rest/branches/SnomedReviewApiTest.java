@@ -27,6 +27,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenDescriptionRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -72,8 +74,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			ReviewStatus.FAILED.toString(), 
 			ReviewStatus.STALE.toString());
 
-	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
-	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
+	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(5L);
+	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(3000L);
 	
 	private static final String DISEASE = "64572001";
 	private static final String TEMPORAL_CONTEXT = "410510008";
@@ -135,7 +137,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		whenRetrievingReviewWithId(reviewId)
 		.then()
 			.statusCode(200)
-			.body("status", equalTo(ReviewStatus.PENDING.toString()));
+			.body("status", CoreMatchers.anyOf(equalTo(ReviewStatus.PENDING.toString()), equalTo(ReviewStatus.CURRENT.toString())));
 		
 		assertReviewCurrent(reviewId);
 	}
@@ -199,7 +201,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			.body("newConcepts", hasItem(c2))
 			.body("changedConcepts", hasItem(DISEASE))
 			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
-			.body("deletedConcepts", equalTo(ImmutableList.of(c1)));
+			.body("deletedConcepts", hasItem(c1));
 	}
 	
 	@Test
@@ -238,7 +240,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			.body("newConcepts", hasItem(c2))
 			.body("changedConcepts", hasItem(DISEASE))
 			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
-			.body("deletedConcepts", equalTo(ImmutableList.of(c1)));
+			.body("deletedConcepts", hasItem(c1));
 	}
 	
 	@Test
@@ -476,7 +478,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		assertReviewCurrent(reviewId);
 		
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		final String id = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, id);
 		
 		whenRetrievingReviewWithId(reviewId)
 		.then()

@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.events.bulk.BulkResponse;
 /**
  * @since 4.5
  */
-public class RepositoryBulkReadRequestBuilder extends BaseIndexReadRequestBuilder<RepositoryBulkReadRequestBuilder, BulkResponse> {
+public class RepositoryBulkReadRequestBuilder extends BaseRevisionIndexReadRequestBuilder<RepositoryBulkReadRequestBuilder, BulkResponse> {
 	
 	private Request<BranchContext, BulkResponse> body;
 

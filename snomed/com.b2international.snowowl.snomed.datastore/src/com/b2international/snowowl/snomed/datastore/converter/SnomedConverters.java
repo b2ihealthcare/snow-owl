@@ -30,9 +30,8 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
@@ -43,7 +42,7 @@ public class SnomedConverters {
 	
 	private SnomedConverters() {}
 	
-	public static ResourceConverter<SnomedConceptIndexEntry, ISnomedConcept, SnomedConcepts> newConceptConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public static ResourceConverter<SnomedConceptDocument, ISnomedConcept, SnomedConcepts> newConceptConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		return new SnomedConceptConverter(context, expand, locales);
 	}
 	
@@ -59,7 +58,7 @@ public class SnomedConverters {
 		return new SnomedReferenceSetMemberConverter(context, expand, locales);
 	}
 	
-	public static ResourceConverter<SnomedRefSetIndexEntry, SnomedReferenceSet, SnomedReferenceSets> newRefSetConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public static ResourceConverter<SnomedConceptDocument, SnomedReferenceSet, SnomedReferenceSets> newRefSetConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		return new SnomedReferenceSetConverter(context, expand, locales);
 	}
 	

@@ -15,13 +15,9 @@
  */
 package com.b2international.snowowl.snomed.exporter.model;
 
-import static com.b2international.commons.collections.Collections3.forEach;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.core.api.ComponentUtils.getIds;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
@@ -30,18 +26,19 @@ import javax.annotation.Nullable;
 import org.eclipse.net4j.util.StringUtil;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -65,7 +62,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private boolean refSetsToExport;
 	private boolean exportToRf1;
 	private boolean extendedDescriptionTypesForRf1;
-	private boolean deltaExport;
+	private boolean includeUnpublised;
 
 	private Date deltaExportStartEffectiveTime;
 	private Date deltaExportEndEffectiveTime;
@@ -76,7 +73,6 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String namespace;
 	private IBranchPath clientBranch;
 	private String userId;
-	private Collection<SnomedModuleDependencyRefSetMemberFragment> moduleDependencyMembers;
 	private String unsetEffectiveTimeLabel;
 
 	/**
@@ -95,11 +91,16 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		final SnomedRf2ExportModel model = new SnomedRf2ExportModel();
 		model.releaseType = contentSubType;
 		model.clientBranch = branchPath;
-		forEach(getIds(getServiceForClass(SnomedRefSetBrowser.class).getAllReferenceSets(branchPath)), new Procedure<String>() {
-			protected void doApply(final String refSetId) {
-				model.updateRefSet(refSetId);
-			}
-		});
+		
+		final SnomedReferenceSets referenceSets = SnomedRequests.prepareSearchRefSet()
+			.all()
+			.build(branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+		for (SnomedReferenceSet refSet : referenceSets) {
+			model.updateRefSet(refSet.getId());
+		}
+		
 		return model;
 	}
 	
@@ -251,12 +252,12 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
 	}
 
-	public boolean isDeltaExport() {
-		return deltaExport;
+	public boolean includeUnpublised() {
+		return includeUnpublised;
 	}
 
-	public void setDeltaExport(boolean isDeltaExport) {
-		this.deltaExport = isDeltaExport;
+	public void setIncludeUnpublised(boolean includeUnpublised) {
+		this.includeUnpublised = includeUnpublised;
 	}
 
 	public void setNamespace(String namespace) {
@@ -275,14 +276,6 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		return userId;
 	}
 
-	public void setModuleDependencies(final Collection<SnomedModuleDependencyRefSetMemberFragment> moduleDependencyMembers) {
-		this.moduleDependencyMembers = moduleDependencyMembers;
-	}
-	
-	public Collection<SnomedModuleDependencyRefSetMemberFragment> getModuleDependencyMembers() {
-		return moduleDependencyMembers;
-	}
-	
 	public String getUnsetEffectiveTimeLabel() {
 		return unsetEffectiveTimeLabel;
 	}

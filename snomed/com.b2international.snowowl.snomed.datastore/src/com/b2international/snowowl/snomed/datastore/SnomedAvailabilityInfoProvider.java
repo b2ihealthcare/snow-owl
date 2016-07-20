@@ -15,10 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
+import java.util.Collections;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoProvider;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * {@link ContentAvailabilityInfoProvider} for SNOMED&nbsp;CT.
@@ -28,7 +32,11 @@ public class SnomedAvailabilityInfoProvider implements ContentAvailabilityInfoPr
 
 	@Override
 	public boolean isAvailable() {
-		return getServiceForClass(SnomedTerminologyBrowser.class).isTerminologyAvailable(createMainPath());
+		return SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.setComponentIds(Collections.singleton(Concepts.ROOT_CONCEPT))
+				.build(Branch.MAIN_PATH)
+				.executeSync(ApplicationContext.getServiceForClass(IEventBus.class)).getTotal() > 0;
 	}
 
 	@Override

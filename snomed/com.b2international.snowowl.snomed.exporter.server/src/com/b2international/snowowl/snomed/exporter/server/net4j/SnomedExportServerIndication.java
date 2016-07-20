@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.text.ParseException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,18 +36,44 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.commons.FileUtils;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemService;
+import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
-import com.b2international.snowowl.snomed.exporter.server.SnomedExporterFacade;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfigurationImpl;
+import com.b2international.snowowl.snomed.exporter.server.ExportFormat;
+import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
+import com.b2international.snowowl.snomed.exporter.server.SnomedExportContextImpl;
+import com.b2international.snowowl.snomed.exporter.server.SnomedExportExecutor;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRefSetExporterFactory;
+import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapper;
+import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1DescriptionExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.NoopExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedInferredRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2ConceptExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2DescriptionExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedStatedRelationshipExporter;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -95,14 +123,11 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	private Date deltaExportStartEffectiveTime;
 	private Date deltaExportEndEffectiveTime;
 	private String clientNamespace;
-	private boolean deltaExport;
 
-	// the number of the selected refset to export, if 0, no reference export
-	// will be executed
+	// the number of the selected refset to export, if 0, no reference export will be executed
 	private int numberOfRefSetsToExport;
 
-	// the reference sets (identified by the identifier concept id) which have
-	// to be exported, if empty (numberOfRefSetsToExport = 0!)
+	// the reference sets (identified by the identifier concept id) which have to be exported, if empty (numberOfRefSetsToExport = 0!)
 	// no reference set export will be executed
 	private Set<String> refsetIdentifierConcepts;
 	private Set<SnomedMapSetSetting> settings;
@@ -113,7 +138,10 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 
 	private SnomedExportResult result;
 
-	private SnomedExportConfigurationImpl configuration;
+	private SnomedExportContext exportContext;
+
+	//indicates whether the unpublished artifacts should be part of the export process
+	private boolean includeUnpublished;
 
 	public SnomedExportServerIndication(SignalProtocol<?> protocol) {
 		super(protocol, Net4jProtocolConstants.SNOMED_EXPORT_SIGNAL);
@@ -131,20 +159,14 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		userId = in.readUTF();
 		branchPath = createPath(in.readUTF());
 		
-		deltaExport = in.readBoolean();
 		String deltaExportStartEffectiveTimeString = in.readUTF();
 		String deltaExportEndEffectiveTimeString = in.readUTF();
 		deltaExportStartEffectiveTime = deltaExportStartEffectiveTimeString.equals("") ? null : convertRF2StringToDate(deltaExportStartEffectiveTimeString);
 		deltaExportEndEffectiveTime = deltaExportEndEffectiveTimeString.equals("") ? null : convertRF2StringToDate(deltaExportEndEffectiveTimeString);
 		releaseType = ContentSubType.getByValue(in.readInt());
 		unsetEffectiveTimeLabel = in.readUTF();
+		includeUnpublished = in.readBoolean();
 		
-		configuration = new SnomedExportConfigurationImpl(
-				branchPath, 
-				releaseType, 
-				unsetEffectiveTimeLabel,
-				deltaExportStartEffectiveTime, 
-				deltaExportEndEffectiveTime);
 		
 		includeRf1 = in.readBoolean();
 		includeExtendedDescriptionTypes = in.readBoolean();
@@ -171,12 +193,22 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		
 		clientNamespace = in.readUTF();
 		
+		exportContext = new SnomedExportContextImpl(
+				ExportFormat.RF2,
+				branchPath, 
+				releaseType, 
+				unsetEffectiveTimeLabel,
+				deltaExportStartEffectiveTime, 
+				deltaExportEndEffectiveTime,
+				modulesToExport,
+				new Id2Rf1PropertyMapper());
+		
 		LogUtils.logExportActivity(LOGGER, userId, branchPath, 
 				MessageFormat.format("SNOMED CT export{0}requested.", coreComponentExport ? " with core components " : " "));
 	}
 
 	@Override
-	protected void responding(ExtendedDataOutputStream out, OMMonitor monitor) throws Exception {
+	protected void responding(ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
 
 		File file = null;
 		
@@ -188,7 +220,11 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			checkOtherPublication();
 			
 			if (Result.IN_PROGRESS != result.getResult()) {
-				file = doExport(monitor);
+				
+				//obtain the index service here to ensure a consistent view of the data during the export process
+				RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+				RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+				file = doExport(revisionIndex, monitor);
 			}
 			
 			LogUtils.logExportActivity(LOGGER, userId, branchPath, "Transferring export result...");
@@ -262,49 +298,132 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 	}
 	
-	private File doExport(final OMMonitor monitor) {
+	private File doExport(final RevisionIndex revisionIndex, final OMMonitor monitor) {
+		
 		try {
+			Collection<ICodeSystemVersion> codeSystemVersions = ApplicationContext.getServiceForClass(CodeSystemService.class).getAllTags(SnomedDatastoreActivator.REPOSITORY_UUID);
+			
+			List<String> exportBranchPaths = Lists.newArrayList();
+			final ContentSubType subType = exportContext.getContentSubType();
+			switch (subType) {
+			case DELTA:
+				
+				Collection<ICodeSystemVersion> filteredVersions = Collections2.filter(codeSystemVersions, new Predicate<ICodeSystemVersion>() {
 
-			SnomedExporterFacade exporter = new SnomedExporterFacade(
-					userId,
-					branchPath,
-					LOGGER,
-					includeRf1, 
-					includeExtendedDescriptionTypes, 
-					settings, 
-					modulesToExport, 
-					deltaExport, 
-					deltaExportStartEffectiveTime, 
-					deltaExportEndEffectiveTime, 
-					clientNamespace);
+					@Override
+					public boolean apply(ICodeSystemVersion input) {
+						
+						//special case, unpublished only, do not handle here
+						if (deltaExportStartEffectiveTime == null && deltaExportEndEffectiveTime == null) {
+							return false;
+						} else if (deltaExportStartEffectiveTime == null) {
+							Date effectiveDate = new Date(input.getEffectiveDate());
+							if (effectiveDate.before(deltaExportEndEffectiveTime) || effectiveDate.equals(deltaExportEndEffectiveTime)) {
+								return true;
+							}
+						} else if (deltaExportEndEffectiveTime == null) {
+							Date effectiveDate = new Date(input.getEffectiveDate());
+							if (effectiveDate.after(deltaExportStartEffectiveTime) || effectiveDate.equals(deltaExportStartEffectiveTime)) {
+								return true;
+							}
+						} else {
+							Date effectiveDate = new Date(input.getEffectiveDate());
+							if ((effectiveDate.after(deltaExportStartEffectiveTime) || effectiveDate.equals(deltaExportStartEffectiveTime))
+									&& (effectiveDate.before(deltaExportEndEffectiveTime) || effectiveDate.equals(deltaExportEndEffectiveTime))) {
+								return true;
+							}
+						}
+						return false;
+					}
+				});
+				
+				Collection<String> versionBranchPaths = Collections2.transform(filteredVersions, new Function<ICodeSystemVersion, String>() {
+					@Override
+					public String apply(ICodeSystemVersion input) {
+						return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), input.getVersionId()).getPath(); 
+					}
+				});
+				exportBranchPaths = Lists.newArrayList(versionBranchPaths);
+				
+				break;
+			case SNAPSHOT:
+				exportBranchPaths = Lists.newArrayList(branchPath.getPath());
+				break;
+			case FULL:
+				versionBranchPaths = Collections2.transform(codeSystemVersions, new Function<ICodeSystemVersion, String>() {
 
-			if (monitor.isCanceled()) {
-				processCancel();
-				return null;
+					@Override
+					public String apply(ICodeSystemVersion input) {
+						return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), input.getVersionId()).getPath(); 
+					}
+				});
+				exportBranchPaths = Lists.newArrayList(versionBranchPaths);
+				break;
+			default:
+				break;
 			}
 			
-			if (coreComponentExport) {
-				LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT core components export...");
-				exporter.executeCoreExport(TEMPORARY_WORKING_DIRECTORY, configuration, monitor);
+			if (exportBranchPaths.isEmpty() && !isUnpublishedExport(subType)) {
+				throw new BadRequestException("No branch paths were found for the export.");
 			}
-
-			if (monitor.isCanceled()) {
-				processCancel();
-				return null;
-			}
-
-			if (numberOfRefSetsToExport != 0) {
+			
+			Collections.sort(exportBranchPaths);
+			for (String versionBranchPath : exportBranchPaths) {
 				
-				LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT reference set export...");
-				
-				for (String identifierConceptId : refsetIdentifierConcepts) {
-					exporter.executeRefSetExport(TEMPORARY_WORKING_DIRECTORY, configuration, identifierConceptId, monitor);
+				revisionIndex.read(versionBranchPath, new RevisionIndexRead<Void>() {
 
-					if (monitor.isCanceled()) {
-						processCancel();
+					@Override
+					public Void execute(RevisionSearcher revisionSearcher) throws IOException {
+
+						if (monitor.isCanceled()) {
+							processCancel();
+							return null;
+						}
+						
+						if (coreComponentExport) {
+							LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT core components " + subType+ " export...");
+							executeCoreExport(TEMPORARY_WORKING_DIRECTORY, exportContext, revisionSearcher, monitor);
+						}
+						
+						if (numberOfRefSetsToExport != 0) {
+							
+							LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT reference set " + subType+ " export...");
+							
+							for (String identifierConceptId : refsetIdentifierConcepts) {
+								executeRefSetExport(TEMPORARY_WORKING_DIRECTORY, exportContext, identifierConceptId, revisionSearcher, false, monitor);
+								
+								if (monitor.isCanceled()) {
+									processCancel();
+									return null;
+								}
+							}
+						}
 						return null;
 					}
-				}
+				});
+			}
+			
+			//special case
+			if (subType == ContentSubType.DELTA && deltaExportStartEffectiveTime == null && deltaExportEndEffectiveTime == null) {
+				revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
+					@Override
+					public Void execute(RevisionSearcher revisionSearcher) throws IOException {
+						LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT " + subType+ " export for unpublished components...");
+						
+						//do not append as this is the only content
+						exportUnpublished(TEMPORARY_WORKING_DIRECTORY, exportContext, revisionSearcher, false, monitor);
+						return null;
+					}
+				});
+			} else if (includeUnpublished) {
+				revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
+					@Override
+					public Void execute(RevisionSearcher revisionSearcher) throws IOException {
+						LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT " + subType+ " export for unpublished components...");
+						exportUnpublished(TEMPORARY_WORKING_DIRECTORY, exportContext, revisionSearcher, true, monitor);
+						return null;
+					}
+				});
 			}
 			
 			LogUtils.logExportActivity(LOGGER, userId, branchPath, "Archiving SNOMED CT publication...");
@@ -331,10 +450,189 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components: could not create release files.");
 			}
 		}
-		
 		return null;
 	}
+	
+	private boolean isUnpublishedExport(final ContentSubType subType) {
+		return includeUnpublished
+				|| (subType == ContentSubType.DELTA && deltaExportStartEffectiveTime == null && deltaExportEndEffectiveTime == null);
+	}
 
+	private void executeCoreExport(final String workingDirectory, final SnomedExportContext context, final RevisionSearcher revisionSearcher, final OMMonitor monitor) throws IOException {
+
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT concepts into RF2 format.");
+		
+		SnomedExporter conceptExporter = new SnomedRf2ConceptExporter(context, revisionSearcher, false);
+		new SnomedExportExecutor(conceptExporter, workingDirectory, clientNamespace).execute(false);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT description into RF2 format.");
+		SnomedExporter descriptionExporter = new SnomedRf2DescriptionExporter(context, revisionSearcher, false);
+		new SnomedExportExecutor(descriptionExporter, workingDirectory, clientNamespace).execute(false);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT non-stated relationships into RF2 format.");
+		SnomedExporter relationshipExporter = new SnomedInferredRelationshipExporter(context, revisionSearcher, false);
+		new SnomedExportExecutor(relationshipExporter, workingDirectory, clientNamespace).execute(false);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT stated relationships into RF2 format.");
+		SnomedExporter statedRelationshipExporter = new SnomedStatedRelationshipExporter(context, revisionSearcher, false);
+		new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, clientNamespace).execute(false);
+		
+		if (includeRf1) {
+			
+			exportContext.setExportFormat(ExportFormat.RF1);
+			
+			logActivity("Publishing SNOMED CT concepts into RF1 format.");
+			conceptExporter = new SnomedRf2ConceptExporter(context, revisionSearcher, false);
+			new SnomedExportExecutor(conceptExporter, workingDirectory, clientNamespace).execute(false);
+			
+			if (monitor.isCanceled()) {
+				return;
+			} else {
+				monitor.worked(2);
+			}
+			
+			logActivity("Publishing SNOMED CT descriptions into RF1 format.");
+			descriptionExporter = new SnomedRf1DescriptionExporter(context, revisionSearcher, false, includeExtendedDescriptionTypes);
+			final SnomedExportExecutor exportExecutor = new SnomedExportExecutor(descriptionExporter, workingDirectory, clientNamespace);
+			exportExecutor.execute(true);
+			
+			if (includeExtendedDescriptionTypes) {
+				exportExecutor.writeExtendedDescriptionTypeExplanation();
+			}
+			
+			if (monitor.isCanceled()) {
+				return;
+			} else {
+				monitor.worked(2);
+			}
+			
+			logActivity("Publishing SNOMED CT relationships into RF1 format.");
+			relationshipExporter = new SnomedInferredRelationshipExporter(context, revisionSearcher, false);
+			new SnomedExportExecutor(relationshipExporter, workingDirectory, clientNamespace).execute(false);
+			
+			if (monitor.isCanceled()) {
+				return;
+			} else {
+				monitor.worked(2);
+			}
+		}
+	}
+	
+	private void exportUnpublished(final String workingDirectory, final SnomedExportContext context, 
+			final RevisionSearcher revisionSearcher, final boolean append, final OMMonitor monitor) throws IOException {
+		
+		logActivity("Publishing SNOMED CT unpublished concepts into RF2 format.");
+		SnomedExporter unpublishedConceptExporter = new SnomedRf2ConceptExporter(context, revisionSearcher, true);
+		new SnomedExportExecutor(unpublishedConceptExporter, workingDirectory, clientNamespace).execute(append);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT unpublished descriptions into RF2 format.");
+		SnomedExporter unpublishedDescriptionExporter = new SnomedRf2DescriptionExporter(context, revisionSearcher, true);
+		new SnomedExportExecutor(unpublishedDescriptionExporter, workingDirectory, clientNamespace).execute(append);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT unpublished stated relationships into RF2 format.");
+		SnomedExporter unpublishedStatedRelationshipExporter = new SnomedStatedRelationshipExporter(context, revisionSearcher, true);
+		new SnomedExportExecutor(unpublishedStatedRelationshipExporter, workingDirectory, clientNamespace).execute(append);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT unpublished inferred relationships into RF2 format.");
+		SnomedExporter unpublishedinferredRelationshipExporter = new SnomedStatedRelationshipExporter(context, revisionSearcher, true);
+		new SnomedExportExecutor(unpublishedinferredRelationshipExporter, workingDirectory, clientNamespace).execute(append);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		for (String identifierConceptId : refsetIdentifierConcepts) {
+			executeRefSetExport(TEMPORARY_WORKING_DIRECTORY, exportContext, identifierConceptId, revisionSearcher, true, monitor);
+		}
+	}
+
+	private void executeRefSetExport(final String workingDirectory, final SnomedExportContext configuration, final String refSetId, 
+			final RevisionSearcher revisionSearcher, final boolean unpublished, final OMMonitor monitor) throws IOException {
+		
+		final SnomedExporter refSetExporter = SnomedRefSetExporterFactory.getRefSetExporter(refSetId, configuration, revisionSearcher, unpublished);
+		
+		if (NoopExporter.INSTANCE == refSetExporter) {
+			return;
+		}
+		
+		logActivity("Publishing SNOMED CT reference set into RF2 format. Reference set identifier concept ID: " + refSetId);
+		new SnomedExportExecutor(refSetExporter, workingDirectory, clientNamespace).execute(false);
+
+		//RF1 export
+		if (includeRf1) {
+			//RF1 subset exporter.
+			boolean alreadyLogged = false;
+			for (final SnomedExporter exporter : SnomedRefSetExporterFactory.getSubsetExporter(refSetId, configuration, revisionSearcher, unpublished)) {
+				if (NoopExporter.INSTANCE != exporter) {
+					if (!alreadyLogged) {
+						logActivity("Publishing SNOMED CT reference set into RF1 format. Reference set identifier concept ID: " + refSetId);
+						alreadyLogged = true;
+					}
+					new SnomedExportExecutor(exporter, workingDirectory, clientNamespace).execute(false);
+				}
+			}
+			//RF1 map set exporter.
+			final SnomedMapSetSetting mapsetSetting = getSettingForRefSet(refSetId);
+			if (null != mapsetSetting) {
+				alreadyLogged = false;
+				for (final SnomedExporter exporter : SnomedRefSetExporterFactory.getCrossMapExporter(refSetId, configuration, mapsetSetting, revisionSearcher, unpublished)) {
+					if (NoopExporter.INSTANCE != exporter) {
+						if (!alreadyLogged) {
+							logActivity("Publishing SNOMED CT reference set into RF1 format. Reference set identifier concept ID: " + refSetId);
+							alreadyLogged = true;
+						}
+						new SnomedExportExecutor(exporter, workingDirectory, clientNamespace).execute(false);
+					}
+				}
+			}
+		}
+		monitor.worked(1);
+	}
+	
 	private void processCancel() throws IOException {
 		LogUtils.logExportActivity(LOGGER, userId, branchPath, "SNOMED CT export canceled.");
 		result.setResult(Result.CANCELED);
@@ -361,11 +659,22 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		try {
 			return EffectiveTimes.parse(dateInRF2Format, SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
 		} catch (SnowowlRuntimeException e) {
-			if (e.getCause() instanceof ParseException) {
-				return null;
-			} else {
-				throw e;
-			}
+			LOGGER.error(String.format("Couldn't parse RF2 date %s.", dateInRF2Format), e);
+			throw new BadRequestException("Couldn't parse RF2 date %s.", dateInRF2Format);
 		}
+	}
+	
+	/*returns with the map set setting for the specified reference set identifier concept ID*/
+	private SnomedMapSetSetting getSettingForRefSet(final String refSetId) {
+		return Iterables.getOnlyElement(Iterables.filter(settings, new Predicate<SnomedMapSetSetting>() {
+			@Override public boolean apply(final SnomedMapSetSetting setting) {
+				return setting.getRefSetId().equals(refSetId);
+			}
+		}), null);
+	}
+	
+	private void logActivity(final String message) {
+		LOGGER.info(message);
+		LogUtils.logExportActivity(LOGGER, userId, branchPath, message);
 	}
 }

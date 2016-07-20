@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 /**
@@ -28,6 +29,12 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
  */
 public class ReviewImpl implements Review {
 
+	public static class Fields {
+		public static final String LAST_UPDATED = "lastUpdated";
+		public static final String STATUS = "status";
+	}
+	
+	@JsonIgnore
 	private ReviewManagerImpl reviewManager;
 
 	private final String id;
@@ -130,14 +137,6 @@ public class ReviewImpl implements Review {
 	@Override
 	public String lastUpdated() {
 		return lastUpdated;
-	}
-
-	public String sourcePath() {
-		return source.path();
-	}
-
-	public String targetPath() {
-		return target.path();
 	}
 
 	@Override

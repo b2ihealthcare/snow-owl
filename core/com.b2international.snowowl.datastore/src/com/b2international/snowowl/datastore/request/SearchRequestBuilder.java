@@ -77,7 +77,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	
 	@Override
 	protected final BaseResourceRequest<BranchContext, R> create() {
-		final SearchRequest<R> req = createSearch();
+		final RevisionSearchRequest<R> req = createSearch();
 		req.setOffset(offset);
 		req.setLimit(Math.min(limit, MAX_LIMIT - offset));
 		// validate componentIds, do NOT allow null or empty strings
@@ -91,6 +91,6 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return req;
 	}
 	
-	protected abstract SearchRequest<R> createSearch();
+	protected abstract RevisionSearchRequest<R> createSearch();
 
 }

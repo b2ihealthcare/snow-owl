@@ -22,8 +22,8 @@ import java.util.List;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -41,7 +41,7 @@ abstract public class DataTypeUtils {
 	 * @param predicates the predicates applicable for the concept
 	 * @return the human readable name of the concrete domain type predicate.
 	 */
-	public static String getDataTypePredicateLabel(final String dataTypeName, String conceptId, Collection<PredicateIndexEntry> predicates) {
+	public static String getDataTypePredicateLabel(final String dataTypeName, String conceptId, Collection<SnomedConstraintDocument> predicates) {
 		return getDataTypePredicateLabel(dataTypeName, predicates);
 	}
 	
@@ -54,9 +54,9 @@ abstract public class DataTypeUtils {
 		return getDefaultDataTypeLabel(dataTypeName);
 	}
 	
-	private static String getDataTypePredicateLabel(final String dataTypeName, Iterable<PredicateIndexEntry> predicates2) {
-		final List<PredicateIndexEntry> predicates = Lists.newArrayList(Iterables.filter(predicates2, new Predicate<PredicateIndexEntry>() {
-			@Override public boolean apply(final PredicateIndexEntry predicateMini) {
+	private static String getDataTypePredicateLabel(final String dataTypeName, Iterable<SnomedConstraintDocument> predicates2) {
+		final List<SnomedConstraintDocument> predicates = Lists.newArrayList(Iterables.filter(predicates2, new Predicate<SnomedConstraintDocument>() {
+			@Override public boolean apply(final SnomedConstraintDocument predicateMini) {
 				return PredicateType.DATATYPE.equals(predicateMini.getType()) && checkNotNull(dataTypeName, "Data type name argument cannot be null.").equals(predicateMini.getDataTypeName());
 			}
 		}));

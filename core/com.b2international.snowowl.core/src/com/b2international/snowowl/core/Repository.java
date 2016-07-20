@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.core;
 
+import java.io.Closeable;
+
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 4.5
  */
-public interface Repository {
+public interface Repository extends ServiceProvider, Closeable {
 
 	/**
 	 * Returns the ID of the repository.

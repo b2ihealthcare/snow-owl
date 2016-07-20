@@ -15,24 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
-import java.io.File;
-import java.nio.file.Paths;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.Index;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.store.IndexStore;
-import com.b2international.snowowl.datastore.store.MemStore;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
@@ -70,8 +67,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	}
 
 	private void registerTerminologyBrowser(final Environment env, final ISnomedIdentiferReservationService reservationService) {
-		final Provider<SnomedTerminologyBrowser> provider = env.provider(SnomedTerminologyBrowser.class);
-		final UniqueInStoreReservation storeReservation = new UniqueInStoreReservation(provider);
+		final UniqueInStoreReservation storeReservation = new UniqueInStoreReservation(env.provider(IEventBus.class));
 		reservationService.create(STORE_RESERVATIONS, storeReservation);
 	}
 
@@ -88,20 +84,19 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			final ISnomedIdentiferReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 
-		final ObjectMapper mapper = new ObjectMapper();
-
 		switch (conf.getStrategy()) {
-		case MEMORY:
-			LOGGER.info("Snow Owl is configured to use memory based identifier service.");
-			final MemStore<SctId> memStore = new MemStore<SctId>();
-			identifierService = new DefaultSnomedIdentifierService(memStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
-			break;
-		case INDEX:
-			LOGGER.info("Snow Owl is configured to use index based identifier service.");
-			final IndexStore<SctId> indexStore = getIndexStore(env, mapper);
-			identifierService = new DefaultSnomedIdentifierService(indexStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
+		case EMBEDDED:
+			final Provider<Index> indexProvider = new Provider<Index>() {
+				@Override
+				public Index get() {
+					return env.service(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(Index.class);
+				}
+			};
+			LOGGER.info("Snow Owl is configured to use embedded identifier service.");
+			identifierService = new DefaultSnomedIdentifierService(indexProvider, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
 			break;
 		case CIS:
+			final ObjectMapper mapper = new ObjectMapper();
 			LOGGER.info("Snow Owl is configured to use CIS based identifier service.");
 			identifierService = new CisSnomedIdentifierService(conf, reservationService, mapper);
 			break;
@@ -110,11 +105,6 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		}
 
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
-	}
-
-	private IndexStore<SctId> getIndexStore(final Environment env, ObjectMapper mapper) {
-		final File dir = env.getDataDirectory().toPath().resolve(Paths.get("indexes", "snomed", "identifiers")).toFile();
-		return new IndexStore<>(dir, mapper, SctId.class);
 	}
 
 }

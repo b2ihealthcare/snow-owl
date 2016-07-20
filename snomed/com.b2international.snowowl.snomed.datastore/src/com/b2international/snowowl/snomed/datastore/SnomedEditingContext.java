@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.commons.collect.LongSets.transform;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
@@ -36,18 +34,14 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.toArray;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,7 +65,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -81,7 +74,6 @@ import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -98,6 +90,10 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
 import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
@@ -106,35 +102,24 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -156,15 +141,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
 
 	/**
-	 * returns with a set of allowed concepts' ID. concept is allowed as preferred description type concept if 
-	 * has an associated active description type reference set member and is synonym or descendant of the synonym
-	 * @deprecated - move this to the caller
-	 */
-	public static Set<String> getAvailablePreferredTypeIds() {
-		return ApplicationContext.getInstance().getService(IClientSnomedComponentService.class).getAvailablePreferredTermIds();
-	}
-	
-	/**
 	 * Returns with a pair, identifying a preferred term associated with the specified SNOMED&nbsp;CT concept.
 	 * <br>This method may return with {@code null}.
 	 * <ul>
@@ -183,34 +159,31 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @deprecated - revise API
 	 */
 	public static Pair<String, IdStorageKeyPair> getPreferredTermMemberFromIndex(final Concept concept, String languageRefSetId) {
-		checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
-		checkNotNull(concept.cdoView(), "Underlying CDO view for the SNOMED CT concept argument was null.");
-		Preconditions.checkArgument(!concept.cdoView().isClosed(), "Underlying CDO view for the SNOMED CT concept argument was closed.");
-
-		final Collection<SnomedRefSetMemberIndexEntry> preferredTermMembers = 
-				new SnomedRefSetMembershipLookupService().getPreferredTermMembers(concept, languageRefSetId);
-		final SnomedRefSetMemberIndexEntry preferredMember = Iterables.getFirst(preferredTermMembers, null);
-		
-		if (null == preferredMember) {
-			return null;
-		}
-
-		//throw new exception since it should not happen at all
-		if (preferredTermMembers.size() > 1) {
-			final String message = "Multiple preferred terms are associated with a SNOMED CT concept: " + concept.getId() + " " + 
-					concept.getFullySpecifiedName() + "\nMembers: " + Arrays.toString(preferredTermMembers.toArray());
-			LOGGER.error(message);
-			//XXX akitta: do not throw exception for now, as the application cannot be tested with the dataset with duplicate preferred term members
-//			throw new IllegalArgumentException(message);
-		}
-		
-		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
+		throw new UnsupportedOperationException("Unsupported API");
+//		checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
+//		checkNotNull(concept.cdoView(), "Underlying CDO view for the SNOMED CT concept argument was null.");
+//		Preconditions.checkArgument(!concept.cdoView().isClosed(), "Underlying CDO view for the SNOMED CT concept argument was closed.");
+//
+//		final Collection<SnomedRefSetMemberIndexEntry> preferredTermMembers = 
+//				new SnomedRefSetMembershipLookupService().getPreferredTermMembers(concept, languageRefSetId);
+//		final SnomedRefSetMemberIndexEntry preferredMember = Iterables.getFirst(preferredTermMembers, null);
+//		
+//		if (null == preferredMember) {
+//			return null;
+//		}
+//
+//		//throw new exception since it should not happen at all
+//		if (preferredTermMembers.size() > 1) {
+//			final String message = "Multiple preferred terms are associated with a SNOMED CT concept: " + concept.getId() + " " + 
+//					concept.getFullySpecifiedName() + "\nMembers: " + Arrays.toString(preferredTermMembers.toArray());
+//			LOGGER.error(message);
+//			//XXX akitta: do not throw exception for now, as the application cannot be tested with the dataset with duplicate preferred term members
+////			throw new IllegalArgumentException(message);
+//		}
+//		
+//		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
 	}
-	
-	private static SnomedClientIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-	}
-	
+
 	public Concept buildDraftConceptFromNormalForm(final NormalFormWrapper normalForm) {
 		return buildDraftConceptFromNormalForm(normalForm, null);
 	}
@@ -252,6 +225,44 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return newConcept;
 	}
 	
+	public boolean isPreferred(Description description, String languageReferenceSet) {
+		if (null == description) {
+			LOGGER.warn("SNOMED CT description cannot be referenced. Description was null.");
+			return false;
+		}
+		
+		if (!CDOUtils.checkObject(description)) {
+			LOGGER.warn("Description cannot be referenced. Description ID: " + CDOUtils.getAttribute(description, SnomedPackage.eINSTANCE.getComponent_Id(), String.class));
+			return false;
+		}
+
+		if (!description.isActive()) { //inactive description cannot be preferred
+			return false;
+		}
+		
+		final String languageRefSetId = getLanguageRefSetId();
+		
+		if (SnomedConstants.Concepts.FULLY_SPECIFIED_NAME.equals(description.getType().getId())) { //FSN cannot be preferred term
+			return false;
+		}
+		
+		for (final SnomedLanguageRefSetMember languageMember : description.getLanguageRefSetMembers()) {
+			if (languageMember.isActive()) { //active language reference set member
+				
+				if (languageRefSetId.equals(languageMember.getRefSet().getIdentifierId())) { //language is relevant for the configured one
+					
+					if (SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(languageMember.getAcceptabilityId())
+							&& languageMember.getRefSetIdentifierId().equals(languageRefSetId)) { //language member is preferred
+						return true;
+					}
+				}
+				
+			}
+		}
+
+		return false;
+	}
+	
 	/**
 	 * Build a new child concept. All description will be replicated from the parent concept.
 	 * No NON IS_A relationship will be copied from the parent concept. One and only IS_A relationship will be created with parent concept destination.
@@ -278,7 +289,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		concept.setModule(getDefaultModuleConcept());
 		
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-		final Collection<String> preferredTermIds = getPreferredTermFromStoreIds(focusConcept, languageRefSet.getIdentifierId());
 	
 		for (final Description description : focusConcept.getDescriptions()) {
 			
@@ -291,7 +301,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final ComponentIdentifierPair<String> acceptabilityPair;
 			
 			//preferred acceptability if FSN or PT
-			if (preferredTermIds.contains(description.getId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
+			if (isPreferred(description, languageRefSet.getIdentifierId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 			} else {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
@@ -343,7 +353,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		concept.setModule(getDefaultModuleConcept());
 		
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-		final Collection<String> preferredTermIds = getPreferredTermFromStoreIds(selectedConcept, languageRefSet.getIdentifierId());
 	
 		for (final Description description : selectedConcept.getDescriptions()) {
 			
@@ -356,7 +365,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final ComponentIdentifierPair<String> acceptabilityPair;
 			
 			//preferred acceptability if FSN or PT
-			if (preferredTermIds.contains(description.getId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
+			if (isPreferred(description, languageRefSet.getIdentifierId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 			} else {
 				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
@@ -551,8 +560,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return SnomedConstants.QUALIFYING_RELATIONSHIP if destination toplevel is 'Qualifying value', {@code null} otherwise.
 	 */
 	private Concept getQualifyingCharacteristicType(final String destinationConceptid) {
-		final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		final SnomedConceptIndexEntry topLevelConcept = terminologyBrowser.getTopLevelConcept(
+		final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
+		final SnomedConceptDocument topLevelConcept = terminologyBrowser.getTopLevelConcept(
 				terminologyBrowser.getConcept(destinationConceptid));
 		if (topLevelConcept.getId().equals(QUALIFIER_VALUE_TOPLEVEL_CONCEPT)) {
 			return findConceptById(QUALIFYING_RELATIONSHIP);
@@ -807,15 +816,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return ApplicationContext.getInstance().getServiceChecked(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(transaction));
 	}
 	
-	/*returns with the description IDs of the concept where the descriptions are preferred terms as well. preferred terms are synonyms with preferred acceptability*/
-	private Collection<String> getPreferredTermFromStoreIds(final Concept concept, final String languageRefSetId) {
-		return Collections2.transform(new SnomedRefSetMembershipLookupService().getPreferredTermMembers(concept, languageRefSetId), new Function<SnomedRefSetMemberIndexEntry, String>() {
-			@Override public String apply(SnomedRefSetMemberIndexEntry member) {
-				return member.getReferencedComponentId();
-			}
-		});
-	}
-	
 	/**
 	 * This method build a concept with Simple type refset concept id. This is used only by the importer to add
 	 * the missing refset concept to the 0531 NEHTA releases
@@ -999,23 +999,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 
 	/**
-	 * Inactivates the specified SNOMED&nbsp;CT concept with all subtypes and all references. Also creates the required reference set memberships based on the inactivation reason.
-	 * @param monitor progress monitor for the operation.
-	 * @param conceptIds the identifier of the SNOMED&nbsp;CT concept to inactivate.
-	 * @return the inactivation plan what should be executed to perform the inactivation process.
-	 */
-	public SnomedInactivationPlan inactivateConceptAndSubtypes(@Nullable final IProgressMonitor monitor, final String... conceptIds) {
-		final IBranchPath branchPath = createPath(transaction);
-		final ISnomedComponentService componentService = getServiceForClass(ISnomedComponentService.class);
-		final LongSet storageKeys = componentService.getSelfAndAllSubtypeStorageKeysForInactivation(branchPath, conceptIds);
-		final Collection<CDOID> cdoIds = newHashSet(transform(storageKeys, STORAGE_KEY_TO_CDO_ID_FUNCTION));
-		if (null != monitor) {
-			monitor.beginTask("Creating inactivation plan...", cdoIds.size());
-		}
-		return internalInactivateConcept(createDefaultPlan(), false, monitor, toArray(cdoIds, CDOID.class));
-	}
-	
-	/**
 	 * Inactivates the given concepts and all relevant SNOMED&nbsp;CT component references these concepts. Inactivation reference set memberships
 	 * created when you perform the inactivation. This method return a plan to review the components which are going to be inactivated.
 	 * 
@@ -1089,9 +1072,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
 			
-			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<SnomedRelationshipIndexEntry, Long>() {
+			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<ISnomedRelationship, Long>() {
 				@Override
-				public Long apply(SnomedRelationshipIndexEntry input) {
+				public Long apply(ISnomedRelationship input) {
 					return input.getStorageKey();
 				}
 			}).toSet());
@@ -1108,17 +1091,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 			
 			//reference set members
-			final Collection<IIndexEntry> indexEntries 
-				= new SnomedRefSetMembershipLookupService().getMembers(CONCEPT , concept.getId());
-			indexEntries.addAll(new SnomedRefSetMembershipLookupService().getReferringMembers(concept.getId()));
+			final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByActive(true)
+				.filterByReferencedComponent(concept.getId())
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 			
-			for (final IIndexEntry indexEntry : indexEntries) {
-				
+			for (final SnomedReferenceSetMember member : members) {
 				if (monitor.isCanceled()) {
 					return SnomedInactivationPlan.NULL_IMPL;
 				}
-				
-				plan.markForInactivation(CDOUtils.getObjectIfExists(transaction, indexEntry.getStorageKey()));
+				plan.markForInactivation(lookup(member.getId(), SnomedRefSetMember.class));
 			}
 			
 			monitor.worked(1);
@@ -1268,20 +1253,21 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// a released refset member cannot be deleted. however, since a released refset member can
 		// only contain released concepts, we would not have made it this far if anyway
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(concept));
+		final List<SnomedRefSetMember> referringMembers = refSetEditingContext.getReferringMembers(concept);
+		deletionPlan.markForDeletion(referringMembers);
 		
 		//	concept deletion may affect (other) concept descriptions because the concept is being deleted is a member of description type reference set
-		List<SnomedRefSetMember> descriptionTypeRefSetMembers = refSetEditingContext.getReferringMembers(concept, SnomedRefSetType.DESCRIPTION_TYPE);
-		for (SnomedRefSetMember member : descriptionTypeRefSetMembers) {
-			for (SnomedDescriptionIndexEntry entry : getRelatedDescriptions(member.getReferencedComponentId())) {
-				final Description description = new SnomedDescriptionLookupService().getComponent(entry.getId(), transaction);
-				if (null == description) {
-					throw new SnowowlRuntimeException("Description does not exist in store with ID: " + entry.getId());
+		for (SnomedRefSetMember member : referringMembers) {
+			if (com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE.equals(member.getRefSetIdentifierId())) {
+				for (SnomedDescriptionIndexEntry entry : getRelatedDescriptions(member.getReferencedComponentId())) {
+					final Description description = lookup(entry.getId(), Description.class);
+					if (null == description) {
+						throw new SnowowlRuntimeException("Description does not exist in store with ID: " + entry.getId());
+					}
+					deletionPlan.addDirtyDescription(description);
 				}
-				deletionPlan.addDirtyDescription(description);
 			}
 		}
-		deletionPlan.markForDeletion(descriptionTypeRefSetMembers);
 		
 		deletionPlan.markForDeletion(concept);
 		deletionPlan.markForDeletion(concept.getOutboundRelationships());
@@ -1290,25 +1276,35 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 
 	public final List<Relationship> getInboundRelationships(String conceptId) {
-		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
+		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<ISnomedRelationship, Relationship>() {
 			@Override
-			public Relationship apply(SnomedRelationshipIndexEntry input) {
+			public Relationship apply(ISnomedRelationship input) {
 				return (Relationship) lookup(input.getStorageKey());
 			}
 		}).toList();
 	}
 
-	private List<SnomedRelationshipIndexEntry> getInboundRelationshipsFromIndex(String conceptId) {
-		final SnomedIndexService index = ApplicationContext.getInstance().getService(SnomedIndexService.class);
-		return index.search(BranchPathUtils.createPath(getTransaction()), SnomedRelationshipIndexQueryAdapter.findByDestinationId(conceptId));
+	private Iterable<ISnomedRelationship> getInboundRelationshipsFromIndex(String conceptId) {
+		return SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByDestination(conceptId)
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 	}
 
-	private Collection<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
-		return getIndexService().searchUnsorted(createQuery(conceptId));
-	}
-
-	private SnomedDescriptionIndexQueryAdapter createQuery(String conceptId) {
-		return new SnomedDescriptionReducedQueryAdapter(conceptId, SnomedDescriptionReducedQueryAdapter.SEARCH_DESCRIPTION_CONCEPT_ID);
+	private Iterable<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
+		return SnomedRequests.prepareSearchDescription()
+				.all()
+				.filterByConceptId(conceptId)
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedDescriptions, Iterable<SnomedDescriptionIndexEntry>>() {
+					@Override
+					public Iterable<SnomedDescriptionIndexEntry> apply(SnomedDescriptions input) {
+						return SnomedDescriptionIndexEntry.fromDescriptions(input);
+					}
+				}).getSync();
 	}
 
 	private void delete(Relationship relationship, boolean force) {
@@ -1430,7 +1426,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					continue;
 				}
 				
-				SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(member.getRefSetIdentifierId(), transaction);
+				final SnomedRefSet refSet = member.getRefSet();
 				
 				if (!(refSet instanceof SnomedStructuralRefSet)) { // XXX: also includes the previous null check for refSet
 					
@@ -1468,7 +1464,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			else if (eObject instanceof SnomedRefSetMember) {
 				// get the refset and remove the member from it's list
 				SnomedRefSetMember member = (SnomedRefSetMember) eObject;	
-				SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(member.getRefSetIdentifierId(), transaction);
+				SnomedRefSet refSet = member.getRefSet();
 
 				if (refSet != null) {
 					

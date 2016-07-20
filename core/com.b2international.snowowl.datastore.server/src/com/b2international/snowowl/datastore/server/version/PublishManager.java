@@ -57,17 +57,17 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
-import com.b2international.snowowl.datastore.server.index.InternalTerminologyRegistryServiceRegistry;
 import com.b2international.snowowl.datastore.version.IPublishManager;
 import com.b2international.snowowl.datastore.version.IPublishOperationConfiguration;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionBuilder;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableList;
 
 
 /**
@@ -267,9 +267,12 @@ public abstract class PublishManager implements IPublishManager {
 		return null == getConfiguration() ? getMainPath() : BranchPathUtils.createPath(getConfiguration().getParentBranchPath());
 	}
 
-	protected Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
-		return InternalTerminologyRegistryServiceRegistry.INSTANCE.getService(getRepositoryUuid()).getCodeSystemVersionsFromRepository(branchPath,
-				getRepositoryUuid());
+	private Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
+		return ImmutableList.<ICodeSystemVersion>copyOf(new CodeSystemRequests(getRepositoryUuid()).prepareSearchCodeSystemVersion()
+				.all()
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getItems());
 	}
 
 	private void publishTerminologyMetadataChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {

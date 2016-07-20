@@ -15,36 +15,23 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_OID;
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.SYSTEM_SHORT_NAME;
-
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.Searcher;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.ICodeSystem;
-import com.b2international.snowowl.datastore.request.SearchRequest;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
-import com.google.common.collect.Lists;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends SearchRequest<CodeSystems> {
+final class CodeSystemSearchRequest extends RevisionSearchRequest<CodeSystems> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -64,45 +51,25 @@ final class CodeSystemSearchRequest extends SearchRequest<CodeSystems> {
 
 	@Override
 	protected CodeSystems doExecute(final BranchContext context) throws IOException {
-		final Query query = createQuery();
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
-
-		final int totalHits = getTotalHits(searcher, query);
-
-		if (totalHits == 0) {
-			return new CodeSystems(Collections.<ICodeSystem> emptyList());
-		} else {
-			final List<ICodeSystem> codeSystems = Lists.newArrayList();
-			final TopDocs topDocs = searcher.search(query, totalHits);
-			final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-
-			for (final ScoreDoc scoreDoc : scoreDocs) {
-				final Document doc = searcher.doc(scoreDoc.doc);
-				codeSystems.add(CodeSystemEntry.builder(doc).build());
-			}
-
-			return new CodeSystems(codeSystems);
-		}
-	}
-
-	private Query createQuery() {
-		final BooleanQuery query = new BooleanQuery();
+		final ExpressionBuilder query = Expressions.builder();
 
 		if (!StringUtils.isEmpty(shortName)) {
-			final TermQuery shortNameQuery = new TermQuery(new Term(SYSTEM_SHORT_NAME, shortName));
-			query.add(shortNameQuery, Occur.MUST);
+			query.must(CodeSystemEntry.Expressions.shortName(shortName));
 		}
 
 		if (!StringUtils.isEmpty(oid)) {
-			final TermQuery oidQuery = new TermQuery(new Term(SYSTEM_OID, oid));
-			query.add(oidQuery, Occur.MUST);
+			query.must(CodeSystemEntry.Expressions.oid(oid));
 		}
+		
+		final Searcher searcher = context.service(Searcher.class);
 
-		if (!query.clauses().isEmpty()) {
-			return query;
-		} else {
-			return new MatchAllDocsQuery();
-		}
+		final Hits<CodeSystemEntry> hits = searcher.search(Query.select(CodeSystemEntry.class)
+				.where(query.build())
+				.offset(offset())
+				.limit(limit())
+				.build());
+
+		return new CodeSystems(hits.getHits(), offset(), limit(), hits.getTotal());
 	}
 
 	@Override

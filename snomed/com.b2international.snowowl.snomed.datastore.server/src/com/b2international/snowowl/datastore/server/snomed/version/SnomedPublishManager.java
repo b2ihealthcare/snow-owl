@@ -15,43 +15,51 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.version;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
+import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.CompareUtils;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.base.Function;
 
 /**
  * Publish manager for SNOMED&nbsp;CT ontology.
@@ -64,21 +72,47 @@ import com.google.common.collect.Sets;
  */
 public class SnomedPublishManager extends PublishManager {
 
-	private final Collection<SnomedModuleDependencyRefSetMember> newModuleDependencyRefSetMembers = Sets.newHashSet();
-	private final Collection<String> componentIdsToPublish = Sets.newHashSet();
-	
 	private final SnomedIdentifiers snomedIdentifiers;
-	private final ISnomedComponentService componentService;
+	
+	private Set<String> componentIdsToPublish = newHashSet();
+	private Collection<SnomedModuleDependencyRefSetMember> newModuleDependencyRefSetMembers;
 	
 	public SnomedPublishManager() {
 		this.snomedIdentifiers = new SnomedIdentifiers(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
-		this.componentService = ApplicationContext.getInstance().getServiceChecked(ISnomedComponentService.class);
 	}
 	
 	@Override
 	protected LongSet getUnversionedComponentStorageKeys(final IBranchPath branchPath) {
-		final ISnomedComponentService componentService = getServiceForClass(ISnomedComponentService.class);
-		return componentService.getAllUnpublishedComponentStorageKeys(branchPath);
+		return SnomedRequests.prepareBulkRead()
+				.setBody(BulkRequest.<BranchContext>create()
+						.add(SnomedRequests.prepareSearchConcept().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+						.add(SnomedRequests.prepareSearchDescription().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+						.add(SnomedRequests.prepareSearchRelationship().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+						.add(SnomedRequests.prepareSearchMember().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)))
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<BulkResponse, LongSet>() {
+					@Override
+					public LongSet apply(BulkResponse input) {
+						// index all unpublished components by its unique ID and storageKey
+						final LongSet unpublishedStorageKeys = PrimitiveSets.newLongOpenHashSet();
+						for (CollectionResource<?> hits : input.getResponses(CollectionResource.class)) {
+							for (Object hit : hits) {
+								if (hit instanceof SnomedComponent) {
+									final SnomedComponent component = (SnomedComponent) hit;
+									final String id = component.getId();
+									if (component instanceof SnomedCoreComponent) {
+										// if core component mark ID as publishable
+										componentIdsToPublish.add(id);
+									}
+									unpublishedStorageKeys.add(((SnomedComponent) hit).getStorageKey());
+								}
+							}
+						}
+						return unpublishedStorageKeys;
+					}
+				})
+				.getSync();
 	}
 
 	@Override
@@ -123,43 +157,20 @@ public class SnomedPublishManager extends PublishManager {
 	@Override
 	protected void preProcess(final LongSet storageKeys) {
 		collectModuleDependencyChanges(storageKeys);
-		collectComponentIdsToPublish(storageKeys);
 	}
 
 	private void collectModuleDependencyChanges(final LongSet storageKeys) {
 		LOGGER.info("Collecting module dependency changes...");
-		newModuleDependencyRefSetMembers.addAll(collectModuleDependecyRefSetMembers(storageKeys));
+		newModuleDependencyRefSetMembers = ApplicationContext.getServiceForClass(RepositoryManager.class)
+			.get(getRepositoryUuid())
+			.service(RevisionIndex.class)
+			.read(getBranchPathForPublication().getPath(), new RevisionIndexRead<Collection<SnomedModuleDependencyRefSetMember>>() {
+				@Override
+				public Collection<SnomedModuleDependencyRefSetMember> execute(RevisionSearcher searcher) throws IOException {
+					return SnomedModuleDependencyCollectorService.INSTANCE.collectModuleMembers(searcher, getTransaction(), storageKeys);
+				}
+			});
 		LOGGER.info("Collecting module dependency changes successfully finished.");
-	}
-
-	private void collectComponentIdsToPublish(final LongSet storageKeys) {
-		LOGGER.info("Collecting component IDs for ID publication...");
-		final Collection<IdStorageKeyPair> idStorageKeyPairs = getIdStorageKeyPairs(storageKeys);
-		
-		for (final IdStorageKeyPair idStorageKeyPair : idStorageKeyPairs) {
-			componentIdsToPublish.add(idStorageKeyPair.getId());
-		}
-		
-		LOGGER.info("Collecting component IDs for ID publication successfully finished.");
-	}
-
-	private Collection<IdStorageKeyPair> getIdStorageKeyPairs(final LongSet storageKeys) {
-		final Collection<IdStorageKeyPair> pairs = Lists.newArrayList();
-		pairs.addAll(componentService.getAllComponentIdStorageKeys(getBranchPathForPublication(),
-				SnomedTerminologyComponentConstants.CONCEPT_NUMBER));
-		pairs.addAll(componentService.getAllComponentIdStorageKeys(getBranchPathForPublication(),
-				SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER));
-		pairs.addAll(componentService.getAllComponentIdStorageKeys(getBranchPathForPublication(),
-				SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER));
-		
-		final Collection<IdStorageKeyPair> filteredPairs = Collections2.filter(pairs, new Predicate<IdStorageKeyPair>() {
-			@Override
-			public boolean apply(IdStorageKeyPair input) {
-				return storageKeys.contains(input.getStorageKey());
-			}
-		});
-		
-		return filteredPairs;
 	}
 	
 	@Override
@@ -201,7 +212,7 @@ public class SnomedPublishManager extends PublishManager {
 	
 	@Override
 	public void postCommit() {
-		if (!componentIdsToPublish.isEmpty()) {
+		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
 			snomedIdentifiers.publish(componentIdsToPublish);
 		}
 		super.postCommit();
@@ -219,10 +230,11 @@ public class SnomedPublishManager extends PublishManager {
 
 	/**Updates all new module dependency reference set members.*/
 	private void adjustNewModuleDependencyRefSetMembers() {
+		final SnomedRegularRefSet moduleDependencyRefSet = getEditingContext().lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
 		for (final SnomedModuleDependencyRefSetMember member : newModuleDependencyRefSetMembers) {
 			adjustRelased(member);
 			adjustEffectiveTime(member);
-			processNewModuleDependencyMember(member);
+			moduleDependencyRefSet.getMembers().add(member);
 		}
 	}
 
@@ -259,30 +271,6 @@ public class SnomedPublishManager extends PublishManager {
 		if (!member.isReleased()) {
 			member.setReleased(true);
 		}
-	}
-
-	/**Processes the new module dependency reference set member by adding it to the underlying transaction.*/
-	private void processNewModuleDependencyMember(final SnomedModuleDependencyRefSetMember member) {
-		getModuleDependencyRefSet().getMembers().add(member);
-	}
-
-	private SnomedRegularRefSet getModuleDependencyRefSet() {
-		return (SnomedRegularRefSet) new SnomedRefSetLookupService().getComponent(REFSET_MODULE_DEPENDENCY_TYPE, getTransaction());
-	}
-
-	/**Collects all new module dependency reference set members*/
-	private Collection<SnomedModuleDependencyRefSetMember> collectModuleDependecyRefSetMembers(final LongSet storageKeys) {
-		return SnomedModuleDependencyCollectorService.INSTANCE.collectModuleMembers(getTransaction(), storageKeys);
-	}
-	
-	@Override
-	protected Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
-		return new CodeSystemRequests(getRepositoryUuid())
-				.prepareSearchCodeSystemVersion()
-				.setCodeSystemShortName(getConfiguration().getCodeSystemShortName())
-				.build(IBranchPath.MAIN_BRANCH)
-				.executeSync(getEventBus())
-				.getItems();
 	}
 	
 }

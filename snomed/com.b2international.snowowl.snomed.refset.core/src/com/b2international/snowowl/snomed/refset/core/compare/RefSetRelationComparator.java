@@ -31,10 +31,9 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.refset.core.compare.ReferencedComponentDelta.DeltaKind;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Function;
@@ -48,7 +47,7 @@ import com.google.common.collect.Sets;
  */
 public class RefSetRelationComparator {
 
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
+	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
 	private SubsumptionTester delegateSubsumptionTester;
 
 	/**
@@ -56,7 +55,7 @@ public class RefSetRelationComparator {
 	 * 
 	 * @param terminologyBrowser the {@link SnomedClientTerminologyBrowser terminology browser} to use
 	 */
-	public RefSetRelationComparator(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser) {
+	public RefSetRelationComparator(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
 		this.terminologyBrowser = terminologyBrowser;
 	}
 
@@ -74,13 +73,13 @@ public class RefSetRelationComparator {
 	 * @throws OperationCanceledException
 	 *             if the progress monitor has been cancelled
 	 */
-	public List<ReferencedComponentDelta> compare(Collection<SnomedConceptIndexEntry> members1, Collection<SnomedConceptIndexEntry> members2, IProgressMonitor monitor) {
+	public List<ReferencedComponentDelta> compare(Collection<SnomedConceptDocument> members1, Collection<SnomedConceptDocument> members2, IProgressMonitor monitor) {
 		
 		this.delegateSubsumptionTester = new SubsumptionTester(terminologyBrowser);
 
-		Set<SnomedConceptIndexEntry> parentReferencedComponents = (Set<SnomedConceptIndexEntry>) (members1 instanceof Set<?> ? members1 : Sets.newHashSet(members1));
-		Set<SnomedConceptIndexEntry> childReferencedComponents = (Set<SnomedConceptIndexEntry>) (members2 instanceof Set<?> ? members2 : Sets.newHashSet(members2));
-		Set<SnomedConceptIndexEntry> childReferencedComponentsFiltered = Sets.difference(childReferencedComponents, parentReferencedComponents);
+		Set<SnomedConceptDocument> parentReferencedComponents = (Set<SnomedConceptDocument>) (members1 instanceof Set<?> ? members1 : Sets.newHashSet(members1));
+		Set<SnomedConceptDocument> childReferencedComponents = (Set<SnomedConceptDocument>) (members2 instanceof Set<?> ? members2 : Sets.newHashSet(members2));
+		Set<SnomedConceptDocument> childReferencedComponentsFiltered = Sets.difference(childReferencedComponents, parentReferencedComponents);
 
 		// detect added and related
 		Iterator<Collection<ReferencedComponentDelta>> addedOrSubsumedDeltaIterator = ConcurrentCollectionUtils.transform(
@@ -105,34 +104,25 @@ public class RefSetRelationComparator {
 		return childDeltaList;
 	}
 
-	private final class AddedOrRelatedReferencedComponentDeltaFunction implements Function<SnomedConceptIndexEntry, Collection<ReferencedComponentDelta>> {
-		private final Collection<SnomedConceptIndexEntry> referencedComponents;
+	private final class AddedOrRelatedReferencedComponentDeltaFunction implements Function<SnomedConceptDocument, Collection<ReferencedComponentDelta>> {
+		private final Collection<SnomedConceptDocument> referencedComponents;
 		private SnomedHierarchy hierarchy;
-		private LongKeyMap statements;
 
-		public AddedOrRelatedReferencedComponentDeltaFunction(Collection<SnomedConceptIndexEntry> referencedComponents) {
+		public AddedOrRelatedReferencedComponentDeltaFunction(Collection<SnomedConceptDocument> referencedComponents) {
 			final Runnable initBuilder = new Runnable() {
 				@Override public void run() {
 					hierarchy = SnomedHierarchy.forActiveBranch();
 				}
 			};
 			
-			final Runnable getStatements = new Runnable() {
-
-				@Override public void run() {
-					statements = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getAllActiveStatements();
-				}
-			};
-			
-			ForkJoinUtils.runInParallel(initBuilder, getStatements);
-			
+			initBuilder.run();
 			this.referencedComponents = referencedComponents;
 		}
 
 		@Override
-		public Collection<ReferencedComponentDelta> apply(SnomedConceptIndexEntry id) {
+		public Collection<ReferencedComponentDelta> apply(SnomedConceptDocument id) {
 			Collection<ReferencedComponentDelta> componentDeltas = new ArrayList<ReferencedComponentDelta>();
-			for (SnomedConceptIndexEntry refComponent : referencedComponents) {
+			for (SnomedConceptDocument refComponent : referencedComponents) {
 				if (isSubsumed(refComponent, id)) {
 					componentDeltas.add(new ReferencedComponentDelta(id.getId(), id.getLabel(), id.getIconId(), DeltaKind.SUBSUMED, refComponent.getId(), refComponent.getLabel(), refComponent.getIconId()));
 				}
@@ -151,12 +141,13 @@ public class RefSetRelationComparator {
 			return componentDeltas;
 		}
 
-		private boolean isSubsumed(SnomedConceptIndexEntry refComponentId, SnomedConceptIndexEntry id) {
+		private boolean isSubsumed(SnomedConceptDocument refComponentId, SnomedConceptDocument id) {
 			return delegateSubsumptionTester.isSubsumed(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), hierarchy);
 		}
 
-		private boolean isRelated(SnomedConceptIndexEntry refComponentId, SnomedConceptIndexEntry id) {
-			return RelationTester.isRelated(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), statements);
+		private boolean isRelated(SnomedConceptDocument refComponentId, SnomedConceptDocument id) {
+			throw new UnsupportedOperationException("Unsupported API, refactor refset relation comparation");
+//			return RelationTester.isRelated(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), statements);
 		}
 	}
 }

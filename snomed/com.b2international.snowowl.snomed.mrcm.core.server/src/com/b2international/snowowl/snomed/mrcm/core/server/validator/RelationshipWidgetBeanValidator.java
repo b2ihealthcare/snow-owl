@@ -25,7 +25,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
@@ -43,12 +42,6 @@ import com.google.common.collect.Multimap;
  * @since 4.3
  */
 public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidator {
-
-	private SnomedTerminologyBrowser browser;
-
-	public RelationshipWidgetBeanValidator(SnomedTerminologyBrowser browser) {
-		this.browser = browser;
-	}
 
 	@Override
 	public void validate(final IBranchPath branch, ConceptWidgetBean concept, ValidationStatusReporter reporter) {
@@ -98,7 +91,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 					if (destinationId.equals(snomedConceptId)) {
 						reporter.error(relationshipWidgetBean, "For Is-a relationships, the destination should not be the same as the edited concept.");
 					} else {
-						if (browser.getConcept(branch, snomedConceptId) == null) {
+						if (!DescriptionWidgetBeanValidator.exists(branch, snomedConceptId)) {
 							continue; // new concept. it does not exist in store. cannot cause cycle.
 						}
 						

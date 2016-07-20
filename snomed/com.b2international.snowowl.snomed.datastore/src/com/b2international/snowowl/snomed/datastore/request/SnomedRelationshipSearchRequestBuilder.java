@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.datastore.request.SearchRequest;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequest.OptionKey;
 
@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSe
  */
 public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRelationshipSearchRequestBuilder, SnomedRelationships> {
 
-	protected SnomedRelationshipSearchRequestBuilder(String repositoryId) {
+	SnomedRelationshipSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
 
@@ -39,8 +39,12 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.SOURCE, Collections3.toImmutableSet(sourceIds));
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByType(String termFilter) {
-		return addOption(OptionKey.TYPE, termFilter);
+	public SnomedRelationshipSearchRequestBuilder filterByType(String typeId) {
+		return addOption(OptionKey.TYPE, typeId);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByType(Collection<String> typeIds) {
+		return addOption(OptionKey.TYPE, typeIds);
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByDestination(String destinationId) {
@@ -51,12 +55,17 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.DESTINATION, Collections3.toImmutableSet(destinationIds));
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicType(String termFilter) {
-		return addOption(OptionKey.CHARACTERISTIC_TYPE, termFilter);
+	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicType(String characteristicType) {
+		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicType);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByGroup(int group) {
+		return addOption(OptionKey.GROUP, group);
 	}
 	
 	@Override
-	protected SearchRequest<SnomedRelationships> createSearch() {
+	protected RevisionSearchRequest<SnomedRelationships> createSearch() {
 		return new SnomedRelationshipSearchRequest();
 	}
+
 }

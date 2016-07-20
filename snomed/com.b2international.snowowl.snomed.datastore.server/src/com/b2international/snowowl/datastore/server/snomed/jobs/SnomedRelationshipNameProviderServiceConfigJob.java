@@ -15,16 +15,20 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.jobs;
 
+import org.eclipse.net4j.util.container.IPluginContainer;
+
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
-import com.b2international.snowowl.datastore.serviceconfig.IndexServiceTrackingConfigJob;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJob;
+import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.datastore.server.SnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 
 /**
  * Job for initializing and configuring the SNOMED CT relationship name provider.
  */
-public class SnomedRelationshipNameProviderServiceConfigJob extends IndexServiceTrackingConfigJob<ISnomedRelationshipNameProvider, SnomedIndexService> {
+public class SnomedRelationshipNameProviderServiceConfigJob extends ServiceConfigJob {
 
 	/**
 	 * Creates a new job for SNOMED CT relationship name provider service initialization.
@@ -34,17 +38,16 @@ public class SnomedRelationshipNameProviderServiceConfigJob extends IndexService
 	}
 
 	@Override
-	protected Class<SnomedIndexService> getIndexServiceClass() {
-		return SnomedIndexService.class;
-	}
+	protected boolean initService() throws SnowowlServiceException {
+		if (!isRunningInEmbeddedMode()) {
+			return false;
+		}
 
-	@Override
-	protected Class<ISnomedRelationshipNameProvider> getTargetServiceClass() {
-		return ISnomedRelationshipNameProvider.class;
+		final SnomedRelationshipNameProvider service = new SnomedRelationshipNameProvider();
+		ApplicationContext.getInstance().registerService(ISnomedRelationshipNameProvider.class, service);
+		RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE).registerClassLoader(SnomedRelationshipNameProvider.class, service.getClass().getClassLoader());
+		
+		return true;
 	}
-
-	@Override
-	protected ISnomedRelationshipNameProvider createServiceImplementation(final SnomedIndexService indexService) {
-		return new SnomedRelationshipNameProvider(indexService);
-	}
+	
 }

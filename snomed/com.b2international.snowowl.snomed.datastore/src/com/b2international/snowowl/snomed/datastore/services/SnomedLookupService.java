@@ -15,15 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.services;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -39,15 +33,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.ComponentTextProvider;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
-import com.b2international.snowowl.datastore.CodeSystemService;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -55,28 +44,17 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Lookup service for the most common terminology lookup functions.
@@ -87,20 +65,9 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedLookupService.class);
 	/**Predicate which returns with {@code false} if a description is FSN or preferred term.*/
-	private static final Predicate<SnomedDescriptionFragment> ACCEPTED_DESCRIPTION_PREDICATE = new Predicate<SnomedDescriptionFragment>() {
-		@Override public boolean apply(final SnomedDescriptionFragment descriptionFragment) {
-			return !Concepts.FULLY_SPECIFIED_NAME.equals(descriptionFragment.getTypeId()) && !descriptionFragment.isPreferred();
-		}
-	};
 	private static final long SYNONYM_ID = Long.valueOf(Concepts.SYNONYM);
 	private static final long FSN_ID = Long.valueOf(Concepts.FULLY_SPECIFIED_NAME);
 
-	private static final Function<IComponent<String>, String> COMPONENT_TO_ID_FUNCTION = new Function<IComponent<String>, String>() {
-		@Override public String apply(final IComponent<String> component) {
-			return component.getId();
-		}
-	};
-	
 	/* predicate for excluding inactive/retired SNOMED CT components. */
 	private static final Predicate<Component> ACTIVE_PREDICATE = new Predicate<Component>() {
 		@Override
@@ -193,113 +160,6 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	}
 	
 	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllDescriptionsForConcept(java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllDescriptionsForConcept(final String conceptId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		return getAllDescriptionsForConcept(conceptId, getDefaultLanguageRefSetId());
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllDescriptionsForConcept(final String conceptId, final String languageRefSetId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		Preconditions.checkNotNull(languageRefSetId, "Language reference set identifier concept ID argument cannot be null.");
-		return getSnomedComponentService().getDescriptionFragmentsForConcept(conceptId, languageRefSetId);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getDescriptionsForConcept(final String conceptId, final String descriptionTypeId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		Preconditions.checkNotNull(descriptionTypeId, "Description type concept ID argument cannot be null.");
-		return getDescriptionsForConcept(conceptId, descriptionTypeId, getDefaultLanguageRefSetId());
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getDescriptionsForConcept(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getDescriptionsForConcept(final String conceptId, final String descriptionTypeId, final String languageRefSetId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		Preconditions.checkNotNull(descriptionTypeId, "Description type concept ID argument cannot be null.");
-		Preconditions.checkNotNull(languageRefSetId, "Language reference set identifier concept ID argument cannot be null.");
-		return Lists.newArrayList(Collections2.filter(getAllDescriptionsForConcept(conceptId, languageRefSetId), new Predicate<SnomedDescriptionFragment>() {
-			@Override public boolean apply(SnomedDescriptionFragment descriptionFragment) {
-				return descriptionTypeId.equals(descriptionFragment.getTypeId());
-			}
-		}));
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPrferredTermForConcept(java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreferredTermForConcept(final String conceptId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		return getPreferredTermForConcept(conceptId, getDefaultLanguageRefSetId());
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPrferredTermForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreferredTermForConcept(final String conceptId, final String languageRefSetId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		Preconditions.checkNotNull(languageRefSetId, "Language reference set identifier concept ID argument cannot be null.");
-		return Iterables.getOnlyElement(Lists.newArrayList(Collections2.filter(getAllDescriptionsForConcept(conceptId, languageRefSetId), new Predicate<SnomedDescriptionFragment>() {
-			@Override public boolean apply(final SnomedDescriptionFragment descriptionFragment) {
-				return descriptionFragment.isPreferred();
-			}
-		})), null);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllAcceptedDescriptionsForConcept(java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllAcceptedDescriptionsForConcept(final String conceptId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		return getAllAcceptedDescriptionsForConcept(conceptId, getDefaultLanguageRefSetId());
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAllAcceptedDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAllAcceptedDescriptionsForConcept(final String conceptId, final String languageRefSetId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		Preconditions.checkNotNull(languageRefSetId, "Language reference set identifier concept ID argument cannot be null.");
-		return Lists.newArrayList(Collections2.filter(getAllDescriptionsForConcept(conceptId, languageRefSetId), ACCEPTED_DESCRIPTION_PREDICATE));
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAcceptedDescriptionsForConcept(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAcceptedDescriptionsForConcept(final String conceptId, final String descriptionTypeId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		Preconditions.checkNotNull(descriptionTypeId, "Description type concept ID argument cannot be null.");
-		return getAcceptedDescriptionsForConcept(conceptId, descriptionTypeId, getDefaultLanguageRefSetId());
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getAcceptedDescriptionsForConcept(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Collection<SnomedDescriptionFragment> getAcceptedDescriptionsForConcept(final String conceptId, final String descriptionTypeId, final String languageRefSetId) {
-		Preconditions.checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
-		Preconditions.checkNotNull(descriptionTypeId, "Description type concept ID argument cannot be null.");
-		Preconditions.checkNotNull(languageRefSetId, "Language reference set identifier concept ID argument cannot be null.");
-		return Lists.newArrayList(Collections2.filter(getDescriptionsForConcept(conceptId, descriptionTypeId, languageRefSetId), ACCEPTED_DESCRIPTION_PREDICATE));
-	}
-
-	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getDescriptionTerms(java.lang.String)
 	 */
 	@Override
@@ -331,25 +191,6 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		return Iterables.toArray(Collections2.transform(activeDescriptions, DESCRIPTION_TO_TERM), String.class);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#isPreferredTermExists(long)
-	 */
-	@Override
-	public boolean isPreferredTermExists(final long conceptId) {
-		return !StringUtils.isEmpty(getPreferredTerm(conceptId));
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPreferredTerm(long)
-	 */
-	@Override
-	public String getPreferredTerm(final long conceptId) {
-		return getPreferredTerm(String.valueOf(conceptId));
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPreferredTerm(java.lang.String)
-	 */
 	@Override
 	public String getPreferredTerm(final String conceptId) {
 		return conceptTextProvider.getText(conceptId);
@@ -519,97 +360,6 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 	}
 
 	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getDescriptionsWithPreferredTerm(java.lang.String, java.lang.String, boolean)
-	 */
-	@Override
-	public List<IComponent<String>> getDescriptionsWithPreferredTerm(final String conceptId, final String descriptionTypeId, final boolean duplicatePreferredTerm) {
-	
-		if (StringUtils.isEmpty(conceptId)) { //return with empty list if argument is invalid
-			return Collections.emptyList();
-		}
-		
-		if (StringUtils.isEmpty(descriptionTypeId)) { //return with empty list if argument is invalid
-			return Collections.emptyList();
-		}
-		
-		if (Concepts.FULLY_SPECIFIED_NAME.equals(descriptionTypeId)) { //FSN is not supported
-			return Collections.emptyList();	
-		}
-		
-		final SnomedClientTerminologyBrowser browser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		if (null == browser.getConcept(conceptId)) { //concept does not exist in store
-			return Collections.emptyList();
-		}
-		
-		//index service for core SNOMED CT component
-		final SnomedClientIndexService indexService = 
-				ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		
-		//query adapter for getting back all the active descriptions of the concept
-		final SnomedDescriptionIndexQueryAdapter descriptionAdapter = 
-				SnomedDescriptionIndexQueryAdapter.createFindByConceptIds(conceptId);
-		
-		//get all descriptions for the concept
-		final Collection<SnomedDescriptionIndexEntry> allDescriptions = 
-				indexService.searchUnsorted(descriptionAdapter); 
-	
-		//create a description ID - description map
-		final Map<String, SnomedDescriptionIndexEntry> descriptionMap = 
-				Maps.newHashMap(Maps.uniqueIndex(allDescriptions, COMPONENT_TO_ID_FUNCTION)); //has to wrap to be mutable
-		
-		//we have to filter out FSN descriptions as it also associated with language reference set member with preferred acceptability
-		for (final Iterator<SnomedDescriptionIndexEntry> itr = descriptionMap.values().iterator(); itr.hasNext(); /* */) {
-			final SnomedDescriptionIndexEntry entry = itr.next();
-			if (Concepts.FULLY_SPECIFIED_NAME.equals(entry.getTypeId())) { //remove FSNs from the map
-				itr.remove();
-			}
-		}
-		
-		//index service for SNOMED CT reference set and reference set members
-		final SnomedClientIndexService refSetIndexService = 
-				ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-		
-		//index query adapter for getting back all the preferred term members
-		final SnomedRefSetMembershipIndexQueryAdapter preferredMemberAdapter = 
-				SnomedRefSetMembershipIndexQueryAdapter.createFindPreferredTermMembersQuery(Lists.newArrayList(descriptionMap.keySet()));
-		
-		//initialize list to the return
-		final List<IComponent<String>> descriptions = Lists.newArrayListWithCapacity(descriptionMap.size());
-		
-		//get back preferred language reference set members
-		final Collection<SnomedRefSetMemberIndexEntry> preferredMembers = 
-				refSetIndexService.searchUnsorted(preferredMemberAdapter); //better estimation
-		
-		//get the first PT
-		//add the PT (consider only one description as the preferred term) first
-		for (final SnomedRefSetMemberIndexEntry preferredMember : preferredMembers) {
-			
-			if (!preferredMember.isActive()) { //ignore inactive members
-				continue;
-			}
-			
-			//get description from map
-			final SnomedDescriptionIndexEntry descriptionEntry = descriptionMap.get(preferredMember.getReferencedComponentId());
-			if (null != descriptionEntry) { //if we found the proper PT
-				descriptions.add(descriptionEntry); //add it to the result list 
-				if (!duplicatePreferredTerm) { //if duplicate term is allowed do not remove it
-					descriptionMap.remove(descriptionEntry.getId()); //and remove it from the map to avoid duplicate
-				}
-				break;
-			}
-		}
-		
-		//add all the rest if description type ID equals with the specified one
-		for (final SnomedDescriptionIndexEntry otherDescription : descriptionMap.values()) {
-			if (descriptionTypeId.equals(otherDescription.getTypeId())) {
-				descriptions.add(otherDescription);
-			}
-		}
-		
-		return descriptions;
-	}
-
-	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#generateNewConceptId()
 	 */
 	@Override
@@ -633,81 +383,10 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		return generateNewComponsnetId(ComponentCategory.RELATIONSHIP);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPreviousPreferredTerm(java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreviousPreferredTerm(final String conceptId) {
-		return getPreviousPreferredTerm(conceptId, getCurrentVersionForUser().getVersionId());
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.services.ISnomedLookupService#getPreviousPreferredTerm(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public SnomedDescriptionFragment getPreviousPreferredTerm(final String conceptId, final String previousVersionId) {
-		Preconditions.checkNotNull(conceptId, "Concept ID argument cannot be null.");
-		Preconditions.checkNotNull(previousVersionId, "Previous version ID argument cannot be null.");
-		
-		//no versions exist (yet)
-		if (IBranchPath.MAIN_BRANCH.equals(previousVersionId)) {
-			return null;
-		}
-		
-		final Collection<ICodeSystemVersion> versions = getServiceForClass(CodeSystemService.class).getAllTags(SnomedDatastoreActivator.REPOSITORY_UUID);
-		final Set<String> versionIds = Sets.newHashSet(Iterables.transform(versions, new Function<ICodeSystemVersion, String>() {
-			@Override public String apply(final ICodeSystemVersion version) {
-				return version.getVersionId();
-			}
-		}));
-		if (!versionIds.contains(previousVersionId)) {
-			final String msg = "Version '" + previousVersionId + "' does not exist for SNOMED CT";
-			LOGGER.warn(msg);
-			return null;
-		}
-		
-		final IBranchPath mainPath = BranchPathUtils.createMainPath();
-		final IBranchPath previousVersionBranchPath = BranchPathUtils.createPath(mainPath, previousVersionId);
-		
-		final String currentPt = getPreferredTerm(conceptId);
-		final String previousPt = getPreferredTerm(previousVersionBranchPath, conceptId);
-		if (currentPt.equals(previousPt)) {
-			return null; //PT has not changed
-		}
-		
-		final Collection<SnomedDescriptionFragment> previousDescriptions = //
-				getComponentService().getDescriptionFragmentsForConcept(previousVersionBranchPath, conceptId, getDefaultLanguageRefSetId());
-		
-		return Iterables.getOnlyElement(Iterables.filter(previousDescriptions, new Predicate<SnomedDescriptionFragment>() {
-			@Override public boolean apply(final SnomedDescriptionFragment description) {
-				return description.isPreferred();
-			}
-		}), null);
-		
-	}
-
-	private String getPreferredTerm(final IBranchPath branchPath, final String conceptId) {
-		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
-	}
-
-	private ISnomedComponentService getComponentService() {
-		return ApplicationContext.getInstance().getService(ISnomedComponentService.class);
-	}
-	
 	/*generates and returns with a brand new, non-existing component ID based on the component nature argument.*/
 	private String generateNewComponsnetId(final ComponentCategory componentNature) {
 		Preconditions.checkNotNull(componentNature, "Component nature argument cannot be null.");
 		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class).generate(SnomedEditingContext.getDefaultNamespace(), componentNature);
-	}
-	
-	private ICodeSystemVersion getCurrentVersionForUser() {
-		return getServiceForClass(CodeSystemService.class).getCurrentVersionForRepository(getUserId(), SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
-	
-	private String getUserId() {
-		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 	}
 	
 	private boolean isDescriptionExist(final String[] descriptionTerms, final CaseSignificance caseSensitivity, final String termToMatch) {
@@ -797,18 +476,6 @@ public class SnomedLookupService implements IDisposableService, ISnomedLookupSer
 		return CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.CONCEPT);
 	}
 	
-	private String getDefaultLanguageRefSetId() {
-		return getDefaultLanguageConfiguration().getLanguageRefSetId();
-	}
-
-	private LanguageConfiguration getDefaultLanguageConfiguration() {
-		return ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration();
-	}
-	
-	private IClientSnomedComponentService getSnomedComponentService() {
-		return ApplicationContext.getInstance().getService(IClientSnomedComponentService.class);
-	}
-
 	/**
 	 * Predicate for checking a SNOMED&nbsp;CT component by its unique ID.
 	 * 

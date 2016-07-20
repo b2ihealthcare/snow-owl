@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.api.index.IIndexEntry;
  * <li><em>{@link #getStorageKey() storage key}</em>
  * <li><em>{@link #getIconId() icon ID}</em>
  * </ul>
- * 
+ * @deprecated - from 4.7, use {@link AbstractRevisionIndexEntry} instead
  */
 public abstract class AbstractIndexEntry implements IIndexEntry, IconIdProvider<String> {
 

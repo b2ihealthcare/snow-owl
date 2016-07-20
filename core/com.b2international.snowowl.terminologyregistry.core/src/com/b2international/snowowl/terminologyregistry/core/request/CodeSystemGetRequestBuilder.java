@@ -16,9 +16,9 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.BaseResourceRequest;
 import com.b2international.snowowl.datastore.request.BaseResourceRequestBuilder;
-import com.b2international.snowowl.terminologyregistry.core.index.CodeSystemEntry;
 
 /**
  * @since 4.7

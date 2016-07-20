@@ -15,37 +15,23 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_SYSTEM_SHORT_NAME;
-import static com.b2international.snowowl.terminologyregistry.core.index.TerminologyRegistryIndexConstants.VERSION_VERSION_ID;
-
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.Searcher;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.request.SearchRequest;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionEntryBuilder;
-import com.google.common.collect.Lists;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 
 /**
  * @since 4.7
  */
-final class CodeSystemVersionSearchRequest extends SearchRequest<CodeSystemVersions> {
+final class CodeSystemVersionSearchRequest extends RevisionSearchRequest<CodeSystemVersions> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -65,46 +51,25 @@ final class CodeSystemVersionSearchRequest extends SearchRequest<CodeSystemVersi
 
 	@Override
 	protected CodeSystemVersions doExecute(final BranchContext context) throws IOException {
-		final Query query = createQuery();
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
-		
-		final int totalHits = getTotalHits(searcher, query);
-
-		if (totalHits == 0) {
-			return new CodeSystemVersions(Collections.<ICodeSystemVersion> emptyList());
-		} else {
-			final List<ICodeSystemVersion> versions = Lists.newArrayList();
-			final TopDocs topDocs = searcher.search(query, totalHits);
-			final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-
-			for (final ScoreDoc scoreDoc : scoreDocs) {
-				final Document doc = searcher.doc(scoreDoc.doc);
-				final CodeSystemVersionEntry version = new CodeSystemVersionEntryBuilder().build(doc);
-				versions.add(version);
-			}
-
-			return new CodeSystemVersions(versions);
-		}
-	}
-
-	private Query createQuery() {
-		final BooleanQuery query = new BooleanQuery();
+		final ExpressionBuilder query = Expressions.builder();
 
 		if (!StringUtils.isEmpty(codeSystemShortName)) {
-			final TermQuery systemShortNameQuery = new TermQuery(new Term(VERSION_SYSTEM_SHORT_NAME, codeSystemShortName));
-			query.add(systemShortNameQuery, Occur.MUST);
+			query.must(CodeSystemVersionEntry.Expressions.shortName(codeSystemShortName));
 		}
 		
 		if (!StringUtils.isEmpty(versionId)) {
-			final TermQuery versionIdQuery = new TermQuery(new Term(VERSION_VERSION_ID, versionId));
-			query.add(versionIdQuery, Occur.MUST);
+			query.must(CodeSystemVersionEntry.Expressions.versionId(versionId));
 		}
 		
-		if (!query.clauses().isEmpty()) {
-			return query;
-		} else {
-			return new MatchAllDocsQuery();
-		}
+		final Searcher searcher = context.service(Searcher.class);
+		
+		final Hits<CodeSystemVersionEntry> hits = searcher.search(Query.select(CodeSystemVersionEntry.class)
+				.where(query.build())
+				.offset(offset())
+				.limit(limit())
+				.build());
+		
+		return new CodeSystemVersions(hits.getHits(), offset(), limit(), hits.getTotal());
 	}
 
 	@Override

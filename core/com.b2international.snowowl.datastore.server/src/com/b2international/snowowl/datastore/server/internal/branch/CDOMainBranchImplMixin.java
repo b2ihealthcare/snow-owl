@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -26,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class CDOMainBranchImplMixin implements MetadataHolderMixin {
 
 	@JsonCreator
-	CDOMainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp) {
+	CDOMainBranchImplMixin(@JsonProperty("baseTimestamp") long baseTimestamp, @JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("segmentId") int segmentId, @JsonProperty("segments") Collection<Integer> segments) {
 	}
 	
 	@JsonProperty
@@ -40,5 +42,17 @@ public abstract class CDOMainBranchImplMixin implements MetadataHolderMixin {
 	
 	@JsonIgnore
 	public abstract BranchManagerImpl getBranchManager();
+	
+	@JsonProperty
+	public abstract int cdoBranchId();
+	
+	@JsonProperty
+	public abstract int segmentId();
+	
+	@JsonProperty
+	public abstract Collection<Integer> segments();
+	
+	@JsonIgnore
+	public abstract Collection<Integer> parentSegments();
 	
 }

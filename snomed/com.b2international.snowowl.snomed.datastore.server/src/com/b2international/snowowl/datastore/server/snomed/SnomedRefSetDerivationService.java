@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.b2international.commons.collect.LongSets.toStringSet;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.server.CDOServerUtils.commit;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
@@ -25,40 +23,36 @@ import static com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingCo
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext.createDescriptionTypePair;
 import static com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext.createRelationshipTypePair;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.partition;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
-import static java.lang.Long.parseLong;
 import static java.text.MessageFormat.format;
-import static org.apache.lucene.search.BooleanQuery.getMaxClauseCount;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.util.CommitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.derivation.SnomedRefSetDerivationModel;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRefSetDerivationService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Service class for SNOMED&nbsp;CT simple type and simple map type reference set derivation.
@@ -75,12 +69,8 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		checkNotNull(branchPath, "Branch path argument must not be null.");
 		checkNotNull(model, "Derivation model argument must not be null.");
 
-		SnomedRefSetEditingContext editingContext = null;
-		
-		try {
-
-			editingContext = SnomedRefSetEditingContext.createInstance(branchPath);
-			final Collection<String> conceptIds = collectComponentIds(model.getRefSetId(), false, branchPath);
+		try (SnomedRefSetEditingContext editingContext = SnomedRefSetEditingContext.createInstance(branchPath)) {
+			final Collection<String> conceptIds = collectComponentIds(branchPath, model.getRefSetId());
 			final String refSetName = model.getRefSetName();
 			
 			switch (model.getSimpleTypeDerivation()) {
@@ -88,11 +78,11 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 					deriveDescriptions(refSetName, conceptIds, editingContext, branchPath);
 					break;
 				case RELATIONSHIP:
-					deriveRelationships(refSetName, conceptIds, editingContext, branchPath);
+					deriveRelationships(refSetName, conceptIds, editingContext);
 					break;
 				case DUO:
 					deriveDescriptions(refSetName, conceptIds, editingContext, branchPath);
-					deriveRelationships(refSetName, conceptIds, editingContext, branchPath);
+					deriveRelationships(refSetName, conceptIds, editingContext);
 					break;
 			}
 			
@@ -103,10 +93,6 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		} catch (final CommitException e) {
 			LOGGER.error("Error while committing simple type reference set derivation changes.", e);
 			return false;
-		} finally {
-			if (null != editingContext) {
-				editingContext.close();
-			}
 		}
 		
 		return true;
@@ -118,12 +104,9 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		checkNotNull(branchPath, "Branch path argument must not be null.");
 		checkNotNull(model, "Derivation model argument must not be null.");
 
-		SnomedRefSetEditingContext editingContext = null;
-		
-		try {
+		try (SnomedRefSetEditingContext editingContext = SnomedRefSetEditingContext.createInstance(branchPath)) {
 
-			editingContext = SnomedRefSetEditingContext.createInstance(branchPath);
-			final Collection<String> conceptIds = collectComponentIds(model.getRefSetId(), false, branchPath);
+			final Collection<String> conceptIds = collectComponentIds(branchPath, model.getRefSetId());
 			final String refSetName = model.getRefSetName();
 			
 			switch (model.getSimpleMapTypeDerivation()) {
@@ -136,7 +119,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 				case TRIO:
 					deriveConcepts(refSetName, conceptIds, editingContext);
 					deriveDescriptions(refSetName, conceptIds, editingContext, branchPath);
-					deriveRelationships(refSetName, conceptIds, editingContext, branchPath);
+					deriveRelationships(refSetName, conceptIds, editingContext);
 					break;
 				}
 			
@@ -147,10 +130,6 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		} catch (final CommitException e) {
 			LOGGER.error("Error while committing simple map type reference set derivation changes.", e);
 			return false;
-		} finally {
-			if (null != editingContext) {
-				editingContext.close();
-			}
 		}
 		
 		return true;
@@ -191,18 +170,20 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		final String moduleId = getModuleId(context);
 		
 		final SnomedRegularRefSet refSet = context.createSnomedSimpleTypeRefSet(format("{0} - descriptions", refSetName), DESCRIPTION);
-		final Iterable<List<String>> partitions = partition(componentIds, getMaxClauseCount());
 		
-		for (final List<String> partition : partitions) {
-			
-			final IIndexQueryAdapter<SnomedDescriptionIndexEntry> adapter = createQueryDescriptionAdapter(newArrayList(partition));
-			
-			for (final String descriptionId : searchForDescriptionIds(branchPath, adapter)) {
-				members.add(context.createSimpleTypeRefSetMember(
-						createDescriptionTypePair(descriptionId), 
-						moduleId, 
-						refSet));
-			}
+		final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
+			.all()
+			.filterByActive(true)
+			.filterByConceptId(componentIds)
+			.build(context.getBranch())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+		
+		for (final ISnomedDescription description : descriptions) {
+			members.add(context.createSimpleTypeRefSetMember(
+					createDescriptionTypePair(description.getId()), 
+					moduleId, 
+					refSet));
 		}
 		
 		refSet.getMembers().addAll(members);
@@ -212,82 +193,73 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 	 * Creates a new simple type reference set where the referenced component type is relationship and the members are relationships between the
 	 * derived reference set member's. 
 	 */
-	private void deriveRelationships(final String refSetName, final Collection<String> componentIds, final SnomedRefSetEditingContext context, final IBranchPath branchPath) throws SnowowlServiceException {
+	private void deriveRelationships(final String refSetName, final Collection<String> componentIds, final SnomedRefSetEditingContext context) throws SnowowlServiceException {
 
 		final Set<SnomedRefSetMember> members = newHashSet();
 		final String moduleId = getModuleId(context);
 
 		final SnomedRegularRefSet refSet = context.createSnomedSimpleTypeRefSet(format("{0} - relationships", refSetName), RELATIONSHIP);
-		final LongKeyMap activeStatements = getServiceForClass(SnomedStatementBrowser.class).getAllActiveStatements(branchPath);
-
-		for (final String conceptId : componentIds) {
-
-			final Object object = activeStatements.get(parseLong(conceptId));
-
-			if (object instanceof List) {
-
-				@SuppressWarnings("unchecked")
-				final List<StatementFragment> fragments = (List<StatementFragment>) object;
-
-				for (final StatementFragment fragment : fragments) {
-
-					if (componentIds.contains(Long.toString(fragment.getDestinationId()))) {
-
-						final String relationshipId = Long.toString(fragment.getStatementId());
-						members.add(context.createSimpleTypeRefSetMember(
-								createRelationshipTypePair(relationshipId), 
-								moduleId, 
-								refSet));
-					}
-				}
-			}
+		
+		for (ISnomedRelationship relationship : getEdgesBetween(context.getBranch(), componentIds)) {
+			members.add(context.createSimpleTypeRefSetMember(
+					createRelationshipTypePair(relationship.getId()), 
+					moduleId, 
+					refSet));
 		}
-
+		
 		refSet.getMembers().addAll(members);
 	}
 	
+	private SnomedRelationships getEdgesBetween(String branch, Collection<String> componentIds) {
+		return SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterBySource(componentIds)
+				.filterByDestination(componentIds)
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+	}
+
 	/*
 	 * Collects the component IDs from the reference set.
 	 */
-	private Collection<String> collectComponentIds(final String refSetId, final boolean mapTarget, final IBranchPath branchPath) {
-		final LongKeyMap refSetToConceptMappings = getServiceForClass(SnomedRefSetBrowser.class).getReferencedConceptIds(branchPath);
-		final Object concepts = refSetToConceptMappings.get(Long.parseLong(refSetId));
-		return concepts instanceof LongCollection ? toStringSet((LongCollection) concepts) : Collections.<String>emptySet();
+	private Collection<String> collectComponentIds(final IBranchPath branchPath, final String refSetId) {
+		return SnomedRequests.prepareGetReferenceSet()
+			.setComponentId(refSetId)
+			.setExpand("members(limit:"+Integer.MAX_VALUE+",active:true)")
+			.build(branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.then(new Function<SnomedReferenceSet, Collection<String>>() {
+				@Override
+				public Collection<String> apply(SnomedReferenceSet input) {
+					return FluentIterable.from(input.getMembers()).transform(new Function<SnomedReferenceSetMember, String>() {
+						@Override
+						public String apply(SnomedReferenceSetMember input) {
+							return input.getReferencedComponent().getId();
+						}
+					}).toSet();
+				}
+			}).getSync();
 	}
 	
 	/*
 	 * Collects all the active sub type IDs of the given components.
 	 */
 	private Collection<String> collectSubTypeConceptIds(final IBranchPath branchPath, final Collection<String> conceptIds) {
-		
-		final Collection<String> allDescendantConceptIds = newHashSet(conceptIds);
-		final SnomedTaxonomyService taxonomyService = getServiceForClass(SnomedTaxonomyService.class);
-		for (final String conceptId : conceptIds) {
-			allDescendantConceptIds.addAll(taxonomyService.getAllSubtypes(branchPath, conceptId));
-		}
-		
-		return allDescendantConceptIds;
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByAncestors(conceptIds)
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts input) {
+						final Set<String> subTypeIds = newHashSet(conceptIds);
+						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).copyInto(subTypeIds);
+					}
+				})
+				.getSync();
 	}
 	
-	/*
-	 * Creates a query for querying descriptions.
-	 */
-	private SnomedDescriptionContainerQueryAdapter createQueryDescriptionAdapter(final Collection<String> componentIds) {
-		return SnomedDescriptionContainerQueryAdapter.createFindByConceptIds(componentIds);
-	}
-	
-	/*
-	 * Gets the descriptions IDs.
-	 */
-	private Collection<String> searchForDescriptionIds(final IBranchPath branchPath, final IIndexQueryAdapter<SnomedDescriptionIndexEntry> adapter) {
-		return getIndexService().searchUnsortedIds(branchPath, adapter);
-	}
-	
-	/*
-	 * Gets the index service.
-	 */
-	private SnomedIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-
 }

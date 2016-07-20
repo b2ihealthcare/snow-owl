@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.mrcm.core.widget;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -30,8 +29,10 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DescriptionWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -64,7 +65,7 @@ public abstract class WidgetBeanProviderStrategy {
 	 * Map for caching concepts based on their unique SNOMED CT concept ID.
 	 * <br>This cache could be cleared with {@link #clear()} after populating the widget bean.
 	 */
-	protected Map<String, SnomedConceptIndexEntry> componentCache;
+	protected Map<String, SnomedConceptDocument> componentCache;
 	protected final boolean includeUnsanctioned;
 	
 	public WidgetBeanProviderStrategy(final ConceptWidgetModel conceptWidgetModel, final boolean includeUnsanctioned) {
@@ -210,10 +211,8 @@ public abstract class WidgetBeanProviderStrategy {
 		final List<DescriptionWidgetModel> unusedModels = Lists.newArrayList(
 				Lists.transform(conceptWidgetModel.getDescriptionContainerModel().getChildren(), new UncheckedCastFunction<WidgetModel, DescriptionWidgetModel>(DescriptionWidgetModel.class)));
 		
-		final Map<String, Multimap<String, String>> descriptionPreferabilityMap = getDescriptionPreferabilityMap();
-		
 		// Create and populate instance beans for matching models
-		for (final SnomedDescription description : getDescriptions()) {
+		for (final ISnomedDescription description : getDescriptions()) {
 			if (!description.isActive()) {
 				continue;
 			}
@@ -223,16 +222,14 @@ public abstract class WidgetBeanProviderStrategy {
 			final String term = description.getTerm();
 			final boolean released = description.isReleased();
 
-			checkState(descriptionPreferabilityMap.containsKey(descriptionId));
-			final Multimap<String, String> acceptabilityMap = descriptionPreferabilityMap.get(descriptionId);
+			final Map<String, Acceptability> acceptabilityMap = description.getAcceptabilityMap();
 			
-			CaseSignificance caseSensitivity = description.getCaseSensitivity();
+			final CaseSignificance caseSensitivity = CaseSignificance.getById(description.getCaseSignificance().getConceptId());
 			
 			final DescriptionWidgetModel matchingModel = conceptWidgetModel.getDescriptionContainerModel().getFirstMatching(typeId);
 			
 			// the description should show up as preferred on the UI if it is preferred in the currently selected lang refset and it's type is not FSN nor TEXT DEF
-			final boolean preferred = !Concepts.FULLY_SPECIFIED_NAME.equals(typeId)	&& !Concepts.TEXT_DEFINITION.equals(typeId)
-					&& acceptabilityMap.get(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED).contains(selectedLanguageRefSetIdRef.get());
+			final boolean preferred = !Concepts.FULLY_SPECIFIED_NAME.equals(typeId)	&& !Concepts.TEXT_DEFINITION.equals(typeId) && acceptabilityMap.get(selectedLanguageRefSetIdRef.get()) == Acceptability.PREFERRED;
 			final DescriptionWidgetBean matchingBean = new DescriptionWidgetBean(cwb, matchingModel, Long.parseLong(descriptionId), released, preferred);
 			
 			matchingBean.setSelectedType(typeId);
@@ -315,12 +312,7 @@ public abstract class WidgetBeanProviderStrategy {
 		return !groupModel.isUngrouped() && !Sets.intersection(unusedModel.getAllowedTypeIds(), WidgetBeanUtils.NEVER_GROUPED_RELATIONSHIP_TYPE_IDS).isEmpty();
 	}
 	
-	/*returns with the lightweight representation of the SNOMED CT concept identifier by the specified ID*/
-	abstract protected SnomedConceptIndexEntry getConcept(final String conceptId);
-	
-	abstract protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap();
-	
-	abstract protected Collection<SnomedDescription> getDescriptions();
+	abstract protected Collection<ISnomedDescription> getDescriptions();
 	
 	abstract protected Collection<SnomedRelationship> getRelationships();
 

@@ -15,29 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.refSetTypes;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.referencedComponentTypes;
+
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
-
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
@@ -58,51 +50,38 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 
 	@Override
 	protected SnomedReferenceSets doExecute(BranchContext context) throws IOException {
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
-		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().refSet();
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
-		final BooleanFilter filter = new BooleanFilter();
-
-		addComponentIdFilter(filter);
+		addComponentIdFilter(queryBuilder);
 		addModuleClause(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TYPE)) {
-			final Collection<Integer> values = FluentIterable.from(getCollection(OptionKey.TYPE, SnomedRefSetType.class)).transform(new Function<SnomedRefSetType, Integer>() {
-				@Override
-				public Integer apply(SnomedRefSetType input) {
-					return input.ordinal();
-				}
-			}).toSet();
-			addFilterClause(filter, SnomedMappings.refSetType().createTermsFilter(values), Occur.MUST);
+			queryBuilder.must(refSetTypes(getCollection(OptionKey.TYPE, SnomedRefSetType.class)));
+		} else {
+			// always add type filter, so only concept docs with refset props will be returned
+			queryBuilder.must(Expressions.prefixMatch(SnomedConceptDocument.Fields.REFSET_TYPE, ""));
 		}
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
-			addFilterClause(filter, SnomedMappings.refSetReferencedComponentType().createTermsFilter(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)), Occur.MUST);
+			queryBuilder.must(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)));
 		}
 		
-		final Query query = createConstantScoreQuery(createFilteredQuery(queryBuilder.matchAll(), filter));
-		final int totalHits = getTotalHits(searcher, query);
+		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+				.where(queryBuilder.build())
+				.offset(offset())
+				.limit(limit())
+				.build();
 		
-		if (limit() < 1 || totalHits < 1) {
-			return new SnomedReferenceSets(offset(), limit(), totalHits);
-		}
+		final Hits<SnomedConceptDocument> hits = searcher.search(query);
 		
-		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), Sort.INDEXORDER, false, false);
-		if (topDocs.scoreDocs.length < 1) {
-			return new SnomedReferenceSets(offset(), limit(), topDocs.totalHits);
-		}
-
-		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final ImmutableList.Builder<SnomedRefSetIndexEntry> refSetBuilder = ImmutableList.builder();
-		
-		for (int i = offset(); i < scoreDocs.length && i < offset() + limit(); i++) {
-			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			SnomedRefSetIndexEntry indexEntry = SnomedRefSetIndexEntry.builder(doc).build();
-			refSetBuilder.add(indexEntry);
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedReferenceSets(offset(), limit(), hits.getTotal());
+		} else {
+			return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
 
-		List<SnomedRefSetIndexEntry> referenceSets = refSetBuilder.build();
-		return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(referenceSets, offset(), limit(), topDocs.totalHits);
 	}
 	
 	@Override

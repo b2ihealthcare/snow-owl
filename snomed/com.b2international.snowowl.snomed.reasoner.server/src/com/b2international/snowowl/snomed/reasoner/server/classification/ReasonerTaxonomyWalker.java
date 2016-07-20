@@ -35,8 +35,12 @@ import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
+import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
@@ -73,8 +77,26 @@ public class ReasonerTaxonomyWalker {
 		this.reasoner = reasoner;
 		this.taxonomy = changeSet;
 		this.pm = SnomedOntologyUtils.createPrefixManager(SnomedOntologyUtils.BASE_IRI.resolve(branchPath.getPath()));
-		processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(600000);
-		idToStorageKeyMap = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConceptIdToStorageKeyMap(branchPath);
+		this.processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(600000);
+		this.idToStorageKeyMap = getConceptIdToStorageKeyMap(branchPath);
+	}
+
+	private LongKeyLongMap getConceptIdToStorageKeyMap(IBranchPath branchPath) {
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, LongKeyLongMap>() {
+					@Override
+					public LongKeyLongMap apply(SnomedConcepts input) {
+						final LongKeyLongMap result = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(input.getTotal());
+						for (ISnomedConcept concept : input) {
+							result.put(Long.parseLong(concept.getId()), concept.getStorageKey());
+						}
+						return result;
+					}
+				})
+				.getSync();
 	}
 
 	/**

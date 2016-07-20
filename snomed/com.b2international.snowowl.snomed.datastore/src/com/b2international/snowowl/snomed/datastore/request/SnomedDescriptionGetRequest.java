@@ -15,37 +15,33 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.view.CDOView;
-
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.request.GetRequest;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.request.RevisionGetRequest;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 
 /**
  * @since 4.5
  */
-final class SnomedDescriptionGetRequest extends GetRequest<ISnomedDescription> {
+final class SnomedDescriptionGetRequest extends RevisionGetRequest<ISnomedDescription> {
 
 	protected SnomedDescriptionGetRequest() {
 		super(ComponentCategory.DESCRIPTION);
 	}
 
 	@Override
-	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
-		return new SnomedDescriptionLookupService();
+	protected ISnomedDescription process(BranchContext context, IComponent<String> component, Options expand) {
+		return SnomedConverters.newDescriptionConverter(context, expand, locales()).convert((SnomedDescriptionIndexEntry) component);
 	}
 	
 	@Override
-	protected ISnomedDescription process(BranchContext context, IComponent<String> component, Options expand) {
-		return SnomedConverters.newDescriptionConverter(context, expand, locales()).convert((SnomedDescriptionIndexEntry) component);
+	protected Class<? extends RevisionDocument> getType() {
+		return SnomedDescriptionIndexEntry.class;
 	}
 	
 	@Override

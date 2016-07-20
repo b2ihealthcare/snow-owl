@@ -15,16 +15,25 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
-import com.google.common.collect.Sets;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 
 /**
  * Processes a {@link ReferenceSetConceptSetDefinition} to return the actual SNOMED CT concept identifiers
@@ -33,38 +42,54 @@ import com.google.common.collect.Sets;
  */
 public class ReferenceSetConceptSetProcessor extends ConceptSetProcessor<ReferenceSetConceptSetDefinition> {
 
-	private final SnomedClientRefSetBrowser refSetBrowser;
-
-	public ReferenceSetConceptSetProcessor(final ReferenceSetConceptSetDefinition conceptSetDefinition, final SnomedClientRefSetBrowser refSetBrowser) {
+	public ReferenceSetConceptSetProcessor(final ReferenceSetConceptSetDefinition conceptSetDefinition) {
 		super(conceptSetDefinition);
-		this.refSetBrowser = refSetBrowser;
 	}
 	
 	@Override
-	public Iterator<SnomedConceptIndexEntry> getConcepts() {
-		final Set<SnomedConceptIndexEntry> memberConcepts = getReferenceSetMemberReferencedConceptSet();
+	public Iterator<SnomedConceptDocument> getConcepts() {
+		final Set<SnomedConceptDocument> memberConcepts = getReferenceSetMemberReferencedConceptSet();
 		return memberConcepts.iterator();
 	}
 
-	private Set<SnomedConceptIndexEntry> getReferenceSetMemberReferencedConceptSet() {
+	private Set<SnomedConceptDocument> getReferenceSetMemberReferencedConceptSet() {
 		final String refSetIdentifierConceptId = conceptSetDefinition.getRefSetIdentifierConceptId();
-		final SnomedRefSetIndexEntry refSet = refSetBrowser.getRefSet(refSetIdentifierConceptId);
+		final SnomedReferenceSets refSets = SnomedRequests.prepareSearchRefSet()
+			.setLimit(1)
+			.filterByActive(true)
+			.setExpand("members(expand(referencedComponent()))")
+			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+			.setComponentIds(Collections.singleton(refSetIdentifierConceptId))
+			.build(getBranch())
+			.execute(getBus())
+			.getSync();
 		
-		if (refSet == null) {
-			return Collections.emptySet();
-		}
-		
-		if (refSet.getReferencedComponentType() != SnomedTerminologyComponentConstants.CONCEPT_NUMBER) {
-			throw new IllegalArgumentException(String.format("The reference set %s does not have concepts as its referenced components.", 
-					refSetIdentifierConceptId));
-		}
-		
-		final Collection<SnomedConceptIndexEntry> memberConcepts = refSetBrowser.getMemberConcepts(refSetIdentifierConceptId);
-		return Sets.newHashSet(memberConcepts);
+		final SnomedReferenceSet refSet = Iterables.getOnlyElement(refSets, null); 
+		return refSet == null ? Collections.<SnomedConceptDocument>emptySet() : FluentIterable.from(refSet.getMembers()).transform(new Function<SnomedReferenceSetMember, SnomedConceptDocument>() {
+			@Override
+			public SnomedConceptDocument apply(SnomedReferenceSetMember input) {
+				return SnomedConceptDocument.builder((ISnomedConcept) input.getReferencedComponent()).build();
+			}
+		}).toSet();
+	}
+
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+
+	private String getBranch() {
+		return BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
 	}
 	
 	@Override
-	public boolean contains(final SnomedConceptIndexEntry concept) {
-		return refSetBrowser.isReferenced(conceptSetDefinition.getRefSetIdentifierConceptId(), concept.getId());
+	public boolean contains(final SnomedConceptDocument concept) {
+		return SnomedRequests.prepareSearchMember()
+				.setLimit(0)
+				.filterByActive(true)
+				.filterByReferencedComponent(concept.getId())
+				.filterByRefSet(conceptSetDefinition.getRefSetIdentifierConceptId())
+				.build(getBranch())
+				.execute(getBus())
+				.getSync().getTotal() > 0;
 	}
 }

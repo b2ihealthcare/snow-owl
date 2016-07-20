@@ -24,18 +24,25 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
  * Lookup service implementation for SNOMED CT concepts.
+ * @deprecated - UNSUPPORTED API, only exist for compatibility reasons, use {@link SnomedRequests} where possible
  */
 public class SnomedConceptLookupService extends AbstractLookupService<String, Concept, CDOView> {
 
@@ -45,7 +52,8 @@ public class SnomedConceptLookupService extends AbstractLookupService<String, Co
 		checkNotNull(conceptId, "SNOMED CT concept ID argument cannot be null.");
 		CDOUtils.check(view);
 
-		final long conceptStorageKey = getTerminologyBrowser().getStorageKey(BranchPathUtils.createPath(view), conceptId);
+		final IBranchPath branchPath = BranchPathUtils.createPath(view);
+		final long conceptStorageKey = getStorageKey(branchPath, conceptId);
 		CDOObject cdoObject = null;
 
 		//make an other attempt to lookup concept in transaction with ID
@@ -78,20 +86,32 @@ public class SnomedConceptLookupService extends AbstractLookupService<String, Co
 	}
 
 	@Override
-	public SnomedConceptIndexEntry getComponent(final IBranchPath branchPath, final String conceptId) {
-		final SnomedTerminologyBrowser terminologyBrowser = getTerminologyBrowser();
-		return (null == terminologyBrowser) ? null : terminologyBrowser.getConcept(branchPath, conceptId);
+	public SnomedConceptDocument getComponent(final IBranchPath branchPath, final String conceptId) {
+		try {
+			return SnomedRequests.prepareGetConcept()
+					.setComponentId(conceptId)
+					.build(branchPath.getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(new Function<ISnomedConcept, SnomedConceptDocument>() {
+						@Override
+						public SnomedConceptDocument apply(ISnomedConcept input) {
+							final ISnomedDescription pt = input.getPt();
+							final String preferredTerm = pt == null ? input.getId() : pt.getTerm();
+							return SnomedConceptDocument.builder(input).label(preferredTerm).build();
+						}
+					})
+					.getSync();
+		} catch (NotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
-		return getTerminologyBrowser().getStorageKey(branchPath, id);
+		final SnomedConceptDocument component = getComponent(branchPath, id);
+		return component != null ? component.getStorageKey() : CDOUtils.NO_STORAGE_KEY;
 	}
 
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-	}
-	
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

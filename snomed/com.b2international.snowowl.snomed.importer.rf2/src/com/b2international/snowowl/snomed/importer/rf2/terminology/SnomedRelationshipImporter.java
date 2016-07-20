@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.search.Query;
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ParseInt;
@@ -28,10 +27,11 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.importer.rf2.csv.RelationshipRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.IndexConfiguration;
@@ -79,6 +79,11 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 		
 		super(createImportConfiguration(type), importContext, releaseFileStream, releaseFileIdentifier);
 	}
+	
+	@Override
+	protected Class<? extends SnomedDocument> getType() {
+		return SnomedRelationshipIndexEntry.class;
+	}
 
 	@Override
 	protected void importRow(final RelationshipRow currentRow) {
@@ -117,11 +122,6 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 		}
 		
 		getImportContext().conceptVisited(currentRow.getSourceId());
-	}
-	
-	@Override
-	protected Query getAvailableComponentsQuery() {
-		return SnomedMappings.newQuery().relationship().matchAll();
 	}
 	
 	@Override

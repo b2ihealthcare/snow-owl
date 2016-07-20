@@ -61,7 +61,7 @@ import com.google.common.base.Preconditions;
  * <p>
  * It wraps a {@link ICDOBranchActionManager}, which contains the CDO related logic.
  * </p>
- * 
+ * @deprecated - refactor after 5.0 release
  */
 public class TaskManager {
 

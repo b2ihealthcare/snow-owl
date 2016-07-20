@@ -24,7 +24,6 @@ import com.b2international.snowowl.dsl.escg.Expression;
 import com.b2international.snowowl.dsl.parser.antlr.ESCGParser;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.SimpleAstExpressionNormalFormGenerator;
 import com.b2international.snowowl.semanticengine.simpleast.test.utils.TestUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
 
@@ -285,13 +284,12 @@ public class NormalFormGeneratorTestFromSnomedDocument {
 	private void testNormalFormGenerator(Expression originalExpression, Expression expectedLongNormalFormExpression, 
 			Expression expectedShortNormalFormExpression) {
 		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		SnomedClientStatementBrowser statementBrowser = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class);
-		SimpleAstExpressionNormalFormGenerator normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser, statementBrowser);
+		SimpleAstExpressionNormalFormGenerator normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser);
 		ESCGEcoreRewriter rewriter = new ESCGEcoreRewriter(escgParser);
 		RValue longNormalFormExpression = normalFormGenerator.getLongNormalForm(rewriter.rewrite(originalExpression));
 		TestUtils.assertExpressionsEqual("Long normal form expression different from expected.", rewriter.rewrite(expectedLongNormalFormExpression), longNormalFormExpression);
 		
-		normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser, statementBrowser);
+		normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser);
 		RValue shortNormalFormExpression = normalFormGenerator.getShortNormalForm(rewriter.rewrite(originalExpression));
 		TestUtils.assertExpressionsEqual("Short normal form expression different from expected.", rewriter.rewrite(expectedShortNormalFormExpression), shortNormalFormExpression);
 	}

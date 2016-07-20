@@ -15,36 +15,43 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.view.CDOView;
-
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.request.GetRequest;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.request.RevisionGetRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * @since 4.5
  */
-final class SnomedRefSetGetRequest extends GetRequest<SnomedReferenceSet> {
+final class SnomedRefSetGetRequest extends RevisionGetRequest<SnomedReferenceSet> {
+
+	private static final String REFERENCE_SET = "Reference Set";
 
 	protected SnomedRefSetGetRequest() {
-		super("Reference Set");
-	}
-
-	@Override
-	protected ILookupService<String, ? extends CDOObject, CDOView> getLookupService() {
-		return new SnomedRefSetLookupService();
+		super(REFERENCE_SET);
 	}
 
 	@Override
 	protected SnomedReferenceSet process(BranchContext context, IComponent<String> component, Options expand) {
-		return SnomedConverters.newRefSetConverter(context, expand, locales()).convert((SnomedRefSetIndexEntry) component);
+		final SnomedReferenceSet refSet = SnomedConverters.newRefSetConverter(context, expand, locales())
+				.convert((SnomedConceptDocument) component);
+		
+		if (refSet.getStorageKey() != CDOUtils.NO_STORAGE_KEY) {
+			return refSet;
+		} else {
+			throw new ComponentNotFoundException(REFERENCE_SET, component.getId());
+		}
+	}
+	
+	@Override
+	protected Class<? extends RevisionDocument> getType() {
+		return SnomedConceptDocument.class;
 	}
 	
 	@Override

@@ -22,18 +22,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.AttributeValue;
 import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgFactory;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * <b>5.3.3.1	The set of normalized definitions of each focus concept</b><br/>
@@ -52,15 +57,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  */
 public class ConceptDefinitionNormalizer {
 
-	private final IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser;
 	private final ScgExpressionNormalFormGenerator normalFormGenerator;
-	private final SnomedClientStatementBrowser statementBrowser;
 	
-	public ConceptDefinitionNormalizer(IClientTerminologyBrowser<SnomedConceptIndexEntry, String> terminologyBrowser, SnomedClientStatementBrowser statementBrowser) {
-		this.terminologyBrowser = terminologyBrowser;
-		this.statementBrowser = statementBrowser;
-		this.normalFormGenerator = new ScgExpressionNormalFormGenerator(terminologyBrowser, statementBrowser);
-		
+	public ConceptDefinitionNormalizer(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
+		this.normalFormGenerator = new ScgExpressionNormalFormGenerator(terminologyBrowser);
 	}
 	
 	/**
@@ -77,20 +77,26 @@ public class ConceptDefinitionNormalizer {
 			 */
 			//int internalID = terminologyBrowser.resolve(focusConcept.getId());
 			//int[] outgoingRelationships = terminologyBrowser.getData().outgoingRelationships[internalID];
-			final Collection<SnomedRelationshipIndexEntry> outboundRelationships = statementBrowser.getActiveOutboundStatementsById(focusConcept.getId());
+			final SnomedRelationships outboundRelationships = SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true)
+					.filterByType(Concepts.IS_A)
+					.filterBySource(focusConcept.getId())
+					.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {
-			for (SnomedRelationshipIndexEntry relationship : outboundRelationships) {
-				if (!relationship.getAttributeId().equals(Concepts.IS_A) 
-						&& !relationship.isAdditional()) {
+			for (ISnomedRelationship relationship : outboundRelationships) {
+				if (!Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicType())) {
 					
 					int relationshipGroup = relationship.getGroup();
 					Attribute attribute = ScgFactory.eINSTANCE.createAttribute();
 					Concept nameConcept = ScgFactory.eINSTANCE.createConcept();
-					nameConcept.setId(relationship.getAttributeId());
+					nameConcept.setId(relationship.getTypeId());
 					attribute.setName(nameConcept);
 					Expression valueExpression = ScgFactory.eINSTANCE.createExpression();
 					Concept valueConcept = ScgFactory.eINSTANCE.createConcept();
-					valueConcept.setId(relationship.getValueId());
+					valueConcept.setId(relationship.getDestinationId());
 					valueExpression.getConcepts().add(valueConcept);
 					Expression valueNormalFormExpression = normalFormGenerator.getLongNormalForm(valueExpression);
 					// only build subexpression, if necessary

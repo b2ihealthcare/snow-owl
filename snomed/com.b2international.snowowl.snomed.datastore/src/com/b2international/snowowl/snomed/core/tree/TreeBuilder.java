@@ -17,15 +17,15 @@ package com.b2international.snowowl.snomed.core.tree;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * @since 4.6
  */
 public interface TreeBuilder {
 
-	TerminologyTree build(String branch, Iterable<SnomedConceptIndexEntry> nodes);
+	TerminologyTree build(String branch, Iterable<SnomedConceptDocument> nodes);
 	
-	TreeBuilder withTopLevelConcepts(Collection<SnomedConceptIndexEntry> topLevelConcepts);
+	TreeBuilder withTopLevelConcepts(Collection<SnomedConceptDocument> topLevelConcepts);
 	
 }

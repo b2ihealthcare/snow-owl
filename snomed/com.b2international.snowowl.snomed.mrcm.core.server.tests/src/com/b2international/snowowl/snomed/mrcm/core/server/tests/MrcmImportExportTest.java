@@ -25,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collection;
 
 import org.junit.Test;
 
@@ -34,9 +33,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedPredicateBrowser;
-import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExporter;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmImporter;
@@ -63,8 +63,12 @@ public class MrcmImportExportTest {
 			assertEquals(58, context.getOrCreateConceptModel().getConstraints().size());
 		}
 		// verify index
-		final Collection<PredicateIndexEntry> allPredicates = ApplicationContext.getServiceForClass(SnomedPredicateBrowser.class).getAllPredicates(branch);
-		assertEquals(58, allPredicates.size());
+		final SnomedConstraints allPredicates = SnomedRequests.prepareSearchConstraint()
+				.all()
+				.build(branch.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+		assertEquals(58, allPredicates.getTotal());
 	}
 	
 	@Test

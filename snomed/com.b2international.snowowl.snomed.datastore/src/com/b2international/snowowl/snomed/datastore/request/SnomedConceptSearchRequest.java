@@ -15,33 +15,32 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespace;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.defining;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.primitive;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.queries.CustomScoreQuery;
-import org.apache.lucene.queries.function.FunctionQuery;
-import org.apache.lucene.queries.function.FunctionValues;
-import org.apache.lucene.queries.function.ValueSource;
-import org.apache.lucene.queries.function.valuesource.DualFloatFunction;
-import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
-import org.apache.lucene.queries.function.valuesource.LongFieldSource;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TopDocs;
-
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.functions.StringToLongFunction;
-import com.b2international.commons.options.Options;
+import com.b2international.index.Hits;
+import com.b2international.index.query.DualScoreFunction;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.FieldScoreFunction;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.ScoreFunction;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -49,25 +48,21 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
 import com.b2international.snowowl.snomed.datastore.escg.EscgParseFailedException;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
-import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry.Builder;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
-import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Fields;
+import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
  */
 final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcepts> {
-
-	private static final ValueSource DOI_VALUE_SOURCE = new FloatFieldSource(SnomedMappings.conceptDegreeOfInterest().fieldName());
 
 	private static final float MIN_DOI_VALUE = 1.05f;
 	private static final float MAX_DOI_VALUE = 10288.383f;
@@ -145,76 +140,81 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 
 	@Override
 	protected SnomedConcepts doExecute(BranchContext context) throws IOException {
-		final IndexSearcher searcher = context.service(IndexSearcher.class);
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 
-		final SnomedQueryBuilder queryBuilder = SnomedMappings.newQuery().concept();
+		ExpressionBuilder queryBuilder = Expressions.builder();
+		
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
+		addComponentIdFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.NAMESPACE)) {
-			queryBuilder.conceptNamespaceId(Long.valueOf(getString(OptionKey.NAMESPACE)));
+			queryBuilder.must(namespace(getString(OptionKey.NAMESPACE)));
 		}
 		
 		if (containsKey(OptionKey.DEFINITION_STATUS)) {
-			queryBuilder.primitive(Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS)));
-		}
-		
-		if (containsKey(OptionKey.PARENT)) {
-			queryBuilder.parent(getString(OptionKey.PARENT));
-		}
-		
-		if (containsKey(OptionKey.STATED_PARENT)) {
-			queryBuilder.statedParent(getString(OptionKey.STATED_PARENT));
-		}
-		
-		if (containsKey(OptionKey.ANCESTOR)) {
-			final String ancestorId = getString(OptionKey.ANCESTOR);
-			queryBuilder.and(SnomedMappings.newQuery()
-					.parent(ancestorId)
-					.ancestor(ancestorId)
-					.matchAny());
-		}
-		
-		if (containsKey(OptionKey.STATED_ANCESTOR)) {
-			final String ancestorId = getString(OptionKey.STATED_ANCESTOR);
-			queryBuilder.and(SnomedMappings.newQuery()
-					.statedParent(ancestorId)
-					.statedAncestor(ancestorId)
-					.matchAny());
-		}
-
-		final BooleanFilter filter = new BooleanFilter();
-		Sort sort;
-		Query query;
-		
-		if (containsKey(OptionKey.ESCG)) {
-			/* 
-			 * XXX: Not using IEscgQueryEvaluatorService, as it would add the equivalent of 
-			 * active() and concept() to escgQuery, which is not needed.
-			 */
-			final String escg = getString(OptionKey.ESCG);
-			try {
-				final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
-				final BooleanQuery escgQuery = queryEvaluator.evaluate(context.service(EscgRewriter.class).parseRewrite(escg));
-				queryBuilder.and(escgQuery);
-			} catch (final SyntaxErrorException e) {
-				throw new IllegalQueryParameterException(e.getMessage());
-			} catch (EscgParseFailedException e) {
-				final LongCollection matchingConceptIds = context.service(IEscgQueryEvaluatorService.class).evaluateConceptIds(context.branch().branchPath(), escg);
-				addFilterClause(filter, SnomedMappings.id().createTermsFilter(LongSets.toSet(matchingConceptIds)), Occur.MUST);
+			if (Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS))) {
+				queryBuilder.must(primitive());
+			} else if (Concepts.FULLY_DEFINED.equals(getString(OptionKey.DEFINITION_STATUS))) {
+				queryBuilder.must(defining());
 			}
 		}
 		
-		BooleanQuery searchProfileQuery = null;
-		if (containsKey(OptionKey.SEARCH_PROFILE)) {
-			final String userId = getString(OptionKey.SEARCH_PROFILE);
-			searchProfileQuery = SearchProfileQueryProvider.provideQuery(context.branch().branchPath(), userId);
+		if (containsKey(OptionKey.PARENT)) {
+			queryBuilder.must(parents(getCollection(OptionKey.PARENT, String.class)));
+		}
+		
+		if (containsKey(OptionKey.STATED_PARENT)) {
+			queryBuilder.must(statedParents(getCollection(OptionKey.STATED_PARENT, String.class)));
+		}
+		
+		if (containsKey(OptionKey.ANCESTOR)) {
+			final Collection<String> ancestorIds = getCollection(OptionKey.ANCESTOR, String.class);
+			queryBuilder.must(Expressions.builder()
+					.should(parents(ancestorIds))
+					.should(ancestors(ancestorIds))
+					.build());
+		}
+		
+		if (containsKey(OptionKey.STATED_ANCESTOR)) {
+			final Collection<String> ancestorIds = getCollection(OptionKey.STATED_ANCESTOR, String.class);
+			queryBuilder.must(Expressions.builder()
+					.should(statedParents(ancestorIds))
+					.should(statedAncestors(ancestorIds))
+					.build());
 		}
 
-		addComponentIdFilter(filter);
+		if (containsKey(OptionKey.ESCG)) {
+			final String escg = getString(OptionKey.ESCG);
+			try {
+				final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
+				final Expression escgQuery = queryEvaluator.evaluate(context.service(EscgRewriter.class).parseRewrite(escg));
+				queryBuilder.must(escgQuery);
+			} catch (final SyntaxErrorException e) {
+				throw new IllegalQueryParameterException(e.getMessage());
+			} catch (EscgParseFailedException e) {
+				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
+				final LongCollection matchingConceptIds = new ConceptIdQueryEvaluator2(searcher).evaluate(expression);
+				queryBuilder.must(ids(LongSets.toStringSet(matchingConceptIds)));
+			}
+		}
+		
+		Expression searchProfileQuery = null;
+		if (containsKey(OptionKey.SEARCH_PROFILE)) {
+			final String userId = getString(OptionKey.SEARCH_PROFILE);
+			searchProfileQuery = SearchProfileQueryProvider.provideQuery(userId);
+		}
+
+		
+		final Expression queryExpression;
+		final SortBy sortBy;
 		
 		if (containsKey(OptionKey.TERM)) {
-			final BooleanQuery bq = buildBooleanQuery(queryBuilder.matchAll(), Occur.MUST);
+			final ExpressionBuilder bq = Expressions.builder();
+			// nest current query
+			bq.must(queryBuilder.build());
+			queryBuilder = bq;
 			
 			final String term = getString(OptionKey.TERM);
 			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, term);
@@ -223,7 +223,6 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(term);
 				if (category == ComponentCategory.CONCEPT) {
 					conceptScoreMap.put(term, Float.MAX_VALUE);
-					bq.add(SnomedMappings.id().toQuery(Long.valueOf(term)), Occur.SHOULD);
 				}
 			} catch (IllegalArgumentException e) {
 				// ignored
@@ -233,101 +232,61 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				return new SnomedConcepts(offset(), limit(), 0);
 			}
 			
-			addFilterClause(filter, SnomedMappings.id().createTermsFilter(StringToLongFunction.copyOf(conceptScoreMap.keySet())), Occur.MUST);
+			queryBuilder.must(ids(conceptScoreMap.keySet()));
 			
-			final FunctionQuery functionQuery = new FunctionQuery(
-					new DualFloatFunction(new LongFieldSource(SnomedMappings.id().fieldName()), DOI_VALUE_SOURCE) {
-						@Override
-						protected String name() {
-							return "ConceptScoreMap";
-						}
-
-						@Override
-						protected float func(int doc, FunctionValues conceptIdValues, FunctionValues interestValues) {
-							final String conceptId = Long.toString(conceptIdValues.longVal(doc));
-							float interest = containsKey(OptionKey.USE_DOI) ? interestValues.floatVal(doc) : 0.0f;
-							
-							// TODO move this normalization to index initializer.
-							if (interest != 0.0f) {
-								interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE - MIN_DOI_VALUE);
-							}
-							
-							if (conceptScoreMap.containsKey(conceptId)) {
-								return conceptScoreMap.get(conceptId) + interest;
-							} else {
-								return 0.0f;
-							}
-						}
-					});
-
-			final Query filteredQuery = createFilteredQuery(bq, filter);
-			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
-			query = new CustomScoreQuery(q, functionQuery);
-			sort = Sort.RELEVANCE;
+			final ScoreFunction func = new DualScoreFunction<String, Float>("ConceptScoreMap", Fields.ID, Fields.DOI) {
+				@Override
+				protected float compute(String idValue, Float interestValue) {
+					float interest = containsKey(OptionKey.USE_DOI) ? interestValue : 0.0f;
+					
+					// TODO move this normalization to index initializer.
+					if (interest != 0.0f) {
+						interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE - MIN_DOI_VALUE);
+					}
+					
+					if (conceptScoreMap.containsKey(idValue)) {
+						return conceptScoreMap.get(idValue) + interest;
+					} else {
+						return 0.0f;
+					}
+				}
+			};
+			
+			
+			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
+			queryExpression = Expressions.customScore(q, func);
+			sortBy = SortBy.SCORE;
 		} else if (containsKey(OptionKey.USE_DOI)) {
-			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
-			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
-			query = new CustomScoreQuery(createConstantScoreQuery(q), new FunctionQuery(DOI_VALUE_SOURCE));
-			sort = Sort.RELEVANCE;
+			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
+			queryExpression = Expressions.customScore(q, new FieldScoreFunction(Fields.DOI));
+			sortBy = SortBy.SCORE;
 		} else {
-			final Query filteredQuery = createFilteredQuery(queryBuilder.matchAll(), filter);
-			final Query q = addSearchProfile(searchProfileQuery, filteredQuery);
-			query = createConstantScoreQuery(q);
-			sort = Sort.INDEXORDER;
+			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
+			sortBy = SortBy.NONE;
 		}
 		
-		final int totalHits = getTotalHits(searcher, query);
-		if (limit() < 1 || totalHits < 1) {
-			return new SnomedConcepts(offset(), limit(), totalHits);
-		}
 		
-		// TODO: control score tracking
-		final TopDocs topDocs = searcher.search(query, null, numDocsToRetrieve(searcher, totalHits), sort, true, false);
-		if (topDocs.scoreDocs.length < 1) {
-			return new SnomedConcepts(offset(), limit(), topDocs.totalHits);
+		final Hits<SnomedConceptDocument> hits = searcher.search(Query.select(SnomedConceptDocument.class)
+				.where(queryExpression)
+				.offset(offset())
+				.limit(limit())
+				.withScores(SortBy.SCORE == sortBy)
+				.build());
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedConcepts(offset(), limit(), hits.getTotal());
+		} else {
+			return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
-		
-		final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		final ImmutableList.Builder<SnomedConceptIndexEntry> conceptsBuilder = ImmutableList.builder();
-		
-		final Options expand = expand();
-		for (int i = offset(); i < scoreDocs.length; i++) {
-			Document doc = searcher.doc(scoreDocs[i].doc); // TODO: should expand & filter drive fieldsToLoad? Pass custom fieldValueLoader?
-			final Builder builder = SnomedConceptIndexEntry.builder(doc).score(scoreDocs[i].score);
-			
-			if (expand != null) {
-				if (expand.containsKey("parentIds") || expand.containsKey("ancestors")) {
-					builder.parents(SnomedMappings.parent().getValueAsLongSet(doc));
-					builder.statedParents(SnomedMappings.statedParent().getValueAsLongSet(doc));
-				}
-				
-				if (expand.containsKey("ancestorIds") || expand.containsKey("ancestors")) {
-					builder.ancestors(SnomedMappings.ancestor().getValueAsLongSet(doc));
-					builder.statedAncestors(SnomedMappings.statedAncestor().getValueAsLongSet(doc));
-				}
-			}
-			
-			conceptsBuilder.add(builder.build());
-		}
-		return SnomedConverters.newConceptConverter(context, expand, locales()).convert(conceptsBuilder.build(), offset(), limit(), topDocs.totalHits);
 	}
 
-	private BooleanQuery buildBooleanQuery(final Query query, final Occur occur) {
-		if (query instanceof BooleanQuery) {
-			return (BooleanQuery) query;
-		} else {
-			final BooleanQuery booleanQuery = new BooleanQuery(true);
-			booleanQuery.add(query, occur);
-			return booleanQuery;
-		}
-	}
-	
-	private Query addSearchProfile(final BooleanQuery searchProfileQuery, final Query query) {
+	private Expression addSearchProfile(final Expression searchProfileQuery, final Expression query) {
 		if (searchProfileQuery == null) {
 			return query;
 		} else {
-			searchProfileQuery.add(query, Occur.MUST);
-			return searchProfileQuery;
+			return Expressions.builder()
+					.must(searchProfileQuery)
+					.must(query)
+					.build();
 		}
 	}
 	
@@ -337,7 +296,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 			.filterByActive(true)
 			.filterByTerm(term)
 			.filterByLanguageRefSetIds(languageRefSetIds())
-			.filterByConceptId(StringToLongFunction.copyOf(componentIds()));
+			.filterByConceptId(componentIds());
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);

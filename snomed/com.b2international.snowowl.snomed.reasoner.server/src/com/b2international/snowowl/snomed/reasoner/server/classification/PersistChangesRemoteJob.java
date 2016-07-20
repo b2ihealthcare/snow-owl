@@ -21,6 +21,7 @@ import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockCon
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS;
 import static org.eclipse.core.runtime.Status.OK_STATUS;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +31,13 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexRead;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -42,16 +49,19 @@ import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**
@@ -68,6 +78,8 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
+	
+	private LongSet statedDescendantsOfSmp;
 
 	/**
 	 * @param name
@@ -86,10 +98,6 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		return getServiceForClass(IDatastoreOperationLockManager.class);
 	}
 
-	private static SnomedTerminologyBrowser getTerminologyBrowser() {
-		return getServiceForClass(SnomedTerminologyBrowser.class);
-	}
-	
 	@Override
 	protected IStatus runWithListenableMonitor(final IProgressMonitor monitor) {
 
@@ -125,6 +133,10 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			throw new DatastoreOperationLockException(reason);
 		}
 	}
+	
+	private RevisionIndex getIndex() {
+		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+	}
 
 	private IStatus persistChanges(final IProgressMonitor monitor) throws CommitException {
 
@@ -138,7 +150,12 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		try {
 
 			editingContext = new SnomedEditingContext(branchPath);
-			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
+			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = getIndex().read(branchPath.getPath(), new RevisionIndexRead<InitialReasonerTaxonomyBuilder>() {
+				@Override
+				public InitialReasonerTaxonomyBuilder execute(RevisionSearcher searcher) throws IOException {
+					return new InitialReasonerTaxonomyBuilder(searcher, Type.REASONER);
+				}
+			});
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 			final RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD);
@@ -157,8 +174,8 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 				long firstConceptId = equivalentSet.iterator().next();
 				String firstConceptIdString = Long.toString(firstConceptId);
 
-				// FIXME: make equivalence set to fix user-selectable
-				if (getTerminologyBrowser().isSuperTypeOfById(branchPath, Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT, firstConceptIdString)) {
+				// FIXME: make equivalence set to fix user-selectable, only subtype of SMP can be auto-merged
+				if (isSubTypeOfSMP(branchPath, firstConceptIdString)) {
 					equivalenciesToFix.add(equivalentSet);
 				}
 			}
@@ -183,6 +200,34 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 				editingContext.close();
 			}
 		}
+	}
+
+	private boolean isSubTypeOfSMP(IBranchPath branchPath, String subTypeId) {
+		if (statedDescendantsOfSmp == null) {
+			statedDescendantsOfSmp = SnomedRequests.prepareGetConcept()
+				.setComponentId(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT)
+				.setExpand("descendants(limit:"+Integer.MAX_VALUE+",direct:false,form:\"stated\")")
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<ISnomedConcept, LongSet>() {
+					@Override
+					public LongSet apply(ISnomedConcept input) {
+						final LongSet descendantIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(input.getDescendants().getTotal());
+						for (ISnomedConcept descendant : input.getDescendants()) {
+							descendantIds.add(Long.parseLong(descendant.getId()));
+						}
+						return descendantIds;
+					}
+				})
+				.fail(new Function<Throwable, LongSet>() {
+					@Override
+					public LongSet apply(Throwable input) {
+						return PrimitiveSets.newLongOpenHashSet();
+					}
+				})
+				.getSync();
+		}
+		return statedDescendantsOfSmp.contains(Long.parseLong(subTypeId));
 	}
 
 	private void cleanup() {

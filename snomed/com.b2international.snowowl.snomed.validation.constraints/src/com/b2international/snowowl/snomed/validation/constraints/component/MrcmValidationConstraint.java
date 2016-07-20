@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.core.validation.IComponentValidationConstraint;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.validator.MrcmConceptWidgetBeanValidator;
 import com.b2international.snowowl.snomed.mrcm.core.validator.WidgetBeanValidationDiagnostic;
 import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetBeanProvider;
@@ -33,12 +33,12 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetMo
  * MRCM based validation constraint.
  * 
  */
-public class MrcmValidationConstraint implements IComponentValidationConstraint<SnomedConceptIndexEntry> {
+public class MrcmValidationConstraint implements IComponentValidationConstraint<SnomedConceptDocument> {
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.MrcmValidationConstraint";
 	
 	@Override
-	public ComponentValidationDiagnosticImpl validate(final IBranchPath branchPath, final SnomedConceptIndexEntry indexEntry) {
+	public ComponentValidationDiagnosticImpl validate(final IBranchPath branchPath, final SnomedConceptDocument indexEntry) {
 		final IWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IWidgetModelProvider.class);
 		final IWidgetBeanProvider widgetBeanProvider = ApplicationContext.getInstance().getService(IWidgetBeanProvider.class);
 		
