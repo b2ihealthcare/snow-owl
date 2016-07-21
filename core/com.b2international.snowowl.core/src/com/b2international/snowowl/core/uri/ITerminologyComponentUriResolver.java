@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.api.IComponent;
  * 
  *
  * @param <C> the terminology component type
+ * @deprecated - UNSUPPORTED API
  */
 public interface ITerminologyComponentUriResolver<C extends IComponent<?>> {
 	/**

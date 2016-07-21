@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.uri.ITerminologyComponentUriResolver;
 import com.b2international.snowowl.core.uri.UriUtils;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
@@ -43,11 +42,11 @@ public class SnomedComponentUriResolver implements ITerminologyComponentUriResol
 		if ("code".equals(command)) {
 			// concept
 			ILookupService<String, Object, Object> lookupService = CORE_TERMINOLOGY_BROKER.getLookupService(SnomedTerminologyComponentConstants.CONCEPT);
-			return lookupService.getComponent(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), uriSegments.get(UriUtils.COMPONENT_ID_INDEX));
+			return lookupService.getComponent(BranchPathUtils.createMainPath(), uriSegments.get(UriUtils.COMPONENT_ID_INDEX));
 		} else if ("refset".equals(command)) {
 			// refset
 			ILookupService<String, Object, Object> lookupService = CORE_TERMINOLOGY_BROKER.getLookupService(SnomedTerminologyComponentConstants.REFSET);
-			return lookupService.getComponent(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), uriSegments.get(UriUtils.COMPONENT_ID_INDEX));
+			return lookupService.getComponent(BranchPathUtils.createMainPath(), uriSegments.get(UriUtils.COMPONENT_ID_INDEX));
 		}
 		throw new IllegalArgumentException("Can't handle URI: " + uri);
 	}

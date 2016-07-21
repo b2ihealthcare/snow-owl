@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.AttributeValue;
 import com.b2international.snowowl.dsl.scg.Concept;
@@ -29,7 +28,6 @@ import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -198,7 +196,7 @@ public class SubsumptionTester {
 					.all()
 					.filterByActive(true)
 					.filterBySource(candidate.getId())
-					.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+					.build(branchPath)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {

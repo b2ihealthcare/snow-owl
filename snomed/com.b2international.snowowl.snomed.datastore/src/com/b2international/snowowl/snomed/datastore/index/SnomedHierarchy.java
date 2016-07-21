@@ -17,18 +17,13 @@ package com.b2international.snowowl.snomed.datastore.index;
 
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyIntMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.google.common.base.Preconditions;
 
@@ -61,14 +56,6 @@ public class SnomedHierarchy {
 	private final LongKeyIntMap conceptIdToInternalId;
 
 	private final long[] conceptIds;
-	
-	/**
-	 * Creates a view of the concept hierarchy for the currently activated branch.
-	 * @return the new incremental taxonomy builder instance.
-	 */
-	public static SnomedHierarchy forActiveBranch() {
-		return forBranch(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE));
-	}
 	
 	/**
 	 * Creates a view of the concept hierarchy for the specified branch.

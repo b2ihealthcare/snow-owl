@@ -86,17 +86,6 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 	public void refresh() {
 	}
 	
-	/**
-	 * Retrieves the icon identifier of the specified source object, based on information of the
-	 * {@link BranchPathUtils#createActivePath() currently active path}.
-	 * 
-	 * @param source
-	 * @return
-	 */
-	public String getIconId(Object source) {
-		return getIconId(source, BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE));
-	}
-	
 	public String getIconId(Object source, final IBranchPath branchPath) {
 		if (source instanceof Long) {
 			return getIconComponentId(String.valueOf(source), branchPath);
@@ -131,13 +120,13 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 	 * @param source
 	 * @return
 	 */
-	public File getIcon(Object source) {
+	public File getIcon(final String branch, Object source) {
 		// return fast if the given source contains enough information to provide the image file (String or Long)
 		final File resolved = resolveFast(source);
 		if (resolved != null && resolved.exists()) {
 			return resolved;
 		}
-		final String iconId = getIconId(source);
+		final String iconId = getIconId(source, BranchPathUtils.createPath(branch));
 		return getExactFile(iconId, Concepts.ROOT_CONCEPT);
 	}
 
@@ -160,11 +149,12 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 	 * 
 	 * @param conceptId
 	 * @return
+	 * @deprecated - UNSUPPORTED API
 	 */
 	@Override
 	public String getIconComponentId(String componentId) {
-		return getIconComponentId(componentId, BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE));
-	};
+		throw new UnsupportedOperationException("Getting icon ID on server side is not supported without specifying a branch");
+	}
 	
 	public String getIconComponentId(String componentId, final IBranchPath branchPath) {
 		if (componentId == null) {

@@ -25,11 +25,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
-import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
-import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
@@ -111,7 +109,8 @@ public class RefSetRelationComparator {
 		public AddedOrRelatedReferencedComponentDeltaFunction(Collection<SnomedConceptDocument> referencedComponents) {
 			final Runnable initBuilder = new Runnable() {
 				@Override public void run() {
-					hierarchy = SnomedHierarchy.forActiveBranch();
+					// TODO convert comparator to request class
+					hierarchy = SnomedHierarchy.forBranch(BranchPathUtils.createMainPath());
 				}
 			};
 			
