@@ -180,10 +180,9 @@ public final class ImportUtil {
 		checkArgument(BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()));
 		ApiValidation.checkInput(codeSystem);
 		
-		final ImportConfiguration config = new ImportConfiguration();
+		final ImportConfiguration config = new ImportConfiguration(branchPath.getPath());
 		config.setCodeSystem(codeSystem);
 		config.setVersion(contentSubType);
-		config.setBranchPath(branchPath.getPath());
 		config.setCreateVersions(shouldCreateVersions);
 		config.setArchiveFile(releaseArchive);
 

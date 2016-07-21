@@ -26,12 +26,7 @@ import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ZipURLHandler;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -71,15 +66,6 @@ public final class ImportConfiguration {
 	private File languageRefSetFile;
 	private File descriptionType;
 	private File textDefinitionFile;
-	private final String languageRefSetId;
-	
-	{
-		//set client side's language reference set ID based on the configuration. 
-		final ILanguageConfigurationProvider provider = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class);
-		final LanguageConfiguration configuration = provider.getLanguageConfiguration();
-		languageRefSetId = configuration.getLanguageRefSetId();
-		
-	}
 	
 	private ImportSourceKind sourceKind = ImportSourceKind.ARCHIVE;
 	private ContentSubType version = ContentSubType.DELTA;
@@ -87,8 +73,7 @@ public final class ImportConfiguration {
 	private final Set<String> excludedRefSetIds = Sets.newHashSet();
 	private boolean createVersions;
 	
-	//always the active branch path for the client/requester.
-	private String branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
+	private final String branchPath;
 
 	/* Not bound */
 	private ReleaseFileSet releaseFileSet;
@@ -98,6 +83,10 @@ public final class ImportConfiguration {
 	
 	private final Map<String, String> releaseFileNameMappings = Maps.newHashMap();
 
+	public ImportConfiguration(final String branchPath) {
+		this.branchPath = branchPath;
+	}
+	
 	public boolean isCreateVersions() {
 		return createVersions;
 	}
@@ -176,10 +165,6 @@ public final class ImportConfiguration {
 
 	public void setStatedRelationshipsFile(final File statedRelationshipsFile) {
 		this.statedRelationshipsFile = statedRelationshipsFile;
-	}
-	
-	public String getLanguageRefSetId() {
-		return languageRefSetId;
 	}
 	
 	public File getDescriptionType() {
@@ -279,10 +264,6 @@ public final class ImportConfiguration {
 		return branchPath;
 	}
 	
-	public void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-	}
-
 	public CodeSystem getCodeSystem() {
 		return codeSystem;
 	}

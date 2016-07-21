@@ -64,7 +64,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 		
-		final ImportConfiguration configuration = new ImportConfiguration();
+		final ImportConfiguration configuration = new ImportConfiguration(Branch.MAIN_PATH);
 		
 		String arg = null;
 		

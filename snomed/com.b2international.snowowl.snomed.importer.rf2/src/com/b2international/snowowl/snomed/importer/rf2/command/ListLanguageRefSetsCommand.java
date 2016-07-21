@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
@@ -101,7 +102,7 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 			final File languageRefSetFile = new File(languageRefSetFileName);
 			interpreter.println("Searching for language type reference sets in '" + languageRefSetFile.getName() + "'...");
 			
-			final ImportConfiguration config = new ImportConfiguration();
+			final ImportConfiguration config = new ImportConfiguration(Branch.MAIN_PATH);
 	
 			// Setting up configuration only with the required fields
 			config.setSourceKind(ImportSourceKind.ARCHIVE);
