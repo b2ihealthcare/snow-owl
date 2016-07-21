@@ -20,8 +20,8 @@ import static com.b2international.snowowl.snomed.mrcm.core.validator.util.Concep
 import static com.b2international.snowowl.snomed.mrcm.core.validator.util.ConceptWidgetBeanUtil.isRelationshipTypeSet;
 import static com.b2international.snowowl.snomed.mrcm.core.validator.util.ConceptWidgetBeanUtil.isRelationshipValueSet;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 
@@ -45,7 +45,6 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidg
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 /**
  * Server side {@link ConceptWidgetBean} validator.
@@ -115,15 +114,8 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 		final Multimap<ModeledWidgetBean, IStatus> results = HashMultimap.create();
 		final List<ModeledWidgetBean> groups = concept.getProperties().getElements();
 		
-		final String snomedConceptId = concept.getConceptId();
-		final SnomedConceptIndexEntry snomedConceptMini = getTerminologyBrowser().getConcept(branchPath, snomedConceptId);
-		Long snomedConceptIdLong = Long.valueOf(snomedConceptId);
-		LongSet allSubTypesAndSelfIds = getTerminologyBrowser().getAllSubTypeIds(branchPath, snomedConceptIdLong);
-		allSubTypesAndSelfIds.add(snomedConceptIdLong);
-		
 		boolean hasActiveIsA = false;
-		final Set<String> isADestinationIds = Sets.newHashSet();
-		
+		final Multimap<String, String> isaTypeToParentIdMap = HashMultimap.create();
 		
 		for (final RelationshipGroupWidgetBean group : Iterables.filter(groups, RelationshipGroupWidgetBean.class)) {
 			
@@ -131,7 +123,6 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 			
 			for (final RelationshipWidgetBean relationship : Iterables.filter(relationships, RelationshipWidgetBean.class)) {
 
-				
 				// We're only considering populated relationships here
 				if (!isRelationshipTypeSet(relationship) || !isRelationshipValueSet(relationship)) {
 					continue;
@@ -142,33 +133,43 @@ public class WidgetBeanValidator implements IWidgetBeanValidator {
 				}
 
 				// The rest of the loop only deals with IS A relationships
-				final String destinationId = relationship.getSelectedValue().getId();
-				if (!isRelationshipTypeIsA(relationship)) {
-					continue;
-				} else {
-					if (isADestinationIds.contains(destinationId)) {
+				if (isRelationshipTypeIsA(relationship)) {
+					
+					final String destinationId = relationship.getSelectedValue().getId();
+					final String characteristicTypeId = relationship.getSelectedCharacteristicType().getId();
+					
+					Collection<String> parents = isaTypeToParentIdMap.get(characteristicTypeId);
+					
+					if (parents.contains(destinationId)) {
 						results.put(relationship, createError("The concept has duplicate Is-a relationships."));
 					} else {
-						isADestinationIds.add(destinationId);
-					}
-				}
-				
-				// check for active IS_A in ungrouped properties
-				if (!hasActiveIsA && 0 == group.getGroupNumber()) {
-					hasActiveIsA = true;
-				}
-				
-				if (destinationId.equals(snomedConceptId)) {
-					results.put(relationship, createError("For Is-a relationships, the destination should not be the same as the edited concept."));
-				} else {
-					
-					if (null == snomedConceptMini) { //new concept. it does not exist in store. cannot cause cycle.
-						continue;
+						isaTypeToParentIdMap.put(characteristicTypeId, destinationId);
 					}
 					
-					//the IS_A relationship destination cannot be in the subtype set
-					if (allSubTypesAndSelfIds.contains(Long.valueOf(destinationId))) {
-						results.put(relationship, createError("For Is-a relationships, the destination should not be the descendant of the edited concept."));
+					// check for active IS_A in ungrouped properties
+					if (!hasActiveIsA && 0 == group.getGroupNumber()) {
+						hasActiveIsA = true;
+					}
+					
+					final String snomedConceptId = concept.getConceptId();
+					if (destinationId.equals(snomedConceptId)) {
+						results.put(relationship, createError("For Is-a relationships, the destination should not be the same as the edited concept."));
+					} else {
+						
+						final SnomedConceptIndexEntry conceptIndexEntry = getTerminologyBrowser().getConcept(branchPath, snomedConceptId);
+
+						if (null == conceptIndexEntry) { //new concept. it does not exist in store. cannot cause cycle.
+							continue;
+						}
+						
+						Long snomedConceptIdLong = Long.valueOf(snomedConceptId);
+						LongSet allSubTypesAndSelfIds = getTerminologyBrowser().getAllSubTypeIds(branchPath, snomedConceptIdLong);
+						allSubTypesAndSelfIds.add(snomedConceptIdLong);
+						
+						//the IS_A relationship destination cannot be in the subtype set
+						if (allSubTypesAndSelfIds.contains(Long.valueOf(destinationId))) {
+							results.put(relationship, createError("For Is-a relationships, the destination should not be the descendant of the edited concept."));
+						}
 					}
 				}
 			}
