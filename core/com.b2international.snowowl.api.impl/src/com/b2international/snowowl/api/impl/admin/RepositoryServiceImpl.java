@@ -27,11 +27,7 @@ import com.b2international.snowowl.api.admin.exception.LockException;
 import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundException;
 import com.b2international.snowowl.api.admin.exception.RepositoryVersionNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.users.SpecialUserStore;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
@@ -43,7 +39,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
-import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -146,16 +141,6 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 
 		final IOperationLockTarget target = new SingleRepositoryLockTarget(repositoryUuid);
 		doUnlock(context, target);
-	}
-
-	@Override
-	public List<String> getRepositoryVersionIndexFiles(final String repositoryUuid, final String repositoryVersionId) {
-		checkValidRepositoryAndVersionId(repositoryUuid, repositoryVersionId);
-
-		final IIndexUpdater<IIndexEntry> updater = IndexServerServiceManager.INSTANCE.getByUuid(repositoryUuid);
-		final IBranchPath versionPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), repositoryVersionId);
-		final List<String> fileList =  updater.listFiles(versionPath);
-		return ImmutableList.copyOf(fileList);
 	}
 
 	private void checkValidTimeout(final int timeoutMillis) {

@@ -19,7 +19,6 @@ import java.util.List;
 
 import com.b2international.snowowl.api.admin.exception.LockException;
 import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundException;
-import com.b2international.snowowl.api.admin.exception.RepositoryVersionNotFoundException;
 
 /**
  * Implementations of the repository service allow creating on-line backups of terminology content repositories by
@@ -89,17 +88,4 @@ public interface IRepositoryService {
 	 */
 	List<String> getRepositoryVersionIds(String repositoryUuid);
 
-	/**
-	 * Retrieves the relative path of all files that make up the index of the specified repository and version.
-	 * 
-	 * @param repositoryUuid      a unique identifier pointing to a particular repository (may not be {@code null})
-	 * @param repositoryVersionPath the path of a repository version, as returned by {@link #getRepositoryVersionIds(String)} (may not be {@code null})
-	 * 
-	 * @return a list of relative paths to files which make up the index of the given version, in alphabetical order (never {@code null})
-	 * 
-	 * @throws RepositoryNotFoundException        if the specified repository UUID does not correspond to any repository
-	 * @throws RepositoryVersionNotFoundException if the specified version identifier does not correspond to a version
-	 *                                            in the repository
-	 */
-	List<String> getRepositoryVersionIndexFiles(String repositoryUuid, String repositoryVersionPath);
 }

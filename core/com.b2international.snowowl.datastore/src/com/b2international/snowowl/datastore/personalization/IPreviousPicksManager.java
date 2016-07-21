@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.personalization;
 
+import com.b2international.index.compat.SingleDirectoryIndex;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 
 /**
  * Provides access to components previously selected from the global quick search control.

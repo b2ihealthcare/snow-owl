@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store;
+package com.b2international.index.compat;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
@@ -27,8 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexCommit;
@@ -40,17 +40,10 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 
-import com.b2international.commons.ClassUtils;
-import com.b2international.index.IndexException;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.b2international.index.lucene.Directories;
 import com.b2international.index.lucene.SearchWarmerFactory;
-import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.SnowOwlApplication;
-import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;
@@ -59,9 +52,9 @@ import com.google.common.io.Closeables;
 
 /**
  * An abstract implementation for an index service which does not use multiple directories. 
- *
+ * @deprecated - in favor of new index api, use that if possible
  */
-public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, IDisposableService {
+public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, Closeable {
 
 	private final class SnapshotOrdering extends Ordering<String> {
 		@Override
@@ -110,7 +103,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			this.writer.commit(); // Create index if it didn't exist
 			this.manager = new SearcherManager(directory, new SearchWarmerFactory());
 		} catch (final IOException e) {
-			throw new IndexException(e.getMessage(), e);
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	
@@ -123,19 +116,12 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 	}
 
 	@Override
-	public boolean isDisposed() {
-		return disposed.get();
-	}
-
-	@Override
-	public final void dispose() {
-		
+	public void close() throws IOException {
 		if (disposed.compareAndSet(false, true)) {
 			doDispose();
 		}
 	}
-
-	@OverridingMethodsMustInvokeSuper
+	
 	protected void doDispose() {
 		
 		for (final IndexCommit heldCommit : heldSnapshots.values()) {
@@ -157,7 +143,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 
 	@Override
 	public String getIndexPath() {
-		return Paths.get(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory().getAbsolutePath(), "indexes").relativize(indexDirectory.toPath()).toString();
+		return indexDirectory.toPath().toString();
 	}
 	
 	@Override
@@ -194,9 +180,9 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			return Lists.newArrayList();
 		}
 		
-		final IPath base = new Path(basePath.getAbsolutePath());
-		final IPath actual = new Path(indexDirectory.getAbsolutePath());
-		final IPath relativePath = actual.makeRelativeTo(base);
+		final Path base = Paths.get(basePath.getAbsolutePath());
+		final Path actual = Paths.get(indexDirectory.getAbsolutePath());
+		final Path relativePath = actual.relativize(base);
 
 		final Collection<String> fileNames = indexCommit.getFileNames();
 		
@@ -205,7 +191,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			
 			// Only collect files from this folder
 			if (indexFilePath.exists() && indexFilePath.isFile()) {
-				result.add(relativePath.append(fileName).toString());
+				result.add(relativePath.resolve(fileName).toString());
 			}
 		}
 		
@@ -244,11 +230,11 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 	}
 
 	private SnapshotDeletionPolicy getSnapshotDeletionPolicy() {
-		return ClassUtils.checkAndCast(writer.getConfig().getIndexDeletionPolicy(), SnapshotDeletionPolicy.class);
+		return (SnapshotDeletionPolicy) writer.getConfig().getIndexDeletionPolicy();
 	}
 
 	private void checkNotDisposed() {
-		if (isDisposed()) {
+		if (disposed.get()) {
 			throw new IllegalStateException("This service is disposed.");
 		}
 	}

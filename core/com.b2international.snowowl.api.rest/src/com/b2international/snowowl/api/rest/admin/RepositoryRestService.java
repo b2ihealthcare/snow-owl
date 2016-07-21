@@ -165,23 +165,4 @@ public class RepositoryRestService extends AbstractAdminRestService {
 		return joinStrings(versions);
 	}
 
-	@RequestMapping(value="{repositoryUuid}/versions/{repositoryVersionId}/indexFiles", method=RequestMethod.GET)
-	@ApiOperation(
-			value="Retrieve all repository version index file paths",
-			notes="Retrieves the relative path of all files that make up the index of the specified repository and version.")
-	@ApiResponses({
-		@ApiResponse(code=404, message="Repository or version not found"),
-	})
-	public String getRepositoryVersionIndexFiles(
-			@PathVariable(value="repositoryUuid") 
-			@ApiParam(value="a unique identifier pointing to a particular repository")
-			final String repositoryUuid,
-
-			@PathVariable(value="repositoryVersionId") 
-			@ApiParam(value="the identifier of a repository version")
-			final String repositoryVersionId) {
-
-		final List<String> fileList = delegate.getRepositoryVersionIndexFiles(repositoryUuid, repositoryVersionId);
-		return joinStrings(fileList);
-	}
 }

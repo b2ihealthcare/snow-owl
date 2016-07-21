@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyFloatMap;
-import com.b2international.snowowl.core.api.index.IndexException;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.google.common.base.Preconditions;
 
@@ -86,8 +86,8 @@ public class DoiInitializer {
 					try {
 						is.close();
 					} catch (final IOException e1) {
+						throw new SnowowlRuntimeException("Error while closing DOI resource file stream.", e);
 					}
-					throw new IndexException("Error while closing DOI resource file stream.", e);
 				}
 				
 			}

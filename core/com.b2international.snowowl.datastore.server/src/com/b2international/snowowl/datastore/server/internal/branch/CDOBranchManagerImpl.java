@@ -43,8 +43,6 @@ import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.users.SpecialUserStore;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
@@ -223,13 +221,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);
         final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
-        final CDOBranchPath cdoBranchPath = new CDOBranchPath(childCDOBranch);
-
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
-        // XXX compatibility with 4.6.x terminologies, 4.7.x terminologies should not have index updater
-        if (repository.getIndexUpdater() != null) {
-        	repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath);
-        }
 		return reopen(parent, name, metadata, timeStamp, childCDOBranch.getID());
     }
 

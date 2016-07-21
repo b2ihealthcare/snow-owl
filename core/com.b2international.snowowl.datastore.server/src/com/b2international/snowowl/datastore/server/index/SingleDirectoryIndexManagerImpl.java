@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.index;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
-import com.b2international.snowowl.datastore.SingleDirectoryIndex;
+import com.b2international.index.compat.SingleDirectoryIndex;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;

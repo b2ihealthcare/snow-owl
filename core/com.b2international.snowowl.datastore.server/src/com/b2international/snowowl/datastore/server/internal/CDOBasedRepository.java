@@ -46,8 +46,6 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
-import com.b2international.snowowl.core.api.index.IIndexUpdater;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -166,11 +164,6 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 	}
 	
 	@Override
-	public IIndexUpdater<?> getIndexUpdater() {
-		return env.service(IIndexServerServiceManager.class).getByUuid(repositoryId);
-	}
-	
-	@Override
 	public Index getIndex() {
 		return (Index) registry.get(Index.class);
 	}
@@ -224,7 +217,7 @@ public final class CDOBasedRepository implements InternalRepository, RepositoryC
 			return type.cast(this);
 		}
 		if (registry.containsKey(type)) {
-			return (T) registry.get(type);
+			return type.cast(registry.get(type));
 		}
 		return env.service(type);
 	}

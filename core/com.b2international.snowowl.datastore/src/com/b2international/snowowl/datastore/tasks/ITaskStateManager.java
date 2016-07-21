@@ -19,9 +19,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.b2international.index.compat.SingleDirectoryIndex;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.IBranchPathMap;
-import com.b2international.snowowl.datastore.SingleDirectoryIndex;
 import com.b2international.snowowl.datastore.TaskBranchPathMap;
 
 /**

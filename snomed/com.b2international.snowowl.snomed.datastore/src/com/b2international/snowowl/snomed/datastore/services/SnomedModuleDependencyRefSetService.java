@@ -43,7 +43,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -116,26 +115,22 @@ public class SnomedModuleDependencyRefSetService {
 		}
 	}
 	
-	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId, RevisionSearcher searcher) {
-		try {
-			final Expression expression = createPublishedMembersQueryExpression(moduleId);
-			final Query<Revision.Views.StorageKeyOnly> query = Query
-					.selectPartial(Revision.Views.StorageKeyOnly.class, SnomedRefSetMemberIndexEntry.class)
-					.where(expression)
-					.limit(Integer.MAX_VALUE)
-					.build();
-			
-			final Hits<StorageKeyOnly> hits = searcher.search(query);
-			final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
-			
-			for (final StorageKeyOnly storageKey : hits) {
-				storageKeys.add(storageKey.getStorageKey());
-			}
-			
-			return storageKeys;
-		} catch (IOException e) {
-			throw new IndexException("Error while querying module dependency refset members.", e);
+	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId, RevisionSearcher searcher) throws IOException {
+		final Expression expression = createPublishedMembersQueryExpression(moduleId);
+		final Query<Revision.Views.StorageKeyOnly> query = Query
+				.selectPartial(Revision.Views.StorageKeyOnly.class, SnomedRefSetMemberIndexEntry.class)
+				.where(expression)
+				.limit(Integer.MAX_VALUE)
+				.build();
+		
+		final Hits<StorageKeyOnly> hits = searcher.search(query);
+		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
+		
+		for (final StorageKeyOnly storageKey : hits) {
+			storageKeys.add(storageKey.getStorageKey());
 		}
+		
+		return storageKeys;
 	}
 
 	private Expression createPublishedMembersQueryExpression(final String moduleId) {

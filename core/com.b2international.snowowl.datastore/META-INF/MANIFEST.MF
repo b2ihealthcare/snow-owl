@@ -63,6 +63,7 @@ Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.utils,
  com.b2international.snowowl.datastore.validation,
  com.b2international.snowowl.datastore.version
-Import-Package: org.apache.log4j;version="1.2.15",
+Import-Package: com.b2international.index.compat,
+ org.apache.log4j;version="1.2.15",
  org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy

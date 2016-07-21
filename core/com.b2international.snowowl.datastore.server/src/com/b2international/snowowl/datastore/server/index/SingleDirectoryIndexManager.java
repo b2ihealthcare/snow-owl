@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.server.index;
 
 import java.util.List;
 
-import com.b2international.snowowl.datastore.SingleDirectoryIndex;
+import com.b2international.index.compat.SingleDirectoryIndex;
 
 /**
  */

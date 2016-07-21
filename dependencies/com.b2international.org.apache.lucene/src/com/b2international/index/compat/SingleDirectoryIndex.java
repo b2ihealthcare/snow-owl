@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.api.index;
+package com.b2international.index.compat;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
- * Collects index server services by repository.
- * @deprecated - As of 4.7 release, nested index services are not supported
+ * @deprecated - in favor of new index api, use that if possible
  */
-public interface IIndexServerServiceManager {
+public interface SingleDirectoryIndex {
 
-	/**
-	 * Returns with the index updater associated with a repository identified by its unique UUID.
-	 * @param repositoryUuid the unique repository ID.
-	 * @return the index service.
-	 */
-	<E extends IIndexEntry> IIndexUpdater<E> getByUuid(final String repositoryUuid);
+	void releaseSnapshot(final String snapshotId) throws IOException;
+
+	List<String> listFiles(final String snapshotId) throws IOException;
+
+	List<String> getSnapshotIds();
+
+	String snapshot() throws IOException;
+
+	String getIndexPath();
 }

@@ -81,6 +81,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.GetResultRespo
 import com.b2international.snowowl.snomed.reasoner.classification.PersistChangesResponse;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerServiceUtil;
+import com.google.common.io.Closeables;
 
 /**
  */
@@ -248,7 +249,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		
 		if (null != indexService) {
 			ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).unregisterIndex(indexService);
-			indexService.dispose();
+			Closeables.closeQuietly(indexService);
 			indexService = null;
 		}
 		

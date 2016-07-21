@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.index.IIndexServerServiceManager;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
@@ -36,7 +35,6 @@ import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
-import com.b2international.snowowl.datastore.server.index.IndexServerServiceManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
@@ -96,9 +94,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			cdoRepositoryManager.activate();
 			env.services().registerService(ICDORepositoryManager.class, cdoRepositoryManager);
 			
-			// register index manager services, one for branching, one for single directory
-			// TODO would be nice to merge these into one single IndexManager
-			env.services().registerService(IIndexServerServiceManager.class, IndexServerServiceManager.INSTANCE);
+			// TODO remove single directory manager
 			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
 
 			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
