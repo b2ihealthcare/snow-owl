@@ -76,7 +76,6 @@ import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBran
 import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEventBusHandler;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.datastore.validation.TimeValidator;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Function;
@@ -388,7 +387,8 @@ public class VersioningService implements IVersioningService {
 	private Map<String, Supplier<ICodeSystemVersion>> initCurrentVersionSuppliers(final Iterable<String> toolingIds) {
 		final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers = newHashMap();
 		for (final String toolingId : toolingIds) {
-			final String versionIdForTooling = getActiveBranchForToolingFeature(toolingId).lastSegment();
+			// TODO on server the active branch is always MAIN, refactor versioning 
+			final String versionIdForTooling = Branch.MAIN_PATH;
 			currentVersionSuppliers.put(toolingId, memoize(new Supplier<ICodeSystemVersion>() {
 				public ICodeSystemVersion get() {
 					return find(getExistingVersions(toolingId), new Predicate<ICodeSystemVersion>() {
@@ -531,14 +531,6 @@ public class VersioningService implements IVersioningService {
 
 	private IDatastoreOperationLockManager getLockManager() {
 		return getServiceForClass(IDatastoreOperationLockManager.class);
-	}
-	
-	private IBranchPath getActiveBranchForToolingFeature(final String toolingId) {
-		return getTaskManager().getActiveBranch(getRepositoryUuid(checkNotNull(toolingId, "toolingId")));
-	}
-
-	private TaskManager getTaskManager() {
-		return getServiceForClass(TaskManager.class);
 	}
 	
 	private SingleRepositoryAndBranchLockTarget createLockTarget(final String toolingId, final IBranchPath branchPath) {
