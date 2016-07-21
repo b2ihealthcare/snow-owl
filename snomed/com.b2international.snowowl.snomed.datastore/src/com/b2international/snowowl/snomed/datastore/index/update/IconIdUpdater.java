@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
@@ -61,9 +60,6 @@ public class IconIdUpdater {
 	private String getParentIcon(String componentId, ISnomedTaxonomyBuilder taxonomyBuilder) {
 		if (componentId == null || !taxonomyBuilder.containsNode(componentId)) {
 			return null;
-		}
-		if (taxonomyBuilder.getAllAncestorNodeIds(componentId).contains(Long.valueOf(componentId))) {
-			throw new CycleDetectedException("Concept " + componentId + " would introduce a cycle in the ISA graph (loop).");
 		}
 		final Set<String> visitedNodes = Sets.newHashSet();
 		return getParentFrom(componentId, taxonomyBuilder, visitedNodes);
