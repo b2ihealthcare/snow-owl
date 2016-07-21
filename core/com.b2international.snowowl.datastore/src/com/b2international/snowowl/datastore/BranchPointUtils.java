@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createActivePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
@@ -35,7 +34,6 @@ import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.core.api.IBranchPoint.NullBranchPoint;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Preconditions;
 
 /**
@@ -138,16 +136,6 @@ public abstract class BranchPointUtils {
 		return create(getConnectionManager().get(branchPoint.getBranch()), createPath(branchPoint.getBranch()), branchPoint.getTimeStamp());
 	}
 	
-	/**
-	 * Creates and returns a branch point representing the HEAD of the currently active branch.
-	 * <p>Currently active branch is specified via {@link TaskManager#getActiveBranch()}.
-	 * @param connection connection to the remote repository.
-	 * @return the branch point representing the HEAD of the currently active branch.
-	 */
-	public static IBranchPoint createActiveHead(final ICDOConnection connection) {
-		return create(connection, createActivePath(connection.getUuid()));
-	}
-
 	/**
 	 * Counter part of the {@link #create(CDOBranchPoint)}.
 	 * @param branchPoint the branch point.

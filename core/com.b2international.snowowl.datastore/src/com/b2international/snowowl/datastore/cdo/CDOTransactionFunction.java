@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.google.common.base.Preconditions;
 
 /**
  * Function performing any arbitrary operation on a {@link CDOTransaction transaction}.
@@ -30,19 +27,6 @@ import com.google.common.base.Preconditions;
  */
 public abstract class CDOTransactionFunction<T> extends CDOViewFunction<T, CDOTransaction> {
 
-	/**
-	 * Creates a function that can make any operation in a {@link CDOTransaction transaction} opened on the active branch.
-	 * @param connection the connection where the transaction has to be opened.
-	 */
-	public CDOTransactionFunction(final ICDOConnection connection) {
-		this(check(connection), BranchPathUtils.createActivePath(connection.getUuid()));
-	}
-	
-	/**Creates a function that can make any arbitrary operation in a {@link CDOTransaction transaction} opened on the given {@link CDOBranch branch}.*/
-	public CDOTransactionFunction(final CDOBranch branch) {
-		this(getConnection(branch), BranchPathUtils.createPath(Preconditions.checkNotNull(branch, "CDO branch argument cannot be null.")));
-	}
-	
 	/**Creates a function that can make any operation in a {@link CDOTransaction transaction} opened on the branch given by its unique {@link IBranchPath branch path}.
 	 * @param connection the connection where the transaction has to be opened.*/
 	public CDOTransactionFunction(final ICDOConnection connection, final IBranchPath branchPath) {

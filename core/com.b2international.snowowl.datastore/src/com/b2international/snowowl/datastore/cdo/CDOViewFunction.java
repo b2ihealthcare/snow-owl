@@ -39,14 +39,6 @@ public abstract class CDOViewFunction<T, V extends CDOView> implements CDOFuncti
 	/*default*/ CDOBranch branch;
 	/*default*/ ICDOConnection connection;
 
-	/**
-	 * Creates a function that can make any operation in a {@link CDOView view} opened on the HEAD of the active branch.
-	 * @param connection the connection where the CDO view should be operate.
-	 */
-	public CDOViewFunction(final ICDOConnection connection) {
-		this(check(connection), BranchPathUtils.createActivePath(connection.getUuid()));
-	}
-	
 	/**Creates a function that can make any arbitrary operation in a {@link CDOView view} opened on the HEAD of the given {@link CDOBranch branch}.*/
 	public CDOViewFunction(final CDOBranch branch) {
 		this(check(getConnection(branch)), BranchPathUtils.createPath(Preconditions.checkNotNull(branch, "CDO branch argument cannot be null.")));

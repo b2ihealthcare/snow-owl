@@ -273,7 +273,7 @@ public class CDOBranchActionManager implements ICDOBranchActionManager {
 
 		final CDOBranch parentBranch = connection.getBranch(branchPath.getParent());
 
-		final boolean branchSynchronized = CDOUtils.apply(new CDOViewFunction<Boolean, CDOView>(connection) {
+		final boolean branchSynchronized = CDOUtils.apply(new CDOViewFunction<Boolean, CDOView>(connection, branchPath) {
 			@Override protected Boolean apply(final CDOView view) {
 				final CDOQuery parentMaxCommitTimeQuery = view.createQuery("sql", "SELECT MAX(COMMIT_TIME) FROM CDO_COMMIT_INFOS WHERE BRANCH_ID = " + parentBranch.getID());
 				parentMaxCommitTimeQuery.setParameter(CDO_OBJECT_QUERY, false);

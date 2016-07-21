@@ -41,7 +41,6 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.tasks.Task;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
@@ -75,37 +74,6 @@ public abstract class BranchPathUtils {
 		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
 		final ICDOConnection connection = connectionManager.get(ePackage);
 		return BranchPathUtils.createActivePath(connection.getUuid());
-	}
-	
-	/**
-	 * Returns with the parent of the active {@link IBranchPath branch path} instance based on the currently used active branch in a particular repository.
-	 * If the active path is MAIN then returns the active path itself.
-	 * @param ePackage the {@link EPackage} associated with a repository
-	 * @return the {@link IBranchPath} instance.
-	 * @see TaskManager#getActiveBranch()
-	 */
-	public static IBranchPath createParentForActivePath(final EPackage ePackage) {
-		IBranchPath activePath = createActivePath(ePackage);
-		if(!BranchPathUtils.isMain(activePath)) {
-			return activePath.getParent();
-		}
-		return activePath;
-	}
-	
-	public static TaskBranchPathMap createPathForTaskId(final String taskId) {
-		final TaskManager taskManager = ApplicationContext.getInstance().getService(TaskManager.class);
-		final Task task = taskManager.getTask(taskId);
-		return checkNotNull(task, "Task not found for %s", taskId).getTaskBranchPathMap();
-	}
-	
-	/**
-	 * Returns with the {@link IBranchPath branch path} instance based on the currently used active branch.
-	 * @param repositoryId the repository identifier.
-	 * @return the {@link IBranchPath} instance.
-	 * @see TaskManager#getActiveBranch()
-	 */
-	public static IBranchPath createActivePath(final String repositoryId) {
-		return getOrCache(ApplicationContext.getInstance().getService(TaskManager.class).getActiveBranch(repositoryId));
 	}
 	
 	/**

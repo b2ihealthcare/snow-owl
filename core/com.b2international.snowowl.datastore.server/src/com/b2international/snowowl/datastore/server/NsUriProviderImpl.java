@@ -32,6 +32,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.emf.NsUriProvider;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOContainer;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -80,7 +81,7 @@ public abstract class NsUriProviderImpl implements NsUriProvider {
 	}
 
 	private Set<String> initResourceURIs() {
-		return unmodifiableSet(newHashSet(apply(new CDOTransactionFunction<Set<String>>(getConnection()) {
+		return unmodifiableSet(newHashSet(apply(new CDOTransactionFunction<Set<String>>(getConnection(), BranchPathUtils.createMainPath()) {
 			
 			@Override
 			protected Set<String> apply(final CDOTransaction transaction) {
