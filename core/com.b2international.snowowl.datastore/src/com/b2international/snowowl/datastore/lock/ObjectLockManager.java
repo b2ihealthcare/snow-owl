@@ -43,7 +43,6 @@ import org.eclipse.net4j.util.event.IListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -355,7 +354,7 @@ public class ObjectLockManager implements IObjectLockManager, IListener {
 	}
 	
 	private CDOBranch getActiveBranch() {
-		return connection.getBranch(BranchPathUtils.createActivePath(context));
+		throw new UnsupportedOperationException("Not supported on the server side");
 	}
 	
 }
