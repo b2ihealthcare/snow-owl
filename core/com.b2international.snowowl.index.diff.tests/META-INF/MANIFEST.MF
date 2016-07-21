@@ -6,9 +6,9 @@ Bundle-Version: 5.0.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
-Require-Bundle: com.b2international.snowowl.index.diff;bundle-version="[4.7.0,4.8.0)",
+Require-Bundle: com.b2international.snowowl.index.diff,
  org.junit;bundle-version="4.11.0",
  org.assertj.core;bundle-version="1.7.1",
- com.b2international.snowowl.datastore.comp46;bundle-version="[4.7.0,4.8.0)",
- com.b2international.snowowl.datastore.server.comp46;bundle-version="[4.7.0,4.8.0)"
+ com.b2international.snowowl.datastore.comp46,
+ com.b2international.snowowl.datastore.server.comp46
 Import-Package: org.slf4j
