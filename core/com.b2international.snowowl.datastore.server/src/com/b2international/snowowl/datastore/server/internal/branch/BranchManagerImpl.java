@@ -163,8 +163,11 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	final InternalBranch merge(final InternalBranch from, final InternalBranch to, final String commitMessage) {
 		final InternalBranch mergedTo = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
-		final InternalBranch reopenedFrom = reopen(to, from.name(), from.metadata());
-		sendChangeEvent(reopenedFrom); // Explicit notification (reopen)
+		// reopen only if the to branch is a direct parent of the from branch, otherwise these are unrelated branches 
+		if (from.parent().equals(mergedTo)) {
+			final InternalBranch reopenedFrom = reopen(mergedTo, from.name(), from.metadata());
+			sendChangeEvent(reopenedFrom); // Explicit notification (reopen)
+		}
 		return mergedTo;
 	}
 

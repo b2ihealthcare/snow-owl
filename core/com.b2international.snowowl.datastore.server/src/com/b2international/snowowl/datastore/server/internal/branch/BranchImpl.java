@@ -153,7 +153,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		} else {
 			System.err.println(path() + " - " + state());
 			System.err.println(changesFrom.path() + " - " + changesFromState);
-			throw new BranchMergeException("Branch %s should be in the FORWARD state to be merged into %s. It's currently %s", changesFrom.path(), path(), changesFromState);
+			throw new BranchMergeException("Branch %s should be in FORWARD state to be merged into %s. It's currently %s", changesFrom.path(), path(), changesFromState);
 		}
 	}
 
