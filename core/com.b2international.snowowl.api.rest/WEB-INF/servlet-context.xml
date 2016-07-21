@@ -19,7 +19,6 @@
 
 	<bean class="com.b2international.snowowl.api.impl.admin.MessagingServiceImpl" />
 	<bean class="com.b2international.snowowl.api.impl.admin.RepositoryServiceImpl" />
-	<bean class="com.b2international.snowowl.api.impl.admin.SupportingIndexServiceImpl" />
 	
 	<bean class="com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl" />
 	<bean class="com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl" />
