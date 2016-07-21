@@ -49,7 +49,7 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 				} else {
 					//check fsn uniqueness for unpersisted concept.
 					if (!exists(branch, concept.getConceptId())) {
-						final IStatus status = new FullySpecifiedNameUniquenessValidator().validate(description.getTerm());
+						final IStatus status = new FullySpecifiedNameUniquenessValidator(branch).validate(description.getTerm());
 						if (!status.isOK()) {
 							reporter.error(description, status.getMessage());	
 						}

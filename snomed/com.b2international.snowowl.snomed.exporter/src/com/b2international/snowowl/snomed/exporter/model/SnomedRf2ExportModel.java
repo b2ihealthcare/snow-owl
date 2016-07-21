@@ -29,11 +29,8 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -71,7 +68,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private Set<String> modulesToExport;
 
 	private String namespace;
-	private IBranchPath clientBranch;
+	private final IBranchPath branch;
 	private String userId;
 	private String unsetEffectiveTimeLabel;
 
@@ -88,9 +85,8 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		checkNotNull(contentSubType, "contentSubType");
 		checkNotNull(branchPath, "branchPath");
 		
-		final SnomedRf2ExportModel model = new SnomedRf2ExportModel();
+		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(branchPath);
 		model.releaseType = contentSubType;
-		model.clientBranch = branchPath;
 		
 		final SnomedReferenceSets referenceSets = SnomedRequests.prepareSearchRefSet()
 			.all()
@@ -114,29 +110,26 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	 */
 	public static SnomedRf2ExportModel createExportModelForSingleRefSet(final String refSetId, 
 			final ContentSubType contentSubType, final IBranchPath branchPath) {
-		
 		checkNotNull(contentSubType, "contentSubType");
-		checkNotNull(branchPath, "branchPath");
 		checkNotNull(refSetId, "refSetId");
 		
-		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(refSetId);
+		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(branchPath, refSetId);
 		model.releaseType = contentSubType;
-		model.clientBranch = branchPath;
 		return model;
 	}
 	
 	/**
 	 * Creates a new model instance for core export.
 	 */
-	public SnomedRf2ExportModel() {
-		this(null);
+	public SnomedRf2ExportModel(IBranchPath branch) {
+		this(branch, null);
 	}
 
 	/**
 	 * Creates a new model instance.
 	 * @param refSetId
 	 */
-	public SnomedRf2ExportModel(@Nullable final String refSetId) {
+	public SnomedRf2ExportModel(final IBranchPath branch, @Nullable final String refSetId) {
 		super();
 		refSetIds = StringUtils.isEmpty(refSetId) ? Sets.<String> newHashSet() : Sets.newHashSet(refSetId);
 		singleRefSetExport = !refSetIds.isEmpty();
@@ -145,8 +138,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		settings = Sets.newHashSet();
 		refSetsToExport = true;
 		modulesToExport = Sets.newHashSet();
-		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
-		clientBranch = BranchPathUtils.createActivePath(connection.getUuid());
+		this.branch = checkNotNull(branch, "branch");
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 		unsetEffectiveTimeLabel = "";
 		setExportPath(initExportPath());
@@ -202,7 +194,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		if (!singleRefSetExport) {
 			token = new StringBuilder().append("SnomedCT_Release_INT_").append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
 		} else {
-			token = StringUtil.capAll(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(clientBranch, Iterables.getOnlyElement(refSetIds)));
+			token = StringUtil.capAll(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branch, Iterables.getOnlyElement(refSetIds)));
 		}
 		final StringBuilder sb = new StringBuilder();
 		return sb.append(System.getProperty("user.home")).append(File.separatorChar).append(token).append(".zip").toString();
@@ -269,7 +261,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	}
 
 	public IBranchPath getClientBranch() {
-		return clientBranch;
+		return branch;
 	}
 
 	public String getUserId() {

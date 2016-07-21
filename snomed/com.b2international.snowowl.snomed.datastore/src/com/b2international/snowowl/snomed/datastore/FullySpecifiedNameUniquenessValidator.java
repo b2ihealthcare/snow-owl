@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createActivePath;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.eclipse.core.databinding.validation.IValidator;
@@ -39,15 +37,10 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  * Data binding {@link IValidator validator} for checking the uniqueness of a fully specified name description.
  * 
  */
-public class FullySpecifiedNameUniquenessValidator implements IValidator, Serializable {
+public class FullySpecifiedNameUniquenessValidator implements IValidator {
 
-	private static final long serialVersionUID = -4234940980892877333L;
-	private IBranchPath branchPath;
+	private final IBranchPath branchPath;
 
-	public FullySpecifiedNameUniquenessValidator() {
-		this(createActivePath(SnomedDatastoreActivator.REPOSITORY_UUID));
-	}
-	
 	public FullySpecifiedNameUniquenessValidator(final IBranchPath branchPath) {
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
