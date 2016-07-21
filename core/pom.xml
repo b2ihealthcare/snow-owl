@@ -41,7 +41,6 @@
 		<module>com.b2international.snowowl.emf.compare</module>
 		<module>com.b2international.snowowl.importer</module>
 		<module>com.b2international.snowowl.index.diff</module>
-		<module>com.b2international.snowowl.index.diff.tests</module>
 		
 		<!-- Scripting modules -->
 		<module>com.b2international.snowowl.scripting.core</module>
