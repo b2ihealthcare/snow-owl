@@ -19,12 +19,10 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IHierarchicalService;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -47,6 +45,12 @@ import com.google.common.collect.Lists;
  */
 public class SnomedHierarchicalService implements IHierarchicalService {
 
+	private final String branch;
+
+	public SnomedHierarchicalService(final String branch) {
+		this.branch = branch;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.scripting.services.api.IHierarchicalService#getSnomedRoot()
 	 */
@@ -179,7 +183,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.filterByType(relationshipTypeId)
 				.setExpand("sourceConcept(expand(pt()))")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedRelationships, Collection<ISnomedConcept>>() {
 					@Override
@@ -331,7 +335,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterBySource(conceptId)
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override
@@ -351,7 +355,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.all()
 				.filterByActive(true)
 				.filterBySource(conceptId)
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override
@@ -391,7 +395,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByDestination(conceptId)
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override
@@ -408,7 +412,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.all()
 				.filterByActive(true)
 				.filterByDestination(conceptId)
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override

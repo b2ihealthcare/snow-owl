@@ -21,10 +21,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IConcreteDomainService;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -43,7 +41,12 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	private static final String IS_MANUFACTURED = "isManufactured";
 	private static final String IS_VACCINE = "isVaccine";
 	private static final String IS_VITAMIN = "isVitamin";
+	private String branch;
 
+	public ConcreteDomainService(final String branch) {
+		this.branch = branch;
+	}
+	
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId) {
 		throw new UnsupportedOperationException();
@@ -64,7 +67,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 				.filterByActive(true)
 				.filterByReferencedComponent(ids)
 				.filterByRefSetType(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE))
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedRefSetMemberIndexEntry>>() {
 					@Override

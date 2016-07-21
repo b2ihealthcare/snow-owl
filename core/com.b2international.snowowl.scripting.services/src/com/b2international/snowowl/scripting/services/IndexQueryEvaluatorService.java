@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IQueryEvaluatorService;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -67,7 +66,7 @@ public class IndexQueryEvaluatorService implements IQueryEvaluatorService<Snomed
 		ApplicationContext applicationContext = ApplicationContext.getInstance();
 		List<ExtendedLocale> languagePreference = applicationContext.getService(LanguageSetting.class).getLanguagePreference();
 		IEventBus eventBus = applicationContext.getService(IEventBus.class);
-		IBranchPath branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE);
+		IBranchPath branchPath = BranchPathUtils.createMainPath();
 		
 		if (ids.length == 0) {
 			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).

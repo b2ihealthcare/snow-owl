@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.scripting.core.bindings;
 
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.scripting.services.api.impl.SnomedHierarchicalService;
 
 /**
@@ -32,7 +33,7 @@ public class SnomedHierarhicalServiceBinding implements ScriptBinding {
 
 	@Override
 	public SnomedHierarchicalService createVariable() {
-		return new SnomedHierarchicalService();
+		return new SnomedHierarchicalService(BranchPathUtils.createMainPath().getPath());
 	}
 
 }
