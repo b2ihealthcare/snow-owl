@@ -16,20 +16,14 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager.IServiceConfigJobChangeListener;
-import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.services.SnomedLookupService;
 
 public class SnomedDatastoreActivator implements BundleActivator, IServiceConfigJobChangeListener {
 
@@ -75,17 +69,5 @@ public class SnomedDatastoreActivator implements BundleActivator, IServiceConfig
 		final Environment env = SnowOwlApplication.INSTANCE.getEnviroment();
 		final PreferencesService preferences = env.services().getService(PreferencesService.class);
 		env.services().registerService(SnomedConfiguration.class, new SnomedConfiguration(preferences, env.getDefaultsDirectory()));
-		final ICDOConnection cdoConnection = env.services().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
-		
-		//register the description lookup service
-		SnomedLookupService snomedLookupService = env.services().getService(SnomedLookupService.class);
-		if (null == snomedLookupService) {
-			
-			//we care about only the main branch
-			final CDOBranch mainBranch = cdoConnection.getMainBranch();
-			final CDOView cdoView = cdoConnection.createView(mainBranch);
-			snomedLookupService = new SnomedLookupService(cdoView);
-			env.services().registerService(SnomedLookupService.class, snomedLookupService);
-		}
 	}
 }
