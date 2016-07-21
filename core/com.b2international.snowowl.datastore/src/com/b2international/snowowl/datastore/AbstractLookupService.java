@@ -20,7 +20,6 @@ import java.io.Serializable;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 
 /**
@@ -40,15 +39,6 @@ public abstract class AbstractLookupService<K extends Serializable, T, V> implem
 	@Override
 	public boolean exists(final IBranchPath branchPath, final K id) {
 		return -1 < getStorageKey(branchPath, id);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(java.io.Serializable)
-	 */
-	@Override
-	public final IComponent<K> getComponent(K id) {
-		return getComponent(BranchPathUtils.createActivePath(getEPackage()), id);
 	}
 	
 	protected abstract EPackage getEPackage();

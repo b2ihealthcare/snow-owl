@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -254,17 +253,6 @@ public class CoreTerminologyBroker {
 
 		}
 		return representationClasses;
-	}
-
-	/*
-	 * TODO (apeteri): This method should be moved to the datastore bundle. It requires knowledge of a BranchPathMap which is not available in core.
-	 */
-	public IComponent<?> getComponent(final ComponentIdentifierPair<?> pair) {
-		checkNotNull(pair, "Component identifier pair argument cannot be null.");
-		
-		final String terminologyComponentId = pair.getTerminologyComponentId();
-		final ILookupService<String, ?, ?> lookupService = getLookupService(terminologyComponentId);
-		return lookupService.getComponent(String.valueOf(pair.getComponentId()));
 	}
 
 	public String getTerminologyComponentId(final Object object) {

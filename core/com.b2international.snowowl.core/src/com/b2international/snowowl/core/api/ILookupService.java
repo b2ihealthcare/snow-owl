@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.api;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.core.annotations.Client;
-
 /**
  * Represents the common service interface for all component lookup services.
  * 
@@ -46,15 +44,6 @@ public interface ILookupService<K extends Serializable, T, V> {
 	 */
 	T getComponent(final K id, final V view);
 
-	/**
-	 * Returns the requested component with the identifier {@code id} on the currently active branch in the associated repository.
-	 * 
-	 * @param id the unique identifier of the component (may not be {@code null})
-	 * @return the resolved component, or {@code null}
-	 */
-	@Client
-	IComponent<K> getComponent(final K id);
-	
 	/**
 	 * Returns {@code true} if the component exists on a particular branch with the given unique ID.
 	 * @param branchPath the path uniquely identifying the branch where the existence check has to be performed.
