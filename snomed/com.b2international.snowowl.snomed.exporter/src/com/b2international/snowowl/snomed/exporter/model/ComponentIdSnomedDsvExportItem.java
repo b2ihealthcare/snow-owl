@@ -20,18 +20,16 @@ import java.io.IOException;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 
-/**
- * 
- */
 public class ComponentIdSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
 
 	private final long componentId;
+	private final String branch;
 	
-	public ComponentIdSnomedDsvExportItem(final SnomedDsvExportItemType type, final long componentId) {
+	public ComponentIdSnomedDsvExportItem(final String branch, final SnomedDsvExportItemType type, final long componentId) {
 		super(type);
+		this.branch = branch;
 		this.componentId = componentId;
 	}
 	
@@ -39,22 +37,16 @@ public class ComponentIdSnomedDsvExportItem extends AbstractSnomedDsvExportItem 
 		return componentId;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem#writeToOutputStream(java.io.DataOutputStream)
-	 */
 	@Override
 	public void writeToOutputStream(DataOutputStream outputStream) throws IOException {
 		super.writeToOutputStream(outputStream);
 		outputStream.writeLong(componentId);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem#getDisplayName()
-	 */
 	@Override
 	public String getDisplayName() {
 		// FIXME: Any way to get to the branch path here?
 		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class)
-				.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), String.valueOf(getComponentId()));
+				.getComponentLabel(BranchPathUtils.createPath(branch), String.valueOf(getComponentId()));
 	}
 }

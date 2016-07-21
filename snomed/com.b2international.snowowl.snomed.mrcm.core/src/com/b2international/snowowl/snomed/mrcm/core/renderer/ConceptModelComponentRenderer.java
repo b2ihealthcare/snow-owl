@@ -22,7 +22,6 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
@@ -52,17 +51,17 @@ public class ConceptModelComponentRenderer {
 	
 	private final LoadingCache<String, String> componentLabelMap;
 	
-	public ConceptModelComponentRenderer() {
-		this(ImmutableMap.<String, String>of());
+	public ConceptModelComponentRenderer(final String branch) {
+		this(branch, ImmutableMap.<String, String>of());
 	}
 	
-	public ConceptModelComponentRenderer(Map<String, String> componentLabelMap) {
+	public ConceptModelComponentRenderer(final String branch, Map<String, String> componentLabelMap) {
 		this.componentLabelMap = CacheBuilder.newBuilder().build(new CacheLoader<String, String>() {
 			@Override
 			public String load(String id) throws Exception {
 				final INameProviderFactory conceptNameProviderFactory = CoreTerminologyBroker.getInstance().getNameProviderFactory(SnomedTerminologyComponentConstants.CONCEPT);
 				final IComponentNameProvider conceptNameProvider = conceptNameProviderFactory.getNameProvider();
-				return conceptNameProvider.getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), id);
+				return conceptNameProvider.getComponentLabel(BranchPathUtils.createPath(branch), id);
 			}
 		});
 		

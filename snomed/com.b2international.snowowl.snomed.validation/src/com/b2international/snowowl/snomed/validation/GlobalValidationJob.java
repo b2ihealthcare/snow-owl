@@ -21,6 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptySet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,9 +41,7 @@ import com.b2international.snowowl.core.ValuedJob;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
 import com.b2international.snowowl.core.markers.MarkerManager;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -61,20 +60,17 @@ import com.google.common.collect.Maps;
  */
 public class GlobalValidationJob extends ValuedJob<Integer> {
 	
-	private static final String[] EMPTY_ARRAY = {};
 	private static final Logger LOG = LoggerFactory.getLogger(GlobalValidationJob.class);
 	
 	private final IClientSnomedComponentValidationService validationService;
 	private final Collection<String> globalValidationConstraintIds;
+	private final String branch;
 
-	public GlobalValidationJob(final String name, final Object family) {
-		this(name, family, EMPTY_ARRAY);
-	}
-	
-	public GlobalValidationJob(final String name, final Object family, final String... globalValidationConstraintIds) {
+	public GlobalValidationJob(final String name, final Object family, final String branch, final String... globalValidationConstraintIds) {
 		super(name, family);
+		this.branch = branch;
 		this.validationService = getServiceForClass(IClientSnomedComponentValidationService.class);
-		this.globalValidationConstraintIds = newHashSet(globalValidationConstraintIds);
+		this.globalValidationConstraintIds = globalValidationConstraintIds == null ? Collections.<String>emptySet() : newHashSet(globalValidationConstraintIds);
 	}
 
 	@Override
@@ -148,14 +144,12 @@ public class GlobalValidationJob extends ValuedJob<Integer> {
 			}
 		}).toSet();
 		
-		final String branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
-
 		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 			.setComponentIds(componentIds)
 			.setLocales(getLocales())
 			.setExpand("pt()")
 			.all()
-			.build(branchPath)
+			.build(branch)
 			.executeSync(getEventbus());
 		
 		final Map<String, SnomedConceptDocument> idToEntryMap = Maps.uniqueIndex(SnomedConceptDocument.fromConcepts(concepts), new Function<SnomedConceptDocument, String>() {

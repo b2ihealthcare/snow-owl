@@ -49,7 +49,7 @@ public class CsvMrcmExporter {
 
 	public void doExport(String user, OutputStream stream) {
 		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer();
+		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer(branch.getPath());
 
 		try (MrcmEditingContext context = new MrcmEditingContext(branch)) {
 			LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules to CSV...");

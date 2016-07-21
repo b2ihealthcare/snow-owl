@@ -33,9 +33,7 @@ import com.b2international.snowowl.core.ValuedJob;
 import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
 import com.b2international.snowowl.core.markers.MarkerManager;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
@@ -43,6 +41,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -66,35 +65,42 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 	private static final String MISSING_REFERENCED_CONCEPT = "The reference set member is referring to a non-existing concept %s";
 	private static final String MISSING_REFERENCED_DESCRIPTION = "The reference set member is referring to a non-existing description %s";
 	private static final String MISSING_REFERENCED_RELATIONSHIP = "The reference set member is referring to a non-existing relationship %s";
+	
+	private final String branch;
+	private final String referenceSetId;
 
-	private final SnomedReferenceSet refSet;
-
-	public ValidateRefSetJob(final String name, final Object family, final SnomedReferenceSet refSet) {
+	public ValidateRefSetJob(final String name, final Object family, final String branch, final String referenceSetId) {
 		super(name, family);
-		this.refSet = refSet;
+		this.branch = branch;
+		this.referenceSetId = referenceSetId;
+	}
+	
+	private String getBranch() {
+		return branch;
 	}
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
-		final List<SnomedReferenceSetMember> members = SnomedRequests
-				.prepareSearchMember()
-				.all()
-				.filterByRefSet(refSet.getId())
+		// TODO huge reference sets should be paged
+		final SnomedReferenceSet referenceSet = SnomedRequests
+				.prepareGetReferenceSet()
+				.setComponentId(referenceSetId)
 				.setLocales(getLocales())
+				.setExpand("members(limit:"+Integer.MAX_VALUE+")")
 				.build(getBranch())
-				.executeSync(getBus())
-				.getItems();
+				.execute(getBus())
+				.getSync();
 
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Validating reference set members...", members.size());
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Validating reference set members...", referenceSet.getMembers().getTotal());
 
 		try {
-			switch (refSet.getReferencedComponentType()) {
+			switch (referenceSet.getReferencedComponentType()) {
 			case SnomedTerminologyComponentConstants.CONCEPT:
-				return validateConceptMembers(members, subMonitor);
+				return validateConceptMembers(referenceSet.getMembers(), subMonitor);
 			case SnomedTerminologyComponentConstants.DESCRIPTION:
-				return validateDescriptionMembers(subMonitor, members);
+				return validateDescriptionMembers(referenceSet.getMembers(), subMonitor);
 			case SnomedTerminologyComponentConstants.RELATIONSHIP:
-				return validateRelationshipMembers(subMonitor, members);
+				return validateRelationshipMembers(referenceSet.getMembers(), subMonitor);
 			default:
 				// TODO: This component type cannot be validated here. What to do?
 				return Status.OK_STATUS;
@@ -108,17 +114,13 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
-	private String getBranch() {
-		return BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath();
-	}
-
 	private IEventBus getBus() {
 		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
-	private IStatus validateConceptMembers(final Collection<SnomedReferenceSetMember> members, final SubMonitor subMonitor) {
+	private IStatus validateConceptMembers(final SnomedReferenceSetMembers members, final SubMonitor subMonitor) {
 		// We will also validate the concepts themselves; double up the tick count
-		subMonitor.setWorkRemaining(2 * members.size());
+		subMonitor.setWorkRemaining(2 * members.getTotal());
 
 		final List<ISnomedConcept> referencedConcepts = SnomedRequests
 				.prepareSearchConcept()
@@ -180,7 +182,7 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 		return finishValidation(subMonitor, diagnostics, errorCount);
 	}
 
-	private Collection<String> getReferencedComponentIds(final Collection<SnomedReferenceSetMember> members) {
+	private Collection<String> getReferencedComponentIds(final SnomedReferenceSetMembers members) {
 		return FluentIterable.from(members).transform(new Function<SnomedReferenceSetMember, String>() {
 			@Override
 			public String apply(SnomedReferenceSetMember input) {
@@ -198,7 +200,7 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 		});
 	}
 
-	private IStatus validateDescriptionMembers(final SubMonitor subMonitor, final List<SnomedReferenceSetMember> members) {
+	private IStatus validateDescriptionMembers(final SnomedReferenceSetMembers members, final SubMonitor subMonitor) {
 		final List<IDiagnostic> diagnostics = newArrayList();
 
 		final List<ISnomedDescription> referencedDescriptions = SnomedRequests
@@ -240,7 +242,7 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 		return finishValidation(subMonitor, diagnostics);
 	}
 
-	private IStatus validateRelationshipMembers(final SubMonitor subMonitor, final List<SnomedReferenceSetMember> members) {
+	private IStatus validateRelationshipMembers(final SnomedReferenceSetMembers members, final SubMonitor subMonitor) {
 		final List<IDiagnostic> diagnostics = newArrayList();
 
 		final List<ISnomedRelationship> referencedRelationships = SnomedRequests
@@ -303,7 +305,7 @@ public class ValidateRefSetJob extends ValuedJob<Integer> {
 
 			final MarkerManager markerManager = ApplicationContext.getServiceForClass(MarkerManager.class);
 			final SnomedRefSetDiagnostic summaryDiagnostic = new SnomedRefSetDiagnostic(DiagnosticSeverity.ERROR, "", errors);
-			markerManager.createValidationMarkerOnComponent(refSet, summaryDiagnostic);
+			markerManager.createValidationMarkerOnComponent(referenceSetId, summaryDiagnostic);
 		}
 
 		setValue(errorCount);

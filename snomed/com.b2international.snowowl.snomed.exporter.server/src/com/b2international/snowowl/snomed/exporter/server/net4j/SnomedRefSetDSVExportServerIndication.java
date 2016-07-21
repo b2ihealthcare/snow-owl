@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -46,10 +47,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
+import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.exporter.server.dsv.IRefSetDSVExporter;
 import com.b2international.snowowl.snomed.exporter.server.dsv.MapTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.exporter.server.dsv.SnomedSimpleTypeRefSetDSVExporter;
-import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
@@ -93,7 +94,8 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		exportSetting.setRelationshipTargetExpected(in.readBoolean());
 		int exportItemsSize = in.readInt();
 		for (int i = 0; i < exportItemsSize; i++) {
-			exportSetting.addExportItem(AbstractSnomedDsvExportItem.createFromInputStream(in));
+			// TODO supplying MAIN here, as the selected branch read later from the stream
+			exportSetting.addExportItem(AbstractSnomedDsvExportItem.createFromInputStream(Branch.MAIN_PATH, in));
 		}
 		exportSetting.setLanguageConfigurationId(in.readLong());
 		exportSetting.setDelimiter(in.readUTF());

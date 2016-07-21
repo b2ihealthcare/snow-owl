@@ -18,15 +18,6 @@ package com.b2international.snowowl.snomed.exporter.model;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 
@@ -56,28 +47,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		super();
 	}
 	
-	public SnomedRefSetDSVExportModel(String refSetId, String refSetLabel, SnomedRefSetType refSetType) {
-		this.refSetId = refSetId;
-		this.refSetLabel = refSetLabel;
-		this.refSetType = refSetType;
-		
-		this.setDescriptionIdExpected(false);
-		this.setRelationshipTargetExpected(false);
-		ILanguageConfigurationProvider languageConfigurationProvider = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class);
-		this.languageConfigurationId = Long.parseLong(languageConfigurationProvider.getLanguageConfiguration().getLanguageRefSetId());
-
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		final ICDOConnection connection = connectionManager.get(SnomedPackage.eINSTANCE);
-		IBranchPath _branchPath = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE);
-		final CDOBranch branch = connection.getBranch(_branchPath);
-
-		this.setBranchID(branch.getID());
-		this.setBranchBase(branch.getBase().getTimeStamp());
-		branchPath = branch.getPathName();
-		
-		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
-	}
-
 	public int getConceptSize() {
 		return conceptSize;
 	}

@@ -31,7 +31,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -63,7 +62,8 @@ public final class SnomedSimpleTypeRefSetAttributeConfiguration extends Abstract
 		if (null == service)
 			return null;
 		
-		for (final SnomedReferenceSetMember member : getSimpleMembers(concept.getId())) {
+		final String branch = BranchPathUtils.createPath(concept).getPath();
+		for (final SnomedReferenceSetMember member : getSimpleMembers(branch, concept.getId())) {
 			final String refSetIdentifierId = member.getReferenceSetId();
 			final SnomedSimpleTypeRefSetAttributeConfiguration configuration = service.getConfiguration(refSetIdentifierId);
 			if (null != configuration)
@@ -79,12 +79,12 @@ public final class SnomedSimpleTypeRefSetAttributeConfiguration extends Abstract
 		return null;
 	}
 	
-	public static SnomedSimpleTypeRefSetAttributeConfiguration getConfiguration(final String conceptId) {
+	public static SnomedSimpleTypeRefSetAttributeConfiguration getConfiguration(final String branch, final String conceptId) {
 		final ComponentAttributeOrderConfiguration service = ApplicationContext.getInstance().getService(ComponentAttributeOrderConfiguration.class);
 		if (null == service)
 			return null;
 		
-		for (final SnomedReferenceSetMember refSetMembers : getSimpleMembers(conceptId)) {
+		for (final SnomedReferenceSetMember refSetMembers : getSimpleMembers(branch, conceptId)) {
 			final String refSetIdentifierId = refSetMembers.getReferenceSetId();
 			final SnomedSimpleTypeRefSetAttributeConfiguration configuration = service.getConfiguration(refSetIdentifierId);
 			if (null != configuration)
@@ -93,15 +93,14 @@ public final class SnomedSimpleTypeRefSetAttributeConfiguration extends Abstract
 		return null;
 	}
 
-	private static SnomedReferenceSetMembers getSimpleMembers(final String conceptId) {
-		final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
+	private static SnomedReferenceSetMembers getSimpleMembers(final String branch, final String conceptId) {
+		return SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByReferencedComponent(conceptId)
 				.filterByRefSetType(SIMPLE_TYPE_SET)
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
-		return members;
 	}
 
 	/**

@@ -17,12 +17,8 @@ package com.b2international.snowowl.snomed.mrcm.core.configuration;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.preferences.AbstractEntrySetting;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.mrcm.mini.DataTypeConstants;
 import com.b2international.snowowl.snomed.mrcm.mini.SectionType;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -99,13 +95,10 @@ public final class AttributeOrderConfiguration extends AbstractEntrySetting impl
 		if (AttributeType.CONCRETE_DATA_TYPE.equals(attributeType)) {
 			label = DataTypeUtils.getDefaultDataTypeLabel(id);
 		} else {
-			label = getText(id); 
+			// TODO fix label of concept ID when attribute ordering reintroduced in client side
+			label = id; 
 		}
 		return sb.append(label).append(" [").append(priority).append("; ").append(attributeType).append("; ").append(sectionType).append("]").toString();
 	}
 
-	private String getText(String conceptId) {
-		final String label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), conceptId);
-		return label != null ? label : conceptId;
-	}
 }

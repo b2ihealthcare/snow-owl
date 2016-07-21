@@ -21,10 +21,8 @@ import java.util.Collections;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -45,12 +43,12 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 	 * @return {@code true} if the reference set is language type.
 	 */
 	//XXX language type reference set member cannot be created, modified or deleted on branch. so we can lookup reference sets in index
-	protected static boolean isLanguageType(final String refSetId) {
+	protected boolean isLanguageType(final String refSetId) {
 		return SnomedRequests.prepareSearchRefSet()
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(refSetId))
 				.filterByType(SnomedRefSetType.LANGUAGE)
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(getBranchPath().getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 	}

@@ -347,7 +347,7 @@ public class SnomedEditingContextMerger extends AbstractCDOEditingContextMerger<
 							//if the component does not exist anymore we do not have to do anything
 							//otherwise we get it's storage key
 							final String uuid = CDOUtils.getAttribute(detachedObject, SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_Uuid(), String.class);
-							final long storageKey = new SnomedRefSetMemberLookupService().getStorageKey(BranchPathUtils.createActivePath(SnomedRefSetPackage.eINSTANCE), uuid);
+							final long storageKey = new SnomedRefSetMemberLookupService().getStorageKey(BranchPathUtils.createPath(newEditingContext.getBranch()), uuid);
 
 							//if component exists but we deleted it
 							if (-1L != storageKey) {
