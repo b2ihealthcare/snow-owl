@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -79,6 +80,16 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 		// use previous segments here, the branch got a new segment because a new child branch got opened
 		builder.addAll(segments());
 		return new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), cdoBranchId(), segmentId, builder.build(), parentSegments);
+	}
+	
+	@Override
+	public String toString() {
+		return Objects.toStringHelper(getClass())
+				.add("cdoBranchId", cdoBranchId())
+				.add("segmentId", segmentId())
+				.add("segments", segments())
+				.add("parentSegments", parentSegments())
+				.toString();
 	}
 
 }
