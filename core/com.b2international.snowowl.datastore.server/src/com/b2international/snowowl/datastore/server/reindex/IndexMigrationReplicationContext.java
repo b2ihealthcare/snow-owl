@@ -26,7 +26,9 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.lock.IDurableLockingManager.LockArea;
+import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.server.DelegatingRepository;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
@@ -47,6 +49,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBranchException;
 import com.b2international.snowowl.datastore.server.DelegatingTransaction;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.google.common.collect.Sets;
 
 /**
@@ -73,6 +76,8 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	private Exception exception;
 
+	private boolean optimize = false;
+
 	IndexMigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session) {
 		this.context = context;
 		this.initialBranchId = initialBranchId;
@@ -94,7 +99,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			// get the first entry and use the base of that branch for purge
 			Entry<Long, CDOBranch> currentBranchToReplicate = branchesByBasetimestamp.firstEntry();
 			
-			// before creating the branches, execute a purge on the current segment
+			// before creating the branches, execute a purge on the latest segment of the parent branch
 			PurgeRequest.builder(context.id())
 				.setBranchPath(currentBranchToReplicate.getValue().getBase().getBranch().getPathName())
 				.build()
@@ -116,8 +121,15 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 				currentBranchToReplicate = branchesByBasetimestamp.firstEntry();
 			} while (currentBranchToReplicate != null && currentBranchToReplicate.getKey() <= lastBranchToReplicateBeforeCommit.getKey());
 			
-			// optimize index after branch creations
-			optimize();
+			if (optimize) {
+				optimize();
+				optimize = false;
+			}
+		}
+		
+		if (isVersionCommit(commitInfo)) {
+			// optimize the index next time we create the version branch
+			this.optimize = true;
 		}
 		
 		if (skippedBranches.contains(commitInfo.getBranch().getID())) {
@@ -257,6 +269,24 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 		}
 	}
 
+	private boolean isVersionCommit(final CDOCommitInfo commitInfo) {
+		for (CDOIDAndVersion newObject : commitInfo.getNewObjects()) {
+			if (newObject instanceof CDORevision) {
+				if (TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION.isSuperTypeOf(((CDORevision) newObject).getEClass())) {
+					return true;
+				}
+			}
+		}
+		for (CDORevisionKey changedObject : commitInfo.getChangedObjects()) {
+			if (changedObject instanceof CDORevision) {
+				if (TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION.isSuperTypeOf(((CDORevision) changedObject).getEClass())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	private void optimize() {
 		OptimizeRequest.builder(context.id()).setMaxSegments(8).build().execute(context);
 	}
