@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.revision.Purge;
@@ -114,9 +115,9 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			
 			interpreter.println(getHelp());
 		} catch (Exception ex) {
+			LoggerFactory.getLogger("console").error("Failed to execute command", ex);
 			if (Strings.isNullOrEmpty(ex.getMessage())) {
 				interpreter.println("Something went wrong during the processing of your request.");
-				ex.printStackTrace();
 			} else {
 				interpreter.println(ex.getMessage());
 			}
