@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.reindex;
 
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -44,7 +45,9 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
+import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBranchException;
 import com.b2international.snowowl.datastore.server.DelegatingTransaction;
+import com.google.common.collect.Sets;
 
 /**
  * Replication context the delegates the actual work to the same repository the replications is reading from. 
@@ -66,6 +69,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	private int skippedCommits = 0;
 	private int processedCommits = 0;
 	private long failedCommitTimestamp = -1;
+	private final Set<Integer> skippedBranches = Sets.newHashSet();
 
 	private Exception exception;
 
@@ -100,7 +104,12 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			do {
 				final CDOBranch branch = currentBranchToReplicate.getValue();
 				LOGGER.info("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
-				context.service(BranchReplicator.class).replicateBranch(branch);
+				try {
+					context.service(BranchReplicator.class).replicateBranch(branch);
+				} catch (SkipBranchException e) {
+					LOGGER.warn("Skipping branch with all of its commits: {}", branch.getID());
+					skippedBranches.add(branch.getID());
+				}
 				branchesByBasetimestamp.remove(currentBranchToReplicate.getKey());
 				
 				// check if there are more branches to create until this point
@@ -109,6 +118,11 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			
 			// optimize index after branch creations
 			optimize();
+		}
+		
+		if (skippedBranches.contains(commitInfo.getBranch().getID())) {
+			skippedCommits++;
+			return;
 		}
 		
 		try {

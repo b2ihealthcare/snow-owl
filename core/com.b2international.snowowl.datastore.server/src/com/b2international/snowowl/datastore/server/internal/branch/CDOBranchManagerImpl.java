@@ -101,7 +101,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 			final Branch existingBranch = getBranch(branch.getID());
 			
 			if (existingBranch == null) {
-				final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(branch.getBase().getBranch().getID());
+				final int parentCdoBranchId = branch.getBase().getBranch().getID();
+				InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(parentCdoBranchId);
+				if (parent == null) {
+					throw new SkipBranchException(branch);
+				}
 				long baseTimestamp = repository.getBaseTimestamp(branch);
 				long headTimestamp = repository.getHeadTimestamp(branch);
 				final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();

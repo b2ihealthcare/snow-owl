@@ -22,10 +22,25 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
  */
 public interface BranchReplicator {
 	
+	class SkipBranchException extends RuntimeException {
+		
+		private final CDOBranch branch;
+
+		public SkipBranchException(CDOBranch branch) {
+			this.branch = branch;
+		}
+		
+		public CDOBranch getBranch() {
+			return branch;
+		}
+		
+	}
+	
 	/**
 	 * Replicates a branch with additional metadata in the local store.
 	 * @param branch - the branch to replicate
+	 * @throws SkipBranchException - if the branch and all its commits must be skipped, because the branch state is inconsistent
 	 */
-	void replicateBranch(CDOBranch branch);
+	void replicateBranch(CDOBranch branch) throws SkipBranchException;
 	
 }
