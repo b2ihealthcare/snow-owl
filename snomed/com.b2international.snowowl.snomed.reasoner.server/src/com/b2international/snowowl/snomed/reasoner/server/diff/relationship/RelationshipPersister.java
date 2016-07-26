@@ -205,7 +205,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 						originalMember.getUomComponentId(),
 						originalMember.getOperatorComponentId(),
 						originalMember.getSerializedValue(), 
-						getCharacteristicTypeId(originalMember, Concepts.DEFINING_RELATIONSHIP), 
+						getCharacteristicTypeId(originalMember, Concepts.INFERRED_RELATIONSHIP), 
 						originalMember.getLabel(), 
 						module.getId(), 
 						concreteDataTypeRefSet);
