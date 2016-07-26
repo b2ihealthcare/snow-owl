@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.mrcm.core.server.widget;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -124,7 +125,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		final List<LeafWidgetBean> beans = Lists.newArrayList();
 
 		//ignore inactive ones
-		final Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> indexEntries = new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(relationshipIds);
+		final Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> indexEntries = new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(Arrays.asList(relationshipIds));
 		
 		//occurred 
 		

@@ -21,6 +21,7 @@ import static com.google.common.collect.Iterables.get;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -34,7 +35,7 @@ import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembers
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
@@ -54,11 +55,11 @@ public class ConcreteDomainService implements IConcreteDomainService {
 		final Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> $ = Lists.newArrayList();
 		$.addAll(new SnomedRefSetMembershipLookupService().getConceptDataTypes(conceptId));
 		final Collection<SnomedRelationshipIndexEntry> sourceRelationships = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getActiveOutboundStatementsById(conceptId);
-		final String[] activeSourceIds = Iterables.toArray(Iterables.transform(sourceRelationships, new Function<SnomedRelationshipIndexEntry, String>() {
-			@Override public String apply(final SnomedRelationshipIndexEntry relationship) {
+		List<String> activeSourceIds = FluentIterable.from(sourceRelationships).transform(new Function<SnomedRelationshipIndexEntry, String>() {
+			@Override public String apply(SnomedRelationshipIndexEntry relationship) {
 				return relationship.getId();
 			}
-		}), String.class);
+		}).toList();
 		$.addAll(new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(activeSourceIds));
 		return $;
 	}

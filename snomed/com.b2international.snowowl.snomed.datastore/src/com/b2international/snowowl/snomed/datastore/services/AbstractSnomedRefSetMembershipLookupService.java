@@ -359,20 +359,26 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 		return getIndexService().search(createFindByRefSetTypeQuery, 100);
 	}
 
+	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getRelationshipDataTypes(String relationshipId) {
+		return getRelationshipDataTypes(Collections.singleton(relationshipId));
+	}
+	
 	/**
 	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced relationships 
 	 * are given as the relationship ID argument.
 	 * @param relationshipIds the relationship IDs.
 	 * @return a collection of data type reference set members referencing the given relationships.
 	 */
-	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getRelationshipDataTypes(final String... relationshipIds) {
-		if (0 == relationshipIds.length)
-			return Lists.newArrayList();
+	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getRelationshipDataTypes(Collection<String> relationshipIds) {
+		
+		if (relationshipIds.isEmpty()) {
+			return Collections.emptyList();
+		}
 
 		final IIndexQueryAdapter<SnomedConcreteDataTypeRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
 				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindByReferencedComponentIdsQuery(
 						RELATIONSHIP, 
-						wrapArguments(relationshipIds));
+						relationshipIds);
 		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
 	}
 
