@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 
 /**
  * Abstract export request class for retrieving single files over the net4j protocol.
@@ -41,7 +40,7 @@ import com.b2international.snowowl.datastore.tasks.TaskManager;
 public abstract class AbstractExportRequest extends RequestWithMonitoring<File> {
 
 	private String exportPath;
-	private String repositoryId;
+	private final IBranchPath branchPath;
 	
 	/**
 	 * @param protocol
@@ -49,11 +48,10 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 	 * @param importSignal
 	 * @param targetEffectiveTime 
 	 */
-	public AbstractExportRequest(final SignalProtocol<?> protocol, final short importSignal, final String exportPath) {
+	public AbstractExportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final String exportPath) {
 		super(protocol, importSignal);
 		this.exportPath = exportPath;
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		this.repositoryId = connectionManager.get(getEPackage()).getUuid();
+		this.branchPath = branchPath;
 	}
 	
 	protected abstract EPackage getEPackage();
@@ -66,7 +64,7 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 	protected void requesting(ExtendedDataOutputStream out, OMMonitor monitor) throws Exception {
 		
 		out.writeUTF(getUserId()); //user ID
-		out.writeUTF(getBranchPath().getPath()); //branch path as string
+		out.writeUTF(branchPath.getPath()); //branch path as string
 		
 		postRequesting(out);
 	}
@@ -141,24 +139,14 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 		return 0;
 	}
 	
-	/*returns with the branch path of the currently active task*/
-	private IBranchPath getBranchPath() {
-		return getTaskManager().getActiveBranch(repositoryId);
-	}
-
 	/*returns with the user ID from the underlying session*/
 	private String getUserId() {
-		return getConnection().getUserId();
+		return getConnectionManager().getUserId();
 	}
 	
 	/*returns with the connection manager*/
-	private ICDOConnectionManager getConnection() {
+	private ICDOConnectionManager getConnectionManager() {
 		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-	}
-
-	/*returns with the task manager*/
-	private TaskManager getTaskManager() {
-		return ApplicationContext.getInstance().getService(TaskManager.class);
 	}
 
 }

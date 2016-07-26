@@ -20,6 +20,8 @@ import java.util.Collection;
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 
+import com.b2international.snowowl.core.api.IBranchPath;
+
 /**
  * Export request for exports where a set of components are exported.
  * 
@@ -29,8 +31,8 @@ public abstract class AbstractFilteredComponentsExportRequest extends AbstractEx
 
 	private final Collection<String> componentIds;
 
-	public AbstractFilteredComponentsExportRequest(final SignalProtocol<?> protocol, final short importSignal, final String exportPath, final Collection<String> componentIds) {
-		super(protocol, importSignal, exportPath);
+	public AbstractFilteredComponentsExportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final String exportPath, final Collection<String> componentIds) {
+		super(protocol, importSignal, branchPath, exportPath);
 		this.componentIds = componentIds;
 	}
 	

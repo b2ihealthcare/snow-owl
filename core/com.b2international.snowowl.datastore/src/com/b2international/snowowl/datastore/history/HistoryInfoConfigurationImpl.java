@@ -34,7 +34,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 
 /**
  * {@link HistoryInfoConfiguration} implementation. 
@@ -48,11 +47,7 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 	private final IBranchPath branchPath;
 	private final String componentId;
 
-	public static HistoryInfoConfiguration create(final long storageKey) {
-		return create(storageKey, getActiveBranchPath(storageKey));
-	}
-	
-	public static HistoryInfoConfiguration create(final long storageKey, final IBranchPath branchPath) {
+	public static HistoryInfoConfiguration create(final IBranchPath branchPath, final long storageKey) {
 		checkArgument(checkId(storageKey), "Invalid storage key of: " + storageKey);
 		checkNotNull(branchPath, "branchPath");
 		
@@ -99,15 +94,6 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 		return branchPath;
 	}
 	
-	private static IBranchPath getActiveBranchPath(final long storageKey) {
-		final String repositoryUuid = getRepositoryUuid(storageKey);
-		return getServiceForClass(TaskManager.class).getActiveBranch(repositoryUuid);
-	}
-
-	private static String getRepositoryUuid(final long storageKey) {
-		return getConnection(storageKey).getUuid();
-	}
-
 	private static ICDOConnection getConnection(final long storageKey) {
 		return getServiceForClass(ICDOConnectionManager.class).get(storageKey);
 	}

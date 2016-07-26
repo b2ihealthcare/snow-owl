@@ -123,7 +123,7 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 			throw new ComponentNotFoundException(handledCategory, componentId);
 		}
 
-		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(storageKey, branch);
+		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(branch, storageKey);
 		final Collection<com.b2international.snowowl.core.api.IHistoryInfo> sourceHistoryInfos = getHistoryService().getHistory(configuration);			
 		final Collection<IHistoryInfo> targetHistoryInfos = Collections2.transform(sourceHistoryInfos, CONVERTER);
 
