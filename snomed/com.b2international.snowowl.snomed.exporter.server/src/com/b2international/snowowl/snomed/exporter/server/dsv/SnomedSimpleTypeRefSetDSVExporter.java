@@ -275,7 +275,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						
 						case DESCRIPTION:
 							final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
-							final String descriptionTypeId = String.valueOf(descriptionItem.getComponentId());
+							final String descriptionTypeId = descriptionItem.getComponentId();
 							final int descriptionOccurrences = exportItemMaxOccurences.get(descriptionTypeId);
 							
 							final Collection<String> descriptions = executeDescriptionQuery(QueryType.DESCRIPTION, conceptCDOId, descriptionTypeId);
@@ -393,7 +393,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				
 				case DESCRIPTION:
 					final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
-					final String descriptionTypeId = String.valueOf(descriptionItem.getComponentId());
+					final String descriptionTypeId = descriptionItem.getComponentId();
 					final int descriptionOccurrences = getMaxOccurence(QueryType.DESCRIPTION, descriptionTypeId);
 					final String descriptionDisplayName = descriptionItem.getDisplayName();
 					
