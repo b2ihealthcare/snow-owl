@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 
 /**
  * Abstract import request with additional user ID and {@link IBranchPath branch path} properties.
@@ -33,12 +32,12 @@ import com.b2international.snowowl.datastore.tasks.TaskManager;
  */
 public abstract class AbstractUserAndBranchAwareImportRequest extends ImportRequest {
 
-	private final String repositoryId;
+	private final IBranchPath branchPath;
 
-	protected AbstractUserAndBranchAwareImportRequest(final SignalProtocol<?> protocol, final short importSignal, final File sourceDir, final TerminologyImportType importType) {
+	protected AbstractUserAndBranchAwareImportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final File sourceDir, final TerminologyImportType importType) {
 		super(protocol, importSignal, sourceDir, importType);
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		this.repositoryId = connectionManager.get(getEPackage()).getUuid();
+		this.branchPath = branchPath;
+		
 	}
 	
 	protected abstract EPackage getEPackage();
@@ -49,12 +48,7 @@ public abstract class AbstractUserAndBranchAwareImportRequest extends ImportRequ
 	@Override
 	protected void postFileRequesting(final ExtendedDataOutputStream out) throws Exception {
 		out.writeUTF(getUserId()); //user ID
-		out.writeUTF(getBranchPath().getPath()); //branch path as string
-	}
-
-	/*returns with the branch path of the currently active task*/
-	private IBranchPath getBranchPath() {
-		return getTaskManager().getActiveBranch(repositoryId);
+		out.writeUTF(branchPath.getPath()); //branch path as string
 	}
 
 	/*returns with the user ID from the underlying session*/
@@ -65,11 +59,6 @@ public abstract class AbstractUserAndBranchAwareImportRequest extends ImportRequ
 	/*returns with the connection manager*/
 	private ICDOConnectionManager getConnection() {
 		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-	}
-
-	/*returns with the task manager*/
-	private TaskManager getTaskManager() {
-		return ApplicationContext.getInstance().getService(TaskManager.class);
 	}
 
 }
