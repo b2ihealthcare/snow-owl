@@ -94,13 +94,6 @@
             type="java.lang.Object">
       </propertyTester>
       <propertyTester
-            class="com.b2international.snowowl.datastore.expressions.TaskContextBasedPropertyTester"
-            id="com.b2international.snowowl.datastore.expressions.TaskContextBasedPropertyTester"
-            namespace="com.b2international.snowowl.datastore.expressions"
-            properties="taskContext"
-            type="java.lang.Object">
-      </propertyTester>
-      <propertyTester
             class="com.b2international.snowowl.datastore.propertytester.OsPropertyTester"
             id="com.b2international.snowowl.datastore.propertytester.OsPopertyTester"
             namespace="com.b2international.snowowl.datastore.propertytester.os"
