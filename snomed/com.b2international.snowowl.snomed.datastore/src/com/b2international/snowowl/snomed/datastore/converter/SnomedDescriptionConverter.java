@@ -79,43 +79,66 @@ final class SnomedDescriptionConverter extends BaseSnomedComponentConverter<Snom
 	
 	@Override
 	protected void expand(List<ISnomedDescription> results) {
-		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
-
 		if (expand().isEmpty()) {
 			return;
 		}
 		
+		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
+		
 		expandInactivationProperties(results, descriptionIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
+		expandConcept(results, descriptionIds);
 		expandType(results, descriptionIds);
 	}
 
+	private void expandConcept(List<ISnomedDescription> results, final Set<String> descriptionIds) {
+		if (expand().containsKey("concept")) {
+			final Options expandOptions = expand().get("concept", Options.class);
+			final Set<String> conceptIds = FluentIterable.from(results)
+					.transform(new Function<ISnomedDescription, String>() {
+						@Override public String apply(ISnomedDescription input) { return input.getConceptId(); }
+					})
+					.toSet();
+			
+			final Map<String, ISnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
+			
+			for (ISnomedDescription description : results) {
+				final ISnomedConcept concept = conceptsById.get(description.getConceptId());
+				((SnomedDescription) description).setConcept(concept);
+			}
+		}
+	}
+	
 	private void expandType(List<ISnomedDescription> results, final Set<String> descriptionIds) {
 		if (expand().containsKey("type")) {
 			final Options expandOptions = expand().get("type", Options.class);
-			final Set<String> typeIds = FluentIterable.from(results).transform(new Function<ISnomedDescription, String>() {
-				@Override
-				public String apply(ISnomedDescription input) {
-					return input.getTypeId();
-				}
-			}).toSet();
+			final Set<String> conceptIds = FluentIterable.from(results)
+					.transform(new Function<ISnomedDescription, String>() {
+						@Override public String apply(ISnomedDescription input) { return input.getTypeId(); }
+					})
+					.toSet();
 			
-			final SnomedConcepts types = SnomedRequests
-				.prepareSearchConcept()
-				.setLimit(typeIds.size())
-				.setComponentIds(typeIds)
-				.setLocales(locales())
-				.setExpand(expandOptions.get("expand", Options.class))
-				.build()
-				.execute(context());
-			
-			final Map<String, ISnomedConcept> typesById = Maps.uniqueIndex(types, ID_FUNCTION);
+			final Map<String, ISnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
 			
 			for (ISnomedDescription description : results) {
-				final ISnomedConcept type = typesById.get(description.getTypeId());
+				final ISnomedConcept type = conceptsById.get(description.getTypeId());
 				((SnomedDescription) description).setType(type);
 			}
 		}
+	}
+
+	private Map<String, ISnomedConcept> getConceptMap(final Options expandOptions, final Set<String> conceptIds) {
+		final SnomedConcepts types = SnomedRequests
+			.prepareSearchConcept()
+			.setLimit(conceptIds.size())
+			.setComponentIds(conceptIds)
+			.setLocales(locales())
+			.setExpand(expandOptions.get("expand", Options.class))
+			.build()
+			.execute(context());
+		
+		final Map<String, ISnomedConcept> conceptsById = Maps.uniqueIndex(types, ID_FUNCTION);
+		return conceptsById;
 	}
 
 	private void expandInactivationProperties(List<ISnomedDescription> results, final Set<String> descriptionIds) {
