@@ -94,6 +94,7 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 		protected String id;
 		protected String label;
 		protected String iconId;
+		protected float score = 0.0f;
 		
 		// XXX only for JSON deserialization
 		protected long storageKey;
@@ -125,6 +126,11 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 		
 		public B iconId(final String iconId) {
 			this.iconId = iconId;
+			return getSelf();
+		}
+		
+		public B score(final float score) {
+			this.score = score;
 			return getSelf();
 		}
 		

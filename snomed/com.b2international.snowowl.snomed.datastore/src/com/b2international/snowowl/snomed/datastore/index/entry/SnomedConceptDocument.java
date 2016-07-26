@@ -375,6 +375,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					structural);
 			
 			entry.doi = doi;
+			entry.setScore(score);
 			entry.setBranchPath(branchPath);
 			entry.setCommitTimestamp(commitTimestamp);
 			entry.setStorageKey(storageKey);

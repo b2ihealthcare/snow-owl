@@ -596,6 +596,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			// query
 			doc.query = query;
 			
+			doc.setScore(score);
 			// metadata
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);

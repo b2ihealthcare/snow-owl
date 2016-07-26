@@ -298,6 +298,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 					group, 
 					unionGroup, 
 					destinationNegated);
+			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);

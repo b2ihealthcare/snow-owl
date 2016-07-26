@@ -343,6 +343,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
 					preferredIn, acceptableIn);
+			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
