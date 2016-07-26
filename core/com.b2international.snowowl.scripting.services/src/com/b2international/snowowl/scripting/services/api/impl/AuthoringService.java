@@ -36,7 +36,6 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.b2international.snowowl.scripting.services.api.IAuthoringService;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Concept;
@@ -46,14 +45,11 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 /**
@@ -170,7 +166,7 @@ public enum AuthoringService implements IAuthoringService {
 		checkModuleId(moduleId);
 		final SnomedRefSetEditingContext context = editingContext.getRefSetEditingContext();
 		final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
-		final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
+		final SnomedConcreteDataTypeRefSet refSet = context.lookup(identifierConceptId, SnomedConcreteDataTypeRefSet.class);
 
 		final ComponentType componentType = ComponentType.RELATIONSHIP;
 
@@ -203,7 +199,7 @@ public enum AuthoringService implements IAuthoringService {
 		checkModuleId(moduleId);
 		final SnomedRefSetEditingContext context = editingContext.getRefSetEditingContext();
 		final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
-		final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
+		final SnomedConcreteDataTypeRefSet refSet = context.lookup(identifierConceptId, SnomedConcreteDataTypeRefSet.class);
 		
 		final ComponentType componentType = ComponentType.RELATIONSHIP;
 		
@@ -299,7 +295,7 @@ public enum AuthoringService implements IAuthoringService {
 		try {
 			context = SnomedRefSetEditingContext.createInstance(getOrCreateBranch(taskId));
 			final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
-			final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
+			final SnomedConcreteDataTypeRefSet refSet = context.lookup(identifierConceptId, SnomedConcreteDataTypeRefSet.class);
 			final ComponentType componentType = ComponentType.getComponentType(componentId);
 			final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
 					componentType.getComponentIdentifierPair(componentId), concreteDomainAttributeType, value, 
@@ -333,7 +329,7 @@ public enum AuthoringService implements IAuthoringService {
 		checkModuleId(moduleId);
 		final SnomedRefSetEditingContext context = editingContext.getRefSetEditingContext();
 		final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
-		final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
+		final SnomedConcreteDataTypeRefSet refSet = context.lookup(identifierConceptId, SnomedConcreteDataTypeRefSet.class);
 
 		final ComponentType componentType = ComponentType.CONCEPT;
 
@@ -370,12 +366,6 @@ public enum AuthoringService implements IAuthoringService {
 		return checkString(checkNotNull(context.getDefaultModuleConcept(), "Default SNOMED CT module concept was null.").getId());
 	}
 
-	/*returns with the task manager service. never null.*/
-	@Nonnull
-	private TaskManager getTaskManager() {
-		return Preconditions.checkNotNull(ApplicationContext.getInstance().getService(TaskManager.class), "Task manager service was null.");
-	}
-	
 	/*
 	 * checks the specified CDO view instance. throw runtime exception if the
 	 * specified CDO view cannot be referenced.returns with the view if it can
@@ -405,30 +395,6 @@ public enum AuthoringService implements IAuthoringService {
 			throw new IllegalStateException("String argument cannot be null or empty: " + s);
 		}
 		return s;
-	}
-
-	/*
-	 * returns with the concrete domain reference set identified by the
-	 * unique identifier concept ID.
-	 */
-	@Nonnull
-	private SnomedConcreteDataTypeRefSet getRefSet(final CDOView view, final String identifierConcepetId) {
-		final SnomedRefSet refSet = getRefSetLookupService().getComponent(identifierConcepetId, checkView(view));
-		checkNotNull(refSet, "SNOMED CT reference set was null. Identifier concept ID: " + identifierConcepetId);
-		if (refSet instanceof SnomedConcreteDataTypeRefSet) {
-			return (SnomedConcreteDataTypeRefSet) refSet;
-		} else {
-			throw new IllegalStateException("SNOMED CT reference set was not a concrete domain reference set but "
-					+ refSet.getClass().getName());
-		}
-	}
-
-	/*
-	 * returns with a service for looking up SNOMED CT reference sets based on
-	 * the identifier concept IDs
-	 */
-	private SnomedRefSetLookupService getRefSetLookupService() {
-		return new SnomedRefSetLookupService();
 	}
 
 	/*
