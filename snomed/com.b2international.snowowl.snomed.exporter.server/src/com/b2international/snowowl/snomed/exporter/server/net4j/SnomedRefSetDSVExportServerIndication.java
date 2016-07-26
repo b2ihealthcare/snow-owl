@@ -39,7 +39,6 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -95,7 +94,7 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		int exportItemsSize = in.readInt();
 		for (int i = 0; i < exportItemsSize; i++) {
 			// TODO supplying MAIN here, as the selected branch read later from the stream
-			exportSetting.addExportItem(AbstractSnomedDsvExportItem.createFromInputStream(Branch.MAIN_PATH, in));
+			exportSetting.addExportItem(AbstractSnomedDsvExportItem.createFromInputStream(in));
 		}
 		exportSetting.setLanguageConfigurationId(in.readLong());
 		exportSetting.setDelimiter(in.readUTF());

@@ -59,7 +59,7 @@ public abstract class AbstractSnomedDsvExportItem {
 	 * @return
 	 * @throws IOException
 	 */
-	public static AbstractSnomedDsvExportItem createFromInputStream(final String branch, final DataInputStream inputStream) throws IOException {
+	public static AbstractSnomedDsvExportItem createFromInputStream(final DataInputStream inputStream) throws IOException {
 		
 		final int ordinal = inputStream.readInt();
 		final SnomedDsvExportItemType type = SnomedDsvExportItemType.values()[ordinal];
@@ -67,8 +67,8 @@ public abstract class AbstractSnomedDsvExportItem {
 		switch (type) {
 			case DESCRIPTION:
 			case RELATIONSHIP:
-				final long componentId = inputStream.readLong();
-				return new ComponentIdSnomedDsvExportItem(branch, type, componentId);
+				final String componentId = inputStream.readUTF();
+				return new ComponentIdSnomedDsvExportItem(type, componentId);
 
 			case DATAYPE:
 				final String datatypeLabel = inputStream.readUTF();
