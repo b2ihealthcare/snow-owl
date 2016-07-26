@@ -37,9 +37,9 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 
+import com.b2international.snowowl.client.core.branching.TaskManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 import com.google.common.base.Predicate;
 
 /**

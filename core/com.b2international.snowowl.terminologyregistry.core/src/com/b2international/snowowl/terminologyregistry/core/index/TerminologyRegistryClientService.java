@@ -19,11 +19,11 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 
 import java.util.Collection;
 
+import com.b2international.snowowl.client.core.branching.TaskManager;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
-import com.b2international.snowowl.datastore.tasks.TaskManager;
 
 /**
  * A terminology metadata service implementation for clients. 
