@@ -15,7 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.*;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.COMPONENT_ACTIVE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_ACCEPTABILITY_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_EFFECTIVE_TIME;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_TYPE_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCED_COMPONENT_TYPE;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_ID;
+import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_REFERENCE_SET_TYPE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -27,8 +35,14 @@ import java.util.StringTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BooleanFilter;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
@@ -334,14 +348,19 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			};
 		}
 		
-		@SuppressWarnings("unchecked")
 		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByReferencedComponentIdsQuery(
 				final String componentType, final Iterable<String> referencedComponentIds) { // FIXME: variable naming!
-
+			return createFindByReferencedComponentIdsQuery(componentType, referencedComponentIds, false);
+		}
+		
+		@SuppressWarnings("unchecked")
+		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByReferencedComponentIdsQuery(
+				final String componentType, final Iterable<String> referencedComponentIds, boolean ignoreMissingIconIds) {
+			
 			checkArgument(!CompareUtils.isEmpty(referencedComponentIds), "Referenced component identifiers argument cannot be empty.");
 			checkNotNull(componentType, "Referenced component type argument cannot be null.");
 			
-			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter() {
+			return (IIndexQueryAdapter<T>) new SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter(ignoreMissingIconIds) {
 				private static final long serialVersionUID = 8756363743189925011L;
 				@Override public Query createQuery() {
 					final BooleanQuery query = new BooleanQuery();
@@ -360,7 +379,6 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 			};
 		}
 		
-
 		@SuppressWarnings("unchecked")
 		public static <T extends SnomedRefSetMemberIndexEntry> IIndexQueryAdapter<T> createFindByRefSetTypeQuery() {
 

@@ -89,7 +89,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 
 	@Override
 	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getDataTypesForRelationship(final String relationshipId) {
-		return Lists.newArrayList(new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(relationshipId));
+		return Lists.newArrayList(new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(relationshipId, true));
 	}
 
 	@Override
