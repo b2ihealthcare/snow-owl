@@ -101,7 +101,7 @@ public class WidgetBeanProvider {
 				.getSync();
 		final boolean active = concept.isActive();
 		
-		final ConceptWidgetBean cwb = new ConceptWidgetBean(conceptWidgetModel, conceptId, active);
+		final ConceptWidgetBean cwb = new ConceptWidgetBean(branchPath, conceptWidgetModel, conceptId, active);
 		
 		final AtomicReference<List<LeafWidgetBean>> descriptionBeansRef = new AtomicReference<List<LeafWidgetBean>>();
 		final AtomicReference<ListMultimap<Integer, LeafWidgetBean>> relationshipGroupsRef = new AtomicReference<ListMultimap<Integer, LeafWidgetBean>>();

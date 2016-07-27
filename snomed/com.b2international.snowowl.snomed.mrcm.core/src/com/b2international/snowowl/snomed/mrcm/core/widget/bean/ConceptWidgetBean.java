@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.mrcm.core.widget.bean;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -27,9 +26,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.NullComponent;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 import com.google.common.collect.Iterables;
 
@@ -41,11 +46,13 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 
 	private static final long serialVersionUID = 6737791419471322048L;
 
+	private IBranchPath branchPath;
 	private DescriptionContainerWidgetBean descriptions;
 	private ContainerWidgetBean properties;
 	private ContainerWidgetBean mappings;
 	private String conceptId;
 	private boolean active;
+
 
 	/**
 	 * Default constructor for serialization.
@@ -54,8 +61,9 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 		super();
 	}
 
-	public ConceptWidgetBean(final ConceptWidgetModel model, final String conceptId, final boolean active) {
+	public ConceptWidgetBean(final IBranchPath branchPath, final ConceptWidgetModel model, final String conceptId, final boolean active) {
 		super(model);
+		this.branchPath = branchPath;
 		this.conceptId = conceptId;
 		this.active = active;
 	}
@@ -192,7 +200,7 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 					}
 				}
 
-				for (final IComponent<String> concept : getServiceForClass(SnomedClientTerminologyBrowser.class).getComponents(unresolvedComponentIds)) {
+				for (final IComponent<String> concept : getConcepts(unresolvedComponentIds)) {
 					componentMap.put(concept.getId(), concept);
 				}
 
@@ -202,6 +210,17 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 				return component;
 			}
 		}
+	}
+
+	private Collection<SnomedConceptDocument> getConcepts(Collection<String> unresolvedComponentIds) {
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.setComponentIds(unresolvedComponentIds)
+				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(SnomedConcepts.TO_DOCS)
+				.getSync();
 	}
 
 	private final Map<String, IComponent<String>> componentMap = newHashMap();
