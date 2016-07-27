@@ -32,19 +32,16 @@ import java.util.List;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.ecore.EPackage;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
-import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Preconditions;
@@ -158,50 +155,6 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 	}
 	
 	@Override
-	public ICodeSystemVersion getCurrentVersionForRepository(final String userId, final EPackage ePackage) {
-		
-		Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
-		Preconditions.checkNotNull(ePackage, "Package argument cannot be null.");
-		
-		final String repositoryUuid = getRepositoryUuidForEPackage(ePackage);
-		return getCurrentVersionForRepository(userId, repositoryUuid);
-	}
-	
-	@Override
-	public ICodeSystemVersion getCurrentVersionForRepository(final String userId, final String repositoryUuid) {
-		Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
-		Preconditions.checkNotNull(repositoryUuid, "Repository UUID argument cannot be null.");
-		
-		final List<ICodeSystemVersion> versions = getAllTagsWithHead(repositoryUuid);
-		Preconditions.checkState(!CompareUtils.isEmpty(versions), "No versions are available for " + repositoryUuid);
-		
-		//no versions (yet)
-		if (1 == versions.size()) {
-			return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid);
-		}
-		
-		IBranchPath branchPath = getUserBranchPathForRepository(userId, repositoryUuid);
-		
-		if (BranchPathUtils.isMain(branchPath)) {
-			return versions.get(1); //first not MAIN (most recently created version)
-		}
-
-		final boolean hasActiveTask = null != getTaskStateManager().getActiveTaskId(userId);
-		if (hasActiveTask) {
-			branchPath = branchPath.getParent();
-		}
-		
-		final String versionId = branchPath.lastSegment();
-		for (final ICodeSystemVersion version : versions) {
-			if (versionId.equals(version.getVersionId())) {
-				return version;
-			}
-		}
-		
-		return LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid);
-	}
-
-	@Override
 	@SuppressWarnings("unchecked")
 	public <T extends ICodeSystemVersion> Collection<T> decorateWithPatchedFlag(final String repositoryUuid, final Collection<? extends T> versions) {
 		for (T version : versions) {
@@ -250,18 +203,6 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 
 	private ICDOConnectionManager getConnectionManager() {
 		return getServiceForClass(ICDOConnectionManager.class);
-	}
-
-	private IBranchPath getUserBranchPathForRepository(final String userId, final String repositoryUuid) {
-		return getBranchPathMapConfiguration(userId).getBranchPath(repositoryUuid);
-	}
-
-	private IBranchPathMap getBranchPathMapConfiguration(final String userId) {
-		return getTaskStateManager().getBranchPathMapConfiguration(userId, true);
-	}
-
-	private ITaskStateManager getTaskStateManager() {
-		return ApplicationContext.getInstance().getService(ITaskStateManager.class);
 	}
 
 	/**

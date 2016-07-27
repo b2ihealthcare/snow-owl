@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 /**
  * Service for searching and querying among existing code system versions for
  * terminologies and contents. 
- *
+ * @deprecated - refactor with ext.management in mind
  */
 public interface CodeSystemService {
 
@@ -109,20 +109,6 @@ public interface CodeSystemService {
 	 * @return a list of all available tags including the HEAD.
 	 */
 	List<ICodeSystemVersion> getAllTagsWithHeadDecorateWithPatched(final String repositoryUuid);
-
-	/**Sugar for {@link #getCurrentVersionForRepository(String)}. Returns with the current version for a given terminology for a user.*/
-	ICodeSystemVersion getCurrentVersionForRepository(final String userId, final EPackage ePackage);
-
-	/**
-	 * Returns with the most recently created version for a user for a given terminology.
-	 * If no versions are available yet, this method returns with {@link ICodeSystemVersion#LATEST_ENTRY MAIN}.
-	 * If user is currently working on the {@link ICodeSystemVersion#LATEST_ENTRY MAIN} version, then this method returns with 
-	 * the most recently created version.
-	 * @param userId the user ID.
-	 * @param repositoryUuid the repository UUID.
-	 * @return the current version for a terminology.
-	 */
-	ICodeSystemVersion getCurrentVersionForRepository(final String userId, String repositoryUuid);
 
 	/**
 	 * Returns with a collection of value sets where the returning collection contains exactly the same number and
