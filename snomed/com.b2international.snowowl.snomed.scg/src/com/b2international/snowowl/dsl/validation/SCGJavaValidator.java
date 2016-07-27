@@ -126,7 +126,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		SCGExpressionExtractor extractor = new SCGExpressionExtractor(expression);
 		NormalFormWrapper normalForm = new NormalFormWrapper(extractor.getFocusConceptIdList(), wrapRelationshipGroups(extractor.getGroupConcepts()));
 		
-		try (SnomedEditingContext editingContext = new SnomedEditingContext()) {
+		try (SnomedEditingContext editingContext = new SnomedEditingContext(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE))) {
 			com.b2international.snowowl.snomed.Concept concept = editingContext.buildDraftConceptFromNormalForm(normalForm);
 			concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
 			IClientWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IClientWidgetModelProvider.class);

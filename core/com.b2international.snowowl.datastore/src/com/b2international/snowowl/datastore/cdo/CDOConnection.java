@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.PostStoreUpdateManager;
 import com.b2international.snowowl.datastore.cdo.ICDOBranchActionManager.BranchPathPredicate;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.google.common.base.Preconditions;
@@ -57,7 +56,6 @@ import com.google.common.collect.Lists;
  * <li>the {@link User} credentials
  * <li>the custom client side {@link SnowowlClientProtocol} for net4j communication
  * <li>{@link ICDOBranchActionManager}
- * <li>{@link PostStoreUpdateManager}
  *
  */
 /*default*/ class CDOConnection extends CDOManagedItem<ICDOConnection> implements ICDOConnection {

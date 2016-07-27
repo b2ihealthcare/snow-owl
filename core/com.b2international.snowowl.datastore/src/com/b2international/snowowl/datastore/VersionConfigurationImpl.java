@@ -37,7 +37,6 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 
-import com.b2international.snowowl.client.core.branching.TaskManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.google.common.base.Predicate;
@@ -52,10 +51,10 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 	private final Map<String, List<ICodeSystemVersion>> allVersions;
 	private final Map<String, ICodeSystemVersion> currentVersions;
 
-	public VersionConfigurationImpl(final String userId) {
-		taskBranchPathMap = getTaskBranchPathMap();
-		allVersions = getAllVersions();
-		currentVersions = initCurrentVersions();
+	public VersionConfigurationImpl(final IBranchPathMap branchPathMap) {
+		this.taskBranchPathMap = branchPathMap;
+		this.allVersions = getAllVersions();
+		this.currentVersions = initCurrentVersions();
 	}
 
 	@Override
@@ -184,14 +183,6 @@ public class VersionConfigurationImpl implements VersionConfiguration {
 		return allVersionsFromServer;
 	}
 
-	/**
-	 * Returns with the user's task aware branch path map.
-	 * @return a branch path map representing the task aware branch configuration of a use.r
-	 */
-	protected IBranchPathMap getTaskBranchPathMap() {
-		return getServiceForClass(TaskManager.class).getBranchPathMap();
-	}
-	
 	/**
 	 * Returns with the repository UUID of the slave repository. May return with 
 	 * {@code null} if the repository does not have any slave. 

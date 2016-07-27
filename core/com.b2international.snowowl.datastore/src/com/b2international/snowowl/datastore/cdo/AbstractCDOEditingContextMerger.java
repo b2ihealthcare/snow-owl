@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.api.IHistoryInfo;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.MergeFailedException;
 import com.b2international.snowowl.datastore.exception.MergeFailedWithCDOIDException;
@@ -153,7 +154,7 @@ public abstract class AbstractCDOEditingContextMerger<E extends CDOEditingContex
 		final CDOID cdoId = e.getID();
 
 		//try extracting historical information
-		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(asLong(cdoId));
+		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(BranchPathUtils.createPath(newEditingContext.getBranch()), asLong(cdoId));
 		final Collection<IHistoryInfo> historyInfo = getServiceForClass(HistoryService.class).getHistory(configuration);
 
 		if (CompareUtils.isEmpty(historyInfo)) {
