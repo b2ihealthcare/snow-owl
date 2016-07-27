@@ -18,19 +18,10 @@ package com.b2international.snowowl.snomed.mrcm.core.extensions;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.Concept;
 
 /**
  */
 public interface IConceptModelExtensionProvider {
-
-	/**
-	 * Returns the applicable concept model extensions for the specified concept.
-	 * 
-	 * @param concept
-	 * @return the applicable concept model extensions
-	 */
-	Collection<IConceptModelExtension> getModelExtensions(Concept concept);
 
 	/**
 	 * Returns the applicable concept model extensions for the concept with the specified identifier.
@@ -39,5 +30,5 @@ public interface IConceptModelExtensionProvider {
 	 * @param conceptId the identifier of the concept to collect extensions for
 	 * @return the applicable concept model extensions, or an empty collection if no extension could be collected
 	 */
-	Collection<IConceptModelExtension> getModelExtensions(IBranchPath branchPath, long conceptId);
+	Collection<IConceptModelExtension> getModelExtensions(IBranchPath branchPath, String conceptId);
 }

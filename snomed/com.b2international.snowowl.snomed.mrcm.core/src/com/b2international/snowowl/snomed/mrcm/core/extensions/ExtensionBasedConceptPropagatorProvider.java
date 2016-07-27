@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.mrcm.core.extensions;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.Concept;
-
 /**
  */
 public class ExtensionBasedConceptPropagatorProvider extends AbstractConceptExtensionProvider<IConceptPropagator> implements IConceptPropagatorProvider {
@@ -33,7 +31,7 @@ public class ExtensionBasedConceptPropagatorProvider extends AbstractConceptExte
 	}
 
 	@Override
-	public Collection<IConceptPropagator> getPropagators(final Concept model) {
-		return getExtensions(model);
+	public Collection<IConceptPropagator> getPropagators(final String branch, final String conceptId) {
+		return getExtensions(branch, conceptId);
 	}
 }

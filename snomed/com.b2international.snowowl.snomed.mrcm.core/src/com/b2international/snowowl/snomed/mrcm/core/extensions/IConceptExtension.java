@@ -15,18 +15,17 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.extensions;
 
-import com.b2international.snowowl.snomed.Concept;
-
 /**
  */
 public interface IConceptExtension {
 
 	/**
-	 * Checks whether this extension handles the specified concept.
+	 * Checks whether this extension handles the specified concept by its ID.
 	 * 
-	 * @param concept the concept to check (may not be {@code null})
+	 * @param branch - the branch to check
+	 * @param conceptId the concept to check (may not be {@code null})
 	 * @return {@code true} if this extension wants to participate in the concept's editing process, {@code false}
 	 * otherwise
 	 */
-	boolean handlesConcept(Concept concept);
+	boolean handlesConcept(String branch, String conceptId);
 }

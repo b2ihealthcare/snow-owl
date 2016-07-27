@@ -67,7 +67,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 		
 		// Apply concept model extensions
 		final IConceptModelExtensionProvider conceptModelExtensionProvider = ApplicationContext.getServiceForClass(IConceptModelExtensionProvider.class);
-		final Collection<IConceptModelExtension> extensions = conceptModelExtensionProvider.getModelExtensions(branchPath, conceptId);
+		final Collection<IConceptModelExtension> extensions = conceptModelExtensionProvider.getModelExtensions(branchPath, conceptIdString);
 		for (final IConceptModelExtension conceptModelExtension : extensions) {
 			conceptModelExtension.modifyWidgetModel(widgetModel);
 		}

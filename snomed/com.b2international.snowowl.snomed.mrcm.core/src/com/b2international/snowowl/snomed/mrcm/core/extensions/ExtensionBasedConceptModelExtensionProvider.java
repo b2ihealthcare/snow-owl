@@ -17,12 +17,7 @@ package com.b2international.snowowl.snomed.mrcm.core.extensions;
 
 import java.util.Collection;
 
-import org.eclipse.emf.spi.cdo.FSMUtil;
-
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.Concept;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 /**
@@ -44,25 +39,13 @@ public class ExtensionBasedConceptModelExtensionProvider extends AbstractConcept
 	}
 
 	@Override
-	public Collection<IConceptModelExtension> getModelExtensions(final Concept concept) {
-		
-		Preconditions.checkNotNull(concept, "Concept reference may not be null.");
-
-		if (concept.cdoView().isDirty()) {
-			return getExtensions(concept);
-		} else {
-			return getModelExtensions(BranchPathUtils.createPath(concept), Long.valueOf(concept.getId()));
-		}
-	}
-
-	@Override
-	public Collection<IConceptModelExtension> getModelExtensions(final IBranchPath branchPath, final long conceptId) {
+	public Collection<IConceptModelExtension> getModelExtensions(final IBranchPath branchPath, final String conceptId) {
 		
 		initializeElements();
 		final Collection<IConceptModelExtension> elements = Lists.newArrayList();
 
 		for (final IConceptModelExtension modelExtension : registeredExtensions.values()) {
-			if (modelExtension.handlesConceptId(branchPath, conceptId)) {
+			if (modelExtension.handlesConcept(branchPath.getPath(), conceptId)) {
 				elements.add(modelExtension);
 			}
 		}

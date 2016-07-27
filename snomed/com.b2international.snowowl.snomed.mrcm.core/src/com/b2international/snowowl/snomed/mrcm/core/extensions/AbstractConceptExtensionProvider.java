@@ -51,13 +51,13 @@ public abstract class AbstractConceptExtensionProvider<T extends IConceptExtensi
 		this.extensionInterface = extensionInterface;
 	}
 
-	protected Collection<T> getExtensions(final Concept concept) {
+	protected Collection<T> getExtensions(final String branch, final String conceptId) {
 
 		initializeElements();
 		final Collection<T> elements = Lists.newArrayList();
 
 		for (final T extension : registeredExtensions.values()) {
-			if (extension.handlesConcept(concept)) {
+			if (extension.handlesConcept(branch, conceptId)) {
 				elements.add(extension);
 			}
 		}

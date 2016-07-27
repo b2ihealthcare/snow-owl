@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.extensions;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 
 /**
@@ -32,12 +31,4 @@ public interface IConceptModelExtension extends IConceptExtension {
 	 */
 	public void modifyWidgetModel(ConceptWidgetModel widgetModel);
 
-	/**
-	 * Checks whether the widget model for the concept with the given identifier should be modified by this extension.
-	 * 
-	 * @param branchPath the branch path to use when determining extension applicability (may not be {@code null})
-	 * @param conceptId the concept identifier to check
-	 * @return {@code true} if this extension wants to modify the concept widget model, {@code false} otherwise
-	 */
-	public boolean handlesConceptId(IBranchPath branchPath, long conceptId);
 }

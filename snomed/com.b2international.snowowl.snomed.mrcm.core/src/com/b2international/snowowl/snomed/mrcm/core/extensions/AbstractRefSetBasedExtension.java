@@ -20,8 +20,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedTerminologyBrowserProvider.SnomedRefSetBrowserProvider;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * Represents an abstract {@link IConceptExtension} which accepts concepts based on reference set membership. 
@@ -37,12 +38,18 @@ public abstract class AbstractRefSetBasedExtension implements IConceptExtension,
 	}
 
 	@Override
-	public boolean handlesConcept(final Concept concept) {
-		final SnomedRefSetBrowserProvider refSetBrowser = SnomedRefSetBrowserProvider.create(concept);
-		return handlesConceptId(refSetBrowser, concept.getId());
+	public boolean handlesConcept(final String branch, final String conceptId) {
+		return isReferenced(branch, refSetId, conceptId);
 	}
 
-	protected boolean handlesConceptId(final SnomedRefSetBrowserProvider refSetBrowser, final String conceptId) {
-		return refSetBrowser.isReferenced(refSetId, conceptId);
+	private boolean isReferenced(String branch, String refSetId, String conceptId) {
+		return SnomedRequests.prepareSearchMember()
+				.setLimit(0)
+				.filterByRefSet(refSetId)
+				.filterByReferencedComponent(conceptId)
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 	}
+
 }

@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.mrcm.core.extensions;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.Concept;
-
 /**
  */
 public interface IConceptValidatorProvider {
@@ -26,9 +24,10 @@ public interface IConceptValidatorProvider {
 	/**
 	 * Returns the registered validation rules for the specified concept.
 	 * 
-	 * @param concept the concept to collect validators for (may not be {@code null})
+	 * @param branch
+	 * @param conceptId the concept to collect validators for (may not be {@code null})
 	 * @return a collection of {@link IConceptValidator}s relevant to the given concept, or an empty collection if none
 	 * of the available validators are applicable
 	 */
-	public Collection<IConceptValidator> getValidators(Concept concept);
+	public Collection<IConceptValidator> getValidators(final String branch, final String conceptId);
 }

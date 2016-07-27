@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.mrcm.core.extensions;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.Concept;
-
 /**
  */
 public class ExtensionBasedConceptValidatorProvider extends AbstractConceptExtensionProvider<IConceptValidator> implements IConceptValidatorProvider {
@@ -33,7 +31,7 @@ public class ExtensionBasedConceptValidatorProvider extends AbstractConceptExten
 	}
 
 	@Override
-	public Collection<IConceptValidator> getValidators(final Concept concept) {
-		return getExtensions(concept);
+	public Collection<IConceptValidator> getValidators(final String branch, final String conceptId) {
+		return getExtensions(branch, conceptId);
 	}
 }

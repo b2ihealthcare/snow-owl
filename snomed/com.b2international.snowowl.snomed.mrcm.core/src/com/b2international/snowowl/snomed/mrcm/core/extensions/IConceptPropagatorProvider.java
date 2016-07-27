@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.mrcm.core.extensions;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.Concept;
-
 /**
  */
 public interface IConceptPropagatorProvider {
@@ -26,9 +24,10 @@ public interface IConceptPropagatorProvider {
 	/**
 	 * Returns the registered {@link IConceptPropagator} instances.
 	 * 
-	 * @param model
+	 * @param branch
+	 * @param conceptId
 	 * @return
 	 */
-	Collection<IConceptPropagator> getPropagators(Concept model);
+	Collection<IConceptPropagator> getPropagators(String branch, String conceptId);
 
 }
