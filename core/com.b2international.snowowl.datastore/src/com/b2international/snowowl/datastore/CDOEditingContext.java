@@ -59,7 +59,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.client.core.branching.TaskManager;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
@@ -105,13 +104,6 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	private final Map<Pair<String, Class<?>>, EObject> resolvedObjectsById = newHashMap();
 
-	/**
-	 * @param ePackage - the primary ePackage of this editing context
-	 */
-	protected CDOEditingContext(EPackage ePackage) {
-		this(ePackage, getActivePath(ePackage));
-	}
-	
 	protected CDOEditingContext(final EPackage ePackage, final IBranchPath branchPath) {
 		this(createTransaction(checkNotNull(ePackage, "ePackage"), checkNotNull(branchPath, "Branch path argument cannot be null.")));
 	}
@@ -201,7 +193,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		if (Strings.isNullOrEmpty(componentId)) {
 			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
 		} else if (CodeSystem.class.isAssignableFrom(type)) {
-			return (T) getCodeSystem(componentId);
+			return type.cast(getCodeSystem(componentId));
 		}
 
 		final Pair<String, Class<?>> key = Tuples.<String, Class<?>>pair(componentId, type);
@@ -568,10 +560,6 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		}
 	}
 	
-	private static IBranchPath getActivePath(EPackage ePackage) {
-		return getTaskManager().getActiveBranch(getConnection(ePackage).getUuid());
-	}
-	
 	/*returns with the proper CDO connection service*/
 	private static ICDOConnection getConnection(EPackage ePackage) {
 		return getConnectionManager().get(ePackage);
@@ -582,10 +570,6 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		final CDOTransaction transaction = getConnection(ePackage).createTransaction(branchPath);
 		transaction.options().setLockNotificationEnabled(true);
 		return transaction;
-	}
-
-	private static TaskManager getTaskManager() {
-		return getApplicationContext().getService(TaskManager.class);
 	}
 
 	private static ICDOConnectionManager getConnectionManager() {

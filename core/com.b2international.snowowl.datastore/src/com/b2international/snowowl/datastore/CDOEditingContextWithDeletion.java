@@ -25,7 +25,7 @@ import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
+import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -38,10 +38,6 @@ import com.google.common.collect.Ordering;
  */
 public abstract class CDOEditingContextWithDeletion extends CDOEditingContext {
 
-	protected CDOEditingContextWithDeletion(EPackage ePackage) {
-		super(ePackage);
-	}
-	
 	protected CDOEditingContextWithDeletion(EPackage ePackage, final IBranchPath branchPath) {
 		super(ePackage, branchPath);
 	}
@@ -94,6 +90,6 @@ public abstract class CDOEditingContextWithDeletion extends CDOEditingContext {
 		return -1;
 	}
 
-	public abstract ComponentDeletionPlan getDeletionPlan(AbstractIndexEntry indexEntry);
+	public abstract ComponentDeletionPlan getDeletionPlan(IIndexEntry indexEntry);
 
 }

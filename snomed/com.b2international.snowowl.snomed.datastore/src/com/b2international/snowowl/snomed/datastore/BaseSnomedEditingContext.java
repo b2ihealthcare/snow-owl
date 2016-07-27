@@ -31,10 +31,6 @@ import com.b2international.snowowl.snomed.SnomedPackage;
  */
 public abstract class BaseSnomedEditingContext extends CDOEditingContext {
 
-	protected BaseSnomedEditingContext() {
-		super(SnomedPackage.eINSTANCE);
-	}
-
 	protected BaseSnomedEditingContext(final IBranchPath branchPath) {
 		super(SnomedPackage.eINSTANCE, checkNotNull(branchPath, "branchPath"));
 	}

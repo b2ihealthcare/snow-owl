@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
 import com.b2international.commons.StringUtils;
@@ -163,16 +162,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	@Override
 	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
 		return getSnomedEditingContext().getComponentLookupService(type);
-	}
-	
-	/**
-	 * Creates a new SNOMED CT reference set editing context on the currently active branch of the SNOMED CT repository.
-	 * 
-	 * @see BranchPathUtils#createActivePath(EPackage)
-	 * @see SnomedRefSetEditingContext#getPackage()
-	 */
-	public static SnomedRefSetEditingContext createInstance() {
-		return new SnomedEditingContext().getRefSetEditingContext();
 	}
 	
 	/**

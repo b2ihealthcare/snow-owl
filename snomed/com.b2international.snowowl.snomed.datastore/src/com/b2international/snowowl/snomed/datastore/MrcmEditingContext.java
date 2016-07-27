@@ -18,10 +18,8 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.UUID;
 
 import org.eclipse.emf.cdo.CDOState;
-import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
@@ -76,16 +74,6 @@ public class MrcmEditingContext extends BaseSnomedEditingContext {
 		return SnomedCDORootResourceNameProvider.MRCM_ROOT_RESOURCE_NAME;
 	}
 
-	/**
-	 * Creates a new MRCM editing context on the currently active branch of the SNOMED CT repository.
-	 * 
-	 * @see BranchPathUtils#createActivePath(EPackage)
-	 * @see MrcmEditingContext#getPackage()
-	 */
-	public MrcmEditingContext() {
-		super();
-	}
-	
 	/**
 	 * Creates a new MRCM editing context on the specified branch of the SNOMED CT repository.
 	 * 

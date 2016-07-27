@@ -19,21 +19,7 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
@@ -63,7 +49,6 @@ import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.commons.CompareUtils;
@@ -544,18 +529,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		return null;
 	}
-
-	/**
-	 * Creates a new SNOMED CT core components editing context on the currently active branch of the SNOMED CT repository.
-	 * 
-	 * @see BranchPathUtils#createActivePath(EPackage)
-	 * @see SnomedEditingContext#getPackage()
-	 */
-	public SnomedEditingContext() {
-		super();
-		init(getDefaultNamespace());
-	}
-
 
 	/**
 	 * Creates a new SNOMED CT core components editing context on the specified branch of the SNOMED CT repository.
