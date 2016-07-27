@@ -28,10 +28,8 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.commons.collections.BackwardListIterator;
-import com.b2international.snowowl.client.core.branching.TaskManager;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -39,8 +37,6 @@ import com.b2international.snowowl.core.api.NullBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
@@ -62,20 +58,6 @@ public abstract class BranchPathUtils {
 	 */
 	private static final Interner<IBranchPath> BRANCH_PATH_INTERNER = Interners.newStrongInterner();
 			
-	/**
-	 * Returns with the {@link IBranchPath branch path} instance based on the currently used active branch in a particular repository.
-	 * @param ePackage the {@link EPackage} associated with a repository
-	 * @return the {@link IBranchPath} instance.
-	 * @see TaskManager#getActiveBranch()
-	 */
-	public static IBranchPath createActivePath(final EPackage ePackage) {
-		checkNotNull(ePackage, "EPackage reference may not be null.");
-		
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		final ICDOConnection connection = connectionManager.get(ePackage);
-		return BranchPathUtils.createActivePath(connection.getUuid());
-	}
-	
 	/**
 	 * Returns with the branch path representing the MAIN branch.
 	 * @return the branch path for the MAIN branch.
