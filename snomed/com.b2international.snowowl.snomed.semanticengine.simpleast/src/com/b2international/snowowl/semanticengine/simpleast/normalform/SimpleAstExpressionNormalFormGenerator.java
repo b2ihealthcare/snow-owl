@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClauseGroup;
@@ -36,10 +35,10 @@ import com.google.common.collect.Lists;
  */
 public class SimpleAstExpressionNormalFormGenerator {
 	
-	private final SnomedClientTerminologyBrowser terminologyBrowser;
+	private final String branch;
 
-	public SimpleAstExpressionNormalFormGenerator(SnomedClientTerminologyBrowser terminologyBrowser) {
-		this.terminologyBrowser = terminologyBrowser;
+	public SimpleAstExpressionNormalFormGenerator(String branch) {
+		this.branch = branch;
 	}
 
 	/**
@@ -48,7 +47,7 @@ public class SimpleAstExpressionNormalFormGenerator {
 	public RValue getLongNormalForm(RValue originalExpression) {
 		// expression focus concepts	
 		Collection<ConceptRef> focusConcepts = QueryAstUtils.getFocusConcepts(originalExpression);
-		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(terminologyBrowser);
+		FocusConceptNormalizer focusConceptNormalizer = new FocusConceptNormalizer(branch);
 		FocusConceptNormalizationResult normalizedFocusConcepts = focusConceptNormalizer.normalizeFocusConcepts(focusConcepts);
 		
 		// expression refinements
@@ -62,12 +61,12 @@ public class SimpleAstExpressionNormalFormGenerator {
 			expressionAttributeClauseLists.add(attributeClauseList);
 		}
 		
-		AttributeNormalizer attributeNormalizer = new AttributeNormalizer(terminologyBrowser);
+		AttributeNormalizer attributeNormalizer = new AttributeNormalizer(branch);
 		ConceptDefinition normalizedExpressionRefinements = attributeNormalizer.normalizeAttributes(expressionAttributeClauseLists, 
 				ungroupedExpressionAttributes);
 		
 		// merge refinements
-		RefinementsMerger refinementsMerger = new RefinementsMerger(terminologyBrowser);
+		RefinementsMerger refinementsMerger = new RefinementsMerger(branch);
 		ConceptDefinition mergedRefinements = refinementsMerger.mergeRefinements(normalizedFocusConcepts, normalizedExpressionRefinements);
 		
 		// create expression

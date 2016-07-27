@@ -28,7 +28,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -55,8 +54,8 @@ public class ConceptDefinitionNormalizer {
 
 	private final SimpleAstExpressionNormalFormGenerator normalFormGenerator;
 	
-	public ConceptDefinitionNormalizer(SnomedClientTerminologyBrowser terminologyBrowser) {
-		this.normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser);
+	public ConceptDefinitionNormalizer(String branch) {
+		this.normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(branch);
 	}
 	
 	/**

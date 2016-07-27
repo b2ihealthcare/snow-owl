@@ -17,13 +17,12 @@ package com.b2international.snowowl.semanticengine.simpleast.normalform.test;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.ESCGEcoreRewriter;
 import com.b2international.snowowl.dsl.escg.Expression;
 import com.b2international.snowowl.dsl.parser.antlr.ESCGParser;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.SimpleAstExpressionNormalFormGenerator;
 import com.b2international.snowowl.semanticengine.simpleast.test.utils.TestUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
 
 /**
@@ -124,8 +123,7 @@ public class SimpleAstNormalFormGeneratorTest {
 
 	private void testNormalFormGenerator(Expression originalExpression, Expression expectedLongNormalFormExpression, 
 			Expression expectedShortNormalFormExpression) {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		SimpleAstExpressionNormalFormGenerator normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(terminologyBrowser);
+		SimpleAstExpressionNormalFormGenerator normalFormGenerator = new SimpleAstExpressionNormalFormGenerator(Branch.MAIN_PATH);
 		ESCGEcoreRewriter rewriter = new ESCGEcoreRewriter(escgParser);
 		RValue rewrittenOriginalExpression = rewriter.rewrite(originalExpression);
 		System.out.println("Original: " + rewrittenOriginalExpression);

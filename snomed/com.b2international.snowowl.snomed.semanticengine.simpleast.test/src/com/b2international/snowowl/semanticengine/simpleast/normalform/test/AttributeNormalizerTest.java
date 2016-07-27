@@ -28,12 +28,11 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeNormalizer;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
 
@@ -43,8 +42,7 @@ public class AttributeNormalizerTest {
 
 	@Before
 	public void beforeTest() {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		attributeNormalizer = new AttributeNormalizer(terminologyBrowser);
+		attributeNormalizer = new AttributeNormalizer(Branch.MAIN_PATH);
 	}
 	
 	@Test

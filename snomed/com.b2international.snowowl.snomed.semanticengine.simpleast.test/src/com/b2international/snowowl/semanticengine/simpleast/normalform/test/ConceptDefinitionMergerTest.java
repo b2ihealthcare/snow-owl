@@ -30,13 +30,12 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.ConceptDefinitionMerger;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
 
@@ -46,8 +45,7 @@ public class ConceptDefinitionMergerTest {
 
 	@Before
 	public void beforeTest() {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		conceptDefinitionMerger = new ConceptDefinitionMerger(new SubsumptionTester(terminologyBrowser));
+		conceptDefinitionMerger = new ConceptDefinitionMerger(new SubsumptionTester(Branch.MAIN_PATH));
 	}
 	
 	@Test
@@ -80,8 +78,8 @@ public class ConceptDefinitionMergerTest {
 		conceptDefinitionMap.put(concept2, conceptDefinition2);
 		
 		// build expected results
-		AttributeClauseList expectedAttributeClauseList = buildAttributeClauseList(Arrays.asList((AttributeClause)EcoreUtil.copy(findingSiteLungStructure), 
-				(AttributeClause)EcoreUtil.copy(causativeAgentSubstance)));
+		AttributeClauseList expectedAttributeClauseList = buildAttributeClauseList(Arrays.asList(EcoreUtil.copy(findingSiteLungStructure), 
+				EcoreUtil.copy(causativeAgentSubstance)));
 		ConceptDefinition expectedConceptDefinition = buildConceptDefinition(Collections.singleton(expectedAttributeClauseList), 
 				Collections.singleton(EcoreUtil.copy(severitySevere)));
 		

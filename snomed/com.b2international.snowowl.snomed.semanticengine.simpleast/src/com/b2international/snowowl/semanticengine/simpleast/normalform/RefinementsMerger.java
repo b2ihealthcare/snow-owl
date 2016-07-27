@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ecoreastFactory;
 
@@ -46,10 +45,10 @@ import com.b2international.snowowl.snomed.dsl.query.queryast.ecoreastFactory;
  */
 public class RefinementsMerger {
 	
-	private final SnomedClientTerminologyBrowser snor;
+	private final String branch;
 
-	public RefinementsMerger(SnomedClientTerminologyBrowser snor) {
-		this.snor = snor;
+	public RefinementsMerger(final String branch) {
+		this.branch = branch;
 	}
 
 	/** 
@@ -58,7 +57,7 @@ public class RefinementsMerger {
 	 * @return the merged refinements
 	 */
 	public ConceptDefinition mergeRefinements(FocusConceptNormalizationResult normalizedFocusConcepts, ConceptDefinition normalizedExpressionRefinements) {
-		ConceptDefinitionMerger conceptDefinitionMerger = new ConceptDefinitionMerger(new SubsumptionTester(snor));
+		ConceptDefinitionMerger conceptDefinitionMerger = new ConceptDefinitionMerger(new SubsumptionTester(branch));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		// TODO: get rid of dummy concepts
 		conceptDefinitionMap.put(ecoreastFactory.eINSTANCE.createConceptRef(), normalizedFocusConcepts.mergedConceptDefinition);

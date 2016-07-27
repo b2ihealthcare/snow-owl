@@ -23,14 +23,13 @@ import java.util.Map;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.UngroupedAttributesMerger;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
 import com.b2international.snowowl.semanticengine.simpleast.test.utils.TestUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
 
@@ -38,8 +37,8 @@ public class UngroupedAttributesMergerTest {
 	
 	@Test
 	public void testMergeSingleConceptDefinition() {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);
 		AttributeClause causativeAgentDustAllergen = TestUtils.buildAttribute(SnomedConcepts.CAUSATIVE_AGENT, SnomedConcepts.DUST_ALLERGEN);
@@ -64,8 +63,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of one of the name-matched attributes subsumes the other value
 		 * 		include the attribute with the most specific value (not grouped)
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);
@@ -97,8 +96,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of one of the name-matched attributes subsumes the other value
 		 * 		include the attribute with the most specific value (not grouped)
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);
@@ -130,8 +129,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of the name-matched attributes are identical
 		 * 		include one and omit the other
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);
@@ -163,8 +162,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of the name-matched attributes are identical
 		 * 		include one and omit the other
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);
@@ -197,8 +196,8 @@ public class UngroupedAttributesMergerTest {
 		 * If neither of the two preceding conditions apply
 		 *		include both attributes (not grouped) 
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, 
@@ -232,8 +231,8 @@ public class UngroupedAttributesMergerTest {
 		 * If neither of the two preceding conditions apply
 		 *		include both attributes (not grouped) 
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, 
@@ -267,8 +266,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of the ungrouped attribute subsumes value of the name-matched grouped attribute
 		 *		omit the ungrouped attribute from the target definition
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);
@@ -306,8 +305,8 @@ public class UngroupedAttributesMergerTest {
 		 *		if this condition is met by multiple groups
 		 *			add the ungrouped attribute to all groups that meet this condition
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, 
@@ -347,8 +346,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of the name-matched grouped and ungrouped attributes are disjoint
 		 * 		add the ungrouped attribute as an ungrouped attribute in the target expression.
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, 
@@ -388,8 +387,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of the ungrouped attribute subsumes value of the name-matched grouped attribute
 		 *		omit the ungrouped attribute from the target definition
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, SnomedConcepts.LUNG_STRUCTURE);
@@ -427,8 +426,8 @@ public class UngroupedAttributesMergerTest {
 		 *		if this condition is met by multiple groups
 		 *			add the ungrouped attribute to all groups that meet this condition
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, 
@@ -468,8 +467,8 @@ public class UngroupedAttributesMergerTest {
 		 * If the value of the name-matched grouped and ungrouped attributes are disjoint
 		 * 		add the ungrouped attribute as an ungrouped attribute in the target expression.
 		 */
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(terminologyBrowser));
+		
+		UngroupedAttributesMerger merger = new UngroupedAttributesMerger(new SubsumptionTester(Branch.MAIN_PATH));
 		Map<ConceptRef, ConceptDefinition> conceptDefinitionMap = new HashMap<ConceptRef, ConceptDefinition>();
 		
 		AttributeClause findingSiteLungStructure = TestUtils.buildAttribute(SnomedConcepts.FINDING_SITE, 

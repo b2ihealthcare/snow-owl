@@ -24,15 +24,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.dsl.ESCGEcoreRewriter;
 import com.b2international.snowowl.dsl.escg.Expression;
 import com.b2international.snowowl.dsl.parser.antlr.ESCGParser;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.semanticengine.simpleast.test.utils.TestUtils;
-import com.b2international.snowowl.snomed.datastore.RecursiveTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
 import com.google.common.collect.Lists;
 
@@ -49,14 +47,13 @@ public class SubsumptionTesterTest {
 	}
 	
 	private void testExpressionSubsumption(Expression predicate, Expression candidate, boolean expectedResult) {
-		SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 		ESCGEcoreRewriter rewriter = new ESCGEcoreRewriter(escgParser);
 		RValue rewrittenPredicate = rewriter.rewrite(predicate);
 		RValue rewrittenCandidate = rewriter.rewrite(candidate);
 		List<Long> iterationTimesInNanoseconds = Lists.newArrayList();
 		for (int i=0; i<TEST_ITERATION_COUNT; i++) {
 			long iterationStart = System.nanoTime();
-			SubsumptionTester subsumptionTest = new SubsumptionTester(RecursiveTerminologyBrowser.create(terminologyBrowser));
+			SubsumptionTester subsumptionTest = new SubsumptionTester(Branch.MAIN_PATH);
 			boolean subsumed = subsumptionTest.isSubsumed(rewrittenPredicate, rewrittenCandidate);
 			long iterationEnd = System.nanoTime();
 			Assert.assertEquals(expectedResult, subsumed);
