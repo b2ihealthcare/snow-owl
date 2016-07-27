@@ -127,17 +127,17 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			}
 		}
 		
-		if (isVersionCommit(commitInfo)) {
-			// optimize the index next time we create the version branch
-			this.optimize = true;
-		}
-		
-		if (skippedBranches.contains(commitInfo.getBranch().getID())) {
-			skippedCommits++;
-			return;
-		}
-		
 		try {
+			if (isVersionCommit(commitInfo)) {
+				// optimize the index next time we create the version branch
+				this.optimize = true;
+			}
+			
+			if (skippedBranches.contains(commitInfo.getBranch().getID())) {
+				skippedCommits++;
+				return;
+			}
+			
 			LOGGER.info("Replicating commit: " + commitInfo.getComment() + " at " + commitInfo.getBranch().getName() + "@" + commitTimestamp);	
 		} catch (DBException e) {
 			skippedCommits++;
