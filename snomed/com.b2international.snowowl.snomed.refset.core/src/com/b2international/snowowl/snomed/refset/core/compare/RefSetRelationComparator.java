@@ -26,10 +26,8 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.refset.core.compare.ReferencedComponentDelta.DeltaKind;
@@ -45,16 +43,10 @@ import com.google.common.collect.Sets;
  */
 public class RefSetRelationComparator {
 
-	private final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser;
-	private SubsumptionTester delegateSubsumptionTester;
+	private final SubsumptionTester subsumptionTester;
 
-	/**
-	 * Class constructor.
-	 * 
-	 * @param terminologyBrowser the {@link SnomedClientTerminologyBrowser terminology browser} to use
-	 */
-	public RefSetRelationComparator(IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser) {
-		this.terminologyBrowser = terminologyBrowser;
+	public RefSetRelationComparator(final String branch) {
+		this.subsumptionTester = new SubsumptionTester(branch);
 	}
 
 	/**
@@ -72,9 +64,6 @@ public class RefSetRelationComparator {
 	 *             if the progress monitor has been cancelled
 	 */
 	public List<ReferencedComponentDelta> compare(Collection<SnomedConceptDocument> members1, Collection<SnomedConceptDocument> members2, IProgressMonitor monitor) {
-		
-		this.delegateSubsumptionTester = new SubsumptionTester(terminologyBrowser);
-
 		Set<SnomedConceptDocument> parentReferencedComponents = (Set<SnomedConceptDocument>) (members1 instanceof Set<?> ? members1 : Sets.newHashSet(members1));
 		Set<SnomedConceptDocument> childReferencedComponents = (Set<SnomedConceptDocument>) (members2 instanceof Set<?> ? members2 : Sets.newHashSet(members2));
 		Set<SnomedConceptDocument> childReferencedComponentsFiltered = Sets.difference(childReferencedComponents, parentReferencedComponents);
@@ -141,7 +130,7 @@ public class RefSetRelationComparator {
 		}
 
 		private boolean isSubsumed(SnomedConceptDocument refComponentId, SnomedConceptDocument id) {
-			return delegateSubsumptionTester.isSubsumed(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), hierarchy);
+			return subsumptionTester.isSubsumed(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), hierarchy);
 		}
 
 		private boolean isRelated(SnomedConceptDocument refComponentId, SnomedConceptDocument id) {

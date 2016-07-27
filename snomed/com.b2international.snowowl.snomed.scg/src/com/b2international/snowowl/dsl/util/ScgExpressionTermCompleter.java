@@ -23,23 +23,19 @@ import com.b2international.snowowl.dsl.scg.AttributeValue;
 import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-/**
- * This class takes an SCG Expression and use {@link SnomedClientTerminologyBrowser} to try to set the {@link Concept} labels;
- * 
- *
- */
 public class ScgExpressionTermCompleter {
 	
-	private Expression expression;
+	private final Expression expression;
+	private final String branch;
 	
-	private SnomedClientTerminologyBrowser terminologyBrowser;
-	
-	public ScgExpressionTermCompleter(Expression expression) {
+	public ScgExpressionTermCompleter(final String branch, Expression expression) {
+		this.branch = branch;
 		this.expression = expression;
-		
-		this.terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 	}
 
 	public Expression getTermCompletedExpression() {
@@ -78,8 +74,17 @@ public class ScgExpressionTermCompleter {
 	}
 
 	private void addTerm(Concept concept) {
-		String label = terminologyBrowser.getConcept(concept.getId()).getLabel();
+		final ISnomedDescription pt = getPt(concept.getId());
+		concept.setTerm(pt == null ? concept.getId() : pt.getTerm());
+	}
 
-		concept.setTerm(label);
+	private ISnomedDescription getPt(String id) {
+		return SnomedRequests.prepareGetConcept()
+				.setComponentId(id)
+				.setExpand("pt()")
+				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.build(branch)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getPt();
 	}
 }

@@ -15,10 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.tree;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-
 /**
  * @since 4.6
  */
@@ -27,11 +23,6 @@ final class InferredTreeBuilderImpl extends TreeBuilderImpl {
 	@Override
 	final String getForm() {
 		return Trees.INFERRED_FORM;
-	}
-
-	@Override
-	final BaseSnomedClientTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 	}
 
 }

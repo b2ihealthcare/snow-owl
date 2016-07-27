@@ -59,7 +59,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -88,7 +87,6 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -183,7 +181,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 */
 	public Concept buildDraftConceptFromNormalForm(final NormalFormWrapper normalForm, @Nullable final String conceptId) {
 		final Concept moduleConcept = getDefaultModuleConcept();
-		final List<Concept> parentConcepts = getConcepts(getTransaction(), normalForm.getParentConceptIds());
+		final List<Concept> parentConcepts = getConcepts(normalForm.getParentConceptIds());
 		final Concept[] additionalParentConcepts = CompareUtils.isEmpty(parentConcepts) ? new Concept[0] : Iterables.toArray(parentConcepts.subList(1, parentConcepts.size()), Concept.class);
 		final Concept newConcept = buildDefaultConcept("", getNamespace(), moduleConcept, parentConcepts.get(0), additionalParentConcepts);
 		if (null != conceptId) {
@@ -491,11 +489,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 
 	/*returns with a bunch of SNOMED CT concepts opened in the specified CDO view the given unique concept IDs*/
-	private static List<Concept> getConcepts(final CDOView view, final Iterable<String> conceptIds) {
-		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
+	private List<Concept> getConcepts(final Iterable<String> conceptIds) {
 		return Lists.newArrayList(Iterables.transform(conceptIds, new Function<String, Concept>() {
 			@Override public Concept apply(final String id) {
-				return lookupService.getComponent(id, view);
+				return lookup(id, Concept.class);
 			}
 		}));
 	}
@@ -508,13 +505,16 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @return SnomedConstants.QUALIFYING_RELATIONSHIP if destination toplevel is 'Qualifying value', {@code null} otherwise.
 	 */
 	private Concept getQualifyingCharacteristicType(final String destinationConceptid) {
-		final IClientTerminologyBrowser<SnomedConceptDocument, String> terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		final SnomedConceptDocument topLevelConcept = terminologyBrowser.getTopLevelConcept(
-				terminologyBrowser.getConcept(destinationConceptid));
-		if (topLevelConcept.getId().equals(QUALIFIER_VALUE_TOPLEVEL_CONCEPT)) {
+		final boolean isSubTypeOfQualifierValue = SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.filterByAncestor(QUALIFIER_VALUE_TOPLEVEL_CONCEPT)
+				.setComponentIds(Collections.singleton(destinationConceptid))
+				.build(getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
+		if (isSubTypeOfQualifierValue) {
 			return findConceptById(QUALIFYING_RELATIONSHIP);
 		}
-		
 		return null;
 	}
 	

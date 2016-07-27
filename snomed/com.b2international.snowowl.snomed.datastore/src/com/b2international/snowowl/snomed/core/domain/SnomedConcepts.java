@@ -19,11 +19,20 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.google.common.base.Function;
 
 /**
  * @since 4.5
  */
 public final class SnomedConcepts extends PageableCollectionResource<ISnomedConcept> {
+
+	public static final Function<SnomedConcepts, List<SnomedConceptDocument>> TO_DOCS = new Function<SnomedConcepts, List<SnomedConceptDocument>>() {
+		@Override
+		public List<SnomedConceptDocument> apply(SnomedConcepts input) {
+			return SnomedConceptDocument.fromConcepts(input);
+		}
+	};
 
 	public SnomedConcepts(int offset, int limit, int total) {
 		super(Collections.<ISnomedConcept>emptyList(), offset, limit, total);

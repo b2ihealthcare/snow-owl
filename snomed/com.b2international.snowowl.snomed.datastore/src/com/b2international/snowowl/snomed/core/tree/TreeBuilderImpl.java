@@ -19,12 +19,14 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.AlphaNumericComparator;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -32,12 +34,13 @@ import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.BaseSnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 
@@ -51,8 +54,6 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 	TreeBuilderImpl() {}
 	
 	abstract String getForm();
-	
-	abstract BaseSnomedClientTerminologyBrowser getTerminologyBrowser();
 	
 	@Override
 	public final TreeBuilder withTopLevelConcepts(final Collection<SnomedConceptDocument> topLevelConcepts) {
@@ -142,13 +143,28 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		allRequiredComponents.remove(null);
 		
 		// fetch required data for all unknown items
-		for (SnomedConceptDocument entry : getTerminologyBrowser().getComponents(allRequiredComponents)) {
+		for (SnomedConceptDocument entry : getComponents(branch, allRequiredComponents)) {
 			treeItemsById.put(entry.getId(), entry);
 		}
 		
 		return new TerminologyTree(treeItemsById, subTypeMap, superTypeMap);
 	}
 	
+	private Collection<SnomedConceptDocument> getComponents(String branch, Set<String> componentIds) {
+		if (CompareUtils.isEmpty(componentIds)) {
+			return Collections.emptySet();
+		}
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.setComponentIds(ImmutableSet.copyOf(componentIds))
+				.setLocales(getLocales())
+				.setExpand("pt(),parentIds(),ancestorIds()")
+				.build(branch)
+				.execute(getBus())
+				.then(SnomedConcepts.TO_DOCS)
+				.getSync();
+	}
+
 	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch) {
 		final ISnomedConcept root = SnomedRequests.prepareGetConcept()
 				.setComponentId(Concepts.ROOT_CONCEPT)

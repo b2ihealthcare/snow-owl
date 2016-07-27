@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.dsl.validation;
 
+import java.util.Collections;
+
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.dsl.escg.Concept;
 import com.b2international.snowowl.dsl.escg.EscgPackage;
 import com.b2international.snowowl.dsl.escg.NumericalAssignment;
@@ -28,13 +29,13 @@ import com.b2international.snowowl.dsl.escg.NumericalAssignmentGroup;
 import com.b2international.snowowl.dsl.escg.RefSet;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.Iterables;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Java validator to register custom validation rules to be checked.
@@ -49,7 +50,16 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 	public static final String INACTIVE_CONCEPT = "inactiveConcept";
 	public static final String INVALID_NUMERICAL_CONCEPT = "invalidNumericalConcept";
 	public static final String INVALID_INGREDIENT_CONCEPT = "invalidIngredientConcept";
+	
+	private final Provider<String> activeBranch;
+	private final Provider<IEventBus> bus;
 
+	@Inject
+	public ESCGJavaValidator(Provider<String> activeBranch, Provider<IEventBus> bus) {
+		this.activeBranch = activeBranch;
+		this.bus = bus;
+	}
+	
 	/**
 	 * Check if the concept id length is between 6 and 18.
 	 * 
@@ -99,15 +109,14 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final SnomedClientTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-		
-		if (null == terminologyBrowser) {
-			return;
-		}
-		
 		try {
 			
-			boolean conceptIdExists = terminologyBrowser.getConcept(concept.getId()) != null;
+			boolean conceptIdExists = SnomedRequests.prepareSearchConcept()
+					.setLimit(0)
+					.setComponentIds(Collections.singleton(concept.getId()))
+					.build(activeBranch.get())
+					.execute(bus.get())
+					.getSync().getTotal() > 0;
 
 			// Concept id is not valid if the concept id length is less then 6 or longer then 18 -> should't be existed at all -> don't show 2 error messages
 			if (concept.getId().length() < 6 || concept.getId().length() > 18) {
@@ -137,14 +146,19 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 		
 		try {
 			
-			boolean refSetExists = ApplicationContext.getServiceForClass(SnomedClientTerminologyBrowser.class).getConcept(refSet.getId()) != null;
-
+			boolean exists = SnomedRequests.prepareSearchConcept()
+					.setLimit(0)
+					.setComponentIds(Collections.singleton(refSet.getId()))
+					.build(activeBranch.get())
+					.execute(bus.get())
+					.getSync().getTotal() > 0;
+			
 			// Concept id is not valid if the concept id length is less then 6 or longer then 18 -> should't be existed at all -> don't show 2 error messages
 			if (refSet.getId().length() < 6 || refSet.getId().length() > 18) {
 				return;
 			}
 
-			if (refSetExists == false) {
+			if (!exists) {
 				error("Regular reference set with this ID does not exist in the database", EscgPackage.Literals.REF_SET__ID, NON_EXISTING_CONCEPT_ID);
 			}
 			
@@ -191,7 +205,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 				.setComponentId(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(activeBranch.get())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -220,7 +234,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final SnomedConceptDocument entry = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(concept.getId());
+		final ISnomedConcept entry = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(concept.getId())).build(activeBranch.get()).execute(bus.get()).getSync(), null);
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", EscgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}

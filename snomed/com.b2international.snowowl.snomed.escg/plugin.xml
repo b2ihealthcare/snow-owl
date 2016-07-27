@@ -22,16 +22,6 @@
      </representation>
   </extension>
   <extension
-        point="org.eclipse.core.runtime.adapters">
-     <factory
-           adaptableType="com.b2international.snowowl.dsl.escg.Concept"
-           class="com.b2international.snowowl.dsl.escg.factory.SnomedESCGConceptAdapterFactory">
-        <adapter
-              type="com.b2international.snowowl.core.api.IComponent">
-        </adapter>
-     </factory>
-  </extension>
-  <extension
         point="com.b2international.snowowl.core.bootstrapFragments">
      <bootstrapFragment
            class="com.b2international.snowowl.dsl.EscgBootstrap">

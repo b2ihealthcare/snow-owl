@@ -16,6 +16,7 @@
 package com.b2international.snowowl.dsl.validation;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +28,7 @@ import org.eclipse.xtext.validation.CheckType;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.tree.emf.EObjectWalker;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -41,27 +42,27 @@ import com.b2international.snowowl.dsl.scg.ScgPackage;
 import com.b2international.snowowl.dsl.util.ScgAttributeFinderVisitor;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.validator.MrcmConceptWidgetBeanValidator;
 import com.b2international.snowowl.snomed.mrcm.core.validator.WidgetBeanValidationDiagnostic;
-import com.b2international.snowowl.snomed.mrcm.core.widget.ClientWidgetBeanProviderFactory;
-import com.b2international.snowowl.snomed.mrcm.core.widget.IClientWidgetBeanProvider;
-import com.b2international.snowowl.snomed.mrcm.core.widget.IClientWidgetModelProvider;
+import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetBeanProvider;
+import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetModelProvider;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
  
 /**
  * Java validator to register custom validation rules to be checked.
@@ -74,7 +75,16 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 	public static final String NON_EXISTING_CONCEPT_ID = "nonexistentConcept";
 	public static final String NON_MATCHING_TERM = "nomMatchingTerm";
 	public static final String INACTIVE_CONCEPT = "inactiveConcept";
+	
+	private final Provider<String> branch;
+	private final Provider<IEventBus> bus;
 
+	@Inject
+	public SCGJavaValidator(Provider<String> branch, Provider<IEventBus> bus) {
+		this.branch = branch;
+		this.bus = bus;
+	}
+	
 	/**
 	 * Check if the concept id length is between 6 and 18.
 	 * @param concept
@@ -100,10 +110,8 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		if (concept.getId() == null)
 			return;
 		
-		SnomedClientTerminologyBrowser queryService = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
-
 		try {
-			IComponent<?> resolvedConcept = queryService.getConcept(concept.getId());
+			ISnomedConcept resolvedConcept = getConcept(concept.getId());
 
 			// Concept id is not valid if the concept id length is less then 6 or longer then 18 -> should't be existed at all -> don't show 2 error messages
 			if (concept.getId().length() < 6 || concept.getId().length() > 18) {
@@ -126,13 +134,14 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		SCGExpressionExtractor extractor = new SCGExpressionExtractor(expression);
 		NormalFormWrapper normalForm = new NormalFormWrapper(extractor.getFocusConceptIdList(), wrapRelationshipGroups(extractor.getGroupConcepts()));
 		
-		try (SnomedEditingContext editingContext = new SnomedEditingContext(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE))) {
+		IBranchPath branchPath = BranchPathUtils.createPath(branch.get());
+		try (SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
 			com.b2international.snowowl.snomed.Concept concept = editingContext.buildDraftConceptFromNormalForm(normalForm);
 			concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
-			IClientWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IClientWidgetModelProvider.class);
-			ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(extractor.getFocusConceptIdList(), null);
-			IClientWidgetBeanProvider widgetBeanProvider = new ClientWidgetBeanProviderFactory().createProvider(conceptWidgetModel, concept, true);
-			ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(concept.getId(), conceptWidgetModel, null, true, new NullProgressMonitor());
+			IWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IWidgetModelProvider.class);
+			ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(branchPath, extractor.getFocusConceptIdList(), null);
+			IWidgetBeanProvider widgetBeanProvider = ApplicationContext.getServiceForClass(IWidgetBeanProvider.class);
+			ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(branchPath, concept.getId(), conceptWidgetModel, null, true, false, new NullProgressMonitor());
 			IDiagnostic diagnostic = new MrcmConceptWidgetBeanValidator().validate(conceptWidgetBean);
 			Set<Attribute> markedAttributes = Sets.newHashSet();
 			for (IDiagnostic childDiagnostic : diagnostic.getChildren()) {
@@ -202,7 +211,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 				.setComponentId(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE).getPath())
+				.build(branch.get())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -236,10 +245,14 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 			return;
 		}
 		
-		final SnomedConceptDocument entry = ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(concept.getId());
+		final ISnomedConcept entry = getConcept(concept.getId());
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", ScgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}
+	}
+
+	private ISnomedConcept getConcept(String id) {
+		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(id)).build(branch.get()).execute(bus.get()).getSync(), null);
 	}
 
 }
