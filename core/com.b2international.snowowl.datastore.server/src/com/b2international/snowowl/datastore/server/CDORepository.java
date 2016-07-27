@@ -60,7 +60,6 @@ import com.b2international.snowowl.datastore.cdo.CDOContainer;
 import com.b2international.snowowl.datastore.cdo.CDOManagedItem;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
-import com.b2international.snowowl.datastore.server.cdo.TaskContextAwareRepositoryHandler;
 import com.google.common.base.Preconditions;
 
 /**
@@ -167,10 +166,7 @@ import com.google.common.base.Preconditions;
 
 	@Override
 	protected void doAfterActivate() throws Exception {
-
 		RepositoryInitializerManager.INSTANCE.getInitializer(getUuid()).initialize();
-		repository.addHandler(new TaskContextAwareRepositoryHandler(getUuid()));
-
 	}
 
 	@Override

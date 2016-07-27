@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +32,6 @@ import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.server.RepositoryNotFoundException;
-import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.session.remote.CDORemoteSessionManager;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager.BranchLoader;
@@ -67,7 +64,6 @@ import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.Authenticator;
 import com.b2international.snowowl.datastore.ClientProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.DatastoreActivator;
-import com.b2international.snowowl.datastore.PostStoreUpdateManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.delta.IBranchPointCalculationStrategy;
@@ -77,11 +73,8 @@ import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Abstract implementation of the {@link ICDOConnectionManager}.
@@ -428,43 +421,6 @@ import com.google.common.collect.Sets;
 		super.doActivate();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.CDOContainer#doAfterActivate()
-	 */
-	@Override
-	protected void doAfterActivate() throws Exception {
-
-		//register mappings
-		super.doAfterActivate();
-
-		final Collection<CDOSession> $ = Collections.unmodifiableCollection(Sets.newHashSet(Iterators.transform(iterator(), new Function<ICDOConnection, CDOSession>() {
-			@Override public CDOSession apply(final ICDOConnection connection) {
-				return connection.getSession();
-			}
-		})));
-
-		final PostStoreUpdateManager changeManager = new PostStoreUpdateManager($);
-
-		if (null == ApplicationContext.getInstance().getService(IPostStoreUpdateManager.class)) {
-
-			synchronized (IPostStoreUpdateManager.class) {
-
-				if (null == ApplicationContext.getInstance().getService(IPostStoreUpdateManager.class)) {
-
-					//register service if does not exist yet
-					ApplicationContext.getInstance().registerService(IPostStoreUpdateManager.class, changeManager);
-
-				}
-
-			}
-
-		}
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.CDOContainer#doDeactivate()
-	 */
 	@Override
 	protected void doDeactivate() throws Exception {
 
