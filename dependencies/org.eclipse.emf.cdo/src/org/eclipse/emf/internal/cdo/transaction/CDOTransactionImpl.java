@@ -1151,8 +1151,13 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
       // use the target revision as base revision and try to apply the delta on it
       if (ancestorRevision == null) {
     	ancestorRevision = targetRevision;
+      } else {
+        resolveElementProxies(ancestorRevision);
       }
-      
+
+      // to avoid PartialCollectionLoadingNotSupportedException when comparing revisions
+      resolveElementProxies(targetRevision);
+
       InternalCDORevision goalRevision = ancestorRevision.copy();
       goalRevision.setBranchPoint(this);
       if (!keepVersions)
@@ -1178,10 +1183,6 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
           featureDelta.apply(goalRevision);
         }
       }
-
-      // to avoid PartialCollectionLoadingNotSupportedException when comparing revisions
-      resolveElementProxies(goalRevision);
-      resolveElementProxies(targetRevision);
 
       InternalCDORevisionDelta targetGoalDelta = goalRevision.compare(targetRevision);
       targetGoalDelta.setTarget(null);
