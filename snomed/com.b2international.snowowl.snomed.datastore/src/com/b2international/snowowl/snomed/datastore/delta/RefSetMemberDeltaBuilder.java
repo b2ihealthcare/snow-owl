@@ -34,7 +34,6 @@ import com.b2international.commons.ChangeKind;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.Triple;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentIconIdProvider;
@@ -47,7 +46,6 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.delta.CompositeComponentDelta;
 import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
-import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -97,7 +95,7 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 	private String targetComponentRepositoryUuid;
 	private SnomedRefSetType refsetType;
 
-	public RefSetMemberDeltaBuilder(final String identifierConceptId, final String userId, final CDOID cdoId, final SnomedRefSetType refsetType, final short referencedComponentType, final short targetComponentType) {
+	public RefSetMemberDeltaBuilder(final IBranchPathMap branchPathMap, final String identifierConceptId, final CDOID cdoId, final SnomedRefSetType refsetType, final short referencedComponentType, final short targetComponentType) {
 		
 		this.refsetType = refsetType;
 		this.cdoId = Preconditions.checkNotNull(cdoId, "CDO ID argument cannot be null.");
@@ -122,7 +120,6 @@ public class RefSetMemberDeltaBuilder extends SnomedConceptDeltaBuilder {
 		
 		 targetComponentBranchPathSupplier = Suppliers.memoize(new Supplier<IBranchPath>() {
 				@Override public IBranchPath get() {
-					final IBranchPathMap branchPathMap = ApplicationContext.getInstance().getService(ITaskStateManager.class).getBranchPathMapConfiguration(userId, true);
 					return hasTarget ? branchPathMap.getBranchPath(targetComponentRepositoryUuid) : getBranchPath();
 				}
 			});

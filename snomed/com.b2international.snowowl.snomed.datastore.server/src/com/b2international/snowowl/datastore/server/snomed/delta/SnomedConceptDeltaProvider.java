@@ -49,6 +49,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.BranchPointUtils;
+import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils.CDOObjectToCDOIDAdjuster;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -100,22 +101,15 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedConceptDeltaProvider.class);
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.ComponentDeltaProvider#createComponentDeltaBuilder()
-	 */
 	@Override
 	protected IComponentDeltaBuilder<HierarchicalComponentDelta> createComponentDeltaBuilder() {
 		return new SnomedConceptDeltaBuilder();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.datastore.delta.ISnomedConceptDeltaProvider#getRefSetMemberDeltas(com.b2international.snowowl.core.api.IBranchPath, java.lang.String)
-	 */
 	@Override
-	public <D extends ComponentDelta> Collection<D> getRefSetMemberDeltas(final IBranchPath branchPath, final String identifierConceptId, final String userId) {
+	public <D extends ComponentDelta> Collection<D> getRefSetMemberDeltas(final IBranchPathMap branchPathMap, final String identifierConceptId) {
+		final IBranchPath branchPath = branchPathMap.getBranchPath(SnomedPackage.eINSTANCE);
 		
-		Preconditions.checkNotNull(userId, "userId");
 		final ICDOConnection connection = getConnection();
 		final CDOBranch taskBranch = connection.getBranch(branchPath);
 		
@@ -150,8 +144,8 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 					
 			
 					final RefSetMemberDeltaBuilder builder = new RefSetMemberDeltaBuilder(
+							branchPathMap,
 							identifierConceptId,
-							userId,
 							refSet.cdoID(), 
 							refSet.getType(), 
 							refSet.getReferencedComponentType(), 

@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.delta.ComponentDelta;
 import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
 import com.b2international.snowowl.datastore.delta.IComponentDeltaProvider;
@@ -33,12 +33,11 @@ public interface ISnomedConceptDeltaProvider extends IComponentDeltaProvider<Hie
 	/**
 	 * Returns a mapping between reference set member IDs and the changes of the corresponding components, which happened on the specified branch.
 	 * 
-	 * @param branchPath the branch path where the calculation is performed.
+	 * @param branchPathMap the branch path map where the calculation is performed.
 	 * @param identifierConceptId identifier concept ID of a reference set which changes has to be tracked.
-	 * @param userId user ID of the requester party.
 	 * @return a mapping between reference set member IDs and the corresponding changes on the branch.
 	 */
-	<D extends ComponentDelta> Collection<D> getRefSetMemberDeltas(final IBranchPath branchPath, final String  identifierConceptId, final String userId);
+	<D extends ComponentDelta> Collection<D> getRefSetMemberDeltas(final IBranchPathMap branchPathMap, final String  identifierConceptId);
 	
 	/**
 	 * Promotes the reference set member changes given as a collection of component deltas. The collection of component deltas could be from different branches.
