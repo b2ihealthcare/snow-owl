@@ -229,22 +229,6 @@ public class ApplicationContext {
 	}
 	
 	/**
-	 * Checks the availability of the registered services.
-	 * Having a <code>null</code> implementation is acceptable, if there is a listener registered for the same interface.
-	 * @return 
-	 */
-	public Collection<ServiceRegistryEntry<?>> checkServices() {
-		for (final ServiceRegistryEntry<?> entry : serviceMap.asMap().values()) {
-			
-			if (null == entry.implementation && entry.listeners.isEmpty()) {
-				throw new SnowowlRuntimeException("Service is missing for " + entry.serviceInterface.getSimpleName() + ".");
-			}
-		}
-		return serviceMap.asMap().values();
-		
-	}
-
-	/**
 	 * Checks the availability of the registered services strictly, which means
 	 * that <code>null</code> implementations are not acceptable.
 	 * 

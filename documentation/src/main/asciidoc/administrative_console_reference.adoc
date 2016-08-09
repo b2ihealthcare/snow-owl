@@ -539,18 +539,6 @@ Impersonate operation as: info@b2international.com
 
 == Diagnostics and maintenance
 
-=== Service registration check
-
-`snowowl checkservices` enumerates all registered services of the instance, and makes sure that there is a working 
-service implementation for all tooling components. An error will be reported if a service registration failed during startup.
-
---------------------------
-osgi> snowowl checkservices
-
-...
-Core services are registered properly and available for use.
---------------------------
-
 `snowowl listrepositories` prints all the repositories in the system.
 ....
 osgi> snowowl listrepositories

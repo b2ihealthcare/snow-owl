@@ -52,13 +52,11 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
 	private static final String LISTREPOSITORIES_COMMAND = "listrepositories";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
-	private static final String CHECKSERVICES_COMMAND = "checkservices";
 
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
-		buffer.append("\tsnowowl checkservices - Checks the core services presence\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system.\n");
 		buffer.append("\tsnowowl listbranches [repository] - prints all the branches in the system for a repository.\n");
@@ -78,11 +76,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	public void _snowowl(CommandInterpreter interpreter) throws InterruptedException {
 		String cmd = interpreter.nextArgument();
 		try {
-			if (CHECKSERVICES_COMMAND.equals(cmd)) {
-				checkServices(interpreter);
-				return;
-			}
-
 			if (DBCREATEINDEX_COMMAND.equals(cmd)) {
 				createDbIndex(interpreter);
 				return;
@@ -258,16 +251,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			indent = indent + DEFAULT_INDENT;
 		}
 		return indent;
-	}
-
-	public synchronized void checkServices(CommandInterpreter ci) {
-		ci.println("Checking core services...");
-		try {
-			ApplicationContext.getInstance().checkServices();
-			ci.println("Core services are registered properly and available for use.");
-		} catch (final Throwable t) {
-			ci.print("Error: " + t.getMessage());
-		}
 	}
 
 	private boolean isValidRepositoryName(String repositoryName, CommandInterpreter interpreter) {
