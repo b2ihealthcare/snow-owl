@@ -182,13 +182,6 @@
       </representation>
    </extension>
    <extension
-         point="com.b2international.snowowl.core.terminologyBrowserFactory">
-      <terminologyBrowserFactory
-            class="com.b2international.snowowl.snomed.datastore.services.SnomedClientTerminologyBrowserFactory"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </terminologyBrowserFactory>
-   </extension>
-   <extension
          point="com.b2international.snowowl.core.lookupService">
       <lookupService
             class="com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService"
@@ -309,38 +302,13 @@
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedTerminologyBrowserServiceConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowserServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.snomed.datastore.serviceconfig.SearchProfileManagerConfigJob"
             id="com.b2international.snowowl.snomed.datastore.serviceconfig.SearchProfileManagerConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.EscgQueryEvaluatorClientServiceConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.EscgQueryEvaluatorClientServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.validation.SnomedComponentValidationClientServiceConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.validation.SnomedComponentValidationClientServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.snomed.datastore.serviceconfig.ClientSnomedConceptDeltaProviderConfigJob"
             id="com.b2international.snowowl.snomed.datastore.serviceconfig.ClientSnomedConceptDeltaProviderConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.ClientSnomedRefSetDerivationServiceConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.ClientSnomedRefSetDerivationServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedStatedClientTerminologyBrowserConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.SnomedStatedClientTerminologyBrowserConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob
