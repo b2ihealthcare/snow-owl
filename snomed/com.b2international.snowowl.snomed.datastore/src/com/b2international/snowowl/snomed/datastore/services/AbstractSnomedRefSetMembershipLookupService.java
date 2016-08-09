@@ -345,7 +345,7 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 	}
 
 	/**
-	 * Returns with a collection of active data type {@link SnomedRefSetMemberIndexEntry reference set members} referencing the
+	 * Returns with a collection of active data type {@link SnomedConcreteDataTypeRefSetMemberIndexEntry reference set members} referencing the
 	 * given SNOMED CT concept.
 	 * @param conceptId the unique ID of the concept.
 	 * @return a collection of data type reference set members.
@@ -356,6 +356,21 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 						CONCEPT, 
 						conceptId);
 		//XXX we maximum 100 CDT is associated with a concept
+		return getIndexService().search(createFindByRefSetTypeQuery, 100);
+	}
+	
+	/**
+	 * Returns with a collection of active data type {@link SnomedConcreteDataTypeRefSetMemberIndexEntry reference set members} referencing the
+	 * given SNOMED CT relationship.
+	 * @param relationshipId
+	 * @return a collection of data type reference set members.
+	 */
+	public Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> getActiveRelationshipDataTypes(final String relationshipId) {
+		final IIndexQueryAdapter<SnomedConcreteDataTypeRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
+				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindActivesByReferencedComponentIdQuery(
+						RELATIONSHIP, 
+						relationshipId);
+		//XXX return maximum 100 concrete domains
 		return getIndexService().search(createFindByRefSetTypeQuery, 100);
 	}
 	
