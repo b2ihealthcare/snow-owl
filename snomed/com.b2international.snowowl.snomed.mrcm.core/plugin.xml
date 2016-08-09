@@ -7,26 +7,6 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.widget.ClientWidgetModelProviderConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.widget.ClientWidgetModelProviderConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.widget.ClientWidgetBeanProviderConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.widget.ClientWidgetBeanProviderConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.validator.ClientWidgetBeanValidatorConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.validator.ClientWidgetBeanValidatorConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.concepteditor.IndexClientSnomedConceptEditorServiceConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.concepteditor.IndexClientSnomedConceptEditorServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
             id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
