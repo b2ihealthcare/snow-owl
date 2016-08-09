@@ -773,4 +773,46 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertComponentHasProperty(childBranch, SnomedComponentType.DESCRIPTION, symbolicNameMap.get("D1"), "caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name());
 	}
 	
+	@Test
+	public void rebaseStaleBranchWithDeleteOnChangedContent() throws Exception {
+		// create changes on test branch
+		assertRelationshipCreated(testBranchPath, "R1");
+		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
+		
+		// create child branch of test branch
+		final IBranchPath childBranch = BranchPathUtils.createPath(testBranchPath, UUID.randomUUID().toString());
+		givenBranchWithPath(childBranch);
+		
+		// modify content on task which is already deleted on parent
+		final Map<?, ?> changesOnTestDescription = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("commitComment", "Changed case significance on test")
+				.build();
+		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnTestDescription);
+		
+		final Map<?, ?> changesOnTestRelationship = ImmutableMap.builder()
+				.put("group", 99)
+				.put("commitComment", "Changed group on test")
+				.build();
+		assertRelationshipCanBeUpdated(testBranchPath, "R1", changesOnTestRelationship);
+		
+		// delete changed content on task
+		assertDescriptionCanBeDeleted(childBranch, "D1");
+		
+		// make change on test's parent to rebase testBranchPath
+		assertRelationshipCreated(testBranchPath.getParent(), "R2");
+		
+		// rebase project
+		assertBranchCanBeRebased(testBranchPath, "Rebase test branch");
+		assertRelationshipExists(testBranchPath, "R1");
+		assertDescriptionExists(testBranchPath, "D1");
+
+		// child should be STALE at this point, try to rebase it, it should pass and R1 and D1 should still exist with changed content
+		assertBranchCanBeRebased(childBranch, "Rebase child with deletion of changed components should be possible");
+		
+		// after the rebase verify that the two components have the modified values
+		assertComponentHasProperty(childBranch, SnomedComponentType.RELATIONSHIP, symbolicNameMap.get("R1"), "group", 99);
+		assertDescriptionNotExists(childBranch, "D1");
+	}
+	
 }
