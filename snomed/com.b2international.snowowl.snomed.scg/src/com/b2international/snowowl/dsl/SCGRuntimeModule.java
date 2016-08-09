@@ -15,9 +15,31 @@
  */
 package com.b2international.snowowl.dsl;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.inject.Provider;
+
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 public class SCGRuntimeModule extends com.b2international.snowowl.dsl.AbstractSCGRuntimeModule {
 
+	public Provider<IEventBus> provideIEventBus() {
+		return new Provider<IEventBus>() {
+			@Override
+			public IEventBus get() {
+				return ApplicationContext.getServiceForClass(IEventBus.class);
+			}
+		};
+	}
+	
+	public Provider<String> provideActiveBranch() {
+		return new Provider<String>() {
+			@Override
+			public String get() {
+				throw new UnsupportedOperationException("This class requires active branch scope");
+			}
+		};
+	}
+	
 }
