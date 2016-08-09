@@ -2,12 +2,4 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="codeSystemVersionProvider" name="Code System Version Provider" schema="schema/codeSystemVersionProvider.exsd"/>
-   <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.terminologyregistry.core.serviceconfig.TerminologyRegistryIndexServiceConfigJob"
-            id="com.b2international.snowowl.terminologyregistry.core.serviceconfig.TerminologyRegistryIndexServiceConfigJob"
-            terminologyId="UNSPECIFIED"><!-- delightfully meta -->
-      </serviceConfigJob>
-   </extension>
 </plugin>
