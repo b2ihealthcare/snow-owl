@@ -54,6 +54,8 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
+import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -130,30 +132,36 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	
 	@Override
 	public void process(final ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
-		this.commitChangeSet = checkNotNull(commitChangeSet, "CDO commit change set argument cannot be null.");
-		for (final CDOObject newObject : commitChangeSet.getNewComponents()) {
-			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(newObject.eClass())) {
-				newCodeSystems.add((CodeSystem) newObject);
-			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(newObject.eClass())) {
-				newCodeSystemVersions.add((CodeSystemVersion) newObject);
+		final Timer indexTimer = MetricsThreadLocal.get().timer("indexing");
+		try {
+			indexTimer.start();
+			this.commitChangeSet = checkNotNull(commitChangeSet, "CDO commit change set argument cannot be null.");
+			for (final CDOObject newObject : commitChangeSet.getNewComponents()) {
+				if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(newObject.eClass())) {
+					newCodeSystems.add((CodeSystem) newObject);
+				} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(newObject.eClass())) {
+					newCodeSystemVersions.add((CodeSystemVersion) newObject);
+				}
 			}
+			
+			for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
+				if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(dirtyObject.eClass())) {
+					dirtyCodeSystems.add((CodeSystem) dirtyObject);
+				} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(dirtyObject.eClass())) {
+					checkAndSetCodeSystemLastUpdateTime(dirtyObject);
+				}
+			}
+			
+			getIndex().read(branchPath.getPath(), new RevisionIndexRead<Void>() {
+				@Override
+				public Void execute(RevisionSearcher index) throws IOException {
+					updateDocuments(index);
+					return null;
+				}
+			});
+		} finally {
+			indexTimer.stop();
 		}
-		
-		for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
-			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(dirtyObject.eClass())) {
-				dirtyCodeSystems.add((CodeSystem) dirtyObject);
-			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(dirtyObject.eClass())) {
-				checkAndSetCodeSystemLastUpdateTime(dirtyObject);
-			}
-		}
-		
-		getIndex().read(branchPath.getPath(), new RevisionIndexRead<Void>() {
-			@Override
-			public Void execute(RevisionSearcher index) throws IOException {
-				updateDocuments(index);
-				return null;
-			}
-		});
 	}
 
 	@Override
@@ -163,31 +171,37 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	
 	@Override
 	public void commit() throws SnowowlServiceException {
-		checkState(commitChangeSet.getTimestamp() > 0, "Commit timestamp should be greater than zero");
-		getIndex().write(branchPath.getPath(), commitChangeSet.getTimestamp(), new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(RevisionWriter writer) throws IOException {
-				LOGGER.info("Persisting changes...");
-				
-				for (Entry<String, Object> doc : rawMappings.entrySet()) {
-					writer.writer().put(doc.getKey(), doc.getValue());
-				}
-				
-				// execute revision updates
-				for (Class<? extends Revision> type : ImmutableMultimap.copyOf(deletions).keySet()) {
-					writer.remove(type, Sets.newHashSet(deletions.get(type)));
-				}
-				
-				for (Entry<Long, Revision> doc : revisionMappings.entrySet()) {
-					if (!deletions.containsValue(doc.getKey())) {
-						writer.put(doc.getKey(), doc.getValue());
+		final Timer indexTimer = MetricsThreadLocal.get().timer("indexing");
+		try {
+			indexTimer.start();
+			checkState(commitChangeSet.getTimestamp() > 0, "Commit timestamp should be greater than zero");
+			getIndex().write(branchPath.getPath(), commitChangeSet.getTimestamp(), new RevisionIndexWrite<Void>() {
+				@Override
+				public Void execute(RevisionWriter writer) throws IOException {
+					LOGGER.info("Persisting changes...");
+					
+					for (Entry<String, Object> doc : rawMappings.entrySet()) {
+						writer.writer().put(doc.getKey(), doc.getValue());
 					}
+					
+					// execute revision updates
+					for (Class<? extends Revision> type : ImmutableMultimap.copyOf(deletions).keySet()) {
+						writer.remove(type, Sets.newHashSet(deletions.get(type)));
+					}
+					
+					for (Entry<Long, Revision> doc : revisionMappings.entrySet()) {
+						if (!deletions.containsValue(doc.getKey())) {
+							writer.put(doc.getKey(), doc.getValue());
+						}
+					}
+					writer.commit();
+					LOGGER.info("Changes have been successfully persisted.");
+					return null;
 				}
-				writer.commit();
-				LOGGER.info("Changes have been successfully persisted.");
-				return null;
-			}
-		});
+			});
+		} finally {
+			indexTimer.stop();
+		}
 	}
 
 	private RevisionIndex getIndex() {
