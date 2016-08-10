@@ -28,12 +28,16 @@ public class DelegatingBranchContext extends DelegatingRepositoryContext impleme
 
 	@Override
 	public Branch branch() {
-		return getContext().branch();
+		return getDelegate().branch();
 	}
 	
 	@Override
-	protected BranchContext getContext() {
-		return (BranchContext) super.getContext();
+	protected BranchContext getDelegate() {
+		return (BranchContext) super.getDelegate();
+	}
+	
+	public static DelegatingBranchContext.Builder<DelegatingBranchContext> basedOn(BranchContext context) {
+		return new DelegatingServiceProvider.Builder<>(new DelegatingBranchContext(context));
 	}
 
 }

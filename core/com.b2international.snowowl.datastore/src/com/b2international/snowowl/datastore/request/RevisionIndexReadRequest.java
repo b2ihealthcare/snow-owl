@@ -50,7 +50,11 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 			@Override
 			public B execute(RevisionSearcher index) throws IOException {
 				try {
-					return wrapAndExecute(context, index);
+					return next(DelegatingBranchContext
+							.basedOn(context)
+							.bind(Searcher.class, index.searcher())
+							.bind(RevisionSearcher.class, index)
+							.build());
 				} catch (QueryParseException e) {
 					throw new IllegalQueryParameterException(e.getMessage());
 				}
@@ -58,20 +62,4 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 		});
 	}
 	
-	private B wrapAndExecute(final BranchContext context, final RevisionSearcher index) {
-		final BranchContext decoratedContext = new DelegatingBranchContext(context) {
-			@Override
-			public <T> T service(Class<T> type) {
-				if (type.isAssignableFrom(Searcher.class)) {
-					return type.cast(index.searcher());
-				} else if (type.isAssignableFrom(RevisionSearcher.class)) {
-					return type.cast(index);
-				} else {
-					return super.service(type);
-				}
-			}
-		};
-
-		return next(decoratedContext);
-	}
 }

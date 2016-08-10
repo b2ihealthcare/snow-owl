@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.CommitInfo;
@@ -37,10 +38,12 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 	public CommitInfo execute(BranchContext context) {
 		final ISnomedIdentifierService identifierService = context.service(ISnomedIdentifierService.class);
 		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
-		final IdContext idContext = new IdContext(context, snomedIdentifiers);
 
 		try {
-			final CommitInfo commitInfo = next(idContext);
+			final CommitInfo commitInfo = next(DelegatingBranchContext
+					.basedOn(context)
+					.bind(SnomedIdentifiers.class, snomedIdentifiers)
+					.build());
 
 			snomedIdentifiers.commit();
 			return commitInfo;
