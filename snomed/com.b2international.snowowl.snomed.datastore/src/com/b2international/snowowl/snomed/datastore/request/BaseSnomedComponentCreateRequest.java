@@ -19,6 +19,8 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.metrics.Metrics;
+import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -66,34 +68,39 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	}
 
 	protected final void ensureUniqueId(String type, TransactionContext context) {
-		
-		if (getIdGenerationStrategy() instanceof RegisteringIdStrategy) {
-			final String componentId = getIdGenerationStrategy().generate(context);
-			
-			try {
-				checkComponentExists(context, componentId);
-				throw new AlreadyExistsException(type, componentId);
-			} catch (ComponentNotFoundException e) {
-				setIdGenerationStrategy(new ConstantIdStrategy(componentId));
-				return;
-			}
-		}
-		
-		if (getIdGenerationStrategy() instanceof ReservingIdStrategy) {
-			String componentId = null;
-			
-			for (int i = 0; i < ID_GENERATION_ATTEMPTS; i++) {
-				componentId = getIdGenerationStrategy().generate(context);
+		final Timer idGenerationTimer = context.service(Metrics.class).timer("idGeneration");
+		try {
+			idGenerationTimer.start();
+			if (getIdGenerationStrategy() instanceof RegisteringIdStrategy) {
+				final String componentId = getIdGenerationStrategy().generate(context);
 				
 				try {
 					checkComponentExists(context, componentId);
+					throw new AlreadyExistsException(type, componentId);
 				} catch (ComponentNotFoundException e) {
-					setIdGenerationStrategy(new RegisteringIdStrategy(componentId));
+					setIdGenerationStrategy(new ConstantIdStrategy(componentId));
 					return;
 				}
 			}
 			
-			throw new BadRequestException("Couldn't generate unique identifier for %s after %d attempts.", type, ID_GENERATION_ATTEMPTS); 
+			if (getIdGenerationStrategy() instanceof ReservingIdStrategy) {
+				String componentId = null;
+				
+				for (int i = 0; i < ID_GENERATION_ATTEMPTS; i++) {
+					componentId = getIdGenerationStrategy().generate(context);
+					
+					try {
+						checkComponentExists(context, componentId);
+					} catch (ComponentNotFoundException e) {
+						setIdGenerationStrategy(new RegisteringIdStrategy(componentId));
+						return;
+					}
+				}
+				
+				throw new BadRequestException("Couldn't generate unique identifier for %s after %d attempts.", type, ID_GENERATION_ATTEMPTS); 
+			}
+		} finally {
+			idGenerationTimer.stop();
 		}
 	}
 
