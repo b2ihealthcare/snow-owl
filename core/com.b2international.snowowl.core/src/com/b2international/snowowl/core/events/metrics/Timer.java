@@ -18,15 +18,26 @@ package com.b2international.snowowl.core.events.metrics;
 /**
  * @since 5.0
  */
-public interface Metrics {
+public interface Timer extends Metric {
 
-	Metrics NOOP = new Metrics() {
+	Timer NOOP = new Timer() {
 		@Override
-		public Timer timer(String name) {
-			return Timer.NOOP;
+		public void start() {
+		}
+
+		@Override
+		public void stop() {
 		}
 	};
 
-	Timer timer(String name);
+	/**
+	 * Starts the timer.
+	 */
+	void start();
+
+	/**
+	 * Stops the timer.
+	 */
+	void stop();
 	
 }

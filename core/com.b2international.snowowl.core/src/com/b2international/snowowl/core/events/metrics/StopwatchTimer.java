@@ -15,25 +15,28 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
+import com.google.common.base.Stopwatch;
 
 /**
- * Class capable of decorating request's in {@link MeteredRequest} with meters selected for the given request. Currently only one meter is registered
- * on the incoming {@link Request}, the {@link StopwatchResponseTimeMeter}.
- * 
  * @since 4.5
  */
-public final class RequestMetrics implements Metrics {
+public final class StopwatchTimer implements Timer {
 
-	private final static Logger LOG = LoggerFactory.getLogger("request");
+	private final Stopwatch watch = Stopwatch.createUnstarted();
+	
+	@Override
+	public void start() {
+		watch.start();
+	}
 
 	@Override
-	public <C extends ServiceProvider, R> Request<C, R> measure(Request<C, R> req) {
-		return new MeteredRequest<>(new StopwatchResponseTimeMeter(LOG), req);
+	public void stop() {
+		watch.stop();
+	}
+	
+	@Override
+	public String toString() {
+		return watch.toString();
 	}
 
 }

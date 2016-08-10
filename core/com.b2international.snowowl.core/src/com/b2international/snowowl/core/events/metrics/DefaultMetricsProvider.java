@@ -15,35 +15,20 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.slf4j.Logger;
-
-import com.google.common.base.Stopwatch;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.Request;
 
 /**
+ * Class capable of decorating request's in {@link MeteredRequest} which offers {@link Metric}s for the entire execution of the request. By default it
+ * registers a single {@link Timer} to measure the execution of the request.
+ * 
  * @since 4.5
  */
-public final class StopwatchResponseTimeMeter implements RequestMeter {
-
-	private final Stopwatch watch;
-	private final Logger log;
-	
-	public StopwatchResponseTimeMeter(Logger log) {
-		this.log = checkNotNull(log, "log");
-		this.watch = Stopwatch.createUnstarted();
-	}
-	
-	@Override
-	public void start(String message) {
-		log.trace("Executing {}", message);
-		watch.start();
-	}
+public final class DefaultMetricsProvider implements MetricsProvider {
 
 	@Override
-	public void stop(String message) {
-		watch.stop();
-		log.info("{} - {}", message, watch);
+	public <R> Request<ServiceProvider, R> measure(Request<ServiceProvider, R> req) {
+		return new MeteredRequest<>(new DefaultMetrics(), req);
 	}
 
 }

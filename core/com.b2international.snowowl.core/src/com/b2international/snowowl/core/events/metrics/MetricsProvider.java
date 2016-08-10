@@ -15,18 +15,21 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.Request;
+
 /**
  * @since 5.0
  */
-public interface Metrics {
+public interface MetricsProvider {
 
-	Metrics NOOP = new Metrics() {
+	<R> Request<ServiceProvider, R> measure(Request<ServiceProvider, R> req);
+	
+	MetricsProvider NOOP = new MetricsProvider() {
 		@Override
-		public Timer timer(String name) {
-			return Timer.NOOP;
+		public <R> Request<ServiceProvider, R> measure(Request<ServiceProvider, R> req) {
+			return new MeteredRequest<>(Metrics.NOOP, req);
 		}
 	};
-
-	Timer timer(String name);
 	
 }

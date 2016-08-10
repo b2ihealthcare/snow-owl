@@ -23,9 +23,10 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.events.metrics.DefaultMetricsProvider;
 import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.MetricsConfiguration;
-import com.b2international.snowowl.core.events.metrics.RequestMetrics;
+import com.b2international.snowowl.core.events.metrics.MetricsProvider;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.login.LoginConfiguration;
 import com.b2international.snowowl.core.markers.MarkerManager;
@@ -55,10 +56,11 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 		env.services().registerService(CoreTerminologyBroker.class, CoreTerminologyBroker.getInstance());
 		
 		if (configuration.getModuleConfig(MetricsConfiguration.class).isEnabled()) {
-			env.services().registerService(Metrics.class, new RequestMetrics());
+			env.services().registerService(MetricsProvider.class, new DefaultMetricsProvider());
 		} else {
-			env.services().registerService(Metrics.class, Metrics.NOOP);
+			env.services().registerService(MetricsProvider.class, MetricsProvider.NOOP);
 		}
+		env.services().registerService(Metrics.class, Metrics.NOOP);
 		
 		// TODO support initial values for feature toggles
 		env.services().registerService(FeatureToggles.class, new FeatureToggles());

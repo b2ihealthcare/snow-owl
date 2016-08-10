@@ -17,29 +17,39 @@ package com.b2international.snowowl.core.events.metrics;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public final class MeteredRequest<C extends ServiceProvider, R> extends DelegatingRequest<C, C, R> {
+public final class MeteredRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
 
-	private final RequestMeter meter;
+	private static final Logger LOG = LoggerFactory.getLogger("request");
+	private final Metrics metrics;
 
-	public MeteredRequest(RequestMeter meter, Request<C, R> next) {
+	MeteredRequest(Metrics metrics, Request<ServiceProvider, R> next) {
 		super(next);
-		this.meter = checkNotNull(meter, "meter");
+		this.metrics = checkNotNull(metrics, "metrics");
 	}
-
+	
 	@Override
-	public R execute(C context) {
+	public R execute(ServiceProvider context) {
+		final Timer responseTimer = metrics.timer("responseTime");
+		responseTimer.start();
 		try {
-			meter.start(getMessage());
-			return next(context);
+			return next(DelegatingServiceProvider
+					.basedOn(context)
+					.bind(Metrics.class, metrics)
+					.build());
 		} finally {
-			meter.stop(getMessage());
+			responseTimer.stop();
+			LOG.info(getMessage());
 		}
 	}
 
@@ -48,6 +58,15 @@ public final class MeteredRequest<C extends ServiceProvider, R> extends Delegati
 			return toString();
 		} catch (Throwable e) {
 			return "Unable to get request description: " + e.getMessage();
+		}
+	}
+	
+	@Override
+	public String toString() {
+		if (metrics == Metrics.NOOP) {
+			return super.toString();
+		} else {
+			return String.format("{req:%s, metrics:%s}", super.toString(), metrics);
 		}
 	}
 

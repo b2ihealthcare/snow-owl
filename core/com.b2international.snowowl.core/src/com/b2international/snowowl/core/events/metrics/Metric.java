@@ -22,22 +22,6 @@ import com.b2international.snowowl.core.events.Request;
  * 
  * @since 4.5
  */
-public interface RequestMeter {
-
-	/**
-	 * Marks the start of a request.
-	 * 
-	 * @param description
-	 *            - the description of the request
-	 */
-	void start(String description);
-
-	/**
-	 * Marks the end of a request.
-	 * 
-	 * @param description
-	 *            - the description of the request
-	 */
-	void stop(String description);
+public interface Metric {
 
 }
