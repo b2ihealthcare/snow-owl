@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
+import java.util.concurrent.TimeUnit;
+
 import com.google.common.base.Stopwatch;
 
 /**
@@ -36,7 +38,7 @@ public final class StopwatchTimer implements Timer {
 	
 	@Override
 	public String toString() {
-		return watch.toString();
+		return Long.toString(watch.elapsed(TimeUnit.MILLISECONDS));
 	}
 
 }

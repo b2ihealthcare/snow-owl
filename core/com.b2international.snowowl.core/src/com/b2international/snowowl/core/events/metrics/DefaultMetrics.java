@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,11 +45,16 @@ public final class DefaultMetrics implements Metrics {
 
 	private String toJson(Map<String, Metric> metrics) {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("{");
-		for (String name : metrics.keySet()) {
-			builder.append(name).append(":").append(metrics.get(name));
+		builder.append('{');
+		final Iterator<String> it = metrics.keySet().iterator();
+		while (it.hasNext()) {
+			final String name = it.next();
+			builder.append(name).append(':').append(metrics.get(name));
+			if (it.hasNext()) {
+				builder.append(',').append(' ');
+			}
 		}
-		builder.append("}");
+		builder.append('}');
 		return builder.toString();
 	}
 	
