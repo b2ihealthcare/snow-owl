@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.request;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -29,9 +28,7 @@ import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.core.exceptions.ApiException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.base.Strings;
 
 /**
@@ -45,7 +42,6 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	@JsonProperty
 	private final String userId;
 	
-	@JsonUnwrapped
 	private final Request<TransactionContext, ?> next;
 
 	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next) {
@@ -101,12 +97,6 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	@Override
 	protected Class<CommitInfo> getReturnType() {
 		return CommitInfo.class;
-	}
-	
-	@JsonIgnore
-	@Override
-	public String getType() {
-		return super.getType();
 	}
 	
 }

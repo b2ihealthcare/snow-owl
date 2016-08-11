@@ -68,9 +68,4 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 	@JsonIgnore
 	protected abstract Class<B> getReturnType();
 	
-	@Override
-	public final String toString() {
-		return getClass().getSimpleName();
-	}
-	
 }
