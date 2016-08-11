@@ -40,7 +40,7 @@ final class SnomedConceptGetRequest extends RevisionGetRequest<ISnomedConcept> {
 	}
 	
 	@Override
-	protected Class<? extends RevisionDocument> getType() {
+	protected Class<? extends RevisionDocument> getRevisionType() {
 		return SnomedConceptDocument.class;
 	}
 	

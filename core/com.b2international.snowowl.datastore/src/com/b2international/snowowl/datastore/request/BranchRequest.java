@@ -30,12 +30,14 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
  */
 public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext, BranchContext, B> {
 
+	@JsonProperty
 	private final String branchPath;
 	
 	BranchRequest(String branchPath, Request<BranchContext, B> next) {
@@ -68,9 +70,4 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 		return branch;
 	}
 	
-	@Override
-	public String toString() {
-		return String.format("{branch:'%s', request:%s", branchPath, next());
-	}
-
 }

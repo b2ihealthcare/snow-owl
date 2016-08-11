@@ -22,12 +22,14 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
  */
 public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvider, RepositoryContext, B> {
 
+	@JsonProperty
 	private final String repositoryId;
 
 	RepositoryRequest(String repositoryId, Request<RepositoryContext, B> next) {
@@ -43,11 +45,6 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	@Override
 	protected String getAddress() {
 		return "/"+repositoryId;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("{repositoryId:%s, request:%s}", repositoryId, next());
 	}
 	
 }

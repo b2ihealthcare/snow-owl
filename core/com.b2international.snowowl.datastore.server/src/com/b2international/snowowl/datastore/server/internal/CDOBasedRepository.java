@@ -120,6 +120,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		initializeRequestSupport(numberOfWorkers);
 		reindex();
 		bind(Repository.class, this);
+		bind(ObjectMapper.class, mapper);
 	}
 
 	@Override

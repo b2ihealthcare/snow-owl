@@ -40,7 +40,7 @@ final class SnomedRelationshipGetRequest extends RevisionGetRequest<ISnomedRelat
 	}
 	
 	@Override
-	protected Class<? extends RevisionDocument> getType() {
+	protected Class<? extends RevisionDocument> getRevisionType() {
 		return SnomedRelationshipIndexEntry.class;
 	}
 	

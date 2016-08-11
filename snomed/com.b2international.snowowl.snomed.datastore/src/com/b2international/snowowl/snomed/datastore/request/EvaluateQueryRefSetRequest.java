@@ -28,6 +28,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEv
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -37,6 +38,7 @@ import com.google.common.collect.FluentIterable;
 public final class EvaluateQueryRefSetRequest extends BaseResourceRequest<BranchContext, QueryRefSetMemberEvaluations> {
 
 	@NotNull
+	@JsonProperty
 	private final String referenceSetId;
 	
 	EvaluateQueryRefSetRequest(String referenceSetId) {
@@ -79,13 +81,6 @@ public final class EvaluateQueryRefSetRequest extends BaseResourceRequest<Branch
 				.build()
 				.execute(context)
 				.getItems();
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("{type:'%s', referenceSetId:'%s'}", 
-				getClass().getSimpleName(), 
-				referenceSetId);
 	}
 	
 }

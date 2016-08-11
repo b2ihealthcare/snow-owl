@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.6
@@ -32,9 +33,13 @@ public abstract class AbstractBranchChangeRequest<R> extends BaseRequest<Reposit
 
 	private final Class<R> responseClass;
 	
+	@JsonProperty
 	protected final String sourcePath;
+	@JsonProperty
 	protected final String targetPath;
+	@JsonProperty
 	protected final String commitMessage;
+	@JsonProperty
 	protected final String reviewId;
 
 	protected AbstractBranchChangeRequest(Class<R> responseClass, String sourcePath, String targetPath, String commitMessage, String reviewId) {
@@ -83,13 +88,4 @@ public abstract class AbstractBranchChangeRequest<R> extends BaseRequest<Reposit
 		return responseClass;
 	}
 
-	@Override
-	public String toString() {
-		return String.format("{type:%s, source:%s, target:%s, commitMessage:%s, reviewId:%s}", 
-				getClass().getSimpleName(),
-				sourcePath,
-				targetPath,
-				commitMessage,
-				reviewId);
-	}
 }

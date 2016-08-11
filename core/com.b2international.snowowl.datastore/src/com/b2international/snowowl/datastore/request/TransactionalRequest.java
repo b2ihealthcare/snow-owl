@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.request;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -28,6 +29,9 @@ import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.core.exceptions.ApiException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.base.Strings;
 
 /**
@@ -35,8 +39,13 @@ import com.google.common.base.Strings;
  */
 public final class TransactionalRequest extends BaseRequest<BranchContext, CommitInfo> {
 
+	@JsonProperty
 	private final String commitComment;
+	
+	@JsonProperty
 	private final String userId;
+	
+	@JsonUnwrapped
 	private final Request<TransactionContext, ?> next;
 
 	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next) {
@@ -59,8 +68,11 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	}
 
 	private CommitInfo commit(final TransactionContext context, final Object body) {
-		MetricsThreadLocal.set(context.service(Metrics.class));
+		final Metrics metrics = context.service(Metrics.class);
+		final Timer commitTimer = metrics.timer("commit");
+		MetricsThreadLocal.set(metrics);
 		try {
+			commitTimer.start();
 			// TODO consider moving preCommit into commit(userId, commitComment)
 			context.preCommit();
 			
@@ -71,6 +83,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 			final long commitTimestamp = context.commit(userId, commitComment);
 			return new CommitInfo(commitTimestamp, body);
 		} finally {
+			commitTimer.stop();
 			MetricsThreadLocal.release();
 		}
 	}
@@ -90,9 +103,10 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 		return CommitInfo.class;
 	}
 	
+	@JsonIgnore
 	@Override
-	public String toString() {
-		return String.format("{userId:'%s', commitComment:'%s', request:%s}", userId, commitComment, next);
+	public String getType() {
+		return super.getType();
 	}
 	
 }
