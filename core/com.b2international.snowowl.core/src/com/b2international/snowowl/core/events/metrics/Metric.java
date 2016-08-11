@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package com.b2international.snowowl.core.events.metrics;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * Measures a value during the execution of a {@link Request}.
+ * Measures a single value during the execution of a {@link Request}.
  * 
- * @since 4.5
+ * @since 5.0
  */
-public interface Metric {
+public interface Metric<T> {
 
+	T getValue();
+	
 }

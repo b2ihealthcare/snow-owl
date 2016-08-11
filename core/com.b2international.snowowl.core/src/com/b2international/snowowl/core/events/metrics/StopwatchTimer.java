@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,20 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.base.Stopwatch;
 
 /**
- * @since 4.5
+ * @since 5.0
  */
 public final class StopwatchTimer implements Timer {
 
 	private final Stopwatch watch = Stopwatch.createUnstarted();
+	private final TimeUnit unit;
+	
+	StopwatchTimer() {
+		this(TimeUnit.MILLISECONDS);
+	}
+	
+	StopwatchTimer(TimeUnit unit) {
+		this.unit = unit;
+	}
 	
 	@Override
 	public void start() {
@@ -37,8 +46,8 @@ public final class StopwatchTimer implements Timer {
 	}
 	
 	@Override
-	public String toString() {
-		return Long.toString(watch.elapsed(TimeUnit.MILLISECONDS));
+	public Long getValue() {
+		return watch.elapsed(unit);
 	}
 
 }

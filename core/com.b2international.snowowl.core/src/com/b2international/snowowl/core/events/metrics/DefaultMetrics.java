@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,47 +15,41 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.google.common.collect.MapMaker;
 
 /**
- * @since 4.5
+ * @since 5.0
  */
 public final class DefaultMetrics implements Metrics {
 
-	private final ConcurrentMap<String, Metric> metrics = new MapMaker().makeMap();
+	private final ConcurrentMap<String, Metric<?>> metrics = new MapMaker().makeMap();
 	
 	@Override
 	public Timer timer(String name) {
 		return register(name, new StopwatchTimer());
 	}
 
-	private <T extends Metric> T register(String name, T metric) {
+	private <T extends Metric<C>, C> T register(String name, T metric) {
 		final T alreadyRegistered = (T) metrics.putIfAbsent(name, metric);
 		return alreadyRegistered == null ? metric : alreadyRegistered;
 	}
-	
-	@Override
-	public String toString() {
-		return toJson(metrics);
-	}
 
-	private String toJson(Map<String, Metric> metrics) {
-		final StringBuilder builder = new StringBuilder();
-		builder.append('{');
+	@JsonAnyGetter
+	public Map<String, Object> getMeasuredValues() {
+		final Map<String, Object> measuredValues = newHashMapWithExpectedSize(metrics.keySet().size());
 		final Iterator<String> it = metrics.keySet().iterator();
 		while (it.hasNext()) {
 			final String name = it.next();
-			builder.append(name).append(':').append(metrics.get(name));
-			if (it.hasNext()) {
-				builder.append(',').append(' ');
-			}
+			measuredValues.put(name, metrics.get(name).getValue());
 		}
-		builder.append('}');
-		return builder.toString();
+		return measuredValues;
 	}
-	
+
 }

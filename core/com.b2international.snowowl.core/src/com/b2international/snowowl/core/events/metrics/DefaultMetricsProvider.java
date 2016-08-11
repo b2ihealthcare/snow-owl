@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.events.Request;
  * Class capable of decorating request's in {@link MeteredRequest} which offers {@link Metric}s for the entire execution of the request. By default it
  * registers a single {@link Timer} to measure the execution of the request.
  * 
- * @since 4.5
+ * @since 5.0
  */
 public final class DefaultMetricsProvider implements MetricsProvider {
 

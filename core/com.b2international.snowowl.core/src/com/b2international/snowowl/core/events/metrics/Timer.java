@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.events.metrics;
 /**
  * @since 5.0
  */
-public interface Timer extends Metric {
+public interface Timer extends Metric<Long> {
 
 	Timer NOOP = new Timer() {
 		@Override
@@ -27,6 +27,11 @@ public interface Timer extends Metric {
 
 		@Override
 		public void stop() {
+		}
+		
+		@Override
+		public Long getValue() {
+			return -1L;
 		}
 	};
 
