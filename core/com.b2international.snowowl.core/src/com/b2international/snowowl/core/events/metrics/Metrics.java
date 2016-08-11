@@ -25,8 +25,31 @@ public interface Metrics {
 		public Timer timer(String name) {
 			return Timer.NOOP;
 		}
+
+		@Override
+		public void setExternalValue(String name, long value) {
+		}
 	};
 
+	/**
+	 * Constant value for skipping externally measured metrics when serializing this {@link Metrics}.
+	 */
+	long SKIP = -1L;
+
+	/**
+	 * Returns a timer to measure elapsed time.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	Timer timer(String name);
-	
+
+	/**
+	 * Sets an externally measured metric value with the given name and value in this {@link Metrics registry}.
+	 * 
+	 * @param name
+	 * @param value
+	 */
+	void setExternalValue(String name, long value);
+
 }

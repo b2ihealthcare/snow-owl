@@ -44,15 +44,20 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	
 	private final Request<TransactionContext, ?> next;
 
-	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next) {
+	private final long preRequestPreparationTime;
+
+	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime) {
 		this.next = checkNotNull(next, "next");
 		this.userId = userId;
 		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null or empty.");
 		this.commitComment = commitComment;
+		this.preRequestPreparationTime = preRequestPreparationTime;
 	}
 	
 	@Override
 	public CommitInfo execute(BranchContext context) {
+		final Metrics metrics = context.service(Metrics.class);
+		metrics.setExternalValue("preRequest", preRequestPreparationTime);
 		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context)) {
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);

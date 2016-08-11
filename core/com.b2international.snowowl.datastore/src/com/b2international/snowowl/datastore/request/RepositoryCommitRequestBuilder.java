@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.core.events.metrics.Metrics;
 
 /**
  * @since 4.5
@@ -32,6 +33,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	private String branch;
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
+	private long preparationTime = Metrics.SKIP;
 
 	protected RepositoryCommitRequestBuilder(String repositoryId) {
 		this.repositoryId = repositoryId;
@@ -60,13 +62,23 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 		this.commitComment = commitComment;
 		return getSelf();
 	}
+	
+	/**
+	 * Set additional preparation time for this commit. The caller is responsible for measuring the time properly before setting it in this builder and sending the request.  
+	 * @param preparationTime
+	 * @return
+	 */
+	public final RepositoryCommitRequestBuilder setPreparationTime(long preparationTime) {
+		this.preparationTime = preparationTime;
+		return getSelf();
+	}
 
 	@Override
 	protected final Request<ServiceProvider, CommitInfo> doBuild() {
 		return new RepositoryRequest<>(repositoryId, 
 				new BranchRequest<>(branch,
 					// additional functionality can be extended here after BranchRequest
-					extend(new RevisionIndexReadRequest<>(new TransactionalRequest(userId, commitComment, body)))
+					extend(new RevisionIndexReadRequest<>(new TransactionalRequest(userId, commitComment, body, preparationTime)))
 				));
 	}
 	

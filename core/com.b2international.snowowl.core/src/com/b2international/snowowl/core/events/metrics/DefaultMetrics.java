@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -30,6 +31,7 @@ import com.google.common.collect.MapMaker;
 public final class DefaultMetrics implements Metrics {
 
 	private final ConcurrentMap<String, Metric<?>> metrics = new MapMaker().makeMap();
+	private final Map<String, Long> externalValues = newHashMap();
 	
 	@Override
 	public Timer timer(String name) {
@@ -44,12 +46,21 @@ public final class DefaultMetrics implements Metrics {
 	@JsonAnyGetter
 	public Map<String, Object> getMeasuredValues() {
 		final Map<String, Object> measuredValues = newHashMapWithExpectedSize(metrics.keySet().size());
-		final Iterator<String> it = metrics.keySet().iterator();
-		while (it.hasNext()) {
-			final String name = it.next();
+		for (final String name : metrics.keySet()) {
 			measuredValues.put(name, metrics.get(name).getValue());
 		}
+		for (final String external : externalValues.keySet()) {
+			measuredValues.put(external, externalValues.get(external));
+		}
 		return measuredValues;
+	}
+
+	@Override
+	public void setExternalValue(String name, long value) {
+		checkArgument(!metrics.containsKey(name), "Metric '%s' should be external, but it is managed by this registry.", name);
+		if (value != Metrics.SKIP) {
+			externalValues.put(name, value);
+		}
 	}
 
 }
