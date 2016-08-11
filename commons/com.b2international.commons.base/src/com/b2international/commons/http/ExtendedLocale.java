@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Strings;
 
 /**
@@ -69,6 +70,7 @@ public class ExtendedLocale implements Serializable {
 	}
 	
 	@Override
+	@JsonValue
 	public String toString() {
 		if (languageRefSetId.isEmpty()) {
 			return getLanguageTag();
