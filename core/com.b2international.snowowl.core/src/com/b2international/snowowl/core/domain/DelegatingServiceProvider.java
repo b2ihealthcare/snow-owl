@@ -60,16 +60,12 @@ public class DelegatingServiceProvider implements ServiceProvider {
 
 	@Override
 	public <T> Provider<T> provider(final Class<T> type) {
-		if (registry.containsKey(type)) {
-			return new Provider<T>() {
-				@Override
-				public T get() {
-					return service(type);
-				}
-			};
-		} else {
-			return delegate.provider(type);
-		}
+		return new Provider<T>() {
+			@Override
+			public T get() {
+				return service(type);
+			}
+		};
 	}
 
 	protected ServiceProvider getDelegate() {
