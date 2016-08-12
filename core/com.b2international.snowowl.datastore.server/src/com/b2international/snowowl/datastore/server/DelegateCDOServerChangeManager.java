@@ -41,6 +41,8 @@ import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.events.metrics.Metrics;
+import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
@@ -100,6 +102,7 @@ public class DelegateCDOServerChangeManager {
 			
 			final Collection<Job> changeProcessingJobs = Sets.newHashSetWithExpectedSize(changeProcessors.size());
 			final InternalSession session = StoreThreadLocal.getSession();
+			final Metrics metrics = MetricsThreadLocal.get();
 			
 			for (final ICDOChangeProcessor processor : changeProcessors) {
 				
@@ -109,6 +112,8 @@ public class DelegateCDOServerChangeManager {
 						
 						try {
 							StoreThreadLocal.setSession(session);
+							MetricsThreadLocal.set(metrics);
+							
 							processor.process(commitChangeSet);
 							return Statuses.ok();
 						} catch (final Exception e) {
@@ -116,6 +121,7 @@ public class DelegateCDOServerChangeManager {
 						} finally {
 							//release session for all threads
 							StoreThreadLocal.release();
+							MetricsThreadLocal.release();
 						}
 					}
 				});
@@ -179,6 +185,7 @@ public class DelegateCDOServerChangeManager {
 		final Collection<ICDOChangeProcessor> committedChangeProcessors = newConcurrentHashSet();
 		
 		try {
+			final Metrics metrics = MetricsThreadLocal.get();
 			
 			final Collection<Job> commitJobs = Sets.newHashSetWithExpectedSize(changeProcessors.size());
 			
@@ -187,6 +194,7 @@ public class DelegateCDOServerChangeManager {
 					
 					@Override protected IStatus run(final IProgressMonitor monitor) {
 						try {
+							MetricsThreadLocal.set(metrics);
 							
 							//log if anything had changed
 							if (processor.hadChangesToProcess()) {
@@ -213,6 +221,8 @@ public class DelegateCDOServerChangeManager {
 								return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, "Error while rolling back changes in " + processor.getName() + " for branch: " + branchPath, ee);
 							}
 							return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, "Error while committing changes with " + processor.getName() + " for branch: " + branchPath, e);
+						} finally {
+							MetricsThreadLocal.release();
 						}
 					}
 				});

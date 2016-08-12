@@ -15,41 +15,21 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.Request;
+
 /**
  * @since 5.0
  */
-public interface Metrics {
+public interface MetricsProvider {
 
-	Metrics NOOP = new Metrics() {
+	<R> Request<ServiceProvider, R> measure(Request<ServiceProvider, R> req);
+	
+	MetricsProvider NOOP = new MetricsProvider() {
 		@Override
-		public Timer timer(String name) {
-			return Timer.NOOP;
-		}
-
-		@Override
-		public void setExternalValue(String name, long value) {
+		public <R> Request<ServiceProvider, R> measure(Request<ServiceProvider, R> req) {
+			return new MeteredRequest<>(Metrics.NOOP, req);
 		}
 	};
-
-	/**
-	 * Constant value for skipping externally measured metrics when serializing this {@link Metrics}.
-	 */
-	long SKIP = -1L;
-
-	/**
-	 * Returns a timer to measure elapsed time.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	Timer timer(String name);
-
-	/**
-	 * Sets an externally measured metric value with the given name and value in this {@link Metrics registry}.
-	 * 
-	 * @param name
-	 * @param value
-	 */
-	void setExternalValue(String name, long value);
-
+	
 }

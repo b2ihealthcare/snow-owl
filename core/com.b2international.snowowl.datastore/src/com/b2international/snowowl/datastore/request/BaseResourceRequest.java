@@ -23,6 +23,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.6
@@ -35,10 +36,12 @@ public abstract class BaseResourceRequest<C extends ServiceProvider, B> extends 
 	@NotNull
 	private Options expand;
 	
+	@JsonProperty
 	protected final List<ExtendedLocale> locales() {
 		return locales;
 	}
 	
+	@JsonProperty
 	protected final Options expand() {
 		return expand;
 	}

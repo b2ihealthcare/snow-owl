@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,30 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
-import com.b2international.snowowl.core.events.Request;
-
 /**
- * Measures a value during the execution of a {@link Request}.
+ * {@link ThreadLocal} based registry for request scoped {@link Metrics} instances.
  * 
- * @since 4.5
+ * @since 5.0
  */
-public interface RequestMeter {
+public final class MetricsThreadLocal {
 
-	/**
-	 * Marks the start of a request.
-	 * 
-	 * @param description
-	 *            - the description of the request
-	 */
-	void start(String description);
-
-	/**
-	 * Marks the end of a request.
-	 * 
-	 * @param description
-	 *            - the description of the request
-	 */
-	void stop(String description);
-
+	private static final ThreadLocal<Metrics> METRICS = new ThreadLocal<Metrics>() {
+		@Override
+		protected Metrics initialValue() {
+			return Metrics.NOOP;
+		}
+	};
+	
+	public static void set(Metrics metrics) {
+		METRICS.set(metrics);
+	}
+	
+	public static Metrics get() {
+		return METRICS.get();
+	}
+	
+	public static void release() {
+		METRICS.remove();
+	}
+	
 }

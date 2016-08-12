@@ -13,3 +13,7 @@ fileAuth:
 
 repository:
   port: 2036
+
+# Request execution metrics (response-time, detailed information about transactions, etc.)
+metrics:
+  enabled: true

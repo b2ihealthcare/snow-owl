@@ -30,6 +30,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
@@ -66,14 +68,17 @@ public abstract class RevisionSearchRequest<B> extends BaseResourceRequest<Branc
 		this.componentIds = componentIds;
 	}
 	
+	@JsonProperty
 	protected final int offset() {
 		return offset;
 	}
 	
+	@JsonProperty
 	protected final int limit() {
 		return limit;
 	}
 	
+	@JsonProperty
 	protected final Options options() {
 		return options;
 	}
@@ -110,6 +115,7 @@ public abstract class RevisionSearchRequest<B> extends BaseResourceRequest<Branc
 		return options.getOptions(key.name());
 	}
 	
+	@JsonProperty
 	protected final Collection<String> componentIds() {
 		return componentIds;
 	}
@@ -118,47 +124,10 @@ public abstract class RevisionSearchRequest<B> extends BaseResourceRequest<Branc
 		return Expressions.matchAny(getIdField(), componentIds);
 	}
 	
+	@JsonIgnore
 	protected String getIdField() {
 		return DocumentMapping._ID;
 	}
-
-//	protected void addFilterClause(final BooleanFilter target, final Filter filter, final Occur occur) {
-//		target.add(checkNotNull(filter, "Filter clause to add was null"), occur);
-//	}
-//	
-//	protected void addFilterClause(final List<Filter> target, final Filter filter) {
-//		target.add(checkNotNull(filter, "Filter clause to add was null"));
-//	}
-//	
-//	protected Query createFilteredQuery(final Query query, final BooleanFilter filter) {
-//		if (!filter.clauses().isEmpty()) {
-//			return new FilteredQuery(query, filter);
-//		} else {
-//			return query;
-//		}
-//	}
-	
-//	protected Query createFilteredQuery(final Query query, final List<Filter> filters, final List<Integer> ops) {
-//		if (!filters.isEmpty()) {
-//			return new FilteredQuery(query, new ChainedFilter(Iterables.toArray(filters, Filter.class), Ints.toArray(ops)));
-//		} else {
-//			return query;
-//		}
-//	}
-	
-//	protected int getTotalHits(final IndexSearcher searcher, final Query query) throws IOException {
-//		final TotalHitCountCollector totalCollector = new TotalHitCountCollector();
-//		searcher.search(createConstantScoreQuery(query), totalCollector);
-//		return totalCollector.getTotalHits();
-//	}
-	
-//	protected int numDocsToRetrieve(final IndexSearcher searcher, final int totalHits) {
-//		return numDocsToRetrieve(searcher, offset(), limit(), totalHits);
-//	}
-	
-//	protected int numDocsToRetrieve(final IndexSearcher searcher, final int offset, final int limit, final int totalHits) {
-//		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc(), totalHits);
-//	}
 
 	@Override
 	public final B execute(BranchContext context) {
@@ -171,17 +140,6 @@ public abstract class RevisionSearchRequest<B> extends BaseResourceRequest<Branc
 
 	protected abstract B doExecute(BranchContext context) throws IOException;
 	
-	@Override
-	public String toString() {
-		return String.format("{type:'%s', offset:%s, limit:%s, componentIds:%s, locales:%s, options:%s}", 
-				getClass().getSimpleName(),
-				offset,
-				limit,
-				formatStringList(componentIds),
-				formatStringList(locales()),
-				options);
-	}
-
 	protected void addComponentIdFilter(ExpressionBuilder exp) {
 		if (!componentIds().isEmpty()) {
 			exp.must(RevisionDocument.Expressions.ids(componentIds));

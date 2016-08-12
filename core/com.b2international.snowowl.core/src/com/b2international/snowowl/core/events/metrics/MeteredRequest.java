@@ -17,38 +17,57 @@ package com.b2international.snowowl.core.events.metrics;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.5
  */
-public final class MeteredRequest<C extends ServiceProvider, R> extends DelegatingRequest<C, C, R> {
+public final class MeteredRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
 
-	private final RequestMeter meter;
+	private static final Logger LOG = LoggerFactory.getLogger("request");
+	
+	@JsonProperty
+	private final Metrics metrics;
 
-	public MeteredRequest(RequestMeter meter, Request<C, R> next) {
+	MeteredRequest(Metrics metrics, Request<ServiceProvider, R> next) {
 		super(next);
-		this.meter = checkNotNull(meter, "meter");
+		this.metrics = checkNotNull(metrics, "metrics");
 	}
-
+	
 	@Override
-	public R execute(C context) {
+	public R execute(ServiceProvider context) {
+		final Timer responseTimer = metrics.timer("responseTime");
+		responseTimer.start();
 		try {
-			meter.start(getMessage());
-			return next(context);
+			return next(DelegatingServiceProvider
+					.basedOn(context)
+					.bind(Metrics.class, metrics)
+					.build());
 		} finally {
-			meter.stop(getMessage());
+			responseTimer.stop();
+			LOG.info(getMessage(context));
 		}
 	}
 
-	private String getMessage() {
+	private String getMessage(ServiceProvider context) {
 		try {
-			return toString();
+			final ObjectMapper mapper = context.service(ObjectMapper.class);
+			if (metrics == Metrics.NOOP) {
+				return mapper.writeValueAsString(next());
+			} else {
+				return mapper.writeValueAsString(this);
+			}
 		} catch (Throwable e) {
 			return "Unable to get request description: " + e.getMessage();
 		}
 	}
-
+	
 }

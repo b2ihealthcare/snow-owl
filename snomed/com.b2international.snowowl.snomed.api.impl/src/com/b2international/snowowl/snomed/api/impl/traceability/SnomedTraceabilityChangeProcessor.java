@@ -47,6 +47,8 @@ import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
+import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
+import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -141,45 +143,51 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
-		this.commitChangeSet = commitChangeSet;
-		this.entry = new TraceabilityEntry(commitChangeSet);
-		
-		// No other details required for "System user" commits
-		if (isSystemCommit() && !collectSystemChanges) {
-			return;
-		}
-		
-		for (CDOObject newComponent : commitChangeSet.getNewComponents()) {
-			processAddition(newComponent);
-		}
-		
-		for (CDOObject dirtyComponent : commitChangeSet.getDirtyComponents()) {
-			processUpdate(dirtyComponent);
-		}
-		
-		final Set<Long> detachedConceptStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT)));
-		final Set<Long> detachedDescriptionStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION)));
-		final Set<Long> detachedRelationshipStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP)));
-
-		index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
-			@Override
-			public Void execute(RevisionSearcher searcher) throws IOException {
-				
-				for (SnomedConceptDocument detachedConcept : searcher.get(SnomedConceptDocument.class, detachedConceptStorageKeys)) {
-					entry.registerChange(detachedConcept.getId(), new TraceabilityChange(SnomedPackage.Literals.CONCEPT, detachedConcept.getId(), ChangeType.DELETE));
-				}
-				
-				for (SnomedDescriptionIndexEntry detachedDescription : searcher.get(SnomedDescriptionIndexEntry.class, detachedDescriptionStorageKeys)) {
-					entry.registerChange(detachedDescription.getConceptId(), new TraceabilityChange(SnomedPackage.Literals.DESCRIPTION, detachedDescription.getId(), ChangeType.DELETE));
-				}
-				
-				for (SnomedRelationshipIndexEntry detachedRelationship : searcher.get(SnomedRelationshipIndexEntry.class, detachedRelationshipStorageKeys)) {
-					entry.registerChange(detachedRelationship.getSourceId(), new TraceabilityChange(SnomedPackage.Literals.RELATIONSHIP, detachedRelationship.getId(), ChangeType.DELETE));
-				}
-				
-				return null;
+		final Timer traceabilityTimer = MetricsThreadLocal.get().timer("traceability");
+		try {
+			traceabilityTimer.start();
+			this.commitChangeSet = commitChangeSet;
+			this.entry = new TraceabilityEntry(commitChangeSet);
+			
+			// No other details required for "System user" commits
+			if (isSystemCommit() && !collectSystemChanges) {
+				return;
 			}
-		});
+			
+			for (CDOObject newComponent : commitChangeSet.getNewComponents()) {
+				processAddition(newComponent);
+			}
+			
+			for (CDOObject dirtyComponent : commitChangeSet.getDirtyComponents()) {
+				processUpdate(dirtyComponent);
+			}
+			
+			final Set<Long> detachedConceptStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT)));
+			final Set<Long> detachedDescriptionStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION)));
+			final Set<Long> detachedRelationshipStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP)));
+			
+			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
+				@Override
+				public Void execute(RevisionSearcher searcher) throws IOException {
+					
+					for (SnomedConceptDocument detachedConcept : searcher.get(SnomedConceptDocument.class, detachedConceptStorageKeys)) {
+						entry.registerChange(detachedConcept.getId(), new TraceabilityChange(SnomedPackage.Literals.CONCEPT, detachedConcept.getId(), ChangeType.DELETE));
+					}
+					
+					for (SnomedDescriptionIndexEntry detachedDescription : searcher.get(SnomedDescriptionIndexEntry.class, detachedDescriptionStorageKeys)) {
+						entry.registerChange(detachedDescription.getConceptId(), new TraceabilityChange(SnomedPackage.Literals.DESCRIPTION, detachedDescription.getId(), ChangeType.DELETE));
+					}
+					
+					for (SnomedRelationshipIndexEntry detachedRelationship : searcher.get(SnomedRelationshipIndexEntry.class, detachedRelationshipStorageKeys)) {
+						entry.registerChange(detachedRelationship.getSourceId(), new TraceabilityChange(SnomedPackage.Literals.RELATIONSHIP, detachedRelationship.getId(), ChangeType.DELETE));
+					}
+					
+					return null;
+				}
+			});
+		} finally {
+			traceabilityTimer.stop();
+		}
 	}
 
 	private boolean isSystemCommit() {
@@ -266,46 +274,49 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 	
 	@Override
 	public void afterCommit() {
-		
-		if (commitChangeSet != null) {
-			final ImmutableSet<String> conceptIds = ImmutableSet.copyOf(entry.getChanges().keySet());
-			final String branch = commitChangeSet.getView().getBranch().getPathName();
-			final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
-			
-			final Request<ServiceProvider, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
-				.setComponentIds(conceptIds)
-				.setOffset(0)
-				.setLimit(entry.getChanges().size())
-				.setExpand("descriptions(),relationships(expand(destination()))")
-				.build(branch);
-			
-			final SnomedConcepts concepts = conceptSearchRequest.executeSync(bus);
-			final Set<String> hasChildrenStated = collectNonLeafs(conceptIds, branch, bus, Concepts.STATED_RELATIONSHIP);
-			final Set<String> hasChildrenInferred = collectNonLeafs(conceptIds, branch, bus, Concepts.INFERRED_RELATIONSHIP);
-			
-			for (ISnomedConcept concept : concepts) {
-				SnomedBrowserConcept convertedConcept = new SnomedBrowserConcept();
-				
-				convertedConcept.setActive(concept.isActive());
-				convertedConcept.setConceptId(concept.getId());
-				convertedConcept.setDefinitionStatus(concept.getDefinitionStatus());
-				convertedConcept.setDescriptions(convertDescriptions(concept.getDescriptions()));
-				convertedConcept.setEffectiveTime(concept.getEffectiveTime());
-				convertedConcept.setModuleId(concept.getModuleId());
-				convertedConcept.setRelationships(convertRelationships(concept.getRelationships()));
-				convertedConcept.setIsLeafStated(!hasChildrenStated.contains(concept.getId()));
-				convertedConcept.setIsLeafInferred(!hasChildrenInferred.contains(concept.getId()));
-				convertedConcept.setFsn(concept.getId());
-				
-				// PT and SYN labels are not populated
-				entry.setConcept(convertedConcept.getId(), convertedConcept);
-			}
-		}
-		
+		final Timer traceabilityTimer = MetricsThreadLocal.get().timer("traceability");
 		try {
+			traceabilityTimer.start();
+			if (commitChangeSet != null) {
+				final ImmutableSet<String> conceptIds = ImmutableSet.copyOf(entry.getChanges().keySet());
+				final String branch = commitChangeSet.getView().getBranch().getPathName();
+				final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
+				
+				final Request<ServiceProvider, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
+					.setComponentIds(conceptIds)
+					.setOffset(0)
+					.setLimit(entry.getChanges().size())
+					.setExpand("descriptions(),relationships(expand(destination()))")
+					.build(branch);
+				
+				final SnomedConcepts concepts = conceptSearchRequest.executeSync(bus);
+				final Set<String> hasChildrenStated = collectNonLeafs(conceptIds, branch, bus, Concepts.STATED_RELATIONSHIP);
+				final Set<String> hasChildrenInferred = collectNonLeafs(conceptIds, branch, bus, Concepts.INFERRED_RELATIONSHIP);
+				
+				for (ISnomedConcept concept : concepts) {
+					SnomedBrowserConcept convertedConcept = new SnomedBrowserConcept();
+					
+					convertedConcept.setActive(concept.isActive());
+					convertedConcept.setConceptId(concept.getId());
+					convertedConcept.setDefinitionStatus(concept.getDefinitionStatus());
+					convertedConcept.setDescriptions(convertDescriptions(concept.getDescriptions()));
+					convertedConcept.setEffectiveTime(concept.getEffectiveTime());
+					convertedConcept.setModuleId(concept.getModuleId());
+					convertedConcept.setRelationships(convertRelationships(concept.getRelationships()));
+					convertedConcept.setIsLeafStated(!hasChildrenStated.contains(concept.getId()));
+					convertedConcept.setIsLeafInferred(!hasChildrenInferred.contains(concept.getId()));
+					convertedConcept.setFsn(concept.getId());
+					
+					// PT and SYN labels are not populated
+					entry.setConcept(convertedConcept.getId(), convertedConcept);
+				}
+			}
+		
 			LOGGER.info(WRITER.writeValueAsString(entry));
 		} catch (IOException e) {
 			throw SnowowlRuntimeException.wrap(e);
+		} finally {
+			traceabilityTimer.stop();
 		}
 	}
 

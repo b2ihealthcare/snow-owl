@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -82,6 +83,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUp
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.FluentIterable;
@@ -183,6 +185,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 
 	@Override
 	public ISnomedBrowserConcept update(String branchPath, ISnomedBrowserConceptUpdate newVersionConcept, String userId, List<ExtendedLocale> locales) {
+		final Stopwatch watch = Stopwatch.createStarted();
+		
 		LOGGER.info("Update concept start {}", newVersionConcept.getFsn());
 		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, newVersionConcept.getConceptId());
 
@@ -251,6 +255,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			.setBranch(branchPath)
 			.setCommitComment(commitComment)
 			.setBody(commitReq)
+			.setPreparationTime(watch.elapsed(TimeUnit.MILLISECONDS))
 			.build()
 			.executeSync(bus);
 		LOGGER.info("Committed changes for concept {}", newVersionConcept.getFsn());

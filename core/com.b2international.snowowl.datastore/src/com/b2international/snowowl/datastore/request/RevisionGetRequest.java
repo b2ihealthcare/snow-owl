@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Iterables;
 
 /**
@@ -43,6 +44,7 @@ public abstract class RevisionGetRequest<R> extends BaseResourceRequest<BranchCo
 	private final String category;
 	
 	@NotEmpty
+	@JsonProperty
 	private String componentId;
 	
 	protected RevisionGetRequest(ComponentCategory category) {
@@ -59,7 +61,7 @@ public abstract class RevisionGetRequest<R> extends BaseResourceRequest<BranchCo
 	
 	@Override
 	public final R execute(BranchContext context) {
-		final Query<? extends RevisionDocument> query = Query.select(getType())
+		final Query<? extends RevisionDocument> query = Query.select(getRevisionType())
 				.where(RevisionDocument.Expressions.id(componentId))
 				.limit(1)
 				.build();
@@ -76,17 +78,8 @@ public abstract class RevisionGetRequest<R> extends BaseResourceRequest<BranchCo
 		}
 	}
 
-	protected abstract Class<? extends RevisionDocument> getType();
+	protected abstract Class<? extends RevisionDocument> getRevisionType();
 
 	protected abstract R process(BranchContext context, IComponent<String> component, Options expand);
-
-	@Override
-	public final String toString() {
-		return String.format("{type:'%s', componentId:'%s', expand:%s, locales:%s}", 
-				getClass().getSimpleName(), 
-				componentId,
-				expand(), 
-				formatStringList(locales()));
-	}
 
 }

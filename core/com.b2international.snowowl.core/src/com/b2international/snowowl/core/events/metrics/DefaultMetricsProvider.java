@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,20 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * Class capable of decorating request's in {@link MeteredRequest} with meters selected for the given request. Currently only one meter is registered
- * on the incoming {@link Request}, the {@link StopwatchResponseTimeMeter}.
+ * Class capable of decorating request's in {@link MeteredRequest} which offers {@link Metric}s for the entire execution of the request. By default it
+ * registers a single {@link Timer} to measure the execution of the request.
  * 
- * @since 4.5
+ * @since 5.0
  */
-public final class RequestMetrics implements Metrics {
-
-	private final static Logger LOG = LoggerFactory.getLogger("request");
+public final class DefaultMetricsProvider implements MetricsProvider {
 
 	@Override
-	public <C extends ServiceProvider, R> Request<C, R> measure(Request<C, R> req) {
-		return new MeteredRequest<>(new StopwatchResponseTimeMeter(LOG), req);
+	public <R> Request<ServiceProvider, R> measure(Request<ServiceProvider, R> req) {
+		return new MeteredRequest<>(new DefaultMetrics(), req);
 	}
 
 }

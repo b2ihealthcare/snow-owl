@@ -17,11 +17,11 @@ package com.b2international.snowowl.core.events;
 
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.base.Joiner;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
@@ -31,8 +31,6 @@ import com.google.common.base.Joiner;
  */
 public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEvent implements Request<C, B> {
 
-	private static final Joiner COMMA_WITH_QUOTE_JOINER = Joiner.on("','").skipNulls();
-	
 	@Override
 	public final Promise<B> execute(IEventBus bus) {
 		return send(bus, getReturnType());
@@ -48,9 +46,18 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 		return execute(bus).getSync(timeout, TimeUnit.MILLISECONDS);
 	}
 
+	@JsonIgnore
 	@Override
 	protected String getAddress() {
 		throw new UnsupportedOperationException("This request "+ getClass().getName() +" cannot be sent over the bus on its own, wrap it into a RepositoryRequest");
+	}
+
+	/**
+	 * @return the type of the request for serialization in log messages
+	 */
+	@JsonProperty
+	public String getType() {
+		return getClass().getSimpleName();
 	}
 	
 	/**
@@ -58,25 +65,7 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 	 * 
 	 * @return
 	 */
+	@JsonIgnore
 	protected abstract Class<B> getReturnType();
 	
-	@Override
-	public String toString() {
-		return getClass().getSimpleName();
-	}
-	
-	/**
-	 * To serialize an {@link Iterable} as a JSON array, return empty array string if the {@link Iterable} either <code>null</code> or empty.
-	 * 
-	 * @param parts
-	 * @return
-	 */
-	protected final String formatStringList(Iterable<? extends Object> parts) {
-		if (CompareUtils.isEmpty(parts)) {
-			return "[]";
-		} else {
-			return String.format("['%s']", COMMA_WITH_QUOTE_JOINER.join(parts)); 
-		}
-	}
-
 }

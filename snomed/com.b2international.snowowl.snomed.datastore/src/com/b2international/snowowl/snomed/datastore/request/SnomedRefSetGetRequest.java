@@ -50,7 +50,7 @@ final class SnomedRefSetGetRequest extends RevisionGetRequest<SnomedReferenceSet
 	}
 	
 	@Override
-	protected Class<? extends RevisionDocument> getType() {
+	protected Class<? extends RevisionDocument> getRevisionType() {
 		return SnomedConceptDocument.class;
 	}
 	

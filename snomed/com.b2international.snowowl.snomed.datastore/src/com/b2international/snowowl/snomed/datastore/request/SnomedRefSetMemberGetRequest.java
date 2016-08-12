@@ -44,7 +44,7 @@ final class SnomedRefSetMemberGetRequest extends RevisionGetRequest<SnomedRefere
 	}
 
 	@Override
-	protected Class<? extends RevisionDocument> getType() {
+	protected Class<? extends RevisionDocument> getRevisionType() {
 		return SnomedRefSetMemberIndexEntry.class;
 	}
 	

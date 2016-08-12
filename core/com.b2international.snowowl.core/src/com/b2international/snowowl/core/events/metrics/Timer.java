@@ -18,38 +18,31 @@ package com.b2international.snowowl.core.events.metrics;
 /**
  * @since 5.0
  */
-public interface Metrics {
+public interface Timer extends Metric<Long> {
 
-	Metrics NOOP = new Metrics() {
+	Timer NOOP = new Timer() {
 		@Override
-		public Timer timer(String name) {
-			return Timer.NOOP;
+		public void start() {
 		}
 
 		@Override
-		public void setExternalValue(String name, long value) {
+		public void stop() {
+		}
+		
+		@Override
+		public Long getValue() {
+			return -1L;
 		}
 	};
 
 	/**
-	 * Constant value for skipping externally measured metrics when serializing this {@link Metrics}.
+	 * Starts the timer.
 	 */
-	long SKIP = -1L;
+	void start();
 
 	/**
-	 * Returns a timer to measure elapsed time.
-	 * 
-	 * @param name
-	 * @return
+	 * Stops the timer.
 	 */
-	Timer timer(String name);
-
-	/**
-	 * Sets an externally measured metric value with the given name and value in this {@link Metrics registry}.
-	 * 
-	 * @param name
-	 * @param value
-	 */
-	void setExternalValue(String name, long value);
-
+	void stop();
+	
 }

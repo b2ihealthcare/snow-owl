@@ -19,6 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * Delegates execution of a {@link Request}. Can be used to decorate/wrap the incoming context within another context to meet the requirements of the
@@ -51,7 +54,15 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	protected final R next(T context) {
 		return next.execute(context);
 	}
-
+	
+	@Override
+	@JsonIgnore
+	public String getType() {
+		return super.getType();
+	}
+	
+	@JsonProperty
+	@JsonUnwrapped
 	protected final Request<T, R> next() {
 		return next;
 	}
@@ -62,9 +73,4 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 		return ClassUtils.checkAndCast(next, BaseRequest.class).getReturnType();
 	}
 
-	@Override
-	public String toString() {
-		return next.toString();
-	}
-	
 }

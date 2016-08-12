@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,39 @@
  */
 package com.b2international.snowowl.core.events.metrics;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.slf4j.Logger;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
 
 /**
- * @since 4.5
+ * @since 5.0
  */
-public final class StopwatchResponseTimeMeter implements RequestMeter {
+public final class StopwatchTimer implements Timer {
 
-	private final Stopwatch watch;
-	private final Logger log;
+	private final Stopwatch watch = Stopwatch.createUnstarted();
+	private final TimeUnit unit;
 	
-	public StopwatchResponseTimeMeter(Logger log) {
-		this.log = checkNotNull(log, "log");
-		this.watch = Stopwatch.createUnstarted();
+	StopwatchTimer() {
+		this(TimeUnit.MILLISECONDS);
+	}
+	
+	StopwatchTimer(TimeUnit unit) {
+		this.unit = unit;
 	}
 	
 	@Override
-	public void start(String message) {
-		log.trace("Executing {}", message);
+	public void start() {
 		watch.start();
 	}
 
 	@Override
-	public void stop(String message) {
+	public void stop() {
 		watch.stop();
-		log.info("{} - {}", message, watch);
+	}
+	
+	@Override
+	public Long getValue() {
+		return watch.elapsed(unit);
 	}
 
 }
