@@ -24,6 +24,9 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.assertComponentUpdatedWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.whenRetrievingConcept;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -46,6 +49,7 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -234,6 +238,98 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		assertRelationshipExists(b1, "R");
 		assertRelationshipExists(b2, "R");
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void mergeReactivatedConcept() {
+		assertConceptCreated(testBranchPath, "C1");
+		
+		final Map<?, ?> changeOnTask = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated test concept")
+				.build();
+		
+		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnTask);
+		assertBranchCanBeMerged(testBranchPath, "merge");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		Map<String, Object> conceptUpdate = SnomedBrowserApiAssert.getConcept(testBranchPath, symbolicNameMap.get("C1"));
+		conceptUpdate.put("active", true);
+		final List<Map<String, Object>> relationshipsResponse = (List<Map<String, Object>>) conceptUpdate.get("relationships");
+		relationshipsResponse.get(0).put("active", true);
+
+		assertComponentUpdatedWithStatus(testBranchPath, symbolicNameMap.get("C1"), conceptUpdate, 200)
+			.and().body("active", equalTo(true))
+			.and().body("descriptions[0].active", equalTo(true))
+			.and().body("descriptions[1].active", equalTo(true))
+			.and().body("relationships[0].active", equalTo(true));
+		
+		assertBranchCanBeMerged(testBranchPath, "merge reactivation");
+		
+		whenRetrievingConcept(testBranchPath.getParent(), symbolicNameMap.get("C1"))
+			.then().assertThat().statusCode(200)
+			.and().body("active", equalTo(true))
+			.and().body("descriptions[0].active", equalTo(true))
+			.and().body("descriptions[1].active", equalTo(true))
+			.and().body("relationships[0].active", equalTo(true));
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void rebaseReactivatedConcept() {
+		assertConceptCreated(testBranchPath, "C1");
+		
+		final Map<?, ?> changeOnTask = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated test concept")
+				.build();
+		
+		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnTask);
+		assertBranchCanBeMerged(testBranchPath, "merge");
+		
+		assertConceptExists(testBranchPath, "C1");
+		assertConceptExists(testBranchPath.getParent(), "C1");
+		
+		// Commit to parent so that testBranchPath falls behind
+		assertConceptCreated(testBranchPath.getParent(), "C2");
+		assertConceptNotExists(testBranchPath, "C2");
+		assertConceptExists(testBranchPath.getParent(), "C2");
+
+		Map<String, Object> conceptUpdate = SnomedBrowserApiAssert.getConcept(testBranchPath, symbolicNameMap.get("C1"));
+		conceptUpdate.put("active", true);
+		final List<Map<String, Object>> relationshipsResponse = (List<Map<String, Object>>) conceptUpdate.get("relationships");
+		relationshipsResponse.get(0).put("active", true);
+		
+		assertComponentUpdatedWithStatus(testBranchPath, symbolicNameMap.get("C1"), conceptUpdate, 200)
+				.and().body("active", equalTo(true))
+				.and().body("descriptions[0].active", equalTo(true))
+				.and().body("descriptions[1].active", equalTo(true))
+				.and().body("relationships[0].active", equalTo(true));
+		
+		assertBranchCanBeRebased(testBranchPath, "rebase reactivation");
+		
+		// Following the rebase, C2 should be visible...
+		assertConceptExists(testBranchPath, "C2");
+		
+		// ...C1 should remain active on testBranchPath...
+		whenRetrievingConcept(testBranchPath, symbolicNameMap.get("C1"))
+				.then().assertThat().statusCode(200)
+				.and().body("active", equalTo(true))
+				.and().body("descriptions[0].active", equalTo(true))
+				.and().body("descriptions[1].active", equalTo(true))
+				.and().body("relationships[0].active", equalTo(true));
+
+		// ...but it should still be inactive on its parent.
+		whenRetrievingConcept(testBranchPath.getParent(), symbolicNameMap.get("C1"))
+				.then().assertThat().statusCode(200)
+				.and().body("active", equalTo(false))
+				.and().body("descriptions[0].active", equalTo(true))
+				.and().body("descriptions[1].active", equalTo(true))
+				.and().body("relationships[0].active", equalTo(false));
+		
 	}
 
 	@Test

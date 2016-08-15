@@ -179,12 +179,17 @@ public class SnomedBrowserApiAssert {
 		return identifierService.reserve(namespace, category);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getConcept(final IBranchPath branchPath, final String conceptId) {
-		final Map<?, ?> concept = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.with().contentType(ContentType.JSON)
-				.when().get("/browser/{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
+		final Map<String, Object> concept = whenRetrievingConcept(branchPath, conceptId)
 				.then().extract().as(Map.class);
 		
-		return (Map<String, Object>) concept;
+		return concept;
+	}
+
+	public static Response whenRetrievingConcept(final IBranchPath branchPath, final String conceptId) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.with().contentType(ContentType.JSON)
+				.when().get("/browser/{path}/concepts/{conceptId}", branchPath.getPath(), conceptId);
 	}
 }

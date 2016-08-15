@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.merge.rules;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptySet;
 
 import java.util.Collection;
@@ -25,18 +25,17 @@ import java.util.Set;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 
 /**
@@ -47,71 +46,87 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 	@Override
 	public Collection<MergeConflict> validate(CDOTransaction transaction) {
 		
-		Iterable<Relationship> relationships = Iterables.concat(ComponentUtils2.getDirtyObjects(transaction, Relationship.class), ComponentUtils2.getNewObjects(transaction, Relationship.class));
+		Iterable<Relationship> newOrDirtyRelationships = Iterables.concat(ComponentUtils2.getDirtyObjects(transaction, Relationship.class), ComponentUtils2.getNewObjects(transaction, Relationship.class));
+
+		Set<String> relationshipConceptIds = newHashSet();
 		
-		Set<String> relationshipConceptIds = FluentIterable.from(relationships).transformAndConcat(new Function<Relationship, Collection<String>>() {
-			@Override
-			public Collection<String> apply(Relationship input) {
-				if (input.isActive()) {
-					Set<String> ids = newHashSetWithExpectedSize(3);
-					ids.add(input.getSource().getId());
-					ids.add(input.getDestination().getId());
-					ids.add(input.getType().getId());
-					return ids;
-				}
-				return emptySet();
+		for (Relationship relationship : newOrDirtyRelationships) {
+			if (relationship.isActive()) {
+				relationshipConceptIds.add(relationship.getSource().getId());
+				relationshipConceptIds.add(relationship.getDestination().getId());
+				relationshipConceptIds.add(relationship.getType().getId());
 			}
-		}).toSet();
+		}
 		
-		if (!relationshipConceptIds.isEmpty()) {
-			
-			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
+		// Either there were no relationships added or modified, or all of them were inactive
+		if (relationshipConceptIds.isEmpty()) {
+			return emptySet();
+		}
+		
+		Set<String> inactiveConceptIds = newHashSet();
+
+		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
 				.setComponentIds(relationshipConceptIds)
 				.filterByActive(false)
 				.all()
 				.build(BranchPathUtils.createPath(transaction).getPath())
 				.executeSync(getEventBus());
-				
-			if (!snomedConcepts.getItems().isEmpty()) {
-				
-				List<MergeConflict> conflicts = newArrayList();
-				
-				Set<String> inactiveConceptIds = FluentIterable.from(snomedConcepts).transform(IComponent.ID_FUNCTION).toSet();
-				
-				for (Relationship relationship : relationships) {
-					
-					if (inactiveConceptIds.contains(relationship.getSource().getId())) {
-						conflicts.add(MergeConflictImpl.builder()
-										.componentId(relationship.getId())
-										.componentType("Relationship")
-										.conflictingAttribute(ConflictingAttributeImpl.builder().property("sourceId").value(relationship.getSource().getId()).build())
-										.type(ConflictType.HAS_INACTIVE_REFERENCE)
-										.build());	
-					}
-					
-					if (inactiveConceptIds.contains(relationship.getDestination().getId())) {
-						conflicts.add(MergeConflictImpl.builder()
-								.componentId(relationship.getId())
-								.componentType("Relationship")
-								.conflictingAttribute(ConflictingAttributeImpl.builder().property("destinationId").value(relationship.getDestination().getId()).build())
-								.type(ConflictType.HAS_INACTIVE_REFERENCE)
-								.build());
-					}
-					
-					if (inactiveConceptIds.contains(relationship.getType().getId())) {
-						conflicts.add(MergeConflictImpl.builder()
-								.componentId(relationship.getId())
-								.componentType("Relationship")
-								.conflictingAttribute(ConflictingAttributeImpl.builder().property("typeId").value(relationship.getType().getId()).build())
-								.type(ConflictType.HAS_INACTIVE_REFERENCE)
-								.build());
-					}
-					
+
+		for (ISnomedConcept concept : snomedConcepts) {
+			inactiveConceptIds.add(concept.getId());
+		}
+		
+		Iterable<Concept> newOrDirtyConcepts = Iterables.concat(ComponentUtils2.getDirtyObjects(transaction, Concept.class), ComponentUtils2.getNewObjects(transaction, Concept.class));
+
+		for (Concept concept : newOrDirtyConcepts) {
+			String conceptId = concept.getId();
+			
+			if (relationshipConceptIds.contains(conceptId)) {
+				if (concept.isActive()) {
+					inactiveConceptIds.remove(conceptId);
+				} else {
+					inactiveConceptIds.add(conceptId);
 				}
-				
-				return conflicts;
 			}
 		}
-		return emptySet();
+
+		// None of the concepts referenced by an active relationship were inactive
+		if (inactiveConceptIds.isEmpty()) {
+			return emptySet();
+		}
+		
+		List<MergeConflict> conflicts = newArrayList();
+			
+		for (Relationship relationship : newOrDirtyRelationships) {
+			
+			if (inactiveConceptIds.contains(relationship.getSource().getId())) {
+				conflicts.add(MergeConflictImpl.builder()
+								.componentId(relationship.getId())
+								.componentType("Relationship")
+								.conflictingAttribute(ConflictingAttributeImpl.builder().property("sourceId").value(relationship.getSource().getId()).build())
+								.type(ConflictType.HAS_INACTIVE_REFERENCE)
+								.build());	
+			}
+			
+			if (inactiveConceptIds.contains(relationship.getDestination().getId())) {
+				conflicts.add(MergeConflictImpl.builder()
+						.componentId(relationship.getId())
+						.componentType("Relationship")
+						.conflictingAttribute(ConflictingAttributeImpl.builder().property("destinationId").value(relationship.getDestination().getId()).build())
+						.type(ConflictType.HAS_INACTIVE_REFERENCE)
+						.build());
+			}
+			
+			if (inactiveConceptIds.contains(relationship.getType().getId())) {
+				conflicts.add(MergeConflictImpl.builder()
+						.componentId(relationship.getId())
+						.componentType("Relationship")
+						.conflictingAttribute(ConflictingAttributeImpl.builder().property("typeId").value(relationship.getType().getId()).build())
+						.type(ConflictType.HAS_INACTIVE_REFERENCE)
+						.build());
+			}
+		}
+		
+		return conflicts;
 	}
 }

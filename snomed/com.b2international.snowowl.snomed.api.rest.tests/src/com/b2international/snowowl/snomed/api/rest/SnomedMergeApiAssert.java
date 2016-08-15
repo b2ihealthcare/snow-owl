@@ -34,6 +34,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 4.7
@@ -49,16 +50,16 @@ public abstract class SnomedMergeApiAssert {
 	// Symbolic component existence checks
 	// --------------------------------------------------------
 
-	public static void assertConceptExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertConceptExists(branchPath, symbolicNameMap.get(symbolicName));
+	public static ValidatableResponse assertConceptExists(final IBranchPath branchPath, final String symbolicName) {
+		return SnomedComponentApiAssert.assertConceptExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	public static void assertDescriptionExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertDescriptionExists(branchPath, symbolicNameMap.get(symbolicName));
+	public static ValidatableResponse assertDescriptionExists(final IBranchPath branchPath, final String symbolicName) {
+		return SnomedComponentApiAssert.assertDescriptionExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	public static void assertRelationshipExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertRelationshipExists(branchPath, symbolicNameMap.get(symbolicName));
+	public static ValidatableResponse assertRelationshipExists(final IBranchPath branchPath, final String symbolicName) {
+		return SnomedComponentApiAssert.assertRelationshipExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
 	public static void assertConceptNotExists(final IBranchPath branchPath, final String symbolicName) {
@@ -73,8 +74,8 @@ public abstract class SnomedMergeApiAssert {
 		SnomedComponentApiAssert.assertRelationshipNotExists(branchPath, symbolicNameMap.get(symbolicName));
 	}
 
-	public static void assertRefSetMemberExists(final IBranchPath branchPath, final String symbolicName) {
-		SnomedComponentApiAssert.assertComponentExists(branchPath, SnomedComponentType.MEMBER, symbolicNameMap.get(symbolicName));
+	public static ValidatableResponse assertRefSetMemberExists(final IBranchPath branchPath, final String symbolicName) {
+		return SnomedComponentApiAssert.assertComponentExists(branchPath, SnomedComponentType.MEMBER, symbolicNameMap.get(symbolicName));
 	}
 	
 	public static void assertRefSetMemberNotExists(final IBranchPath branchPath, final String symbolicName) {
