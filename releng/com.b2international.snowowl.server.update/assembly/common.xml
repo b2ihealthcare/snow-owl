@@ -61,6 +61,7 @@
 			<includes>
 				<include>**/dmk.sh</include>
 				<include>**/startup.sh</include>
+				<include>**/snowowl*.sh</include>
 			</includes>
 		</fileSet>
 		<!-- Application bundles to repository/usr -->

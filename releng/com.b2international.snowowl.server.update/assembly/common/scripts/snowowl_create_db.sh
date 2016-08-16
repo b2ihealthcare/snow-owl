@@ -6,9 +6,7 @@
 # This script creates all required databases and user for Snow Owl Server US edition.
 #
 
-DATABASES=( atcStore icd10Store icd10amStore \
-icd10cmStore localterminologyStore loincStore \
-mappingsetStore snomedStore umlsStore valuesetStore )
+DATABASES=( snomedStore )
 
 MYSQL=`which mysql`
 USER="root"
