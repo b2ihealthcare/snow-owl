@@ -884,6 +884,21 @@ rpc:
   compressed: false
 --------------------------
 
+==== Metrics
+
+Snow Owl can measure and report execution times (and other metrics in the future) of executed requests.
+
+[cols="3*", options="header"]
+|===
+|Name
+|Default
+|Description
+
+|enabled
+|`true`
+|`true`, `false`, `ON`, `OFF` - enable or disable metrics in the application
+|===
+
 ==== SNOMED CT
 
 Configuration of SNOMED CT terminology services.
