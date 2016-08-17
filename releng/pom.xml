@@ -16,10 +16,6 @@
 		<build.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${build.qualifier}</build.version>
 	</properties>
 	
-	<modules>
-		<module>system.bundle.package.exporter</module>
-	</modules>
-	
 	<build>
 		<plugins>
 			<plugin>
@@ -42,6 +38,7 @@
 		<profile>
 			<id>target_site</id>
 			<modules>
+				<module>system.bundle.package.exporter</module>
 				<module>com.b2international.snowowl.server.target.update</module>
 			</modules>
 		</profile>
