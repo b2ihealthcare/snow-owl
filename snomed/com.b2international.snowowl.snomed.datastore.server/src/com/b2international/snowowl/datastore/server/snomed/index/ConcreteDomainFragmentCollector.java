@@ -31,8 +31,6 @@ import bak.pcj.map.LongKeyOpenHashMap;
 import com.b2international.snowowl.datastore.index.AbstractDocsOutOfOrderCollector;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 
 /**
@@ -71,11 +69,11 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 
 	@Override
 	protected void initDocValues(final AtomicReader leafReader) throws IOException {
-		uomValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UOM_ID);
-		valueValues = leafReader.getBinaryDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SERIALIZED_VALUE);
-		labelValues = Mappings.label().getDocValues(leafReader);
+		uomValues = SnomedMappings.memberUomId().getDocValues(leafReader);
+		valueValues = SnomedMappings.memberSerializedValue().getDocValues(leafReader);
+		labelValues = SnomedMappings.memberDataTypeLabel().getDocValues(leafReader);
 		referencedIdValues = SnomedMappings.memberReferencedComponentId().getDocValues(leafReader);
-		typeValues = leafReader.getNumericDocValues(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_DATA_TYPE_VALUE);
+		typeValues = SnomedMappings.memberDataTypeOrdinal().getDocValues(leafReader);
 		storageKeyValues = Mappings.storageKey().getDocValues(leafReader);
 		refSetIdValues = SnomedMappings.memberRefSetId().getDocValues(leafReader);
 	}
@@ -100,10 +98,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 			uomId = ConcreteDomainFragment.UNSET_UOM_ID;
 		}
 
-		// FIXME: Consolidate the two DataType enums
 		final byte type = (byte) typeValues.get(docId);
-		final com.b2international.snowowl.snomed.mrcm.DataType dataType = com.b2international.snowowl.snomed.mrcm.DataType.get(type);
-		final com.b2international.snowowl.snomed.snomedrefset.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.get(dataType);
 
 		final long id = referencedIdValues.get(docId);
 		final long storageKey = storageKeyValues.get(docId);
@@ -116,7 +111,7 @@ public class ConcreteDomainFragmentCollector extends AbstractDocsOutOfOrderColle
 		final ConcreteDomainFragment fragment = new ConcreteDomainFragment(
 				value, 
 				label, 
-				(byte) convertedDataType.ordinal(), 
+				type, 
 				uomId, 
 				storageKey,
 				refSetId);

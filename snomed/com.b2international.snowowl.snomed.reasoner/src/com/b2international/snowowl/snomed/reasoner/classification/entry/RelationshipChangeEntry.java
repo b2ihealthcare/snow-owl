@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.google.common.base.Objects;
 
 /**
- * Represents a reasoner change entry about a relationship.
+ * Represents a reasoner change entry capturing the details of inferred or redundant relationships.
  */
 public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 
@@ -26,11 +26,12 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 
 	private final byte group;
 	private final byte unionGroup;
-	private final IComponentWithIconId<Long> modifier;
+	private final ChangeConcept modifier;
 	private final boolean destinationNegated;
 
 	/**
 	 * Creates a new relationship change entry with the specified arguments.
+	 * 
 	 * @param nature the change nature
 	 * @param source the source component
 	 * @param type the type component
@@ -40,10 +41,17 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 	 * @param modifier the modifier component
 	 * @param destinationNegated {@code true} if the destination component is to be negated, {@code false} otherwise
 	 */
-	public RelationshipChangeEntry(final Nature nature, final IComponentWithIconId<Long> source, final IComponentWithIconId<Long> type,
-			final IComponentWithIconId<Long> destination, final byte group, final byte unionGroup, final IComponentWithIconId<Long> modifier,
+	public RelationshipChangeEntry(final Nature nature, 
+			final ChangeConcept source, 
+			final ChangeConcept type,
+			final ChangeConcept destination, 
+			final byte group, 
+			final byte unionGroup, 
+			final ChangeConcept modifier,
 			final boolean destinationNegated) {
+
 		super(nature, source, type, destination);
+
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.modifier = modifier;
@@ -51,23 +59,23 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 	}
 
 	/**
-	 * @return the relationship's group
+	 * @return the relationship group
 	 */
 	public byte getGroup() {
 		return group;
 	}
 
 	/**
-	 * @return the relationship's union group
+	 * @return the relationship union group
 	 */
 	public byte getUnionGroup() {
 		return unionGroup;
 	}
 
 	/**
-	 * @return the modifier component
+	 * @return the modifier component ("existential" or "universal")
 	 */
-	public IComponentWithIconId<Long> getModifier() {
+	public ChangeConcept getModifier() {
 		return modifier;
 	}
 
@@ -78,11 +86,8 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 		return destinationNegated;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntryBase#hashCode()
-	 */
-	@Override public int hashCode() {
+	@Override 
+	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + (destinationNegated ? 1231 : 1237);
@@ -92,29 +97,18 @@ public class RelationshipChangeEntry extends RelationshipChangeEntryBase {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntryBase#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+	@Override 
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
 		final RelationshipChangeEntry other = (RelationshipChangeEntry) obj;
-		if (destinationNegated != other.destinationNegated)
-			return false;
-		if (group != other.group)
-			return false;
-		if (modifier == null) {
-			if (other.modifier != null)
-				return false;
-		} else if (!modifier.equals(other.modifier))
-			return false;
-		if (unionGroup != other.unionGroup)
-			return false;
+
+		if (destinationNegated != other.destinationNegated) { return false; }
+		if (group != other.group) { return false; }
+		if (unionGroup != other.unionGroup) { return false; }
+		if (!Objects.equal(modifier, other.modifier)) { return false; }
 		return true;
 	}
 }

@@ -23,7 +23,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 
 import com.b2international.snowowl.core.api.BranchPath;
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch;
 import com.google.common.primitives.Ints;
 
 /**

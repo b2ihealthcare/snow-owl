@@ -18,8 +18,10 @@ package com.b2international.snowowl.snomed.api.rest.components;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 
 import java.util.Map;
 
@@ -28,14 +30,16 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.domain.AssociationType;
-import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.api.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMap.Builder;
 
 /**
@@ -92,13 +96,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createDescriptionWithNonExistentConcept() {
-		final Map<?, ?> requestBody = createRequestBody("1", "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description with a non-existent concept ID");
+		final Map<?, ?> requestBody = createRequestBody("1", "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description with a non-existent concept ID");		
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
 	}
 
 	@Test
 	public void createDescriptionWithNonexistentType() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, "2", "New description with a non-existent type ID");
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, "2", "New description with a non-existent type ID");		
 		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
 	}
 
@@ -127,6 +131,17 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
 		assertCaseSignificance(createMainPath(), descriptionId, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
+	}
+	
+	@Test
+	public void createDuplicateDescription() {
+		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
+		
+		final Map<Object, Object> dupRequestBody = Maps.<Object, Object>newHashMap(requestBody);
+		dupRequestBody.put("id", descriptionId);
+		dupRequestBody.put("commitComment", "New duplicate description on MAIN");
+		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.DESCRIPTION, dupRequestBody, 409);
 	}
 
 	@Test
@@ -274,12 +289,33 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
 		assertPreferredTermEquals(createMainPath(), DISEASE, descriptionId);
 	}
+	
+	@Test
+	public void updateAcceptabilityAndInactivate() {
+		final String ptId = givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.with().header("Accept-Language", "en-GB")
+				.when().get("/{path}/concepts/{conceptId}/pt", createMainPath(), DISEASE)
+				.then().extract()
+				.body().path("id");
+
+		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 2", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
+		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP)
+				.put("active", false)
+				.put("commitComment", "Changed description acceptability and inactivated it at the same time")
+				.build();
+		
+		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
+		assertPreferredTermEquals(createMainPath(), DISEASE, ptId);
+	}
 
 	@Test
 	public void createDescriptionOnNestedBranch() {
-		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);
+		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);		
 
 		assertDescriptionExists(nestedBranchPath, descriptionId);
 		assertDescriptionNotExists(nestedBranchPath.getParent(), descriptionId);
@@ -289,9 +325,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void deleteDescriptionOnNestedBranch() {
-		final IBranchPath nestedBranchPath = createNestedBranch("a", "b");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
 		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);
+		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);		
 
 		assertDescriptionCanBeDeleted(nestedBranchPath, descriptionId);
 		assertDescriptionNotExists(nestedBranchPath, descriptionId);

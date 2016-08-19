@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -37,21 +36,20 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
- * Lookup service for the SNOMED CT reference set members.
- * 
+ * Lookup service implementation for SNOMED CT reference set members.
  */
 public class SnomedRefSetMemberLookupService extends AbstractLookupService<String, SnomedRefSetMember, CDOView> {
 
 	/**
-	 * Table names for all supported reference set members. Consider order of the collection in respect of
-	 * performance before modifying it.
+	 * Table names for all available reference set members, ordered by frequency of use (it is likely that most of the reference
+	 * set members in a system will be simple, for example).
 	 */
 	private static final Iterable<String> TABLE_NAMES = ImmutableList.<String>of(
 			"SNOMEDREFSET_SNOMEDREFSETMEMBER",
@@ -63,10 +61,6 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRefSetMemberLookupService.class);
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(java.io.Serializable, java.lang.Object)
-	 */
 	@Override
 	public SnomedRefSetMember getComponent(final String uuid, final CDOView view) {
 
@@ -113,10 +107,6 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 		return (SnomedRefSetMember) cdoObject;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public SnomedRefSetMemberIndexEntry getComponent(final IBranchPath branchPath, final String uuid) {
 		checkNotNull(branchPath, "The branch path cannot be null.");
@@ -139,22 +129,9 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 		return Iterables.getOnlyElement(result, null);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getStorageKey(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
 		return getRefSetBrowser().getMemberStorageKey(branchPath, id);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponentIdAndLabel(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
-	@Override
-	public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
-		return getTerminologyBrowser().getComponentIdAndLabel(branchPath, storageKey);
 	}
 
 	private SnomedIndexService getIndexService() {
@@ -165,14 +142,6 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 		return ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
 	}
 
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.AbstractLookupService#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

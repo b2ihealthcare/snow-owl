@@ -20,7 +20,7 @@ import org.eclipse.emf.ecore.EPackage;
 import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.validation.AbstractComponentValidationClientService;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
  * Client side SNOMED&nbsp;CT component validation service implementation.

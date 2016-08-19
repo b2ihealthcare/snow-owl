@@ -18,12 +18,13 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.branch.Branch.BranchState;
 
 /**
  * @since 4.1
@@ -40,6 +41,7 @@ public class MainBranchTest {
 		manager = mock(BranchManagerImpl.class);
 		main = new MainBranchImpl(0L);
 		main.setBranchManager(manager);
+		when(manager.getBranch(main.path())).thenReturn(main);
 		mainWithTimestamp = new MainBranchImpl(5L);
 		mainWithTimestamp.setBranchManager(manager);
 		serializer = new BranchSerializer();
@@ -98,15 +100,15 @@ public class MainBranchTest {
 		}
 		return branch;
 	}
-
-	@Test(expected = BadRequestException.class)
-	public void rebaseMainBranch() throws Exception {
-		main.rebase("Commit");
-	}
 	
 	@Test(expected = BadRequestException.class)
 	public void deleteMainBranch() throws Exception {
 		main.delete();
+	}
+
+	@Test(expected = BadRequestException.class)
+	public void rebaseMainBranch() throws Exception {
+		main.rebase(main, "Rebase");
 	}
 	
 	@Test
@@ -128,5 +130,4 @@ public class MainBranchTest {
 		assertEquals(false, value.isDeleted());
 		assertEquals("value", value.metadata().get("key"));
 	}
-	
 }

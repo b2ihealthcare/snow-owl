@@ -16,12 +16,15 @@
 package com.b2international.snowowl.datastore.index.mapping;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -37,15 +40,23 @@ public interface IndexField<T> {
 
 	String getValueAsString(Document doc);
 
+	T getOptionalValue(Document doc);
+
+	String getOptionalValueAsString(Document doc);
+
 	List<T> getValues(Document doc);
 
-	List<String> getValuesAsString(Document doc);
+	List<String> getValuesAsStringList(Document doc);
 
-	Query toQuery(T value);
+	Set<String> getValuesAsStringSet(Document doc);
 
-	Query toExistsQuery();
+	TermQuery toQuery(T value);
+
+	PrefixQuery toExistsQuery();
 
 	Term toTerm(T value);
+
+	TermFilter toTermFilter(T value);
 
 	void addTo(Document doc, T value);
 
@@ -55,9 +66,26 @@ public interface IndexField<T> {
 
 	Sort createSort();
 
-	Filter createFilter(T... values);
+	/**
+	 * Creates a {@link Filter} accepting documents where any of the specified values appear in the indexed content for this field.
+	 * <p>
+	 * If the specified {@code Iterable} is empty, the returned filter will match no documents.
+	 * 
+	 * @param values the values to use (may not be {@code null})
+	 * @return the {@code Filter} accepting any of the specified values for this field
+	 */
+	Filter createTermsFilter(Iterable<T> values);
 
-	Filter createFilter(List<BytesRef> bytesRefs);
+	/**
+	 * <i>Expert</i>: creates a {@link Filter} accepting documents where any of the specified {@link BytesRef}s appear in the indexed content for this
+	 * field (term values need to be converted by the caller).
+	 * <p>
+	 * If the specified {@code Iterable} is empty, the returned filter will match no documents.
+	 * 
+	 * @param bytesRefs the {@code BytesRef}s to use (may not be {@code null})
+	 * @return the {@code Filter} accepting any of the specified values for this field
+	 */
+	Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs);
 
 	/**
 	 * Reads the value from the given source {@link Document} and adds it to the target {@link Document}.
@@ -66,5 +94,4 @@ public interface IndexField<T> {
 	 * @param target
 	 */
 	void copyTo(Document source, Document target);
-
 }

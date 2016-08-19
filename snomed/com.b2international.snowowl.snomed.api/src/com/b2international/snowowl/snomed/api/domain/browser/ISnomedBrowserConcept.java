@@ -17,10 +17,12 @@ package com.b2international.snowowl.snomed.api.domain.browser;
 
 import java.util.List;
 
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatusProvider;
+
 /**
  * Represents a specific SNOMED CT concept, carrying information for use in the IHTSDO SNOMED CT Browser.
  */
-public interface ISnomedBrowserConcept extends ISnomedBrowserComponentWithId, IConceptIdWithFsnProvider, IDefinitionStatusProvider, TaxonomyNode {
+public interface ISnomedBrowserConcept extends ISnomedBrowserComponentWithId, IConceptIdWithFsnProvider, DefinitionStatusProvider, TaxonomyNode {
 
 	/** @return the Preferred Term of this concept for the requested language code and dialect */
 	String getPreferredSynonym();

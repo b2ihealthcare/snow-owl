@@ -878,6 +878,9 @@ public class CDOServerCommitBuilder {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CDOServerCommitBuilder.class);
 
+	/** The number of characters in a UUID (32 hex digits and 4 dashes) */
+	private static final int UUID_LENGTH = 36;
+
 	private final ICDOTransactionAggregator transactionAggregator;
 	private final String userId; 
 	private @Nullable final String comment;
@@ -922,7 +925,7 @@ public class CDOServerCommitBuilder {
 
 		this.transactionAggregator = transactionAggregator;
 		this.userId = userId;
-		final String truncatedMessage = StringUtils.truncate(comment, 255 - UUID.randomUUID().toString().length());
+		final String truncatedMessage = StringUtils.truncate(comment, 255 - UUID_LENGTH);
 		if (!truncatedMessage.equals(comment)) {
 			LOGGER.warn("Truncated commit message (original message: {})", comment);
 		}

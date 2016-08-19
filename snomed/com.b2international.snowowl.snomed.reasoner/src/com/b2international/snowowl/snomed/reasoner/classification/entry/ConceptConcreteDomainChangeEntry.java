@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.google.common.base.Objects;
 
 /**
  * Represents a change entry of a concrete domain element related to a concept.
@@ -28,67 +28,48 @@ public class ConceptConcreteDomainChangeEntry extends AbstractChangeEntry implem
 
 	/**
 	 * Creates a new concrete domain change entry with the specified arguments.
+	 * 
 	 * @param nature the change nature
 	 * @param source the component corresponding to the referenced concept
 	 * @param concreteDomainElement the contained concrete domain element
 	 */
-	public ConceptConcreteDomainChangeEntry(final Nature nature, final IComponentWithIconId<Long> source, final ConcreteDomainElement concreteDomainElement) {
+	public ConceptConcreteDomainChangeEntry(final Nature nature, final ChangeConcept source, final ConcreteDomainElement concreteDomainElement) {
 		super(nature, source);
 		this.concreteDomainElement = concreteDomainElement;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry#getConcreteDomainElement()
-	 */
-	@Override public ConcreteDomainElement getConcreteDomainElement() {
+	@Override 
+	public ConcreteDomainElement getConcreteDomainElement() {
 		return concreteDomainElement;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry#getType()
-	 */
-	@Override public IComponentWithIconId<Long> getType() {
+	@Override 
+	public ChangeConcept getType() {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry#getDestination()
-	 */
-	@Override public IComponentWithIconId<Long> getDestination() {
+	@Override 
+	public ChangeConcept getDestination() {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry#hashCode()
-	 */
-	@Override public int hashCode() {
+	@Override 
+	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((concreteDomainElement == null) ? 0 : concreteDomainElement.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+	@Override 
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
 		final ConceptConcreteDomainChangeEntry other = (ConceptConcreteDomainChangeEntry) obj;
-		if (concreteDomainElement == null) {
-			if (other.concreteDomainElement != null)
-				return false;
-		} else if (!concreteDomainElement.equals(other.concreteDomainElement))
-			return false;
+
+		if (!Objects.equal(concreteDomainElement, other.concreteDomainElement)) { return false; }
 		return true;
 	}
 }

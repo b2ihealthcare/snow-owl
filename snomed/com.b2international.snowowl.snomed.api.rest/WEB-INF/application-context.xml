@@ -17,17 +17,10 @@
 	<bean class="com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl" />
 	
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedConceptHistoryServiceImpl" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedConceptServiceImpl" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedDescriptionServiceImpl" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedReferenceSetHistoryServiceImpl" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedRelationshipServiceImpl" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedStatementBrowserServiceImpl" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedTerminologyBrowserServiceImpl" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedExportService" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedRf2ImportService" />
-	
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedClassificationServiceImpl" />
-	
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedBrowserService" />
 	
 	<mvc:default-servlet-handler />

@@ -20,11 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.File;
 import java.util.Date;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 
@@ -34,7 +35,6 @@ import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportCo
  * @see AbstractSnomedRefSetExporter
  */
 public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporter {
-
 	
 	private final SnomedMapSetSetting mapSetSetting;
 	private final String label;
@@ -45,7 +45,7 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 		this.refSetId = checkNotNull(refSetId, "refSetId");
 		this.configuration = checkNotNull(configuration, "configuration");
 		this.mapSetSetting = mapSetSetting;
-		label = SnomedConceptNameProvider.INSTANCE.getComponentLabel(getBranchPath(), refSetId);
+		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId);
 	}
 
 	protected IBranchPath getBranchPath() {
@@ -107,5 +107,4 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 		protected String priority;
 		protected String group;
 	}
-	
 }

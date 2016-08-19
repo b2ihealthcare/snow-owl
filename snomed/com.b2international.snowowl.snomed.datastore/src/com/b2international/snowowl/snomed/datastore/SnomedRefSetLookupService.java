@@ -27,7 +27,6 @@ import org.eclipse.emf.ecore.EPackage;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ComponentIdAndLabel;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -35,27 +34,25 @@ import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
- * Service for looking up SNOMED&nbsp;CT reference sets.
+ * Lookup service implementation for SNOMED CT reference sets.
  */
 public class SnomedRefSetLookupService extends AbstractLookupService<String, SnomedRefSet, CDOView> {
 
-	/**Table names for all available reference sets. Consider order of collection for better performance.*/
-	private static final Iterable<String> TABLE_NAMES = ImmutableList.<String>of(
-			"SNOMEDREFSET_SNOMEDREGULARREFSET",
+	/**
+	 * Table names for all available reference sets, ordered by frequency of use (it is likely that most of the reference sets in
+	 * a system will be simple, for example).
+	 */
+	private static final List<String> REFSET_TABLE_NAMES = ImmutableList.of("SNOMEDREFSET_SNOMEDREGULARREFSET",
 			"SNOMEDREFSET_SNOMEDMAPPINGREFSET",
 			"SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSET",
 			"SNOMEDREFSET_SNOMEDSTRUCTURALREFSET");
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(java.io.Serializable, java.lang.Object)
-	 */
 	@Override
 	public SnomedRefSet getComponent(final String identifierConceptId, final CDOView view) {
 		checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null or empty.");
@@ -75,7 +72,7 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 					}
 				}
 
-				for (final String tableName : TABLE_NAMES) {
+				for (final String tableName : REFSET_TABLE_NAMES) {
 
 					final String sqlGetRefsetByIdentifierConceptId = String.format(SnomedTerminologyQueries.SQL_GET_REFSET_BY_IDENTIFIER_CONCEPT_ID, tableName);
 					final CDOQuery cdoQuery = view.createQuery("sql", sqlGetRefsetByIdentifierConceptId);
@@ -102,45 +99,20 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 		return (SnomedRefSet) cdoObject;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponent(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public SnomedRefSetIndexEntry getComponent(final IBranchPath branchPath, final String id) {
 		return getRefSetBrowser().getRefSet(branchPath, id);
 	}
 
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getStorageKey(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
 	public long getStorageKey(final IBranchPath branchPath, final String id) {
 		return getRefSetBrowser().getStorageKey(branchPath, id);
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#getComponentIdAndLabel(com.b2international.snowowl.core.api.IBranchPath, long)
-	 */
-	@Override
-	public ComponentIdAndLabel getComponentIdAndLabel(final IBranchPath branchPath, final long storageKey) {
-		return getTerminologyBrowser().getComponentIdAndLabel(branchPath, storageKey);
 	}
 
 	private SnomedRefSetBrowser getRefSetBrowser() {
 		return ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
 	}
 
-	private SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.AbstractLookupService#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;

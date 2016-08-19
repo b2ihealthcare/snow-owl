@@ -26,6 +26,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.RelationshipRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -67,14 +68,18 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 				INDEXES);
 	}
 
-	public SnomedRelationshipImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier, final ComponentImportType type) {
+	public SnomedRelationshipImporter(final SnomedImportContext importContext, 
+			final InputStream releaseFileStream, 
+			final String releaseFileIdentifier, 
+			final ComponentImportType type) {
+		
 		super(createImportConfiguration(type), importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override
 	protected void importRow(final RelationshipRow currentRow) {
 
-		final Relationship editedRelationship = getOrCreateRelationship(currentRow.getSourceId(), currentRow.getId());
+		final Relationship editedRelationship = getOrCreateComponent(currentRow.getSourceId(), currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedRelationship)) {
 			return;
@@ -95,21 +100,29 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 		editedRelationship.setModifier(getConceptSafe(currentRow.getModifierId(), SnomedRf2Headers.FIELD_MODIFIER_ID, currentRow.getId()));
 		editedRelationship.setGroup(currentRow.getRelationshipGroup());
 		
+		// Universal "has active ingredient" relationships should be put into a union group
+		if (Concepts.HAS_ACTIVE_INGREDIENT.equals(currentRow.getTypeId()) 
+				&& Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(currentRow.getModifierId())
+				&& editedRelationship.getUnionGroup() != 1) {
+			
+			editedRelationship.setUnionGroup(1);
+		}
+		
 		getImportContext().conceptVisited(currentRow.getSourceId());
 	}
-
-	private Relationship getOrCreateRelationship(final String conceptSctId, final String relationshipSctId) {
-
-		Relationship result = getRelationship(relationshipSctId);
+	
+	@Override
+	protected Relationship createComponent(final String containerId, final String componentId) {
+		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
+		relationship.setId(componentId);
+		relationship.setSource(getConceptSafe(containerId, SnomedRf2Headers.FIELD_SOURCE_ID, componentId));
 		
-		if (null == result) {
-			result = SnomedFactory.eINSTANCE.createRelationship();
-			result.setId(relationshipSctId);
-			result.setSource(getConceptSafe(conceptSctId, SnomedRf2Headers.FIELD_SOURCE_ID, relationshipSctId));
-			getComponentLookup().addNewComponent(result, relationshipSctId);
-		}
-
-		return result;
+		return relationship;
 	}
-
+	
+	@Override
+	protected Relationship getComponent(final String componentId) {
+		return getRelationship(componentId);
+	}
+	
 }

@@ -21,7 +21,7 @@ import static java.util.Collections.emptySet;
 import java.io.Serializable;
 import java.util.Collection;
 
-import com.b2international.snowowl.core.api.LabelProvider;
+import com.b2international.snowowl.core.api.component.LabelProvider;
 
 /**
  * Represents a node change.

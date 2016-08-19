@@ -17,17 +17,16 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.api.domain.AssociationType;
-import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.api.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedDescriptionUpdate;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.google.common.collect.Multimap;
 
 /**
  * @since 1.0
  */
-public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpdate<SnomedDescriptionUpdate> {
+public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpdate {
 
 	private CaseSignificance caseSignificance;
 	private Map<String, Acceptability> acceptability;
@@ -66,18 +65,4 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 		this.associationTargets = associationTargets;
 	}
 
-	@Override
-	protected SnomedDescriptionUpdate createComponentUpdate() {
-		return new SnomedDescriptionUpdate();
-	}
-
-	@Override
-	public SnomedDescriptionUpdate toComponentUpdate() {
-		final SnomedDescriptionUpdate result = super.toComponentUpdate();
-		result.setCaseSignificance(getCaseSignificance());
-		result.setAcceptability(getAcceptability());
-		result.setInactivationIndicator(getInactivationIndicator());
-		result.setAssociationTargets(getAssociationTargets());
-		return result;
-	}
 }

@@ -32,7 +32,7 @@ import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 
 /**
- *
+ * @deprecated - UNSUPPORTED, see {@link SnomedSimpleTypeRefSetAttributeConfiguration}
  */
 public class ComponentAttributeOrderConfiguration extends PreferenceBase {
 

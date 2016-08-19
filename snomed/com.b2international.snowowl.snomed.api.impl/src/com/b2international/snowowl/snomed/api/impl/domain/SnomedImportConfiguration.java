@@ -23,8 +23,8 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
-import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 /**
  * Implementation of a {@link ISnomedImportConfiguration SNOMED&nbsp;CT import configuration}.

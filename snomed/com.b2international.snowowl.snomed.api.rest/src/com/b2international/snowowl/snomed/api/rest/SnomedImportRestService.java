@@ -38,10 +38,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedImportDetails;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedImportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -69,7 +70,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 404, message = "Code system version not found"),
-		@ApiResponse(code = 404, message = "Task not found"),
+		@ApiResponse(code = 404, message = "Task not found", response = RestApiError.class),
 	})
 	@RequestMapping(method=RequestMethod.POST,
 		consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
@@ -88,7 +89,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 			notes="Returns the specified import run's configuration and status.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version or import not found"),
+		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
 	})
 	@RequestMapping(value="/{importId}", method=RequestMethod.GET)
 	public SnomedImportDetails getImportDetails(
@@ -104,7 +105,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 			notes="Removes a pending or finished import configuration from the server.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Code system version or import not found"),
+		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
 	})
 	@RequestMapping(value="/{importId}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -121,7 +122,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 			notes="Removes a pending or finished import configuration from the server.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content"),
-		@ApiResponse(code = 404, message = "Code system version or import not found"),
+		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
 	})
 	@RequestMapping(value="/{importId}/archive", 
 		method=RequestMethod.POST, 

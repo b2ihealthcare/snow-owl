@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter<DescriptionRow, Description> {
-
+	
 	private static final Map<String, CellProcessor> CELLPROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 			.put(DescriptionRow.PROP_ID, NullObjectPattern.INSTANCE)
 			.put(DescriptionRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
@@ -71,7 +71,7 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 	@Override
 	protected void importRow(final DescriptionRow currentRow) {
 
-		final Description editedDescription = getOrCreateDescription(currentRow.getConceptId(), currentRow.getId());
+		final Description editedDescription = getOrCreateComponent(currentRow.getConceptId(), currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedDescription)) {
 			return;
@@ -93,18 +93,19 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 		
 		getImportContext().conceptVisited(currentRow.getConceptId());
 	}
-
-	private Description getOrCreateDescription(final String conceptSctId, final String descriptionSctId) {
-
-		Description result = getDescription(descriptionSctId);
+	
+	@Override
+	protected Description createComponent(final String containerId, final String componentId) {
+		final Description description = SnomedFactory.eINSTANCE.createDescription();
+		description.setId(componentId);
+		description.setConcept(getConceptSafe(containerId, SnomedRf2Headers.FIELD_CONCEPT_ID, componentId));
 		
-		if (null == result) {
-			result = SnomedFactory.eINSTANCE.createDescription();
-			result.setId(descriptionSctId);
-			result.setConcept(getConceptSafe(conceptSctId, SnomedRf2Headers.FIELD_CONCEPT_ID, descriptionSctId));
-			getComponentLookup().addNewComponent(result, descriptionSctId);
-		}
-		
-		return result;
+		return description;
 	}
+	
+	@Override
+	protected Description getComponent(final String componentId) {
+		return getDescription(componentId);
+	}
+	
 }

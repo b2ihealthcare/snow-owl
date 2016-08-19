@@ -35,7 +35,7 @@ import org.eclipse.net4j.util.lifecycle.LifecycleState;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch;
 
 /**
  * @since 4.1

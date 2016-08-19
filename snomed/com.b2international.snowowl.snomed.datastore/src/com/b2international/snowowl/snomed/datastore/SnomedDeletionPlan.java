@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
@@ -47,8 +47,6 @@ import com.google.common.collect.Sets;
  */
 public class SnomedDeletionPlan {
 
-	public static final String REJECT_MESSAGE_FORMAT = "The %s '%s' has been released, and cannot be deleted.";
-	
 	private final List<String> rejectionReasons = new ArrayList<String>();
 	
 	//	deleting concepts that are member of description type refset may affect concept descriptions.

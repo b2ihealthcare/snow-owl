@@ -21,10 +21,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.history.domain.IHistoryInfo;
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.IComponentRef;
+import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
-import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -48,7 +49,7 @@ public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
 			notes="Returns the change history for the specified Concept.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/history", method=RequestMethod.GET)
 	public CollectionResource<IHistoryInfo> getHistory(

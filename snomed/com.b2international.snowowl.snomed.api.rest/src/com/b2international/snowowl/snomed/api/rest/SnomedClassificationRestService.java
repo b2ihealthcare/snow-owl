@@ -17,8 +17,11 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,14 +30,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
 import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
@@ -42,8 +52,6 @@ import com.b2international.snowowl.snomed.api.domain.classification.IRelationshi
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestRun;
-import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
-import com.b2international.snowowl.snomed.api.rest.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
@@ -148,10 +156,24 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
-
+			
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage,
+			
 			final Principal principal) {
 
-		return CollectionResource.of(delegate.getEquivalentConceptSets(branchPath, classificationId, principal.getName()));
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		return CollectionResource.of(delegate.getEquivalentConceptSets(branchPath, classificationId, extendedLocales, principal.getName()));
 	}
 
 	@ApiOperation(
@@ -162,7 +184,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET, produces={"application/json", "text/csv"})
 	public @ResponseBody PageableCollectionResource<IRelationshipChange> getRelationshipChanges(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 
@@ -184,6 +206,47 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 		final IRelationshipChangeList relationshipChangeList = delegate.getRelationshipChanges(branchPath, classificationId, principal.getName(), offset, limit);
 		return PageableCollectionResource.of(relationshipChangeList.getChanges(), offset, limit, relationshipChangeList.getTotal());
+	}
+
+	@ApiOperation(
+			value="Retrieve a preview of a concept with classification changes applied",
+			notes="Retrieves a preview of single concept and related information on a branch with classification changes applied.")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = Void.class),
+			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
+	})
+	@RequestMapping(value="/{path:**}/classifications/{classificationId}/concept-preview/{conceptId}", method=RequestMethod.GET)
+	public @ResponseBody
+	ISnomedBrowserConcept getConceptDetails(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+
+			@ApiParam(value="The classification identifier")
+			@PathVariable(value="classificationId")
+			final String classificationId,
+
+			@ApiParam(value="The concept identifier")
+			@PathVariable(value="conceptId")
+			final String conceptId,
+
+			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
+			final String languageSetting,
+
+			final Principal principal) {
+
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(languageSetting));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		return delegate.getConceptPreview(branchPath, classificationId, conceptId, extendedLocales, principal.getName());
 	}
 
 	@ApiOperation(

@@ -15,24 +15,14 @@
  */
 package com.b2international.snowowl.core.api;
 
-
 /**
- * Factory class for creating or retrieving {@link IComponentNameProvider name provider} instances for
- * different terminology components.  
- * <p>
- * The following features are supported:
- * <ul>
- * <li>{@link INameProviderFactory#getNameProvider() Get name provider}</li>
- * </ul>
- * </p>
+ * Factory class for creating or retrieving {@link IComponentNameProvider name provider} instances for different terminology
+ * components.
  */
 public interface INameProviderFactory {
 
 	/**
-	 * Returns with a terminology independent {@link IComponentNameProvider name provider} instance.
-	 * @return the name provider for terminology independent components.
-	 * @see INameProviderFactory
+	 * @return a name provider instance for components of a terminology
 	 */
 	IComponentNameProvider getNameProvider();
-	
 }

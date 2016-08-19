@@ -17,9 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
 import java.io.Serializable;
 
-import javax.annotation.Nullable;
-
-import com.b2international.snowowl.core.api.IComponent;
+import com.google.common.base.Objects;
 
 /**
  * Represents a summary of a concrete domain reference set member in an {@link IConcreteDomainChangeEntry}.
@@ -30,15 +28,16 @@ public class ConcreteDomainElement implements Serializable {
 
 	private final String attributeDisplayName;
 	private final String value;
-	private final IComponent<Long> unit;
+	private final ChangeConcept unit;
 
 	/**
-	 * Creates a new concrete domain element with the specified arguments
+	 * Creates a new concrete domain element with the specified arguments.
+	 * 
 	 * @param attributeDisplayName the display name of the concrete domain member's attribute
 	 * @param value the value of the concrete domain member, suitable for display on the UI
 	 * @param unit the UOM component of the concrete domain member (can be {@code null} if no unit is associated with this member)
 	 */
-	public ConcreteDomainElement(final String attributeDisplayName, final String value, final IComponent<Long> unit) {
+	public ConcreteDomainElement(final String attributeDisplayName, final String value, final ChangeConcept unit) {
 		this.attributeDisplayName = attributeDisplayName;
 		this.value = value;
 		this.unit = unit;
@@ -61,15 +60,12 @@ public class ConcreteDomainElement implements Serializable {
 	/**
 	 * @return the UOM component of the concrete domain member (can be {@code null} if no unit is associated with this member)
 	 */
-	public @Nullable IComponent<Long> getUnit() {
+	public ChangeConcept getUnit() {
 		return unit;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override public int hashCode() {
+	@Override 
+	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((attributeDisplayName == null) ? 0 : attributeDisplayName.hashCode());
@@ -78,33 +74,17 @@ public class ConcreteDomainElement implements Serializable {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+	@Override 
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
 		final ConcreteDomainElement other = (ConcreteDomainElement) obj;
-		if (attributeDisplayName == null) {
-			if (other.attributeDisplayName != null)
-				return false;
-		} else if (!attributeDisplayName.equals(other.attributeDisplayName))
-			return false;
-		if (unit == null) {
-			if (other.unit != null)
-				return false;
-		} else if (!unit.equals(other.unit))
-			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
+
+		if (!Objects.equal(attributeDisplayName, other.attributeDisplayName)) { return false; }
+		if (!Objects.equal(unit, other.unit)) { return false; }
+		if (!Objects.equal(value, other.value)) { return false; }
 		return true;
 	}
 }

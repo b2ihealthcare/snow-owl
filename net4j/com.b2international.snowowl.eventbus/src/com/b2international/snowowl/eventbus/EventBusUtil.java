@@ -23,6 +23,7 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
 import com.b2international.snowowl.internal.eventbus.EventBus;
+import com.b2international.snowowl.internal.eventbus.WorkerExecutorServiceFactory;
 
 /**
  * @since 3.2
@@ -46,8 +47,8 @@ public class EventBusUtil {
 	 * 
 	 * @return
 	 */
-	public static final IEventBus getBus(String name) {
-		final EventBus bus = new EventBus(name);
+	public static final IEventBus getBus(String name, int numberOfWorkers) {
+		final EventBus bus = new EventBus(name, numberOfWorkers);
 		LifecycleUtil.activate(bus);
 		return bus;
 	}
@@ -81,4 +82,12 @@ public class EventBusUtil {
 		return result.get();
 	}
 
+	/**
+	 * @return an {@link EventBus} with the specified description and number of workers, using a shared queue for distributing tasks
+	 */
+	public static IEventBus getWorkerBus(String name, int numberOfWorkers) {
+		final IEventBus bus = new EventBus(name, numberOfWorkers, new WorkerExecutorServiceFactory());
+		LifecycleUtil.activate(bus);
+		return bus;
+	}
 }

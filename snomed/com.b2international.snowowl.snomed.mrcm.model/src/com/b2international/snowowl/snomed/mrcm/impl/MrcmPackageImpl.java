@@ -34,7 +34,6 @@ import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
 import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
 import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.DependencyOperator;
 import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
 import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
@@ -47,6 +46,8 @@ import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -179,13 +180,6 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	private EEnum dataTypeEEnum = null;
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	private EEnum dependencyOperatorEEnum = null;
 
 	/**
@@ -255,11 +249,16 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 
 		isInited = true;
 
+		// Obtain or create and register interdependencies
+		SnomedRefSetPackageImpl theSnomedrefsetPackage = (SnomedRefSetPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI) instanceof SnomedRefSetPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI) : SnomedRefSetPackage.eINSTANCE);
+
 		// Create package meta-data objects
 		theMrcmPackage.createPackageContents();
+		theSnomedrefsetPackage.createPackageContents();
 
 		// Initialize created meta-data
 		theMrcmPackage.initializePackageContents();
+		theSnomedrefsetPackage.initializePackageContents();
 
 		// Mark meta-data to indicate it can't be changed
 		theMrcmPackage.freeze();
@@ -716,15 +715,6 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EEnum getDataType() {
-		return dataTypeEEnum;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EEnum getDependencyOperator() {
 		return dependencyOperatorEEnum;
 	}
@@ -850,7 +840,6 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 
 		// Create enums
 		groupRuleEEnum = createEEnum(GROUP_RULE);
-		dataTypeEEnum = createEEnum(DATA_TYPE);
 		dependencyOperatorEEnum = createEEnum(DEPENDENCY_OPERATOR);
 		hierarchyInclusionTypeEEnum = createEEnum(HIERARCHY_INCLUSION_TYPE);
 		constraintStrengthEEnum = createEEnum(CONSTRAINT_STRENGTH);
@@ -879,6 +868,9 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		setName(eNAME);
 		setNsPrefix(eNS_PREFIX);
 		setNsURI(eNS_URI);
+
+		// Obtain other dependent packages
+		SnomedRefSetPackage theSnomedrefsetPackage = (SnomedRefSetPackage)EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI);
 
 		// Create type parameters
 
@@ -921,7 +913,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		initEClass(concreteDomainElementPredicateEClass, ConcreteDomainElementPredicate.class, "ConcreteDomainElementPredicate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getConcreteDomainElementPredicate_Name(), ecorePackage.getEString(), "name", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getConcreteDomainElementPredicate_Label(), ecorePackage.getEString(), "label", "", 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConcreteDomainElementPredicate_Type(), this.getDataType(), "type", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConcreteDomainElementPredicate_Type(), theSnomedrefsetPackage.getDataType(), "type", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(dependencyPredicateEClass, DependencyPredicate.class, "DependencyPredicate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getDependencyPredicate_Children(), this.getConceptModelPredicate(), null, "children", null, 0, -1, DependencyPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -979,13 +971,6 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		addEEnumLiteral(groupRuleEEnum, GroupRule.SINGLE_GROUP);
 		addEEnumLiteral(groupRuleEEnum, GroupRule.ALL_GROUPS);
 		addEEnumLiteral(groupRuleEEnum, GroupRule.MULTIPLE_GROUPS);
-
-		initEEnum(dataTypeEEnum, DataType.class, "DataType");
-		addEEnumLiteral(dataTypeEEnum, DataType.BOOLEAN);
-		addEEnumLiteral(dataTypeEEnum, DataType.DATE);
-		addEEnumLiteral(dataTypeEEnum, DataType.FLOAT);
-		addEEnumLiteral(dataTypeEEnum, DataType.INTEGER);
-		addEEnumLiteral(dataTypeEEnum, DataType.STRING);
 
 		initEEnum(dependencyOperatorEEnum, DependencyOperator.class, "DependencyOperator");
 		addEEnumLiteral(dependencyOperatorEEnum, DependencyOperator.ONE);

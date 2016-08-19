@@ -36,5 +36,4 @@ public abstract class SnomedDocumentUpdaterBase extends DocumentUpdaterBase<Snom
 	protected ISnomedTaxonomyBuilder getTaxonomyBuilder() {
 		return taxonomyBuilder;
 	}
-	
 }

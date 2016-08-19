@@ -1,6 +1,76 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 4.5.0
+
+### Added
+- Support for simple and query type reference sets and members in RESTful API
+ * `GET` `/:path/refsets`
+ * `GET` `/:path/refsets/:id`
+ * `GET` `/:path/refsets/:id/history`
+ * `POST` `/:path/refsets`
+ * `POST` `/:path/refsets/:id/actions`
+ * `GET` `/:path/members`
+ * `GET` `/:path/members/:id`
+ * `POST` `/:path/members`
+ * `PUT` `/:path/members/:id`
+ * `DELETE` `/:path/members/:id`
+ * `POST` `/:path/members/:id/actions`
+- Integration with Component Identifier Service (CIS), see configuration_guide.adoc for details on how to configure it
+- Indexing term, language code and acceptability values on SNOMED CT Description documents
+- Initial version of the resource expansion API is currently available (expand `fsn`, `pt`, `descriptions` and other nested resources within a single request)
+- `numberOfWorkers` configuration parameter to tweak worker threads per repository (by default it will be set to `3 x number of cores`)
+
+### Changed
+- Fixed bug in `Accept-Language` header by introducing Extended Locales, they do support language reference set IDs properly (the original header spec. restricts the number of extension characters to `8`)
+- Increased `asyncTimeout` in Tomcat to 60 seconds
+- Performance improvements on some endpoints by utilizing the new resource expansion API
+- Marked a bunch of old APIs as deprecated, they will be removed in upcoming releases
+
+### Removed
+- Removed label indexing from SNOMED CT component indexing (using Description term index field to find a label)
+
+### Merged pull requests
+- https://github.com/b2ihealthcare/snow-owl/pull/35
+
+### Known issues
+- CIS is currently unsupported in SNOMED CT RF2 imports (manual synchronization is required)
+- Simple type mapping reference set membership is not tracked properly if there are multiple mappings for a single referenced component
+
+## 4.4.0
+
+### Added
+- Support of MRCM rules import before/after SNOMED CT import (previously was part of the SNOMED CT import)
+- Few missing SNOMED CT Inactivation Indicators have been added
+
+### Changed
+- RF2 validation in SNOMED CT import validates content based on effective times (fixes invalid errors/warnings)
+- Concept inactivation rewires immediate children to immediate parent (keeping all STATED ISA relationships and inactivating all inferred relationships)
+- Hot backup script copies entire index folder of a repository instead of just the version indexes
+- IndexService inactivity default timeout value changed to 30 minutes
+
+### Removed
+- PostProcessing support has been completely removed
+- Stopwords in index services have been completely removed
+
+### Bugs
+- Fixed stored mapTargetDescription values in SNOMED CT Simple Map Reference Set Members
+- Fixed invalid setting of released flag to false in case of already published component import (set only the effective time)
+- Removed tokenization of source field in IndexStore
+- Keep dirty indexes alive when running service inactivity checker
+
+### Merged pull requests
+- https://github.com/b2ihealthcare/snow-owl/pull/21
+- https://github.com/b2ihealthcare/snow-owl/pull/22
+- https://github.com/b2ihealthcare/snow-owl/pull/23
+- https://github.com/b2ihealthcare/snow-owl/pull/24
+- https://github.com/b2ihealthcare/snow-owl/pull/25
+- https://github.com/b2ihealthcare/snow-owl/pull/26
+- https://github.com/b2ihealthcare/snow-owl/pull/27
+- https://github.com/b2ihealthcare/snow-owl/pull/28
+- https://github.com/b2ihealthcare/snow-owl/pull/33
+- https://github.com/b2ihealthcare/snow-owl/pull/34
+
 ## 4.3.1
 
 ### Added
@@ -11,6 +81,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Renamed `descriptionInactivationIndicator` to `inactivationIndicator` in SNOMED CT Description representations
 - Changed commit notification logging to be more readable and traceable
+- Rebase across deep branches is now supported
 
 ### Bugs
 - Fixed major commit processing bug (https://github.com/b2ihealthcare/snow-owl/commit/4f1ec749bd74f065f9463b75a4a54e0c7f257d0f)

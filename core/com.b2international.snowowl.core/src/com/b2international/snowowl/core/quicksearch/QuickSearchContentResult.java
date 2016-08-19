@@ -25,17 +25,18 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Captures the results of a quick search filtering operation sent from the server. 
- *
  */
 public class QuickSearchContentResult implements Serializable {
 	
+	private static final List<QuickSearchElement> EMPTY_LIST = ImmutableList.of();
+
 	private static final long serialVersionUID = -5073119508848593926L;
 	
 	private final int totalHitCount;
 	private final List<QuickSearchElement> elements;
 	
 	public QuickSearchContentResult() {
-		this(0, ImmutableList.<QuickSearchElement>of());
+		this(0, EMPTY_LIST);
 	}
 
 	public QuickSearchContentResult(final int totalHitCount, final List<? extends QuickSearchElement> elements) {

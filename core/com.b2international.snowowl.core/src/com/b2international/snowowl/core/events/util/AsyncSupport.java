@@ -37,16 +37,16 @@ public final class AsyncSupport<T> {
 		this.clazz = checkNotNull(clazz, "clazz");
 	}
 
-	public Promise<T> send(Event event) {
-		final SettablePromise<T> promise = new SettablePromise<>();
+	public Promise<T> send(final Event event) {
+		final Promise<T> promise = new Promise<>();
 		event.send(bus, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						promise.resolve(clazz.cast(message.body()));
+						promise.resolve(message.body(clazz));
 					} else {
-						promise.reject((Throwable) message.body());
+						promise.reject(message.body(Throwable.class, AsyncSupport.class.getClassLoader()));
 					}
 				} catch (Throwable e) {
 					promise.reject(e);

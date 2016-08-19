@@ -37,7 +37,7 @@ import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
 

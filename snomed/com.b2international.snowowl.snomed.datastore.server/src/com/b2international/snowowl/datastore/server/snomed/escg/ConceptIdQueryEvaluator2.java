@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.escg;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_REFERRING_REFERENCE_SET_ID;
-
 import java.io.Serializable;
 
 import org.apache.lucene.index.Term;
@@ -27,15 +24,11 @@ import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import bak.pcj.LongCollection;
-import bak.pcj.LongIterator;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
@@ -56,6 +49,11 @@ import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.ast.RefSet;
 import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
 import com.google.common.base.Preconditions;
+
+import bak.pcj.LongCollection;
+import bak.pcj.LongIterator;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * Evaluator service for getting SNOMED&nbsp;CT concept IDs.
@@ -186,19 +184,13 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			}
 			
 		} else if (expression instanceof NumericDataClause) {
-			
 			final NumericDataClause clause = (NumericDataClause) expression;
 			return getByNumericalAttributes(evaluate(clause.getConcepts()), clause);
-			
 		} else if (expression instanceof NumericDataGroupClause) {
-			
 			final NumericDataGroupClause clause = (NumericDataGroupClause) expression;
 			return getByNumericalAttributesGroup(evaluate(clause.getConcepts()), clause.getNumericData(), evaluate(clause.getSubstances()));
-			
 		} else if (expression instanceof NotClause) {
-			
-			throw new UnsupportedOperationException("Cannot NOT yet: " + expression);
-			
+			throw new NotImplementedException("Can't start expression with NOT: %s", expression);
 		}
 	
 		throw new IllegalArgumentException("Don't know how to expand: " + expression);
@@ -206,7 +198,7 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 
 	private LongSet handleAndNot(final RValue notNegated, final NotClause negated) {
 		if (notNegated instanceof NotClause) {
-			throw new UnsupportedOperationException("Cannot AND two NOT clauses yet");
+			throw new NotImplementedException("Cannot AND two NOT clauses yet");
 		}
 		
 		final LongSet notNegatedIds = evaluate(notNegated);
@@ -235,11 +227,11 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 	}
 
 	private Term createRefSetTerm(String refSetId) {
-		return new Term(CONCEPT_REFERRING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
+		return new Term(SnomedMappings.conceptReferringRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
 	}
 	
 	private Term createMappingRefSetTerm(String refSetId) {
-		return new Term(CONCEPT_REFERRING_MAPPING_REFERENCE_SET_ID, IndexUtils.longToPrefixCoded(refSetId));
+		return new Term(SnomedMappings.conceptReferringMappingRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
 	}
 	
 	private Query createRefSetQuery(String refSetId) {

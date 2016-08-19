@@ -48,8 +48,9 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.datastore.SingleDirectoryIndex;
-import com.b2international.snowowl.datastore.index.DelimiterAnalyzer;
 import com.b2international.snowowl.datastore.index.IndexUtils;
+import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
+import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;
@@ -101,13 +102,13 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 	protected void initLucene(final File indexDirectory, final boolean clean) {
 		try {
 			this.directory = IndexUtils.open(indexDirectory);
-			final Analyzer analyzer = new DelimiterAnalyzer();
+			final Analyzer analyzer = new ComponentTermAnalyzer(true, true);
 			final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 			config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
 			config.setIndexDeletionPolicy(new SnapshotDeletionPolicy(config.getIndexDeletionPolicy()));
 			this.writer = new IndexWriter(directory, config);
 			this.writer.commit(); // Create index if it didn't exist
-			this.manager = new SearcherManager(directory, null);
+			this.manager = new SearcherManager(directory, new SearchWarmerFactory());
 		} catch (final IOException e) {
 			throw new StoreException(e.getMessage(), e);
 		}

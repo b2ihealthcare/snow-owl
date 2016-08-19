@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.scripting.core;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -31,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.google.common.collect.Sets;
 import com.google.common.io.InputSupplier;
 
 /**
@@ -44,27 +45,30 @@ public enum ExampleScriptCollector {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExampleScriptCollector.class);
 	private static final String EXAMPLE_SCRIPT_EXTENSION_POINT_ID = "com.b2international.snowowl.scripting.core.scripts";
 	private static final String SCRIPTS_ATTRIBUTE_ID = "script";
+	private static final String SCRIPT_SHOULD_OPEN_ATTRIBUTE_ID = "open";
 	
 	/**Eagerly collects and returns with all contributed example scripts.*/
-	public Iterable<File> collectExampleScripts() {
+	public Map<File, Boolean> collectExampleScripts() {
 		
-		final Collection<File> scrips = Sets.newHashSet();
+		Map<File, Boolean> scripts = newHashMap();
 		
 		for (final IConfigurationElement scriptsElement : getScriptingConfigurationElements()) {
-			
-
 			try {
 				final Pair<URL, String> fileURLWithName = getFileUrl(scriptsElement);
 				final File script = tryLoadScript(fileURLWithName);
-		    if (isValidScript(script)) {
-		    	scrips.add(script);
-		    }
+			    if (isValidScript(script)) {
+			    	scripts.put(script, shouldOpenUponProjectCreation(scriptsElement));
+			    }
 			} catch (final SnowowlServiceException e) {
 				LOGGER.error("Failed to load script from.", e);
 			}
-			
 		}
-		return scrips;
+		return scripts;
+	}
+
+	private boolean shouldOpenUponProjectCreation(IConfigurationElement scriptsElement) {
+		String value = scriptsElement.getAttribute(SCRIPT_SHOULD_OPEN_ATTRIBUTE_ID);
+		return null == value ? false : Boolean.valueOf(value).booleanValue();
 	}
 
 	private Pair<URL, String> getFileUrl(final IConfigurationElement scriptsElement) throws SnowowlServiceException {

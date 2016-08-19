@@ -28,6 +28,8 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.diff.NodeChange;
@@ -50,33 +52,35 @@ public abstract class NodeTransformerImpl extends DiffTransformer implements Nod
 	public NodeChange transform(final VersionCompareConfiguration configuration, final NodeDiff diff) {
 		checkNotNull(configuration, "configuration");
 		checkNotNull(diff, "diff");
-		
+
 		final ICDOConnection connection = getConnection(configuration);
-		
+
 		CDOView sourceView = null;
 		CDOView targetView = null;
-		
-		try {
 
-			final boolean treeWayUpdate = configuration.isThreeWay() && isUpdate(diff);
-			sourceView = connection.createView(treeWayUpdate ? createPath(configuration.getSourcePath()) : configuration.getSourcePath());
-			targetView = connection.createView(configuration.getTargetPath());
-			
+		try {
+			final IBranchPath sourceBranchPath = getBranchPath(configuration.isSourcePatched(), configuration.getSourcePath());
+			final IBranchPath targetBranchPath = getBranchPath(configuration.isTargetPatched(), configuration.getTargetPath());
+
+			final boolean threeWayUpdate = configuration.isThreeWay() && isUpdate(diff);
+			sourceView = connection.createView(threeWayUpdate ? createPath(configuration.getSourcePath()) : sourceBranchPath);
+			targetView = connection.createView(targetBranchPath);
+
 			if (!diff.hasChanged()) {
-				return createNodeChange(diff, sourceView, targetView, Collections.<NodeDelta>emptyList());
+				return createNodeChange(diff, sourceView, targetView, Collections.<NodeDelta> emptyList());
 			}
 
 			return trySort(doTransform(sourceView, targetView, diff));
-			
 		} finally {
-
 			LifecycleUtil.deactivate(sourceView);
 			LifecycleUtil.deactivate(targetView);
-			
 		}
-		
 	}
-	
+
+	private IBranchPath getBranchPath(final boolean patched, final IBranchPath branchPath) {
+		return patched ? branchPath : BranchPathUtils.isMain(branchPath) ? branchPath : BranchPathUtils.convertIntoBasePath(branchPath);
+	}
+
 	/**
 	 * Transforms the given node diffs into {@link NodeChange} with the given {@link CDOView views}. 
 	 * @param sourceView the source view.

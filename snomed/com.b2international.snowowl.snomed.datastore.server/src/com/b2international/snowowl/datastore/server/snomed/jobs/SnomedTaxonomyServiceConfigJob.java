@@ -26,6 +26,7 @@ import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServer
 import com.b2international.snowowl.datastore.server.snomed.SnomedTaxonomyServiceImpl;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 
 /**
  * Job for registering the {@link SnomedTaxonomyService taxonomy service} for SNOMED&nbsp;CT onto the server-side. 
@@ -44,7 +45,7 @@ public class SnomedTaxonomyServiceConfigJob extends AbstractServerServiceConfigJ
 
 	@Override
 	protected SnomedTaxonomyService createServiceImplementation() throws SnowowlServiceException {
-		return new SnomedTaxonomyServiceImpl(); 
+		return new SnomedTaxonomyServiceImpl(getEnvironment().service(EscgRewriter.class));
 	}
 	
 	@Override

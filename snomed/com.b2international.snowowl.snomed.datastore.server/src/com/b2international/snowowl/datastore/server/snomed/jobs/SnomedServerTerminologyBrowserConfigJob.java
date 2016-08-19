@@ -17,14 +17,14 @@ package com.b2international.snowowl.datastore.server.snomed.jobs;
 
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerTerminologyBrowser;
-import com.b2international.snowowl.datastore.serviceconfig.BrowserConfigJob;
+import com.b2international.snowowl.datastore.serviceconfig.IndexServiceTrackingConfigJob;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 
 /**
  * Class for initializing and registering the SNOMED&nbsp;CT terminology browser service to the server side. 
  */
-public class SnomedServerTerminologyBrowserConfigJob extends BrowserConfigJob<SnomedTerminologyBrowser, SnomedIndexService> {
+public class SnomedServerTerminologyBrowserConfigJob extends IndexServiceTrackingConfigJob<SnomedTerminologyBrowser, SnomedIndexService> {
 
 	/**
 	 * Creates a new job instance to register SNOMED&nbsp;CT terminology browser.
@@ -37,7 +37,7 @@ public class SnomedServerTerminologyBrowserConfigJob extends BrowserConfigJob<Sn
 	 * @see com.b2international.snowowl.datastore.serviceconfig.TerminologyBrowserConfigJob#getTerminologyBrowserClass()
 	 */
 	@Override
-	protected Class<SnomedTerminologyBrowser> getBrowserClass() {
+	protected Class<SnomedTerminologyBrowser> getTargetServiceClass() {
 		return SnomedTerminologyBrowser.class;
 	}
 
@@ -53,7 +53,7 @@ public class SnomedServerTerminologyBrowserConfigJob extends BrowserConfigJob<Sn
 	 * @see com.b2international.snowowl.datastore.serviceconfig.TerminologyBrowserConfigJob#createTerminologyBrowser(com.b2international.snowowl.core.api.index.IIndexService)
 	 */
 	@Override
-	protected SnomedServerTerminologyBrowser createBrowser(final SnomedIndexService indexService) {
+	protected SnomedServerTerminologyBrowser createServiceImplementation(final SnomedIndexService indexService) {
 		return new SnomedServerTerminologyBrowser(indexService);
 	}
 

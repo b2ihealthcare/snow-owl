@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain.classification;
 
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
  */

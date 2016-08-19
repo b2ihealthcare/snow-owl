@@ -15,33 +15,26 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.util.Collections.unmodifiableSet;
 
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * SNOMED&nbsp;CT module dependency reference set exporter.
- *
+ * SNOMED CT module dependency reference set exporter.
  */
 public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
 
-	private static final Set<String> FIELD_TO_LOAD;
-	
-	static {
-		final Set<String> fieldsToLoad = newHashSet(COMMON_FIELDS_TO_LOAD);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME);
-		fieldsToLoad.add(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME);
-		FIELD_TO_LOAD = unmodifiableSet(fieldsToLoad);
-	}
+	private static final Set<String> FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.fields(COMMON_FIELDS_TO_LOAD)
+			.memberSourceEffectiveTime()
+			.memberTargetEffectiveTime()
+			.build();
 	
 	public SnomedModuleDependencyRefSetExporter(final SnomedExportConfiguration configuration, final String refSetId, final SnomedRefSetType type) {
 		super(checkNotNull(configuration, "configuration"), checkNotNull(refSetId, "refSetId"), checkNotNull(type, "type"));
@@ -57,9 +50,9 @@ public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.transform(doc));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getField(REFERENCE_SET_MEMBER_SOURCE_EFFECTIVE_TIME)));
+		sb.append(formatEffectiveTime(SnomedMappings.memberSourceEffectiveTime().getValue(doc)));
 		sb.append(HT);
-		sb.append(formatEffectiveTime(doc.getField(REFERENCE_SET_MEMBER_TARGET_EFFECTIVE_TIME)));
+		sb.append(formatEffectiveTime(SnomedMappings.memberTargetEffectiveTime().getValue(doc)));
 		return sb.toString();
 	}
 	
@@ -67,5 +60,4 @@ public class SnomedModuleDependencyRefSetExporter extends SnomedRefSetExporter {
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
 	}
-	
 }

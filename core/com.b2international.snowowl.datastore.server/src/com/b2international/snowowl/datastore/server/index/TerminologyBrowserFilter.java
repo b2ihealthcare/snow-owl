@@ -28,22 +28,19 @@ import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ReferenceManager;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.EmptyTerminologyBrowser;
 import com.b2international.snowowl.core.api.FilteredTerminologyBrowser;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.browser.FilterTerminologyBrowserType;
 import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
+import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
@@ -80,73 +77,49 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 	 * @return the filtered client terminology browser
 	 */
 	public IFilterClientTerminologyBrowser<E, String> filterTerminologyBrowser(final IBranchPath branchPath, @Nullable final String expression, @Nullable IProgressMonitor monitor) {
-		
-		monitor = null == monitor ? new NullProgressMonitor() : monitor;
-		
-		final ReferenceManager<IndexSearcher> manager = indexService.getManager(branchPath);
-		IndexSearcher searcher = null;
-		try {
-
-			searcher = manager.acquire();
-			
-			doBeforeSearch(branchPath, searcher);
-			
-			final Query query = createQuery(expression);
-			final int maxDoc = indexService.maxDoc(branchPath);
-			final DocIdCollector collector = DocIdCollector.create(maxDoc);
-			doSearch(branchPath, query, collector);
-	
-			componentIdDocMap = Maps.newHashMap();
-			componentIdParentComponentIdMap = HashMultimap.create();
-			
-			componentMap = Maps.newHashMap();
-			subTypeMap = HashMultimap.create();
-			superTypeMap = HashMultimap.create();
-			filteredComponents = Sets.newHashSet();
-			
-			topLevelDepth = getTopLevelDepth();
-			
-			final DocIdsIterator itr = collector.getDocIDs().iterator();
-			while (itr.next()) {
-				final int docId = itr.getDocID();
-				final Document doc = searcher.doc(docId);
-				final Collection<String> parentIds = Mappings.parent().getValues(doc);
-				final String componentId = Mappings.id().getValue(doc);
+		return indexService.executeReadTransaction(branchPath, new IndexRead<IFilterClientTerminologyBrowser<E, String>>() {
+			@Override
+			public IFilterClientTerminologyBrowser<E, String> execute(IndexSearcher index) throws IOException {
+				doBeforeSearch(branchPath, index);
 				
-				filteredComponents.add(componentId);
-				componentIdDocMap.put(componentId, doc);
-				componentIdParentComponentIdMap.putAll(componentId, parentIds);
-			}
-			
-			if (monitor.isCanceled()) {
-				return EmptyTerminologyBrowser.getInstance();
-			}
-			
-			addTopLevels(branchPath, null, getRootIds(branchPath), topLevelDepth);
-			
-			for (final String componentId : componentIdDocMap.keySet()) {
-				processComponentForTree(branchPath, componentId);
-			}
-
-			trimTopLevels(null, topLevelDepth);
-			
-			if (monitor.isCanceled()) {
-				return EmptyTerminologyBrowser.getInstance();
-			}
-			
-			return new FilteredTerminologyBrowser<E, String>(componentMap, subTypeMap, superTypeMap, FilterTerminologyBrowserType.HIERARCHICAL, filteredComponents);
-			
-		} catch (final IOException e) {
-			throw new IndexException("Error while building taxonomy.", e);
-		} finally {
-			if (searcher != null) {
-				try {
-					manager.release(searcher);
-				} catch (final IOException e) {
-					throw new IndexException(e);
+				final Query query = createQuery(expression);
+				final int maxDoc = index.getIndexReader().maxDoc();
+				final DocIdCollector collector = DocIdCollector.create(maxDoc);
+				doSearch(branchPath, query, collector);
+		
+				componentIdDocMap = Maps.newHashMap();
+				componentIdParentComponentIdMap = HashMultimap.create();
+				
+				componentMap = Maps.newHashMap();
+				subTypeMap = HashMultimap.create();
+				superTypeMap = HashMultimap.create();
+				filteredComponents = Sets.newHashSet();
+				
+				topLevelDepth = getTopLevelDepth();
+				
+				final DocIdsIterator itr = collector.getDocIDs().iterator();
+				while (itr.next()) {
+					final int docId = itr.getDocID();
+					final Document doc = index.doc(docId);
+					final Collection<String> parentIds = Mappings.parent().getValues(doc);
+					final String componentId = Mappings.id().getValue(doc);
+					
+					filteredComponents.add(componentId);
+					componentIdDocMap.put(componentId, doc);
+					componentIdParentComponentIdMap.putAll(componentId, parentIds);
 				}
+				
+				addTopLevels(branchPath, null, getRootIds(branchPath), topLevelDepth);
+				
+				for (final String componentId : componentIdDocMap.keySet()) {
+					processComponentForTree(branchPath, componentId);
+				}
+
+				trimTopLevels(null, topLevelDepth);
+				
+				return new FilteredTerminologyBrowser<E, String>(componentMap, subTypeMap, superTypeMap, FilterTerminologyBrowserType.HIERARCHICAL, filteredComponents);
 			}
-		}
+		});
 	}
 
 	/**

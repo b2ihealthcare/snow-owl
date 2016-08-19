@@ -74,14 +74,6 @@ public class SnomedConceptHistoryInfoQueryExecutor extends HistoryInfoQueryExecu
 	}
 
 	@Override
-	protected Object[] createPrimaryComponentInfo(final ResultSet rs) throws SQLException {
-		return new Object[] { 
-				rs.getObject(1), // created timestamp 
-				rs.getObject(2) // inbound relationships list size
-		};
-	}
-
-	@Override
 	protected CloseableMap<PreparedStatementKey, PreparedStatement> createPreparedStatements(final Connection connection) throws SQLException {
 	
 		final CloseableMap<PreparedStatementKey, PreparedStatement> statements = new CloseableMap<>();

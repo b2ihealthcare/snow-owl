@@ -116,7 +116,6 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 	private static final EAttribute ATTRIBUTE_VALUE_ID_ATTRIBUTE = SnomedRefSetPackage.eINSTANCE.getSnomedAttributeValueRefSetMember_ValueId();
 	
 	private static final Collection<EStructuralFeature> EXCLUDED_FEATURES = unmodifiableSet(Sets.<EStructuralFeature>newHashSet(
-			eINSTANCE.getConcept_InboundRelationships(),
 			SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_EffectiveTime(),
 			SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ModuleId(),
 			SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ReferencedComponentId(),
@@ -609,6 +608,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			return getConceptLabel(getBranchPath(component), ((Concept) component).getId());
 		} else if (component instanceof Relationship) {
 			final Relationship relationship = (Relationship) component;
+			
 			final String negation = relationship.isDestinationNegated() ? " NOT " : "";
 			final String[] labels = getRelationshipLabels(component, relationship);
 			final StringBuilder sb = new StringBuilder();
@@ -616,6 +616,12 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 			sb.append(" - ");
 			sb.append(negation);
 			sb.append(labels[1]);
+			
+			//indicate relationship characteristic type to distinguish between different types
+			sb.append(" (");
+			String characteristicTypeLabel = getComponentLabel(relationship.getCharacteristicType());
+			sb.append(characteristicTypeLabel);
+			sb.append(") ");
 			sb.append(" - ");
 			sb.append(labels[2]);
 			return sb.toString();

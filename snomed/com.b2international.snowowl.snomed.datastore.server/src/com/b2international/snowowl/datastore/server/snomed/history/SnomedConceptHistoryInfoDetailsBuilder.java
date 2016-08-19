@@ -64,20 +64,25 @@ import org.eclipse.emf.spi.cdo.CDOStore;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.Pair;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetails;
 import com.b2international.snowowl.datastore.server.history.AbstractHistoryInfoDetailsBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLabelProviderService;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLabelProviderService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -153,7 +158,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		} else if (cdoObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) cdoObject;
 			if (null != relationship.getSource() && null != relationship.getType() && null != relationship.getDestination())
-				return change + "relationship: " +  getLabel(relationship) + ".";
+				return change + getPreferredTerm(relationship.getCharacteristicType()).toLowerCase() + ": " + getLabel(relationship) + ".";
 		} else if (cdoObject instanceof SnomedConcreteDataTypeRefSetMember) {
 			return change + "concrete domain element: \"" + getConcreteDataTypeItem((SnomedConcreteDataTypeRefSetMember) cdoObject) + "\".";
 		} else if (cdoObject instanceof SnomedRefSetMember) {
@@ -289,7 +294,7 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (DESCRIPTION_FORMAT_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
+						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (STATUS_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
@@ -302,11 +307,11 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject), featureValue);
 			} else if (VALUE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
+						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (MODULE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						SnomedConceptNameProvider.INSTANCE.getText(String.valueOf(featureValue), changedObject.cdoView()), 
+						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
 						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
 			} else if (SOURCE_EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
@@ -329,12 +334,12 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			
 		} else if (changedObject instanceof SnomedMappingRefSet) {
 			if (MAP_TARGET_TYPE_FEATURE_NAME.equals(featureName)) {
-				final String label = SnomedConceptNameProvider.INSTANCE.getText(((SnomedMappingRefSet) changedObject).getIdentifierId());
+				final String label = getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), ((SnomedMappingRefSet) changedObject).getIdentifierId());
 				return appendDescription(builder, getFeatureMapping().get(featureName), getTerminologyComponentName(featureValue), label).toString();
 			}
 		} else if (changedObject instanceof SnomedRefSet) {
 			if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				final String label = SnomedConceptNameProvider.INSTANCE.getText(((SnomedRefSet) changedObject).getIdentifierId());
+				final String label = getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), ((SnomedRefSet) changedObject).getIdentifierId());
 				return getPublishedChange(featureName, builder, label, featureValue);
 			}
 		}
@@ -448,11 +453,15 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		builder.append(" " + String.valueOf(cdtMember.getSerializedValue()));
 		final String uomComponentId = cdtMember.getUomComponentId();
 		if (null != uomComponentId) {
-			builder.append(" " + SnomedConceptNameProvider.INSTANCE.getText(uomComponentId, cdtMember.cdoView()));
+			builder.append(" " + getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(cdtMember.cdoView()), uomComponentId));
 		}
 		return builder.toString();
 	}
 	
+	private ISnomedConceptNameProvider getConceptNameProvider() {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class);
+	}
+
 	private String getComponent(final CDOObject cdoObject) {
 		if (isPtLanguageMember(cdoObject)) { //act as a concept change if the PT changed
 			return CoreTerminologyBroker.getInstance().getComponentInformation(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).getName();
@@ -549,27 +558,48 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	}
 
 	private String getPreferredTerm(final IBranchPath branchPath, final String id) {
-		return getServiceForClass(SnomedConceptLabelProviderService.class).getLabel(branchPath, id);
+		return getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, id);
 	}
 	
 	private String getReferencedComponentLabel(final SnomedRefSetMember member) {
 
+		final IEventBus eventBus = getEventBus();
 		final InternalCDORevision revision = (InternalCDORevision) member.cdoRevision();
 		final IBranchPath branchPath = createPath(member);
 		final String id = String.valueOf(revision.get(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ReferencedComponentId(), CDOStore.NO_INDEX));
 		final short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(id);
+		final List<ExtendedLocale> locales = getLocales();
+		
 		switch (referencedComponentType) {
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
 			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
 				return getPreferredTerm(branchPath, id);
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
-				return getServiceForClass(SnomedDescriptionLabelProviderService.class).getLabel(branchPath, id);
+				return SnomedRequests.prepareGetDescription()
+						.setLocales(locales)
+						.setComponentId(id)
+						.build(branchPath.getPath())
+						.executeSync(eventBus).getTerm();
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				final String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
-				return CoreTerminologyBroker.getInstance().getNameProviderFactory(terminologyComponentId).getNameProvider().getComponentLabel(createPath(member), id);
+				final ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
+						.setLocales(locales)
+						.setComponentId(id)
+						.setExpand("source(expand(pt())),type(expand(pt())),destination(expand(pt()))")
+						.build(branchPath.getPath())
+						.executeSync(eventBus);
+				return String.format("%s %s %s", relationship.getSourceConcept().getPt().getTerm(),
+						relationship.getTypeConcept().getPt().getTerm(), relationship.getDestinationConcept().getPt().getTerm());
 			default:
 				throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + referencedComponentType);
 		}
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
 	private String getLabel(final SnomedRefSet refSet) {

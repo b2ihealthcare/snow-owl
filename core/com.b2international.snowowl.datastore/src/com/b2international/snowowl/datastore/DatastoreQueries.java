@@ -38,6 +38,7 @@ public enum DatastoreQueries {
 			+ "r.CDO_BRANCH "
 			+ "FROM %s r "
 			+ "WHERE r.CDO_VALUE = :cdoId "
+			+ "AND r.CDO_SOURCE = :containerId "
 			+ "AND (CDO_VERSION_REMOVED IS NULL OR CDO_VERSION_ADDED <= :versionMaxAdded) ");
 
 	private final String query;

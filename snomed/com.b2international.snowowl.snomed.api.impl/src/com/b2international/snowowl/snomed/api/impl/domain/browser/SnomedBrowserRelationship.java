@@ -12,11 +12,11 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain.browser;
 
-import com.b2international.snowowl.snomed.api.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.api.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipTarget;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipType;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class SnomedBrowserRelationship extends SnomedBrowserComponent implements ISnomedBrowserRelationship {

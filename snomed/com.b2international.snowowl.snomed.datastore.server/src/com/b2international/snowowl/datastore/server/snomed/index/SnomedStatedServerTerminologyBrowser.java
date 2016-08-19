@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.commons.pcj.LongSets.newLongSetWithExpectedSize;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
@@ -31,9 +30,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -47,6 +43,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+
 /**
  * Server-side terminology browser implementation for SNOMED CT which uses only the STATED relationships when computing parent-child relationships.
  */
@@ -59,7 +58,7 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 	@Override
 	protected Query getSubTypesQuery(String id) {
 		return SnomedMappings.newQuery()
-				.parent(id, STATED_RELATIONSHIP)
+				.statedParent(id)
 				.and(getTerminologyComponentTypeQuery()).matchAll();
 	}
 	
@@ -68,20 +67,20 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 		return SnomedMappings.newQuery()
 				.concept()
 				.and(SnomedMappings.newQuery()
-						.ancestor(id, STATED_RELATIONSHIP)
-						.parent(id, STATED_RELATIONSHIP)
+						.statedParent(id)
+						.statedAncestor(id)
 						.matchAny())
 				.matchAll();
 	}
 	
 	@Override
 	protected Query getRootConceptsQuery() {
-		return SnomedMappings.newQuery().parent(SnomedMappings.ROOT_ID, STATED_RELATIONSHIP).active().matchAll();
+		return SnomedMappings.newQuery().statedParent(SnomedMappings.ROOT_ID).active().matchAll();
 	}
 	
 	@Override
 	protected Set<String> getFieldNamesToLoad() {
-		return SnomedMappings.fieldsToLoad().fields(super.getFieldNamesToLoad()).parent(STATED_RELATIONSHIP).build();
+		return SnomedMappings.fieldsToLoad().fields(super.getFieldNamesToLoad()).statedParent().build();
 	}
 	
 	@Override
@@ -94,10 +93,10 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 			return Collections.emptyList();
 		}
 		
-		Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().parent(STATED_RELATIONSHIP).build();
+		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().build();
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, fieldsToLoad); // direct parents
 		
-		return SnomedMappings.parent(STATED_RELATIONSHIP).getValuesAsString(doc);
+		return SnomedMappings.statedParent().getValuesAsStringList(doc);
 	}
 	
 	@Override
@@ -108,10 +107,10 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 			return new LongOpenHashSet();
 		}
 		
-		Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().parent(STATED_RELATIONSHIP).build();
+		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().build();
 		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, fieldsToLoad); // direct parents
 		
-		return SnomedMappings.parent(STATED_RELATIONSHIP).getValueAsLongSet(document);
+		return SnomedMappings.statedParent().getValueAsLongSet(document);
 	}
 	
 	@Override
@@ -122,11 +121,11 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 			return new LongOpenHashSet();
 		}
 		
-		Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().parent(STATED_RELATIONSHIP).ancestor(STATED_RELATIONSHIP).build(); // all parents
+		final Set<String> fieldsToLoad = SnomedMappings.fieldsToLoad().statedParent().statedAncestor().build(); // all parents
 		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, fieldsToLoad);
 		
-		final LongSet parents = SnomedMappings.parent(STATED_RELATIONSHIP).getValueAsLongSet(doc);
-		final LongSet ancestors = SnomedMappings.ancestor(STATED_RELATIONSHIP).getValueAsLongSet(doc);
+		final LongSet parents = SnomedMappings.statedParent().getValueAsLongSet(doc);
+		final LongSet ancestors = SnomedMappings.statedAncestor().getValueAsLongSet(doc);
 		final LongSet ids = newLongSetWithExpectedSize(parents.size() + ancestors.size());
 		ids.addAll(parents);
 		ids.addAll(ancestors);
@@ -153,9 +152,9 @@ public class SnomedStatedServerTerminologyBrowser extends SnomedServerTerminolog
 			IndexUtils.parallelForEachDocId(collector.getDocIDs(), new IndexUtils.DocIdProcedure() {
 				@Override
 				public void apply(final int docId) throws IOException {
-					final Document doc = searcher.get().doc(docId, SnomedMappings.fieldsToLoad().id().parent(STATED_RELATIONSHIP).build());
+					final Document doc = searcher.get().doc(docId, SnomedMappings.fieldsToLoad().id().statedParent().build());
 					final long id = SnomedMappings.id().getValue(doc);
-					parentageMap.putAll(id, SnomedMappings.parent(STATED_RELATIONSHIP).getValues(doc));
+					parentageMap.putAll(id, SnomedMappings.statedParent().getValues(doc));
 				}
 			});
 			

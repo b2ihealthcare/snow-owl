@@ -20,16 +20,23 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider.INSTANCE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponentIconIdProvider;
+import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.ExtendedComponentProvider;
 import com.b2international.snowowl.core.api.browser.SuperTypeIdProvider;
 import com.b2international.snowowl.datastore.index.diff.CompareResult;
@@ -38,10 +45,19 @@ import com.b2international.snowowl.datastore.index.diff.NodeDiffImpl;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
 import com.b2international.snowowl.datastore.server.version.VersionCompareHierarchyBuilderImpl;
 import com.b2international.snowowl.datastore.version.NodeDiffPredicate;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedCachingSuperTypeIdProvider;
+import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 /**
  * Version compare hierarchy builder implementation for the SNOMED&nbsp;CT ontology.
@@ -69,18 +85,51 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 			return isTopLevel(checkNotNull(nodeDiff, "nodeDiff"));
 		}
 	};
+	
 	private final SuperTypeIdProvider<String> idProvider = new SnomedCachingSuperTypeIdProvider();
 	
 	@Override
-	public NodeDiff createUnchangedNode(final IBranchPath branchPath, final String componentId) {
+	protected IComponentIconIdProvider<String> getIconIdProvider() {
+		return ICON_ID_PROVIDER;
+	}
+	
+	@Override
+	protected IComponentNameProvider getNameProvider() {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	protected String getLabel(IBranchPath branchPath, String componentId) {
+		return componentId;
+	}
+	
+	@Override
+	public Map<String, String> resolveLabels(Multimap<IBranchPath, String> componentIdsByBranch) {
+		final ApplicationContext context = ApplicationContext.getInstance();
+		final List<ExtendedLocale> locales = context.getService(LanguageSetting.class).getLanguagePreference();
+		final IEventBus bus = context.getService(IEventBus.class);
 		
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(componentId, "componentId");
-		
-		final String iconId = ICON_ID_PROVIDER.getIconId(branchPath, componentId);
-		final String label = INSTANCE.getComponentLabel(branchPath, componentId);
-		
-		return new NodeDiffImpl(CONCEPT_NUMBER, NO_STORAGE_KEY, componentId, label, iconId, null, UNCHANGED);
+		final Map<String, ISnomedDescription> pts = newHashMap();
+		for (final IBranchPath branch : componentIdsByBranch.keySet()) {
+			final Set<String> componentIds = newHashSet(componentIdsByBranch.get(branch));
+			pts.putAll(new DescriptionRequestHelper() {
+				@Override
+				protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
+					return req.build(branch.getPath()).executeSync(bus);
+				}
+			}.getPreferredTerms(componentIds, locales));
+		}
+		return Maps.transformValues(pts, new Function<ISnomedDescription, String>() {
+			@Override
+			public String apply(ISnomedDescription input) {
+				return input.getTerm();
+			}
+		});
+	}
+	
+	@Override
+	protected short getTerminologyComponentId() {
+		return CONCEPT_NUMBER;
 	}
 	
 	@Override

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 
@@ -23,15 +23,15 @@ import com.google.common.collect.Ordering;
  */
 public abstract class SnomedComponentOrdering {
 
-	private static final Ordering<? extends ISnomedComponent> ID_ORDERING = Ordering.natural().onResultOf(new Function<ISnomedComponent, String>() {
+	private static final Ordering<? extends SnomedComponent> ID_ORDERING = Ordering.natural().onResultOf(new Function<SnomedComponent, String>() {
 		@Override
-		public String apply(final ISnomedComponent input) {
+		public String apply(final SnomedComponent input) {
 			return input.getId();
 		}
 	});
 	
 	@SuppressWarnings("unchecked")
-	public static <T extends ISnomedComponent> Ordering<T> id() {
+	public static <T extends SnomedComponent> Ordering<T> id() {
 		return (Ordering<T>) ID_ORDERING;
 	}
 

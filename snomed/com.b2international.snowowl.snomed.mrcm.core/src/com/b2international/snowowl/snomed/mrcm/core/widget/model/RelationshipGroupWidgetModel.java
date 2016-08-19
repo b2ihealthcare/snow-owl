@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.collect.Iterables;
 
 /**
@@ -117,7 +117,7 @@ public class RelationshipGroupWidgetModel extends ContainerWidgetModel {
 		}
 		
 		throw new IllegalStateException(MessageFormat.format(
-				"Couldn''t find matching relationship model for type ''{0}'', value ''{1}'' and characteristic type ''{2}''.",
+				"Couldn't find matching relationship model for type ''{0}'', value ''{1}'' and characteristic type ''{2}''.",
 				typeId, valueId, characteristicTypeId));
 	}
 	

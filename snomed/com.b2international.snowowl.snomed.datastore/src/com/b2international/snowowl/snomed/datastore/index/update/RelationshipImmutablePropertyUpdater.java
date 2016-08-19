@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
-import static java.lang.Long.parseLong;
-
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 
 /**
@@ -36,12 +33,9 @@ public class RelationshipImmutablePropertyUpdater extends DocumentUpdaterBase<Sn
 
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
-		final long typeId = parseLong(relationship.getType().getId());
-		final long sourceId = parseLong(relationship.getSource().getId());
-		final long destinationId = parseLong(relationship.getDestination().getId());
 		doc
-			.relationshipType(typeId)
-			.docValuesField(SnomedIndexBrowserConstants.RELATIONSHIP_OBJECT_ID, sourceId)
-			.docValuesField(SnomedIndexBrowserConstants.RELATIONSHIP_VALUE_ID, destinationId);
+			.relationshipType(Long.valueOf(relationship.getType().getId()))
+			.relationshipSource(Long.valueOf(relationship.getSource().getId()))
+			.relationshipDestination(Long.valueOf(relationship.getDestination().getId()));
 	}
 }

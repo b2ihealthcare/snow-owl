@@ -68,7 +68,9 @@ import com.google.common.io.Closer;
  */
 public abstract class AbstractSnomedValidator {
 	
-	private static final Splitter TAB = Splitter.on('\t');
+	public static final String SPECIAL_EFFECTIVE_TIME_KEY = "";
+	
+	private static final Splitter TAB_SPLITTER = Splitter.on('\t');
 	private static final Collection<ComponentCategory> CORE_COMPONENT_CATEGORIES = ImmutableList.of(ComponentCategory.CONCEPT, ComponentCategory.DESCRIPTION, ComponentCategory.RELATIONSHIP);
 	
 	private File componentStagingDirectory;
@@ -141,20 +143,21 @@ public abstract class AbstractSnomedValidator {
 					break;
 				}
 				
-				final String effectiveTime = row.get(1);
+				final String effectiveTimeKey = getEffectiveTimeKey(row.get(1));
 				
-				if (!effectiveTimes.contains(effectiveTime)) {
-					effectiveTimes.add(effectiveTime);
+				if (!effectiveTimes.contains(effectiveTimeKey)) {
+					effectiveTimes.add(effectiveTimeKey);
 					
-					validateEffectiveTime(effectiveTime, releaseFileListReader.getLineNumber());
+					// Use the original effective time field instead of the key
+					validateEffectiveTime(row.get(1), releaseFileListReader.getLineNumber());
 					
-					final Path effectiveTimeFile = getEffectiveTimeFile(effectiveTime);
+					final Path effectiveTimeFile = getEffectiveTimeFile(effectiveTimeKey);
 					final BufferedWriter bw = closer.register(Files.newBufferedWriter(effectiveTimeFile, Charsets.UTF_8, StandardOpenOption.CREATE));
 					final CsvListWriter lw = closer.register(new CsvListWriter(bw, CsvConstants.IHTSDO_CSV_PREFERENCE));
-					writers.put(effectiveTime, lw);
+					writers.put(effectiveTimeKey, lw);
 				}
 				
-				writers.get(effectiveTime).write(row);
+				writers.get(effectiveTimeKey).write(row);
 			}
 
 			return ImmutableList.copyOf(effectiveTimes);
@@ -166,8 +169,12 @@ public abstract class AbstractSnomedValidator {
 		}
 	}
 	
-	private Path getEffectiveTimeFile(String effectiveTime) {
-		return componentStagingDirectory.toPath().resolve(effectiveTime + "_"+ releaseFileName);
+	private String getEffectiveTimeKey(final String effectiveTime) {
+		return ContentSubType.SNAPSHOT.equals(configuration.getVersion()) ? SPECIAL_EFFECTIVE_TIME_KEY : effectiveTime;
+	}
+	
+	private Path getEffectiveTimeFile(String effectiveTimeKey) {
+		return componentStagingDirectory.toPath().resolve(effectiveTimeKey + "_"+ releaseFileName);
 	}
 
 	/**
@@ -198,7 +205,7 @@ public abstract class AbstractSnomedValidator {
 				
 				lineNumber++;
 				
-				final List<String> row = TAB.splitToList(line);
+				final List<String> row = TAB_SPLITTER.splitToList(line);
 				
 				// skip not current effective times, also skips the first line
 				if (!effectiveTime.equals(row.get(1))) {

@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 

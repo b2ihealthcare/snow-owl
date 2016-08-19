@@ -333,7 +333,7 @@ public abstract class IndexUtils {
 	public static String getSortKey(final @Nonnull String label) {
 		final String labelWithoutDiacriticals = StringUtils.removeDiacriticals(label);
 		// whitespace characters can be kept
-		final String labelWithoutDiacriticalsAndTermSeparators = TextConstants.DELIMITER_MATCHER.removeFrom(labelWithoutDiacriticals); 
+		final String labelWithoutDiacriticalsAndTermSeparators = TextConstants.DELIMITER_MATCHER.replaceFrom(labelWithoutDiacriticals, ' '); 
 		return labelWithoutDiacriticalsAndTermSeparators;
 	}
 	

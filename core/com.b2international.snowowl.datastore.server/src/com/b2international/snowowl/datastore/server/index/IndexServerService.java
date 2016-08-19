@@ -57,7 +57,6 @@ import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
@@ -68,7 +67,6 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.DocumentWithScore;
-import com.b2international.snowowl.datastore.index.FakeQueryAdapter;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
@@ -122,7 +120,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	protected static final Logger LOGGER = LoggerFactory.getLogger(IndexServerService.class);
 	
 	private final LoadingCache<IBranchPath, IndexBranchService> branchServices;
-	private final Object branchServicesLock = new Object();
 	private final IndexAccessUpdater updater;
 	private final AtomicBoolean disposed = new AtomicBoolean();
 	
@@ -224,11 +221,12 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		
 		try {
 			
-			synchronized (branchServicesLock) {
-				final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
+			final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
+			
+			synchronized (baseBranchService) {
 				baseBranchService.createIndexCommit(logicalPath, physicalPath);
 				inactiveClose(logicalPath, true);
-				prepare(logicalPath);
+				getBranchService(logicalPath);
 			}
 			
 		} catch (final IOException e) {
@@ -240,12 +238,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		final ICDOConnection connection = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getByUuid(getRepositoryUuid());
 		final CDOBranch branch = connection.getBranch(logicalPath);
 		return new CDOBranchPath(branch);
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public void prepare(final IBranchPath branchPath) {
-		getHitCount(branchPath, (IIndexQueryAdapter<E>) FakeQueryAdapter.INSTANCE);
 	}
 	
 	/**
@@ -264,11 +256,14 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		
 		try {
 
-			synchronized (branchServicesLock) {
-				final IndexBranchService branchService = branchServices.getIfPresent(branchPath);
-				if (branchService != null && (!branchService.isDirty() || force)) {
-					branchServices.invalidate(branchPath);
-					return true;
+			final IndexBranchService branchService = branchServices.getIfPresent(branchPath);
+			
+			if (branchService != null && (!branchService.isDirty() || force)) {
+				synchronized (branchService) {
+					if ((!branchService.isDirty() || force)) {
+						branchServices.invalidate(branchPath);
+						return true;
+					}
 				}
 			}
 
@@ -281,11 +276,9 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	
 	@Override
 	public void dispose() {
-		synchronized (branchServicesLock) {
-			if (disposed.compareAndSet(false, true)) {
-				updater.close();
-				branchServices.invalidateAll();
-			}
+		if (disposed.compareAndSet(false, true)) {
+			updater.close();
+			branchServices.invalidateAll();
 		}
 	}
 
@@ -355,7 +348,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(topDocs.totalHits);
 
 			for (final ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				result.add(new DocumentWithScore(searcher.doc(scoreDoc.doc), branchPath, scoreDoc.score));
+				result.add(new DocumentWithScore(searcher.doc(scoreDoc.doc), scoreDoc.score));
 			}
 
 			return result;
@@ -392,13 +385,14 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 			if (null == sort) {
 				sort = Sort.INDEXORDER;
 			}
-
+			
 			final TopDocs topDocs = searcher.search(query, filter, offset + limit, sort, true, false);
 			final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(limit);
+			final int expectedSize = Math.max(0, scoreDocs.length - offset);
+			final List<DocumentWithScore> result = Lists.newArrayListWithExpectedSize(expectedSize);
 
 			for (int i = offset; i < offset + limit && i < scoreDocs.length; i++) {
-				result.add(new DocumentWithScore(searcher.doc(scoreDocs[i].doc), branchPath, scoreDocs[i].score));
+				result.add(new DocumentWithScore(searcher.doc(scoreDocs[i].doc), scoreDocs[i].score));
 			}
 
 			return result;
@@ -501,7 +495,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 
 			int size = 0;
 			while (itr.next()) {
-				documents[size++] = new DocumentWithScore(searcher.doc(itr.getDocID()), branchPath);
+				documents[size++] = new DocumentWithScore(searcher.doc(itr.getDocID()));
 			}
 			
 			return Arrays.asList(Arrays.copyOf(documents, size));
@@ -824,19 +818,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 	}
 	
 	@Override
-	public void addDocument(final IBranchPath branchPath, final Document document) {
-		checkNotNull(branchPath, "branchPath");
-		checkNotNull(document, "document");
-		checkNotDisposed();
-
-		try {
-			getBranchService(branchPath).addDocument(document);
-		} catch (final IOException e) {
-			throw new IndexException(e);
-		}		
-	}
-	
-	@Override
 	public IndexBranchService getBranchService(final IBranchPath branchPath) {
 		
 		// Record usage
@@ -845,11 +826,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		}
 		
 		try {
-			
-			synchronized (branchServicesLock) {
-				return branchServices.get(branchPath);
-			}
-			
+			return branchServices.get(branchPath);
 		} catch (final ExecutionException e) {
 			throw IndexException.wrap(e.getCause());
 		} catch (final UncheckedExecutionException e) {
@@ -891,6 +868,7 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		}
 	}
 	
+	@Override
 	public <T> T executeReadTransaction(IBranchPath branchPath, IndexRead<T> read) {
 		final ReferenceManager<IndexSearcher> manager = getManager(branchPath);
 		IndexSearcher searcher = null;	

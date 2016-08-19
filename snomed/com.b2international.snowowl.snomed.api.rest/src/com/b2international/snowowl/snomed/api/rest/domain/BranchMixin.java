@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.core.MetadataHolderMixin;
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

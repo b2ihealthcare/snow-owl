@@ -34,7 +34,6 @@ public abstract class SnomedConstants {
 	/**
 	 * Mapping between language codes (e.g. "en-gb") and preferred term reference set identifiers.
 	 * TODO: not a very elegant solution, should eventually be replaced.
-	 * 
 	 */
 	public static abstract class LanguageCodeReferenceSetIdentifierMapping {
 		
@@ -75,9 +74,7 @@ public abstract class SnomedConstants {
 		 * @return a collection of language type reference set identifier concept IDs.
 		 */
 		public static Collection<String> getSupportedLanguageIds() {
-			
 			return Collections.unmodifiableCollection(CODE_IDENTIFIER_BIMAP.values());
-			
 		}
 	}
 	
@@ -125,7 +122,7 @@ public abstract class SnomedConstants {
 		public static final String FOUNDATION_METADATA_CONCEPTS = "900000000000454005";
 		public static final String CASE_SIGNIFICANCE_ROOT_CONCEPT = "900000000000447004";
 		
-		//TODO: These are substitutes for concrete data type operational concepts that WILL be 
+		//TODO: These are substitutes for concrete domain operational concepts that WILL be 
 		//under the metadata hierarchy.  These need to be replaced once available.  bbanfai - 2012.09.11
 		public static final String CD_EQUAL = "276136004";  // =
 		public static final String CD_LESS = "276139006";  // <
@@ -193,13 +190,15 @@ public abstract class SnomedConstants {
 		public static final String SDD_UNIT_OF_MEASURE_REFERENCE_SET = "62111000133108";
 		public static final String SDD_SIMPLE_TYPE_REFERENCE_SET = "69511000133108";
 
-		//concrete data type
+		//concrete domain
 		public static final String REFSET_BOOLEAN_DATATYPE = "759160691000154109";
 		public static final String REFSET_DATETIME_DATATYPE = "492980241000154105";
 		public static final String REFSET_INTEGER_DATATYPE = "373998411000154109";
 		public static final String REFSET_FLOAT_DATATYPE = "744104701000154109";
 		public static final String REFSET_STRING_DATATYPE = "513945551000154100";
 		public static final String REFSET_CONCRETE_DOMAIN_TYPE = "289191171000154104";
+		public static final String REFSET_DEFINING_TYPE = "384696201000154108";
+		public static final String REFSET_MEASUREMENT_TYPE = "945726341000154109";
 
 		public static final String REFSET_DRUG_TO_SOURCE_DRUG_SIMPLE_MAP = "776245861000133102";
 		public static final String REFSET_DRUG_TO_GROUPER_SIMPLE_MAP = "499896751000133109";
@@ -287,6 +286,7 @@ public abstract class SnomedConstants {
 		public static final String MODULE_ROOT = "900000000000443000";
 		public static final String MODULE_SCT_CORE = "900000000000207008";
 		public static final String MODULE_B2I_EXTENSION = "636635721000154103";
+		public static final String B2I_NAMESPACE = "1000154";
 
 		// SG specific concepts
 		public static final String GENERATED_SINGAPORE_MEDICINAL_PRODUCT = "551000991000133100";

@@ -17,28 +17,16 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
-import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.api.impl.domain.InternalComponentRef;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.ComponentUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
-import com.b2international.snowowl.snomed.api.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Given a set of {@link SnomedConceptIndexEntry concept index entries}, collects the corresponding "preferred" fully
@@ -46,114 +34,50 @@ import com.google.common.collect.*;
  */
 public abstract class FsnJoinerOperation<T> {
 
-	private final IComponentRef conceptRef;
-	private final List<Locale> locales;
-	private final ISnomedDescriptionService descriptionService;
-
-	protected IBranchPath branchPath;
+	private final String conceptId;
+	private final List<ExtendedLocale> locales;
+	private final DescriptionService descriptionService;
 	
-	private Collection<SnomedConceptIndexEntry> conceptEntries;
-	private Multimap<String, SnomedDescriptionIndexEntry> fsnsByConcept;
-	private Table<String, String, Acceptability> descriptionAcceptability;
-	private ImmutableBiMap<Locale, String> languageIdMap;
-
-	protected static SnomedIndexService getIndexService() {
-		return ApplicationContext.getServiceForClass(SnomedIndexService.class);
-	}
-
-	protected static SnomedTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class);
-	}
-
-	/**
-	 * @param conceptRef
-	 * @param locales
-	 * @param descriptionService
-	 */
-	protected FsnJoinerOperation(final IComponentRef conceptRef, final List<Locale> locales, final ISnomedDescriptionService descriptionService) {
-
-		this.conceptRef = conceptRef;
+	// Requires a BranchContext decorated with an IndexSearcher
+	protected FsnJoinerOperation(final String conceptId, final List<ExtendedLocale> locales, final DescriptionService descriptionService) {
+		this.conceptId = conceptId;
 		this.locales = locales;
 		this.descriptionService = descriptionService;
 	}
 
 	public final List<T> run() {
-		initConceptEntries();
+		Collection<SnomedConceptIndexEntry> conceptEntries = getConceptEntries(conceptId);
 		if (conceptEntries.isEmpty()) {
 			return ImmutableList.of();
 		}
 		
-		initFsnDataStructures();
-		return convertConceptEntries();
+		Map<String, ISnomedDescription> descriptionsByConcept = initDescriptionsByConcept(conceptEntries);
+		return convertConceptEntries(conceptEntries, descriptionsByConcept);
 	}
 
-	private void initConceptEntries() {
-
-		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
-		internalConceptRef.checkStorageExists();
-		branchPath = internalConceptRef.getBranch().branchPath();
-
-		final String conceptId = conceptRef.getComponentId();
-
-		if (!getTerminologyBrowser().exists(branchPath, conceptId)) {
-			throw new ComponentNotFoundException(ComponentCategory.CONCEPT, conceptId);
-		}
-
-		conceptEntries = getConceptEntries(conceptId);
+	private Map<String, ISnomedDescription> initDescriptionsByConcept(Collection<SnomedConceptIndexEntry> conceptEntries) {
+		final Set<String> conceptIds = ComponentUtils.getIdSet(conceptEntries);
+		return descriptionService.getFullySpecifiedNames(conceptIds, locales);
 	}
 
-	private void initFsnDataStructures() {
-
-		final SnomedDescriptionIndexQueryAdapter fsnsQuery = SnomedDescriptionIndexQueryAdapter.createFindFsnByConceptIds(ComponentUtils.getIdSet(conceptEntries));
-		final Collection<SnomedDescriptionIndexEntry> fsnsIndexEntries = getIndexService().searchUnsorted(branchPath, fsnsQuery);
-		fsnsByConcept = Multimaps.index(fsnsIndexEntries, new Function<SnomedDescriptionIndexEntry, String>() {
-			@Override public String apply(final SnomedDescriptionIndexEntry input) {
-				return input.getConceptId();
-			}
-		});
-
-		descriptionAcceptability = HashBasedTable.create();
-		languageIdMap = descriptionService.getLanguageIdMap(locales, branchPath);
-
-		for (final Locale locale : locales) {
-			final String languageRefSetId = languageIdMap.get(locale);
-
-			if (languageRefSetId != null) {
-				final SnomedRefSetMembershipIndexQueryAdapter languageMembersQuery = SnomedRefSetMembershipIndexQueryAdapter.createFindAllLanguageMembersQuery(ComponentUtils.getIds(fsnsIndexEntries), languageRefSetId);
-				final Collection<SnomedRefSetMemberIndexEntry> languageMemberEntries = getIndexService().searchUnsorted(branchPath, languageMembersQuery);
-
-				for (final SnomedRefSetMemberIndexEntry languageMemberEntry : languageMemberEntries) {
-					final Acceptability acceptability = Acceptability.getByConceptId(languageMemberEntry.getSpecialFieldId());
-					descriptionAcceptability.put(languageMemberEntry.getReferencedComponentId(), languageMemberEntry.getRefSetIdentifierId(), acceptability);
-				}
-			}
-		}
-	}
-
-	private List<T> convertConceptEntries() {
+	private List<T> convertConceptEntries(Collection<SnomedConceptIndexEntry> conceptEntries, Map<String, ISnomedDescription> descriptionsByConcept) {
 		final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 
 		for (final SnomedConceptIndexEntry conceptEntry : conceptEntries) {
-			resultBuilder.add(convertConceptEntry(conceptEntry, getFsn(conceptEntry.getId())));
+			resultBuilder.add(convertConceptEntry(conceptEntry, getTerm(descriptionsByConcept, conceptEntry.getId())));
 		}
 
 		return resultBuilder.build();
 	}
 
-	private Optional<String> getFsn(final String conceptId) {
-		final Collection<SnomedDescriptionIndexEntry> fsnEntries = fsnsByConcept.get(conceptId);
-
-		for (final Locale locale : locales) {
-			final String languageRefSetId = languageIdMap.get(locale);
-			for (final SnomedDescriptionIndexEntry indexEntry : fsnEntries) {
-				if (Acceptability.PREFERRED.equals(descriptionAcceptability.get(indexEntry.getId(), languageRefSetId))) {
-					return Optional.of(indexEntry.getLabel());
-				}
-			}
-		}
-
-		// FIXME: check language codes when it becomes available on the index entry
-		return FluentIterable.from(fsnEntries).first().transform(ComponentUtils.getLabelFunction());
+	private Optional<String> getTerm(Map<String, ISnomedDescription> descriptionsByConcept, final String conceptId) {
+		return Optional.fromNullable(descriptionsByConcept.get(conceptId))
+				.transform(new Function<ISnomedDescription, String>() {
+					@Override
+					public String apply(ISnomedDescription input) {
+						return input.getTerm();
+					}
+				});
 	}
 
 	protected abstract Collection<SnomedConceptIndexEntry> getConceptEntries(String conceptId);

@@ -15,26 +15,20 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import org.apache.lucene.search.Query;
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.LongCollection;
-
-import com.b2international.commons.ClassUtils;
-import com.b2international.commons.StringUtils;
-import com.b2international.commons.pcj.LongSets;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.browser.ITerminologyBrowser;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.quicksearch.CompactQuickSearchElement;
 import com.b2international.snowowl.core.quicksearch.IQuickSearchProvider;
 import com.b2international.snowowl.core.quicksearch.QuickSearchContentResult;
@@ -42,26 +36,27 @@ import com.b2international.snowowl.core.quicksearch.QuickSearchElement;
 import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
-import com.b2international.snowowl.datastore.server.snomed.escg.EscgParseFailedException;
-import com.b2international.snowowl.datastore.utils.UnrestrictedStringSet;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDOIQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedFuzzyQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQuickSearchProvider;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Sets;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Floats;
+import com.google.common.primitives.Ints;
 
 /**
  * Server side, Net4j independent service for providing the SNOMED&nbsp;CT concepts as the content of quick search provider.
- *  
  * 
  * @see IQuickSearchContentProvider
  * @see IIndexServerService
@@ -69,158 +64,120 @@ import com.google.common.collect.Sets;
  */
 public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
-	private final class SnomedConceptConverterFunction implements Function<SnomedConceptIndexEntry, QuickSearchElement> {
+	private static final class SnomedConceptConverterFunction implements Function<ISnomedConcept, QuickSearchElement> {
+		
+		private final String queryExpression;
 		private final boolean approximate;
-
-		private SnomedConceptConverterFunction(boolean approximate) {
+		
+		private SnomedConceptConverterFunction(final String queryExpression, final boolean approximate) {
+			this.queryExpression = queryExpression;
 			this.approximate = approximate;
 		}
 
-		@Override public QuickSearchElement apply(@Nullable final SnomedConceptIndexEntry input) {
-			return new CompactQuickSearchElement(input.getId(), input.getIconId(), input.getLabel(), approximate);
+		@Override 
+		public QuickSearchElement apply(final ISnomedConcept input) {
+			final ISnomedDescription pt = input.getPt();
+			final String label = pt != null ? pt.getTerm() : input.getId();
+			return new CompactQuickSearchElement(
+					input.getId(), 
+					input.getIconId(), 
+					label, 
+					approximate,
+					getMatchRegions(queryExpression, label),
+					getSuffixes(queryExpression, label));
 		}
+
 	}
 
-	private static class ParentValueRangeSupplier implements Supplier<String[]> {
-
-		private final String parentId;
-		private final IBranchPath branchPath;
-		
-		public ParentValueRangeSupplier(final IBranchPath branchPath, final String parentId) {
-			this.branchPath = branchPath;
-			this.parentId = parentId;
-		}
-		
-		@Override public String[] get() {
-
-			if (!StringUtils.isEmpty(parentId)) {
-				
-				final ITerminologyBrowser<SnomedConceptIndexEntry, String> browser = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
-				final SnomedConceptIndexEntry conceptMini = browser.getConcept(branchPath, parentId);
-				
-				if (null != conceptMini) {
-					final Set<String> idSet = ComponentUtils.getIdSet(browser.getAllSubTypes(branchPath, conceptMini));
-					return idSet.toArray(new String[idSet.size()]);
-				}
-			}
-			
-			return null;
-		}
-	}
-
-	/*
-	 * /(non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.IQuickSearchContentProvider#getComponents(java.lang.String, com.b2international.snowowl.core.api.IBranchPath, int, java.util.Map)
-	 */
 	@Override
-	public QuickSearchContentResult getComponents(final String queryExpression, final IBranchPathMap branchPathMap, final int limit, final Map<String, Object> configuration) {
-
-		String userId = null;
-		
-		if (null != configuration) {
-			userId = String.valueOf(configuration.get(IQuickSearchProvider.CONFIGURATION_USER_ID));
+	public QuickSearchContentResult getComponents(final String queryExpression, final IBranchPathMap branchPathMap, final int limit, Map<String, Object> configuration) {
+		if (configuration == null) {
+			configuration = Collections.emptyMap();
 		}
+		
+		final String userId = String.valueOf(configuration.get(IQuickSearchProvider.CONFIGURATION_USER_ID));
+		// TODO replace server-side LOCALES with client side one via configuration
+		final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 		
 		final IBranchPath branchPath = getBranchPath(branchPathMap);
 		
-		Supplier<String[]> conceptIdSupplier = null;
-		SnomedDOIQueryAdapter doiAdapter = null;
-		Query restrictionQuery = null;
-
-		if (null != configuration && configuration.containsKey(SnomedConceptQuickSearchProvider.CONFIGURATION_PARENT_ID)) {
-			conceptIdSupplier = Suppliers.memoize(new ParentValueRangeSupplier(branchPath, (String) configuration.get(SnomedConceptQuickSearchProvider.CONFIGURATION_PARENT_ID)));
-			doiAdapter = new SnomedDOIQueryAdapter(queryExpression, userId, conceptIdSupplier.get());
-		} else if (null != configuration && configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET)) {
-			final Set<String> valueSet = (Set<String>) configuration.get(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET);
-			conceptIdSupplier = (UnrestrictedStringSet.INSTANCE == valueSet) 
-					? Suppliers.<String[]>ofInstance(null) 
-					: Suppliers.ofInstance(valueSet.toArray(new String[valueSet.size()]));
-					
-			doiAdapter = new SnomedDOIQueryAdapter(queryExpression, userId, conceptIdSupplier.get());
-					
-		} else if (null != configuration && configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_EXPRESSION)) {
-			
-			final Object object = configuration.get(IQuickSearchProvider.CONFIGURATION_VALUE_ID_EXPRESSION);
-			final String expression = ClassUtils.checkAndCast(object, String.class);
-
+		final SnomedConceptSearchRequestBuilder req = SnomedRequests
+			.prepareSearchConcept()
+			.filterByActive(true)
+			.filterByTerm(queryExpression)
+			.filterByExtendedLocales(locales)
+			.filterByDescriptionType("<<" + Concepts.SYNONYM)
+			.withSearchProfile(userId)
+			.withDoi()
+			.setExpand("pt()")
+			.setLimit(limit);
+		
+		if (configuration.containsKey(SnomedConceptQuickSearchProvider.CONFIGURATION_PARENT_ID)) {
+			req.filterByAncestor((String) configuration.get(SnomedConceptQuickSearchProvider.CONFIGURATION_PARENT_ID));
+		} else if (configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET)) {
+			final Set<String> componentIdFilter = (Set<String>) configuration.get(IQuickSearchProvider.CONFIGURATION_VALUE_ID_SET);
+			req.setComponentIds(componentIdFilter);
+		} else if (configuration.containsKey(IQuickSearchProvider.CONFIGURATION_VALUE_ID_EXPRESSION)) {
+			final String expression = (String) configuration.get(IQuickSearchProvider.CONFIGURATION_VALUE_ID_EXPRESSION);
 			if (EscgExpressionConstants.UNRESTRICTED_EXPRESSION.equals(expression)) {
-				doiAdapter = new SnomedDOIQueryAdapter(queryExpression, userId, (String[]) null);
+				// no-op
 			} else if (EscgExpressionConstants.REJECT_ALL_EXPRESSION.equals(expression)) {
 				return new QuickSearchContentResult(); //represents no result
 			} else {
-				try {
-				restrictionQuery = createExpressionQuery(branchPath, expression);
-				doiAdapter = new SnomedDOIQueryAdapter(queryExpression, userId, restrictionQuery);
-				} catch (final EscgParseFailedException e) {
-					//falling back to slower procedure. currently join queries are not supported on numeric fields in Lucene
-					final LongCollection conceptIds = ApplicationContext.getInstance().getService(IEscgQueryEvaluatorService.class).evaluateConceptIds(branchPath, expression);
-					final String[] ids = LongSets.toStringArray(conceptIds);
-					doiAdapter = new SnomedDOIQueryAdapter(queryExpression, userId, ids);
-					conceptIdSupplier = Suppliers.ofInstance(ids);
-				}
+				req.filterByEscg(expression);
 			}
-			
-		} else {
-			conceptIdSupplier = Suppliers.<String[]>ofInstance(null);
-			doiAdapter = new SnomedDOIQueryAdapter(queryExpression, userId, conceptIdSupplier.get());
 		}
 		
-		Preconditions.checkNotNull(doiAdapter, "Query adapter was null.");
-		
-		final SnomedIndexService searcher = ApplicationContext.getInstance().getService(SnomedIndexService.class);
-		final int totalHitCount = searcher.getHitCount(branchPath, doiAdapter);
-		
-		final List<SnomedConceptIndexEntry> results = searcher.search(branchPath, doiAdapter, limit);
-		final List<SnomedConceptIndexEntry> approximateResults = newArrayList();
-		
-		if (results.size() < limit) {
-			final SnomedFuzzyQueryAdapter fuzzyAdapter = null == conceptIdSupplier
-					? new SnomedFuzzyQueryAdapter(queryExpression, userId, restrictionQuery)
-					: new SnomedFuzzyQueryAdapter(queryExpression, userId, conceptIdSupplier.get());
-							
-			approximateResults.addAll(searcher.search(branchPath, fuzzyAdapter, limit));
+		final List<QuickSearchElement> quickSearchElements = Lists.newArrayList();
+
+		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(getEventBus());
+		final Map<String, ISnomedConcept> concepts = newHashMap(FluentIterable.from(matches).uniqueIndex(IComponent.ID_FUNCTION));
+		// XXX sort only non-fuzzy matches
+		final List<QuickSearchElement> results = FluentIterable.from(matches)
+				.transform(new SnomedConceptConverterFunction(queryExpression, false))
+				.toSortedList(new Comparator<QuickSearchElement>() {
+					@Override
+					public int compare(QuickSearchElement o1, QuickSearchElement o2) {
+						final Float o1Score = concepts.get(o1.getId()).getScore();
+						final Float o2Score = concepts.get(o2.getId()).getScore();
+						final int sortByScore = o1Score.compareTo(o2Score);
+						if (sortByScore == 0) {
+							return Ints.compare(o1.getLabel().length(), o2.getLabel().length());
+						} else {
+							return -sortByScore;
+						} 
+					}
+				});
+
+		quickSearchElements.addAll(results);
+
+		if (matches.getTotal() < limit) {
+			req.withFuzzySearch();
+
+			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).executeSync(getEventBus());
+
+			final ImmutableList<QuickSearchElement> approximateResults = FluentIterable.from(fuzzyMatches)
+					.filter(new Predicate<ISnomedConcept>() {
+						@Override
+						public boolean apply(ISnomedConcept input) {
+							return !concepts.containsKey(input.getId());
+						}
+					}).transform(new SnomedConceptConverterFunction(queryExpression, true))
+					.toList();
+
+			quickSearchElements.addAll(approximateResults);
 		}
-		
-		return new QuickSearchContentResult(totalHitCount, convertToDTO(results, approximateResults));
-		
+
+		return new QuickSearchContentResult(matches.getTotal(), quickSearchElements);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider#getEPackage()
-	 */
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;
 	}
 	
-	private List<QuickSearchElement> convertToDTO(
-			final List<SnomedConceptIndexEntry> results,
-			final List<SnomedConceptIndexEntry> approximateResults) {
-
-		
-		
-		final List<QuickSearchElement> convertedItems = newArrayList();
-		final Set<String> conceptIds = Sets.newHashSetWithExpectedSize(results.size());
-		
-		final SnomedConceptConverterFunction exactConverter = new SnomedConceptConverterFunction(false);
-		for (SnomedConceptIndexEntry concept : results) {
-			convertedItems.add(exactConverter.apply(concept));
-			conceptIds.add(concept.getId());
-		}
-		
-		final SnomedConceptConverterFunction approximateConverter = new SnomedConceptConverterFunction(true);
-		for (final SnomedConceptIndexEntry concept : approximateResults) {
-			if (!conceptIds.contains(concept.getId())) {
-				convertedItems.add(approximateConverter.apply(concept));
-				conceptIds.add(concept.getId());
-			}
-		}
-		
-		return convertedItems;
-	}
-
-	private Query createExpressionQuery(IBranchPath branchPath, final String wrapper) {
-		return ApplicationContext.getInstance().getService(IEscgQueryEvaluatorService.class).evaluateBooleanQuery(branchPath, wrapper);
-	}
 }

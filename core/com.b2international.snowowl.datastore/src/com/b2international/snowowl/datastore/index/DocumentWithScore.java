@@ -19,53 +19,36 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.lucene.document.Document;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.google.common.base.Preconditions;
-
 /**
- * Wraps a document with the associated score retrieved from index service.
- * 
+ * Wraps a document for an index search hit and its associated score.
  */
 public final class DocumentWithScore {
-	
-	private static final float NULL_SCORE = 0.0F; 
-	
+
+	private static final float ZERO_SCORE = 0.0F; 
+
 	private final Document document;
 	private final float score;
 
-	private IBranchPath branchPath;
-	
-	public DocumentWithScore(final Document document, final IBranchPath branchPath) {
-		this(Preconditions.checkNotNull(document, "Document argument cannot be null."), branchPath, NULL_SCORE);
+	public DocumentWithScore(final Document document) {
+		this(document, ZERO_SCORE);
 	}
-	
-	public DocumentWithScore(final Document document, final IBranchPath branchPath, final float score) {
-		this.branchPath = checkNotNull(branchPath, "branchPath");
-		this.document = Preconditions.checkNotNull(document, "Document argument cannot be null.");
+
+	public DocumentWithScore(final Document document, final float score) {
+		this.document = checkNotNull(document, "Document argument cannot be null.");
 		this.score = score;
 	}
-	
+
 	/**
-	 * Returns with the wrapped {@link Document} instance.
-	 * @return the document.
+	 * @return the {@link Document} retrieved for the search hit
 	 */
 	public Document getDocument() {
 		return document;
 	}
-	
+
 	/**
-	 * Returns with the score associated with the document as the outcome of an index query.
-	 * @return the score.
+	 * @return the relevance (score) of the search hit
 	 */
 	public float getScore() {
 		return score;
-	}
-	
-	/**
-	 * Returns with the branch path.
-	 * @return the branch path.
-	 */
-	public IBranchPath getBranchPath() {
-		return branchPath;
 	}
 }

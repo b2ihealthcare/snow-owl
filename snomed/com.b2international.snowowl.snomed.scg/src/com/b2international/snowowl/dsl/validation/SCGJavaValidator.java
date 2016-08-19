@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.markers.IDiagnostic;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.dsl.expressionextractor.ExtractedSCGAttributeGroup;
 import com.b2international.snowowl.dsl.expressionextractor.SCGExpressionExtractor;
 import com.b2international.snowowl.dsl.scg.Attribute;
@@ -38,17 +39,18 @@ import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgPackage;
 import com.b2international.snowowl.dsl.util.ScgAttributeFinderVisitor;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedConceptFullQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.mrcm.core.validator.MrcmConceptWidgetBeanValidator;
 import com.b2international.snowowl.snomed.mrcm.core.validator.WidgetBeanValidationDiagnostic;
 import com.b2international.snowowl.snomed.mrcm.core.widget.ClientWidgetBeanProviderFactory;
@@ -123,56 +125,53 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		SCGExpressionExtractor extractor = new SCGExpressionExtractor(expression);
 		NormalFormWrapper normalForm = new NormalFormWrapper(extractor.getFocusConceptIdList(), wrapRelationshipGroups(extractor.getGroupConcepts()));
 		
-
-		SnomedEditingContext editingContext = new SnomedEditingContext();
-		com.b2international.snowowl.snomed.Concept concept = SnomedEditingContext.buildDraftConceptFromNormalForm(
-				editingContext, normalForm);
-		concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
-		IClientWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IClientWidgetModelProvider.class);
-		ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(extractor.getFocusConceptIdList(), null);
-		IClientWidgetBeanProvider widgetBeanProvider = new ClientWidgetBeanProviderFactory().createProvider(conceptWidgetModel, concept, true);
-		ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(concept.getId(), conceptWidgetModel, null, true, new NullProgressMonitor());
-		IDiagnostic diagnostic = new MrcmConceptWidgetBeanValidator().validate(conceptWidgetBean);
-		Set<Attribute> markedAttributes = Sets.newHashSet();
-		for (IDiagnostic childDiagnostic : diagnostic.getChildren()) {
-			DiagnosticSeverity severity = childDiagnostic.getProblemMarkerSeverity();
-			switch (severity) {
-			case ERROR:
-				// find exact location for the error
-				WidgetBeanValidationDiagnostic widgetBeanDiagnostic = (WidgetBeanValidationDiagnostic) childDiagnostic;
-				ModeledWidgetBean widgetBean = widgetBeanDiagnostic.getWidgetBean();
-				if (widgetBean instanceof RelationshipWidgetBean) {
-					RelationshipWidgetBean relationshipWidgetBean = (RelationshipWidgetBean) widgetBean;
-					ScgAttributeFinderVisitor<SnomedConceptIndexEntry> attributeExtractingVisitor =	
-							new ScgAttributeFinderVisitor<SnomedConceptIndexEntry>(relationshipWidgetBean.getSelectedType().getId(), 
-									relationshipWidgetBean.getSelectedValue().getId(), Integer.MAX_VALUE, markedAttributes);
-					EObjectWalker extractorWalker = EObjectWalker.createContainmentWalker(attributeExtractingVisitor);
-					extractorWalker.walk(expression);
-					List<Attribute> matchingAttributes = attributeExtractingVisitor.getMatchingAttributes();
-					if (!CompareUtils.isEmpty(matchingAttributes)) {
-						final Attribute matchingAttribute = matchingAttributes.get(0);
-						if (matchingAttribute.eContainer() instanceof Expression) {
-							Expression containingExpression = (Expression) matchingAttribute.eContainer();
-							int index = containingExpression.getAttributes().indexOf(matchingAttribute);
-							error(childDiagnostic.getMessage(), containingExpression, ScgPackage.eINSTANCE.getExpression_Attributes(), index);
-						} else if (matchingAttribute.eContainer() instanceof Group) {
-							Group containingGroup = (Group) matchingAttribute.eContainer();
-							int index = containingGroup.getAttributes().indexOf(matchingAttribute);
-							error(childDiagnostic.getMessage(), containingGroup, ScgPackage.eINSTANCE.getGroup_Attributes(), index);
-						} else {
-							throw new IllegalStateException("Unexpected attribute container: " + matchingAttribute.eContainer());
+		try (SnomedEditingContext editingContext = new SnomedEditingContext()) {
+			com.b2international.snowowl.snomed.Concept concept = editingContext.buildDraftConceptFromNormalForm(normalForm);
+			concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
+			IClientWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IClientWidgetModelProvider.class);
+			ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(extractor.getFocusConceptIdList(), null);
+			IClientWidgetBeanProvider widgetBeanProvider = new ClientWidgetBeanProviderFactory().createProvider(conceptWidgetModel, concept, true);
+			ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(concept.getId(), conceptWidgetModel, null, true, new NullProgressMonitor());
+			IDiagnostic diagnostic = new MrcmConceptWidgetBeanValidator().validate(conceptWidgetBean);
+			Set<Attribute> markedAttributes = Sets.newHashSet();
+			for (IDiagnostic childDiagnostic : diagnostic.getChildren()) {
+				DiagnosticSeverity severity = childDiagnostic.getProblemMarkerSeverity();
+				switch (severity) {
+				case ERROR:
+					// find exact location for the error
+					WidgetBeanValidationDiagnostic widgetBeanDiagnostic = (WidgetBeanValidationDiagnostic) childDiagnostic;
+					ModeledWidgetBean widgetBean = widgetBeanDiagnostic.getWidgetBean();
+					if (widgetBean instanceof RelationshipWidgetBean) {
+						RelationshipWidgetBean relationshipWidgetBean = (RelationshipWidgetBean) widgetBean;
+						ScgAttributeFinderVisitor<SnomedConceptIndexEntry> attributeExtractingVisitor =	
+								new ScgAttributeFinderVisitor<SnomedConceptIndexEntry>(relationshipWidgetBean.getSelectedType().getId(), 
+										relationshipWidgetBean.getSelectedValue().getId(), Integer.MAX_VALUE, markedAttributes);
+						EObjectWalker extractorWalker = EObjectWalker.createContainmentWalker(attributeExtractingVisitor);
+						extractorWalker.walk(expression);
+						List<Attribute> matchingAttributes = attributeExtractingVisitor.getMatchingAttributes();
+						if (!CompareUtils.isEmpty(matchingAttributes)) {
+							final Attribute matchingAttribute = matchingAttributes.get(0);
+							if (matchingAttribute.eContainer() instanceof Expression) {
+								Expression containingExpression = (Expression) matchingAttribute.eContainer();
+								int index = containingExpression.getAttributes().indexOf(matchingAttribute);
+								error(childDiagnostic.getMessage(), containingExpression, ScgPackage.eINSTANCE.getExpression_Attributes(), index);
+							} else if (matchingAttribute.eContainer() instanceof Group) {
+								Group containingGroup = (Group) matchingAttribute.eContainer();
+								int index = containingGroup.getAttributes().indexOf(matchingAttribute);
+								error(childDiagnostic.getMessage(), containingGroup, ScgPackage.eINSTANCE.getGroup_Attributes(), index);
+							} else {
+								throw new IllegalStateException("Unexpected attribute container: " + matchingAttribute.eContainer());
+							}
+							markedAttributes.add(matchingAttribute);
 						}
-						markedAttributes.add(matchingAttribute);
 					}
+					break;
+					
+				default:
+					break;
 				}
-				break;
-
-			default:
-				break;
 			}
 		}
-	
-		
 	}
 
 	private Collection<AttributeConceptGroupWrapper> wrapRelationshipGroups(final Collection<ExtractedSCGAttributeGroup> groupConcepts) {
@@ -198,7 +197,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 			return;
 		}
 		
-		String conceptPreferredTerm = SnomedConceptNameProvider.INSTANCE.getText(concept.getId());
+		String conceptPreferredTerm = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE), concept.getId());
 		if (term.equals(conceptPreferredTerm)) {
 			return;
 		}
@@ -207,10 +206,10 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		List<SnomedDescriptionIndexEntry> result = indexSearcher.search(queryAdapter);
 		
 		for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : result) {
-			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getType())) {
+			if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.FULLY_SPECIFIED_NAME.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is the fully specified name, not the preferred term.", ScgPackage.eINSTANCE.getConcept_Term(), NON_MATCHING_TERM);
 				return;
-			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getType())) {
+			} else if (snomedDescriptionIndexEntry.getLabel().equals(term) && Concepts.SYNONYM.equals(snomedDescriptionIndexEntry.getTypeId())) {
 				warning("This is a synonym, not the preferred term.", ScgPackage.eINSTANCE.getConcept_Term(), NON_MATCHING_TERM);
 				return;
 			}

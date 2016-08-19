@@ -31,10 +31,8 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeContainerWidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
@@ -46,6 +44,7 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipWid
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.LowerBound;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.UpperBound;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
@@ -71,15 +70,12 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final List<RelationshipGroupWidgetModel> relationshipGroupWidgetModels = newSynchronizedList();
 		
 		final List<Runnable> runnables = Lists.newArrayList();
-		for (final PredicateIndexEntry predicates : predicateMinis) {
+		for (final PredicateIndexEntry predicateIndexEntry : predicateMinis) {
 			runnables.add(new Runnable() { @Override public void run() {
-				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicates);
+				processAttributeConstraint(branchPath, descriptionWidgetModels, dataTypeWidgetModels, singleGroupRelationshipWidgetModels, ungroupedRelationshipWidgetModels, predicateIndexEntry);
 			}});
 		}
 		
-		// Add preferred term rule
-		runnables.add(new Runnable() { @Override public void run() { descriptionWidgetModels.add(createPreferredTermDescriptionWidgetModel()); }});
-
 		ForkJoinUtils.runInParallel(runnables);
 		
 		//should be added in the very end of the process
@@ -198,15 +194,6 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		return new LongArrayTransformedToSet(ids);
 	}
 	
-	private static DescriptionWidgetModel createPreferredTermDescriptionWidgetModel() {
-		IClientSnomedComponentService snomedComponentService = ApplicationContext.getInstance().getService(IClientSnomedComponentService.class);
-		final DescriptionWidgetModel preferredTermModel = DescriptionWidgetModel
-				.createInfrastructureModel(snomedComponentService.getSynonymAndDescendantIds());
-
-		preferredTermModel.setPreferredOnly(true);
-		return preferredTermModel;
-	}
-
 	private static <T> List<T> newSynchronizedList() {
 		return Collections.synchronizedList(Lists.<T>newArrayList());
 	}

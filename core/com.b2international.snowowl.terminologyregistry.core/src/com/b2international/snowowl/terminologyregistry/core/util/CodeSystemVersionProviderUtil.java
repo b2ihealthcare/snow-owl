@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.util;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -36,5 +39,10 @@ public class CodeSystemVersionProviderUtil {
 	public static String getVersion(final String terminologyComponentId, final String componentId, final IBranchPath branchPath) {
 		ICodeSystemVersionProvider versionProvider = getComponentVersionProvider(terminologyComponentId);
 		return versionProvider.getVersion(terminologyComponentId, componentId, branchPath);
+	}
+	
+	public static Map<String, String> getVersions(final String terminologyComponentId, final Collection<String> componentIds, final IBranchPath branchPath) {
+		final ICodeSystemVersionProvider versionProvider = getComponentVersionProvider(terminologyComponentId);
+		return versionProvider.getVersions(terminologyComponentId, componentIds, branchPath);
 	}
 }

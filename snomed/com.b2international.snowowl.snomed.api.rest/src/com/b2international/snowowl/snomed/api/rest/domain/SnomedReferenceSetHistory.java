@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.List;
 
-import com.b2international.snowowl.api.history.domain.IHistoryInfo;
+import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 
 /**
  * @since 1.0

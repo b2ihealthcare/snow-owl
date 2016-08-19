@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.events.Event;
-import com.b2international.snowowl.datastore.server.events.CreateReviewEvent;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -37,7 +35,20 @@ public class CreateReviewRequest {
 	@NotEmpty
 	private String target;
 
-	public Event toEvent(final String repositoryId) {
-		return new CreateReviewEvent(repositoryId, source, target);
+	public void setSource(String source) {
+		this.source = source;
 	}
+	
+	public void setTarget(String target) {
+		this.target = target;
+	}
+	
+	public String getSource() {
+		return source;
+	}
+	
+	public String getTarget() {
+		return target;
+	}
+	
 }

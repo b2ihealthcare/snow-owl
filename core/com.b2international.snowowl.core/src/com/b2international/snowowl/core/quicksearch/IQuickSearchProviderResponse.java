@@ -42,6 +42,5 @@ public interface IQuickSearchProviderResponse {
 	 * 
 	 * @return the quick search result entries
 	 */
-	List<IQuickSearchProviderResponseEntry> getEntries();
-	
+	List<QuickSearchElement> getEntries();
 }

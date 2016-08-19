@@ -53,10 +53,11 @@ import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IndexException;
-import com.b2international.snowowl.datastore.index.DelimiterAnalyzer;
 import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.NullSearcherManager;
+import com.b2international.snowowl.datastore.index.SearchWarmerFactory;
+import com.b2international.snowowl.datastore.index.lucene.ComponentTermAnalyzer;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderBase;
 import com.b2international.snowowl.datastore.index.mapping.DocumentBuilderFactory;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
@@ -117,7 +118,7 @@ public class IndexBranchService implements Closeable {
 			} else {
 				this.indexWriter = null;
 				final IndexCommit baseCommit = directory.getLastBaseIndexCommit(logicalBranchPath);
-				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), null);
+				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), new SearchWarmerFactory());
 			}
 
 		} else {
@@ -128,7 +129,7 @@ public class IndexBranchService implements Closeable {
 			} else {
 				this.indexWriter = null;
 				final IndexCommit baseCommit = directory.getLastBaseIndexCommit(logicalBranchPath);
-				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), null);
+				this.manager = new SearcherManager(new ReadOnlyDirectory(baseCommit), new SearchWarmerFactory());
 			}
 		}
 	}
@@ -376,7 +377,7 @@ public class IndexBranchService implements Closeable {
 	}
 
 	private IndexWriter createIndexWriter(final boolean commitIfEmpty) throws IOException {
-		final Analyzer analyzer = new DelimiterAnalyzer();
+		final Analyzer analyzer = new ComponentTermAnalyzer(true, true);
 		final IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_9, analyzer);
 		config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 

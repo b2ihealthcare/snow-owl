@@ -29,15 +29,18 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.BranchManager;
-import com.b2international.snowowl.datastore.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.cdo.CDOBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.server.events.BranchChangedEvent;
-import com.b2international.snowowl.datastore.server.internal.IRepository;
+import com.b2international.snowowl.datastore.events.BranchChangedEvent;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.google.common.collect.ImmutableSortedSet;
@@ -51,9 +54,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
     private static final String CDO_BRANCH_ID = "cdoBranchId";
 
-	private final IRepository repository;
+	private final InternalRepository repository;
 	
-    public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
+    public CDOBranchManagerImpl(final InternalRepository repository, final Store<InternalBranch> branchStore) {
         super(branchStore);
         this.repository = repository;
        	branchStore.configureSearchable(CDO_BRANCH_ID);
@@ -103,9 +106,9 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @Override
-    InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
-        CDOBranch targetBranch = getCDOBranch(target);
-        CDOBranch sourceBranch = getCDOBranch(source);
+    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage) {
+        CDOBranch targetBranch = getCDOBranch(to);
+        CDOBranch sourceBranch = getCDOBranch(from);
         CDOTransaction targetTransaction = null;
 
         try {
@@ -121,17 +124,21 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
             targetTransaction.setCommitComment(commitMessage);
 
-            if (!dryRun) {
-	            CDOCommitInfo commitInfo = targetTransaction.commit();
-	            return target.withHeadTimestamp(commitInfo.getTimeStamp());
+            if (!dryRun && targetTransaction.isDirty()) {
+    			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
+            	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(SpecialUserStore.SYSTEM_USER_NAME, commitMessage, targetTransaction)
+            			.parentContextDescription(DatastoreLockContextDescriptions.SYNCHRONIZE)
+            			.commitOne();
+            	
+	            return to.withHeadTimestamp(commitInfo.getTimeStamp());
             } else {
-            	return target;
+            	return to;
             }
 
         } catch (CDOMerger.ConflictException e) {
-            throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", target.path(), source.path(), e);
+            throw new BranchMergeException("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path(), e);
         } catch (CommitException e) {
-            throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", target.path(), source.path(), e);
+            throw new BranchMergeException("Failed to apply changeset on '%s' from '%s'.", to.path(), from.path(), e);
         } finally {
             if (targetTransaction != null) {
                 targetTransaction.close();
@@ -175,8 +182,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     
     @Override
     InternalBranch sendChangeEvent(final InternalBranch branch) {
-		final BranchChangedEvent event = new BranchChangedEvent(repository.getCdoRepositoryId(), branch);
-		event.publish(repository.getEventBus());
+    	new BranchChangedEvent(repository.id(), branch).publish(repository.events());
 		return super.sendChangeEvent(branch);
     }
 }

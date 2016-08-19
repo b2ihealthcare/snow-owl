@@ -1,7 +1,6 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
@@ -10,18 +9,11 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelat
 
 public abstract class AbstractInputCreator {
 
-	public static final String SNOMEDCT = "SNOMEDCT";
-
-	void setCommonComponentProperties(String branchPath, ISnomedBrowserComponent component, AbstractSnomedComponentInput componentInput, ComponentCategory componentCategory) {
-		componentInput.setBranchPath(branchPath);
-		componentInput.setCodeSystemShortName(SNOMEDCT);
+	protected String getModuleOrDefault(ISnomedBrowserComponent component) {
 		final String moduleId = component.getModuleId();
-		componentInput.setModuleId(moduleId != null ? moduleId : SnomedConstants.Concepts.MODULE_SCT_CORE);
-		// Use default namespace
-		final NamespaceIdGenerationStrategy idGenerationStrategy = new NamespaceIdGenerationStrategy(componentCategory, null);
-		componentInput.setIdGenerationStrategy(idGenerationStrategy);
+		return moduleId != null ? moduleId : SnomedConstants.Concepts.MODULE_SCT_CORE;
 	}
-
+	
 	String getParentId(ISnomedBrowserConcept concept) {
 		ISnomedBrowserRelationship parentRelationship = null;
 		for (ISnomedBrowserRelationship relationship : concept.getRelationships()) {

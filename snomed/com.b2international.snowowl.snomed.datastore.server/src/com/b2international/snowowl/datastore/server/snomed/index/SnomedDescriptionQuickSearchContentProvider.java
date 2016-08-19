@@ -18,8 +18,6 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -31,32 +29,40 @@ import com.b2international.snowowl.datastore.IBranchPathMap;
 import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider;
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionReducedQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**
  * Server side, Net4j independent service for contributing SNOMED&nbsp;CT descriptions as the underlying elements for the quick search provider.
  * 
- * 
  * @see IIndexServerService
  * @see IQuickSearchContentProvider
  */
 public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
-	private final class SnomedDescriptionConverterFunction implements Function<SnomedDescriptionIndexEntry, QuickSearchElement> {
-		@Override public QuickSearchElement apply(@Nullable final SnomedDescriptionIndexEntry input) {
-			return new CompactQuickSearchElement(input.getId(), input.getType(), input.getLabel(), false);
+	private static final class SnomedDescriptionConverterFunction implements Function<SnomedDescriptionIndexEntry, QuickSearchElement> {
+		
+		private final String queryExpression;
+		
+		public SnomedDescriptionConverterFunction(String queryExpression) {
+			this.queryExpression = queryExpression;
+		}
+
+		@Override 
+		public QuickSearchElement apply(final SnomedDescriptionIndexEntry input) {
+			return new CompactQuickSearchElement(input.getId(), 
+					input.getTypeId(), 
+					input.getTerm(), 
+					false,
+					getMatchRegions(queryExpression, input.getTerm()),
+					getSuffixes(queryExpression, input.getTerm()));
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.IQuickSearchContentProvider#getComponents(java.lang.String, com.b2international.snowowl.core.api.IBranchPath, int, java.util.Map)
-	 */
 	@Override
 	public QuickSearchContentResult getComponents(final String queryExpression, final IBranchPathMap branchPathMap, final int limit, final Map<String, Object> configuration) {
 
@@ -75,19 +81,15 @@ public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSe
 			return new QuickSearchContentResult();
 		}
 		
-		return new QuickSearchContentResult(totalHitCount, convertToDTO(searcher.search(branchPath, queryAdapter, limit)));
+		return new QuickSearchContentResult(totalHitCount, convertToDTO(queryExpression, searcher.search(branchPath, queryAdapter, limit)));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchContentProvider#getEPackage()
-	 */
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedPackage.eINSTANCE;
 	}
 	
-	private List<QuickSearchElement> convertToDTO(final List<SnomedDescriptionIndexEntry> searchResults) {
-		return Lists.transform(searchResults, new SnomedDescriptionConverterFunction());
+	private List<QuickSearchElement> convertToDTO(final String queryExpression, final List<SnomedDescriptionIndexEntry> searchResults) {
+		return Lists.transform(searchResults, new SnomedDescriptionConverterFunction(queryExpression));
 	}
 }

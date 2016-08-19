@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.api;
 
 import java.io.File;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedExportConfiguration;
 import com.b2international.snowowl.snomed.api.exception.SnomedExportException;
+import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
 
 /**
  * Implementations of this interface are responsible for generating export archive in RF2 release format from the state

@@ -17,8 +17,10 @@ package com.b2international.snowowl.core.validation;
 
 import static com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity.ERROR;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * Base class of the {@link IComponentValidationConstraint}.
@@ -34,4 +36,7 @@ public abstract class ComponentValidationConstraint<C extends IComponent<?>> imp
 		return ComponentValidationDiagnosticImpl.createOk(componentId, sourceId, terminologyComponentId);
 	}
 	
+	protected IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
 }

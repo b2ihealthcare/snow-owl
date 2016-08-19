@@ -32,20 +32,20 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
-import com.b2international.snowowl.datastore.branch.Branch;
+import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration;
-import com.b2international.snowowl.snomed.api.domain.ISnomedImportConfiguration.ImportStatus;
-import com.b2international.snowowl.snomed.api.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
@@ -179,7 +179,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		checkNotNull(configuration, "SNOMED CT import configuration should be specified.");
 		ApiValidation.checkInput(configuration);
 		
-		final StorageRef importStorageRef = new StorageRef("SNOMEDCT", configuration.getBranchPath());
+		final StorageRef importStorageRef = new StorageRef(REPOSITORY_UUID, configuration.getBranchPath());
 		
 		// Check version and branch existence in case of DELTA RF2 import
 		// FULL AND SNAPSHOT can be import into empty databases

@@ -64,18 +64,23 @@
            terminologyId="com.b2international.snowowl.terminology.snomed">
      </serviceConfigJob>
      <serviceConfigJob
-           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptLabelProviderServiceConfigJob"
-           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptLabelProviderServiceConfigJob"
-           terminologyId="com.b2international.snowowl.terminology.snomed">
-     </serviceConfigJob>
-     <serviceConfigJob
-           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedDescriptionLabelProviderServiceConfigJob"
-           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedDescriptionLabelProviderServiceConfigJob"
-           terminologyId="com.b2international.snowowl.terminology.snomed">
-     </serviceConfigJob>
-     <serviceConfigJob
            class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedStatedServerTerminologyBrowserConfigJob"
            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedStatedServerTerminologyBrowserConfigJob"
+           terminologyId="com.b2international.snowowl.terminology.snomed">
+     </serviceConfigJob>
+     <serviceConfigJob
+           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptNameProviderServiceConfigJob"
+           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptNameProviderServiceConfigJob"
+           terminologyId="com.b2international.snowowl.terminology.snomed">
+     </serviceConfigJob>
+     <serviceConfigJob
+           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedDescriptionNameProviderServiceConfigJob"
+           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedDescriptionNameProviderServiceConfigJob"
+           terminologyId="com.b2international.snowowl.terminology.snomed">
+     </serviceConfigJob>
+     <serviceConfigJob
+           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRelationshipNameProviderServiceConfigJob"
+           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRelationshipNameProviderServiceConfigJob"
            terminologyId="com.b2international.snowowl.terminology.snomed">
      </serviceConfigJob>
    </extension>
@@ -198,5 +203,23 @@
       <executor
             executorClass="com.b2international.snowowl.datastore.server.snomed.history.SnomedRefSetHistoryInfoQueryExecutor">
       </executor>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.server.editingContextFactory">
+      <factory
+            class="com.b2international.snowowl.datastore.server.snomed.SnomedEditingContextFactory">
+      </factory>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.server.classLoaderProvider">
+      <classLoaderProvider
+            class="com.b2international.snowowl.datastore.server.snomed.SnomedClassLoaderProvider">
+      </classLoaderProvider>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor">
+      <postProcessor
+            class="com.b2international.snowowl.datastore.server.snomed.SnomedConcreteDomainImportPostProcessor">
+      </postProcessor>
    </extension>
 </plugin>

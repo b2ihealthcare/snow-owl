@@ -10,6 +10,14 @@
 			<onMismatch>NEUTRAL</onMismatch>
 			<onMatch>DENY</onMatch>
 		</filter>
+	    <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+				<marker>SNOW_OWL_USER_ACCESS</marker>
+			</evaluator>
+			<!--  do not log the audit, it has dedicated appender -->
+			<onMismatch>NEUTRAL</onMismatch>
+			<onMatch>DENY</onMatch>
+		</filter>
 	    <encoder>
 	      <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] %-5level %logger{35} - %msg %n</pattern>
 	    </encoder>
@@ -186,7 +194,7 @@
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
 		<appender-ref ref="STDOUT_USER_ACTIVITY" />
-		<appender-ref ref="STDOUT_USER_ACCESS" />
+		<!-- <appender-ref ref="STDOUT_USER_ACCESS" /> -->
 		<appender-ref ref="STDOUT_IMPORT_ACTIVITY" />
 		<appender-ref ref="STDOUT_EXPORT_ACTIVITY" />
 		<appender-ref ref="SNOWOWL_LOG_FILE" />

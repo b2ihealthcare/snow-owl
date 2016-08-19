@@ -31,10 +31,12 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ExtendedComponentImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.b2international.snowowl.core.api.IComponentNameProvider;
+import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
+import com.b2international.snowowl.core.api.component.IconIdProviderUtil;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.LeafWidgetBeanSorter;
@@ -164,22 +166,38 @@ public class WidgetBeanProvider {
 				if (!entry.isActive()) {
 					continue;
 				}
-				final MappingWidgetModel model = conceptWidgetModel.getMappingContainerWidgetModel().getFirstMatching(entry.getSpecialFieldComponentType());
+				
+				final String mapTargetComponentType = entry.getMapTargetComponentType();
+				final short mapTargetComponentTypeShort = entry.getMapTargetComponentTypeAsShort();
+				final String mapTargetComponentId = entry.getMapTargetComponentId();
+				
+				final MappingWidgetModel model = conceptWidgetModel.getMappingContainerWidgetModel().getFirstMatching(mapTargetComponentType);
 				final MappingWidgetBean bean = new MappingWidgetBean(cwb, model, entry.isReleased());
-				final short terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(entry.getSpecialFieldComponentType());
 				
 				// XXX: as WidgetBeanProvider currently being used via the RPC mechanism which serializes class values, we cannot use returned terminologyDepenendentSelectedValue, instead we use ExtendedComponent
-				final IComponent<String> terminologyDependentSelectedValue = CoreTerminologyBroker.getInstance().getTerminologyBrowserFactory(entry.getSpecialFieldComponentType()).getTerminologyBrowser().getConcept(entry.getSpecialFieldId());
-				final Object rawIconId = terminologyDependentSelectedValue instanceof IComponentWithIconId<?> ? ((IComponentWithIconId<?>) terminologyDependentSelectedValue).getIconId() : null;
-				final String iconId = rawIconId instanceof String ? (String) rawIconId : null; 
-				final IComponent<String> selectedValue = new ExtendedComponentImpl(entry.getSpecialFieldId(), entry.getSpecialFieldLabel(), iconId, terminologyComponentId);
+				final IClientTerminologyBrowser<IComponent<String>, String> terminologyBrowser = CoreTerminologyBroker.getInstance()
+						.getTerminologyBrowserFactory(mapTargetComponentType)
+						.getTerminologyBrowser();
 				
-				bean.setSelectedValue(selectedValue);
+				final IComponentNameProvider nameProvider = CoreTerminologyBroker.getInstance()
+						.getNameProviderFactory(mapTargetComponentType)
+						.getNameProvider();
+				
+				final IComponent<String> localSelectedValue = terminologyBrowser.getConcept(mapTargetComponentId);
+				final String iconId = IconIdProviderUtil.getIconId(localSelectedValue);
+				
+				// FIXME: branch path for external terminology component?
+				final String label = nameProvider.getComponentLabel(branchPath, mapTargetComponentId);
+				
+				final IComponent<String> serializableSelectedValue = new ExtendedComponentImpl(mapTargetComponentId, label, iconId, mapTargetComponentTypeShort);
+				
+				bean.setSelectedValue(serializableSelectedValue);
 				bean.setUuid(entry.getId());
 				result.add(bean);
 				unusedModels.remove(model);
 			}
 		}
+		
 		return result;
 	}
 }

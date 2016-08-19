@@ -20,10 +20,13 @@ import static com.b2international.commons.StringUtils.isEmpty;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicTypePredicates;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
@@ -47,6 +50,8 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 
 	private ConceptWidgetBean cwb;
+
+	private boolean inferredEditingEnabled;
 	
 	/**
 	 * Default constructor for serialization.
@@ -76,6 +81,8 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 		addPropertyChangeListener(PROP_SELECTED_LABEL, actionEnablingListener);
 		addPropertyChangeListener(PROP_SELECTED_VALUE, actionEnablingListener);
 		addPropertyChangeListener(PROP_SELECTED_UOM, actionEnablingListener);
+		
+		inferredEditingEnabled = ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isInferredEditingEnabled();
 	}
 	
 	@Override
@@ -237,6 +244,18 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	@Override
 	public String getSelectedCharacteristicTypeId() {
 		return characteristicTypeId;
+	}
+	
+	@Override
+	protected boolean canBeCloned() {
+		return (super.canBeCloned() && CharacteristicTypePredicates.manuallyCreatableCharacteristicTypesIDsPredicate().apply(getSelectedCharacteristicTypeId()))
+				|| inferredEditingEnabled;
+	}
+
+	@Override
+	protected boolean canBeClonedAndRetired() {
+		return (super.canBeClonedAndRetired() && CharacteristicTypePredicates.manuallyCreatableCharacteristicTypesIDsPredicate().apply(getSelectedCharacteristicTypeId()))
+				|| inferredEditingEnabled;
 	}
 	
 }

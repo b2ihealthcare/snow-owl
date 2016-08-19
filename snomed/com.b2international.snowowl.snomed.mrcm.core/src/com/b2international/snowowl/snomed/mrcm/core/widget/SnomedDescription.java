@@ -19,7 +19,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
@@ -54,7 +54,7 @@ public final class SnomedDescription {
 	}
 	
 	private final String id;
-	private final String label;
+	private final String term;
 	private final String typeId;
 	private final boolean active;
 	private final boolean released;
@@ -62,7 +62,7 @@ public final class SnomedDescription {
 	
 	public SnomedDescription(final Description description) {
 		id = CDOUtils.getAttribute(description, SnomedPackage.eINSTANCE.getComponent_Id(), String.class);
-		label = description.getTerm();
+		term = description.getTerm();
 		typeId = description.getType().getId();
 		active = description.isActive();
 		released = description.isReleased();
@@ -73,8 +73,8 @@ public final class SnomedDescription {
 	
 	public SnomedDescription(final SnomedDescriptionIndexEntry description) {
 		id = description.getId();
-		label = description.getLabel();
-		typeId = description.getType();
+		term = description.getTerm();
+		typeId = description.getTypeId();
 		active = description.isActive();
 		released = description.isReleased();
 		caseSensitivity = CaseSignificance.getForDescriptionIndexEntry(description);
@@ -84,8 +84,8 @@ public final class SnomedDescription {
 		return id;
 	}
 
-	public String getLabel() {
-		return label;
+	public String getTerm() {
+		return term;
 	}
 
 	public String getTypeId() {

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: B2i Commons
 Bundle-SymbolicName: com.b2international.commons
-Bundle-Version: 4.4.0.qualifier
+Bundle-Version: 4.6.3.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: bak.pcj,
@@ -23,6 +23,7 @@ Export-Package: bak.pcj,
  com.b2international.commons.graph,
  com.b2international.commons.inject.equinox,
  com.b2international.commons.ldap,
+ com.b2international.commons.options,
  com.b2international.commons.pcj,
  com.b2international.commons.platform,
  com.b2international.commons.status,

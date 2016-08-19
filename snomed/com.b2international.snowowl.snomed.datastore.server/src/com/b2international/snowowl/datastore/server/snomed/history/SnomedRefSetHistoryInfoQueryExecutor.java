@@ -26,7 +26,6 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.collections.CloseableMap;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IHistoryInfo.IVersion;
 import com.b2international.snowowl.datastore.cdo.LocalDbUtils;
@@ -34,9 +33,9 @@ import com.b2international.snowowl.datastore.server.history.HistoryInfoQueryExec
 import com.b2international.snowowl.datastore.server.history.InternalHistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -81,7 +80,7 @@ public class SnomedRefSetHistoryInfoQueryExecutor extends HistoryInfoQueryExecut
 	}
 	
 	private PreparedStatementKey getRefSetStatementKey(final SnomedRefSetIndexEntry refSet) {
-		if (isMapping(refSet)) { 
+		if (refSet.isMapping()) { 
 			return SnomedPreparedStatementKey.MAPPING_REFSET_CHANGES;
 		} else if (refSet.isStructural()) {
 			return SnomedPreparedStatementKey.STRUCTURAL_REFSET_CHANGES;
@@ -90,17 +89,10 @@ public class SnomedRefSetHistoryInfoQueryExecutor extends HistoryInfoQueryExecut
 		}
 	}
 
-	private boolean isMapping(final SnomedRefSetIndexEntry refSet) {
-		return SnomedRefSetUtil.isMapping(refSet.getType());
-	}
-
 	private SnomedRefSetIndexEntry getRefSet(final InternalHistoryInfoConfiguration configuration) {
 		final IBranchPath branchPath = configuration.getBranchPath();
 		final String refSetId = configuration.getComponentId();
-		return getRefSetBrowser().getRefSet(branchPath, refSetId);
+		return new SnomedRefSetLookupService().getComponent(branchPath, refSetId);
 	}
 
-	private SnomedRefSetBrowser getRefSetBrowser() {
-		return ApplicationContext.getServiceForClass(SnomedRefSetBrowser.class);
-	}
 }

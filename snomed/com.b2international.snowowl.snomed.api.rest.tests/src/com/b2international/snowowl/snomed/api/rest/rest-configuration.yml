@@ -13,6 +13,13 @@ systemUser: true
 
 auth:
   type: PROP_FILE
+  
+snomed:
+  ids:
+    strategy : MEMORY
+  
+metrics:
+  enabled: true
 
 fileAuth:
   users:

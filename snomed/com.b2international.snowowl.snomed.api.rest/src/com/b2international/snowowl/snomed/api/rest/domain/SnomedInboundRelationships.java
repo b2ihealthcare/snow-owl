@@ -17,12 +17,14 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.List;
 
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 
 /**
  * @since 1.0
  */
 public class SnomedInboundRelationships {
+
+	private static String[] expandable = {"source.fsn, type.fsn"};
 
 	private List<ISnomedRelationship> inboundRelationships;
 	private int total;
@@ -33,6 +35,10 @@ public class SnomedInboundRelationships {
 
 	public int getTotal() {
 		return total;
+	}
+
+	public String[] getExpandable() {
+		return expandable;
 	}
 
 	public void setInboundRelationships(final List<ISnomedRelationship> inboundRelationships) {

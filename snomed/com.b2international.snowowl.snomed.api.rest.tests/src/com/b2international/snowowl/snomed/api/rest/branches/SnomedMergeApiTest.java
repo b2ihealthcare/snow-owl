@@ -21,7 +21,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchConflicts;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
 import static com.google.common.collect.Maps.newHashMap;
@@ -32,13 +32,14 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.api.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -179,10 +180,22 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeDeleted(branchPath, symbolicName, SnomedComponentType.DESCRIPTION);
 	}
 
+	@Override
+	public void setup() {
+		super.setup();
+		givenBranchWithPath(testBranchPath);
+	}
+	
+	@Override
+	protected IBranchPath createRandomBranchPath() {
+		// XXX make sure we nest the merge test cases under MAIN, so MAIN is not affected at all
+		final IBranchPath parentBranch = super.createRandomBranchPath();
+		givenBranchWithPath(parentBranch);
+		return BranchPathUtils.createPath(parentBranch, "merge-test");
+	}
+
 	@Test
 	public void mergeNewConceptForward() {
-		givenBranchWithPath(testBranchPath);
-
 		assertConceptCreated(testBranchPath, "C1");
 		assertConceptExists(testBranchPath, "C1");
 
@@ -194,8 +207,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewDescriptionForward() {
-		givenBranchWithPath(testBranchPath);
-
 		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");
 
@@ -207,8 +218,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void mergeNewRelationshipForward() {
-		givenBranchWithPath(testBranchPath);
-
 		assertRelationshipCreated(testBranchPath, "R1");
 		assertRelationshipExists(testBranchPath, "R1");
 
@@ -220,8 +229,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noMergeNewConceptDiverged() {
-		givenBranchWithPath(testBranchPath);
-
 		assertConceptCreated(testBranchPath, "C1");
 		assertConceptExists(testBranchPath, "C1");
 		assertConceptNotExists(testBranchPath.getParent(), "C1");
@@ -230,7 +237,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptExists(testBranchPath.getParent(), "C2");
 		assertConceptNotExists(testBranchPath, "C2");
 
-		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new concept");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new concept");
 
 		assertConceptExists(testBranchPath, "C1");
 		assertConceptNotExists(testBranchPath.getParent(), "C1");
@@ -240,8 +247,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noMergeNewDescriptionDiverged() {
-		givenBranchWithPath(testBranchPath);
-
 		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
@@ -250,7 +255,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
 		assertDescriptionNotExists(testBranchPath, "D2");
 
-		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new description");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new description");
 
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
@@ -260,8 +265,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noMergeNewRelationshipDiverged() {
-		givenBranchWithPath(testBranchPath);
-
 		assertRelationshipCreated(testBranchPath, "R1");
 		assertRelationshipExists(testBranchPath, "R1");
 		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
@@ -270,7 +273,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertRelationshipExists(testBranchPath.getParent(), "R2");
 		assertRelationshipNotExists(testBranchPath, "R2");
 
-		assertBranchConflicts(testBranchPath, testBranchPath.getParent(), "Merge new relationship");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new relationship");
 
 		assertRelationshipExists(testBranchPath, "R1");
 		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
@@ -280,8 +283,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewConceptDiverged() {
-		givenBranchWithPath(testBranchPath);
-
 		assertConceptCreated(testBranchPath, "C1");
 		assertConceptExists(testBranchPath, "C1");
 		assertConceptNotExists(testBranchPath.getParent(), "C1");
@@ -300,8 +301,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewDescriptionDiverged() {
-		givenBranchWithPath(testBranchPath);
-
 		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
@@ -320,8 +319,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewRelationshipDiverged() {
-		givenBranchWithPath(testBranchPath);
-
 		assertRelationshipCreated(testBranchPath, "R1");
 		assertRelationshipExists(testBranchPath, "R1");
 		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
@@ -340,7 +337,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void rebaseNewConceptStale() {
-		IBranchPath branchPath = createNestedBranch("A", "B");
+		IBranchPath branchPath = createNestedBranch(testBranchPath, "A", "B");
 
 		assertConceptCreated(branchPath, "CB1");
 		assertConceptExists(branchPath, "CB1");
@@ -385,8 +382,6 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void noRebaseNewPreferredTerm() {
-		givenBranchWithPath(testBranchPath);
-
 		assertDescriptionCreated(testBranchPath, "D1", PREFERRED_ACCEPTABILITY_MAP);
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
@@ -395,7 +390,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
 		assertDescriptionNotExists(testBranchPath,"D2");
 
-		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
 
 		assertDescriptionExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
@@ -409,7 +404,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionCanBeUpdated(testBranchPath.getParent(), "D1", changesOnParent);
 		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnBranch);
 
-		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase conflicting description change");
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting description change");
 	}
 
 	@Test
@@ -456,7 +451,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
 		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
 
-		assertBranchConflicts(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
+		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
 	}
 
 	@Test
@@ -519,12 +514,48 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionCanBeDeleted(testBranchPath, "D1");
 		assertDescriptionCanBeDeleted(testBranchPath.getParent(), "D1");
 
+		/* 
+		 * The rebase sees that the same thing has already happened on the parent branch, and does not 
+		 * add an empty commit to the new instance of the child; it will be in UP_TO_DATE state and can 
+		 * not be promoted.
+		 */
 		assertBranchCanBeRebased(testBranchPath, "Rebase description dual deletion");
-		assertBranchCanBeMerged(testBranchPath, "Merge description dual deletion");
+		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge description dual deletion");
 
 		assertDescriptionNotExists(testBranchPath, "D1");
 		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
 		assertDescriptionExists(testBranchPath, "D2");
 		assertDescriptionExists(testBranchPath.getParent(), "D2");
+	}
+	
+	@Test
+	public void rebaseOverReusedRelationshipId() {
+		assertRelationshipCreated(testBranchPath.getParent(), "R1");
+		assertRelationshipExists(testBranchPath.getParent(), "R1");
+		final String relationshipId = symbolicNameMap.get("R1");
+		
+		assertBranchCanBeRebased(testBranchPath, "Rebase after relationship creation");
+		assertComponentCanBeDeleted(testBranchPath.getParent(), "R1", SnomedComponentType.RELATIONSHIP);
+		
+		final Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("sourceId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", "116676008") // Associated morphology
+				.put("destinationId", "404684003") // ??? (different from morphologic abnormality)
+				.put("id", relationshipId)
+				.put("commitComment", "New relationship with same ID")
+				.build();
+
+		assertComponentCreated(testBranchPath.getParent(), "new-R1", SnomedComponentType.RELATIONSHIP, requestBody);
+		
+		// Different relationships before rebase
+		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "49755003");
+		
+		assertBranchCanBeRebased(testBranchPath, "Rebase after new relationship creation");
+		
+		// Same relationships after rebase
+		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
+		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
 	}
 }

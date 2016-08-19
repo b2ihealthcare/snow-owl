@@ -21,9 +21,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicTypePredicates;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.RelationshipWidgetModel;
 import com.google.common.base.Strings;
 
@@ -51,6 +54,8 @@ public class RelationshipWidgetBean extends LeafWidgetBean implements Characteri
 	private String selectedValue;
 	private String selectedCharacteristicType;
 	private ConceptWidgetBean cwb;
+
+	private boolean inferredEditingEnabled;
 
 	/**
 	 * Default constructor for serialization.
@@ -82,6 +87,8 @@ public class RelationshipWidgetBean extends LeafWidgetBean implements Characteri
 		// XXX: no need to unregister these as we are pointing to ourselves
 		addPropertyChangeListener(PROP_SELECTED_TYPE, actionEnablingListener);
 		addPropertyChangeListener(PROP_SELECTED_VALUE, actionEnablingListener);
+		
+		inferredEditingEnabled = ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isInferredEditingEnabled();
 	}
 
 	@Override
@@ -275,10 +282,23 @@ public class RelationshipWidgetBean extends LeafWidgetBean implements Characteri
 	}
 
 	@Override
+	protected boolean canBeCloned() {
+		return (super.canBeCloned() && CharacteristicTypePredicates.manuallyCreatableCharacteristicTypesIDsPredicate().apply(getSelectedCharacteristicTypeId()))
+				|| inferredEditingEnabled;
+	}
+	
+	//Orsi: Allow inferred relationships to be manually retired as the classifier does not always remove them 
+	@Override
 	protected boolean canBeRetired() {
 		return super.canBeRetired() && !hasAssociatedMembers();
 	}
 
+	@Override
+	protected boolean canBeClonedAndRetired() {
+		return (super.canBeClonedAndRetired() && CharacteristicTypePredicates.manuallyCreatableCharacteristicTypesIDsPredicate().apply(getSelectedCharacteristicTypeId()))
+				|| inferredEditingEnabled;
+	}
+	
 	public boolean hasAssociatedMembers() {
 
 		if (null == getParent()) {
@@ -304,7 +324,6 @@ public class RelationshipWidgetBean extends LeafWidgetBean implements Characteri
 				return true;
 			}
 		}
-
 		return false;
 	}
 

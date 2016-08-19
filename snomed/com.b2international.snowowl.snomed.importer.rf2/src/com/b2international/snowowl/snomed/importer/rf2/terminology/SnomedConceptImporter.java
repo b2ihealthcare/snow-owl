@@ -37,11 +37,9 @@ import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfigu
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<ConceptRow, Concept> {
 
-	private final Map<String, Concept> conceptMap = Maps.newHashMap();
 	
 	private ImmutableMap.Builder<String, ConceptRow> conceptRowBuilder;
 	
@@ -125,13 +123,13 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 		return false;
 	}
 	
+	
 	@Override
 	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
 		return ImportAction.CONTINUE;
 	}
 
 	private ImportAction cdoCommit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
-		conceptMap.clear();
 		return super.commit(subMonitor, formattedEffectiveTime);
 	}
 
@@ -142,7 +140,7 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 	
 	protected void importRow(final ConceptRow currentRow, final Map<String, ConceptRow> conceptRowMap) {
 
-		final Concept editedConcept = getOrCreateConcept(currentRow.getId());
+		final Concept editedConcept = getOrCreateComponent(null, currentRow.getId());
 		
 		if (skipCurrentRow(currentRow, editedConcept)) {
 			return;
@@ -157,37 +155,30 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 		
 		editedConcept.setExhaustive(false);
 		editedConcept.setActive(currentRow.isActive());
-		editedConcept.setDefinitionStatus(getOrCreateConcept(currentRow.getDefinitionStatusId()));
-		editedConcept.setModule(getOrCreateConcept(currentRow.getModuleId()));
+		editedConcept.setDefinitionStatus(getOrCreateComponent(null, currentRow.getDefinitionStatusId()));
+		editedConcept.setModule(getOrCreateComponent(null, currentRow.getModuleId()));
 		
 		getImportContext().conceptVisited(currentRow.getId());
 	}
 	
-	private Concept getOrCreateConcept(final String conceptSctId) {
+	@Override
+	protected Concept getComponent(final String componentId) {
+		return getConcept(componentId);
+	}
+	
+	@Override
+	protected Concept createComponent(final String containerId, final String componentId) {
+		final Concept concept = SnomedFactory.eINSTANCE.createConcept();
+		concept.setId(componentId);
+		//add to CDO resource after initializing it
+		//this is to avoid dangling reference exception when committing
+		//consider the following use case
+		//after every 50k RF2 file row, a commit is performed if the underlying transaction is dirty
+		//consider 50k brand new concept with a non-existing module concept which will be processed as the 50001 RF2 file row
+		//the module concept will be created, but will not be added to its CDO resource but set as a module for the previous 50k concepts
+		//cause dangling reference exception on commit
+		getImportContext().getEditingContext().add(concept);
 		
-		Concept result = conceptMap.get(conceptSctId);
-
-		if (null != result) {
-			return result;
-		}
-
-		result = getConcept(conceptSctId);
-		
-		if (null == result) {
-			result = SnomedFactory.eINSTANCE.createConcept();
-			result.setId(conceptSctId);
-			//add to CDO resource after initializing it
-			//this is to avoid dangling reference exception when committing
-			//consider the following use case
-			//after every 50k RF2 file row, a commit is performed if the underlying transaction is dirty
-			//consider 50k brand new concept with a non-existing module concept which will be processed as the 50001 RF2 file row
-			//the module concept will be created, but will not be added to its CDO resource but set as a module for the previous 50k concepts
-			//cause dangling reference exception on commit
-			getImportContext().getEditingContext().add(result);
-			getComponentLookup().addNewComponent(result, conceptSctId);
-		}
-		
-		conceptMap.put(conceptSctId, result);
-		return result;
+		return concept;
 	}
 }

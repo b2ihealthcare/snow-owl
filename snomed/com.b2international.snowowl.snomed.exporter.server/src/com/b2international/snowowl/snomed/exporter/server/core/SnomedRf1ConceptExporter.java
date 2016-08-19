@@ -18,10 +18,6 @@ package com.b2international.snowowl.snomed.exporter.server.core;
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.CONCEPT_PRIMITIVE;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID;
-import static com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_VALUE_ID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
 
@@ -35,11 +31,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
@@ -62,11 +58,11 @@ import com.google.common.collect.AbstractIterator;
  */
 public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 
-	private static final Set<String> CONCEPT_FILEDS_TO_LOAD = SnomedMappings.fieldsToLoad().active().field(CONCEPT_FULLY_SPECIFIED_NAME).field(CONCEPT_PRIMITIVE).build();
+	private static final Set<String> CONCEPT_FIELDS_TO_LOAD = SnomedMappings.fieldsToLoad().active().primitive().build();
 	
-	private static final Set<String> MAP_TARGET_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().field(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID).build();
+	private static final Set<String> MAP_TARGET_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberMapTargetComponentId().build();
 	
-	private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().field(REFERENCE_SET_MEMBER_VALUE_ID).build();
+	private static final Set<String> INACTIVATION_ID_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad().memberValueId().build();
 
 	private final Id2Rf1PropertyMapper mapper;
 	private final SnomedExportConfiguration configuration;
@@ -86,6 +82,10 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 					
 					private final Iterator<IdStorageKeyPair> idIterator = getServiceForClass(ISnomedComponentService.class)
 							.getAllComponentIdStorageKeys(getBranchPath(), CONCEPT_NUMBER).iterator();
+					
+					//////////////////////////////
+					// TODO: Map FSNs here
+					//////////////////////////////
 					
 					@SuppressWarnings("rawtypes")
 					private final IndexServerService indexService = (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
@@ -113,12 +113,12 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								
 								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));
 								
-								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, CONCEPT_FILEDS_TO_LOAD);
+								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, CONCEPT_FIELDS_TO_LOAD);
 								
 								_values[0] = conceptId;
-								_values[1] = 1 == SnomedMappings.active().getValue(doc) ? "1" : "0";
-								_values[2] = doc.get(CONCEPT_FULLY_SPECIFIED_NAME);
-								_values[3] = 1 == IndexUtils.getIntValue(doc.getField(CONCEPT_PRIMITIVE)) ? "1" : "0";
+								_values[1] = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)) ? "1" : "0";
+								_values[2] = conceptId; // doc.get(CONCEPT_FULLY_SPECIFIED_NAME);
+								_values[3] = BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc)) ? "1" : "0";
 								
 								if ("0".equals(String.valueOf(_values[1]))) {
 									
@@ -129,7 +129,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 									final TopDocs inactivationTopDocs = indexService.search(getBranchPath(), inactivationIndicatorQuery, 1);
 									
 									if (null != inactivationTopDocs && !CompareUtils.isEmpty(inactivationTopDocs.scoreDocs)) {
-										_values[1] = searcher.doc(inactivationTopDocs.scoreDocs[0].doc, INACTIVATION_ID_FIELD_TO_LOAD).get(REFERENCE_SET_MEMBER_VALUE_ID);
+										_values[1] = SnomedMappings.memberValueId().getValue(searcher.doc(inactivationTopDocs.scoreDocs[0].doc, INACTIVATION_ID_FIELD_TO_LOAD));
 									} 
 									
 								}
@@ -141,7 +141,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								final TopDocs ctv3TopDocs = indexService.search(getBranchPath(), ctv3Query, 1);
 								
 								if (null != ctv3TopDocs && !CompareUtils.isEmpty(ctv3TopDocs.scoreDocs)) {
-									_values[4] = searcher.doc(ctv3TopDocs.scoreDocs[0].doc, MAP_TARGET_ID_FIELD_TO_LOAD).get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
+									_values[4] = SnomedMappings.memberMapTargetComponentId().getValue(searcher.doc(ctv3TopDocs.scoreDocs[0].doc, MAP_TARGET_ID_FIELD_TO_LOAD));
 								}
 								
 								final Query snomedRtQuery = SnomedMappings.newQuery()
@@ -151,7 +151,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								final TopDocs snomedRtTopDocs = indexService.search(getBranchPath(), snomedRtQuery, 1);
 								
 								if (null != snomedRtTopDocs && !CompareUtils.isEmpty(snomedRtTopDocs.scoreDocs)) {
-									_values[5] = searcher.doc(snomedRtTopDocs.scoreDocs[0].doc, MAP_TARGET_ID_FIELD_TO_LOAD).get(REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
+									_values[5] = SnomedMappings.memberMapTargetComponentId().getValue(searcher.doc(snomedRtTopDocs.scoreDocs[0].doc, MAP_TARGET_ID_FIELD_TO_LOAD));
 								}
 								
 								return new StringBuilder(valueOfOrEmptyString(_values[0])) //ID

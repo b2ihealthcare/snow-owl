@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.snomed.index.init;
 import static com.b2international.snowowl.datastore.index.IndexUtils.TYPE_PRECISE_INT_STORED;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
@@ -46,37 +45,25 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.net4j.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.index.IndexException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.index.DocIdCollector;
-import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.mapping.LongIndexField;
 import com.b2international.snowowl.datastore.store.SingleDirectoryIndexImpl;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
@@ -132,15 +119,12 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     private static final String PREFERRED_PREFIX = "preferred";
     private static final String ACCEPTABLE_PREFIX = "acceptable";
 
-    private static final Set<String> TERM_ONLY = ImmutableSet.of(TERM);
     private static final Set<String> TERM_AND_TYPE_ONLY = ImmutableSet.of(TERM, TERM_TYPE);
 
-    private static final String DIRECTORY_PATH = "sct_import";
+    private static final String DIRECTORY_PATH_PREFIX = "sct_import";
 
     private final IBranchPath importTargetBranchPath;
     private final LongKeyMap pendingDescriptionDocuments = new LongKeyOpenHashMap();
-	
-	private String languageRefSetId;
 	
 	private LoadingCache<String, Filter> preferredFilters = CacheBuilder.newBuilder().build(new CacheLoader<String, Filter>() {
 		@Override
@@ -161,24 +145,23 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
      * A set containing the storage keys of the Synonym description type concept and its all descendant.
      * 
      * @param importTargetBranchPath
-     * @param languageRefSetId
-     * 
      */
-    public ImportIndexServerService(final IBranchPath importTargetBranchPath, final String languageRefSetId) {
-        super(createPath(), true);
+    public ImportIndexServerService(final IBranchPath importTargetBranchPath) {
+        super(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory().toPath()
+        		.resolve("indexes")
+        		.resolve(createPath())
+        		.toFile(), true);
         this.importTargetBranchPath = importTargetBranchPath;
-        this.languageRefSetId = languageRefSetId;
     }
 
-    private static final File createPath() {
+    private static final String createPath() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(DIRECTORY_PATH);
+        sb.append(DIRECTORY_PATH_PREFIX);
         sb.append("_");
         sb.append(Dates.formatByHostTimeZone(new Date(), DateFormats.FULL));
         sb.append("_");
         sb.append(UUID.randomUUID().toString());
-        
-        return new File(sb.toString());
+        return sb.toString();
     }
 
     @Override
@@ -414,66 +397,6 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
         }
 	}
 
-	public String getRelationshipLabel(final String relationshipId) {
-
-        return CDOUtils.apply(new CDOViewFunction<String, CDOView>(getConnection(), importTargetBranchPath) {
-            @Override protected String apply(final CDOView view) {
-                final Relationship relationship = new SnomedRelationshipLookupService().getComponent(relationshipId, view);
-                final String sourceId = relationship.getSource().getId();
-                final String typeId = relationship.getType().getId();
-                final String destinationId = relationship.getDestination().getId();
-                return new StringBuilder(sourceId).append(" - ").append(typeId).append(" - ").append(destinationId).toString();
-            }
-        });
-
-    }
-
-	@Deprecated
-	public String getConceptLabel(final String conceptId) {
-
-		String label = getConceptLabel(conceptId, languageRefSetId);
-		if (label != null) {
-			return label;
-		}
-		
-		// XXX: fallback to UK language reference set
-		label = getConceptLabel(conceptId, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		if (label != null) {
-			return label;
-		}
-		
-		// XXX: fallback to FSN
-		label = getFullySpecifiedName(conceptId);
-		if (label != null) {
-			return label;
-		}
-
-        // Use the concept identifier as the label
-		LOGGER.warn("No preferred term found for concept {}.", conceptId);
-        return conceptId;
-	}
-
-    private String getFullySpecifiedName(final String conceptId) {
-		final Query conceptLabelQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).field(TERM_TYPE, TermType.FSN.ordinal()).matchAll(); 
-        final Iterable<Document> fsnDescriptionDocuments = searchOne(conceptLabelQuery, null);
-        for (final Document document : fsnDescriptionDocuments) {
-            return document.get(TERM);
-        }
-
-        return null;
-	}
-
-	public String getConceptLabel(final String conceptId, final String languageRefSetId) {
-		final Query conceptLabelQuery = SnomedMappings.newQuery().and(createActiveQuery()).and(createContainerConceptQuery(conceptId)).field(TERM_TYPE, TermType.SYNONYM_AND_DESCENDANTS.ordinal()).matchAll(); 
-        final Filter preferredFilter = getPreferredFilter(languageRefSetId);
-        final Iterable<Document> preferredDescriptionDocuments = searchOne(conceptLabelQuery, preferredFilter);
-        for (final Document document : preferredDescriptionDocuments) {
-        	return document.get(TERM);
-		}
-
-        return null;
-    }
-
 	public List<TermWithType> getConceptDescriptions(final String conceptId) {
 
         IndexSearcher searcher = null;
@@ -537,56 +460,6 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     	return new TermQuery(new Term(ACTIVE, Boolean.TRUE.toString()));
     }
     
-    private Filter getPreferredFilter(final String languageRefSetId) {
-    	return preferredFilters.getUnchecked(languageRefSetId);
-    }
-
-	public String getDescriptionLabel(final String descriptionId) {
-
-        IndexSearcher searcher = null;
-
-        try {
-
-            searcher = manager.acquire();
-
-            final Query descriptionQuery = createDescriptionQuery(descriptionId);
-            final TopDocs topDocs = searcher.search(descriptionQuery, 1);
-
-            if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-
-                final String term = CDOUtils.apply(new CDOViewFunction<String, CDOView>(getConnection(), importTargetBranchPath) {
-                    @Override protected String apply(final CDOView view) {
-                        final Description component = new SnomedDescriptionLookupService().getComponent(descriptionId, view);
-                        return null == component ? descriptionId : component.getTerm();
-                    }
-                });
-
-                return StringUtil.isEmpty(term) ? descriptionId : term;
-            }
-
-            final Document descriptionDocument = searcher.doc(topDocs.scoreDocs[0].doc, TERM_ONLY);
-            final String term = descriptionDocument.get(TERM);
-            return term;
-
-        } catch (final IOException e) {
-
-            LOGGER.error("Error while searching for description '{}'.", descriptionId);
-            throw new SnowowlRuntimeException(e);
-
-        } finally {
-
-            if (null != manager && null != searcher) {
-
-                try {
-                    manager.release(searcher);
-                } catch (final IOException e) {
-                    LOGGER.error("Error while releasing index searcher.");
-                    throw new SnowowlRuntimeException(e);
-                }
-            }
-        }
-    }
-
     private TermType getTermType(final Document doc) {
         final int typeOrdinal = IndexUtils.getIntValue(doc.getField(TERM_TYPE));
         return TermType.values()[typeOrdinal];
@@ -627,11 +500,6 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
     	preferredFilters.invalidateAll();
 	}
 
-    /*returns with the CDO connection*/
-    private ICDOConnection getConnection() {
-        return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
-    }
-
 	private void index(Term term, Document doc) {
 		try {
 			writer.updateDocument(term, doc);
@@ -640,37 +508,6 @@ public class ImportIndexServerService extends SingleDirectoryIndexImpl {
 		}
 	}
 	
-    private Iterable<Document> searchOne(Query query, Filter filter) {
-        IndexSearcher searcher = null;
-
-        try {
-
-            searcher = manager.acquire();
-
-            final DocIdCollector collector = DocIdCollector.create(searcher.getIndexReader().maxDoc());
-            searcher.search(query, filter, collector);
-
-            final DocIdsIterator itr = collector.getDocIDs().iterator();
-            while (itr.next()) {
-            	return Collections.singleton(searcher.doc(itr.getDocID())); 
-            }
-            
-            return Collections.emptySet();
-
-        } catch (final IOException e) {
-            throw new SnowowlRuntimeException(e);
-        } finally {
-            if (null != manager && null != searcher) {
-                try {
-                    manager.release(searcher);
-                } catch (final IOException e) {
-                    LOGGER.error("Error while releasing index searcher.");
-                    throw new SnowowlRuntimeException(e);
-                }
-            }
-        }		
-	}
-    
 	public <T> T executeReadTransaction(IndexRead<T> read) {
 		IndexSearcher searcher = null;	
 		try {

@@ -36,17 +36,19 @@ import com.b2international.snowowl.core.users.Permission;
 import com.b2international.snowowl.core.users.PermissionIdConstant;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
+import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExportFormat;
+import com.google.common.collect.Sets;
 
 /**
  * OSGi command provider for MRCM import and export.
  */
-
 public class MrcmCommandProvider implements CommandProvider {
 
+	private String exportFormatsString = StringUtils.toString(Sets.newHashSet(MrcmExportFormat.values()));
+	
 	public void _mrcm(final CommandInterpreter interpreter) {
 		
 		try {
-			
 			final String nextArgument = interpreter.nextArgument();
 			
 			if ("import".equals(nextArgument)) {
@@ -62,7 +64,6 @@ public class MrcmCommandProvider implements CommandProvider {
 		} catch (final Throwable t) {
 			interpreter.println(getHelp());
 		}
-		
 	}
 	
 	public synchronized void _import(final CommandInterpreter interpreter) {
@@ -98,32 +99,51 @@ public class MrcmCommandProvider implements CommandProvider {
 
 	public synchronized void _export(final CommandInterpreter interpreter) {
 
+		final String format = interpreter.nextArgument();
+		if (StringUtils.isEmpty(format)) {
+			interpreter.println("Format needs to be specified.");
+			return;
+		}
+		
+		MrcmExportFormat selectedFormat = null;
+		try {
+			selectedFormat = MrcmExportFormat.valueOf(format);
+		} catch(IllegalArgumentException iae) {
+			interpreter.println("Incorrect format: " + format + " Supported formats: " + exportFormatsString + ".");
+			return;
+		}
+		
 		final String destinationFolder = interpreter.nextArgument();
 		
 		if (StringUtils.isEmpty(destinationFolder)) {
-			interpreter.println("Export destination folder should be specified.");
+			interpreter.println("Export destination folder needs to be specified.");
 			return;
 		}
 		
 		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
 		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
 		if (authenticator.authenticate(interpreter) && !authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.MRCM_EXPORT))) {
-			interpreter.print("User is unauthorized to export MRCM rules.");
+			interpreter.print("User is not authorized to export MRCM rules.");
 			return;
 		}
 		
 		// final String userId = authenticator.getUsername();
 		final String user = SpecialUserStore.SYSTEM_USER_NAME;
 
-		interpreter.println("Exporting MRCM rules...");
+		interpreter.println("Exporting MRCM rules (" + selectedFormat.name() + ")...");
 		
 		final Path outputFolder = Paths.get(destinationFolder);
 		checkOutputFolder(outputFolder);
-		final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + ".xmi");
+		final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + "." + selectedFormat.name().toLowerCase());
 		
 		try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
-			new XMIMrcmExporter().doExport(user, stream);
-			interpreter.println("Exported MRCM rules to " + exportPath);
+			if (selectedFormat == MrcmExportFormat.XMI) {
+				new XMIMrcmExporter().doExport(user, stream);
+			} else if (selectedFormat == MrcmExportFormat.CSV) {
+				new CsvMrcmExporter().doExport(user, stream);
+			}
+			interpreter.println("Exported MRCM rules to " + exportPath + " in " 
+			+ selectedFormat.name() + " format.");
 		} catch (IOException e) {
 			interpreter.printStackTrace(e);
 		}
@@ -143,7 +163,9 @@ public class MrcmCommandProvider implements CommandProvider {
 	public String getHelp() {
 		return new StringBuilder("--- MRCM commands ---\n")
 		.append("\tmrcm import [importFileAbsolutePath] - Imports the MRCM rules from the given XMI source file.\n")
-		.append("\tmrcm export [destinationDirectoryPath] - Exports the MRCM rules XMI file to the destination folder.\n").toString();
+		.append("\tmrcm export ")
+		.append(exportFormatsString)
+		.append(" [destinationDirectoryPath] - Exports the MRCM rules in the given format to the destination folder.\n").toString();
 	}
 
 }

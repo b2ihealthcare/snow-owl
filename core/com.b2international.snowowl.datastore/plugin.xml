@@ -3,7 +3,6 @@
 <plugin>
    <extension-point id="changeProcessorFactory" name="changeProcessorFactory" schema="schema/changeProcessorFactory.exsd"/>
    <extension-point id="serviceConfigJob" name="serviceConfigJob" schema="schema/serviceConfigJob.exsd"/>
-   <extension-point id="revisionCacheWarmerJob" name="revisionCacheWarmerJob" schema="schema/revisionCacheWarmerJob.exsd"/>
    <extension-point id="connectionFactory" name="connectionFactory" schema="schema/connectionFactory.exsd"/>
    <extension-point id="protocolFactory" name="Net4j Client Protocol Factory" schema="schema/protocolFactory.exsd"/>
    <extension-point id="repository" name="Repository" schema="schema/repository.exsd"/>
@@ -37,11 +36,6 @@
       <serviceConfigJob
             class="com.b2international.snowowl.datastore.version.TagServiceClientConfigJob"
             id="com.b2international.snowowl.datastore.version.TagServiceClientConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-            <serviceConfigJob
-            class="com.b2international.snowowl.datastore.version.VersioningManagerClientConfigJob"
-            id="com.b2international.snowowl.datastore.version.UnversionedComponentProviderClientConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob

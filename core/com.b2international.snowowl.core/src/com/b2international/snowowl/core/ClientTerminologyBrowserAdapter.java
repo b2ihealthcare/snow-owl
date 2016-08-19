@@ -18,6 +18,7 @@ package com.b2international.snowowl.core;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -47,6 +48,11 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	@SuppressWarnings("unchecked")
 	public C getConcept(final K id) {
 		return (C) NullComponent.<C>getNullImplementation();
+	}
+	
+	@Override
+	public Iterable<C> getComponents(Iterable<K> ids) {
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -175,5 +181,10 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	@Override
 	public boolean exists(final String componentId) {
 		return false;
+	}
+	
+	@Override
+	public Map<String, Boolean> exist(Collection<String> componentIds) {
+		throw new UnsupportedOperationException("Not implemented.");
 	}
 }

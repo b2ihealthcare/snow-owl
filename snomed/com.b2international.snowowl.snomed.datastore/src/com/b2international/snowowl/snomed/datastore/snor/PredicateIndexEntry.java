@@ -27,8 +27,8 @@ import javax.annotation.concurrent.ThreadSafe;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.mrcm.DataType;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
@@ -82,12 +82,12 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	}
 
 	/**
-	 * Creates a concrete data type predicate.
+	 * Creates a concrete domain predicate.
 	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
 	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
 	 * @param dataType the data type of the concrete domain. See: {@link DataType}.
-	 * @param dataTypeName the unique name of the concrete data type. E.g.: {@code isVitamin} or {@code isClinicallySignificant}.
-	 * @param dataTypeLabel the humane readable label of the concrete data type. E.g.: {@code Vitamin} or {@code Clinically significant}.
+	 * @param dataTypeName the unique name of the concrete domain. E.g.: {@code isVitamin} or {@code isClinicallySignificant}.
+	 * @param dataTypeLabel the humane readable label of the concrete domain. E.g.: {@code Vitamin} or {@code Clinically significant}.
 	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties. 
 	 * @return the new data type predicate instance.
 	 */
@@ -152,7 +152,7 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	@Nullable private String dataTypeLabel;
 	/**The unique came-case name of the concrete domain data type. E.g.: {@code isVitamin}. Can be {@code null}.*/
 	@Nullable private String dataTypeName;
-	/**Represents the concrete data type of the predicate. Can be {@code null} if the current predicate type is NOT {@link PredicateType#DATATYPE data type}.*/
+	/**Represents the concrete domain of the predicate. Can be {@code null} if the current predicate type is NOT {@link PredicateType#DATATYPE data type}.*/
 	@Nullable private DataType dataTypeType;
 	/**ESCG expression describing the allowed SNOMED&nbsp;CT relationship type concept IDs. Can be {@code null}.*/
 	@Nullable private String relationshipTypeExpression;
@@ -246,8 +246,8 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	}
 	
 	/**
-	 * Returns with the type of the concrete data type.
-	 * @return the concrete data type.
+	 * Returns with the type of the concrete domain.
+	 * @return the concrete domain.
 	 */
 	public DataType getDataTypeType() {
 		Preconditions.checkState(PredicateType.DATATYPE.equals(type), "Predicate type was not a data type type but " + type);

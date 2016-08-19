@@ -22,7 +22,7 @@ import java.io.File;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.server.index.FSIndexServerService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 
 /**
  * Server-side index service for SNOMED&nbsp;CT ontology.

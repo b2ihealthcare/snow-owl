@@ -20,23 +20,30 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.security.Principal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.snomed.api.ISnomedRelationshipService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipInput;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationshipUpdate;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestUpdate;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.wordnik.swagger.annotations.*;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
@@ -47,15 +54,12 @@ import com.wordnik.swagger.annotations.*;
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 
-	@Autowired
-	protected ISnomedRelationshipService delegate;
-
 	@ApiOperation(
 			value="Create Relationship", 
 			notes="Creates a new Relationship directly on a version branch.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found")
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/relationships", 
@@ -73,8 +77,15 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 
-		final ISnomedRelationship createdRelationship = doCreate(branchPath, body, principal);
-		return Responses.created(getRelationshipLocation(branchPath, createdRelationship)).build();
+		final String commitComment = body.getCommitComment();
+		final String createdRelationshipId = body
+				.getChange()
+				.toRequestBuilder()
+				.build(principal.getName(), branchPath, commitComment)
+				.executeSync(bus, 120L * 1000L)
+				.getResultAs(String.class);
+				
+		return Responses.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
 	}
 
 	@ApiOperation(
@@ -83,10 +94,10 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found")
+		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.GET)
-	public ISnomedRelationship read(
+	public DeferredResult<ISnomedRelationship> read(
 			@ApiParam(value="The branch path")
 			@PathVariable("path") 
 			final String branchPath,
@@ -95,7 +106,12 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@PathVariable("relationshipId") 
 			final String relationshipId) {
 
-		return delegate.read(createComponentRef(branchPath, relationshipId));
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareGetRelationship()
+					.setComponentId(relationshipId)
+					.build(branchPath)
+					.execute(bus));
 	}
 
 	@ApiOperation(
@@ -103,7 +119,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			notes="Updates properties of the specified Relationship.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found")
+		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/relationships/{relationshipId}/updates", 
@@ -125,12 +141,20 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 
-		final IComponentRef relationshipRef = createComponentRef(branchPath, relationshipId);
-		final ISnomedRelationshipUpdate update = body.getChange().toComponentUpdate();
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
+		final SnomedRelationshipRestUpdate update = body.getChange();
 
-		delegate.update(relationshipRef, update, userId, commitComment);
+		SnomedRequests
+			.prepareUpdateRelationship(relationshipId)
+			.setActive(update.isActive())
+			.setModuleId(update.getModuleId())
+			.setCharacteristicType(update.getCharacteristicType())
+			.setGroup(update.getGroup())
+			.setUnionGroup(update.getUnionGroup())
+			.setModifier(update.getModifier())
+			.build(userId, branchPath, commitComment)
+			.executeSync(bus, 120L * 1000L);
 	}
 
 	@ApiOperation(
@@ -140,7 +164,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					+ "status will be returned.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Branch or Relationship not found"),
+		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class),
 		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.DELETE)
@@ -156,19 +180,14 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 
-		final IComponentRef relationshipRef = createComponentRef(branchPath, relationshipId);
-		final String userId = principal.getName();
-		delegate.delete(relationshipRef, userId, String.format("Deleted Relationship '%s' from store.", relationshipId));
+		SnomedRequests
+			.prepareDeleteRelationship()
+			.setComponentId(relationshipId)
+			.build(principal.getName(), branchPath, String.format("Deleted Relationship '%s' from store.", relationshipId))
+			.executeSync(bus, 120L * 1000L);
 	}
 
-	private ISnomedRelationship doCreate(final String branchPath, final ChangeRequest<SnomedRelationshipRestInput> body, final Principal principal) {
-		final ISnomedRelationshipInput input = body.getChange().toComponentInput(branchPath, codeSystemShortName);
-		final String userId = principal.getName();
-		final String commitComment = body.getCommitComment();
-		return delegate.create(input, userId, commitComment);
-	}
-	
-	private URI getRelationshipLocation(final String branchPath, final ISnomedRelationship createdRelationship) {
-		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(createdRelationship.getId()).toUri();
+	private URI getRelationshipLocation(final String branchPath, final String relationshipId) {
+		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(relationshipId).toUri();
 	}
 }

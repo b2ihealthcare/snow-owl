@@ -16,12 +16,15 @@
 package com.b2international.snowowl.datastore.index.mapping;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 
@@ -51,6 +54,16 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	public T getValue(Document doc) {
 		return delegate.getValue(doc);
 	}
+	
+	@Override
+	public T getOptionalValue(Document doc) {
+		return delegate.getOptionalValue(doc);
+	}
+	
+	@Override
+	public String getOptionalValueAsString(Document doc) {
+		return delegate.getOptionalValueAsString(doc);
+	}
 
 	@Override
 	public List<T> getValues(Document doc) {
@@ -58,8 +71,13 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public List<String> getValuesAsString(Document doc) {
-		return delegate.getValuesAsString(doc);
+	public List<String> getValuesAsStringList(Document doc) {
+		return delegate.getValuesAsStringList(doc);
+	}
+	
+	@Override
+	public Set<String> getValuesAsStringSet(Document doc) {
+		return delegate.getValuesAsStringSet(doc);
 	}
 	
 	@Override
@@ -68,18 +86,23 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 
 	@Override
-	public final Query toQuery(T value) {
+	public final TermQuery toQuery(T value) {
 		return delegate.toQuery(value);
 	}
 
 	@Override
-	public final Query toExistsQuery() {
+	public final PrefixQuery toExistsQuery() {
 		return delegate.toExistsQuery();
 	}
 
 	@Override
 	public final Term toTerm(T value) {
 		return delegate.toTerm(value);
+	}
+	
+	@Override
+	public final TermFilter toTermFilter(T value) {
+		return delegate.toTermFilter(value);
 	}
 
 	@Override
@@ -103,13 +126,13 @@ public class IndexFieldDelegate<T> implements IndexField<T> {
 	}
 
 	@Override
-	public final Filter createFilter(T... values) {
-		return delegate.createFilter(values);
+	public final Filter createTermsFilter(Iterable<T> values) {
+		return delegate.createTermsFilter(values);
 	}
 	
 	@Override
-	public final Filter createFilter(List<BytesRef> bytesRefs) {
-		return delegate.createFilter(bytesRefs);
+	public final Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs) {
+		return delegate.createBytesRefFilter(bytesRefs);
 	}
 	
 	protected IndexField<T> getDelegate() {

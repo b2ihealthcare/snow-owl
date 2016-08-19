@@ -15,16 +15,13 @@
  */
 package com.b2international.snowowl.snomed.refset.core.automap;
 
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptyMap;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
@@ -214,20 +211,8 @@ public class RefSetAutoMapperModel {
 	 * @return
 	 */
 	public Map<AutoMapEntry, String> validate() {
-		final Set<String> mappedValues = newHashSet();
-		final Map<AutoMapEntry, String> errorMessages = newHashMap();
-		for (AutoMapEntry entry : getContent()) {
-			final String mappedValue = entry.getAutoMappedId();
-			if (!mappedValue.isEmpty()) {
-				if (!mappedValues.contains(mappedValue)) {
-					mappedValues.add(mappedValue);
-				} else {
-					errorMessages.put(entry, SnomedConceptNameProvider.INSTANCE.getText(mappedValue)
-							+ " is redundant SNOMED CT equivalent component.");
-				}
-			}
-		}
-		return errorMessages;
+		/* place to add validation rules */
+		return emptyMap();
 	}
 
 }

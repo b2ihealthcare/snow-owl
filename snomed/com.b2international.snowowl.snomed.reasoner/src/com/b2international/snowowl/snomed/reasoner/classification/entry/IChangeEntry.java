@@ -17,35 +17,51 @@ package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
 
 /**
  * Common interface for all change entries reported in a reasoner change set.
- * @see AbstractChangeEntry
  */
 public interface IChangeEntry extends Serializable {
 
 	/**
-	 * @return the component for the source column (referenced concept for concept concrete domain members, the relationship source concept for
-	 *         relationship concrete domain members and relationships)
+	 * Returns the concept to be displayed in the source column, which is:
+	 * <ul>
+	 * <li>the relationship source concept for relationships;
+	 * <li>the relationship source concept for relationship concrete domain members;
+	 * <li>the referenced concept for concept concrete domain members.
+	 * </ul>
+	 * 
+	 * @return the source concept
 	 */
-	IComponentWithIconId<Long> getSource();
+	ChangeConcept getSource();
 
 	/**
-	 * @return the component for the type column ({@code null} for concept concrete domain members, the relationship type concept for relationship
-	 *         concrete domain members and relationships)
+	 * Returns the concept to be displayed in the type column, which is:
+	 * <ul>
+	 * <li>the relationship type concept for relationships;
+	 * <li>the relationship type concept for relationship concrete domain members;
+	 * <li>{@code null} for concept concrete domain members.
+	 * </ul>
+	 * 
+	 * @return the type concept
 	 */
-	IComponentWithIconId<Long> getType();
+	ChangeConcept getType();
 
 	/**
-	 * @return the component for the destination column ({@code null} for concept concrete domain members, the relationship destination concept for
-	 *         relationship concrete domain members and relationships)
+	 * Returns the concept to be displayed in the destination column, which is:
+	 * <ul>
+	 * <li>the relationship destination concept for relationships;
+	 * <li>the relationship destination concept for relationship concrete domain members;
+	 * <li>{@code null} for concept concrete domain members.
+	 * </ul>
+	 * 
+	 * @return the destination concept
 	 */
-	IComponentWithIconId<Long> getDestination();
+	ChangeConcept getDestination();
 
 	/**
-	 * @return the change nature {@link Nature#INFERRED} or {@link Nature#REDUNDANT}
+	 * @return the change nature of this entry ({@link Nature#INFERRED} or {@link Nature#REDUNDANT})
 	 */
 	Nature getNature();
 }

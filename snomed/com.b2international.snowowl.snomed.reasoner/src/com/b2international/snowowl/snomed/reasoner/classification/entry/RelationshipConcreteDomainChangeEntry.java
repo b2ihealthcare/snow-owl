@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.google.common.base.Objects;
 
 /**
  * Represents a change entry of a concrete domain element related to a relationship.
@@ -28,54 +28,46 @@ public class RelationshipConcreteDomainChangeEntry extends RelationshipChangeEnt
 
 	/**
 	 * Creates a new relationship concrete domain change entry instance with the specified arguments.
+	 * 
 	 * @param nature the change nature
 	 * @param source the relationship source component
 	 * @param type the relationship type component
 	 * @param destination the relationship destination component
 	 * @param concreteDomainElement the contained concrete domain element
 	 */
-	public RelationshipConcreteDomainChangeEntry(final Nature nature, final IComponentWithIconId<Long> source, final IComponentWithIconId<Long> type,
-			final IComponentWithIconId<Long> destination, final ConcreteDomainElement concreteDomainElement) {
+	public RelationshipConcreteDomainChangeEntry(final Nature nature, 
+			final ChangeConcept source, 
+			final ChangeConcept type,
+			final ChangeConcept destination, 
+			final ConcreteDomainElement concreteDomainElement) {
+
 		super(nature, source, type, destination);
+
 		this.concreteDomainElement = concreteDomainElement;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry#getConcreteDomainElement()
-	 */
-	@Override public ConcreteDomainElement getConcreteDomainElement() {
+	@Override 
+	public ConcreteDomainElement getConcreteDomainElement() {
 		return concreteDomainElement;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipReasonerResponseEntryBase#hashCode()
-	 */
-	@Override public int hashCode() {
+	@Override 
+	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((concreteDomainElement == null) ? 0 : concreteDomainElement.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipReasonerResponseEntryBase#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+	@Override 
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
 		final RelationshipConcreteDomainChangeEntry other = (RelationshipConcreteDomainChangeEntry) obj;
-		if (concreteDomainElement == null) {
-			if (other.concreteDomainElement != null)
-				return false;
-		} else if (!concreteDomainElement.equals(other.concreteDomainElement))
-			return false;
+
+		if (!Objects.equal(concreteDomainElement, other.concreteDomainElement)) { return false; }
 		return true;
 	}
 }

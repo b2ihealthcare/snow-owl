@@ -37,7 +37,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.ITaskStateManager;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
-import com.b2international.snowowl.scripting.services.api.ConcreteDomainDataType;
 import com.b2international.snowowl.scripting.services.api.IAuthoringService;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Concept;
@@ -56,8 +55,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 
 /**
  * Authoring service singleton implementation.
@@ -71,19 +68,6 @@ public enum AuthoringService implements IAuthoringService {
 	 */
 	INSTANCE;
 
-	/**
-	 * Map for navigating between the {@link ConcreteDomainDataType} and the
-	 * {@link DataType} enumerations.
-	 */
-	public static final BiMap<ConcreteDomainDataType, DataType> CONCRETE_DOMAIN_DATATYPE_TO_DATATYPE_BIMAP = ImmutableBiMap
-			.<ConcreteDomainDataType, DataType> builder()
-			.put(ConcreteDomainDataType.BOOLEAN, DataType.BOOLEAN)
-			.put(ConcreteDomainDataType.DATE, DataType.DATE)
-			.put(ConcreteDomainDataType.DECIMAL, DataType.DECIMAL)
-			.put(ConcreteDomainDataType.INTEGER, DataType.INTEGER)
-			.put(ConcreteDomainDataType.STRING, DataType.STRING)
-			.build();
-
 	/** Logger instance for the {@link AuthoringService authoring service}. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthoringService.class);
 
@@ -93,7 +77,7 @@ public enum AuthoringService implements IAuthoringService {
 	 */
 	@Override
 	public void addConcreteDomainDataTypeToConcept(final long conceptId, final String concreteDomainAttributeName,
-			final ConcreteDomainDataType concreteDomainAttributeType, final Object value, final String characteristicTypeId, final String taskId) {
+			final DataType concreteDomainAttributeType, final Object value, final String characteristicTypeId, final String taskId) {
 		
 		addConcreteDomainDataTypeToComponent(conceptId, concreteDomainAttributeName, concreteDomainAttributeType, 
 				value, characteristicTypeId, taskId);
@@ -108,7 +92,7 @@ public enum AuthoringService implements IAuthoringService {
 			final boolean booleanValue, final String characteristicTypeId, final String taskId) {
 		
 		addConcreteDomainDataTypeToConcept(conceptId, concreteDomainAttributeName, 
-				ConcreteDomainDataType.BOOLEAN, booleanValue, characteristicTypeId, taskId);
+				DataType.BOOLEAN, booleanValue, characteristicTypeId, taskId);
 	}
 
 	/*
@@ -120,7 +104,7 @@ public enum AuthoringService implements IAuthoringService {
 			final String characteristicTypeId, final String taskId) {
 		
 		addConcreteDomainDataTypeToConcept(conceptId, concreteDomainAttributeName, 
-				ConcreteDomainDataType.INTEGER, intValue, characteristicTypeId, taskId);
+				DataType.INTEGER, intValue, characteristicTypeId, taskId);
 	}
 
 	/*
@@ -132,7 +116,7 @@ public enum AuthoringService implements IAuthoringService {
 			final String characteristicTypeId, final String taskId) {
 		
 		addConcreteDomainDataTypeToConcept(conceptId, concreteDomainAttributeName, 
-				ConcreteDomainDataType.DECIMAL, floatValue, characteristicTypeId, taskId);
+				DataType.DECIMAL, floatValue, characteristicTypeId, taskId);
 	}
 
 	/*
@@ -144,7 +128,7 @@ public enum AuthoringService implements IAuthoringService {
 			final String characteristicTypeId, final String taskId) {
 		
 		addConcreteDomainDataTypeToConcept(conceptId, concreteDomainAttributeName, 
-				ConcreteDomainDataType.DATE, dateValue, characteristicTypeId, taskId);
+				DataType.DATE, dateValue, characteristicTypeId, taskId);
 	}
 
 	/*
@@ -156,7 +140,7 @@ public enum AuthoringService implements IAuthoringService {
 			final String characteristicTypeId, final String taskId) {
 		
 		addConcreteDomainDataTypeToConcept(conceptId, concreteDomainAttributeName, 
-				ConcreteDomainDataType.STRING, stringValue, characteristicTypeId, taskId);
+				DataType.STRING, stringValue, characteristicTypeId, taskId);
 	}
 
 	/*
@@ -165,7 +149,7 @@ public enum AuthoringService implements IAuthoringService {
 	 */
 	@Override
 	public void addConcreteDomainDataTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName,
-			final ConcreteDomainDataType concreteDomainAttributeType, final Object value, final String characteristicTypeId, final String taskId) {
+			final DataType concreteDomainAttributeType, final Object value, final String characteristicTypeId, final String taskId) {
 		
 		addConcreteDomainDataTypeToComponent(relationshipId, concreteDomainAttributeName, 
 				concreteDomainAttributeType, value, characteristicTypeId, taskId);
@@ -174,31 +158,30 @@ public enum AuthoringService implements IAuthoringService {
 
 	@Override
 	public void addConcreteDomainDataTypeToRelationship(final SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String characteristicTypeId) {
 		addConcreteDomainDataTypeToRelationship(editingContext, relationship, concreteDomainAttributeName, concreteDomainAttributeType, value,
 				getModuleId(editingContext), characteristicTypeId);
 	}
 	@Override
 	public void addConcreteDomainDataTypeToRelationship(final SnomedEditingContext editingContext, final Relationship relationship,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String moduleId, final String characteristicTypeId) {
 		checkModuleId(moduleId);
 		final SnomedRefSetEditingContext context = editingContext.getRefSetEditingContext();
-		final DataType dataType = getDataType(concreteDomainAttributeType);
-		final String identifierConceptId = getIdentifierConceptId(dataType);
+		final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
 		final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
 
 		final ComponentType componentType = ComponentType.RELATIONSHIP;
 
 		final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
 				componentType.getComponentIdentifierPair(Long.valueOf(relationship.getId())), 
-				dataType, 
+				concreteDomainAttributeType, 
 				value,
 				characteristicTypeId,
 				concreteDomainAttributeName, 
 				moduleId, 
-				refSet), "Error while creating concrete data type for "
+				refSet), "Error while creating concrete domain for "
 				+ componentType + ": " + relationship.getId() + " with value " + value);
 
 		// attach it to the relationship
@@ -207,7 +190,7 @@ public enum AuthoringService implements IAuthoringService {
 	
 	@Override
 	public void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, Relationship relationship,
-			String concreteDomainAttributeName, ConcreteDomainDataType concreteDomainAttributeType, Object value, String uomId, String operatorId,
+			String concreteDomainAttributeName, DataType concreteDomainAttributeType, Object value, String uomId, String operatorId,
 			String characteristicTypeId) {
 		addConcreteDomainDataTypeToRelationship(editingContext, relationship, concreteDomainAttributeName, concreteDomainAttributeType, value, uomId,
 				operatorId, getModuleId(editingContext), characteristicTypeId);
@@ -215,12 +198,11 @@ public enum AuthoringService implements IAuthoringService {
 	
 	@Override
 	public void addConcreteDomainDataTypeToRelationship(SnomedEditingContext editingContext, Relationship relationship,
-			String concreteDomainAttributeName, ConcreteDomainDataType concreteDomainAttributeType, Object value, String uomId, String operatorId,
+			String concreteDomainAttributeName, DataType concreteDomainAttributeType, Object value, String uomId, String operatorId,
 			String moduleId, String characteristicTypeId) {
 		checkModuleId(moduleId);
 		final SnomedRefSetEditingContext context = editingContext.getRefSetEditingContext();
-		final DataType dataType = getDataType(concreteDomainAttributeType);
-		final String identifierConceptId = getIdentifierConceptId(dataType);
+		final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
 		final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
 		
 		final ComponentType componentType = ComponentType.RELATIONSHIP;
@@ -233,7 +215,7 @@ public enum AuthoringService implements IAuthoringService {
 				characteristicTypeId,
 				concreteDomainAttributeName,
 				moduleId,
-				refSet), "Error while creating concrete data type for " + componentType + ": " + relationship.getId() + " with value " + value);
+				refSet), "Error while creating concrete domain for " + componentType + ": " + relationship.getId() + " with value " + value);
 		
 		// attach it to the relationship
 		relationship.getConcreteDomainRefSetMembers().add(member);
@@ -251,7 +233,7 @@ public enum AuthoringService implements IAuthoringService {
 	public void addBooleanConcreteDomainTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName,
 			final boolean booleanValue, final String characteristicTypeId, final String taskId) {
 		
-		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, ConcreteDomainDataType.BOOLEAN, booleanValue,
+		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, DataType.BOOLEAN, booleanValue,
 				characteristicTypeId, taskId);
 	}
 
@@ -263,7 +245,7 @@ public enum AuthoringService implements IAuthoringService {
 	public void addIntegerConcreteDomainTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName,
 			final int intValue, final String characteristicTypeId, final String taskId) {
 		
-		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, ConcreteDomainDataType.INTEGER, intValue,
+		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, DataType.INTEGER, intValue,
 				characteristicTypeId, taskId);
 	}
 
@@ -275,7 +257,7 @@ public enum AuthoringService implements IAuthoringService {
 	public void addFloatConcreteDomainTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName,
 			final float floatValue, final String characteristicTypeId, final String taskId) {
 		
-		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, ConcreteDomainDataType.DECIMAL, floatValue,
+		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, DataType.DECIMAL, floatValue,
 				characteristicTypeId, taskId);
 	}
 
@@ -287,7 +269,7 @@ public enum AuthoringService implements IAuthoringService {
 	public void addDateConcreteDomainTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName,
 			final Date dateValue, final String characteristicTypeId, final String taskId) {
 		
-		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, ConcreteDomainDataType.DATE, dateValue, 
+		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, DataType.DATE, dateValue, 
 				characteristicTypeId, taskId);
 	}
 
@@ -299,7 +281,7 @@ public enum AuthoringService implements IAuthoringService {
 	public void addStringDomainDateTypeToRelationship(final long relationshipId, final String concreteDomainAttributeName,
 			final String stringValue, final String characteristicTypeId, final String taskId) {
 		
-		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, ConcreteDomainDataType.STRING, stringValue,
+		addConcreteDomainDataTypeToRelationship(relationshipId, concreteDomainAttributeName, DataType.STRING, stringValue,
 				characteristicTypeId, taskId);
 	}
 
@@ -308,7 +290,7 @@ public enum AuthoringService implements IAuthoringService {
 	 * CT component identified by its unique component ID
 	 */
 	private void addConcreteDomainDataTypeToComponent(final long componentId, final String concreteDomainAttributeName,
-			final ConcreteDomainDataType concreteDomainAttributeType, final Object value, 
+			final DataType concreteDomainAttributeType, final Object value, 
 			final String characteristicTypeId,
 			final String taskId) {
 		
@@ -316,15 +298,14 @@ public enum AuthoringService implements IAuthoringService {
 		
 		try {
 			context = SnomedRefSetEditingContext.createInstance(getOrCreateBranch(taskId));
-			final DataType dataType = getDataType(concreteDomainAttributeType);
-			final String identifierConceptId = getIdentifierConceptId(dataType);
+			final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
 			final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
 			final ComponentType componentType = ComponentType.getComponentType(componentId);
 			final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
-					componentType.getComponentIdentifierPair(componentId), dataType, value, 
+					componentType.getComponentIdentifierPair(componentId), concreteDomainAttributeType, value, 
 					characteristicTypeId,
 					concreteDomainAttributeName,
-					getModuleId(context), refSet), "Error while creating concrete data type for " + componentType + ": " + componentId
+					getModuleId(context), refSet), "Error while creating concrete domain for " + componentType + ": " + componentId
 					+ "on task " + taskId + " with value " + value);
 			componentType.getComponent(context.getTransaction(), componentId).getConcreteDomainRefSetMembers().add(member);
 			context.commit("", new ConsoleProgressMonitor());
@@ -340,27 +321,26 @@ public enum AuthoringService implements IAuthoringService {
 
 	@Override
 	public void addConcreteDomainDataTypeToConcept(final SnomedEditingContext editingContext, final Concept concept,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String characteristicTypeId) {
 		addConcreteDomainDataTypeToConcept(editingContext, concept, concreteDomainAttributeName, concreteDomainAttributeType, value, getModuleId(editingContext), characteristicTypeId);
 	}
 	
 	@Override
 	public void addConcreteDomainDataTypeToConcept(final SnomedEditingContext editingContext, final Concept concept,
-			final String concreteDomainAttributeName, final ConcreteDomainDataType concreteDomainAttributeType, final Object value,
+			final String concreteDomainAttributeName, final DataType concreteDomainAttributeType, final Object value,
 			final String moduleId, final String characteristicTypeId) {
 		checkModuleId(moduleId);
 		final SnomedRefSetEditingContext context = editingContext.getRefSetEditingContext();
-		final DataType dataType = getDataType(concreteDomainAttributeType);
-		final String identifierConceptId = getIdentifierConceptId(dataType);
+		final String identifierConceptId = getIdentifierConceptId(concreteDomainAttributeType);
 		final SnomedConcreteDataTypeRefSet refSet = getRefSet(context.getTransaction(), identifierConceptId);
 
 		final ComponentType componentType = ComponentType.CONCEPT;
 
 		final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
-				componentType.getComponentIdentifierPair(Long.valueOf(concept.getId())), dataType, value, 
+				componentType.getComponentIdentifierPair(Long.valueOf(concept.getId())), concreteDomainAttributeType, value, 
 				characteristicTypeId, concreteDomainAttributeName,
-				moduleId, refSet), "Error while creating concrete data type for " + componentType + ": " + concept.getId()
+				moduleId, refSet), "Error while creating concrete domain for " + componentType + ": " + concept.getId()
 				+ " with value " + value);
 
 		// attach it to the concept
@@ -368,12 +348,12 @@ public enum AuthoringService implements IAuthoringService {
 	}
 
 	/*
-	 * returns with the proper identifier concept ID of the concrete data type
+	 * returns with the proper identifier concept ID of the concrete domain
 	 * reference set based on the specified data type.
 	 */
 	@Nonnull
 	private String getIdentifierConceptId(final DataType dataType) {
-		return checkNotNull(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.get(dataType), "Error while getting identifier concept ID for concrete data type reference set. Type: " + dataType);
+		return checkNotNull(SnomedRefSetUtil.DATATYPE_TO_REFSET_MAP.get(dataType), "Error while getting identifier concept ID for concrete domain reference set. Type: " + dataType);
 	}
 
 	/* returns with the unique ID of the default SNOMED CT module concept. */
@@ -428,7 +408,7 @@ public enum AuthoringService implements IAuthoringService {
 	}
 
 	/*
-	 * returns with the concrete data type reference set identified by the
+	 * returns with the concrete domain reference set identified by the
 	 * unique identifier concept ID.
 	 */
 	@Nonnull
@@ -438,7 +418,7 @@ public enum AuthoringService implements IAuthoringService {
 		if (refSet instanceof SnomedConcreteDataTypeRefSet) {
 			return (SnomedConcreteDataTypeRefSet) refSet;
 		} else {
-			throw new IllegalStateException("SNOMED CT reference set was not a concrete data type reference set but "
+			throw new IllegalStateException("SNOMED CT reference set was not a concrete domain reference set but "
 					+ refSet.getClass().getName());
 		}
 	}
@@ -449,16 +429,6 @@ public enum AuthoringService implements IAuthoringService {
 	 */
 	private SnomedRefSetLookupService getRefSetLookupService() {
 		return new SnomedRefSetLookupService();
-	}
-
-	/*
-	 * returns with the proper data type associated with the concrete domain
-	 * data type.
-	 */
-	@Nonnull
-	private DataType getDataType(final ConcreteDomainDataType concreteDomainDataType) {
-		return checkNotNull(CONCRETE_DOMAIN_DATATYPE_TO_DATATYPE_BIMAP.get(concreteDomainDataType), "Error while getting data type for concrete domain data type: "
-				+ concreteDomainDataType);
 	}
 
 	/*

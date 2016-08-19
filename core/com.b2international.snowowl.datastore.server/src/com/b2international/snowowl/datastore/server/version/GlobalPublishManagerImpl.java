@@ -74,7 +74,10 @@ import com.b2international.snowowl.datastore.version.ITagService;
 import com.b2international.snowowl.datastore.version.IVersioningManager;
 import com.b2international.snowowl.datastore.version.VersionCollector;
 import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -86,26 +89,22 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 
 	private static final Logger LOGGER = getLogger(GlobalPublishManagerImpl.class);
 	
-	private static final int TASK_WORK_STEP = 5;
+	private static final int TASK_WORK_STEP = 6;
 	private static final String NEW_VERSION_COMMIT_COMMENT_TEMPLATE = "Created new version ''{0}'' for {1}.";
 	private static final String ADJUST_EFFECTIVE_TIME_COMMIT_COMMENT_TEMPLATE = "Adjusted effective time to ''{0}'' for {1} version ''{2}''.";
 
 	@Override
 	public void publish(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {
 		
-		final Map<String, DatastoreLockContext> lockContexts = newHashMap();
-		final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets = newHashMap();
 		
 		final AbstractRemoteJob job = new AbstractRemoteJob(buildTaskName(configuration)) {
 			protected IStatus runWithListenableMonitor(final IProgressMonitor monitor) {
 
 				ConfigurationThreadLocal.setConfiguration(configuration);
+				final DatastoreLockContext lockContext = createLockContext(configuration.getUserId());
+				final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets = createLockTargets(configuration);
 				
-				try {
-					tryAcquireLocks(lockContexts, lockTargets);
-				} catch (final OperationLockException | InterruptedException e) {
-					throw new DatastoreOperationLockException("Error while trying to acquire lock on repository for versioning.");
-				}
+				acquireLocks(lockContext, lockTargets);
 				
 				try ( final ICDOTransactionAggregator aggregator = create(Lists.<CDOTransaction>newArrayList()); ) {
 			
@@ -113,21 +112,53 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 					final Map<String, Boolean> performTagPerToolingFeatures = getTagPreferences();
 					subMonitor.worked(1);
 					
-					doPublish(aggregator, subMonitor);
+					// create version managers
+					final Map<String, IVersioningManager> versioningManagers = Maps.toMap(configuration.getToolingIds(), new Function<String, IVersioningManager>() {
+						@Override
+						public IVersioningManager apply(String toolingId) {
+							return VersioningManagerBroker.INSTANCE.createVersioningManager(toolingId);
+						}
+					});
+					
+					doPublish(aggregator, versioningManagers, subMonitor);
 					doCommitChanges(aggregator, subMonitor);
 					doTag(performTagPerToolingFeatures, subMonitor);
+					postCommit(aggregator, versioningManagers, monitor);
 					
 					return OK_STATUS;
 				} catch (final SnowowlServiceException e) {
 					LOGGER.error("Error occurred during versioning.", e);
 					throw new SnowowlRuntimeException("Error occurred during versioning.", e);
 				} finally {
-					tryReleaseLocks(configuration, lockContexts, lockTargets);
+					getLockManager().unlock(lockContext, lockTargets.values());
 					ConfigurationThreadLocal.reset();
 					if (null != monitor) {
 						monitor.done();
 					}
 				}
+			}
+
+			private void acquireLocks(final DatastoreLockContext lockContext, final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets) {
+				try {
+					getLockManager().lock(lockContext, IMMEDIATE, lockTargets.values());
+				} catch (final OperationLockException e) {
+					if (e instanceof DatastoreOperationLockException) {
+						throw new DatastoreOperationLockException(String.format("Failed to acquire locks for versioning because %s.", e.getMessage())); 
+					} else {
+						throw new DatastoreOperationLockException("Error while trying to acquire lock on repository for versioning.");
+					}
+				} catch (final InterruptedException e) {
+					throw new SnowowlRuntimeException(e);
+				}
+			}
+
+			private Map<String, SingleRepositoryAndBranchLockTarget> createLockTargets(final IPublishOperationConfiguration configuration) {
+				final Builder<String, SingleRepositoryAndBranchLockTarget> lockTargetsBuilder = ImmutableMap.builder();
+				for (final String toolingId : configuration) {
+					lockTargetsBuilder.put(toolingId, createLockTarget(toolingId));
+				}
+				final Map<String,SingleRepositoryAndBranchLockTarget> lockTargets = lockTargetsBuilder.build();
+				return lockTargets;
 			}
 
 		};
@@ -164,35 +195,15 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 		return sb.toString();
 	}
 	
-	private void doPublish(final ICDOTransactionAggregator aggregator, 
-			final IProgressMonitor monitor) throws SnowowlServiceException {
-		
-		IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
+	private void doPublish(final ICDOTransactionAggregator aggregator, final Map<String, IVersioningManager> versioningManagers, final IProgressMonitor monitor) throws SnowowlServiceException {
+		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
 		for (final String toolingId : configuration) {
-			final IVersioningManager versioningManager = getVersionManager(toolingId);
-			versioningManager.publish(aggregator, toolingId, configuration, monitor);
+			versioningManagers.get(toolingId).publish(aggregator, toolingId, configuration, monitor);
 		}
 	}
 
-	private IVersioningManager getVersionManager(final String toolingId) {
-		return VersioningManagerBroker.INSTANCE.getVersioningManager(toolingId);
-	}
-	
-	private DatastoreLockContext createLockContext() {
-		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
-		return createLockContext(configuration.getUserId());
-	}
-	
 	private DatastoreLockContext createLockContext(final String userId) {
 		return new DatastoreLockContext(userId, CREATE_VERSION);
-	}
-	
-	private void tryAcquireLocks(final Map<String, DatastoreLockContext> lockContexts, final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets) throws OperationLockException, InterruptedException {
-		for (final String toolingId : ConfigurationThreadLocal.getConfiguration()) {
-			lockContexts.put(checkNotNull(toolingId, "toolingId"), createLockContext());
-			lockTargets.put(toolingId, createLockTarget(toolingId));
-			getLockManager().lock(lockContexts.get(toolingId), IMMEDIATE, lockTargets.get(toolingId));
-		}
 	}
 	
 	private SingleRepositoryAndBranchLockTarget createLockTarget(final String toolingId) {
@@ -208,22 +219,6 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 	private String getRepositoryUuid(final String toolingId) {
 		return CodeSystemUtils.getRepositoryUuid(checkNotNull(toolingId, "toolingId"));
 	}
-	
-	private void tryReleaseLocks(final IPublishOperationConfiguration configuration, final Map<String, DatastoreLockContext> lockContexts, final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets) throws OperationLockException {
-		for (final String toolingId : configuration) {
-			checkNotNull(toolingId, "toolingId");
-			if (null != lockContexts.get(toolingId) && null != lockTargets.get(toolingId)) {
-				getLockManager().unlock(lockContexts.get(toolingId), lockTargets.get(toolingId));
-			}
-		}
-		if (null != lockContexts) {
-			lockContexts.clear();
-		}
-		if (null != lockTargets) {
-			lockTargets.clear();
-		}
-	}
-	
 	
 	private IDatastoreOperationLockManager getLockManager() {
 		return getServiceForClass(IDatastoreOperationLockManager.class);
@@ -270,6 +265,19 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 				final ITagService tagService = getServiceForClass(ITagService.class);
 				final ITagConfiguration tagConfiguration = createTagConfiguration(toolingId);
 				tagService.tag(tagConfiguration);
+				monitor.worked(1);
+			}
+		}
+	}
+	
+	/*
+	 * Performs actions after the successful commit. 
+	 */
+	private void postCommit(final ICDOTransactionAggregator aggregator, final Map<String, IVersioningManager> versioningManagers, final IProgressMonitor monitor) throws SnowowlServiceException {
+		final IPublishOperationConfiguration configuration = ConfigurationThreadLocal.getConfiguration();
+		for (final String toolingId : configuration) {
+			versioningManagers.get(toolingId).postCommit();
+			if (null != monitor) {
 				monitor.worked(1);
 			}
 		}

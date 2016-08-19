@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
 
@@ -27,26 +26,21 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocument
 public class ComponentMutablePropertyUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
 
 	private Component component;
-	private String effectiveTimeField;
 
-	public ComponentMutablePropertyUpdater(Component component, String effectiveTimeField) {
+	public ComponentMutablePropertyUpdater(Component component) {
 		super(component.getId());
 		this.component = component;
-		this.effectiveTimeField = effectiveTimeField;
 	}
 	
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
 		doc
-			.removeAll(Mappings.longDocValuesField(effectiveTimeField));
-		doc
 			.active(component.isActive())
 			.released(component.isReleased())
-			.docValuesField(effectiveTimeField, EffectiveTimes.getEffectiveTime(this.component.getEffectiveTime()));
+			.effectiveTime(component.isSetEffectiveTime() ? component.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	}
 	
 	protected Component getComponent() {
 		return component;
 	}
-	
 }

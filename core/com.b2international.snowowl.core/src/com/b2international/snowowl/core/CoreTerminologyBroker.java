@@ -20,7 +20,6 @@ import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +40,6 @@ import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.IMappingSetMembershipLookupService;
 import com.b2international.snowowl.core.api.INameProviderFactory;
-import com.b2international.snowowl.core.api.IRefSetMembershipLookupService;
 import com.b2international.snowowl.core.api.ISearchResultProvider;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.api.IValueSetMembershipLookupService;
@@ -52,7 +50,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -98,6 +95,11 @@ public class CoreTerminologyBroker {
 	public static final String UNSPECIFIED = "UNSPECIFIED";
 	public static final int UNSPECIFIED_NUMBER = -1;
 	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
+	
+	private static final ICoreTerminologyComponentInformation UNSPECIFIED_COMPONENT = new ICoreTerminologyComponentInformation() {
+		@Override public String getName() {	return UNSPECIFIED;	}
+		@Override public String getId() { return UNSPECIFIED; }
+	};
 
 	public static final String TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminologyComponent";
 	public static final String TERMINOLOGY_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminology";
@@ -468,27 +470,27 @@ public class CoreTerminologyBroker {
 		return isHierarchical(getTerminologyComponentId(object));
 	}
 
-	public Collection<IRefSetMembershipLookupService<String>> getRefSetMembershipLookupServices() {
-		final Set<IRefSetMembershipLookupService<String>> searchers = Sets.newHashSet();
-		final Iterator<IConfigurationElement> terminologyElements = Iterators.forArray(Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID));
-		final Set<String> allTerminologyIds = Sets.newHashSet(Iterators.transform(terminologyElements, new Function<IConfigurationElement, String>() {
-
-			//implements com.google.common.base.Function<org.eclipse.core.runtime.IConfigurationElement,java.lang.String>.apply
-			@Override
-			public String apply(final IConfigurationElement configurationElement) {
-				return configurationElement.getAttribute(ID_ATTRIBUTE);
-			}
-		}));
-
-		for (final String terminologyId : allTerminologyIds) {
-			final Collection<IConfigurationElement> elements = getAllTerminologyLevelConfigurationElement(terminologyId, REFSET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID);
-			for (final IConfigurationElement element : elements) {
-				searchers.add((IRefSetMembershipLookupService<String>) createExecutableExtension(element));
-			}
-		}
-
-		return searchers;
-	}
+//	public Collection<IRefSetMembershipLookupService<String>> getRefSetMembershipLookupServices() {
+//		final Set<IRefSetMembershipLookupService<String>> searchers = Sets.newHashSet();
+//		final Iterator<IConfigurationElement> terminologyElements = Iterators.forArray(Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID));
+//		final Set<String> allTerminologyIds = Sets.newHashSet(Iterators.transform(terminologyElements, new Function<IConfigurationElement, String>() {
+//
+//			//implements com.google.common.base.Function<org.eclipse.core.runtime.IConfigurationElement,java.lang.String>.apply
+//			@Override
+//			public String apply(final IConfigurationElement configurationElement) {
+//				return configurationElement.getAttribute(ID_ATTRIBUTE);
+//			}
+//		}));
+//
+//		for (final String terminologyId : allTerminologyIds) {
+//			final Collection<IConfigurationElement> elements = getAllTerminologyLevelConfigurationElement(terminologyId, REFSET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID);
+//			for (final IConfigurationElement element : elements) {
+//				searchers.add((IRefSetMembershipLookupService<String>) createExecutableExtension(element));
+//			}
+//		}
+//
+//		return searchers;
+//	}
 
 	public Collection<IValueSetMembershipLookupService> getValueSetMembershipLookupServices() {
 		final Set<IValueSetMembershipLookupService> searchers = Sets.newHashSet();
@@ -715,7 +717,7 @@ public class CoreTerminologyBroker {
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final String terminologyComponentId) {
 		Preconditions.checkNotNull(terminologyComponentId, "Terminology component identifier argument cannot be null.");
-		return internalGetRegisteredComponents().get(terminologyComponentId);
+		return UNSPECIFIED.equals(terminologyComponentId) ? UNSPECIFIED_COMPONENT : internalGetRegisteredComponents().get(terminologyComponentId);
 	}
 
 	private String getTerminologyAttributeValueByOid(final String attribute, final String oid) {

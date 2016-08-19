@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.net4j.util.CheckUtil;
@@ -53,37 +51,32 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private ConcurrentMap<String, ChoosableList<Handler>> handlerMap = new ConcurrentHashMap<>();
 	private ChoosableList<ExecutorService> contexts = new ChoosableList<ExecutorService>();
 	private final String description;
+	private final int numberOfWorkers;
+	private final ExecutorServiceFactory executorServiceFactory;
 
 	public EventBus() {
-		this(EventBusConstants.GLOBAL_BUS);
+		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
 	}
 	
-	public EventBus(String description) {
+	public EventBus(String description, int numberOfWorkers) {
+		this(description, numberOfWorkers, new DefaultExecutorServiceFactory());
+	}
+
+	public EventBus(String description, int numberOfWorkers, ExecutorServiceFactory executorServiceFactory) {
 		CheckUtil.checkArg(description, "Description should be specified");
+		CheckUtil.checkArg(numberOfWorkers > 0, "Number of workers must be greater than zero");
 		this.description = description;
+		this.numberOfWorkers = numberOfWorkers;
+		this.executorServiceFactory = executorServiceFactory;
 	}
 
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-			final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description + "-" + i);
-			final ThreadGroup group = new ThreadGroup(groupName);
-			final ExecutorService context = Executors.newSingleThreadExecutor(new ThreadFactory() {
-				@Override
-				public Thread newThread(Runnable r) {
-					return new Thread(group, r);
-				}
-			});
-			contexts.list.add(context);
-		}
+		final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description);
+		contexts.list.addAll(executorServiceFactory.createExecutorServices(groupName, numberOfWorkers));
 	}
-	
-	@Override
-	protected void doDeactivate() throws Exception {
-		super.doDeactivate();
-	}
-	
+
 	@Override
 	public IEventBus send(String address, Object message) {
 		return send(address, message, null);
@@ -114,7 +107,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private void receiveMessage(ChoosableList<Handler> handlers, BaseMessage message) {
-		LOG.trace("Received message: " + message);
+		LOG.trace("Received message: {}", message);
 		if (handlers != null) {
 			if (message.isSend()) {
 				final Handler handler = handlers.choose();
@@ -128,7 +121,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 			}
 		} else {
 			// TODO send reply to indicate that there is no handler
-			LOG.warn("No event handler registered to handle message: {}", message);
+			LOG.trace("No event handler registered to handle message: {}", message);
 		}
 	}
 	
@@ -265,7 +258,9 @@ public class EventBus extends Lifecycle implements IEventBus {
 
 		@Override
 		public Object create(String description) throws ProductCreationException {
-			return new EventBus(description);
+			final String[] values = description.split(":");
+			final boolean worker = Boolean.parseBoolean(values[2]);
+			return new EventBus(values[0], Integer.parseInt(values[1]), worker ? new WorkerExecutorServiceFactory() : new DefaultExecutorServiceFactory());
 		}
 
 	}

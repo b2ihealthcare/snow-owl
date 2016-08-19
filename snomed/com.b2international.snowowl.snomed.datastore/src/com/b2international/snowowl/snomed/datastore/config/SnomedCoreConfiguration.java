@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -30,20 +31,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 3.4
  */
 public class SnomedCoreConfiguration {
-
+	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
 	public static final String DEFAULT_LANGUAGE = "en-gb"; //$NON-NLS-1$
 	public static final int DEFAULT_MAXIMUM_REASONER_COUNT = 2;
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
-	public static final String DEFAULT_NAMESPACE = "";
+	public static final String DEFAULT_NAMESPACE = ""; //$NON-NLS-1$
+	public static final String DEFAULT_MODULE = Concepts.MODULE_SCT_CORE;
 	
 	@Min(1)
 	@Max(3)
 	private int maxReasonerCount = DEFAULT_MAXIMUM_REASONER_COUNT;
 	
 	@Min(1)
-	@Max(10)
+	@Max(100)
 	private int maxReasonerResults = DEFAULT_MAXIMUM_REASONER_RESULTS;
 	
 	@NotEmpty
@@ -73,9 +75,21 @@ public class SnomedCoreConfiguration {
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
 	
-	private boolean concreteDomainSupport;
+	@NotEmpty
+	private String defaultModule = DEFAULT_MODULE;
+	
+	@Valid
+	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
+	
+	private boolean collectSystemChanges = false;
+	
+	private boolean concreteDomainSupport = false;
+	
 	private boolean showReasonerUsageWarning = true;
 	
+	//enables the manual editing of inferred relationships and concrete data types
+	private boolean inferredEditingEnabled = false;
+		
 	/**
 	 * @return the maxReasonerCount
 	 */
@@ -133,6 +147,22 @@ public class SnomedCoreConfiguration {
 	}
 	
 	/**
+	 * @return the default module user for SNOMED CT
+	 */
+	@JsonProperty
+	public String getDefaultModule() {
+		return defaultModule;
+	}
+	
+	/**
+	 * @param defaultModule the default module to set
+	 */
+	@JsonProperty
+	public void setDefaultModule(String defaultModule) {
+		this.defaultModule = defaultModule;
+	}
+	
+	/**
 	 * @param language the SNOMED CT language code to set
 	 */
 	@JsonProperty
@@ -174,6 +204,34 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("showReasonerUsageWarning")
 	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
 		this.showReasonerUsageWarning = showReasonerUsageWarning;
+	}
+	
+	@JsonProperty("inferredEditingEnabled")
+	public boolean isInferredEditingEnabled() {
+		return inferredEditingEnabled;
+	}
+
+	@JsonProperty("inferredEditingEnabled")
+	public void setInferredEditingEnabled(boolean inferredEditingEnabled) {
+		this.inferredEditingEnabled = inferredEditingEnabled;
+	}
+	
+	@JsonProperty("collectSystemChanges")
+	public boolean isCollectSystemChanges() {
+		return collectSystemChanges;
+	}
+	
+	@JsonProperty("collectSystemChanges")
+	public void setCollectSystemChanges(boolean collectSystemChanges) {
+		this.collectSystemChanges = collectSystemChanges;
+	}
+	
+	public SnomedIdentifierConfiguration getIds() {
+		return ids;
+	}
+	
+	public void setIds(SnomedIdentifierConfiguration ids) {
+		this.ids = ids;
 	}
 
 	/**

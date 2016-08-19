@@ -50,6 +50,14 @@ public class RepositoryConfiguration {
 	
 	@Min(0)
 	private long indexTimeout = 30L;
+
+	@Min(0)
+	@Max(100)
+	private int numberOfWorkers = 3 * Runtime.getRuntime().availableProcessors();
+	
+	@Min(10)
+	@Max(1000)
+	private int mergeMaxResults = 100;
 	
 	/**
 	 * Returns whether the communication used by the persistance layer is done
@@ -135,6 +143,22 @@ public class RepositoryConfiguration {
 	}
 	
 	/**
+	 * @return the number of workers threads per repository
+	 */
+	@JsonProperty
+	public int getNumberOfWorkers() {
+		return numberOfWorkers;
+	}
+	
+	/**
+	 * @param numberOfWorkers the number of workers per repository to set
+	 */
+	@JsonProperty
+	public void setNumberOfWorkers(int numberOfWorkers) {
+		this.numberOfWorkers = numberOfWorkers;
+	}
+	
+	/**
 	 * @return the databaseConfiguration
 	 */
 	@JsonProperty("database")
@@ -158,6 +182,19 @@ public class RepositoryConfiguration {
 	 */
 	public JdbcUrl getDatabaseUrl() {
 		return new JdbcUrl(getDatabaseConfiguration().getScheme(), getDatabaseConfiguration().getLocation(), getDatabaseConfiguration().getSettings());
+	}
+	
+	/**
+	 * @return the maximum number of completed merge job results to keep
+	 */
+	@JsonProperty
+	public int getMergeMaxResults() {
+		return mergeMaxResults;
+	}
+	
+	@JsonProperty
+	public void setMergeMaxResults(int mergeMaxResults) {
+		this.mergeMaxResults = mergeMaxResults;
 	}
 	
 	/**

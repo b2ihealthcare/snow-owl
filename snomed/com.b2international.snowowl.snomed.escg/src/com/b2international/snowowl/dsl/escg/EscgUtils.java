@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import com.b2international.snowowl.dsl.ESCGRewriter;
 import com.b2international.snowowl.dsl.ESCGStandaloneSetup;
 import com.b2international.snowowl.dsl.parser.antlr.ESCGParser;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -35,7 +36,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  * Utility service singleton for ESCG expressions.
  * 
  */
-public enum EscgUtils {
+public enum EscgUtils implements EscgRewriter {
 	
 	INSTANCE;
 	
@@ -47,12 +48,7 @@ public enum EscgUtils {
 		}
 	});
 	
-	/**
-	 * Parses the specified ESCG expression and rewrites it into a query AST.
-	 * 
-	 * @param expression the ESCG expression to parse and rewrite
-	 * @return the query AST equivalent of the ESCG expression
-	 */
+	@Override
 	public RValue parseRewrite(final String expression) {
 		try {
 			return expressionToRvalueCache.get(expression);

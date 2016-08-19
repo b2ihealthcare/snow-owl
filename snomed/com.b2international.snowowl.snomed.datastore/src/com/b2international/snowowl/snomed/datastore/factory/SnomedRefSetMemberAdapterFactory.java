@@ -15,57 +15,46 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
-import java.util.List;
+import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.emf.cdo.CDOState;
-
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
 /**
- *
+ * Adapter factory implementation for SNOMED CT reference set members.
  */
-public class SnomedRefSetMemberAdapterFactory implements IAdapterFactory {
+public class SnomedRefSetMemberAdapterFactory extends TypeSafeAdapterFactory {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public Object getAdapter(Object adaptableObject, Class adapterType) {
-		if (IComponent.class == adapterType) {
-			if (adaptableObject instanceof SnomedRefSetMemberIndexEntry) {
-				return adaptableObject;
-			} else if (adaptableObject instanceof SnomedRefSetMember) {
-				final SnomedClientIndexService indexSearcher = ApplicationContext.getInstance().getService(SnomedClientIndexService.class);
-				final SnomedRefSetMember member = (SnomedRefSetMember) adaptableObject;
-				final List<SnomedRefSetMemberIndexEntry> result = indexSearcher.search(
-						SnomedRefSetMembershipIndexQueryAdapter.createFindByUuidQuery(member.getUuid()), 1);
-				switch (result.size()) {
-					case 1: return result.get(0);
-					case 0: 
-						if (CDOState.NEW.equals(member.cdoState())) {
-							return SnomedRefSetMemberIndexEntry.createForNewMember(member);
-						} else if (CDOState.DIRTY.equals(member.cdoState())) {
-							return SnomedRefSetMemberIndexEntry.create(member);
-						}
-					default: throw new RuntimeException("Non-unique SNOMED CT reference set member was found by the '" + member.getUuid() + "' identifier.");
-				}
-			}
-		}
-		return null;
+	public SnomedRefSetMemberAdapterFactory() {
+		super(IComponent.class, SnomedRefSetMemberIndexEntry.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapterList()
-	 */
 	@Override
-	public Class[] getAdapterList() {
-		return new Class[] { IComponent.class };
+	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
+
+		if (adaptableObject instanceof SnomedRefSetMemberIndexEntry) {
+			return adapterType.cast(adaptableObject);
+		} 
+
+		if (adaptableObject instanceof SnomedRefSetMember) {
+
+			final SnomedRefSetMember refSetMember = (SnomedRefSetMember) adaptableObject;
+			final SnomedRefSetMemberIndexEntry refSetMemberIndexEntry;
+
+			if (FSMUtil.isClean(refSetMember) && !refSetMember.cdoRevision().isHistorical()) {
+				refSetMemberIndexEntry = new SnomedRefSetMemberLookupService().getComponent(BranchPathUtils.createPath(refSetMember), refSetMember.getUuid());
+			} else {
+				refSetMemberIndexEntry = SnomedRefSetMemberIndexEntry.builder(refSetMember).build();
+			}
+
+			return adapterType.cast(refSetMemberIndexEntry);
+		}
+
+		return null;
 	}
 
 }

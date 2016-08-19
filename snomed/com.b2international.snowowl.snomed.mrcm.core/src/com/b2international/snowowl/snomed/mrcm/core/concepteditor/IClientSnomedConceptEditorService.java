@@ -32,13 +32,4 @@ public interface IClientSnomedConceptEditorService {
 	 */
 	SnomedConceptDetailsBean getConceptDetailsBean(long conceptId, boolean includeUnsanctioned);
 
-	/** 
-	 * Preloads required concept labels and icons, to be returned as part of the call to 
-	 * {@link #getConceptDetailsBean(long, boolean)}; uses the currently active branch for looking up data.
-	 * 
-	 * @param conceptId the identifier of the edited concept
-	 * @param active {@code true} if the concept represented by {@code conceptId} is active, {@code false} otherwise
-	 * @return a map of labels and icons for each concept needed for displaying data for the edited concept in an editor
-	 */
-	SnomedConceptLabelAndIconIdMappings getConceptMappings(long conceptId, boolean active);
 }

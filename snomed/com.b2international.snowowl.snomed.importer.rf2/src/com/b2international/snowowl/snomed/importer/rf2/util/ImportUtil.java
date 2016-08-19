@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.util;
 
+import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.snowowl.core.users.SpecialUserStore.SYSTEM_USER_NAME;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind.FILES;
@@ -27,7 +28,6 @@ import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet
 import static com.b2international.snowowl.snomed.importer.rf2.util.RF2ReleaseRefSetFileCollector.collectUrlFromRelease;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.isEmpty;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,6 +50,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.commons.ConsoleProgressMonitor;
+import com.b2international.commons.collections.LongSet;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
@@ -65,15 +67,25 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
@@ -92,6 +104,7 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelatio
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -103,6 +116,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
+import com.google.common.primitives.Longs;
 
 /**
  * Provides utility methods for setting up and running importers.
@@ -364,35 +378,102 @@ public final class ImportUtil {
 
 			// release specific post processing
 			postProcess(context);
-
-			final SnomedTerminologyBrowser terminologyBrowser = ApplicationContext.getInstance().getServiceChecked(SnomedTerminologyBrowser.class);
-
-			for (final long conceptId : context.getVisitedConcepts().toSortedArray()) {
-				result.getVisitedConcepts().add(terminologyBrowser.getConcept(branchPath, Long.toString(conceptId)));
-			}
-
-			for (final long refSetId : context.getVisitedRefSets().toSortedArray()) {
-
-				final SnomedRefSetIndexEntry refSet = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getRefSet(branchPath, Long.toString(refSetId));
-
-				// Check if the refset is structural (in which case no RefSetMini can be retrieved)
-				if (null != refSet) {
-					result.getVisitedRefSets().add(refSet);
-				}
-			}
+			
+			result.getVisitedConcepts().addAll(getVisitedConcepts(context.getVisitedConcepts(), branchPath));
+			result.getVisitedRefSets().addAll(getVisitedRefSets(context.getVisitedRefSets(), branchPath));
 
 			return result;
-
 		} finally {
-
 			subMonitor.done();
-
 			if (!result.getVisitedConcepts().isEmpty() || !result.getVisitedRefSets().isEmpty()) {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import successfully finished.");
 			} else {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import finished. No changes could be found.");
 			}
 		}
+	}
+
+	private Collection<SnomedConceptIndexEntry> getVisitedConcepts(final LongSet visitedConceptIds, final IBranchPath branchPath) {
+		if (visitedConceptIds.size() == 0) {
+			return Collections.emptyList();
+		}
+
+		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.setComponentIds(getAsStringList(visitedConceptIds))
+				.build(branchPath.getPath())
+				.executeSync(getEventBus());
+		
+		final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
+		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptIndexEntry>() {
+			@Override
+			public SnomedConceptIndexEntry apply(ISnomedConcept concept) {
+				final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
+				final long storageKey = lookupService.getStorageKey(branchPath, concept.getId());
+				return SnomedConceptIndexEntry.builder(concept)
+						.label(label)
+						.storageKey(storageKey)
+						.build();
+			}
+		}).toList();
+	}
+	
+	private Collection<SnomedRefSetIndexEntry> getVisitedRefSets(final LongSet visitedRefSetIds, final IBranchPath branchPath) {
+		if (visitedRefSetIds.size() == 0) {
+			return Collections.emptyList();
+		}
+
+		final Collection<SnomedConceptIndexEntry> identifierConcepts = getVisitedConcepts(visitedRefSetIds, branchPath);
+		
+		final SnomedReferenceSets refSets = SnomedRequests.prepareSearchRefSet()
+				.all()
+				.setLocales(getLocales())
+				.setComponentIds(getAsStringList(visitedRefSetIds))
+				.build(branchPath.getPath())
+				.executeSync(getEventBus());
+		
+		final SnomedRefSetLookupService lookupService = new SnomedRefSetLookupService();
+		return FluentIterable.from(refSets.getItems()).transform(new Function<SnomedReferenceSet, SnomedRefSetIndexEntry>() {
+			@Override
+			public SnomedRefSetIndexEntry apply(final SnomedReferenceSet refSet) {
+				final Optional<SnomedConceptIndexEntry> identifierConcept = getIdentifierConcept(identifierConcepts, refSet);
+				final String preferredTerm = identifierConcept.isPresent() ? identifierConcept.get().getLabel() : refSet.getId();
+				final long storageKey = lookupService.getStorageKey(branchPath, refSet.getId());
+				return SnomedRefSetIndexEntry.builder(refSet)
+						.label(preferredTerm)
+						.storageKey(storageKey)
+						.build();
+			}
+		}).toList();
+	}
+	
+	private ImmutableList<String> getAsStringList(final LongSet longIds) {
+		return FluentIterable.from(Longs.asList(longIds.toSortedArray())).transform(new Function<Long, String>() {
+			@Override
+			public String apply(Long input) {
+				return String.valueOf(input);
+			}
+		}).toList();
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+	}
+
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+
+	private Optional<SnomedConceptIndexEntry> getIdentifierConcept(final Collection<SnomedConceptIndexEntry> identifierConcepts,
+			final SnomedReferenceSet refSet) {
+		return FluentIterable.from(identifierConcepts).firstMatch(new Predicate<SnomedConceptIndexEntry>() {
+			@Override
+			public boolean apply(SnomedConceptIndexEntry concept) {
+				return concept.getId().equals(refSet.getId());
+			}
+		});
 	}
 
 	// result is populated with validation errors if the return value is false

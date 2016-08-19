@@ -23,29 +23,35 @@ import java.util.Collection;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 
-import bak.pcj.LongCollection;
-
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.dsl.escg.EscgUtils;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
+import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+
+import bak.pcj.LongCollection;
 
 public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Serializable {
 
 	private static final long serialVersionUID = -6008793055376183745L;
+	private EscgRewriter rewriter;
 
+	public EscgQueryEvaluatorService(EscgRewriter rewriter) {
+		this.rewriter = rewriter;
+	}
+	
 	@Override
 	public Collection<SnomedConceptIndexEntry> evaluate(final IBranchPath branchPath, final String queryExpression) {
 		final QueryEvaluator delegate = new QueryEvaluator(branchPath);
-		return delegate.evaluate(EscgUtils.INSTANCE.parseRewrite(queryExpression));
+		return delegate.evaluate(rewriter.parseRewrite(queryExpression));
 	}
 
 	@Override
 	public BooleanQuery evaluateBooleanQuery(final IBranchPath branchPath, final String expression) {
 		final IndexQueryQueryEvaluator delegate = new IndexQueryQueryEvaluator();
-		final BooleanQuery booleanQuery = delegate.evaluate(EscgUtils.INSTANCE.parseRewrite(expression));
+		final BooleanQuery booleanQuery = delegate.evaluate(rewriter.parseRewrite(expression));
 		booleanQuery.add(SnomedMappings.newQuery().active().matchAll(), Occur.MUST);
 		booleanQuery.add(SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).matchAll(), Occur.MUST);
 		return booleanQuery;
@@ -55,6 +61,6 @@ public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService, Se
 	public LongCollection evaluateConceptIds(final IBranchPath branchPath, final String queryExpression) {
 		checkNotNull(queryExpression, "ESCG query expression wrapper argument cannot be null.");
 		final ConceptIdQueryEvaluator2 delegate = new ConceptIdQueryEvaluator2(branchPath);
-		return delegate.evaluate(EscgUtils.INSTANCE.parseRewrite(queryExpression));
+		return delegate.evaluate(rewriter.parseRewrite(queryExpression));
 	}
 }

@@ -17,9 +17,9 @@ package com.b2international.snowowl.api.impl.history.domain;
 
 import java.util.List;
 
-import com.b2international.snowowl.api.history.domain.IHistoryInfo;
-import com.b2international.snowowl.api.history.domain.IHistoryInfoDetails;
-import com.b2international.snowowl.api.history.domain.IHistoryVersion;
+import com.b2international.snowowl.core.history.domain.IHistoryInfo;
+import com.b2international.snowowl.core.history.domain.IHistoryInfoDetails;
+import com.b2international.snowowl.core.history.domain.IHistoryVersion;
 
 /**
  *

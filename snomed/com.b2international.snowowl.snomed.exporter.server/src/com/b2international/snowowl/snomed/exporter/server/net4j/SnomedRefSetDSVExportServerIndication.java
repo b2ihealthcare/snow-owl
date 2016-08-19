@@ -34,8 +34,9 @@ import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
@@ -119,8 +120,7 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 	
 	private IRefSetDSVExporter getRefSetExporter() {
 		IBranchPath branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
-		SnomedRefSetBrowser refSetBrowser = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class);
-		SnomedRefSetIndexEntry refSet = refSetBrowser.getRefSet(branchPath, exportSetting.getRefSetId());
+		final SnomedRefSetIndexEntry refSet = new SnomedRefSetLookupService().getComponent(branchPath, exportSetting.getRefSetId());
 		IRefSetDSVExporter exporter = null;
 		if (SnomedRefSetType.SIMPLE.equals(refSet.getType())) {
 			exporter = new SnomedSimpleTypeRefSetDSVExporter(exportSetting);

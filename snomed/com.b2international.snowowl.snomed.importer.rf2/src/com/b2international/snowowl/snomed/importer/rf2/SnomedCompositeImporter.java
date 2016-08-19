@@ -183,7 +183,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			
 				Preconditions.checkState(!ApplicationContext.getInstance().exists(ImportIndexServerService.class), "SNOMED CT import already in progress.");
 	
-				final ImportIndexServerService importIndexServerService = new ImportIndexServerService(branchPath, importContext.getLanguageRefSetId());
+				final ImportIndexServerService importIndexServerService = new ImportIndexServerService(branchPath);
 				final IndexBasedImportIndexServiceFeeder feeder = new IndexBasedImportIndexServiceFeeder();
 				feeder.initContent(importIndexServerService, branchPath, subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 				

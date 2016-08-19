@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.datastore.serviceconfig;
 
 import com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
@@ -35,27 +37,20 @@ public class SnomedTerminologyBrowserServiceConfigJob extends ClientServiceConfi
 		super(JOB_NAME, SnomedDatastoreActivator.PLUGIN_ID);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#getBranchAwareClass()
-	 */
 	@Override
 	protected Class<SnomedTerminologyBrowser> getServiceClass() {
 		return SnomedTerminologyBrowser.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#getTrackingClass()
-	 */
 	@Override
 	protected Class<SnomedClientTerminologyBrowser> getTrackingClass() {
 		return SnomedClientTerminologyBrowser.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob#createTrackingService(java.lang.Object)
-	 */
 	@Override
 	protected SnomedClientTerminologyBrowser createTrackingService(final SnomedTerminologyBrowser branchAwareService) {
-		return new SnomedClientTerminologyBrowser(branchAwareService);
+		return new SnomedClientTerminologyBrowser(branchAwareService, 
+				getEnvironment().service(IEventBus.class),
+				getEnvironment().provider(LanguageSetting.class));
 	}
 }

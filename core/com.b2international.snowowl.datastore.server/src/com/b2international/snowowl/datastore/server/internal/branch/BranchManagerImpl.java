@@ -20,11 +20,11 @@ import java.util.Collection;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.branch.BranchManager;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
@@ -36,7 +36,7 @@ import com.google.common.collect.Iterables;
 public abstract class BranchManagerImpl implements BranchManager {
 
 	private static final String PATH_FIELD = "path";
-	
+
 	private final Store<InternalBranch> branchStore;
 	
 	public BranchManagerImpl(final Store<InternalBranch> branchStore) {
@@ -118,25 +118,26 @@ public abstract class BranchManagerImpl implements BranchManager {
 		}
 	}
 
-	final InternalBranch merge(final InternalBranch target, final InternalBranch source, final String commitMessage) {
-		final InternalBranch mergedTarget = applyChangeSet(target, source, false, commitMessage); // Implicit notification (commit)
-		final InternalBranch reopenedSource = reopen((InternalBranch) source.parent(), source.name(), source.metadata());
-		sendChangeEvent(reopenedSource); // Explicit notification (reopen)
-		return mergedTarget;
+	final InternalBranch merge(final InternalBranch from, final InternalBranch to, final String commitMessage) {
+		final InternalBranch mergedTo = applyChangeSet(from, to, false, commitMessage); // Implicit notification (commit)
+		final InternalBranch reopenedFrom = reopen(to, from.name(), from.metadata());
+		sendChangeEvent(reopenedFrom); // Explicit notification (reopen)
+		return mergedTo;
 	}
 
-	final InternalBranch rebase(final InternalBranch source, final InternalBranch target, final String commitMessage) {
-		applyChangeSet(target, source, true, commitMessage);
-		final InternalBranch reopenedSource = reopen(target, source.name(), source.metadata());
+	final InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String commitMessage, final Runnable postReopen) {
+		applyChangeSet(branch, onTopOf, true, commitMessage);
+		final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
+		postReopen.run();
 		
-		if (source.headTimestamp() > source.baseTimestamp()) {
-			return applyChangeSet(reopenedSource, source, false, commitMessage); // Implicit notification (reopen & commit)
+		if (branch.headTimestamp() > branch.baseTimestamp()) {
+			return applyChangeSet(branch, rebasedBranch, false, commitMessage); // Implicit notification (reopen & commit)
 		} else {
-			return sendChangeEvent(reopenedSource); // Explicit notification (reopen)
+			return sendChangeEvent(rebasedBranch); // Explicit notification (reopen)
 		}
 	}
 
-	abstract InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage);
+	abstract InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, String commitMessage);
 
 	/*package*/ final InternalBranch delete(final InternalBranch branchImpl) {
 		for (Branch child : branchImpl.children()) {

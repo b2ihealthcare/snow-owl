@@ -22,11 +22,14 @@ import javax.annotation.Nullable;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.index.IndexQueryBuilder;
 import com.b2international.snowowl.datastore.index.IndexUtils;
-import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
 
+/**
+ * @deprecated - UNSUPPORTED, use {@link SnomedRequests#prepareSearchDescription()} instead
+ */
 public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndexQueryAdapter implements Serializable {
 
 	private static final long serialVersionUID = -1041630591287866356L;
@@ -77,7 +80,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 		return getDescriptionTypeQuery(super.createIndexQueryBuilder())
 				.require(new IndexQueryBuilder()
 				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_ID), SnomedMappings.newQuery().id(id).matchAll())
-				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), Mappings.label().fieldName(), searchString)
+				.matchParsedTermIf(anyFlagSet(SEARCH_DESCRIPTION_TERM), SnomedMappings.descriptionTerm().fieldName(), searchString)
 				.matchIf(anyFlagSet(SEARCH_DESCRIPTION_CONCEPT_ID), SnomedMappings.newQuery().descriptionConcept(id).matchAll()));
 	}
 
@@ -103,7 +106,7 @@ public class SnomedDescriptionReducedQueryAdapter extends SnomedDescriptionIndex
 				.requireIf(anyFlagSet(SEARCH_DESCRIPTION_ACTIVE_ONLY), SnomedMappings.newQuery().active().matchAll())
 				.requireIf(StringUtils.isEmpty(searchString), SnomedMappings.id().toExistsQuery())
 				.finishIf(StringUtils.isEmpty(searchString))
-				.require(new IndexQueryBuilder().matchParsedTerm(Mappings.label().fieldName(), searchString));
+				.require(new IndexQueryBuilder().matchParsedTerm(SnomedMappings.descriptionTerm().fieldName(), searchString));
 	}	
 	
 	private IndexQueryBuilder requireType(IndexQueryBuilder builder) {

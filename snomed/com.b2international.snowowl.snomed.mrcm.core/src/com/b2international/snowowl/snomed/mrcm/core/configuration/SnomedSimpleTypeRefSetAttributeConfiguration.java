@@ -33,9 +33,9 @@ import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.mrcm.mini.SectionType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -48,6 +48,9 @@ import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * @deprecated - UNSUPPORTED, please do NOT use it if possible, it has to be refactored and it currently does not work at all 
+ */
 @XStreamAlias("snomedSimpleTypeRefSetAttributeConfiguration")
 public final class SnomedSimpleTypeRefSetAttributeConfiguration extends AbstractSerializableConfiguration<AttributeOrderConfiguration>{
 	

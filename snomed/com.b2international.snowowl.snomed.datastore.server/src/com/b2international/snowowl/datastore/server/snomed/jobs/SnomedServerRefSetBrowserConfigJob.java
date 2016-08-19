@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedServerRefSetBrowser;
-import com.b2international.snowowl.datastore.serviceconfig.BrowserConfigJob;
+import com.b2international.snowowl.datastore.serviceconfig.IndexServiceTrackingConfigJob;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 /**
  * Class for initializing and registering the SNOMED&nbsp;CT reference set browser service to the server side. 
  */
-public class SnomedServerRefSetBrowserConfigJob extends BrowserConfigJob<SnomedRefSetBrowser, SnomedIndexService> {
+public class SnomedServerRefSetBrowserConfigJob extends IndexServiceTrackingConfigJob<SnomedRefSetBrowser, SnomedIndexService> {
 
 	/**
 	 * Creates a new job instance to to register SNOMED CT terminology browser.
@@ -46,7 +46,7 @@ public class SnomedServerRefSetBrowserConfigJob extends BrowserConfigJob<SnomedR
 	 * @see com.b2international.snowowl.datastore.serviceconfig.TerminologyBrowserConfigJob#getTerminologyBrowserClass()
 	 */
 	@Override
-	protected Class<SnomedRefSetBrowser> getBrowserClass() {
+	protected Class<SnomedRefSetBrowser> getTargetServiceClass() {
 		return SnomedRefSetBrowser.class;
 	}
 
@@ -62,7 +62,7 @@ public class SnomedServerRefSetBrowserConfigJob extends BrowserConfigJob<SnomedR
 	 * @see com.b2international.snowowl.datastore.serviceconfig.TerminologyBrowserConfigJob#createTerminologyBrowser(com.b2international.snowowl.core.api.index.IIndexService)
 	 */
 	@Override
-	protected SnomedRefSetBrowser createBrowser(SnomedIndexService indexService) {
+	protected SnomedRefSetBrowser createServiceImplementation(SnomedIndexService indexService) {
 		return new SnomedServerRefSetBrowser(indexService);
 	}
 	
@@ -85,13 +85,13 @@ public class SnomedServerRefSetBrowserConfigJob extends BrowserConfigJob<SnomedR
 				}
 				
 				SnomedIndexService indexService = ApplicationContext.getInstance().getService(SnomedIndexService.class);
-				final SnomedRefSetBrowser impl = createBrowser(indexService);
-				ApplicationContext.getInstance().registerService(getBrowserClass(), impl);
+				final SnomedRefSetBrowser impl = createServiceImplementation(indexService);
+				ApplicationContext.getInstance().registerService(getTargetServiceClass(), impl);
 				
 				if (null != impl) {
 				
 					final RpcSession session = RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE);
-					session.registerClassLoader(getBrowserClass(), impl.getClass().getClassLoader());
+					session.registerClassLoader(getTargetServiceClass(), impl.getClass().getClassLoader());
 					
 				}
 				

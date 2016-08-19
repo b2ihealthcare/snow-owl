@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.refset;
 
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Function;
 
 /**
@@ -30,21 +31,7 @@ public abstract class SnomedRefSetMemberIndexEntryFunctions {
 		}
 	};
 
-	public static final Function<SnomedRefSetMemberIndexEntry, String> EXTRACT_REFSET_MEMBER_REFERENCED_COMPONENT_ID = new Function<SnomedRefSetMemberIndexEntry, String>() {
-		@Override
-		public String apply(final SnomedRefSetMemberIndexEntry entry) {
-			return entry.getReferencedComponentId();
-		}
-	};
-
-	public static final Function<SnomedRefSetMemberIndexEntry, String> EXTRACT_REFSET_MEMBER_SPECIAL_FIELD_ID = new Function<SnomedRefSetMemberIndexEntry, String>() {
-		@Override
-		public String apply(final SnomedRefSetMemberIndexEntry entry) {
-			return entry.getSpecialFieldId();
-		}
-	};
-	
 	private SnomedRefSetMemberIndexEntryFunctions() {
-		// Suppress instantiation
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 }

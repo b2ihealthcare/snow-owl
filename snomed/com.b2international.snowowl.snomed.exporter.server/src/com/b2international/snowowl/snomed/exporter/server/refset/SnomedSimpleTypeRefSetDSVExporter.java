@@ -40,9 +40,11 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
@@ -51,10 +53,10 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.DatatypeSnomedDsvExportItem;
@@ -159,6 +161,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private Collection<AbstractSnomedDsvExportItem> groupedOnlyItems;
 	private int branchId;
 	private long branchBase;
+	private IBranchPath branchPath;
 	private Long languageConfiguration;
 	private String delimiter;
 
@@ -185,6 +188,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.delimiter = exportSetting.getDelimiter();
 		this.branchId = exportSetting.getBranchID();
 		this.branchBase = exportSetting.getBranchBase();
+		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 
 		SnomedSimpleTypeRefSetDSVExporter.TEMPORARY_WORKING_DIRECTORY = exportSetting.getExportPath();
 		groupedRelationships = Maps.newTreeMap();
@@ -499,23 +503,23 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			for (String relationshipTypeId : groupedRelationships.get(groupId).keySet()) {
 				if (1 == groupedRelationships.get(groupId).get(relationshipTypeId)) {
 					if (relationshipTargetIdExpected) {
-						metaHeaderList.add(SnomedConceptNameProvider.INSTANCE.getText(relationshipTypeId) + " (AG" + groupId + ")");
-						metaHeaderList.add(SnomedConceptNameProvider.INSTANCE.getText(relationshipTypeId) + " (AG" + groupId + ")");
+						metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (AG" + groupId + ")");
+						metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (AG" + groupId + ")");
 						headerList.add("Id");
 						headerList.add("Name");
 					} else {
-						metaHeaderList.add(SnomedConceptNameProvider.INSTANCE.getText(relationshipTypeId) + " (AG" + groupId + ")");
+						metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (AG" + groupId + ")");
 						headerList.add("");
 					}
 				} else {
 					for (int j = 1; j <= groupedRelationships.get(groupId).get(relationshipTypeId); j++) {
 						if (relationshipTargetIdExpected) {
-							metaHeaderList.add(SnomedConceptNameProvider.INSTANCE.getText(relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
-							metaHeaderList.add(SnomedConceptNameProvider.INSTANCE.getText(relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
+							metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
+							metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
 							headerList.add("Id");
 							headerList.add("Name");
 						} else {
-							metaHeaderList.add(SnomedConceptNameProvider.INSTANCE.getText(relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
+							metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
 							headerList.add("");
 						}
 
@@ -526,6 +530,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		// remove the only grouped relationships from the export items, because
 		// they will be exported particularly by groups.
 		exportItems.removeAll(groupedOnlyItems);
+	}
+
+	private ISnomedConceptNameProvider getNameProvider() {
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class);
 	}
 
 	/**

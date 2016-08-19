@@ -26,22 +26,23 @@ import org.eclipse.core.runtime.IStatus;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemVersionNotFoundException;
-import com.b2international.snowowl.api.exception.LockedException;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
-import com.b2international.snowowl.api.impl.domain.StorageRef;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.datastore.UserBranchPathMap;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.VersioningService;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -157,12 +158,15 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		if (!versionResult.isOK()) {
 			throw new AlreadyExistsException("Version", properties.getVersion());
 		}
-		
-		final StorageRef ref = new StorageRef("SNOMEDCT", "MAIN/" + properties.getVersion());
+		final String versionBranch = "MAIN/"+properties.getVersion();
 		
 		try {
-			ref.getBranch();
-			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", ref.getBranchPath());
+			RepositoryRequests
+				// FIXME remove hard coded SNOMED CT store value, versioning should get the repositoryId from the API
+				.branching("snomedStore")
+				.prepareGet(versionBranch)
+				.executeSync(ApplicationContext.getServiceForClass(IEventBus.class));
+			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", versionBranch);
 		} catch (NotFoundException expected) {
 			// fall-through
 		}

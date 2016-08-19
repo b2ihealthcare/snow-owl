@@ -37,7 +37,6 @@ public final class ComponentModuleUpdater extends DocumentUpdaterBase<SnomedDocu
 
 	@Override
 	public void doUpdate(SnomedDocumentBuilder doc) {
-		doc.module(moduleId);
+		doc.module(Long.valueOf(moduleId));
 	}
-
 }

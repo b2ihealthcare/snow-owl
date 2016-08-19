@@ -372,7 +372,7 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EReference getConcept_InboundRelationships() {
+	public EReference getConcept_Descriptions() {
 		return (EReference)conceptEClass.getEStructuralFeatures().get(2);
 	}
 
@@ -381,17 +381,8 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EReference getConcept_Descriptions() {
-		return (EReference)conceptEClass.getEStructuralFeatures().get(3);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EAttribute getConcept_Exhaustive() {
-		return (EAttribute)conceptEClass.getEStructuralFeatures().get(4);
+		return (EAttribute)conceptEClass.getEStructuralFeatures().get(3);
 	}
 
 	/**
@@ -400,7 +391,7 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * @generated
 	 */
 	public EAttribute getConcept_FullySpecifiedName() {
-		return (EAttribute)conceptEClass.getEStructuralFeatures().get(5);
+		return (EAttribute)conceptEClass.getEStructuralFeatures().get(4);
 	}
 
 	/**
@@ -409,7 +400,7 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 	 * @generated
 	 */
 	public EAttribute getConcept_Primitive() {
-		return (EAttribute)conceptEClass.getEStructuralFeatures().get(6);
+		return (EAttribute)conceptEClass.getEStructuralFeatures().get(5);
 	}
 
 	/**
@@ -600,7 +591,6 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		conceptEClass = createEClass(CONCEPT);
 		createEReference(conceptEClass, CONCEPT__DEFINITION_STATUS);
 		createEReference(conceptEClass, CONCEPT__OUTBOUND_RELATIONSHIPS);
-		createEReference(conceptEClass, CONCEPT__INBOUND_RELATIONSHIPS);
 		createEReference(conceptEClass, CONCEPT__DESCRIPTIONS);
 		createEAttribute(conceptEClass, CONCEPT__EXHAUSTIVE);
 		createEAttribute(conceptEClass, CONCEPT__FULLY_SPECIFIED_NAME);
@@ -695,8 +685,7 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 
 		initEClass(conceptEClass, Concept.class, "Concept", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getConcept_DefinitionStatus(), this.getConcept(), null, "definitionStatus", null, 1, 1, Concept.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getConcept_OutboundRelationships(), this.getRelationship(), this.getRelationship_Source(), "outboundRelationships", null, 0, -1, Concept.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getConcept_InboundRelationships(), this.getRelationship(), this.getRelationship_Destination(), "inboundRelationships", null, 0, -1, Concept.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConcept_OutboundRelationships(), this.getRelationship(), this.getRelationship_Source(), "outboundRelationships", null, 0, -1, Concept.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
 		initEReference(getConcept_Descriptions(), this.getDescription(), this.getDescription_Concept(), "descriptions", null, 0, -1, Concept.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getConcept_Exhaustive(), ecorePackage.getEBoolean(), "exhaustive", null, 1, 1, Concept.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getConcept_FullySpecifiedName(), ecorePackage.getEString(), "fullySpecifiedName", "", 1, 1, Concept.class, IS_TRANSIENT, !IS_VOLATILE, !IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, IS_DERIVED, IS_ORDERED);
@@ -707,7 +696,7 @@ public class SnomedPackageImpl extends EPackageImpl implements SnomedPackage {
 		initEAttribute(getRelationship_UnionGroup(), ecorePackage.getEInt(), "unionGroup", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getRelationship_DestinationNegated(), ecorePackage.getEBoolean(), "destinationNegated", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationship_Source(), this.getConcept(), this.getConcept_OutboundRelationships(), "source", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEReference(getRelationship_Destination(), this.getConcept(), this.getConcept_InboundRelationships(), "destination", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getRelationship_Destination(), this.getConcept(), null, "destination", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationship_Type(), this.getConcept(), null, "type", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationship_CharacteristicType(), this.getConcept(), null, "characteristicType", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationship_Modifier(), this.getConcept(), null, "modifier", null, 1, 1, Relationship.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

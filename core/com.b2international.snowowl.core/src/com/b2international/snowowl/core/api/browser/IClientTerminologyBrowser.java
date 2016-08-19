@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.api.browser;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -44,6 +45,8 @@ public interface IClientTerminologyBrowser<C, K> {
 	 * @return
 	 */
 	public C getConcept(final K id);
+	
+	public Iterable<C> getComponents(Iterable<K> ids);
 	
 	/**
 	 * Returns the parent concepts for the specified concept.
@@ -214,4 +217,18 @@ public interface IClientTerminologyBrowser<C, K> {
 	 * @return {@code true} if the component exists, otherwise returns with {@code false}.
 	 */
 	boolean exists(final String componentId);
+	
+	/**
+	 * Checks whether the components identified by their terminology specific
+	 * unique IDs exist on the given branch. Returns with a map, where the keys
+	 * are the component IDs and the values are <code>true</code> or
+	 * <code>false</code> whether the component exists or not.
+	 * 
+	 * @param componentIds
+	 *            the terminology specific unique IDs.
+	 * @return map where each ID is mapped to <code>true</code> or
+	 *         <code>false</code> whether it exists or not.
+	 */
+	Map<String, Boolean> exist(Collection<String> componentIds);
+	
 }

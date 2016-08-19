@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.b2international.snowowl.core.api.IComponentWithIconId;
+import com.google.common.base.Objects;
 
 /**
  * Abstract base class for reasoner change entries.
@@ -28,38 +28,30 @@ public abstract class AbstractChangeEntry implements IChangeEntry {
 	 * Enumerates the possible natures of an {@link AbstractChangeEntry}.
 	 */
 	public enum Nature {
-		INFERRED, REDUNDANT
+		INFERRED, 
+		REDUNDANT
 	}
 
-	private final IComponentWithIconId<Long> source;
+	private final ChangeConcept source;
 	private final Nature nature;
 
-	protected AbstractChangeEntry(final Nature nature, final IComponentWithIconId<Long> source) {
+	protected AbstractChangeEntry(final Nature nature, final ChangeConcept source) {
 		this.source = source;
 		this.nature = nature;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IChangeEntry#getSource()
-	 */
-	@Override public IComponentWithIconId<Long> getSource() {
+	@Override 
+	public ChangeConcept getSource() {
 		return source;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.reasoner.classification.entry.IChangeEntry#getNature()
-	 */
-	@Override public Nature getNature() {
+	@Override 
+	public Nature getNature() {
 		return nature;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override public int hashCode() {
+	@Override 
+	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((nature == null) ? 0 : nature.hashCode());
@@ -67,25 +59,16 @@ public abstract class AbstractChangeEntry implements IChangeEntry {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+	@Override 
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
 		final AbstractChangeEntry other = (AbstractChangeEntry) obj;
-		if (nature != other.nature)
-			return false;
-		if (source == null) {
-			if (other.source != null)
-				return false;
-		} else if (!source.equals(other.source))
-			return false;
+
+		if (nature != other.nature) { return false; }
+		if (!Objects.equal(source, other.source)) { return false; }
 		return true;
 	}
 }

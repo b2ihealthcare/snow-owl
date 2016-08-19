@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.refset.derivation.AbstractSnomedRefSetDerivator;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

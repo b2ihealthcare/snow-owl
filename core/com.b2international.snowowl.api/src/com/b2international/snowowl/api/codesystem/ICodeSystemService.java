@@ -18,7 +18,7 @@ package com.b2international.snowowl.api.codesystem;
 import java.util.List;
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
-import com.b2international.snowowl.api.codesystem.exception.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 
 /**
  * Implementations of this interface allow browsing code system metadata.

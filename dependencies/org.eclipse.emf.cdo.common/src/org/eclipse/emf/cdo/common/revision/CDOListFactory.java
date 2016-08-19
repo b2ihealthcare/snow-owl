@@ -24,5 +24,5 @@ public interface CDOListFactory
 {
   public static final CDOListFactory DEFAULT = CDOListImpl.FACTORY;
 
-  public CDOList createList(int intitialCapacity, int size, int initialChunk);
+  public CDOList createList(int intitialCapacity, int size, int initialChunk, boolean ordered);
 }

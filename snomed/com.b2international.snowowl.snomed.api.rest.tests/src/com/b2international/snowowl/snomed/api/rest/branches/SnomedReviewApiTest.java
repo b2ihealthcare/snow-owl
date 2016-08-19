@@ -17,14 +17,18 @@ package com.b2international.snowowl.snomed.api.rest.branches;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenMergingOrRebasingBranches;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenDescriptionRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
@@ -44,15 +48,17 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.branch.Branch;
-import com.b2international.snowowl.datastore.server.review.ReviewStatus;
+import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
@@ -161,7 +167,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void reviewBeforeMerge() {
-		final IBranchPath setupBranch = createNestedBranch("a", "b");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		final IBranchPath setupBranch = createNestedBranch(testBranchPath, "a", "b");
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 
 		// Create a new concept on the setup branch so that it can be deleted on the nested branch
@@ -198,7 +205,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void reviewBeforeRebase() {
 		// Open the setup branch
-		IBranchPath setupBranchPath = createNestedBranch("A");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		IBranchPath setupBranchPath = createNestedBranch(testBranchPath, "A");
 		
 		// Create a new concept on the setup branch so that it can be deleted on the test branch
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
@@ -234,9 +242,124 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void reviewDescriptionInactivation() {
+		givenBranchWithPath(testBranchPath);
+		
+		// Create a new concept on the test branch
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String c1 = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		final Map<Object, Object> descriptionRequestBody = Maps.<Object, Object>newHashMap(givenDescriptionRequestBody("New SYN at ", ACCEPTABLE_ACCEPTABILITY_MAP, SYNONYM));
+		descriptionRequestBody.put("conceptId", c1);
+		descriptionRequestBody.put("commitComment", "Created new synonym");
+		
+		final String d1 = assertComponentCreated(testBranchPath, SnomedComponentType.DESCRIPTION, descriptionRequestBody);
+		
+		// Create a nested branch after C1 and D1 appears
+		IBranchPath nestedBranchPath = BranchPathUtils.createPath(testBranchPath, "A");
+		givenBranchWithPath(nestedBranchPath);
+		
+		// Inactivate D1 on test branch
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated description")
+				.build();
+
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.DESCRIPTION, d1, updateRequestBody);
+
+		// See what happened on testBranchPath before we actually decide to rebase (reopen) nestedBranchPath on top of it
+		final String reviewId = andCreatedReview(testBranchPath.getPath(), nestedBranchPath.getPath());
+		assertReviewCurrent(reviewId);
+		
+		whenRetrievingChangesWithId(reviewId)
+		.then()
+		.statusCode(200)
+		.body("id", equalTo(reviewId))
+		.body("changedConcepts", equalTo(ImmutableList.of(c1)));
+	}
+	
+	@Test
+	public void reviewRelationshipInactivation() {
+		givenBranchWithPath(testBranchPath);
+		
+		// Create a new relationship on the setup branch
+		final Map<?, ?> relationshipRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship");
+		final String r1 = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody);
+		
+		// Create a nested branch after R1 appears
+		IBranchPath nestedBranchPath = BranchPathUtils.createPath(testBranchPath, "A");
+		givenBranchWithPath(nestedBranchPath);
+		
+		// Inactivate R1 on test branch
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated description")
+				.build();
+		
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.RELATIONSHIP, r1, updateRequestBody);
+		
+		// See what happened on testBranchPath before we actually decide to rebase (reopen) nestedBranchPath on top of it
+		final String reviewId = andCreatedReview(testBranchPath.getPath(), nestedBranchPath.getPath());
+		assertReviewCurrent(reviewId);
+		
+		whenRetrievingChangesWithId(reviewId)
+		.then()
+		.statusCode(200)
+		.body("id", equalTo(reviewId))
+		.body("changedConcepts", equalTo(ImmutableList.of(DISEASE)))
+		.body("changedConcepts", not(hasItem(FINDING_CONTEXT)));
+	}
+	
+	@Test
+	public void reviewBeforeDivergedRebase() {
+		// Open the setup branch
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		IBranchPath setupBranchPath = createNestedBranch(testBranchPath, "A");
+		
+		// Create a new concept on the setup branch so that it can be deleted on the test branch
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String c1 = assertComponentCreated(setupBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		assertBranchCanBeMerged(setupBranchPath, "Creating concept which can be deleted");
+		
+		// Create a nested branch after C1 appears
+		IBranchPath nestedBranchPath = BranchPathUtils.createPath(testBranchPath, "B");
+		givenBranchWithPath(nestedBranchPath);
+		
+		// Create new concept on test branch
+		final String c2 = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		// Create new relationship, which will mark "Disease" as changed, but not "Finding context"
+		final Map<?, ?> relationshipRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship");
+		assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody);
+		
+		// Delete the concept we have created earlier
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.CONCEPT, c1);
+		
+		// Add new concept on MAIN
+		final String c3 = assertComponentCreated(testBranchPath.getParent(), SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		// Rebase testBranchPath on MAIN
+		assertBranchCanBeRebased(testBranchPath, "Rebasing testBranchPath on MAIN");
+		
+		// See what happened on testBranchPath's newest instance, before we actually decide to rebase (reopen) nestedBranchPath on top of it
+		final String reviewId = andCreatedReview(testBranchPath.getPath(), nestedBranchPath.getPath());
+		assertReviewCurrent(reviewId);
+		
+		whenRetrievingChangesWithId(reviewId)
+		.then()
+			.statusCode(200)
+			.body("id", equalTo(reviewId))
+			.body("newConcepts", hasItems(c2, c3))
+			.body("changedConcepts", hasItem(DISEASE))
+			.body("changedConcepts", not(hasItem(FINDING_CONTEXT)))
+			.body("deletedConcepts", nullValue()); // In this test case we never see c1
+	}
+	
+	@Test
 	public void reviewAfterParentRebase() {
 		// Open the setup branch
-		IBranchPath setupBranchPath = createNestedBranch("A");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		IBranchPath setupBranchPath = createNestedBranch(testBranchPath, "A");
 		
 		// Create a new concept on the setup branch so that it can be deleted on the test branch
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
@@ -280,7 +403,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void reviewAfterParentMerge() {
 		// Open the setup branch
-		IBranchPath setupBranchPath = createNestedBranch("A");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		IBranchPath setupBranchPath = createNestedBranch(testBranchPath, "A");
 		
 		// Create a new concept on the setup branch so that it can be deleted on the test branch
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
@@ -363,7 +487,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void setReviewStaleAfterParentRebase() {
 		// Create all branches down to MAIN/test/A
-		IBranchPath nestedBranchPath = createNestedBranch("A");
+		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "A");
 		
 		// Create a new concept on MAIN
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);

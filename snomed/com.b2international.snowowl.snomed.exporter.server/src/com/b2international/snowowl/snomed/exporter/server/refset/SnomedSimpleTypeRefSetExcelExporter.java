@@ -35,8 +35,6 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
-import bak.pcj.set.LongSet;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
@@ -49,12 +47,15 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Exporter class to export simple type reference sets to Excel format where the 
@@ -176,7 +177,8 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		OMMonitor componentsMonitor = null;
 		
 		try {
-			final String refSetLabel = formatSheetName(browser.getComponentLabel(getBranchPath(), refSetId));
+			
+			final String refSetLabel = formatSheetName(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId));
 			final Sheet sheet = workbook.createSheet(refSetLabel);
 			
 			async = monitor.forkAsync(70);
@@ -323,7 +325,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	}
 
 	private String getPrefferedTermByConcept(final Concept concept) {
-		return lookupService.getComponent(getBranchPath(), concept.getId()).getLabel();
+		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), concept.getId());
 	}
 
 	private String getAcceptablilityId(final Description description) {
@@ -334,7 +336,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			return null;
 		} else {
 			final SnomedRefSetMemberIndexEntry entry = Lists.newArrayList(membersForType).get(0);
-			return entry.getSpecialFieldId();
+			return entry.getAcceptabilityId();
 		}
 	}
 	

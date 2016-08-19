@@ -42,7 +42,7 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -140,7 +140,6 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		refSetIds = StringUtils.isEmpty(refSetId) ? Sets.<String> newHashSet() : Sets.newHashSet(refSetId);
 		singleRefSetExport = !refSetIds.isEmpty();
 		coreComponentsToExport = !singleRefSetExport;
-		setExportPath(initExportPath());
 		releaseType = ContentSubType.SNAPSHOT;
 		settings = Sets.newHashSet();
 		refSetsToExport = true;
@@ -149,6 +148,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		clientBranch = BranchPathUtils.createActivePath(connection.getUuid());
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 		unsetEffectiveTimeLabel = "";
+		setExportPath(initExportPath());
 	}
 
 	public Set<String> getRefSetIds() {
@@ -201,7 +201,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		if (!singleRefSetExport) {
 			token = new StringBuilder().append("SnomedCT_Release_INT_").append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
 		} else {
-			token = StringUtil.capAll(SnomedConceptNameProvider.INSTANCE.getText(Iterables.getOnlyElement(refSetIds)));
+			token = StringUtil.capAll(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(clientBranch, Iterables.getOnlyElement(refSetIds)));
 		}
 		final StringBuilder sb = new StringBuilder();
 		return sb.append(System.getProperty("user.home")).append(File.separatorChar).append(token).append(".zip").toString();

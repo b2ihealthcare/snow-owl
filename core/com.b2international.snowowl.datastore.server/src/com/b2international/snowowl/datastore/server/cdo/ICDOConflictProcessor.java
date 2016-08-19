@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
@@ -53,6 +54,19 @@ public interface ICDOConflictProcessor {
 	 * </ul>
 	 */
 	Object addedInSource(CDORevision sourceRevision, Map<CDOID, Object> targetMap);
+
+	/**
+	 * Checks if the specified {@link CDOFeatureDelta} from the target change set conflicts with the corresponding 
+	 * {@code CDOFeatureDelta} on the source.
+	 * 
+	 * @param targetFeatureDelta the single-value change on the target
+	 * @param sourceFeatureDelta the single-value change on the source
+	 * @return <ul>
+	 * <li>{@code null} if a conflict should be reported;
+	 * <li>a {@link CDOFeatureDelta} containing the "winning" change otherwise.
+	 * </ul>
+	 */
+	CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta);
 
 	/**
 	 * Checks if the object with the removed {@link CDOID} from the target change set conflicts with an item in the

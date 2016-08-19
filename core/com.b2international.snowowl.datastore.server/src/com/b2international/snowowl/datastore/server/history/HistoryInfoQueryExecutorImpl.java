@@ -31,6 +31,8 @@ import java.util.SortedMap;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.collections.CloseableMap;
 import com.b2international.snowowl.core.api.IHistoryInfo.IVersion;
@@ -44,6 +46,8 @@ import com.google.common.collect.Lists;
  *
  */
 public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryExecutor {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(HistoryInfoQueryExecutorImpl.class);
 
 	/** Minor version value, set when the actual minor version is not yet known. */
 	protected static final int UNSPECIFIED_MINOR_VERSION = -1;
@@ -301,7 +305,12 @@ public abstract class HistoryInfoQueryExecutorImpl implements HistoryInfoQueryEx
 		Version versionForTimestamp = (Version) allModification.get(createdTimestamp);
 
 		if (versionForTimestamp == null) {
-			final Version previousVersion = (Version) allModification.get(allModification.headMap(createdTimestamp).lastKey());
+			final SortedMap<Long, IVersion<CDOID>> headMap = allModification.headMap(createdTimestamp);
+			if (headMap.isEmpty()) {
+				LOGGER.error("Created timestamp {} is smaller than first versions timestamp {}.", createdTimestamp, allModification.firstKey());
+				return;
+			}
+			final Version previousVersion = (Version) allModification.get(headMap.lastKey());
 			final int majorVersion = previousVersion.getMajorVersion();
 			versionForTimestamp = new Version(majorVersion, UNSPECIFIED_MINOR_VERSION); // fix minor versions at the end
 			allModification.put(createdTimestamp, versionForTimestamp);

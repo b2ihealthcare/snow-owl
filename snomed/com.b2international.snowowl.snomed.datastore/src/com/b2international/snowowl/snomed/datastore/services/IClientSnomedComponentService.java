@@ -17,10 +17,9 @@ package com.b2international.snowowl.snomed.datastore.services;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import bak.pcj.set.LongSet;
 
@@ -30,8 +29,9 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
-import com.b2international.snowowl.snomed.mrcm.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Multimap;
 
@@ -103,19 +103,6 @@ public interface IClientSnomedComponentService {
 	long getExtensionConceptId(final String componentId);
 	
 	/**
-	 * Returns with an array of labels for components identified by their unique SNOMED&nbsp;CT core component ID.
-	 * <br>The component type will be identified from the core component ID.
-	 * <p>Clients can make sure that the order of the specified component IDs will be the same as the returning array of label.
-	 * <p>The returning array may contain {@code null}s. Clients must take care of them.
-	 * <p>If the specified component ID is *NOT* a valid SNOMED&nbsp;CT core component ID, it will be ignored and the associated
-	 * label will be {@code null}.
-	 * @param componentIds the unique ID of a SNOMED&nbsp;CT core components.
-	 * @return an array of labels.
-	 * @expert
-	 */
-	@Nullable String[] getLabels(final String... componentIds);
-
-	/**
 	* Returns with an array of SNOMED&nbsp;CT concept icon IDs for
 	* a bunch of SNOMED&nbsp;CT concepts given by their unique SNOMED&nbsp;CT concept ID.
 	* <br>Returning array may contain {@code null} elements. Order of the given concept IDs and the returning array
@@ -165,14 +152,13 @@ public interface IClientSnomedComponentService {
 	
 	/**
 	 * Returns with a collection of reference set member storage keys (CDO IDs) where a component given its unique {@code componentId}
-	 * is either the referenced component or depending on the {@link SnomedRefSetType type ordinal} is the target component.
+	 * is either the referenced component or depending on the {@link SnomedRefSetType type} is the target component.
 	 * <br>(e.g.: map target for simple map reference set member, value in case of attribute value type, etc.)  
 	 * @param componentId the component ID.
-	 * @param typeOrdinal the ordinal of the SNOMED&nbsp;CT reference set {@link SnomedRefSetType type}.
-	 * @param otherTypeOrdinal additional reference set types.
+	 * @param types the set of the SNOMED CT reference set {@link SnomedRefSetType types}.
 	 * @return a collection of reference set member storage keys.
 	 */
-	LongSet getAllReferringMembersStorageKey(final String componentId, final int typeOrdinal, final int... otherTypeOrdinal);
+	LongSet getAllReferringMembersStorageKey(final String componentId, final EnumSet<SnomedRefSetType> types);
 	
 	/**
 	 * Returns with the a set of SNOMED CT IDs for all description.
@@ -181,9 +167,14 @@ public interface IClientSnomedComponentService {
 	LongSet getAllDescriptionIds();
 	
 	/**
+	 * Returns with a collection of all active {@link SnomedDescriptionIndexEntry} for the current branch.
+	 * @return a collection of {@link SnomedDescriptionIndexEntry}
+	 */
+	Collection<SnomedDescriptionIndexEntry> getAllActiveDescriptionEntry();
+	
+	/**
 	 * Returns with a collection of active {@link SnomedDescriptionFragment description}s for a concept which are belongs to the 
 	 * given language.
-	 * @param branchPath branch path.
 	 * @param conceptId the container concept ID.
 	 * @param languageRefSetId the unique language reference set concept identifier.
 	 * @return a collection of active descriptions for a concept in a given language.
@@ -203,6 +194,7 @@ public interface IClientSnomedComponentService {
 	 * @param descriptionTypeId the description type IDs. Optional, if omitted the PT of the concept will be returned as the term.
 	 * @return a map of concept IDs and the associated description terms from a given type of descriptions.
 	 */
+	@Deprecated
 	Map<String, String> getReferencedConceptTerms(final String refSetId, final String... descriptionTypeId);
 	
 	/**

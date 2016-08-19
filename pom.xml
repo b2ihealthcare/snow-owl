@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>4.4.0-SNAPSHOT</version>
+	<version>4.6.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -30,6 +30,7 @@
 		<module>snomed</module>
 		<module>tests</module>
 		<module>releng</module>
+		<module>documentation</module>
 	</modules>
 
 	<build>
@@ -230,6 +231,49 @@
 								<versionRange>[1.0.7,1.0.8)</versionRange>
 							</restrictTo>
 						</filter>
+						<!-- Restrict Jackson bundles to the selected version -->
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.core.jackson-annotations</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.core.jackson-core</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.core.jackson-databind</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-yaml</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-csv</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
 					</filters>
 					<environments>
 						<environment>
@@ -388,6 +432,12 @@
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
+    				<groupId>com.fasterxml.jackson.dataformat</groupId>
+    				<artifactId>jackson-dataformat-csv</artifactId>
+    				<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
 				    <groupId>com.fasterxml.jackson.module</groupId>
 				    <artifactId>jackson-module-afterburner</artifactId>
 				    <version>${jackson.version}</version>
@@ -519,7 +569,7 @@
 				</repository>
 				<repository>
 					<id>emfjson</id>
-					<url>http://ghillairet.github.com/p2</url>
+					<url>http://ghillairet.github.io/p2/releases/emfjson/0.10.0/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>

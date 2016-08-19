@@ -15,46 +15,45 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
-import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.commons.TypeSafeAdapterFactory;
 import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.datastore.SnomedClientStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
- *
+ * Adapter factory implementation for SNOMED CT relationships.
  */
-public class SnomedRelationshipAdapterFactory implements IAdapterFactory {
+public class SnomedRelationshipAdapterFactory extends TypeSafeAdapterFactory {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
-	 */
+	public SnomedRelationshipAdapterFactory() {
+		super(IComponent.class, SnomedRelationshipIndexEntry.class);
+	}
+
 	@Override
-	public Object getAdapter(final Object adaptableObject, final Class adapterType) {
-		if (IComponent.class == adapterType) {
-			if (adaptableObject instanceof SnomedRelationshipIndexEntry) {
-				return adaptableObject;
-			} else if (adaptableObject instanceof Relationship) {
-				Relationship relationship = (Relationship) adaptableObject;
-				SnomedRelationshipIndexEntry relationshipIndexEntry = ApplicationContext.getInstance().getService(SnomedClientStatementBrowser.class).getStatement(relationship.getId());
-				if (null == relationshipIndexEntry) {
-					relationshipIndexEntry = new SnomedRelationshipIndexEntry(relationship);
-				}
-				return relationshipIndexEntry;
+	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
+
+		if (adaptableObject instanceof SnomedRelationshipIndexEntry) {
+			return adapterType.cast(adaptableObject);
+		} 
+
+		if (adaptableObject instanceof Relationship) {
+
+			final Relationship relationship = (Relationship) adaptableObject;
+			final SnomedRelationshipIndexEntry adaptedEntry;
+			
+			if (FSMUtil.isClean(relationship) && !relationship.cdoRevision().isHistorical()) {
+				adaptedEntry = new SnomedRelationshipLookupService().getComponent(BranchPathUtils.createPath(relationship), relationship.getId());
+			} else {
+				adaptedEntry = SnomedRelationshipIndexEntry.builder(relationship).build();
 			}
+
+			return adapterType.cast(adaptedEntry);
 		}
+
 		return null;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapterList()
-	 */
-	@Override
-	public Class[] getAdapterList() {
-		return new Class[] { IComponent.class };
-	}
-
 }

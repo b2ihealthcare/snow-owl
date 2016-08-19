@@ -41,7 +41,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getConcreteDomainRefSetMembers <em>Concrete Domain Ref Set Members</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getDefinitionStatus <em>Definition Status</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getOutboundRelationships <em>Outbound Relationships</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getInboundRelationships <em>Inbound Relationships</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getDescriptions <em>Descriptions</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#isExhaustive <em>Exhaustive</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.impl.ConceptImpl#getFullySpecifiedName <em>Fully Specified Name</em>}</li>
@@ -127,16 +126,6 @@ public class ConceptImpl extends ComponentImpl implements Concept {
 	@SuppressWarnings("unchecked")
 	public EList<Relationship> getOutboundRelationships() {
 		return (EList<Relationship>)eGet(SnomedPackage.Literals.CONCEPT__OUTBOUND_RELATIONSHIPS, true);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@SuppressWarnings("unchecked")
-	public EList<Relationship> getInboundRelationships() {
-		return (EList<Relationship>)eGet(SnomedPackage.Literals.CONCEPT__INBOUND_RELATIONSHIPS, true);
 	}
 
 	/**

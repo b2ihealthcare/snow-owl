@@ -20,7 +20,6 @@ import org.eclipse.spi.net4j.ClientProtocolFactory;
 
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.internal.eventbus.EventBus;
-import com.b2international.snowowl.internal.eventbus.net4j.EventBusAwareElementInjector;
 import com.b2international.snowowl.internal.eventbus.net4j.EventBusProtocol;
 import com.b2international.snowowl.internal.eventbus.net4j.EventBusProtocolInjector;
 
@@ -39,7 +38,6 @@ public class EventBusNet4jUtil {
 		container.registerFactory(new EventBusProtocol.ClientFactory());
 		container.registerFactory(new EventBusProtocol.ServerFactory());
 		container.registerFactory(new EventBus.Factory());
-		container.addPostProcessor(new EventBusAwareElementInjector());
 		container.addPostProcessor(new EventBusProtocolInjector());
 	}
 
@@ -61,8 +59,18 @@ public class EventBusNet4jUtil {
 	 * @return
 	 */
 	public static IEventBus getBus(IManagedContainer container) {
-		return (IEventBus) container.getElement(EventBusConstants.EVENT_BUS_PRODUCT_GROUP,
-				EventBusConstants.PROTOCOL_NAME, EventBusConstants.GLOBAL_BUS, true);
+		return getBus(container, Runtime.getRuntime().availableProcessors());
+	}
+	
+	/**
+	 * Returns the event bus associated with the description of globalBus.
+	 * 
+	 * @param container
+	 * @param numberOfWorkers
+	 * @return
+	 */
+	private static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
+		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers, true);
 	}
 
 	/**
@@ -70,11 +78,12 @@ public class EventBusNet4jUtil {
 	 * 
 	 * @param container
 	 * @param name
+	 * @param numberOfWorkers
 	 * @return
 	 */
-	public static IEventBus getBus(IManagedContainer container, String name) {
+	private static IEventBus getBus(IManagedContainer container, String name, int numberOfWorkers, boolean worker) {
 		return (IEventBus) container.getElement(EventBusConstants.EVENT_BUS_PRODUCT_GROUP,
-				EventBusConstants.PROTOCOL_NAME, name, true);
+				EventBusConstants.PROTOCOL_NAME, String.format("%s:%s:%s", name, numberOfWorkers, worker), true);
 	}
 
 }

@@ -48,6 +48,7 @@ public class ExtendedComponentImpl implements ExtendedComponent {
 	 * @see com.b2international.snowowl.core.api.LabelProvider#getLabel()
 	 */
 	@Override
+	@Deprecated
 	public String getLabel() {
 		return label;
 	}

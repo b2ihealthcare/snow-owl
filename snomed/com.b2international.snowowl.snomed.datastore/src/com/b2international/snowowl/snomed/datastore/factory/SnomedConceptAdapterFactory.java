@@ -15,73 +15,58 @@
  */
 package com.b2international.snowowl.snomed.datastore.factory;
 
+import org.eclipse.emf.spi.cdo.FSMUtil;
+
 import com.b2international.commons.TypeSafeAdapterFactory;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 
 /**
+ * Adapter factory implementation for SNOMED CT concepts.
  */
 public class SnomedConceptAdapterFactory extends TypeSafeAdapterFactory {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterSafe(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
+	public SnomedConceptAdapterFactory() {
+		super(IComponent.class, SnomedConceptIndexEntry.class);
+	}
 
-		if (null == adaptableObject) {
-			return null;
-		}
-		
-		if (IComponent.class != adapterType) {
-			return null;
-		}
-		
-		if (adaptableObject instanceof SnomedConceptIndexEntry || adaptableObject instanceof SnomedConceptIndexEntry) {
+	@Override
+	protected <T> T getAdapterSafe(final Object adaptableObject, final Class<T> adapterType) {
+
+		if (adaptableObject instanceof SnomedConceptIndexEntry) {
 			return adapterType.cast(adaptableObject);
-		}
-		
+		} 
+
 		if (adaptableObject instanceof Concept) {
 
 			final Concept concept = (Concept) adaptableObject;
-			final SnomedClientTerminologyBrowser terminologyBrowser = getTerminologyBrowser();
-			SnomedConceptIndexEntry conceptMini = terminologyBrowser.getConcept(concept.getId());
-
-			if (null != conceptMini) {
-				return adapterType.cast(conceptMini);
+			final SnomedConceptIndexEntry adaptedEntry;
+			
+			if (FSMUtil.isClean(concept) && !concept.cdoRevision().isHistorical()) {
+				adaptedEntry = new SnomedConceptLookupService().getComponent(BranchPathUtils.createPath(concept), concept.getId());
+			} else {
+				adaptedEntry = SnomedConceptIndexEntry.builder()
+						.id(concept.getId())
+						.iconId(SnomedIconProvider.getInstance().getIconComponentId(concept.getId())) 
+						.moduleId(concept.getModule().getId()) 
+						.storageKey(CDOUtils.getStorageKey(concept))
+						.active(concept.isActive())
+						.primitive(concept.isPrimitive())
+						.exhaustive(concept.isExhaustive())
+						.released(concept.isReleased()) 
+						.effectiveTimeLong(concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME)
+						.build();
 			}
-			
-			conceptMini = new SnomedConceptIndexEntry(concept.getId(), 
-					concept.getModule().getId(), 
-					SnomedConceptNameProvider.INSTANCE.getText(concept.getId(), concept.cdoView()), 
-					SnomedIconProvider.getInstance().getIconComponentId(concept.getId()), 
-					CDOUtils.getStorageKey(concept), SnomedConceptIndexEntry.generateFlags(concept.isActive(), concept.isPrimitive(), concept.isExhaustive(), concept.isReleased()), 
-					null == concept.getEffectiveTime() ? EffectiveTimes.UNSET_EFFECTIVE_TIME : concept.getEffectiveTime().getTime());
-			
-			return adapterType.cast(conceptMini);
+
+			return adapterType.cast(adaptedEntry);
 		}
-		
+
 		return null;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.commons.TypeSafeAdapterFactory#getAdapterListSafe()
-	 */
-	@Override
-	public Class<?>[] getAdapterListSafe() {
-		return new Class<?>[] { IComponent.class };
-	}
-
-	protected SnomedClientTerminologyBrowser getTerminologyBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class);
 	}
 }

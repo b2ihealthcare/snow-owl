@@ -21,7 +21,6 @@ import static java.util.Collections.emptyList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -37,7 +36,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.browser.SnomedIndexBrowserConstants;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -45,7 +43,6 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 /**
  * SNOMED&nbsp;CT cross map target exporter for complex map and simple map type reference sets.
@@ -60,15 +57,17 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 
 	private static final String FILE_NAME_PREFIX = "CrossMapTargets";
 
-	private static final Set<String> MEMBER_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID));
+	private static final Set<String> MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.memberUuid()
+			.memberMapTargetComponentId()
+			.build();
 	
-	private static final Set<String> COMPLEX_MEMBER_FIELD_TO_LOAD = Collections.unmodifiableSet(Sets.newHashSet(
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE,
-			SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE));
+	private static final Set<String> COMPLEX_MEMBER_FIELD_TO_LOAD = SnomedMappings.fieldsToLoad()
+			.memberUuid()
+			.memberMapTargetComponentId()
+			.memberMapRule()
+			.memberMapAdvice()
+			.build();
 
 	private boolean complex;
 	private Iterator<String> itr;
@@ -77,6 +76,7 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 		super(configuration, refSetId, mapSetSetting);
 		complex = getMapSetSetting().isComplex();
 		itr = Iterators.transform(createResultSet().iterator(), new Function<MapTargetEntry, String>() {
+			@Override
 			public String apply(final MapTargetEntry input) {
 				return new StringBuilder(input.uuid).append(HT)
 					.append(getMapSetSetting().getMapSchemeId()).append(HT)
@@ -122,21 +122,17 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 
 						final Document doc = searcher.doc(topDocs.scoreDocs[i].doc, complex ? COMPLEX_MEMBER_FIELD_TO_LOAD : MEMBER_FIELD_TO_LOAD);
 						final MapTargetEntry entry = new MapTargetEntry();
-						entry.uuid = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_UUID);
-						entry.mapTarget = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_TARGET_COMPONENT_ID);
+						entry.uuid = SnomedMappings.memberUuid().getValue(doc);
+						entry.mapTarget = SnomedMappings.memberMapTargetComponentId().getValue(doc);
 						
 						if (complex) {
-							
-							entry.rule = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_RULE);
-							entry.advice = doc.get(SnomedIndexBrowserConstants.REFERENCE_SET_MEMBER_MAP_ADVICE);
-							
+							entry.rule = SnomedMappings.memberMapRule().getOptionalValue(doc);
+							entry.advice = SnomedMappings.memberMapAdvice().getOptionalValue(doc);
 						}
-							
 						
 						$[i] = entry;
 						
 					}
-
 				}
 				
 				return Arrays.asList($);

@@ -15,31 +15,42 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import java.util.Collections;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.api.domain.IComponentList;
-import com.b2international.snowowl.api.domain.IComponentRef;
-import com.b2international.snowowl.snomed.api.ISnomedDescriptionService;
-import com.b2international.snowowl.snomed.api.ISnomedStatementBrowserService;
-import com.b2international.snowowl.snomed.api.ISnomedTerminologyBrowserService;
-import com.b2international.snowowl.snomed.api.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.api.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.api.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.api.rest.domain.PageableCollectionResource;
+import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.snomed.api.exception.FullySpecifiedNameNotFoundException;
+import com.b2international.snowowl.snomed.api.exception.PreferredTermNotFoundException;
+import com.b2international.snowowl.snomed.api.impl.DescriptionService;
+import com.b2international.snowowl.snomed.api.rest.domain.ExpandableSnomedRelationship;
+import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescriptions;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -55,25 +66,16 @@ import com.wordnik.swagger.annotations.ApiResponses;
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
 
-	@Autowired
-	protected ISnomedDescriptionService descriptions;
-
-	@Autowired
-	protected ISnomedStatementBrowserService statements;
-
-	@Autowired
-	protected ISnomedTerminologyBrowserService terminology;
-
 	@ApiOperation(
 			value="Retrieve descriptions of a concept", 
 			notes="Returns all descriptions associated with the specified concept.",
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/descriptions", method=RequestMethod.GET)
-	public SnomedConceptDescriptions getConceptDescriptions(
+	public @ResponseBody DeferredResult<SnomedConceptDescriptions> getConceptDescriptions(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -81,24 +83,38 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@ApiParam(value="The concept identifier")
 			@PathVariable(value="conceptId")
 			final String conceptId) {
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final List<ISnomedDescription> conceptDescriptions = descriptions.readConceptDescriptions(conceptRef);
-
-		final SnomedConceptDescriptions result = new SnomedConceptDescriptions();
-		result.setConceptDescriptions(conceptDescriptions);
-		return result;
+		
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareSearchDescription()
+					.all()
+					.filterByConceptId(conceptId)
+					.build(branchPath)
+					.execute(bus)
+					.then(new Function<SnomedDescriptions, SnomedConceptDescriptions>() {
+						@Override
+						public SnomedConceptDescriptions apply(SnomedDescriptions input) {
+							final SnomedConceptDescriptions result = new SnomedConceptDescriptions();
+							result.setConceptDescriptions(ImmutableList.copyOf(input.getItems()));
+							return result;
+						};
+					}));
 	}
 
 	@ApiOperation(
 			value="Retrieve inbound relationships of a concept",
-			notes="Returns a list of all inbound relationships of the specified concept.",
+			notes="Returns a list of all inbound relationships of the specified concept."
+					+ "<p>The following properties can be expanded:"
+					+ "<p>"
+					+ "&bull; source.fsn &ndash; the fully specified name of the relationship's source concept in the given locale<br>"
+					+ "&bull; type.fsn &ndash; the fully specified name of the relationships's type concept in the given locale<br>",
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/inbound-relationships", method=RequestMethod.GET)
-	public SnomedInboundRelationships getInboundStatements(
+	public DeferredResult<SnomedInboundRelationships> getInboundStatements(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -107,21 +123,69 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@PathVariable(value="conceptId")
 			final String conceptId,
 
+			@ApiParam(value="What parts of the response information to expand.")
+			@RequestParam(value="expand", defaultValue="", required=false)
+			final String[] expand,
+
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
 			final int offset,
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			final int limit,
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedRelationship> inboundEdges = statements.getInboundEdges(conceptRef, offset, limit);
+			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String languageSetting) {
 
-		final SnomedInboundRelationships result = new SnomedInboundRelationships();
-		result.setTotal(inboundEdges.getTotalMembers());
-		result.setInboundRelationships(inboundEdges.getMembers());
-		return result;
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(languageSetting));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		final StringBuilder newExpand = new StringBuilder();
+		for (String expandParam : expand) {
+			if (newExpand.length() > 0) {
+				newExpand.append(',');
+			}
+			if ("type.fsn".equals(expandParam)) {
+				newExpand.append("type(expand(fsn()))");
+			} else if ("source.fsn".equals(expandParam)) {
+				newExpand.append("source(expand(fsn()))");
+			}
+		}
+		
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareSearchRelationship()
+					.filterByDestination(conceptId)
+					.setOffset(offset)
+					.setLimit(limit)
+					.setExpand(newExpand.toString())
+					.setLocales(extendedLocales)
+					.build(branchPath)
+					.execute(bus)
+					.then(new Function<SnomedRelationships, SnomedInboundRelationships>() {
+						@Override
+						public SnomedInboundRelationships apply(SnomedRelationships input) {
+							final SnomedInboundRelationships result = new SnomedInboundRelationships();
+							result.setTotal(input.getTotal());
+							
+							final List<ISnomedRelationship> members = newArrayList();
+							for (ISnomedRelationship relationship : input) {
+								members.add(new ExpandableSnomedRelationship(relationship, expand));
+							}
+							
+							result.setInboundRelationships(members);
+							return result;
+						};
+					}));
 	}
 
 	@ApiOperation(
@@ -130,10 +194,10 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}/outbound-relationships", method=RequestMethod.GET)
-	public SnomedOutboundRelationships getOutboundStatements(
+	public DeferredResult<SnomedOutboundRelationships> getOutboundStatements(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -150,13 +214,23 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedRelationship> outboundEdges = statements.getOutboundEdges(conceptRef, offset, limit);
-
-		final SnomedOutboundRelationships result = new SnomedOutboundRelationships();
-		result.setTotal(outboundEdges.getTotalMembers());
-		result.setOutboundRelationships(outboundEdges.getMembers());
-		return result;
+		return DeferredResults.wrap(
+				SnomedRequests
+					.prepareSearchRelationship()
+					.filterBySource(conceptId)
+					.setOffset(offset)
+					.setLimit(limit)
+					.build(branchPath)
+					.execute(bus)
+					.then(new Function<SnomedRelationships, SnomedOutboundRelationships>() {
+						@Override
+						public SnomedOutboundRelationships apply(SnomedRelationships input) {
+							final SnomedOutboundRelationships result = new SnomedOutboundRelationships();
+							result.setTotal(input.getTotal());
+							result.setOutboundRelationships(input.getItems());
+							return result;
+						};
+					}));
 	}
 
 	@ApiOperation(
@@ -165,12 +239,12 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/descendants",
 			method = RequestMethod.GET)
-	public PageableCollectionResource<ISnomedConcept> getDescendants(
+	public DeferredResult<SnomedConcepts> getDescendants(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -189,11 +263,23 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 
 			@ApiParam(value="Return direct descendants only")
 			@RequestParam(value="direct", defaultValue="false", required=false) 
-			final boolean direct) {
-
-		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedConcept> descendants = terminology.getDescendants(ref, direct, offset, limit);
-		return toPageable(descendants, offset, limit);
+			final boolean direct,
+			
+			@ApiParam(value="Return stated or inferred descendants")
+			@RequestParam(value="form", defaultValue="inferred", required=false)
+			final String form) {
+	
+		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptId)
+				.setExpand(String.format("descendants(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
+				.build(branchPath)
+				.execute(bus)
+				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+					@Override
+					public SnomedConcepts apply(ISnomedConcept input) {
+						return input.getDescendants();
+					}
+				}));
 	}
 
 	@ApiOperation(
@@ -202,12 +288,12 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Concept not found")
+		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/ancestors",
 			method = RequestMethod.GET)
-	public PageableCollectionResource<ISnomedConcept> getAncestors(
+	public DeferredResult<SnomedConcepts> getAncestors(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -224,17 +310,25 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 
-			@ApiParam(value="Return direct descendants only")
+			@ApiParam(value="Return direct ancestors only")
 			@RequestParam(value="direct", defaultValue="false", required=false) 
-			final boolean direct) {
+			final boolean direct,
+			
+			@ApiParam(value="Return stated or inferred ancestors")
+			@RequestParam(value="form", defaultValue="inferred", required=false)
+			final String form) {
 
-		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		final IComponentList<ISnomedConcept> ancestors = terminology.getAncestors(ref, direct, offset, limit);
-		return toPageable(ancestors, offset, limit);
-	}
-
-	private PageableCollectionResource<ISnomedConcept> toPageable(final IComponentList<ISnomedConcept> concepts, final int offset, final int limit) {
-		return PageableCollectionResource.of(concepts.getMembers(), offset, limit, concepts.getTotalMembers());
+		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
+				.setComponentId(conceptId)
+				.setExpand(String.format("ancestors(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
+				.build(branchPath)
+				.execute(bus)
+				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+					@Override
+					public SnomedConcepts apply(ISnomedConcept input) {
+						return input.getAncestors();
+					}
+				}));
 	}
 
 	@ApiOperation(
@@ -243,12 +337,12 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			response=Void.class)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch, Concept or Preferred Term not found")
+		@ApiResponse(code = 404, message = "Branch, Concept or Preferred Term not found", response = RestApiError.class)
 	})
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/pt",
 			method = RequestMethod.GET)
-	public ISnomedDescription getPreferredTerm(
+	public @ResponseBody ISnomedDescription getPreferredTerm(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -257,13 +351,71 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@PathVariable(value="conceptId")
 			final String conceptId,
 
-			@ApiParam(value="Language codes and reference sets, in order of preference")
+			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String languageSetting,
-
-			final HttpServletRequest request) {
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		return descriptions.getPreferredTerm(conceptRef, Collections.list(request.getLocales()));
+			final String acceptLanguage) {
+		
+		final List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
+		final ISnomedDescription pt = descriptionService.getPreferredTerm(conceptId, extendedLocales);
+		
+		if (pt == null) {
+			throw new PreferredTermNotFoundException(conceptId);
+		} else {
+			return pt;
+		}
 	}
-
+	
+	@ApiOperation(
+			value = "Retrieve the fully specified name of a concept",
+			notes = "Returns the fully specified name of the specified concept on a branch based on the defined language preferences in the header",
+			response=Void.class)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Branch, Concept or FSN not found", response = RestApiError.class)
+	})
+	@RequestMapping(
+			value="/{path:**}/concepts/{conceptId}/fsn",
+			method = RequestMethod.GET)
+	public @ResponseBody ISnomedDescription getFullySpecifiedName(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+			
+			@ApiParam(value="The concept identifier")
+			@PathVariable(value="conceptId")
+			final String conceptId,
+			
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
+		
+		List<ExtendedLocale> extendedLocales;
+		
+		try {
+			extendedLocales = AcceptHeader.parseExtendedLocales(new StringReader(acceptLanguage));
+		} catch (IOException e) {
+			throw new BadRequestException(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException(e.getMessage());
+		}
+		
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
+		final ISnomedDescription fsn = descriptionService.getFullySpecifiedName(conceptId, extendedLocales);
+		
+		if (fsn == null) {
+			throw new FullySpecifiedNameNotFoundException(conceptId);
+		} else {
+			return fsn;
+		}
+	}
 }

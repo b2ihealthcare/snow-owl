@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.branch.Branch;
 
 /**
  * @since 4.1
@@ -70,12 +70,12 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	public BranchState state(Branch target) {
-		throw new UnsupportedOperationException(path() + " cannot compute state compared to target " + target.path());
+	public Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen) {
+		throw new BadRequestException(path() + " cannot be rebased");
 	}
 	
 	@Override
-	public Branch rebase(Branch target, String commitMessage) {
-		throw new BadRequestException(path() + " cannot be rebased");
+	public BranchState state(Branch target) {
+		throw new UnsupportedOperationException(path() + " cannot compute state compared to target " + target.path());
 	}
 }

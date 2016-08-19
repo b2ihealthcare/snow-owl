@@ -29,14 +29,14 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedConcreteDataTypeRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMembershipIndexQueryAdapter.SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
@@ -56,6 +56,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 /**
  * Server side widget bean provider strategy implementation.
@@ -75,8 +76,8 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	}
 
 	@Override
-	protected Map<String, Boolean> getDescriptionPreferabilityMap(final String languageRefSetId) {
-		return getServiceForClass(ISnomedComponentService.class).getDescriptionPreferabilityMap(branchPath, conceptId, languageRefSetId);
+	protected Map<String, Multimap<String, String>> getDescriptionPreferabilityMap() {
+		return getServiceForClass(ISnomedComponentService.class).getDescriptionPreferabilityMap(branchPath, conceptId);
 	}
 
 	@Override
@@ -117,27 +118,26 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		final List<LeafWidgetBean> beans = Lists.newArrayList();
 
 		//ignore inactive ones
-		final Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> indexEntries = new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(relationshipIds);
+		final Collection<SnomedRefSetMemberIndexEntry> indexEntries = new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(relationshipIds);
 		
 		//occurred 
 		
-		final Iterable<SnomedConcreteDataTypeRefSetMemberIndexEntry> dataTypes = Iterables.filter(indexEntries, new Predicate<SnomedConcreteDataTypeRefSetMemberIndexEntry>() {
-			@Override public boolean apply(final SnomedConcreteDataTypeRefSetMemberIndexEntry member) {
+		final Iterable<SnomedRefSetMemberIndexEntry> dataTypes = Iterables.filter(indexEntries, new Predicate<SnomedRefSetMemberIndexEntry>() {
+			@Override public boolean apply(final SnomedRefSetMemberIndexEntry member) {
 				return member.isActive();
 			}
 		});
 		
 		final RelationshipGroupWidgetModel groupModel = conceptWidgetModel.getRelationshipGroupContainerModel().getFirstMatching(GroupFlag.GROUPED);
 		
-		for (final SnomedConcreteDataTypeRefSetMemberIndexEntry entry : dataTypes) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getDataType());
-			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getLabel(), convertedDataType);
+		for (final SnomedRefSetMemberIndexEntry entry : dataTypes) {
+			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
 			if (entry.getUomComponentId() != null) {
 				widgetBean.setSelectedUom(entry.getUomComponentId());
 			}
-			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));
-			widgetBean.setSelectedLabel(entry.getLabel());
+			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
+			widgetBean.setSelectedLabel(entry.getAttributeLabel());
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 		}
@@ -155,12 +155,11 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		final List<DataTypeWidgetModel> unusedModels = Lists.newArrayList(
 				Lists.transform(dataTypeModel.getChildren(), new UncheckedCastFunction<WidgetModel, DataTypeWidgetModel>(DataTypeWidgetModel.class)));
 		
-		for (final SnomedConcreteDataTypeRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
-			final com.b2international.snowowl.snomed.mrcm.DataType convertedDataType = SnomedRefSetUtil.MRCM_DATATYPE_TO_DATATYPE_MAP.inverse().get(entry.getDataType());
-			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), convertedDataType);
+		for (final SnomedRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
+			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
-			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));
-			widgetBean.setSelectedLabel(entry.getLabel());
+			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
+			widgetBean.setSelectedLabel(entry.getAttributeLabel());
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			beans.add(widgetBean);
 			unusedModels.remove(matchingModel);
@@ -182,12 +181,10 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		return beans;
 	}
 
-	private Iterable<SnomedConcreteDataTypeRefSetMemberIndexEntry> getConcreteDataTypes(final String id) {
-		final IIndexQueryAdapter<SnomedConcreteDataTypeRefSetMemberIndexEntry> createFindByRefSetTypeQuery = 
-				SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter.createFindActivesByReferencedComponentIdQuery(
-						CONCEPT, 
-						id);
-		//XXX we maximum 100 CDT is associated with a concept
+	private Iterable<SnomedRefSetMemberIndexEntry> getConcreteDataTypes(final String id) {
+		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
+				.createFindActivesByReferencedComponentIdQuery(CONCEPT, id);
+		// XXX The number of allowed concrete domain datatypes are maximized in 100 for a concept
 		return ApplicationContext.getInstance().getService(SnomedIndexService.class).search(branchPath, createFindByRefSetTypeQuery, 100);
 	}
 

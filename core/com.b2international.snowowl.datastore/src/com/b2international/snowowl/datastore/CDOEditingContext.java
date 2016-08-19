@@ -45,8 +45,10 @@ import org.eclipse.emf.cdo.transaction.CDOPushTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOQuery;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,15 +58,19 @@ import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
+import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersionGroup;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  * This class is a thin, generic wrapper around the underlying {@link CDOTransaction}. 
@@ -104,29 +110,45 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		this.transaction = CDOUtils.check(cdoTransaction);
 	}
 	
+	public final String getBranch() {
+		return BranchPathUtils.createPath(getTransaction()).getPath();
+	}
+	
+	public final <T extends CDOObject> Iterable<T> getNewObjects(Class<T> type) {
+		return ComponentUtils2.getNewObjects(getTransaction(), type);
+	}
+	
+	public final <T extends CDOObject> Iterable<T> getDetachedObjects(Class<T> type) {
+		return ComponentUtils2.getDetachedObjects(getTransaction(), type);
+	}
+	
+	public final <T extends CDOObject> Iterable<T> getChangedObjects(Class<T> type) {
+		return ComponentUtils2.getDirtyObjects(getTransaction(), type);
+	}
+	
 	/*
 	 * get the index from the database for an EObject on the given table.
 	 * If the object is not in the database, a RTE will be thrown.
 	 */
-	public int getIndexFromDatabase(final EObject object, final String tableName)  {
-			
+	public int getIndexFromDatabase(final CDOObject cdoObject, final CDOObject container, final String tableName)  {
 		// the object must be a cdoObject, otherwise the database cannot contain it
-		if (!(object instanceof CDOObject)) {
-			throw new RuntimeException("The removable object is not a CDOObject.");
-		}
 		if (tableName == null) {
 			throw new RuntimeException("Argument tableName must not be null.");
 		}
-		final CDOObject cdoObject = (CDOObject) object;
-		 		
-		// query the resources table, to get the index directly
-		final CDOObject container = object.eContainer()== null ? cdoObject.cdoResource() : (CDOObject) object.eContainer();
+		
+		// params
+		final long cdoId = CDOIDUtil.getLong(cdoObject.cdoID());
+		final long containerId = CDOIDUtil.getLong(container.cdoID());
 		final int version = container.cdoRevision().getVersion();
+		
+		// query the resources table, to get the index directly
 		final String sqlGetIndexFormatted = DatastoreQueries.SQL_GET_INDEX_AND_BRANCH_FOR_VALUE.getQuery(tableName);
 		final CDOQuery query = transaction.createQuery("sql", sqlGetIndexFormatted);
 		query.setParameter(CDOQueryUtils.CDO_OBJECT_QUERY, false);
-		query.setParameter("cdoId", CDOIDUtil.getLong(cdoObject.cdoID()));
+		query.setParameter("cdoId", cdoId);
+		query.setParameter("containerId", containerId);
 		query.setParameter("versionMaxAdded", version);
+		// exec query
 		final List<Object[]> result = query.getResult(Object[].class);
 		// neither 0 nor more than 1 results are acceptable
 		if (result.size() <= 0) {			
@@ -165,7 +187,21 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		return CDOUtils.getObjectIfExists(transaction, storageKey);
 	}
 	
+	public <T extends EObject> T lookup(final String componentId, Class<T> type) {
+		if (Strings.isNullOrEmpty(componentId)) {
+			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
+		}
+		final T component = getComponentLookupService(type).getComponent(componentId, getTransaction());
+		if (null == component) {
+			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
+		}
+		return component;
+	}
 	
+	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+		throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+	}
+
 	/**
 	 * Commits the content of the transaction into the underlying Snow Owl storage.
 	 * 
@@ -350,6 +386,14 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	public void addAll(final Collection<? extends EObject> objects) {
 		getContents().addAll(checkNotNull(objects, "objects"));
+	}
+	
+	/**
+	 * Deletes the object from this editing context and from his parent.
+	 * @param object
+	 */
+	public void delete(EObject object) {
+		EcoreUtil.remove(object);
 	}
 
 	/**

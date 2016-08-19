@@ -15,17 +15,19 @@
  */
 package com.b2international.snowowl.core.events;
 
+import java.io.Serializable;
+
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
 /**
- * {@link Event}s represent
- * 
+ * {@link Event}s represent messages coming from different parts of the system to execute something or just notify us.
+ *
  * @since 4.1
  */
-public interface Event {
+public interface Event extends Serializable {
 
 	void send(IEventBus bus);
 	

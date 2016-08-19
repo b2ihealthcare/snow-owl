@@ -27,7 +27,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.SnomedConcreteDataTypes;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.importer.rf2.csv.ConcreteDomainRefSetRow;
 import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ParseUuid;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 /**
- * SNOMED&nbsp;CT concrete data type reference set importer.
+ * SNOMED&nbsp;CT concrete domain reference set importer.
  * @see AbstractSnomedRefSetImporter
  */
 public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetImporter<ConcreteDomainRefSetRow, SnomedConcreteDataTypeRefSetMember> {
@@ -157,12 +157,12 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 	 * @return the data type associated with the reference set specified by the identifier concept ID.
 	 */
 	protected DataType getDataType(final String identifierConceptId) {
-		return SnomedConcreteDataTypes.getDataTypeByRefSetId(identifierConceptId);
+		return SnomedRefSetUtil.getDataType(identifierConceptId);
 	}
 
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
-		return SnomedConcreteDataTypes.getParentConceptId(refSetId);
+		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override

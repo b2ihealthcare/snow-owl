@@ -16,9 +16,11 @@
 package com.b2international.snowowl.internal.eventbus;
 
 import java.io.IOException;
+import java.io.ObjectStreamClass;
 
 import org.eclipse.net4j.util.CheckUtil;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
+import org.eclipse.net4j.util.io.ExtendedIOUtil;
 
 import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
@@ -80,7 +82,7 @@ import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
 	}
 
 	@Override
-	public <T> T body(Class<T> type, ClassLoader classLoader) {
+	public <T> T body(Class<T> type, final ClassLoader classLoader) {
 		CheckUtil.checkNull(body, "Body should not be null.");
 		if (body instanceof ExtendedDataInputStream) {
 			synchronized (this) {
@@ -88,7 +90,12 @@ import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
 					try {
 						Object readObject = null;
 						if (classLoader != null) {
-							readObject = ((ExtendedDataInputStream) body).readObject(classLoader);
+							readObject = ((ExtendedDataInputStream) body).readObject(new ExtendedIOUtil.ClassResolver() {
+								@Override
+								public Class<?> resolveClass(ObjectStreamClass v) throws ClassNotFoundException {
+									return Class.forName(v.getName(), true, classLoader);
+								}
+							});
 						} else {
 							readObject = ((ExtendedDataInputStream) body).readObject();
 						}

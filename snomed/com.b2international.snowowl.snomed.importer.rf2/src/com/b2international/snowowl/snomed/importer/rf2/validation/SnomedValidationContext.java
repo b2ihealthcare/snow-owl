@@ -114,14 +114,14 @@ public final class SnomedValidationContext {
 	private void doValidate(final SubMonitor monitor) {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, effectiveTimes.size());
 		for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimes)) {
-			if (!"".equals(effectiveTime)) {
+			if (!AbstractSnomedValidator.SPECIAL_EFFECTIVE_TIME_KEY.equals(effectiveTime)) {
 				runValidators(effectiveTime, subMonitor);
 			}
 		}
 		
-		// validate Unpublished effective time last
-		if (effectiveTimes.contains("")) {
-			runValidators("", subMonitor.newChild(1));
+		// Validate an unpublished effective time layer, or a combined snapshot
+		if (effectiveTimes.contains(AbstractSnomedValidator.SPECIAL_EFFECTIVE_TIME_KEY)) {
+			runValidators(AbstractSnomedValidator.SPECIAL_EFFECTIVE_TIME_KEY, subMonitor.newChild(1));
 		}
 	}
 	

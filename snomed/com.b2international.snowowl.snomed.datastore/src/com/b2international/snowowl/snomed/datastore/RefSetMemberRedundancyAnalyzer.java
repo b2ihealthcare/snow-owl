@@ -39,7 +39,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.datastore.index.SnomedClientIndexService;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexQueryAdapter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -66,19 +66,6 @@ public abstract class RefSetMemberRedundancyAnalyzer {
 	 * Private constructor.
 	 */
 	private RefSetMemberRedundancyAnalyzer() { /*suppress construction*/ }
-	
-	
-	/**
-	 * Calls {@link #analyzeMemberRedundancy(SnomedRegularRefSet, Iterable)} method after wrapping the component identifier args into a iterable instance.
-	 * @param refSet the reference set to check.
-	 * @param monitor the progress monitor for the process. Can be {@code null}. If {@code null} a new {@link NullProgressMonitor} will be instantiated.
-	 * @param componentIds the unique identifiers associated with terminology independent components
-	 * @return the redundant and non-redundant reference set member IDs.
-	 * @see #analyzeMemberRedundancy(SnomedRegularRefSet, Iterable)
-	 */
-	public static ReferencedComponentIdSet analyzeMemberRedundancy(@Nonnull final SnomedRegularRefSet refSet, @Nullable IProgressMonitor monitor, final String... componentIds) {
-		return analyzeMemberRedundancy(refSet, monitor, Sets.newHashSet(componentIds));
-	}
 	
 	/**
 	 * Returns with a {@link ReferencedComponentIdSet a set of redundant and non-redundant member IDs} based on the specified SNOMED CT 

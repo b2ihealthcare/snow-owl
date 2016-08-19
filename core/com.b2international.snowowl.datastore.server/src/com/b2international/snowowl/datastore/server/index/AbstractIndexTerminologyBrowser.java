@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -55,6 +56,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -182,28 +184,6 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 		}
 		final Document document = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
 		return Mappings.parent().getValues(document);
-	}
-	
-	/**
-	 * Returns with the human readable label of a terminology independent component identified by its unique ID
-	 * from the given branch. This method may return with {@code null} if the component cannot be found on the 
-	 * specified branch with the given component ID.
-	 * @param branchPath the branch path uniquely identifying the branch where the lookup has to be performed.
-	 * @param componentId the terminology specific unique ID of the component.
-	 * @return the name/label of the component. Or {@code null} if the component cannot be found.
-	 */
-	@Override
-	@Nullable 
-	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(componentId, "Component ID argument cannot be null.");
-		final TopDocs topDocs = service.search(branchPath, getConceptByIdQueryBuilder(componentId), 1);
-		//cannot found matching label for component
-		if (null == topDocs || CompareUtils.isEmpty(topDocs.scoreDocs)) {
-			return null;
-		}
-		final Document doc = service.document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().label().build());
-		return Mappings.label().getValue(doc);
 	}
 	
 	@Override
@@ -334,6 +314,15 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	protected boolean exists(final IBranchPath branchPath, final Query query) {
 		return service.getTotalHitCount(branchPath, query) > 0;
+	}
+	
+	@Override
+	public Map<String, Boolean> exist(final IBranchPath branchPath, final Collection<String> componentIds) {
+		final Map<String, Boolean> result = Maps.newHashMap();
+		for (final String componentId : componentIds) {
+			result.put(componentId, exists(branchPath, componentId));
+		}
+		return result;
 	}
 
 	// Even when we accept multiple component types, we only want to display root concepts from a particular type -- see Icd10AmServerTerminologyBrowser

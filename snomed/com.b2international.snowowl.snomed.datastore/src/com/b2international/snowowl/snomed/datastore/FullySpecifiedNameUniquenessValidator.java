@@ -19,19 +19,21 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createActive
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.runtime.IStatus;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
 import com.b2international.snowowl.core.validation.ComponentValidationStatus;
-import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionSortKeyQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * Data binding {@link IValidator validator} for checking the uniqueness of a fully specified name description.
@@ -60,29 +62,39 @@ public class FullySpecifiedNameUniquenessValidator implements IValidator, Serial
 		final String fsn = ((String) value).trim();
 		
 		if (fsn.isEmpty()) {
-			return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Please determine preferred term.");
-		}
-			
-		final IIndexQueryAdapter<SnomedDescriptionIndexEntry> queryAdapter = new SnomedDescriptionSortKeyQueryAdapter(fsn, 
-				SnomedDescriptionSortKeyQueryAdapter.SEARCH_DESCRIPTION_ACTIVE_ONLY,
-				SnomedConstants.Concepts.FULLY_SPECIFIED_NAME);
-		
-		if (getIndexService().getHitCount(branchPath, queryAdapter) < 1) {
-			return ComponentValidationStatus.OK_STATUS;
+			return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Fully specified name must be specified.");
 		}
 		
-		final Collection<SnomedDescriptionIndexEntry> results = getIndexService().searchUnsorted(branchPath, queryAdapter);
+		if (fsn.length() < 2) {
+			return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Fully specified name should be at least two characters long.");
+		}
 		
-		for (final SnomedDescriptionIndexEntry indexEntry : results) {
-			if (indexEntry.getLabel().equals(fsn)) {
-				return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID, "Fully specified name is not unique.");
+		final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
+				.setLocales(getLocales())
+				.filterByActive(true)
+				.filterByTerm(fsn)
+				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
+				.build(branchPath.getPath())
+				.executeSync(getEventBus());
+		
+		if (descriptions.getItems().size() != 0) {
+			for (final ISnomedDescription description : descriptions.getItems()) {
+				if (fsn.equals(description.getTerm())) {
+					return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID,
+							"Fully specified name is not unique.");
+				}
 			}
 		}
-
+			
 		return ComponentValidationStatus.OK_STATUS;
 	}
 
-	private SnomedIndexService getIndexService() {
-		return ApplicationContext.getInstance().getService(SnomedIndexService.class);
+	private IEventBus getEventBus() {
+		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
+	}
+
 }

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.refset.core.automap;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +32,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.google.common.io.Closeables;
 
@@ -63,6 +65,7 @@ public class XlsParser implements ITableParser {
 		this.skipEmptyRows = skipEmptyRows;
 	}
 	
+	@Override
 	public void parse() throws SnowowlServiceException {
 		parse(0);
 	}
@@ -90,7 +93,6 @@ public class XlsParser implements ITableParser {
 
 		if (hasHeader) {
 			header = collectRowValues(sheet.getRow(firstRowIndex));
-
 			firstRowIndex++;
 		} else {
 			final Row firstRow = sheet.getRow(firstRowIndex);
@@ -112,7 +114,6 @@ public class XlsParser implements ITableParser {
 				if (!skipEmptyRows) {
 					content.add(Collections.<String>emptyList());
 				}
-
 				continue;
 			}
 
@@ -120,9 +121,17 @@ public class XlsParser implements ITableParser {
 				maxWidth = row.getLastCellNum();
 			}
 
-			content.add(collectRowValues(row));
+			List<String> rowValues = collectRowValues(row);
+			
+			if (rowValues.isEmpty()) {
+				if (!skipEmptyRows) {
+					content.add(Collections.<String>emptyList());
+				}
+				continue;
+			}
+			
+			content.add(rowValues);
 		}
-		
 	}
 	
 	private boolean isString(Cell cell) {
@@ -139,11 +148,17 @@ public class XlsParser implements ITableParser {
 	}
 
 	private List<String> collectRowValues(Row row) {
-		List<String> list = newArrayList();
+
+		List<String> list = newArrayListWithExpectedSize(row.getLastCellNum());
+		
+		boolean hasAnyCellWithValue = false;
 		for (int i = 0; i < row.getLastCellNum(); i++) {
-			list.add(getStringValue(row.getCell(i)));
+			String cellValue = getStringValue(row.getCell(i, Row.RETURN_BLANK_AS_NULL));
+			hasAnyCellWithValue = !StringUtils.isEmpty(cellValue);
+			list.add(cellValue);
 		}
-		return list;
+		
+		return hasAnyCellWithValue ? list : Collections.<String>emptyList();
 	}
 
 	/**
@@ -224,6 +239,7 @@ public class XlsParser implements ITableParser {
 	 * 
 	 * @return
 	 */
+	@Override
 	public List<List<String>> getContent() {
 		return content;
 	}

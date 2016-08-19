@@ -26,6 +26,8 @@ import com.b2international.snowowl.core.annotations.Client;
 import com.b2international.snowowl.datastore.browser.AbstractClientStatementBrowser;
 import com.b2international.snowowl.datastore.browser.ActiveBranchClientStatementBrowser;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * Relationship hierarchy browser service for the SNOMED&nbsp;CT ontology.
@@ -106,17 +108,6 @@ public class SnomedClientStatementBrowser extends ActiveBranchClientStatementBro
 	 */
 	public Collection<SnomedRelationshipIndexEntry> getActiveOutboundStatementsById(final String conceptId) {
 		return ((SnomedStatementBrowser) getDelegateBrowser()).getActiveOutboundStatementsById(getBranchPath(), conceptId);
-	}
-
-	/**
-	 * Returns a map of concept IDs and the associated preferred terms for the concepts. The concept IDs are a set of
-	 * object, value and attribute concept IDs of all source and destination relationships of the concept identifier by
-	 * the specified unique SNOMED&nbsp;CT ID.
-	 * @param conceptId the concept ID.
-	 * @return a map of concept IDs and concept preferred terms.
-	 */
-	public Map<String, String> getAllStatementLabelsById(final String conceptId) {
-		return ((SnomedStatementBrowser) getDelegateBrowser()).getAllStatementLabelsById(getBranchPath(), conceptId);
 	}
 
 	/**

@@ -19,18 +19,34 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import bak.pcj.set.LongSet;
-
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.annotations.Client;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.refset.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.inject.Provider;
+
+import bak.pcj.set.LongSet;
 
 /**
  * Reference set hierarchy browser service for the SNOMED&nbsp;CT ontology.
@@ -39,21 +55,113 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 @Client
 public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<SnomedRefSetIndexEntry, SnomedConceptIndexEntry, String> {
 
+	private final Provider<SnomedClientTerminologyBrowser> browser;
+	private final IEventBus bus;
+	private final Provider<LanguageSetting> languageSetting;
+
 	/**
 	 * Creates a new service instance based on the wrapped server side reference set browser service.
 	 * @param wrappedBrowser the wrapped server side service.
 	 */
-	public SnomedClientRefSetBrowser(final SnomedRefSetBrowser wrapperService) {
+	public SnomedClientRefSetBrowser(final SnomedRefSetBrowser wrapperService, final Provider<SnomedClientTerminologyBrowser> browser, final IEventBus bus, final Provider<LanguageSetting> languageSetting) {
 		super(wrapperService);
+		this.browser = browser;
+		this.bus = bus;
+		this.languageSetting = languageSetting;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.BranchPathAwareService#getEPackage()
-	 */
+	protected final List<ExtendedLocale> getLocales() {
+		return languageSetting.get().getLanguagePreference();
+	}
+	
 	@Override
 	protected EPackage getEPackage() {
 		return SnomedRefSetPackage.eINSTANCE;
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getRootConcepts() {
+		final Iterable<String> refSetTypeConceptIds = FluentIterable.from(SnomedRefSetUtil.getTypesForUI()).transform(new Function<SnomedRefSetType, String>() {
+			@Override
+			public String apply(SnomedRefSetType input) {
+				return SnomedRefSetUtil.getConceptId(input);
+			}
+		});
+		return browser.get().getComponents(refSetTypeConceptIds);
+	}
+	
+	@Override
+	public SnomedRefSetIndexEntry getRefSet(String refSetId) {
+		try {
+			final SnomedReferenceSet refset = SnomedRequests
+					.prepareGetReferenceSet()
+					.setComponentId(refSetId)
+					.setLocales(getLocales())
+					.build(getBranchPath().getPath())
+					.executeSync(bus);
+			
+			final SnomedConceptIndexEntry concept = browser.get().getConcept(refSetId);
+			return SnomedRefSetIndexEntry.builder(refset).label(concept.getLabel()).build();
+		} catch (NotFoundException e) {
+			return null;
+		}
+	}
+	
+	@Override
+	public Iterable<SnomedRefSetIndexEntry> getRefsSets() {
+		final List<SnomedReferenceSet> refSets = SnomedRequests.prepareSearchRefSet()
+				.all()
+				.setLocales(getLocales())
+				.build(getBranchPath().getPath())
+				.executeSync(bus)
+				.getItems();
+
+		final Set<String> matchingRefSetIds = FluentIterable.from(refSets).transform(IComponent.ID_FUNCTION).toSet();
+		final Iterable<SnomedConceptIndexEntry> identifierConcepts = getComponents(matchingRefSetIds);
+		final ImmutableMap<String, SnomedConceptIndexEntry> identifierConceptMap = FluentIterable.from(identifierConcepts)
+				.uniqueIndex(new Function<SnomedConceptIndexEntry, String>() {
+					@Override
+					public String apply(SnomedConceptIndexEntry input) {
+						return input.getId();
+					}
+				});
+
+		return FluentIterable.from(refSets).transform(new Function<SnomedReferenceSet, SnomedRefSetIndexEntry>() {
+			@Override
+			public SnomedRefSetIndexEntry apply(SnomedReferenceSet input) {
+				final String label = identifierConceptMap.containsKey(input.getId()) ? identifierConceptMap.get(input.getId()).getLabel()
+						: input.getId();
+				return SnomedRefSetIndexEntry.builder(input).label(label).build();
+			}
+		}).toList();
+	}
+
+	@Override
+	public Iterable<SnomedConceptIndexEntry> getComponents(final Iterable<String> ids) {
+		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setComponentIds(Lists.newArrayList(ids))
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(bus)
+				.getItems();
+
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
+	}
+	
+	@Override
+	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final String refsetId) {
+		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByEscg("^" + refsetId)
+				.setLocales(getLocales())
+				.setExpand("pt()")
+				.build(getBranchPath().getPath())
+				.executeSync(bus)
+				.getItems();
+		
+		return SnomedConceptIndexEntry.fromConcepts(concepts);
 	}
 	
 	/**
@@ -118,6 +226,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * @param identifierConceptId the reference set identifier concept ID.
 	 * @param conceptId the unique concept ID. 
 	 * @return {@code true} if the reference set has at least one active member referencing to the specified concept, otherwise returns with {@code false}.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public boolean isActiveMemberOf(final long identifierConceptId, final long conceptId) {
 		return getWrapperService().isActiveMemberOf(getBranchPath(), identifierConceptId, conceptId);
@@ -149,6 +258,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	/**
 	 * Returns with all reference sets.
 	 * @return a collection of all existing reference sets.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchRefSet()}.
 	 */
 	public Collection<SnomedRefSetIndexEntry> getAllReferenceSets() {
 		return getWrapperService().getAllReferenceSets(getBranchPath());
@@ -158,6 +268,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all active reference set members referring the given SNOMED&nbsp;CT concept.
 	 * @param conceptId the unique concept ID.
 	 * @return a collection of active members referring to the given concept.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getActiveReferringMembers(final String conceptId) {
 		return getWrapperService().getActiveReferringMembers(getBranchPath(), conceptId);
@@ -167,6 +278,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all (including the inactive ones) reference set members referring the given SNOMED&nbsp;CT concept.
 	 * @param conceptId the unique concept ID.
 	 * @return a collection of all members referring to the given concept.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getReferringMembers(final String conceptId) {
 		return getWrapperService().getReferringMembers(getBranchPath(), conceptId);
@@ -176,6 +288,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all (including the inactive ones) reference set members of a given reference set.
 	 * @param referenceSetId the reference set identifier concept ID.
 	 * @return a collection of all reference set members of a reference set.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getMembers(final String referenceSetId) {
 		return getWrapperService().getMembers(getBranchPath(), referenceSetId);
@@ -185,6 +298,7 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	 * Returns with all active reference set members of a given reference set.
 	 * @param referenceSetId the reference set identifier concept ID.
 	 * @return a collection of active reference set members of a reference set.
+	 * @deprecated Use {@link SnomedRequests#prepareSearchMember()}.
 	 */
 	public Collection<SnomedRefSetMemberIndexEntry> getActiveMembers(final String referenceSetId) {
 		return getWrapperService().getActiveMembers(getBranchPath(), referenceSetId);
@@ -242,13 +356,8 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	}
 	
 	@Override
-	public Collection<SnomedConceptIndexEntry> getSubTypesWithActiveMembers(final String refsetId, final String... excludedIds) {
-		return getWrapperService().getSubTypesWithActiveMembers(getBranchPath(), refsetId, excludedIds);
-	}
-	
-	@Override
-	public Collection<SnomedConceptIndexEntry> getAllSubTypesWithActiveMembers(final String refsetId, final String... excludedIds) {
-		return getWrapperService().getAllSubTypesWithActiveMembers(getBranchPath(), refsetId, excludedIds);
+	public Map<String, Boolean> exist(Collection<String> componentIds) {
+		throw new UnsupportedOperationException("Not implemented.");
 	}
 	
 	/* (non-Javadoc)

@@ -19,23 +19,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A subclass of {@link QuickSearchElement} which relies on the parent provider to return terminology information. 
- *
  */
 public class FullQuickSearchElement extends QuickSearchElement {
 
 	private static final long serialVersionUID = 5231144043150272991L;
-	
+
 	private final String terminologyComponentId;
-	
-	public FullQuickSearchElement(final String id, final String imageId, final String label, final boolean approximate, final String terminologyComponentId) {
-		super(id, imageId, label, approximate);
+
+	public FullQuickSearchElement(final String id, 
+			final String imageId, 
+			final String label, 
+			final boolean approximate, 
+			final String terminologyComponentId, 
+			final int[][] matchRegions, 
+			final String[] suffixes) {
+
+		super(id, imageId, label, approximate, matchRegions, suffixes);
 		this.terminologyComponentId = checkNotNull(terminologyComponentId, "Terminology component identifier may not be null.");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.quicksearch.QuickSearchElement#getTerminologyComponentId()
-	 */
 	@Override
 	public String getTerminologyComponentId() {
 		return terminologyComponentId;
