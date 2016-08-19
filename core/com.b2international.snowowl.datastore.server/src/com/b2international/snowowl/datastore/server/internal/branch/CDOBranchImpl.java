@@ -33,10 +33,6 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	private final Collection<Integer> segments;
 	private final Collection<Integer> parentSegments;
 
-	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, Metadata metadata, int cdoBranchId, int segmentId, Collection<Integer> segments, Collection<Integer> parentSegments) {
-		this(name, parentPath, baseTimestamp, baseTimestamp, metadata, cdoBranchId, segmentId, segments, parentSegments);
-	}
-
 	protected CDOBranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, Metadata metadata, int cdoBranchId, int segmentId, Collection<Integer> segments, Collection<Integer> parentSegments) {
 		this(name, parentPath, baseTimestamp, headTimestamp, false, metadata, cdoBranchId, segmentId, segments, parentSegments);
 	}
