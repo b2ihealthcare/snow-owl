@@ -36,7 +36,8 @@ public class SnomedAvailabilityInfoProvider implements ContentAvailabilityInfoPr
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(Concepts.ROOT_CONCEPT))
 				.build(Branch.MAIN_PATH)
-				.executeSync(ApplicationContext.getServiceForClass(IEventBus.class)).getTotal() > 0;
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync().getTotal() > 0;
 	}
 
 	@Override

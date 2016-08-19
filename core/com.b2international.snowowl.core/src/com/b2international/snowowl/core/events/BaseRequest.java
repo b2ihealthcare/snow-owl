@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.events;
 
-import java.util.concurrent.TimeUnit;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -34,16 +32,6 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 	@Override
 	public final Promise<B> execute(IEventBus bus) {
 		return send(bus, getReturnType());
-	}
-
-	@Override
-	public final B executeSync(IEventBus bus) {
-		return execute(bus).getSync();
-	}
-
-	@Override
-	public final B executeSync(IEventBus bus, long timeout) {
-		return execute(bus).getSync(timeout, TimeUnit.MILLISECONDS);
 	}
 
 	@JsonIgnore

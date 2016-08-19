@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -239,7 +240,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setReferenceSetId(change.getReferenceSetId())
 				.setProperties(change.getProperties())
 				.build(principal.getName(), branchPath, body.getCommitComment())
-				.executeSync(bus, 120L * 1000L)
+				.execute(bus)
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 		
 		return Responses.created(getRefSetMemberLocationURI(branchPath, createdRefSetMemberId)).build();
@@ -276,7 +278,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setComponentId(memberId)
 			.force(force)
 			.build(principal.getName(), branchPath, String.format("Deleted reference set member '%s' from store.", memberId))
-			.executeSync(bus, 120L * 1000L);
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 	
 	@ApiOperation(
@@ -319,7 +322,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setSource(update.getSource())
 			.force(force)
 			.build(userId, branchPath, body.getCommitComment())
-			.executeSync(bus, 120L * 1000L);
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 	
 	@ApiOperation(
@@ -359,7 +363,8 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setBody(body.getChange().resolve(resolver))
 				.setCommitComment(body.getCommitComment())
 				.build()
-				.executeSync(bus);
+				.execute(bus)
+				.getSync();
 	}
 	
 	private URI getRefSetMemberLocationURI(String branchPath, String memberId) {

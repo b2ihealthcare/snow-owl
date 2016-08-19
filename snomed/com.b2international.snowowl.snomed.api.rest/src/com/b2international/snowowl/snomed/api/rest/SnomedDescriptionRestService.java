@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -177,7 +178,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.getChange()
 			.toRequestBuilder()
 			.build(principal.getName(), branchPath, commitComment)
-			.executeSync(bus, 120L * 1000L)
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
 		
 		return Responses.created(getDescriptionLocation(branchPath, createdDescriptionId)).build();
@@ -254,7 +256,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.setCaseSignificance(update.getCaseSignificance())
 			.setAcceptability(update.getAcceptability())
 			.build(userId, branchPath, commitComment)
-			.executeSync(bus, 120L * 1000L);
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 		
 	}
 
@@ -290,7 +293,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.setComponentId(descriptionId)
 			.force(force)
 			.build(principal.getName(), branchPath, String.format("Deleted Description '%s' from store.", descriptionId))
-			.executeSync(bus, 120L * 1000L);
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 	
 	private URI getDescriptionLocation(final String branchPath, final String descriptionId) {

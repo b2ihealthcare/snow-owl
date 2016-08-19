@@ -177,7 +177,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.setUserId(userId)
 				.setBranch(branchPath)
 				.build()
-				.executeSync(bus)
+				.execute(bus)
+				.getSync()
 				.getResultAs(String.class);
 		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, createdConceptId);
 		return getConceptDetails(componentRef, locales);
@@ -257,7 +258,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			.setBody(commitReq)
 			.setPreparationTime(watch.elapsed(TimeUnit.MILLISECONDS))
 			.build()
-			.executeSync(bus);
+			.execute(bus)
+			.getSync();
 		LOGGER.info("Committed changes for concept {}", newVersionConcept.getFsn());
 
 		return getConceptDetails(componentRef, locales);
@@ -542,7 +544,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			.setLimit(limit)
 			.filterByTerm(query)
 			.build(branchPath.getPath())
-			.executeSync(bus)
+			.execute(bus)
+			.getSync()
 			.getItems();
 
 		final Set<String> conceptIds = FluentIterable.from(descriptions)
@@ -633,7 +636,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				SnomedRequests.prepareGetConcept()
 						.setComponentId(conceptId)
 						.build(branch)
-						.executeSync(bus);
+						.execute(bus)
+						.getSync();
 				
 				final SnomedBrowserConstant constant = new SnomedBrowserConstant();
 				constant.setConceptId(conceptId);

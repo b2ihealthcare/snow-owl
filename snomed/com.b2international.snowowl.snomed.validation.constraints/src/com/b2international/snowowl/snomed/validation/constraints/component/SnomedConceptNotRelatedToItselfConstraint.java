@@ -51,7 +51,8 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 			.setExpand("type(expand(pt()))")
 			.setLocales(getLocales())
 			.build(branchPath.getPath())
-			.executeSync(getBus());
+			.execute(getBus())
+			.getSync();
 		
 		if (!relationships.getItems().isEmpty()) {
 			for (ISnomedRelationship relationship : relationships) {

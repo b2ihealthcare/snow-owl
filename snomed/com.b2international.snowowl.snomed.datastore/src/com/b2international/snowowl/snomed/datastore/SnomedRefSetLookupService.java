@@ -112,7 +112,8 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 					.prepareGetReferenceSet()
 					.setComponentId(id)
 					.build(branchPath.getPath())
-					.executeSync(bus);
+					.execute(bus)
+					.getSync();
 			
 			final SnomedConceptDocument concept = new SnomedConceptLookupService().getComponent(branchPath, id);
 			

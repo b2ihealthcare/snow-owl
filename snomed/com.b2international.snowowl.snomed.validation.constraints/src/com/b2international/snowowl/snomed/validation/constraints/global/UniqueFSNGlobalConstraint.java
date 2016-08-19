@@ -92,7 +92,8 @@ public class UniqueFSNGlobalConstraint implements IGlobalConstraint {
 				.filterByConceptId(activeConceptIds)
 				.all()
 				.build(branchPath.getPath())
-				.executeSync(bus);
+				.execute(bus)
+				.getSync();
 		
 			subMonitor.worked(1);
 			

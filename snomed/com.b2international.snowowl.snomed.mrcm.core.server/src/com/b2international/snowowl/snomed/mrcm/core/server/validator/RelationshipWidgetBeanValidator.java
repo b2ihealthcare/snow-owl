@@ -103,7 +103,8 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 								.setComponentIds(Lists.newArrayList(destinationId))
 								.setLocales(context.getService(LanguageSetting.class).getLanguagePreference())
 								.build(branch.getPath())
-								.executeSync(context.getService(IEventBus.class))
+								.execute(context.getService(IEventBus.class))
+								.getSync()
 								.getItems();
 						
 						if (snomedConcepts.size() != 0) {
@@ -127,7 +128,8 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 				.setComponentId(id)
 				.setExpand("pt()")
 				.build(branchPath.getPath())
-				.executeSync(getEventBus()).getPt().getTerm();
+				.execute(getEventBus())
+				.getSync().getPt().getTerm();
 	}
 
 	private List<ExtendedLocale> getLocales() {

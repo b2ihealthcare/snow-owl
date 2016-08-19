@@ -190,7 +190,8 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			RepositoryRequests
 				.branching(repositoryId)
 				.prepareGet(versionBranch)
-				.executeSync(ApplicationContext.getServiceForClass(IEventBus.class));
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", versionBranch);
 		} catch (NotFoundException expected) {
 			// fall-through

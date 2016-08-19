@@ -70,7 +70,8 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 				.filterByActive(false)
 				.all()
 				.build(BranchPathUtils.createPath(transaction).getPath())
-				.executeSync(getEventBus());
+				.execute(getEventBus())
+				.getSync();
 
 		for (ISnomedConcept concept : snomedConcepts) {
 			inactiveConceptIds.add(concept.getId());

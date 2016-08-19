@@ -59,7 +59,8 @@ public class SnomedContentRule extends ExternalResource {
 				.setParent(parentBranchPath.getPath())
 				.setName(codeSystem.getShortName())
 				.build()
-				.executeSync(eventBus);
+				.execute(eventBus)
+				.getSync();
 		}
 	}
 

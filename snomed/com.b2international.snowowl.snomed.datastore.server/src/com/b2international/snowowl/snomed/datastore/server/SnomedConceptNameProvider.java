@@ -47,7 +47,7 @@ public class SnomedConceptNameProvider implements ISnomedConceptNameProvider {
 		final ISnomedDescription pt = new DescriptionRequestHelper() {
 			@Override
 			protected SnomedDescriptions execute(final SnomedDescriptionSearchRequestBuilder req) {
-				return req.build(branchPath.getPath()).executeSync(bus.get(), NAME_PROVIDER_TIMEOUT);
+				return req.build(branchPath.getPath()).execute(bus.get()).getSync(NAME_PROVIDER_TIMEOUT, TimeUnit.MILLISECONDS);
 			}
 		}.getPreferredTerm(componentId, languageSetting.get().getLanguagePreference());
 		

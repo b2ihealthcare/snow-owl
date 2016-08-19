@@ -243,7 +243,8 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 							.setParent(parentBranchPath.getPath())
 							.setName(codeSystem.getShortName())
 							.build()
-							.executeSync(eventBus);
+							.execute(eventBus)
+							.getSync();
 					}
 					
 					branchPath = extensionBranchPath.getPath();

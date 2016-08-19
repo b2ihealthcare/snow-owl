@@ -91,7 +91,8 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 						.prepareGetDescription()
 						.setComponentId(getComponentId())
 						.build(branchPath)
-						.executeSync(bus);
+						.execute(bus)
+						.getSync();
 	
 					if (!isDifferentToPreviousRelease(description, releasedDescription)) {
 						description.setEffectiveTime(releasedDescription.getEffectiveTime());

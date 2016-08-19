@@ -422,7 +422,8 @@ public final class ImportUtil {
 				.setExtensionOf(codeSystem.getExtensionOf())
 				.build(userId, IBranchPath.MAIN_BRANCH, String.format("Created SNOMED CT code system '%s' (OID: %s)",
 					codeSystem.getShortName(), codeSystem.getOid()))
-				.executeSync(getEventBus());
+				.execute(getEventBus())
+				.getSync();
 		} catch (AlreadyExistsException e) {
 			// ignore and continue import
 		}

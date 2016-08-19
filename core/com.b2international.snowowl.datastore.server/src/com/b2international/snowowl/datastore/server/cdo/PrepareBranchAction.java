@@ -82,7 +82,8 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 					.setParent(parentBranchPath.getPath())
 					.setName(taskBranchPath.lastSegment())
 					.build()
-					.executeSync(eventBus);
+					.execute(eventBus)
+					.getSync();
 		}
 	}
 }

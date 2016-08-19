@@ -70,11 +70,11 @@ public class IndexQueryEvaluatorService implements IQueryEvaluatorService<Snomed
 		
 		if (ids.length == 0) {
 			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).
-					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
+					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).execute(eventBus).getSync();
 			return SnomedConceptDocument.fromConcepts(snomedConcepts);
 		} else {
 			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).setComponentIds(Sets.newHashSet(ids)).
-					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).executeSync(eventBus);
+					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).execute(eventBus).getSync();
 			return SnomedConceptDocument.fromConcepts(snomedConcepts);
 		}
 		

@@ -101,7 +101,8 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 			.setExpand("type(expand(pt()))")
 			.setLocales(getLocales())
 			.build(branchPath.getPath())
-			.executeSync(getBus());
+			.execute(getBus())
+			.getSync();
 			
 		final Multimap<Integer, ISnomedRelationship> groupToRelationshipsMultimap = ArrayListMultimap.create();
 		

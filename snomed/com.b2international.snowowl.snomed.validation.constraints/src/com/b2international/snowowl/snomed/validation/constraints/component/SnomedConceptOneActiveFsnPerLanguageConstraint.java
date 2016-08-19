@@ -59,7 +59,8 @@ public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentVal
 			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 			.filterByConceptId(concept.getId())
 			.build(branchPath.getPath())
-			.executeSync(getBus());
+			.execute(getBus())
+			.getSync();
 		
 		if (descriptions.getTotal() > 1) {
 			final Multimap<String, String> languageRefsetIdToDescriptionIdMap = HashMultimap.create(); 

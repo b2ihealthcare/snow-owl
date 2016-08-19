@@ -325,7 +325,7 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 			}
 			
 			final Set<ICodeSystemVersion> versions = newHashSet();
-			versions.addAll(requestBuilder.build(IBranchPath.MAIN_BRANCH).executeSync(getEventBus()).getItems());
+			versions.addAll(requestBuilder.build(IBranchPath.MAIN_BRANCH).execute(getEventBus()).getSync().getItems());
 			
 			existingVersions.put(toolingId, versions);
 		}

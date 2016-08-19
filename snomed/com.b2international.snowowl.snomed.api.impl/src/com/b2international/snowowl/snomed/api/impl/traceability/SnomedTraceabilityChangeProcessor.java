@@ -289,7 +289,7 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 					.setExpand("descriptions(),relationships(expand(destination()))")
 					.build(branch);
 				
-				final SnomedConcepts concepts = conceptSearchRequest.executeSync(bus);
+				final SnomedConcepts concepts = conceptSearchRequest.execute(bus).getSync();
 				final Set<String> hasChildrenStated = collectNonLeafs(conceptIds, branch, bus, Concepts.STATED_RELATIONSHIP);
 				final Set<String> hasChildrenInferred = collectNonLeafs(conceptIds, branch, bus, Concepts.INFERRED_RELATIONSHIP);
 				
@@ -339,7 +339,8 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 		final BulkResponse relationshipResponses = SnomedRequests.prepareBulkRead()
 			.setBody(hasChildrenBulkRequest)
 			.build(branch)
-			.executeSync(bus);
+			.execute(bus)
+			.getSync();
 
 		final Iterator<SnomedRelationships> responseIterator = relationshipResponses.getResponses(SnomedRelationships.class).iterator();
 		

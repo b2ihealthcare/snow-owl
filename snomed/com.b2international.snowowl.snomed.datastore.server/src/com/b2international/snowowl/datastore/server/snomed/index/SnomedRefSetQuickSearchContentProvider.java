@@ -107,7 +107,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			final Map<String, Object> configuration, final IBranchPath branchPath) {
 		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration,
 				getComponentIdsFromConfiguration(configuration), getRefSetTypes(configuration));
-		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).executeSync(getEventBus());
+		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
 
 		if (matchingRefSets.getTotal() <= 0) {
 			return new QuickSearchContentResult();
@@ -122,7 +122,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 				}).toList();
 
 		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest("", limit, conceptIds);
-		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).executeSync(getEventBus());
+		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
 
 		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
 		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
@@ -133,7 +133,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			final Map<String, Object> configuration, final IBranchPath branchPath) {
 		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest(queryExpression, limit,
 				getComponentIdsFromConfiguration(configuration));
-		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).executeSync(getEventBus());
+		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
 
 		if (matchingConcepts.getTotal() <= 0) {
 			return new QuickSearchContentResult();
@@ -143,7 +143,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 
 		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration, matchingConceptsById.keySet(),
 				getRefSetTypes(configuration));
-		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).executeSync(getEventBus());
+		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
 
 		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
 				new RefSetToQuickSearchElementConverter(queryExpression, matchingConceptsById)));

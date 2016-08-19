@@ -84,7 +84,8 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 		final Branch branch = RepositoryRequests.branching(repositoryId)
 				.prepareGet(taskBranchPath.getPath())
-				.executeSync(eventBus);
+				.execute(eventBus)
+				.getSync();
 		
 		return branch.canRebase();
 	}
@@ -114,7 +115,8 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 		final Branch reopenedBranch = RepositoryRequests.branching(repositoryId)
 				.prepareReopen(taskBranchPath.getPath())
-				.executeSync(eventBus);
+				.execute(eventBus)
+				.getSync();
 
 		// At this point, others are free to make changes to the parent after reopening the task branch
 		releaseLock(new SingleRepositoryAndBranchLockTarget(repositoryId, parentBranchPath));

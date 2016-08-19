@@ -60,6 +60,7 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 	protected void applyChanges() {
 		RepositoryRequests
 			.wrap(repository.id(), new SyncMergeRequest(merge, commitComment, reviewId))
-			.executeSync(repository.events());
+			.execute(repository.events())
+			.getSync();
 	}
 }

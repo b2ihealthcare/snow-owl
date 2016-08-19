@@ -83,7 +83,8 @@ public class CodeSystemRequestTest {
 		requests.prepareUpdateCodeSystem(shortName)
 			.setName("updated name")
 			.build("system", BRANCH, String.format("Updated code system %s.", shortName))
-			.executeSync(bus);
+			.execute(bus)
+			.getSync();
 		
 		final ICodeSystem updatedCodeSystem = getCodeSystem(shortName);
 		assertNotNull(updatedCodeSystem);
@@ -102,7 +103,8 @@ public class CodeSystemRequestTest {
 		requests.prepareUpdateCodeSystem(shortName)
 			.setBranchPath("non-existent-branch-path")
 			.build("system", BRANCH, String.format("Updated code system %s.", shortName))
-			.executeSync(bus);
+			.execute(bus)
+			.getSync();
 	}
 	
 	@Test
@@ -110,7 +112,8 @@ public class CodeSystemRequestTest {
 		final CodeSystems codeSystems = requests.prepareSearchCodeSystem()
 			.filterByShortName(SNOMEDCT)
 			.build(BRANCH)
-			.executeSync(bus);
+			.execute(bus)
+			.getSync();
 		
 		assertEquals(1, codeSystems.getItems().size());
 		assertEquals(SNOMEDCT, Iterables.getOnlyElement(codeSystems.getItems()).getShortName());
@@ -129,14 +132,16 @@ public class CodeSystemRequestTest {
 			.setTerminologyId("concept")
 			.setLink("www.ihtsdo.org")
 			.build("system", BRANCH, String.format("New code system %s", shortName))
-			.executeSync(bus);
+			.execute(bus)
+			.getSync();
 	}
 	
 	private ICodeSystem getCodeSystem(final String shortName) {
 		return requests.prepareGetCodeSystem()
 				.setUniqueId(shortName)
 				.build(BRANCH)
-				.executeSync(bus);
+				.execute(bus)
+				.getSync();
 	}
 	
 	private void assertCodeSystemCreated(final String shortName, final String oid) {

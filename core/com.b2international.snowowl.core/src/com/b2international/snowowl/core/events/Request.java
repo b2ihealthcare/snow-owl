@@ -30,8 +30,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
  * the context and execute your {@link Request}:
  * <ul>
  * <li>{@link #execute(IEventBus)} - async execution, will return with a {@link Promise}</li>
- * <li>{@link #executeSync(IEventBus)} - sync execution with unbounded timeout value</li>
- * <li>{@link #executeSync(IEventBus, long)} - sync execution with given timeout value</li>
+ * <li>{@link #execute(C)} - sync execution, will return with the response or throws exception if fails</li>
  * </p>
  *
  * @since 4.5
@@ -51,28 +50,6 @@ public interface Request<C extends ServiceProvider, R> extends Event {
 	 * @return a {@link Promise} representing the execution of the {@link Request}
 	 */
 	Promise<R> execute(IEventBus bus);
-
-	/**
-	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it arrives. Basically converts this async
-	 * operation to a sync one.
-	 * 
-	 * @param bus
-	 *            - the dispatcher of the request
-	 * @return
-	 */
-	R executeSync(IEventBus bus);
-
-	/**
-	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it arrives or the timeout (defined in
-	 * milliseconds) happens.
-	 * 
-	 * @param bus
-	 *            - the dispatcher of the request
-	 * @param timeout
-	 *            - timeout value defined in milliseconds
-	 * @return
-	 */
-	R executeSync(IEventBus bus, long timeout);
 
 	/**
 	 * Executes this action on the given {@link ExecutionContext} directly without dispatching it.

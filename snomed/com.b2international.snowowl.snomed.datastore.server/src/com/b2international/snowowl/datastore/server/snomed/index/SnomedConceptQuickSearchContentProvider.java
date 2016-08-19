@@ -130,7 +130,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		
 		final List<QuickSearchElement> quickSearchElements = Lists.newArrayList();
 
-		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(getEventBus());
+		final SnomedConcepts matches = req.build(branchPath.getPath()).execute(getEventBus()).getSync();
 		final Map<String, ISnomedConcept> concepts = newHashMap(FluentIterable.from(matches).uniqueIndex(IComponent.ID_FUNCTION));
 		// XXX sort only non-fuzzy matches
 		final List<QuickSearchElement> results = FluentIterable.from(matches)
@@ -154,7 +154,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		if (matches.getTotal() < limit) {
 			req.withFuzzySearch();
 
-			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).executeSync(getEventBus());
+			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).execute(getEventBus()).getSync();
 
 			final ImmutableList<QuickSearchElement> approximateResults = FluentIterable.from(fuzzyMatches)
 					.filter(new Predicate<ISnomedConcept>() {

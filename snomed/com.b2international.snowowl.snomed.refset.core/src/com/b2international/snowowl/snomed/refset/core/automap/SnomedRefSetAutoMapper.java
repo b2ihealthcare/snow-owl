@@ -89,11 +89,11 @@ public class SnomedRefSetAutoMapper {
 					
 					request.setLimit(limit);
 					
-					final SnomedConcepts concepts = request.build(branch).executeSync(eventBus);
+					final SnomedConcepts concepts = request.build(branch).execute(eventBus).getSync();
 					List<SnomedConceptDocument> candidates = SnomedConceptDocument.fromConcepts(concepts);
 					
 					if (candidates.isEmpty()) {
-						final SnomedConcepts fuzzyConcepts = request.withFuzzySearch().build(branch).executeSync(eventBus);
+						final SnomedConcepts fuzzyConcepts = request.withFuzzySearch().build(branch).execute(eventBus).getSync();
 						final List<SnomedConceptDocument> fuzzyCandidates = SnomedConceptDocument.fromConcepts(fuzzyConcepts);
 						
 						if (fuzzyCandidates.isEmpty()) {

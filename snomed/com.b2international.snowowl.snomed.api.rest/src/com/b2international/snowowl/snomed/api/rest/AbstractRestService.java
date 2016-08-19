@@ -24,6 +24,11 @@ import org.springframework.beans.factory.annotation.Value;
 public abstract class AbstractRestService {
 
 	/**
+	 * Two minutes timeout value for commit requests in milliseconds.
+	 */
+	protected static final long COMMIT_TIMEOUT = 120L * 1000L;
+
+	/**
 	 * The currently supported versioned media type of the snowowl RESTful API.
 	 */
 	public static final String SO_MEDIA_TYPE = "application/vnd.com.b2international.snowowl+json";

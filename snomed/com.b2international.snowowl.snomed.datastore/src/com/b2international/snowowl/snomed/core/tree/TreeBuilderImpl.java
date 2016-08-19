@@ -171,7 +171,8 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 				.setExpand(String.format("pt(),descendants(form:\"%s\",direct:true,expand(pt()))", getForm()))
 				.setLocales(getLocales())
 				.build(branch)
-				.executeSync(getBus());
+				.execute(getBus())
+				.getSync();
 	
 		final Collection<ISnomedConcept> requiredTreeItemConcepts = newHashSet();
 		requiredTreeItemConcepts.add(root);

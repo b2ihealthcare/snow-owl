@@ -228,7 +228,8 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
 					.setComponentId(existingMember.getUuid())
 					.build(referenceBranch)
-					.executeSync(context.service(IEventBus.class));
+					.execute(context.service(IEventBus.class))
+					.getSync();
 
 			boolean restoreEffectiveTime = true;
 			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();

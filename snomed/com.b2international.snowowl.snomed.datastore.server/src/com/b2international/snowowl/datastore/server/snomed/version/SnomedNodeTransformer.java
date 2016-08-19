@@ -260,7 +260,8 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 				.setLocales(getLocales())
 				.setComponentId(refSetId)
 				.build(branchPath.getPath())
-				.executeSync(getBus());
+				.execute(getBus())
+				.getSync();
 		
 		switch (refSet.getReferencedComponentType()) {
 		case SnomedTerminologyComponentConstants.REFSET:
@@ -298,7 +299,8 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 				.setLocales(getLocales())
 				.setExpand(expansion)
 				.build(branchPath.getPath())
-				.executeSync(getBus());
+				.execute(getBus())
+				.getSync();
 	}
 
 	private IEventBus getBus() {

@@ -94,7 +94,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 		ISnomedConcept snomedConcept = SnomedRequests.prepareGetConcept()
 			.setComponentId(doc.getId())
 			.setLocales(languageSetting.getLanguagePreference())
-			.setExpand("fsn()").build(getExportContext().getCurrentBranchPath().getPath()).executeSync(eventBus);
+			.setExpand("fsn()").build(getExportContext().getCurrentBranchPath().getPath()).execute(eventBus).getSync();
 		
 		concept.fsn = snomedConcept.getFsn().getTerm();
 		

@@ -113,7 +113,7 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 			pts.putAll(new DescriptionRequestHelper() {
 				@Override
 				protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
-					return req.build(branch.getPath()).executeSync(bus);
+					return req.build(branch.getPath()).execute(bus).getSync();
 				}
 			}.getPreferredTerms(componentIds, locales));
 		}

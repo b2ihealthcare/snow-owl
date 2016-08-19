@@ -44,6 +44,7 @@ public class SnomedComponentValidationService extends ComponentValidationService
 			.filterByActive(true)
 			.all()
 			.build(branchPath.getPath())
-			.executeSync(ApplicationContext.getServiceForClass(IEventBus.class)));
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync());
 	}
 }

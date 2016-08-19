@@ -74,7 +74,8 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 					.filterByReferencedComponent(idToComponentTypeMap.keySet())
 					.all()
 					.build(BranchPathUtils.createPath(transaction).getPath())
-					.executeSync(getEventBus());
+					.execute(getEventBus())
+					.getSync();
 			
 			for (SnomedReferenceSetMember member : membersReferencingDetachedComponents) {
 				if (!detachedMemberIds.contains(member.getId())) {
@@ -109,21 +110,24 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 							.setComponentIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
 							.build(branchPath)
-							.executeSync(getEventBus())).transform(IComponent.ID_FUNCTION).toSet());
+							.execute(getEventBus())
+							.getSync()).transform(IComponent.ID_FUNCTION).toSet());
 
 			descriptionIds.addAll(FluentIterable
 					.from(SnomedRequests.prepareSearchDescription()
 							.setComponentIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
 							.build(branchPath)
-							.executeSync(getEventBus())).transform(IComponent.ID_FUNCTION).toSet());
+							.execute(getEventBus())
+							.getSync()).transform(IComponent.ID_FUNCTION).toSet());
 
 			relationshipIds.addAll(FluentIterable
 					.from(SnomedRequests.prepareSearchRelationship()
 							.setComponentIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
 							.build(branchPath)
-							.executeSync(getEventBus())).transform(IComponent.ID_FUNCTION).toSet());
+							.execute(getEventBus())
+							.getSync()).transform(IComponent.ID_FUNCTION).toSet());
 
 			Set<String> missingConceptIds = Sets.difference(referencedComponentIds, Sets.union(Sets.union(conceptIds, descriptionIds), relationshipIds));
 

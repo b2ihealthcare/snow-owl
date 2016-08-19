@@ -57,7 +57,8 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 			branch = SnomedRequests
 						.branching()
 						.prepareGet(editingContext.getBranch())
-						.executeSync(ApplicationContext.getServiceForClass(IEventBus.class));
+						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+						.getSync();
 		}
 		return branch;
 	}

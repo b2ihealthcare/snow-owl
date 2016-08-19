@@ -68,7 +68,8 @@ public class FullySpecifiedNameUniquenessValidator implements IValidator {
 				.filterByTerm(fsn)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 				.build(branchPath.getPath())
-				.executeSync(getEventBus());
+				.execute(getEventBus())
+				.getSync();
 		
 		if (descriptions.getItems().size() != 0) {
 			for (final ISnomedDescription description : descriptions.getItems()) {

@@ -125,8 +125,8 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setExtensionOf(codeSystem.getExtensionOf())
 				.build(userId, IBranchPath.MAIN_BRANCH, commitComment)
-				.executeSync(bus)
-				.getResultAs(String.class);
+				.execute(bus)
+				.getSync().getResultAs(String.class);
 		
 		return Responses
 				.created(linkTo(CodeSystemRestService.class)
@@ -168,7 +168,8 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setLanguage(codeSystem.getPrimaryLanguage())
 				.setLink(codeSystem.getOrganizationLink())
 				.build(principal.getName(), IBranchPath.MAIN_BRANCH, commitComment)
-				.executeSync(bus);
+				.execute(bus)
+				.getSync();
 	}
 
 	private void validateUpdateInput(final String shortNameOrOId, final String repositoryUuid) {

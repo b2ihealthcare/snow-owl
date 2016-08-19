@@ -77,7 +77,8 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			.setReviewId(restRequest.getReviewId())
 			.setCommitComment(restRequest.getCommitComment())
 			.build()
-			.executeSync(bus);
+			.execute(bus)
+			.getSync();
 		
 		final URI linkUri = linkTo(SnomedBranchMergingController.class).slash(merge.getId()).toUri();
 		return Responses.accepted(linkUri).build();

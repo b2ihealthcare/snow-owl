@@ -35,7 +35,7 @@ public class DescriptionService extends DescriptionRequestHelper {
 
 	@Override
 	protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
-		return req.build(branch).executeSync(bus);
+		return req.build(branch).execute(bus).getSync();
 	}
 
 }

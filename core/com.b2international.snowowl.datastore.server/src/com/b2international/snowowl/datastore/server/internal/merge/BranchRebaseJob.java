@@ -80,6 +80,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 	protected void applyChanges() {
 		RepositoryRequests
 			.wrap(repository.id(), new SyncRebaseRequest(merge, commitComment, reviewId))
-			.executeSync(repository.events());
+			.execute(repository.events())
+			.getSync();
 	}
 }

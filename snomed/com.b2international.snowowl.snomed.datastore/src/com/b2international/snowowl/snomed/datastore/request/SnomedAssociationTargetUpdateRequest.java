@@ -244,7 +244,8 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
 					.setComponentId(existingMember.getUuid())
 					.build(referenceBranch)
-					.executeSync(context.service(IEventBus.class));
+					.execute(context.service(IEventBus.class))
+					.getSync();
 
 			final SnomedConcept targetComponent = (SnomedConcept) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
 			
