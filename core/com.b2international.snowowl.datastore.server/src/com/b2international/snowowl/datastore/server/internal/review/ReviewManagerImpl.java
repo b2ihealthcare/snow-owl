@@ -118,7 +118,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		@Override
 		public void handle(final IMessage message) {
 			final BranchChangedEvent changeEvent = message.body(BranchChangedEvent.class);
-			final String path = changeEvent.getBranch().path();
+			final String path = changeEvent.getBranch();
 
 			store.write(new IndexWrite<Void>() {
 				@Override

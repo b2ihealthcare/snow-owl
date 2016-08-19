@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.events;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.BaseRepositoryEvent;
 
 /**
@@ -25,14 +24,14 @@ import com.b2international.snowowl.core.events.BaseRepositoryEvent;
  */
 public final class BranchChangedEvent extends BaseRepositoryEvent {
 	
-	private final Branch branch;
+	private final String branch;
 	
-	public BranchChangedEvent(final String repositoryId, final Branch branch) {
+	public BranchChangedEvent(final String repositoryId, final String branch) {
 		super(repositoryId);
 		this.branch = checkNotNull(branch, "branch");
 	}
 	
-	public Branch getBranch() {
+	public String getBranch() {
 		return branch;
 	}
 
