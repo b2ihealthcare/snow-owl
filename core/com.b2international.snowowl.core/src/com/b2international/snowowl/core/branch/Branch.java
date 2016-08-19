@@ -249,13 +249,6 @@ public interface Branch extends Deletable, MetadataHolder {
 	IBranchPath branchPath();
 
 	/**
-	 * Sends a notification event about changes on this branch to interested parties. 
-	 * 
-	 * @return the state of this branch
-	 */
-	Branch notifyChanged();
-
-	/**
 	 * Returns a new version of this branch with updated {@link Metadata}.
 	 * @param metadata
 	 * @return

@@ -161,11 +161,6 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 
 	@Override
-	public Branch notifyChanged() {
-		return branchManager.sendChangeEvent(this);
-	}
-
-	@Override
 	public Branch createChild(String name) {
 		return createChild(name, null);
 	}
