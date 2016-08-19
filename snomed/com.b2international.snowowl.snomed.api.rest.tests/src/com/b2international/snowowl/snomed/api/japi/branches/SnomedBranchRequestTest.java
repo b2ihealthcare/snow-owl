@@ -62,8 +62,8 @@ public class SnomedBranchRequestTest {
 		
 		// try to create two branches at the same time
 		final String branchName = UUID.randomUUID().toString();
-		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build().execute(bus);
-		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build().execute(bus);
+		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).buildFor().execute(bus);
+		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).buildFor().execute(bus);
 		final String error = Promise.all(first, second)
 			.then(new Function<List<Object>, String>() {
 				@Override
@@ -91,8 +91,8 @@ public class SnomedBranchRequestTest {
 		// try to create two branches at the same time
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
-		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchA).build().execute(bus);
-		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchB).build().execute(bus);
+		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchA).buildFor().execute(bus);
+		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchB).buildFor().execute(bus);
 		final Boolean success = Promise.all(first, second)
 			.then(new Function<List<Object>, Boolean>() {
 				@Override

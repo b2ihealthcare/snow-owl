@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.events.SearchBranchRequest;
 
@@ -24,15 +24,15 @@ import com.b2international.snowowl.datastore.events.SearchBranchRequest;
  * TODO filter them by date, deleted flag, path match etc.
  * @since 4.5
  */
-public final class BranchSearchRequestBuilder extends BaseRepositoryRequestBuilder<BranchSearchRequestBuilder, ServiceProvider, Branches> {
+public final class BranchSearchRequestBuilder extends BaseRepositoryRequestBuilder<BranchSearchRequestBuilder, Branches> {
 
 	public BranchSearchRequestBuilder(String repositoryId) {
 		super(repositoryId);
 	}
 
 	@Override
-	protected Request<ServiceProvider, Branches> doBuild() {
-		return wrap(new SearchBranchRequest());
+	protected Request<RepositoryContext, Branches> doBuild() {
+		return new SearchBranchRequest();
 	}
 	
 }

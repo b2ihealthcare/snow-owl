@@ -17,15 +17,15 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataImpl;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.events.CreateBranchRequest;
 
 /**
  * @since 4.5
  */
-public final class BranchCreateRequestBuilder extends BaseRepositoryRequestBuilder<BranchCreateRequestBuilder, ServiceProvider, Branch> {
+public final class BranchCreateRequestBuilder extends BaseRepositoryRequestBuilder<BranchCreateRequestBuilder, Branch> {
 
 	private String parent;
 	private String name;
@@ -51,8 +51,8 @@ public final class BranchCreateRequestBuilder extends BaseRepositoryRequestBuild
 	}
 	
 	@Override
-	protected Request<ServiceProvider, Branch> doBuild() {
-		return wrap(new CreateBranchRequest(parent, name, metadata));
+	protected Request<RepositoryContext, Branch> doBuild() {
+		return new CreateBranchRequest(parent, name, metadata);
 	}
 	
 }

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.reindex;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
@@ -23,7 +22,7 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
 /**
  * @since 4.7
  */
-public final class OptimizeRequestBuilder extends BaseRepositoryRequestBuilder<OptimizeRequestBuilder, RepositoryContext, Boolean> {
+public final class OptimizeRequestBuilder extends BaseRepositoryRequestBuilder<OptimizeRequestBuilder, Boolean> {
 
 	private int maxSegments = 1;
 	
@@ -36,11 +35,6 @@ public final class OptimizeRequestBuilder extends BaseRepositoryRequestBuilder<O
 		return getSelf();
 	}
 	
-	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
-	public Request<ServiceProvider, Boolean> create() {
-		return wrap(build());
-	}
-
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
 		OptimizeRequest req = new OptimizeRequest();

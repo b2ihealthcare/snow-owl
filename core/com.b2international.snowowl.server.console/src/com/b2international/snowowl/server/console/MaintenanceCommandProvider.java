@@ -152,7 +152,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		PurgeRequest.builder(repositoryId)
 			.setBranchPath(branchPath)
 			.setPurge(purge)
-			.create()
+			.buildFor()
 			.execute(getBus())
 			.getSync();
 	}
@@ -173,7 +173,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 		
 		final ReindexResult result = req
-				.create()
+				.buildFor()
 				.execute(getBus())
 				.getSync();
 		
@@ -202,7 +202,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		interpreter.println("Optimizing index to max. " + maxSegments + " number of segments...");
 		OptimizeRequest.builder(repositoryId)
 			.setMaxSegments(maxSegments)
-			.create()
+			.buildFor()
 			.execute(getBus())
 			.getSync();
 		interpreter.println("Index optimization completed.");

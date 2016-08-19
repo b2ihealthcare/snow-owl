@@ -28,8 +28,8 @@ public abstract class BaseRevisionIndexReadRequestBuilder<B extends BaseRevision
 	}
 
 	@Override
-	protected Request<BranchContext, R> wrapBranchRequest(Request<BranchContext, R> req) {
-		return new RevisionIndexReadRequest<>(super.wrapBranchRequest(req));
+	protected Request<BranchContext, R> extend(Request<BranchContext, R> req) {
+		return new RevisionIndexReadRequest<>(super.extend(req));
 	}
 
 }

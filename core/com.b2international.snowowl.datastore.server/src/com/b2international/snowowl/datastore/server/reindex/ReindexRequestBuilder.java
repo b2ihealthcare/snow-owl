@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.reindex;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
@@ -23,7 +22,7 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
 /**
  * @since 4.7
  */
-public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, RepositoryContext, ReindexResult> {
+public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<ReindexRequestBuilder, ReindexResult> {
 	
 	private long failedCommitTimestamp = -1;
 
@@ -36,11 +35,6 @@ public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<Re
 		return this;
 	}
 	
-	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
-	public Request<ServiceProvider, ReindexResult> create() {
-		return wrap(build());
-	}
-
 	@Override
 	protected Request<RepositoryContext, ReindexResult> doBuild() {
 		final ReindexRequest req = new ReindexRequest();

@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.reindex;
 
 import com.b2international.index.revision.Purge;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
@@ -24,7 +23,7 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
 /**
  * @since 5.0
  */
-public class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeRequestBuilder, RepositoryContext, Boolean> {
+public class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeRequestBuilder, Boolean> {
 
 	private String branchPath;
 	private Purge purge = Purge.LATEST;
@@ -43,11 +42,6 @@ public class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeReque
 		return getSelf();
 	}
 	
-	// FIXME method names in builder hierarchy, currently build(), build(branch), create()
-	public Request<ServiceProvider, Boolean> create() {
-		return wrap(build());
-	}
-
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
 		PurgeRequest req = new PurgeRequest();

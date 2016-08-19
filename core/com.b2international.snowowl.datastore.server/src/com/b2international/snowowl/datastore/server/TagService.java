@@ -72,7 +72,7 @@ public class TagService implements ITagService {
 						.prepareCreate()
 						.setParent(branchPath.getPath())
 						.setName(versionId)
-						.build()
+						.buildFor()
 						.execute(bus).get();
 				} catch (final InterruptedException e) {
 					throw new SnowowlRuntimeException(e);

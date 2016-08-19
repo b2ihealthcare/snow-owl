@@ -75,7 +75,7 @@ public class SnomedBranchingController extends AbstractRestService {
 					.setParent(request.getParent())
 					.setName(request.getName())
 					.setMetadata(request.metadata())
-					.build()
+					.buildFor()
 					.execute(bus), 
 				Responses.created(getBranchLocationHeader(request.path())).build());
 	}
@@ -92,7 +92,7 @@ public class SnomedBranchingController extends AbstractRestService {
 				SnomedRequests
 					.branching()
 					.prepareSearch()
-					.build()
+					.buildFor()
 					.execute(bus));
 	}
 	
