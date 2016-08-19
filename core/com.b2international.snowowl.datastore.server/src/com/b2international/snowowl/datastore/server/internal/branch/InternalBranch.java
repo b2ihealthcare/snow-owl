@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import com.b2international.index.Doc;
+import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 
 
@@ -32,5 +33,8 @@ public interface InternalBranch extends Branch {
 	InternalBranch withBaseTimestamp(long newBaseTimestamp);
 	
 	InternalBranch withHeadTimestamp(long newHeadTimestamp);
+	
+	@Override
+	InternalBranch withMetadata(Metadata metadata);
 	
 }

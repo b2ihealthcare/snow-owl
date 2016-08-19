@@ -17,22 +17,30 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.1
  */
 public class CreateBranchRestRequest extends MetadataHolderImpl {
 
-	@JsonProperty
 	@NotEmpty
-	private String parent = "MAIN";
+	private final String parent;
 
-	@JsonProperty
 	@NotEmpty
-	private String name;
+	private final String name;
+
+	@JsonCreator
+	public CreateBranchRestRequest(@JsonProperty("parent") final String parent, @JsonProperty("name") final String name, @JsonProperty("metadata") final Metadata metadata) {
+		super(metadata);
+		this.parent = Strings.isNullOrEmpty(parent) ? "MAIN" : parent;
+		this.name = name;
+	}
 
 	public String getName() {
 		return name;
@@ -45,4 +53,5 @@ public class CreateBranchRestRequest extends MetadataHolderImpl {
 	public String path() {
 		return parent + Branch.SEPARATOR + name;
 	}
+	
 }

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -27,16 +25,14 @@ import com.b2international.snowowl.datastore.events.CreateBranchRequest;
 /**
  * @since 4.5
  */
-public final class BranchCreateRequestBuilder {
+public final class BranchCreateRequestBuilder extends BaseRepositoryRequestBuilder<BranchCreateRequestBuilder, ServiceProvider, Branch> {
 
 	private String parent;
 	private String name;
 	private Metadata metadata = new MetadataImpl();
 	
-	private final String repositoryId;
-	
 	BranchCreateRequestBuilder(String repositoryId) {
-		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
+		super(repositoryId);
 	}
 	
 	public BranchCreateRequestBuilder setMetadata(Metadata metadata) {
@@ -54,8 +50,9 @@ public final class BranchCreateRequestBuilder {
 		return this;
 	}
 	
-	public Request<ServiceProvider, Branch> build() {
-		return RepositoryRequests.wrap(repositoryId, new CreateBranchRequest(parent, name, metadata));
+	@Override
+	protected Request<ServiceProvider, Branch> doBuild() {
+		return wrap(new CreateBranchRequest(parent, name, metadata));
 	}
 	
 }

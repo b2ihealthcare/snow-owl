@@ -24,16 +24,15 @@ import com.b2international.snowowl.datastore.events.SearchBranchRequest;
  * TODO filter them by date, deleted flag, path match etc.
  * @since 4.5
  */
-public final class BranchSearchRequestBuilder {
-
-	private String repositoryId;
+public final class BranchSearchRequestBuilder extends BaseRepositoryRequestBuilder<BranchSearchRequestBuilder, ServiceProvider, Branches> {
 
 	public BranchSearchRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
+		super(repositoryId);
 	}
-	
-	public Request<ServiceProvider, Branches> build() {
-		return RepositoryRequests.wrap(repositoryId, new SearchBranchRequest());
+
+	@Override
+	protected Request<ServiceProvider, Branches> doBuild() {
+		return wrap(new SearchBranchRequest());
 	}
 	
 }

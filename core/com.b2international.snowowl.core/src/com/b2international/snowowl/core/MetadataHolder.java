@@ -31,10 +31,10 @@ public interface MetadataHolder {
 	Metadata metadata();
 
 	/**
-	 * Override the current {@link Metadata} with the specified one.
+	 * Returns a new {@link MetadataHolder} object with the specified {@link Metadata}.
 	 * 
 	 * @param metadata
 	 */
-	void metadata(Metadata metadata);
+	MetadataHolder withMetadata(Metadata metadata);
 
 }

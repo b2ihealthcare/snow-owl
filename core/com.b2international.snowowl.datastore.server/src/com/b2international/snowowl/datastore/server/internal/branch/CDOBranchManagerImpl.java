@@ -37,6 +37,7 @@ import com.b2international.commons.Pair;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
@@ -73,7 +74,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
       	final long baseTimestamp = repository.getBaseTimestamp(cdoMainBranch);
       	// assign first segment to MAIN
       	final int segmentId = segmentIds.getAndIncrement();
-		initBranchStore(new CDOMainBranchImpl(baseTimestamp, repository.getHeadTimestamp(cdoMainBranch), segmentId, ImmutableSet.of(segmentId)));
+		initBranchStore(new CDOMainBranchImpl(baseTimestamp, repository.getHeadTimestamp(cdoMainBranch), new MetadataImpl(), segmentId, ImmutableSet.of(segmentId)));
        	
 		int maxExistingSegment = segmentId;
 		for (Branch branch : getBranches()) {
@@ -113,7 +114,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 		    	// all branch should know the segment path to the ROOT
 		    	parentSegments.addAll(parent.parentSegments());
 		    	parentSegments.addAll(parent.segments());
-				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, branch.getID(), nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments));
+				registerBranch(new CDOBranchImpl(branch.getName(), branch.getBase().getBranch().getPathName(), baseTimestamp, headTimestamp, new MetadataImpl(), branch.getID(), nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments));
 				registerBranch(parent.withSegmentId(nextTwoSegments.getB()));
 			}
 		}
@@ -236,8 +237,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     	// all branch should know the segment path to the ROOT
     	parentSegments.addAll(parentBranch.parentSegments());
     	parentSegments.addAll(parentBranch.segments());
-        final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, id, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
-        branch.metadata(metadata);
+        final InternalBranch branch = new CDOBranchImpl(name, parent.path(), baseTimestamp, metadata, id, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
         registerBranch(branch);
         registerBranch(parentBranch.withSegmentId(nextTwoSegments.getB()));
         return branch;

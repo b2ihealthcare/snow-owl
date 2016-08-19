@@ -75,8 +75,7 @@ public class BranchManagerTest {
 
 		@Override
 		InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
-			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp());
-			branch.metadata(metadata);
+			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp(), metadata);
 			registerBranch(branch);
 			return branch;
 		}

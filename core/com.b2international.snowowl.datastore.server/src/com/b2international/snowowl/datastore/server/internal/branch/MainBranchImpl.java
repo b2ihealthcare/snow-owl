@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 
@@ -24,11 +26,11 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 public class MainBranchImpl extends BranchImpl {
 
 	MainBranchImpl(long baseTimestamp) {
-		super(MAIN_PATH, "", baseTimestamp);
+		super(MAIN_PATH, "", baseTimestamp, new MetadataImpl());
 	}
 	
-	MainBranchImpl(long baseTimestamp, long headTimestamp) {
-		super(MAIN_PATH, "", baseTimestamp, headTimestamp);
+	MainBranchImpl(long baseTimestamp, long headTimestamp, Metadata metadata) {
+		super(MAIN_PATH, "", baseTimestamp, headTimestamp, metadata);
 	}
 
 	@Override
@@ -43,9 +45,8 @@ public class MainBranchImpl extends BranchImpl {
 	
 	@Override
 	public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
-		final MainBranchImpl main = new MainBranchImpl(baseTimestamp(), newHeadTimestamp);
+		final MainBranchImpl main = new MainBranchImpl(baseTimestamp(), newHeadTimestamp, metadata());
 		main.setBranchManager(branchManager);
-		main.metadata(metadata());
 		return main;
 	}
 

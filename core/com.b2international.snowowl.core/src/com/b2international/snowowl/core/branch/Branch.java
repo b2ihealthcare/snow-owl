@@ -254,4 +254,12 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * @return the state of this branch
 	 */
 	Branch notifyChanged();
+
+	/**
+	 * Returns a new version of this branch with updated {@link Metadata}.
+	 * @param metadata
+	 * @return
+	 */
+	@Override
+	Branch withMetadata(Metadata metadata);
 }
