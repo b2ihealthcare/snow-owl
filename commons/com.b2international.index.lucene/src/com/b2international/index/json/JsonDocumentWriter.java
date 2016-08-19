@@ -34,7 +34,6 @@ import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexException;
 import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.Searcher;
-import com.b2international.index.WithId;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
@@ -143,7 +142,7 @@ public class JsonDocumentWriter implements Writer {
 	}
 	
 	@Override
-	public <T extends WithId> void bulkUpdate(BulkUpdate<T> update) throws IOException {
+	public <T> void bulkUpdate(BulkUpdate<T> update) throws IOException {
 		this.withUpdate = true;
 		this.operations.add(new BulkUpdateOperation<T>(update, mapper, mappings));
 	}

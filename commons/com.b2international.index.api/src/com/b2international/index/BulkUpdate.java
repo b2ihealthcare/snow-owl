@@ -21,15 +21,17 @@ import com.google.common.base.Function;
 /**
  * @since 5.0
  */
-public final class BulkUpdate<T extends WithId> {
+public final class BulkUpdate<T> {
 	
 	private final Class<? extends T> type;
 	private final Expression filter;
 	private final Function<T, T> update;
+	private final IdProvider<? super T> idProvider;
 	
-	public BulkUpdate(Class<? extends T> type, Expression filter, Function<T, T> func) {
+	public BulkUpdate(Class<? extends T> type, Expression filter, IdProvider<? super T> idProvider, Function<T, T> func) {
 		this.type = type;
 		this.filter = filter;
+		this.idProvider = idProvider;
 		this.update = func;
 	}
 	
@@ -43,6 +45,10 @@ public final class BulkUpdate<T extends WithId> {
 	
 	public Function<T, T> getUpdate() {
 		return update;
+	}
+	
+	public IdProvider<? super T> getIdProvider() {
+		return idProvider;
 	}
 
 }

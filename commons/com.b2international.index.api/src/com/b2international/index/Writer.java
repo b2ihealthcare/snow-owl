@@ -28,7 +28,7 @@ public interface Writer extends AutoCloseable {
 	
 	<T> void putAll(Map<String, T> objectsByKey) throws IOException;
 
-	<T extends WithId> void bulkUpdate(BulkUpdate<T> update) throws IOException;
+	<T> void bulkUpdate(BulkUpdate<T> update) throws IOException;
 	
 	void remove(Class<?> type, String key) throws IOException;
 	

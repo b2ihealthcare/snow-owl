@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.b2international.index.BulkUpdate;
+import com.b2international.index.IdProvider;
 import com.b2international.index.Writer;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -98,7 +99,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 							.must(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate))
 							.must(Revision.branchFilter(branch))
 							.build();
-				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, new Function<Revision, Revision>() {
+				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, IdProvider.WITH_ID, new Function<Revision, Revision>() {
 					@Override
 					public Revision apply(Revision rev) {
 						// register this revision as replaced in this segment
