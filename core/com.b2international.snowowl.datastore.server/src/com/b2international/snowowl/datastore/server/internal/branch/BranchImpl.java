@@ -123,6 +123,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 					return input.withMetadata(metadata);
 				}
 			}));
+			branchManager.sendChangeEvent(path());
 		}
 	}
 	
