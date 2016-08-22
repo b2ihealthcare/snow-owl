@@ -360,31 +360,6 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 	}
 
 	/**
-	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} referencing the given SNOMED CT concept.
-	 * 
-	 * @param conceptId the unique ID of the concept.
-	 * @return a collection of data type reference set members.
-	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getConceptDataTypes(final String conceptId) {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
-				.createFindByReferencedComponentIdQuery(CONCEPT, conceptId);
-		// XXX The number of allowed concrete domain datatypes are maximized in 100 for a concept
-		return getIndexService().search(createFindByRefSetTypeQuery, 100);
-	}
-
-	/**
-	 * Returns with a collection of active data type {@link SnomedRefSetMemberIndexEntry reference set members} referencing the
-	 * given SNOMED CT relationship.
-	 * @param relationshipId
-	 * @return a collection of data type reference set members.
-	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getActiveRelationshipDataTypes(final String relationshipId) {
-		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
-				.createFindActivesByReferencedComponentIdQuery(RELATIONSHIP, relationshipId);
-		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
-	}
-	
-	/**
 	 * Returns with a collection of data type {@link SnomedRefSetMemberIndexEntry reference set members} where the referenced relationships are given
 	 * as the relationship ID argument.
 	 * 
