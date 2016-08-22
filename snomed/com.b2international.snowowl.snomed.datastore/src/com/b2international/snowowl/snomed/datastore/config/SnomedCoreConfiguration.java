@@ -58,9 +58,6 @@ public class SnomedCoreConfiguration {
 	private String defaultNamespace = DEFAULT_NAMESPACE;
 	
 	@NotEmpty
-	private String defaultModule = DEFAULT_MODULE;
-	
-	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
 	
 	@NotEmpty
@@ -77,6 +74,9 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
+	
+	@NotEmpty
+	private String defaultModule = DEFAULT_MODULE;
 	
 	@Valid
 	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
@@ -353,5 +353,4 @@ public class SnomedCoreConfiguration {
 	public void setDatetimeDatatypeRefsetIdentifier(String datetimeDatatypeRefsetIdentifier) {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
 	}
-	
 }

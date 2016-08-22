@@ -90,7 +90,6 @@ public abstract class SnomedRefSetUtil {
 			.put(Concepts.REFSET_WAS_A_ASSOCIATION, "Was a")
 			.build();
 	
-	
 	public static final BiMap<DataType, String> DATATYPE_TO_REFSET_MAP = ImmutableBiMap.<DataType, String>builder()
 			.put(DataType.BOOLEAN, getCoreConfiguration().getBooleanDatatypeRefsetIdentifier())
 			.put(DataType.DATE, getCoreConfiguration().getDatetimeDatatypeRefsetIdentifier())
