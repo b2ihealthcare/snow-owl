@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Function;
 
 /**
  * @since 4.1
@@ -111,6 +112,18 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	@Override
 	public Branch reopen() {
 		return branchManager.reopen((InternalBranch) parent(), name, metadata());
+	}
+	
+	@Override
+	public final void update(final Metadata metadata) {
+		if (!metadata().equals(metadata)) {
+			branchManager.commit(branchManager.update(getClass(), path(), new Function<InternalBranch, InternalBranch>() {
+				@Override
+				public InternalBranch apply(InternalBranch input) {
+					return input.withMetadata(metadata);
+				}
+			}));
+		}
 	}
 	
 	@Override

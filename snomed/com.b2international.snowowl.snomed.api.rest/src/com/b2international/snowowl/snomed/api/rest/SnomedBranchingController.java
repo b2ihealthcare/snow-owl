@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
+import com.b2international.snowowl.snomed.api.rest.domain.BranchUpdateRestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -147,6 +148,31 @@ public class SnomedBranchingController extends AbstractRestService {
 					.branching()
 					.prepareDelete(branchPath)
 					.execute(bus), 
+				Responses.noContent().build());
+	}
+	
+	@ApiOperation(
+			value = "Update a branch", 
+			notes = "Updates a branch"
+					+ "<p>"
+					+ "The endpoint allows clients to update any metadata properties, other properties are immutable."
+					+ "</p>")
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "No Content"),
+		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+	})
+	@RequestMapping(value="/{path:**}", method=RequestMethod.PUT)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public DeferredResult<ResponseEntity<Void>> updateBranch(
+			@PathVariable("path") String branchPath,
+			@RequestBody BranchUpdateRestRequest request) {
+		return DeferredResults.wrap(
+				SnomedRequests
+					.branching()
+					.prepareUpdate(branchPath)
+					.setMetadata(request.getMetadata())
+					.buildFor()
+					.execute(bus),
 				Responses.noContent().build());
 	}
 	
