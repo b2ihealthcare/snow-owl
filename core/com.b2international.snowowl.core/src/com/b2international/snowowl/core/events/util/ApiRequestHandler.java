@@ -30,7 +30,7 @@ public final class ApiRequestHandler extends ApiEventHandler {
 	private final ServiceProvider context;
 
 	public ApiRequestHandler(ServiceProvider context, ClassLoaderProvider classLoaderProvider) {
-		super(classLoaderProvider);
+		super(Request.class, classLoaderProvider);
 		this.context = context;
 	}
 	
