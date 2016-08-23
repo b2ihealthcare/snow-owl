@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.events;
 
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -42,8 +41,23 @@ public abstract class BaseEvent implements Event {
 	}
 
 	@Override
-	public final <T> Promise<T> send(IEventBus bus, Class<T> returnType) {
-		return new AsyncSupport<T>(bus, returnType).send(this);
+	public final <T> Promise<T> send(final IEventBus bus, final Class<T> returnType) {
+		final Promise<T> promise = new Promise<>();
+		send(bus, new IHandler<IMessage>() {
+			@Override
+			public void handle(IMessage message) {
+				try {
+					if (message.isSucceeded()) {
+						promise.resolve(message.body(returnType));
+					} else {
+						promise.reject(message.body(Throwable.class, BaseEvent.class.getClassLoader()));
+					}
+				} catch (Throwable e) {
+					promise.reject(e);
+				}
+			}
+		});
+		return promise;
 	}
 
 	/**

@@ -75,10 +75,8 @@ public class BranchManagerTest {
 
 		@Override
 		InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
-			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp());
-			branch.metadata(metadata);
-			registerBranch(branch);
-			return branch;
+			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp(), metadata);
+			return commit(create(branch));
 		}
 	}
 
@@ -213,7 +211,7 @@ public class BranchManagerTest {
 	@Test
 	public void whenDeletingBranchWithChildTree_ThenChildTreeShouldBeDeleted() throws Exception {
 		a.createChild("1").createChild("2");
-		a.delete();
+		assertTrue(a.delete().isDeleted());
 		assertTrue(manager.getBranch("MAIN/a/1").isDeleted());
 		assertTrue(manager.getBranch("MAIN/a/1/2").isDeleted());
 	}

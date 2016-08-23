@@ -62,7 +62,7 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 				new SnomedIdentifierGenerateRequestBuilder()
 					.setCategory(request.getType())
 					.setNamespace(request.getNamespace())
-					.build(Branch.MAIN_PATH)
+					.build(repositoryId, Branch.MAIN_PATH)
 					.execute(bus)
 					.then(new Function<String, SnomedIdentifierResponse>() {
 						@Override

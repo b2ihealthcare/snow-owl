@@ -24,8 +24,8 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
  */
 public final class SnomedRefSetGetRequestBuilder extends RevisionGetRequestBuilder<SnomedRefSetGetRequestBuilder, SnomedReferenceSet> {
 
-	protected SnomedRefSetGetRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRefSetGetRequestBuilder() {
+		super();
 	}
 
 	@Override

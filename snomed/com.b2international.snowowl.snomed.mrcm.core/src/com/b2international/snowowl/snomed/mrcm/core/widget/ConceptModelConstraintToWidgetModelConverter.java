@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
@@ -87,7 +88,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		final SnomedConstraints dataTypeConstraints = SnomedRequests.prepareSearchConstraint()
 				.all()
 				.filterByType(SnomedConstraintDocument.PredicateType.DATATYPE)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -204,7 +205,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByEscg(expression)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override

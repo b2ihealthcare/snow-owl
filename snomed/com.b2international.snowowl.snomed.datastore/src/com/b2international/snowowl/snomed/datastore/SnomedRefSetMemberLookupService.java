@@ -112,7 +112,7 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 		return SnomedRequests.prepareSearchMember()
 				.setLimit(2)
 				.setComponentIds(Collections.singleton(uuid))
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry>() {
 					@Override

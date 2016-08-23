@@ -28,8 +28,8 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseSnomedTransactio
 	private String referencedComponentType;
 	private Request<TransactionContext, String> conceptReq;
 
-	SnomedRefSetCreateRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRefSetCreateRequestBuilder() {
+		super();
 	}
 
 	public SnomedRefSetCreateRequestBuilder setType(SnomedRefSetType type) {

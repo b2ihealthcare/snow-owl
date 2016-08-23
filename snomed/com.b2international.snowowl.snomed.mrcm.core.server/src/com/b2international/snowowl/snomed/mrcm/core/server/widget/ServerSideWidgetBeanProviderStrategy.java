@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -71,7 +72,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 					.all()
 					.filterByActive(true)
 					.filterByConceptId(conceptId)
-					.build(branchPath.getPath())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync().getItems();
 		}
@@ -84,7 +85,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 			.all()
 			.filterByActive(true)
 			.filterBySource(conceptId)
-			.build(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.then(new Function<SnomedRelationships, Collection<SnomedRelationship>>() {
 				@Override
@@ -155,7 +156,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 				.all()
 				.filterByActive(true)
 				.filterByReferencedComponent(id)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync());
 	}

@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
@@ -28,18 +25,18 @@ import com.b2international.snowowl.core.events.Request;
 public abstract class BaseTransactionalRequestBuilder<B extends BaseTransactionalRequestBuilder<B, R>, R>
 		extends BaseRequestBuilder<B, TransactionContext, R> {
 
-	private final String repositoryId;
+	private final RepositoryCommitRequestBuilder commitRequestBuilder;
 
-	protected BaseTransactionalRequestBuilder(String repositoryId) {
-		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
+	public BaseTransactionalRequestBuilder(RepositoryCommitRequestBuilder commitRequestBuilder) {
+		this.commitRequestBuilder = commitRequestBuilder;
 	}
-
-	public final Request<ServiceProvider, CommitInfo> build(String userId, String branch, String commitComment) {
-		return createCommitBuilder(repositoryId).setUserId(userId).setBranch(branch).setCommitComment(commitComment).setBody(this).build();
+	
+	public final AsyncRequest<CommitInfo> build(String repositoryId, String branch, String userId, String commitComment) {
+		return commitRequestBuilder
+				.setUserId(userId)
+				.setCommitComment(commitComment)
+				.setBody(build())
+				.build(repositoryId, branch);
 	}
-
-	protected RepositoryCommitRequestBuilder createCommitBuilder(String repositoryId) {
-		return new RepositoryCommitRequestBuilder(repositoryId);
-	}
-
+	
 }

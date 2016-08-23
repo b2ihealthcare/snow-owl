@@ -31,8 +31,8 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	private InactivationIndicator inactivationIndicator;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 
-	SnomedConceptUpdateRequestBuilder(String repositoryId, String componentId) {
-		super(repositoryId, componentId);
+	SnomedConceptUpdateRequestBuilder(String componentId) {
+		super(componentId);
 	}
 	
 	@Override

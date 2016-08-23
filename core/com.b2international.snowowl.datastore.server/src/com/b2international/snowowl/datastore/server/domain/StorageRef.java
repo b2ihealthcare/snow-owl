@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.domain;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -70,9 +72,11 @@ public class StorageRef implements InternalStorageRef {
 	public Branch getBranch() {
 		if (branch == null) {
 			branch = RepositoryRequests
-						.branching(getRepositoryId())
+						.branching()
 						.prepareGet(branchPath)
-						.executeSync(getEventBus(), DEFAULT_ASYNC_TIMEOUT_DELAY);
+						.build(getRepositoryId())
+						.execute(getEventBus())
+						.getSync(DEFAULT_ASYNC_TIMEOUT_DELAY, TimeUnit.MILLISECONDS);
 		}
 		if (branch == null) {
 			throw new NotFoundException("Branch", getBranchPath());

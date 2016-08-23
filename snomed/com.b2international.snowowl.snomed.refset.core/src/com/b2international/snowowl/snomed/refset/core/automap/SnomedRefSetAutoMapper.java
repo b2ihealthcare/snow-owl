@@ -30,6 +30,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -89,11 +90,11 @@ public class SnomedRefSetAutoMapper {
 					
 					request.setLimit(limit);
 					
-					final SnomedConcepts concepts = request.build(branch).executeSync(eventBus);
+					final SnomedConcepts concepts = request.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch).execute(eventBus).getSync();
 					List<SnomedConceptDocument> candidates = SnomedConceptDocument.fromConcepts(concepts);
 					
 					if (candidates.isEmpty()) {
-						final SnomedConcepts fuzzyConcepts = request.withFuzzySearch().build(branch).executeSync(eventBus);
+						final SnomedConcepts fuzzyConcepts = request.withFuzzySearch().build(SnomedDatastoreActivator.REPOSITORY_UUID, branch).execute(eventBus).getSync();
 						final List<SnomedConceptDocument> fuzzyCandidates = SnomedConceptDocument.fromConcepts(fuzzyConcepts);
 						
 						if (fuzzyCandidates.isEmpty()) {

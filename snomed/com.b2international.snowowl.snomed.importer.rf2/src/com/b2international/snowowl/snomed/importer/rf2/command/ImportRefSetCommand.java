@@ -29,6 +29,7 @@ import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
@@ -55,7 +56,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 		boolean isTerminologyAvailable = SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(Concepts.ROOT_CONCEPT))
-				.build(Branch.MAIN_PATH)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 		

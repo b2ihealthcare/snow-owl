@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.refset.core.compare.ReferencedComponentDelta.DeltaKind;
@@ -245,7 +246,7 @@ public class LinkageRefSetGenerator {
 				.filterByActive(true)
 				.filterByType(typeId)
 				.filterBySource(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 	}
@@ -254,7 +255,7 @@ public class LinkageRefSetGenerator {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByDestination(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 	}
@@ -263,7 +264,7 @@ public class LinkageRefSetGenerator {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterBySource(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 	}

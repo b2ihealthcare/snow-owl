@@ -70,6 +70,7 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.delta.ISnomedConceptDeltaProvider;
@@ -199,7 +200,7 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 		final SnomedReferenceSet referenceSet = Iterables.getOnlyElement(SnomedRequests.prepareSearchRefSet()
 				.setLimit(1)
 				.setComponentIds(Collections.singleton(identifierId))
-				.build(destinationBranch.get().getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, destinationBranch.get().getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync(), null);
 		

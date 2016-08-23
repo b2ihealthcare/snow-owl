@@ -612,7 +612,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 				.all()
 				.filterByActive(true)
 				.filterByAncestor(Concepts.SYNONYM)
-				.build(getBranchPath(member).getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath(member).getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override

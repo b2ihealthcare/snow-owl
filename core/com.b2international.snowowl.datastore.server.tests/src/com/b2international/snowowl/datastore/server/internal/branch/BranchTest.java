@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -144,7 +145,7 @@ public class BranchTest {
 	}
 
 	private InternalBranch createBranch(Branch parent, String name, long currentTimestamp) {
-		final BranchImpl branch = new BranchImpl(name, parent.path(), currentTimestamp);
+		final BranchImpl branch = new BranchImpl(name, parent.path(), currentTimestamp, new MetadataImpl());
 		branch.setBranchManager(manager);
 		return branch;
 	}

@@ -36,8 +36,8 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	private Collection<String> componentIds = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
-	protected SearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	protected SearchRequestBuilder() {
+		super();
 	}
 	
 	public final B setOffset(int offset) {

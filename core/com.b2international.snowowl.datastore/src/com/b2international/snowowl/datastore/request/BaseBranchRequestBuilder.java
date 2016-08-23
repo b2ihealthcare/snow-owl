@@ -15,30 +15,32 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilder<B, R>, R> extends BaseRepositoryRequestBuilder<B, BranchContext, R> {
+public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, BranchContext, R> {
 
-	protected BaseBranchRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	public final AsyncRequest<R> build(final String repositoryId, final String branch) {
+		return toAsync("/"+repositoryId, 
+				new RepositoryRequest<>(repositoryId, 
+						new BranchRequest<>(branch, extend(build()))));
 	}
-
-	public final Request<ServiceProvider, R> build(String branch) {
-		return wrap(new BranchRequest<>(branch, wrapBranchRequest(build())));
-	}
-
+	
 	/**
-	 * Wraps the {@link Request} if required.
+	 * Extend the given {@link Request} with additional functionality.
 	 * 
 	 * @param req
 	 * @return
 	 */
-	protected Request<BranchContext, R> wrapBranchRequest(Request<BranchContext, R> req) {
+	@OverridingMethodsMustInvokeSuper
+	protected Request<BranchContext, R> extend(Request<BranchContext, R> req) {
 		return req;
 	}
 

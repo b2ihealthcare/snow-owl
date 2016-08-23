@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.LeafWidgetBeanSorter;
@@ -96,7 +97,7 @@ public class WidgetBeanProvider {
 		
 		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		final boolean active = concept.isActive();
@@ -192,7 +193,7 @@ public class WidgetBeanProvider {
 				.setLimit(referenceSetIds.size())
 				.setComponentIds(referenceSetIds)
 				// TODO filter by map target type
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 
@@ -253,7 +254,7 @@ public class WidgetBeanProvider {
 				.filterByActive(true)
 				.filterByReferencedComponent(conceptId)
 				.filterByRefSetType(Collections.singleton(SnomedRefSetType.SIMPLE_MAP))
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 	}

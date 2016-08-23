@@ -82,9 +82,11 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final Branch branch = RepositoryRequests.branching(repositoryId)
+		final Branch branch = RepositoryRequests.branching()
 				.prepareGet(taskBranchPath.getPath())
-				.executeSync(eventBus);
+				.build(repositoryId)
+				.execute(eventBus)
+				.getSync();
 		
 		return branch.canRebase();
 	}
@@ -112,9 +114,11 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final Branch reopenedBranch = RepositoryRequests.branching(repositoryId)
+		final Branch reopenedBranch = RepositoryRequests.branching()
 				.prepareReopen(taskBranchPath.getPath())
-				.executeSync(eventBus);
+				.build(repositoryId)
+				.execute(eventBus)
+				.getSync();
 
 		// At this point, others are free to make changes to the parent after reopening the task branch
 		releaseLock(new SingleRepositoryAndBranchLockTarget(repositoryId, parentBranchPath));
@@ -127,7 +131,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 			transactions.add(syncTransaction);
 		} else {
 			// Explicit notification, let listeners know the new state
-			final BranchChangedEvent changeEvent = new BranchChangedEvent(repositoryId, reopenedBranch);
+			final BranchChangedEvent changeEvent = new BranchChangedEvent(repositoryId, reopenedBranch.path());
 			changeEvent.publish(eventBus);
 			syncTransaction.close();
 		}

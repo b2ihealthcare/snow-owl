@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSe
  */
 public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRelationshipSearchRequestBuilder, SnomedRelationships> {
 
-	SnomedRelationshipSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRelationshipSearchRequestBuilder() {
+		super();
 	}
 
 	public SnomedRelationshipSearchRequestBuilder filterBySource(String sourceId) {

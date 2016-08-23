@@ -242,8 +242,9 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 						SnomedRequests.branching().prepareCreate()
 							.setParent(parentBranchPath.getPath())
 							.setName(codeSystem.getShortName())
-							.build()
-							.executeSync(eventBus);
+							.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+							.execute(eventBus)
+							.getSync();
 					}
 					
 					branchPath = extensionBranchPath.getPath();

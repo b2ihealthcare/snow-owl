@@ -76,8 +76,9 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			.setTarget(restRequest.getTarget())
 			.setReviewId(restRequest.getReviewId())
 			.setCommitComment(restRequest.getCommitComment())
-			.build()
-			.executeSync(bus);
+			.build(repositoryId)
+			.execute(bus)
+			.getSync();
 		
 		final URI linkUri = linkTo(SnomedBranchMergingController.class).slash(merge.getId()).toUri();
 		return Responses.accepted(linkUri).build();
@@ -93,7 +94,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 		})
 	@RequestMapping(method = RequestMethod.GET, value="/{id}")
 	public DeferredResult<Merge> getMerge(@PathVariable("id") UUID id) {
-		return DeferredResults.wrap(SnomedRequests.merging().prepareGet(id).execute(bus));
+		return DeferredResults.wrap(SnomedRequests.merging().prepareGet(id).build(repositoryId).execute(bus));
 	}
 	
 	@ApiOperation(
@@ -122,7 +123,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 				.withSource(source)
 				.withTarget(target)
 				.withStatus(status)
-				.build()
+				.build(repositoryId)
 				.execute(bus));
 	}
 	
@@ -136,7 +137,10 @@ public class SnomedBranchMergingController extends AbstractRestService {
 	@RequestMapping(method=RequestMethod.DELETE, value="/{id}")
 	public DeferredResult<ResponseEntity<Void>> deleteMerge(@PathVariable("id") UUID id) {
 		return DeferredResults.wrap(
-				SnomedRequests.merging().prepareDelete(id).execute(bus),
+				SnomedRequests.merging()
+					.prepareDelete(id)
+					.build(repositoryId)
+					.execute(bus),
 				Responses.noContent().build());
 	}
 }

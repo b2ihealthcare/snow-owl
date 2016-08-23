@@ -31,7 +31,7 @@ public abstract class BranchRequest<B> extends BaseRequest<RepositoryContext, B>
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
 
-	public final String getBranchPath() {
+	protected final String getBranchPath() {
 		return branchPath;
 	}
 }

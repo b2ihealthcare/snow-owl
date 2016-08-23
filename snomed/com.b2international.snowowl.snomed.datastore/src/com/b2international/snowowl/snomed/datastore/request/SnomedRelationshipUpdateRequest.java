@@ -90,7 +90,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 					final String branchPath = getLatestReleaseBranch(context);
 					final ISnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship()
 							.setComponentId(getComponentId())
-							.build(branchPath)
+							.build(context.id(), branchPath)
 							.execute(context.service(IEventBus.class))
 							.getSync();
 	

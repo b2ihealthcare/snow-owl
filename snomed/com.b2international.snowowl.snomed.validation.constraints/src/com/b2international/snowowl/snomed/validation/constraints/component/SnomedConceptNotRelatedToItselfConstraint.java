@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -50,8 +51,9 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 			.filterBySource(conceptId)
 			.setExpand("type(expand(pt()))")
 			.setLocales(getLocales())
-			.build(branchPath.getPath())
-			.executeSync(getBus());
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync();
 		
 		if (!relationships.getItems().isEmpty()) {
 			for (ISnomedRelationship relationship : relationships) {

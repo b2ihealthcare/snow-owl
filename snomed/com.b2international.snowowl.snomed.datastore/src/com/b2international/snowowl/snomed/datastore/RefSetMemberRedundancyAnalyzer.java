@@ -160,7 +160,7 @@ public abstract class RefSetMemberRedundancyAnalyzer {
 		return SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByRefSet(refSetId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedReferenceSetMembers, Collection<String>>() {
 					@Override

@@ -19,6 +19,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -82,8 +83,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final String createdRelationshipId = body
 				.getChange()
 				.toRequestBuilder()
-				.build(principal.getName(), branchPath, commitComment)
-				.executeSync(bus, 120L * 1000L)
+				.build(repositoryId, branchPath, principal.getName(), commitComment)
+				.execute(bus)
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
 				
 		return Responses.created(getRelationshipLocation(branchPath, createdRelationshipId)).build();
@@ -111,7 +113,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 				SnomedRequests
 					.prepareGetRelationship()
 					.setComponentId(relationshipId)
-					.build(branchPath)
+					.build(repositoryId, branchPath)
 					.execute(bus));
 	}
 
@@ -154,8 +156,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.setGroup(update.getGroup())
 			.setUnionGroup(update.getUnionGroup())
 			.setModifier(update.getModifier())
-			.build(userId, branchPath, commitComment)
-			.executeSync(bus, 120L * 1000L);
+			.build(repositoryId, branchPath, userId, commitComment)
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 
 	@ApiOperation(
@@ -192,8 +195,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.prepareDeleteRelationship()
 			.setComponentId(relationshipId)
 			.force(force)
-			.build(principal.getName(), branchPath, String.format("Deleted Relationship '%s' from store.", relationshipId))
-			.executeSync(bus, 120L * 1000L);
+			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Relationship '%s' from store.", relationshipId))
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 
 	private URI getRelationshipLocation(final String branchPath, final String relationshipId) {

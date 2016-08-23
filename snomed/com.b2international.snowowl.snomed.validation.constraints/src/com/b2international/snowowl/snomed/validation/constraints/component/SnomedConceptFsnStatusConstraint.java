@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -45,7 +46,7 @@ public class SnomedConceptFsnStatusConstraint extends ComponentValidationConstra
 				.filterByActive(true)
 				.filterByConceptId(concept.getId())
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 			if (descriptions.getTotal() < 1) {

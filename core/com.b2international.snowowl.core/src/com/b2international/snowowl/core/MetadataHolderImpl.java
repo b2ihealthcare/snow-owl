@@ -19,9 +19,13 @@ package com.b2international.snowowl.core;
 /**
  * @since 4.1
  */
-public class MetadataHolderImpl implements MetadataHolder {
+public abstract class MetadataHolderImpl implements MetadataHolder {
 
-	private Metadata metadata = new MetadataImpl();
+	private final Metadata metadata;
+	
+	public MetadataHolderImpl(Metadata metadata) {
+		this.metadata = metadata;
+	}
 	
 	@Override
 	public Metadata metadata() {
@@ -29,8 +33,8 @@ public class MetadataHolderImpl implements MetadataHolder {
 	}
 	
 	@Override
-	public void metadata(Metadata metadata) {
-		this.metadata = metadata;
+	public MetadataHolder withMetadata(Metadata metadata) {
+		throw new UnsupportedOperationException();
 	}
 	
 }

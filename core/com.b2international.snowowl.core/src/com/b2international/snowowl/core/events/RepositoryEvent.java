@@ -20,15 +20,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * @since 4.5
  */
-public abstract class BaseRepositoryEvent extends BaseEvent {
+public abstract class RepositoryEvent extends BaseEvent {
 
 	private final String repositoryId;
 
-	protected BaseRepositoryEvent(final String repositoryId) {
+	protected RepositoryEvent(final String repositoryId) {
 		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
 	}
 
-	public String getRepositoryId() {
+	public final String getRepositoryId() {
 		return repositoryId;
 	}
 

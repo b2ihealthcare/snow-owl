@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,40 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.util;
+package com.b2international.snowowl.core.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.b2international.snowowl.core.events.Event;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
 /**
- * Simple class to ease the development of event based async messaging between nodes.
- * 
- * @since 4.1
+ * @since 5.0
  */
-public final class AsyncSupport<T> {
+public final class AsyncRequest<R> {
 
-	private IEventBus bus;
-	private Class<T> clazz;
+	private final String address;
+	private final Request<?, R> request;
 
-	public AsyncSupport(IEventBus bus, Class<T> clazz) {
-		this.bus = checkNotNull(bus, "bus");
-		this.clazz = checkNotNull(clazz, "clazz");
+	public AsyncRequest(String address, Request<?, R> request) {
+		this.address = address;
+		this.request = request;
 	}
-
-	public Promise<T> send(final Event event) {
-		final Promise<T> promise = new Promise<>();
-		event.send(bus, new IHandler<IMessage>() {
+	
+	public Promise<R> execute(IEventBus bus) {
+		final Promise<R> promise = new Promise<>();
+		final Class<R> responseType = ((BaseRequest<?, R>) request).getReturnType(); 
+		bus.send(address, request, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						promise.resolve(message.body(clazz));
+						promise.resolve(message.body(responseType));
 					} else {
-						promise.reject(message.body(Throwable.class, AsyncSupport.class.getClassLoader()));
+						promise.reject(message.body(Throwable.class, AsyncRequest.class.getClassLoader()));
 					}
 				} catch (Throwable e) {
 					promise.reject(e);

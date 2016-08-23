@@ -22,7 +22,7 @@ import com.b2international.snowowl.datastore.request.RepositoryBulkReadRequestBu
  */
 public class SnomedRepositoryBulkReadRequestBuilder extends RepositoryBulkReadRequestBuilder {
 
-	SnomedRepositoryBulkReadRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRepositoryBulkReadRequestBuilder() {
+		super();
 	}
 }

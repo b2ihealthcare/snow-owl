@@ -15,14 +15,22 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
 import java.util.UUID;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
@@ -34,8 +42,10 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.index.Index;
+import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -46,6 +56,13 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * @since 4.1
@@ -58,7 +75,6 @@ public class CDOBranchManagerTest {
 	
 	private CDOBranchManagerImpl manager;
 	private CDOMainBranchImpl main;
-	private Branch branchA;
 	
 	private InternalRepository repository;
 	private ServiceProvider context;
@@ -112,14 +128,14 @@ public class CDOBranchManagerTest {
 	
 	@Test
 	public void whenCreatingBranch_ThenItShouldBeCreated_AndACDOBranchShouldBeAssociatedWithIt() throws Exception {
-		branchA = main.createChild("a");
+		final Branch branchA = main.createChild("a");
 		final CDOBranch cdoBranch = manager.getCDOBranch(branchA);
 		assertEquals(branchA.path(), cdoBranch.getPathName());
 	}
 	
 	@Test
 	public void whenCreatingDeepBranch_ThenItShouldBeCreatedAndAssociatedWithCDOBranches() throws Exception {
-		branchA = main.createChild("a");
+		final Branch branchA = main.createChild("a");
 		final Branch branchB = branchA.createChild("b");
 		final CDOBranch cdoBranchA = manager.getCDOBranch(branchA);
 		assertEquals(branchA.path(), cdoBranchA.getPathName());
@@ -130,13 +146,13 @@ public class CDOBranchManagerTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void whenGettingCDOBranchOfDeletedBranch_ThenThrowException() throws Exception {
 		whenCreatingBranch_ThenItShouldBeCreated_AndACDOBranchShouldBeAssociatedWithIt();
-		final Branch deletedA = branchA.delete();
+		final Branch deletedA = manager.getBranch("MAIN/a").delete();
 		manager.getCDOBranch(deletedA);
 	}
 	
 	@Test
 	public void whenRebasingChildBranchInForwardState_ThenManagerShouldReopenAssociatedCDOBranch() throws Exception {
-		branchA = main.createChild("a");
+		final Branch branchA = main.createChild("a");
 		final CDOBranch cdoBranchA = manager.getCDOBranch(branchA);
 
 		// commit and rebase
@@ -194,6 +210,51 @@ public class CDOBranchManagerTest {
 		assertThat(c.segmentId()).isEqualTo(5);
 		assertThat(c.segments()).containsOnly(5);
 		assertThat(c.parentSegments()).containsOnly(0, 1, 3);
+	}
+	
+	@Test
+	public void updateMetadata() throws Exception {
+		final InternalBranch branchA = (InternalBranch) main.createChild("a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)));
+		final long commitTimestamp = clock.getTimeStamp();
+		final IndexWrite<Void> timestampUpdate = manager.update(branchA.getClass(), branchA.path(), new Function<InternalBranch, InternalBranch>() {
+			@Override
+			public InternalBranch apply(InternalBranch input) {
+				return input.withHeadTimestamp(commitTimestamp);
+			}
+		});
+		
+		final IndexWrite<Void> metadataUpdate = manager.update(branchA.getClass(), branchA.path(), new Function<InternalBranch, InternalBranch>() {
+			@Override
+			public InternalBranch apply(InternalBranch input) {
+				return input.withMetadata(new MetadataImpl(ImmutableMap.<String, Object>of("test", 1)));
+			}
+		});
+		final Collection<IndexWrite<Void>> parallelUpdates = ImmutableList.of(timestampUpdate, metadataUpdate);
+		
+		final CyclicBarrier barrier = new CyclicBarrier(parallelUpdates.size());
+		final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(parallelUpdates.size()));
+		final Collection<ListenableFuture<?>> futures = newArrayList();
+		for (final IndexWrite<Void> parallelUpdate : parallelUpdates) {
+			futures.add(executor.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						barrier.await(1000, TimeUnit.MILLISECONDS);
+						manager.commit(parallelUpdate);
+					} catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
+						throw new RuntimeException("Failed to wait for all parties");
+					}
+				}
+			}));
+		}
+		
+		// wait all runnables to complete
+		Futures.allAsList(futures).get();
+
+		// after parallel updates, both timestamp and metadata should be changed and recorded
+		final Branch branch = manager.getBranch("MAIN/a");
+		assertEquals(branch.headTimestamp(), commitTimestamp);
+		assertEquals(branch.metadata(), ImmutableMap.<String, Object>of("test", 1));
 	}
 	
 }

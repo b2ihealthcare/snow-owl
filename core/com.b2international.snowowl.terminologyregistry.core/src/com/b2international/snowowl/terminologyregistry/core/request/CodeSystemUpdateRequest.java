@@ -30,7 +30,6 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 	private static final long serialVersionUID = 1L;
 
 	private final String uniqueId;
-	private final String repositoryUuid;
 
 	private String name;
 	private String link;
@@ -39,9 +38,8 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 	private String branchPath;
 	private String iconPath;
 
-	CodeSystemUpdateRequest(final String uniqueId, final String repositoryUuid) {
+	CodeSystemUpdateRequest(final String uniqueId) {
 		this.uniqueId = uniqueId;
-		this.repositoryUuid = repositoryUuid;
 	}
 
 	void setName(final String name) {
@@ -128,8 +126,9 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 		}
 		
 		final Branch branch = RepositoryRequests
-				.branching(repositoryUuid)
+				.branching()
 				.prepareGet(branchPath)
+				.build()
 				.execute(context);
 		
 		if (branch.isDeleted()) {

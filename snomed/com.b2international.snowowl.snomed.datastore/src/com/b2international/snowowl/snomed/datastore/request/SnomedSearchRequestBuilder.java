@@ -34,10 +34,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.
  */
 public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> extends SearchRequestBuilder<B, R> {
 
-	protected SnomedSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
-	
 	public final B filterByModule(String moduleId) {
 		return addOption(OptionKey.MODULE, moduleId);
 	}

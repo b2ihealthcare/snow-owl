@@ -36,6 +36,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExporter;
@@ -65,7 +66,7 @@ public class MrcmImportExportTest {
 		// verify index
 		final SnomedConstraints allPredicates = SnomedRequests.prepareSearchConstraint()
 				.all()
-				.build(branch.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		assertEquals(58, allPredicates.getTotal());

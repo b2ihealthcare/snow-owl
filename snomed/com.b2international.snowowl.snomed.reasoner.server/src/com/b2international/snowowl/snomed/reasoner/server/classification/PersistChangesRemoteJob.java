@@ -207,7 +207,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			statedDescendantsOfSmp = SnomedRequests.prepareGetConcept()
 				.setComponentId(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT)
 				.setExpand("descendants(limit:"+Integer.MAX_VALUE+",direct:false,form:\"stated\")")
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<ISnomedConcept, LongSet>() {
 					@Override

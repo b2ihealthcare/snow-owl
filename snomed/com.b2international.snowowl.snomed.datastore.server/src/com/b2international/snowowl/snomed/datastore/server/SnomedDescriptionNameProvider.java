@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedDescriptionNameProvider;
 
@@ -28,7 +29,7 @@ public class SnomedDescriptionNameProvider implements ISnomedDescriptionNameProv
 
 	@Override
 	public String getComponentLabel(IBranchPath branchPath, String componentId) {
-		return SnomedRequests.prepareGetDescription().setComponentId(componentId).build(branchPath.getPath())
+		return SnomedRequests.prepareGetDescription().setComponentId(componentId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync().getTerm();
 	}
 

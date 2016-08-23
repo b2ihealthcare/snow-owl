@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,8 +39,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class CDOBranchImplMixin implements MetadataHolderMixin {
 
 	@JsonCreator
-	CDOBranchImplMixin(@JsonProperty("name") String name, @JsonProperty("parentPath") String parentPath, @JsonProperty("baseTimestamp") long baseTimestamp,
-			@JsonProperty("headTimestamp") long headTimestamp, @JsonProperty("deleted") boolean deleted, @JsonProperty("cdobranchId") int cdoBranchId, @JsonProperty("segmentId") int segmentId,
+	CDOBranchImplMixin(
+			@JsonProperty("name") String name, 
+			@JsonProperty("parentPath") String parentPath, 
+			@JsonProperty("baseTimestamp") long baseTimestamp,
+			@JsonProperty("headTimestamp") long headTimestamp, 
+			@JsonProperty("deleted") boolean deleted,
+			@JsonProperty("metadata") Metadata metadata,
+			@JsonProperty("cdobranchId") int cdoBranchId, 
+			@JsonProperty("segmentId") int segmentId,
 			@JsonProperty("segments") Collection<Integer> segments, 
 			@JsonProperty("parentSegments") Collection<Integer> parentSegments) {
 	}

@@ -17,34 +17,26 @@ package com.b2international.snowowl.datastore.request;
 
 import java.util.UUID;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.merge.Merge;
-
 /**
  * @since 4.6
  */
-public class Merging {
+public final class Merging {
 
-	private String repositoryId;
-
-	Merging(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
+	Merging() {}
 	
 	public CreateMergeRequestBuilder prepareCreate() {
-		return new CreateMergeRequestBuilder(repositoryId);
+		return new CreateMergeRequestBuilder();
 	}
 
-	public Request<ServiceProvider, Merge> prepareGet(UUID id) {
-		return RepositoryRequests.wrap(repositoryId, new GetMergeRequest(id));
+	public MergeGetRequestBuilder prepareGet(UUID id) {
+		return new MergeGetRequestBuilder(id);
 	}
 	
 	public SearchMergeRequestBuilder prepareSearch() {
-		return new SearchMergeRequestBuilder(repositoryId);
+		return new SearchMergeRequestBuilder();
 	}
 
-	public Request<ServiceProvider, Void> prepareDelete(UUID id) {
-		return RepositoryRequests.wrap(repositoryId, new DeleteMergeRequest(id));
+	public MergeDeleteRequestBuilder prepareDelete(UUID id) {
+		return new MergeDeleteRequestBuilder(id);
 	}
 }

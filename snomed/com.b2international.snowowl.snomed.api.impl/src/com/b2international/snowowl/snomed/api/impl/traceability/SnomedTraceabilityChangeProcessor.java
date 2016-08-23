@@ -37,12 +37,10 @@ import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -74,6 +72,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -282,14 +281,15 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 				final String branch = commitChangeSet.getView().getBranch().getPathName();
 				final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
 				
-				final Request<ServiceProvider, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
+				final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 					.setComponentIds(conceptIds)
 					.setOffset(0)
 					.setLimit(entry.getChanges().size())
 					.setExpand("descriptions(),relationships(expand(destination()))")
-					.build(branch);
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+					.execute(bus)
+					.getSync();
 				
-				final SnomedConcepts concepts = conceptSearchRequest.executeSync(bus);
 				final Set<String> hasChildrenStated = collectNonLeafs(conceptIds, branch, bus, Concepts.STATED_RELATIONSHIP);
 				final Set<String> hasChildrenInferred = collectNonLeafs(conceptIds, branch, bus, Concepts.INFERRED_RELATIONSHIP);
 				
@@ -338,8 +338,9 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 		
 		final BulkResponse relationshipResponses = SnomedRequests.prepareBulkRead()
 			.setBody(hasChildrenBulkRequest)
-			.build(branch)
-			.executeSync(bus);
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+			.execute(bus)
+			.getSync();
 
 		final Iterator<SnomedRelationships> responseIterator = relationshipResponses.getResponses(SnomedRelationships.class).iterator();
 		

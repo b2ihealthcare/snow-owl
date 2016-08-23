@@ -30,9 +30,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSea
  */
 public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
 
-	SnomedDescriptionSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	SnomedDescriptionSearchRequestBuilder() {}
 	
 	public SnomedDescriptionSearchRequestBuilder withFuzzySearch() {
 		return addOption(OptionKey.USE_FUZZY, true);

@@ -41,12 +41,10 @@ public class CodeSystemRequestTest {
 	private static final String BRANCH = IBranchPath.MAIN_BRANCH;
 
 	private IEventBus bus;
-	private CodeSystemRequests requests;
 
 	@Before
 	public void setup() {
 		this.bus = ApplicationContext.getInstance().getService(IEventBus.class);
-		this.requests = new CodeSystemRequests(REPOSITORY_ID);
 	}
 	
 	@Test
@@ -80,10 +78,11 @@ public class CodeSystemRequestTest {
 		final ICodeSystem oldCodeSystem = getCodeSystem(shortName);
 		assertNotNull(oldCodeSystem);
 		
-		requests.prepareUpdateCodeSystem(shortName)
+		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
 			.setName("updated name")
-			.build("system", BRANCH, String.format("Updated code system %s.", shortName))
-			.executeSync(bus);
+			.build(REPOSITORY_ID, BRANCH, "system", String.format("Updated code system %s.", shortName))
+			.execute(bus)
+			.getSync();
 		
 		final ICodeSystem updatedCodeSystem = getCodeSystem(shortName);
 		assertNotNull(updatedCodeSystem);
@@ -99,25 +98,27 @@ public class CodeSystemRequestTest {
 		final ICodeSystem oldCodeSystem = getCodeSystem(shortName);
 		assertNotNull(oldCodeSystem);
 		
-		requests.prepareUpdateCodeSystem(shortName)
+		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
 			.setBranchPath("non-existent-branch-path")
-			.build("system", BRANCH, String.format("Updated code system %s.", shortName))
-			.executeSync(bus);
+			.build(REPOSITORY_ID, BRANCH, "system", String.format("Updated code system %s.", shortName))
+			.execute(bus)
+			.getSync();
 	}
 	
 	@Test
 	public void searchCodeSystem() {
-		final CodeSystems codeSystems = requests.prepareSearchCodeSystem()
+		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 			.filterByShortName(SNOMEDCT)
-			.build(BRANCH)
-			.executeSync(bus);
+			.build(REPOSITORY_ID, BRANCH)
+			.execute(bus)
+			.getSync();
 		
 		assertEquals(1, codeSystems.getItems().size());
 		assertEquals(SNOMEDCT, Iterables.getOnlyElement(codeSystems.getItems()).getShortName());
 	}
 	
 	private void createCodeSystem(final String shortName, final String oid) {
-		requests.prepareNewCodeSystem()
+		CodeSystemRequests.prepareNewCodeSystem()
 			.setShortName(shortName)
 			.setOid(oid)
 			.setName(String.format("%s - %s", shortName, oid))
@@ -128,15 +129,17 @@ public class CodeSystemRequestTest {
 			.setRepositoryUuid(REPOSITORY_ID)
 			.setTerminologyId("concept")
 			.setLink("www.ihtsdo.org")
-			.build("system", BRANCH, String.format("New code system %s", shortName))
-			.executeSync(bus);
+			.build(REPOSITORY_ID, "system", BRANCH, String.format("New code system %s", shortName))
+			.execute(bus)
+			.getSync();
 	}
 	
 	private ICodeSystem getCodeSystem(final String shortName) {
-		return requests.prepareGetCodeSystem()
+		return CodeSystemRequests.prepareGetCodeSystem()
 				.setUniqueId(shortName)
-				.build(BRANCH)
-				.executeSync(bus);
+				.build(REPOSITORY_ID, BRANCH)
+				.execute(bus)
+				.getSync();
 	}
 	
 	private void assertCodeSystemCreated(final String shortName, final String oid) {

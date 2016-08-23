@@ -30,6 +30,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Predicate;
@@ -100,8 +101,9 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 			.filterBySource(component.getId())
 			.setExpand("type(expand(pt()))")
 			.setLocales(getLocales())
-			.build(branchPath.getPath())
-			.executeSync(getBus());
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync();
 			
 		final Multimap<Integer, ISnomedRelationship> groupToRelationshipsMultimap = ArrayListMultimap.create();
 		

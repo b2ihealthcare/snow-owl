@@ -20,8 +20,8 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.b2international.index.BulkUpdate;
+import com.b2international.index.IdProvider;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
+import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -60,7 +61,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 					return new ReentrantLock();
 				}
 			});
-	
+
 	public BranchManagerImpl(final Index branchStore) {
 		this.branchStore = branchStore;
 	}
@@ -75,19 +76,15 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	private void doInitBranchStore(InternalBranch main) {
 		branchStore.admin().clear(Branch.class);
-		registerBranch(main);
-	}
-
-	void registerBranch(final InternalBranch branch) {
-		branch.setBranchManager(this);
-		put(branch);
+		main.setBranchManager(this);
+		commit(create(main));
 	}
 
 	final InternalBranch createBranch(final InternalBranch parent, final String name, final Metadata metadata) {
 		if (parent.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parent.path());
 		}
-		final String path = parent.path().concat(Branch.SEPARATOR).concat(name);
+		final String path = toAbsolutePath(parent.path(), name);
 		Branch existingBranch = getBranchFromStore(path);
 		if (existingBranch != null) {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
@@ -102,7 +99,9 @@ public abstract class BranchManagerImpl implements BranchManager {
 					if (existingBranch != null) {
 						return (InternalBranch) existingBranch;
 					} else {
-						return sendChangeEvent(reopen(parent, name, metadata)); // Explicit notification (creation)
+						final InternalBranch reopenedBranch = reopen(parent, name, metadata);
+						sendChangeEvent(reopenedBranch.path()); // Explicit notification (creation)
+						return reopenedBranch; 
 					}
 				} else {
 					throw new RequestTimeoutException();
@@ -115,15 +114,19 @@ public abstract class BranchManagerImpl implements BranchManager {
 		}
 	}
 
+	protected final String toAbsolutePath(final String parentPath, final String name) {
+		return parentPath.concat(Branch.SEPARATOR).concat(name);
+	}
+
 	abstract InternalBranch reopen(InternalBranch parent, String name, Metadata metadata);
 
 	@Override
-	public Branch getMainBranch() {
+	public final Branch getMainBranch() {
 		return getBranch(MainBranchImpl.MAIN_PATH);
 	}
 
 	@Override
-	public Branch getBranch(final String path) {
+	public final Branch getBranch(final String path) {
 		final Branch branch = getBranchFromStore(path);
 		if (branch == null) {
 			throw new NotFoundException(Branch.class.getSimpleName(), path);
@@ -149,7 +152,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	@Override
-	public Collection<? extends Branch> getBranches() {
+	public final Collection<? extends Branch> getBranches() {
 		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build());
 		initialize(values);
 		return values;
@@ -166,7 +169,8 @@ public abstract class BranchManagerImpl implements BranchManager {
 		// reopen only if the to branch is a direct parent of the from branch, otherwise these are unrelated branches 
 		if (from.parent().equals(mergedTo)) {
 			final InternalBranch reopenedFrom = reopen(mergedTo, from.name(), from.metadata());
-			sendChangeEvent(reopenedFrom); // Explicit notification (reopen)
+			sendChangeEvent(reopenedFrom.path()); // Explicit notification (reopen)
+			return reopenedFrom;
 		}
 		return mergedTo;
 	}
@@ -179,7 +183,8 @@ public abstract class BranchManagerImpl implements BranchManager {
 		if (branch.headTimestamp() > branch.baseTimestamp()) {
 			return applyChangeSet(branch, rebasedBranch, false, true, commitMessage); // Implicit notification (reopen & commit)
 		} else {
-			return sendChangeEvent(rebasedBranch); // Explicit notification (reopen)
+			sendChangeEvent(rebasedBranch.path()); // Explicit notification (reopen)
+			return rebasedBranch;
 		}
 	}
 
@@ -192,26 +197,36 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return doDelete(branchImpl);
 	}
 
-	private InternalBranch doDelete(final InternalBranch branchImpl) {
-		final InternalBranch deleted = branchImpl.withDeleted();
-		put(deleted);
-		return sendChangeEvent(deleted); // Explicit notification (delete)
+	private InternalBranch doDelete(final InternalBranch branch) {
+		final String path = branch.path();
+		commit(update(branch.getClass(), path, new Function<InternalBranch, InternalBranch>() {
+			@Override
+			public InternalBranch apply(InternalBranch input) {
+				return input.withDeleted();
+			}
+		}));
+		sendChangeEvent(path); // Explicit notification (delete)
+		return (InternalBranch) getBranch(path);
 	}
 	
 	/*package*/ final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
-		final InternalBranch branchAfterCommit = branch.withHeadTimestamp(timestamp);
-		registerBranch(branchAfterCommit);
-		return sendChangeEvent(branchAfterCommit); // Explicit notification (commit)
+		final String path = branch.path();
+		commit(update(branch.getClass(), path, new Function<InternalBranch, InternalBranch>() {
+			@Override
+			public InternalBranch apply(InternalBranch input) {
+				return input.withHeadTimestamp(timestamp);
+			}
+		}));
+		sendChangeEvent(path); // Explicit notification (commit)
+		return (InternalBranch) getBranch(path);
 	}
 
 	/**
 	 * Subclasses should override this method if they want to broadcast notifications of changed branches.
-	 * @param branch the subject of the notification (may not be {@code null})
+	 * @param branchPath the subject of the notification (may not be {@code null})
 	 * @return {@code branch} (for convenience)
 	 */
-	@OverridingMethodsMustInvokeSuper
-	InternalBranch sendChangeEvent(final InternalBranch branch) {
-		return branch;
+	void sendChangeEvent(final String branchPath) {
 	}
 
 	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {
@@ -238,14 +253,41 @@ public abstract class BranchManagerImpl implements BranchManager {
 		});
 	}
 	
-	private void put(final InternalBranch branch) {
-		branchStore.write(new IndexWrite<Void>() {
+	protected final <T> T commit(final IndexWrite<T> changes) {
+		return branchStore.write(new IndexWrite<T>() {
 			@Override
-			public Void execute(Writer index) throws IOException {
-				index.put(branch.path(), branch);
+			public T execute(Writer index) throws IOException {
+				final T result = changes.execute(index);
 				index.commit();
-				return null;
+				return result;
 			}
 		});
+	}
+	
+	protected final IndexWrite<Void> update(final Class<? extends InternalBranch> branchType, final String path, final Function<InternalBranch, InternalBranch> mutator) {
+		return new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.bulkUpdate(new BulkUpdate<>(branchType, DocumentMapping.matchId(path), new IdProvider.ConstantIdProvider<>(path), new Function<InternalBranch, InternalBranch>() {
+					@Override
+					public InternalBranch apply(InternalBranch input) {
+						input.setBranchManager(BranchManagerImpl.this);
+						return mutator.apply(input);
+					}
+				}));
+				return null;
+			}
+		};
+	}
+	
+	protected final IndexWrite<InternalBranch> create(final InternalBranch branch) {
+		return new IndexWrite<InternalBranch>() {
+			@Override
+			public InternalBranch execute(Writer index) throws IOException {
+				index.put(branch.path(), branch);
+				branch.setBranchManager(BranchManagerImpl.this);
+				return branch;
+			}
+		};
 	}
 }

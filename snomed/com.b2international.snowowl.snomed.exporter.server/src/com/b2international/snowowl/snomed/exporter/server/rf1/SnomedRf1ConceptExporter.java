@@ -29,6 +29,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -94,7 +95,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 		ISnomedConcept snomedConcept = SnomedRequests.prepareGetConcept()
 			.setComponentId(doc.getId())
 			.setLocales(languageSetting.getLanguagePreference())
-			.setExpand("fsn()").build(getExportContext().getCurrentBranchPath().getPath()).executeSync(eventBus);
+			.setExpand("fsn()").build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath()).execute(eventBus).getSync();
 		
 		concept.fsn = snomedConcept.getFsn().getTerm();
 		

@@ -254,12 +254,12 @@ public abstract class PublishManager implements IPublishManager {
 	protected abstract LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath);
 
 	private boolean couldCreateVersion(final IPublishOperationConfiguration configuration) {
-		return new CodeSystemRequests(getRepositoryUuid())
+		return CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.setLimit(0)
 				.filterByCodeSystemShortName(configuration.getCodeSystemShortName())
 				.filterByVersionId(configuration.getVersionId())
-				.build(IBranchPath.MAIN_BRANCH)
+				.build(getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
 				.execute(getEventBus())
 				.getSync().getTotal() == 0;
 	}
@@ -269,11 +269,11 @@ public abstract class PublishManager implements IPublishManager {
 	}
 
 	private Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
-		return ImmutableList.<ICodeSystemVersion>copyOf(new CodeSystemRequests(getRepositoryUuid()).prepareSearchCodeSystemVersion()
+		return ImmutableList.<ICodeSystemVersion>copyOf(CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
-				.build(branchPath.getPath())
+				.build(getRepositoryUuid(), branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync().getItems());
+				.getSync());
 	}
 
 	private void publishTerminologyMetadataChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {
@@ -297,12 +297,12 @@ public abstract class PublishManager implements IPublishManager {
 
 	@Nullable
 	private ICodeSystemVersion getVersion(final IPublishOperationConfiguration configuration) {
-		final CodeSystemVersions versions = new CodeSystemRequests(getRepositoryUuid())
+		final CodeSystemVersions versions = CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.setLimit(2)
 				.filterByCodeSystemShortName(configuration.getCodeSystemShortName())
 				.filterByVersionId(configuration.getVersionId())
-				.build(IBranchPath.MAIN_BRANCH)
+				.build(getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
 				.execute(getEventBus())
 				.getSync();
 		

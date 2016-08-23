@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -93,7 +94,7 @@ public class FocusConceptNormalizer {
 		for (ConceptRef concept : focusConcepts) {
 			final ISnomedConcept fc = SnomedRequests.prepareGetConcept()
 					.setComponentId(concept.getConceptId())
-					.build(branch)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(fc));
@@ -140,7 +141,7 @@ public class FocusConceptNormalizer {
 	private Collection<SnomedConceptDocument> getAllSubTypes(String id) {
 		return SnomedRequests.prepareSearchConcept()
 				.filterByAncestor(id)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(SnomedConcepts.TO_DOCS)
 				.getSync();
@@ -161,7 +162,7 @@ public class FocusConceptNormalizer {
 				.filterByType(Concepts.IS_A)
 				.filterBySource(concept.getId())
 				.setExpand("destinationConcept()")
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		for (ISnomedRelationship relationship : outboundRelationships) {
@@ -221,7 +222,7 @@ public class FocusConceptNormalizer {
 				.setLimit(0)
 				.filterByAncestor(superType.getId())
 				.setComponentIds(Collections.singleton(subType.getId()))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 	}

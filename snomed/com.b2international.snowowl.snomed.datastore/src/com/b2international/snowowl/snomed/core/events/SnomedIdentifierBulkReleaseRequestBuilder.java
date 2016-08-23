@@ -20,7 +20,6 @@ import java.util.Collection;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BaseBranchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.5
@@ -29,10 +28,6 @@ public final class SnomedIdentifierBulkReleaseRequestBuilder extends BaseBranchR
 
 	private Collection<String> componentIds;
 
-	public SnomedIdentifierBulkReleaseRequestBuilder() {
-		super(SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
-	
 	public SnomedIdentifierBulkReleaseRequestBuilder setComponentIds(Collection<String> componentIds) {
 		this.componentIds = componentIds;
 		return getSelf();

@@ -77,12 +77,13 @@ public class PrepareBranchAction extends AbstractCDOBranchAction {
 
 			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 			
-			RepositoryRequests.branching(repositoryId)
+			RepositoryRequests.branching()
 					.prepareCreate()
 					.setParent(parentBranchPath.getPath())
 					.setName(taskBranchPath.lastSegment())
-					.build()
-					.executeSync(eventBus);
+					.build(repositoryId)
+					.execute(eventBus)
+					.getSync();
 		}
 	}
 }

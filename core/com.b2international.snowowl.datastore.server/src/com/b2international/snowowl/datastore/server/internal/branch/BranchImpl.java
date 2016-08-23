@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Function;
 
 /**
  * @since 4.1
@@ -46,15 +47,16 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     private final long headTimestamp;
     private final boolean deleted;
     
-    protected BranchImpl(String name, String parentPath, long baseTimestamp) {
-    	this(name, parentPath, baseTimestamp, baseTimestamp);
+    protected BranchImpl(String name, String parentPath, long baseTimestamp, Metadata metadata) {
+    	this(name, parentPath, baseTimestamp, baseTimestamp, metadata);
     }
     
-    protected BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp) {
-    	this(name, parentPath, baseTimestamp, headTimestamp, false);
+    protected BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, Metadata metadata) {
+    	this(name, parentPath, baseTimestamp, headTimestamp, false, metadata);
     }
     
-    protected BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
+    protected BranchImpl(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, Metadata metadata) {
+    	super(metadata);
         BranchNameValidator.DEFAULT.checkName(name);
         checkArgument(baseTimestamp >= 0L, "Base timestamp may not be negative.");
         checkArgument(headTimestamp >= baseTimestamp, "Head timestamp may not be smaller than base timestamp.");
@@ -77,35 +79,52 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	
     @Override
     public InternalBranch withDeleted() {
-		return createBranch(name, parentPath, baseTimestamp, headTimestamp, true);
+		return createBranch(name, parentPath, baseTimestamp, headTimestamp, true, metadata());
 	}
 
     @Override
     public InternalBranch withBaseTimestamp(long newBaseTimestamp) {
         checkArgument(newBaseTimestamp > baseTimestamp, "New base timestamp may not be smaller or equal than old base timestamp.");
-		return createBranch(name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted);
+		return createBranch(name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted, metadata());
 	}
 	
     @Override
     public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
 		checkArgument(newHeadTimestamp > headTimestamp, "New head timestamp may not be smaller or equal than old head timestamp.");
-		return createBranch(name, parentPath, baseTimestamp, newHeadTimestamp, deleted);
+		return createBranch(name, parentPath, baseTimestamp, newHeadTimestamp, deleted, metadata());
 	}
     
-	private BranchImpl createBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
-		final BranchImpl branch = doCreateBranch(name, parentPath, baseTimestamp, headTimestamp, deleted);
+    @Override
+    public InternalBranch withMetadata(Metadata metadata) {
+    	return createBranch(name, parentPath, baseTimestamp, headTimestamp, deleted, metadata);
+    }
+    
+	private BranchImpl createBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, Metadata metadata) {
+		final BranchImpl branch = doCreateBranch(name, parentPath, baseTimestamp, headTimestamp, deleted, metadata);
 		branch.setBranchManager(getBranchManager());
-		branch.metadata(metadata());
 		return branch;
 	}
 
-	protected BranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted) {
-		return new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted);
+	protected BranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, Metadata metadata) {
+		return new BranchImpl(name, parentPath, baseTimestamp, headTimestamp, deleted, metadata);
 	}
 	
 	@Override
 	public Branch reopen() {
 		return branchManager.reopen((InternalBranch) parent(), name, metadata());
+	}
+	
+	@Override
+	public final void update(final Metadata metadata) {
+		if (!metadata().equals(metadata)) {
+			branchManager.commit(branchManager.update(getClass(), path(), new Function<InternalBranch, InternalBranch>() {
+				@Override
+				public InternalBranch apply(InternalBranch input) {
+					return input.withMetadata(metadata);
+				}
+			}));
+			branchManager.sendChangeEvent(path());
+		}
 	}
 	
 	@Override
@@ -153,11 +172,6 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		} else {
 			throw new BranchMergeException("Branch %s should be in FORWARD state to be merged into %s. It's currently %s", changesFrom.path(), path(), changesFromState);
 		}
-	}
-
-	@Override
-	public Branch notifyChanged() {
-		return branchManager.sendChangeEvent(this);
 	}
 
 	@Override

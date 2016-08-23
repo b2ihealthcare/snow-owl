@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +42,6 @@ public class MainBranchTest {
 		manager = mock(BranchManagerImpl.class);
 		main = new MainBranchImpl(0L);
 		main.setBranchManager(manager);
-		when(manager.getBranch(main.path())).thenReturn(main);
 		mainWithTimestamp = new MainBranchImpl(5L);
 		mainWithTimestamp.setBranchManager(manager);
 	}

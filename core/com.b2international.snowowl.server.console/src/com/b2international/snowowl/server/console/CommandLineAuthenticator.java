@@ -22,8 +22,6 @@ import java.io.InputStreamReader;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.users.IUserManager;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 

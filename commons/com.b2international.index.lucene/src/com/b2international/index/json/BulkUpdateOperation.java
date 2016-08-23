@@ -24,7 +24,6 @@ import org.apache.lucene.index.IndexWriter;
 
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Searcher;
-import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
@@ -33,7 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 5.0
  */
-public final class BulkUpdateOperation<T extends WithId> implements Operation {
+public final class BulkUpdateOperation<T> implements Operation {
 
 	private final ObjectMapper mapper;
 	private final Mappings mappings;
@@ -52,7 +51,7 @@ public final class BulkUpdateOperation<T extends WithId> implements Operation {
 		final Query<? extends T> query = Query.select(update.getType()).where(update.getFilter()).limit(Integer.MAX_VALUE).build();
 		for (T hit : searcher.search(query)) {
 			final T changed = update.getUpdate().apply(hit);
-			Index op = new Index(changed._id(), changed, mapper, mapping);
+			Index op = new Index(update.getIdProvider().getId(changed), changed, mapper, mapping);
 			op.execute(writer, searcher);
 			updates.add(op);
 		}

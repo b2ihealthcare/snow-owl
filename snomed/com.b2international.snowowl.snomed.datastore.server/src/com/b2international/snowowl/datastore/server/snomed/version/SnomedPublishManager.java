@@ -89,7 +89,7 @@ public class SnomedPublishManager extends PublishManager {
 						.add(SnomedRequests.prepareSearchDescription().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 						.add(SnomedRequests.prepareSearchRelationship().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 						.add(SnomedRequests.prepareSearchMember().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)))
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<BulkResponse, LongSet>() {
 					@Override

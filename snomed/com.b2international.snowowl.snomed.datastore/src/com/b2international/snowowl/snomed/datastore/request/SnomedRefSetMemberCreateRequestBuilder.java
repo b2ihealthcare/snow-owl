@@ -32,8 +32,8 @@ public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTran
 	private String referencedComponentId;
 	private Map<String, Object> properties = Collections.emptyMap();
 	
-	SnomedRefSetMemberCreateRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRefSetMemberCreateRequestBuilder() {
+		super();
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setReferencedComponentId(String referencedComponentId) {

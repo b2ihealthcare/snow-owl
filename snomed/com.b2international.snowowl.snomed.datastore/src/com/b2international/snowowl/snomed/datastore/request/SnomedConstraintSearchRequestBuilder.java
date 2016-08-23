@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocumen
  */
 public final class SnomedConstraintSearchRequestBuilder extends SearchRequestBuilder<SnomedConstraintSearchRequestBuilder, SnomedConstraints> {
 
-	SnomedConstraintSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedConstraintSearchRequestBuilder() {
+		super();
 	}
 	
 	public SnomedConstraintSearchRequestBuilder filterBySelfId(String selfId) {

@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -68,7 +69,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByParent(toString(SnomedConceptDocument.ROOT_ID))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)
 				.getSync();
@@ -82,7 +83,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept()
 				.setLimit(1)
 				.setComponentIds(Collections.singleton(toString(conceptId)))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)
 				.getSync(), null);
@@ -96,7 +97,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByParent(toString(conceptId))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)
 				.getSync();
@@ -110,7 +111,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.filterByParent(toString(conceptId))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.getSync().getTotal();
 	}
@@ -123,7 +124,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.filterByAncestor(toString(conceptId))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.getSync().getTotal();
 	}
@@ -136,7 +137,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByAncestor(toString(conceptId))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)
 				.getSync();
@@ -150,7 +151,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareGetConcept()
 				.setComponentId(toString(conceptId))
 				.setExpand("ancestors(limit:"+Integer.MAX_VALUE+",direct:true,form:\"inferred\")")
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
 					@Override
@@ -170,7 +171,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareGetConcept()
 				.setComponentId(toString(conceptId))
 				.setExpand("ancestors(limit:"+Integer.MAX_VALUE+",direct:false,form:\"inferred\")")
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
 					@Override
@@ -190,7 +191,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareGetConcept()
 				.setComponentId(toString(conceptId))
 				.setExpand("ancestors(limit:"+0+",direct:true,form:\"inferred\")")
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
 					@Override
@@ -209,7 +210,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareGetConcept()
 				.setComponentId(toString(conceptId))
 				.setExpand("ancestors(limit:"+0+",direct:false,form:\"inferred\")")
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
 					@Override
@@ -237,7 +238,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.setLimit(0)
 				.filterByAncestor(toString(parentConceptId))
 				.setComponentIds(Collections.singleton(toString(childConceptId)))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.getSync().getTotal() > 0;
 	}
@@ -270,7 +271,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.filterByType(relationshipTypeId)
 				.setExpand("sourceConcept(expand(pt()))")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<SnomedRelationships, Collection<ISnomedConcept>>() {
 					@Override
@@ -330,7 +331,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept()
 				.setLimit(1)
 				.setComponentIds(Collections.singleton(conceptId))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<SnomedConcepts, Collection<SnomedConceptDocument>>() {
 					@Override
@@ -437,7 +438,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterBySource(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override
@@ -457,7 +458,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.all()
 				.filterByActive(true)
 				.filterBySource(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override
@@ -497,7 +498,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByDestination(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override
@@ -514,7 +515,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.all()
 				.filterByActive(true)
 				.filterByDestination(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(new Function<SnomedRelationships, List<SnomedRelationshipIndexEntry>>() {
 					@Override

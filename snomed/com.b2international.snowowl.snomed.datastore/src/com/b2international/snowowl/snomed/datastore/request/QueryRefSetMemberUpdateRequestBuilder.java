@@ -19,18 +19,17 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberUpdateRequestBuilder extends BaseTransactionalRequestBuilder<QueryRefSetMemberUpdateRequestBuilder, Void> {
+public final class QueryRefSetMemberUpdateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<QueryRefSetMemberUpdateRequestBuilder, Void> {
 
 	private String memberId;
 	private String moduleId;
 
-	QueryRefSetMemberUpdateRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	QueryRefSetMemberUpdateRequestBuilder() {
+		super();
 	}
 	
 	public QueryRefSetMemberUpdateRequestBuilder setMemberId(String memberId) {

@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -48,7 +49,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(refSetId))
 				.filterByType(SnomedRefSetType.LANGUAGE)
-				.build(getBranchPath().getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 	}

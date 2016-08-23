@@ -27,9 +27,7 @@ public final class QueryRefSetMemberEvaluationRequestBuilder extends BaseResourc
 
 	private String memberId;
 
-	QueryRefSetMemberEvaluationRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	QueryRefSetMemberEvaluationRequestBuilder() {}
 
 	public QueryRefSetMemberEvaluationRequestBuilder setMemberId(String memberId) {
 		this.memberId = memberId;

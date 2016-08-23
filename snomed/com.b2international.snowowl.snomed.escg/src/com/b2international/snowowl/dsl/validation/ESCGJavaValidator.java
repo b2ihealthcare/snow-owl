@@ -32,6 +32,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
@@ -114,7 +115,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			boolean conceptIdExists = SnomedRequests.prepareSearchConcept()
 					.setLimit(0)
 					.setComponentIds(Collections.singleton(concept.getId()))
-					.build(activeBranch.get())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get())
 					.execute(bus.get())
 					.getSync().getTotal() > 0;
 
@@ -149,7 +150,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			boolean exists = SnomedRequests.prepareSearchConcept()
 					.setLimit(0)
 					.setComponentIds(Collections.singleton(refSet.getId()))
-					.build(activeBranch.get())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get())
 					.execute(bus.get())
 					.getSync().getTotal() > 0;
 			
@@ -205,7 +206,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 				.setComponentId(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(activeBranch.get())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -234,7 +235,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final ISnomedConcept entry = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(concept.getId())).build(activeBranch.get()).execute(bus.get()).getSync(), null);
+		final ISnomedConcept entry = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(concept.getId())).build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get()).execute(bus.get()).getSync(), null);
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", EscgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}

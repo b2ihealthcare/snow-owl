@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -93,7 +94,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		return DeferredResults.wrap(SnomedRequests.prepareSearchRefSet()
 				.setOffset(offset)
 				.setLimit(limit)
-				.build(branchPath)
+				.build(repositoryId, branchPath)
 				.execute(bus));
 	}
 	
@@ -140,7 +141,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.setComponentId(referenceSetId)
 				.setExpand(expand)
 				.setLocales(extendedLocales)
-				.build(branchPath)
+				.build(repositoryId, branchPath)
 				.execute(bus));
 	}
 	
@@ -174,8 +175,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setIdentifierConcept(change.toRequestBuilder())
 			.setType(change.getType())
 			.setReferencedComponentType(change.getReferencedComponentType())
-			.build(principal.getName(), branchPath, body.getCommitComment())
-			.executeSync(bus, 120L * 1000L)
+			.build(repositoryId, branchPath, principal.getName(), body.getCommitComment())
+			.execute(bus)
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
 		
 		return Responses.created(getRefSetLocationURI(branchPath, createdRefSetId)).build();
@@ -217,9 +219,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setBody(body.getChange().resolve(resolver))
 			.setCommitComment(body.getCommitComment())
 			.setUserId(principal.getName())
-			.setBranch(branchPath)
-			.build()
-			.executeSync(bus);
+			.build(repositoryId, branchPath)
+			.execute(bus)
+			.getSync();
 	}
 	
 	@ApiOperation(
@@ -258,10 +260,10 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.prepareCommit()
 			.setBody(bulkRequest.resolve(resolver))
 			.setUserId(principal.getName())
-			.setBranch(branchPath)
 			.setCommitComment(request.getCommitComment())
-			.build()
-			.executeSync(bus);
+			.build(repositoryId, branchPath)
+			.execute(bus)
+			.getSync();
 	}
 	
 	private URI getRefSetLocationURI(String branchPath, String refSetId) {

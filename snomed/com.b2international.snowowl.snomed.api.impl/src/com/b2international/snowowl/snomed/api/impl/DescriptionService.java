@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.impl;
 
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 
@@ -35,7 +36,7 @@ public class DescriptionService extends DescriptionRequestHelper {
 
 	@Override
 	protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
-		return req.build(branch).executeSync(bus);
+		return req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch).execute(bus).getSync();
 	}
 
 }

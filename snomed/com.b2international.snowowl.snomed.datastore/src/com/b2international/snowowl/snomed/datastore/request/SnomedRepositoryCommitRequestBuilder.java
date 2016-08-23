@@ -23,15 +23,15 @@ import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuil
 /**
  * @since 4.5
  */
-public class SnomedRepositoryCommitRequestBuilder extends RepositoryCommitRequestBuilder {
+public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommitRequestBuilder {
 
-	SnomedRepositoryCommitRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRepositoryCommitRequestBuilder() {
+		super();
 	}
 	
 	@Override
 	protected Request<BranchContext, CommitInfo> extend(Request<BranchContext, CommitInfo> req) {
-		return new IdRequest(req); 
+		return super.extend(new IdRequest(req)); 
 	}
 
 }

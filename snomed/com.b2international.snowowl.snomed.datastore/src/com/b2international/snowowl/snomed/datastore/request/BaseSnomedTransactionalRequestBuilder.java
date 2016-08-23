@@ -16,20 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 4.5
  */
 public abstract class BaseSnomedTransactionalRequestBuilder<B extends BaseSnomedTransactionalRequestBuilder<B, R>, R> extends BaseTransactionalRequestBuilder<B, R> {
 
-	protected BaseSnomedTransactionalRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
-	
-	@Override
-	protected RepositoryCommitRequestBuilder createCommitBuilder(String repositoryId) {
-		return new SnomedRepositoryCommitRequestBuilder(repositoryId);
+	protected BaseSnomedTransactionalRequestBuilder() {
+		super(new SnomedRepositoryCommitRequestBuilder());
 	}
 	
 }

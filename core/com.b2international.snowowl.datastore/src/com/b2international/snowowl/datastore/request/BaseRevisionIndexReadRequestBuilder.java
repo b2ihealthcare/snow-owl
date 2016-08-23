@@ -23,13 +23,9 @@ import com.b2international.snowowl.core.events.Request;
  */
 public abstract class BaseRevisionIndexReadRequestBuilder<B extends BaseRevisionIndexReadRequestBuilder<B, R>, R> extends BaseBranchRequestBuilder<B, R> {
 
-	protected BaseRevisionIndexReadRequestBuilder(final String repositoryId) {
-		super(repositoryId);
-	}
-
 	@Override
-	protected Request<BranchContext, R> wrapBranchRequest(Request<BranchContext, R> req) {
-		return new RevisionIndexReadRequest<>(super.wrapBranchRequest(req));
+	protected Request<BranchContext, R> extend(Request<BranchContext, R> req) {
+		return new RevisionIndexReadRequest<>(super.extend(req));
 	}
 
 }

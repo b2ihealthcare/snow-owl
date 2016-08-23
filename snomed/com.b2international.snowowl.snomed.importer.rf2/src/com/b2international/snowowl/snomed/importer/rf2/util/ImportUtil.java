@@ -407,7 +407,7 @@ public final class ImportUtil {
 	
 	private void createCodeSystemIfNotExists(final CodeSystem codeSystem, final String userId) {
 		try {
-			new CodeSystemRequests(codeSystem.getRepositoryUuid())
+			CodeSystemRequests
 				.prepareNewCodeSystem()
 				.setBranchPath(codeSystem.getBranchPath())
 				.setName(codeSystem.getName())
@@ -420,9 +420,10 @@ public final class ImportUtil {
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setRepositoryUuid(codeSystem.getRepositoryUuid())
 				.setExtensionOf(codeSystem.getExtensionOf())
-				.build(userId, IBranchPath.MAIN_BRANCH, String.format("Created SNOMED CT code system '%s' (OID: %s)",
+				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, userId, String.format("Created SNOMED CT code system '%s' (OID: %s)",
 					codeSystem.getShortName(), codeSystem.getOid()))
-				.executeSync(getEventBus());
+				.execute(getEventBus())
+				.getSync();
 		} catch (AlreadyExistsException e) {
 			// ignore and continue import
 		}
@@ -476,7 +477,7 @@ public final class ImportUtil {
 				.setLocales(getLocales())
 				.setExpand("pt()")
 				.setComponentIds(getAsStringList(visitedConceptIds))
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getEventBus())
 				.then(new Function<SnomedConcepts, Collection<SnomedConceptDocument>>() {
 					@Override

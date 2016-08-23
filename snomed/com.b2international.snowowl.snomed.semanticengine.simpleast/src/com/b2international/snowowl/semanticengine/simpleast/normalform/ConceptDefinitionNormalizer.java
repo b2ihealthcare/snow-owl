@@ -28,6 +28,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.dsl.query.queryast.AttributeClause;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
@@ -77,7 +78,7 @@ public class ConceptDefinitionNormalizer {
 					.filterByType(Concepts.IS_A)
 					.filterBySource(focusConcept.getConceptId())
 					// TODO fix branch path
-					.build(BranchPathUtils.createMainPath().getPath())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createMainPath().getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			for (ISnomedRelationship relationship : outboundRelationships) {

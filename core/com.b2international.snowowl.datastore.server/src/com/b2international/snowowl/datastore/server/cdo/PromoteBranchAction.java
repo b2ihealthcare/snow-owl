@@ -69,9 +69,11 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final Branch branch = RepositoryRequests.branching(repositoryId)
+		final Branch branch = RepositoryRequests.branching()
 				.prepareGet(taskBranchPath.getPath())
-				.executeSync(eventBus);
+				.build(repositoryId)
+				.execute(eventBus)
+				.getSync();
 		
 		final BranchState state = branch.state();
 		

@@ -23,6 +23,7 @@ import static java.util.Collections.unmodifiableList;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
@@ -249,7 +250,11 @@ public abstract class BranchPathUtils {
 	 */
 	public static boolean exists(String repositoryUUID, String branchPath) {
 		try {
-			RepositoryRequests.branching(repositoryUUID).prepareGet(branchPath).executeSync(ApplicationContext.getInstance().getService(IEventBus.class), 1000);
+			RepositoryRequests.branching()
+				.prepareGet(branchPath)
+				.build(repositoryUUID)
+				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
+				.getSync(1000, TimeUnit.MILLISECONDS);
 		} catch (NotFoundException e) {
 			return false;
 		}
@@ -262,7 +267,11 @@ public abstract class BranchPathUtils {
 	 * @return
 	 */
 	public static Branch getMainBranchForRepository(String repositoryUUID) {
-		return RepositoryRequests.branching(repositoryUUID).prepareGet(IBranchPath.MAIN_BRANCH).executeSync(ApplicationContext.getInstance().getService(IEventBus.class), 1000);
+		return RepositoryRequests.branching()
+				.prepareGet(IBranchPath.MAIN_BRANCH)
+				.build(repositoryUUID)
+				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
+				.getSync(1000, TimeUnit.MILLISECONDS);
 	}
 	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {

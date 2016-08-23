@@ -15,39 +15,27 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.DeleteReviewRequest;
-import com.b2international.snowowl.datastore.events.ReadConceptChangesRequest;
-import com.b2international.snowowl.datastore.events.ReadReviewRequest;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
-import com.b2international.snowowl.datastore.review.Review;
-
 /**
  * @since 4.5
  */
 public final class Reviews {
 
-	private String repositoryId;
-
-	Reviews(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
+	Reviews() {}
 	
 	public ReviewCreateRequestBuilder prepareCreate() {
-		return new ReviewCreateRequestBuilder(repositoryId);
+		return new ReviewCreateRequestBuilder();
 	}
 
-	public Request<ServiceProvider, Review> prepareGet(String reviewId) {
-		return RepositoryRequests.wrap(repositoryId, new ReadReviewRequest(reviewId));
+	public ReviewGetRequestBuilder prepareGet(String reviewId) {
+		return new ReviewGetRequestBuilder(reviewId);
 	}
 
-	public Request<ServiceProvider, ConceptChanges> prepareGetConceptChanges(String reviewId) {
-		return RepositoryRequests.wrap(repositoryId, new ReadConceptChangesRequest(reviewId));
+	public ConceptChangesGetRequestBuilder prepareGetConceptChanges(String reviewId) {
+		return new ConceptChangesGetRequestBuilder(reviewId);
 	}
 
-	public Request<ServiceProvider, Review> prepareDelete(String reviewId) {
-		return RepositoryRequests.wrap(repositoryId, new DeleteReviewRequest(reviewId));
+	public ReviewDeleteRequestBuilder prepareDelete(String reviewId) {
+		return new ReviewDeleteRequestBuilder(reviewId);
 	}
 	
 }

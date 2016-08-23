@@ -222,11 +222,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	
 	private CodeSystemEntry getCodeSystem(final String shortName) {
 		try {
-			return new CodeSystemRequests(REPOSITORY_UUID)
-					.prepareGetCodeSystem()
+			return CodeSystemRequests.prepareGetCodeSystem()
 					.setUniqueId(shortName)
-					.build(IBranchPath.MAIN_BRANCH)
-					.executeSync(getEventBus());
+					.build(REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
+					.execute(getEventBus())
+					.getSync();
 		} catch (CodeSystemNotFoundException e) {
 			return null;
 		}

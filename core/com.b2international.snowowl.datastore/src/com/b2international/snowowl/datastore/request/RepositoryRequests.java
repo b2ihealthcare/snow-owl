@@ -15,35 +15,23 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
-
 /**
  * @since 4.5
  */
-public class RepositoryRequests {
+public final class RepositoryRequests {
 
-	private RepositoryRequests() {
+	private RepositoryRequests() {}
+	
+	public static Branching branching() {
+		return new Branching();
 	}
 	
-	public static <B> Request<ServiceProvider, B> wrap(String repositoryId, Request<RepositoryContext, B> next) {
-		return new RepositoryRequest<>(repositoryId, next);
+	public static Merging merging() {
+		return new Merging();
 	}
 	
-	public static Branching branching(String repositoryId) {
-		return new Branching(repositoryId);
-	}
-	
-	public static Merging merging(String repositoryId) {
-		return new Merging(repositoryId);
-	}
-	
-	public static Reviews reviews(String repositoryId) {
-		return new Reviews(repositoryId);
+	public static Reviews reviews() {
+		return new Reviews();
 	}
 
-	public static DeleteRequestBuilder prepareDelete(String repositoryId) {
-		return new DeleteRequestBuilder(repositoryId);
-	}
 }

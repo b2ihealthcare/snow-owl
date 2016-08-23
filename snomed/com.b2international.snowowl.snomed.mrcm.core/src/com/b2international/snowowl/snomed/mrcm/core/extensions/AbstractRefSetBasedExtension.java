@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IExecutableExtension;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -47,7 +48,7 @@ public abstract class AbstractRefSetBasedExtension implements IConceptExtension,
 				.setLimit(0)
 				.filterByRefSet(refSetId)
 				.filterByReferencedComponent(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 	}

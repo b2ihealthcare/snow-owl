@@ -24,9 +24,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
  */
 public final class SnomedDescriptionGetRequestBuilder extends RevisionGetRequestBuilder<SnomedDescriptionGetRequestBuilder, ISnomedDescription> {
 
-	SnomedDescriptionGetRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	SnomedDescriptionGetRequestBuilder() {}
 
 	@Override
 	protected RevisionGetRequest<ISnomedDescription> createGet() {

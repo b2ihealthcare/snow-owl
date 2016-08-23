@@ -31,6 +31,7 @@ import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -186,7 +187,7 @@ public class SubsumptionTester {
 		
 		final ISnomedConcept candidateConcept = SnomedRequests.prepareGetConcept()
 				.setComponentId(candidate.getId())
-				.build(branchPath)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -196,7 +197,7 @@ public class SubsumptionTester {
 					.all()
 					.filterByActive(true)
 					.filterBySource(candidate.getId())
-					.build(branchPath)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {

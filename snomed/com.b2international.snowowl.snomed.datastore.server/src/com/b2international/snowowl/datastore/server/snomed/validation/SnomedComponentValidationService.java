@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.datastore.server.validation.ComponentValidationService;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.validation.ISnomedComponentValidationService;
@@ -43,7 +44,8 @@ public class SnomedComponentValidationService extends ComponentValidationService
 		return SnomedConceptDocument.fromConcepts(SnomedRequests.prepareSearchConcept()
 			.filterByActive(true)
 			.all()
-			.build(branchPath.getPath())
-			.executeSync(ApplicationContext.getServiceForClass(IEventBus.class)));
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync());
 	}
 }

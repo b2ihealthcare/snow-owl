@@ -23,8 +23,8 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 
 /**
  * @since 4.5
@@ -35,8 +35,8 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	private IdGenerationStrategy idGenerationStrategy;
 	private ComponentCategory category;
 	
-	protected SnomedComponentCreateRequestBuilder(String repositoryId, ComponentCategory category) {
-		super(repositoryId);
+	protected SnomedComponentCreateRequestBuilder(ComponentCategory category) {
+		super();
 		this.category = checkNotNull(category);
 	}
 	

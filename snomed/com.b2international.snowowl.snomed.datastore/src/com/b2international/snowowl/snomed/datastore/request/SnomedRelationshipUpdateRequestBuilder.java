@@ -28,8 +28,8 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 	private Integer unionGroup;
 	private RelationshipModifier modifier;
 
-	SnomedRelationshipUpdateRequestBuilder(String repositoryId, String componentId) {
-		super(repositoryId, componentId);
+	SnomedRelationshipUpdateRequestBuilder(String componentId) {
+		super(componentId);
 	}
 	
 	public SnomedRelationshipUpdateRequestBuilder setCharacteristicType(CharacteristicType characteristicType) {

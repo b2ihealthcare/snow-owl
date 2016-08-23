@@ -27,10 +27,8 @@ public final class QueryRefSetEvaluationRequestBuilder extends BaseResourceReque
 
 	private String referenceSetId;
 
-	protected QueryRefSetEvaluationRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
-
+	QueryRefSetEvaluationRequestBuilder() {}
+	
 	public QueryRefSetEvaluationRequestBuilder setReferenceSetId(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
 		return getSelf();

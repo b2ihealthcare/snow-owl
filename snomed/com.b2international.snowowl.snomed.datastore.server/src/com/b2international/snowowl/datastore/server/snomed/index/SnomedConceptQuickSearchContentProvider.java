@@ -45,6 +45,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQuickSearchProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -130,7 +131,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		
 		final List<QuickSearchElement> quickSearchElements = Lists.newArrayList();
 
-		final SnomedConcepts matches = req.build(branchPath.getPath()).executeSync(getEventBus());
+		final SnomedConcepts matches = req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 		final Map<String, ISnomedConcept> concepts = newHashMap(FluentIterable.from(matches).uniqueIndex(IComponent.ID_FUNCTION));
 		// XXX sort only non-fuzzy matches
 		final List<QuickSearchElement> results = FluentIterable.from(matches)
@@ -154,7 +155,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		if (matches.getTotal() < limit) {
 			req.withFuzzySearch();
 
-			final SnomedConcepts fuzzyMatches = req.build(branchPath.getPath()).executeSync(getEventBus());
+			final SnomedConcepts fuzzyMatches = req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 
 			final ImmutableList<QuickSearchElement> approximateResults = FluentIterable.from(fuzzyMatches)
 					.filter(new Predicate<ISnomedConcept>() {

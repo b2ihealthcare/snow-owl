@@ -25,11 +25,11 @@ import com.b2international.snowowl.core.merge.MergeService;
 /**
  * @since 4.6
  */
-public class GetMergeRequest extends BaseRequest<RepositoryContext, Merge> {
+public final class GetMergeRequest extends BaseRequest<RepositoryContext, Merge> {
 
-	private UUID id;
+	private final UUID id;
 
-	public GetMergeRequest(UUID id) {
+	GetMergeRequest(UUID id) {
 		this.id = id;
 	}
 
