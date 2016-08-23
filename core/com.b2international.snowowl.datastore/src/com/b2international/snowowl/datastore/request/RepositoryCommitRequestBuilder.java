@@ -15,56 +15,49 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.metrics.Metrics;
 
 /**
+ * Repository Commit Request builder. Repository commit requests should always be executed in async mode.
+ * 
  * @since 4.5
  */
-public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, ServiceProvider, CommitInfo> {
-	
+public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<RepositoryCommitRequestBuilder, CommitInfo> {
+
 	private String userId;
-	private String repositoryId;
-	private String branch;
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
 	private long preparationTime = Metrics.SKIP;
 
-	protected RepositoryCommitRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
-
-	public final RepositoryCommitRequestBuilder setBranch(String branch) {
-		this.branch = branch;
-		return getSelf();
-	}
-	
 	public final RepositoryCommitRequestBuilder setUserId(String userId) {
 		this.userId = userId;
 		return getSelf();
 	}
-	
+
 	public final RepositoryCommitRequestBuilder setBody(RequestBuilder<TransactionContext, ?> req) {
 		return setBody(req.build());
 	}
-	
+
 	public final RepositoryCommitRequestBuilder setBody(Request<TransactionContext, ?> req) {
 		this.body = req;
 		return getSelf();
 	}
-	
+
 	public final RepositoryCommitRequestBuilder setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
 		return getSelf();
 	}
-	
+
 	/**
-	 * Set additional preparation time for this commit. The caller is responsible for measuring the time properly before setting it in this builder and sending the request.  
+	 * Set additional preparation time for this commit. The caller is responsible for measuring the time properly before setting it in this builder
+	 * and sending the request.
+	 * 
 	 * @param preparationTime
 	 * @return
 	 */
@@ -74,16 +67,13 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	}
 
 	@Override
-	protected final Request<ServiceProvider, CommitInfo> doBuild() {
-		return new RepositoryRequest<>(repositoryId, 
-				new BranchRequest<>(branch,
-					// additional functionality can be extended here after BranchRequest
-					extend(new RevisionIndexReadRequest<>(new TransactionalRequest(userId, commitComment, body, preparationTime)))
-				));
+	protected final Request<BranchContext, CommitInfo> doBuild() {
+		return new TransactionalRequest(userId, commitComment, body, preparationTime);
 	}
 	
+	@OverridingMethodsMustInvokeSuper
 	protected Request<BranchContext, CommitInfo> extend(Request<BranchContext, CommitInfo> req) {
-		return req;
+		return new RevisionIndexReadRequest<>(req);
 	}
 
 }

@@ -32,7 +32,7 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	@JsonProperty
 	private final String repositoryId;
 
-	RepositoryRequest(String repositoryId, Request<RepositoryContext, B> next) {
+	public RepositoryRequest(String repositoryId, Request<RepositoryContext, B> next) {
 		super(next);
 		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
 	}
@@ -40,11 +40,6 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	@Override
 	public B execute(final ServiceProvider context) {
 		return next(context.service(RepositoryContextProvider.class).get(context, repositoryId));
-	}
-	
-	@Override
-	protected String getAddress() {
-		return "/"+repositoryId;
 	}
 	
 }

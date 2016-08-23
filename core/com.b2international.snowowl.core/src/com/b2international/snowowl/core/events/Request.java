@@ -39,17 +39,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
  * @param <R>
  *            - the type of the resource aka the response
  */
-public interface Request<C extends ServiceProvider, R> extends Event {
-
-	/**
-	 * Sends and executes this {@link Request} asynchronously via the given dispatcher. The returned {@link Promise} will be either resolved or
-	 * rejected after execution of the {@link Request}.
-	 * 
-	 * @param bus
-	 *            - the dispatcher of the request
-	 * @return a {@link Promise} representing the execution of the {@link Request}
-	 */
-	Promise<R> execute(IEventBus bus);
+public interface Request<C extends ServiceProvider, R> {
 
 	/**
 	 * Executes this action on the given {@link ExecutionContext} directly without dispatching it.
@@ -59,5 +49,5 @@ public interface Request<C extends ServiceProvider, R> extends Event {
 	 * @return - the result of the {@link Request}, never <code>null</code>.
 	 */
 	R execute(C context);
-
+	
 }

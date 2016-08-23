@@ -27,10 +27,6 @@ public class RepositoryBulkReadRequestBuilder extends BaseRevisionIndexReadReque
 	
 	private Request<BranchContext, BulkResponse> body;
 
-	protected RepositoryBulkReadRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
-
 	public final RepositoryBulkReadRequestBuilder setBody(BulkRequestBuilder<BranchContext> req) {
 		body = req.build();
 		return getSelf();

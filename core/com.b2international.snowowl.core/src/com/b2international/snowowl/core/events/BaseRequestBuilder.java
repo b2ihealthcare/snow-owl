@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.exceptions.ApiValidation;
  * 
  * @since 4.5
  * @param <B>
- *            - the subclass type of this class
+ *            - the subclass type of this builder class
  * @param <C>
  *            - the required context
  * @param <R>
@@ -35,9 +35,19 @@ public abstract class BaseRequestBuilder<B extends BaseRequestBuilder<B, C, R>, 
 	public final Request<C, R> build() {
 		return ApiValidation.checkInput(doBuild());
 	}
-
+	
+	/**
+	 * Build an async request that can be sent to an executor or remote node for asynchronous processing.
+	 * 
+	 * @return
+	 */
+	protected final AsyncRequest<R> toAsync(String address, Request<ServiceProvider, R> request) {
+		return new AsyncRequest<>(address, request);
+	}
+	
 	protected abstract Request<C, R> doBuild();
 
+	@SuppressWarnings("unchecked")
 	protected final B getSelf() {
 		return (B) this;
 	}

@@ -24,8 +24,8 @@ public abstract class RevisionGetRequestBuilder<B extends RevisionGetRequestBuil
 
 	private String componentId;
 
-	protected RevisionGetRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	protected RevisionGetRequestBuilder() {
+		super();
 	}
 	
 	public final B setComponentId(String componentId) {

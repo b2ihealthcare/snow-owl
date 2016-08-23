@@ -16,29 +16,14 @@
 package com.b2international.snowowl.core.events;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
- *
- * @param <C>
- * @param <B>
+ * @see Request
  */
-public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEvent implements Request<C, B> {
-
-	@Override
-	public final Promise<B> execute(IEventBus bus) {
-		return send(bus, getReturnType());
-	}
-
-	@JsonIgnore
-	@Override
-	protected String getAddress() {
-		throw new UnsupportedOperationException("This request "+ getClass().getName() +" cannot be sent over the bus on its own, wrap it into a RepositoryRequest");
-	}
+public abstract class BaseRequest<C extends ServiceProvider, R> implements Request<C, R> {
 
 	/**
 	 * @return the type of the request for serialization in log messages
@@ -54,6 +39,6 @@ public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEven
 	 * @return
 	 */
 	@JsonIgnore
-	protected abstract Class<B> getReturnType();
+	protected abstract Class<R> getReturnType();
 	
 }

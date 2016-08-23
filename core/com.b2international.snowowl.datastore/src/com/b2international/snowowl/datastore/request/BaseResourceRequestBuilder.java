@@ -33,10 +33,6 @@ public abstract class BaseResourceRequestBuilder<B extends BaseResourceRequestBu
 	private Options expand = OptionsBuilder.newBuilder().build();
 	private List<ExtendedLocale> locales = Collections.emptyList();
 	
-	protected BaseResourceRequestBuilder(final String repositoryId) {
-		super(repositoryId);
-	}
-	
 	public final B setLocales(List<ExtendedLocale> locales) {
 		if (!CompareUtils.isEmpty(locales)) {
 			this.locales = locales;

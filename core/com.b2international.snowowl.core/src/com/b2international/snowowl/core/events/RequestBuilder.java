@@ -18,10 +18,17 @@ package com.b2international.snowowl.core.events;
 import com.b2international.snowowl.core.ServiceProvider;
 
 /**
+ * A {@link RequestBuilder} is capable of creating user intents (aka {@link Request}s).
+ * 
  * @since 4.5
  */
-public interface RequestBuilder<C extends ServiceProvider, B> {
+public interface RequestBuilder<C extends ServiceProvider, R> {
 
-	Request<C, B> build();
-	
+	/**
+	 * Build a request that can be executed synchronously via {@link Request#execute(ServiceProvider)}.
+	 * 
+	 * @return
+	 */
+	Request<C, R> build();
+
 }
