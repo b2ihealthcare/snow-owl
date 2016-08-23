@@ -49,8 +49,8 @@ public class PurgeRequest extends BaseRequest<RepositoryContext, Boolean> {
 		return Boolean.class;
 	}
 
-	public static PurgeRequestBuilder builder(String repositoryId) {
-		return new PurgeRequestBuilder(repositoryId);
+	public static PurgeRequestBuilder builder() {
+		return new PurgeRequestBuilder();
 	}
 
 }

@@ -23,14 +23,12 @@ import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilde
 /**
  * @since 5.0
  */
-public class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeRequestBuilder, Boolean> {
+public final class PurgeRequestBuilder extends BaseRepositoryRequestBuilder<PurgeRequestBuilder, Boolean> {
 
 	private String branchPath;
 	private Purge purge = Purge.LATEST;
 
-	PurgeRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	PurgeRequestBuilder() {}
 	
 	public PurgeRequestBuilder setBranchPath(String branchPath) {
 		this.branchPath = branchPath;

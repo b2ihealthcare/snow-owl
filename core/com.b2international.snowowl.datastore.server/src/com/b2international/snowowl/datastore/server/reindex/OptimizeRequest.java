@@ -43,8 +43,8 @@ public final class OptimizeRequest extends BaseRequest<RepositoryContext, Boolea
 		return Boolean.class;
 	}
 	
-	public static OptimizeRequestBuilder builder(String repositoryId) {
-		return new OptimizeRequestBuilder(repositoryId);
+	public static OptimizeRequestBuilder builder() {
+		return new OptimizeRequestBuilder();
 	}
 
 }

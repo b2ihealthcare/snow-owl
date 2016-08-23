@@ -26,9 +26,7 @@ public final class OptimizeRequestBuilder extends BaseRepositoryRequestBuilder<O
 
 	private int maxSegments = 1;
 	
-	OptimizeRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	OptimizeRequestBuilder() {}
 	
 	public OptimizeRequestBuilder setMaxSegments(int maxSegments) {
 		this.maxSegments = maxSegments;

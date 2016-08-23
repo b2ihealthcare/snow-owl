@@ -84,8 +84,8 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, ReindexResult
 		return ReindexResult.class;
 	}
 
-	public static ReindexRequestBuilder builder(String repositoryId) {
-		return new ReindexRequestBuilder(repositoryId);
+	public static ReindexRequestBuilder builder() {
+		return new ReindexRequestBuilder();
 	}
 
 	public static String featureFor(String repositoryId) {

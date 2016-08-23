@@ -26,9 +26,7 @@ public final class ReindexRequestBuilder extends BaseRepositoryRequestBuilder<Re
 	
 	private long failedCommitTimestamp = -1;
 
-	ReindexRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	ReindexRequestBuilder() {}
 	
 	public ReindexRequestBuilder setFailedCommitTimestamp(long failedCommitTimestamp) {
 		this.failedCommitTimestamp = failedCommitTimestamp;
