@@ -15,41 +15,31 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * @since 4.7
  */
 public class CodeSystemRequests {
 
-	private final String repositoryId;
+	private CodeSystemRequests() {}
+	
+	public static CodeSystemCreateRequestBuilder prepareNewCodeSystem() {
+		return new CodeSystemCreateRequestBuilder();
+	}
 
-	public CodeSystemRequests(final String repositoryId) {
-		this.repositoryId = checkNotNull(repositoryId, "repositoryId");
+	public static CodeSystemUpdateRequestBuilder prepareUpdateCodeSystem(final String uniqueId) {
+		return new CodeSystemUpdateRequestBuilder(uniqueId);
+	}
+
+	public static CodeSystemGetRequestBuilder prepareGetCodeSystem() {
+		return new CodeSystemGetRequestBuilder();
+	}
+
+	public static CodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
+		return new CodeSystemSearchRequestBuilder();
+	}
+
+	public static CodeSystemVersionSearchRequestBuilder prepareSearchCodeSystemVersion() {
+		return new CodeSystemVersionSearchRequestBuilder();
 	}
 	
-	public CodeSystemCreateRequestBuilder prepareNewCodeSystem() {
-		return new CodeSystemCreateRequestBuilder(repositoryId);
-	}
-
-	public CodeSystemUpdateRequestBuilder prepareUpdateCodeSystem(final String uniqueId) {
-		return new CodeSystemUpdateRequestBuilder(repositoryId, uniqueId);
-	}
-
-	public CodeSystemGetRequestBuilder prepareGetCodeSystem() {
-		return new CodeSystemGetRequestBuilder(repositoryId);
-	}
-
-	public CodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
-		return new CodeSystemSearchRequestBuilder(repositoryId);
-	}
-
-	public CodeSystemVersionSearchRequestBuilder prepareSearchCodeSystemVersion() {
-		return new CodeSystemVersionSearchRequestBuilder(repositoryId);
-	}
-	
-	public String getRepositoryId() {
-		return repositoryId;
-	}
-
 }

@@ -27,8 +27,8 @@ public final class CodeSystemSearchRequestBuilder extends SearchRequestBuilder<C
 	private String shortName;
 	private String oid;
 
-	CodeSystemSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	CodeSystemSearchRequestBuilder() {
+		super();
 	}
 
 	public CodeSystemSearchRequestBuilder filterByShortName(final String shortName) {

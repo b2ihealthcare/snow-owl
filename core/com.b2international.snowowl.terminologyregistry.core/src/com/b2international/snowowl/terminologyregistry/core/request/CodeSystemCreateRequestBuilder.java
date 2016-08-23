@@ -18,6 +18,7 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 4.7
@@ -36,8 +37,8 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 	private String terminologyId;
 	private String extensionOf;
 
-	CodeSystemCreateRequestBuilder(final String repositoryId) {
-		super(repositoryId);
+	CodeSystemCreateRequestBuilder() {
+		super(new RepositoryCommitRequestBuilder());
 	}
 
 	public CodeSystemCreateRequestBuilder setBranchPath(final String branchPath) {

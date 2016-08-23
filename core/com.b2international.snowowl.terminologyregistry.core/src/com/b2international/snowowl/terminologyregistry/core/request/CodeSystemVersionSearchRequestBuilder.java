@@ -27,8 +27,8 @@ public final class CodeSystemVersionSearchRequestBuilder extends SearchRequestBu
 	private String codeSystemShortName;
 	private String versionId;
 
-	CodeSystemVersionSearchRequestBuilder(final String repositoryId) {
-		super(repositoryId);
+	CodeSystemVersionSearchRequestBuilder() {
+		super();
 	}
 
 	public CodeSystemVersionSearchRequestBuilder filterByCodeSystemShortName(String codeSystemShortName) {

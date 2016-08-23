@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
@@ -117,8 +116,9 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 		}
 		
 		final Branch branch = RepositoryRequests
-				.branching(repositoryUuid)
+				.branching()
 				.prepareGet(branchPath)
+				.build()
 				.execute(context);
 		
 		if (branch.isDeleted()) {
@@ -128,10 +128,10 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 	
 	private CodeSystemEntry getCodeSystem(final String uniqeId, final TransactionContext context) {
 		try {
-			return new CodeSystemRequests(repositoryUuid)
+			return CodeSystemRequests
 					.prepareGetCodeSystem()
 					.setUniqueId(uniqeId)
-					.build(IBranchPath.MAIN_BRANCH)
+					.build()
 					.execute(context);
 		} catch (CodeSystemNotFoundException e) {
 			 return null;
