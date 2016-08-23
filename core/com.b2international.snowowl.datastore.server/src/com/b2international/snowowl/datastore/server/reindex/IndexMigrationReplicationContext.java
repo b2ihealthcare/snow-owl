@@ -100,7 +100,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 			Entry<Long, CDOBranch> currentBranchToReplicate = branchesByBasetimestamp.firstEntry();
 			
 			// before creating the branches, execute a purge on the latest segment of the parent branch
-			PurgeRequest.builder(context.id())
+			PurgeRequest.builder()
 				.setBranchPath(currentBranchToReplicate.getValue().getBase().getBranch().getPathName())
 				.build()
 				.execute(context);
@@ -288,7 +288,7 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 	}
 	
 	private void optimize() {
-		OptimizeRequest.builder(context.id()).setMaxSegments(8).build().execute(context);
+		OptimizeRequest.builder().setMaxSegments(8).build().execute(context);
 	}
 
 	@Override
