@@ -31,7 +31,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 	
 	@Override
 	protected Request<BranchContext, CommitInfo> extend(Request<BranchContext, CommitInfo> req) {
-		return new IdRequest(req); 
+		return super.extend(new IdRequest(req)); 
 	}
 
 }

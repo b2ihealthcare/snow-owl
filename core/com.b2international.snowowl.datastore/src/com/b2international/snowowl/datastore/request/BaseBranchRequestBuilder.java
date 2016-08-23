@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -37,6 +39,7 @@ public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilde
 	 * @param req
 	 * @return
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected Request<BranchContext, R> extend(Request<BranchContext, R> req) {
 		return req;
 	}
