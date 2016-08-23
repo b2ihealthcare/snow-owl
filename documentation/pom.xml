@@ -36,6 +36,7 @@
 						</configuration>
 					</execution>
 
+					<!--
 					<execution>
 						<id>output-pdf</id>
 						<phase>generate-resources</phase>
@@ -47,6 +48,7 @@
 							<sourceHighlighter>coderay</sourceHighlighter>
 						</configuration>
 					</execution>
+					-->
 				</executions>
 
 				<dependencies>
