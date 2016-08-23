@@ -94,7 +94,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		return DeferredResults.wrap(SnomedRequests.prepareSearchRefSet()
 				.setOffset(offset)
 				.setLimit(limit)
-				.build(branchPath)
+				.build(repositoryId, branchPath)
 				.execute(bus));
 	}
 	
@@ -141,7 +141,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.setComponentId(referenceSetId)
 				.setExpand(expand)
 				.setLocales(extendedLocales)
-				.build(branchPath)
+				.build(repositoryId, branchPath)
 				.execute(bus));
 	}
 	
@@ -175,7 +175,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setIdentifierConcept(change.toRequestBuilder())
 			.setType(change.getType())
 			.setReferencedComponentType(change.getReferencedComponentType())
-			.build(principal.getName(), branchPath, body.getCommitComment())
+			.build(repositoryId, branchPath, principal.getName(), body.getCommitComment())
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -219,8 +219,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setBody(body.getChange().resolve(resolver))
 			.setCommitComment(body.getCommitComment())
 			.setUserId(principal.getName())
-			.setBranch(branchPath)
-			.build()
+			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync();
 	}
@@ -261,9 +260,8 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.prepareCommit()
 			.setBody(bulkRequest.resolve(resolver))
 			.setUserId(principal.getName())
-			.setBranch(branchPath)
 			.setCommitComment(request.getCommitComment())
-			.build()
+			.build(repositoryId, branchPath)
 			.execute(bus)
 			.getSync();
 	}

@@ -94,7 +94,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 					.all()
 					.filterByConceptId(conceptId)
 					.setExpand(expand)
-					.build(branchPath)
+					.build(repositoryId, branchPath)
 					.execute(bus)
 					.then(new Function<SnomedDescriptions, SnomedConceptDescriptions>() {
 						@Override
@@ -174,7 +174,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 					.setLimit(limit)
 					.setExpand(newExpand.toString())
 					.setLocales(extendedLocales)
-					.build(branchPath)
+					.build(repositoryId, branchPath)
 					.execute(bus)
 					.then(new Function<SnomedRelationships, SnomedInboundRelationships>() {
 						@Override
@@ -225,7 +225,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 					.filterBySource(conceptId)
 					.setOffset(offset)
 					.setLimit(limit)
-					.build(branchPath)
+					.build(repositoryId, branchPath)
 					.execute(bus)
 					.then(new Function<SnomedRelationships, SnomedOutboundRelationships>() {
 						@Override
@@ -277,7 +277,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
 				.setExpand(String.format("descendants(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
-				.build(branchPath)
+				.build(repositoryId, branchPath)
 				.execute(bus)
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
 					@Override
@@ -326,7 +326,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
 				.setExpand(String.format("ancestors(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
-				.build(branchPath)
+				.build(repositoryId, branchPath)
 				.execute(bus)
 				.then(new Function<ISnomedConcept, SnomedConcepts>() {
 					@Override

@@ -396,7 +396,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 					final ISnomedConcept targetConcept = SnomedRequests.prepareGetConcept()
 							.setComponentId(relationshipChange.getDestinationId())
-							.build(branchPath)
+							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(bus)
 							.getSync();
 					final SnomedBrowserRelationshipTarget relationshipTarget = browserService.getSnomedBrowserRelationshipTarget(targetConcept, branchPath, locales);

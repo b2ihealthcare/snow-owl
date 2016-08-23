@@ -74,6 +74,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
@@ -130,7 +131,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.setComponentId(conceptId)
 				.setLocales(locales)
 				.setExpand("pt(),fsn(),descriptions(limit:"+Integer.MAX_VALUE+"),relationships(limit:"+Integer.MAX_VALUE+")")
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(bus)
 				.getSync();
 		
@@ -175,8 +176,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.setCommitComment(commitComment)
 				.setBody(req)
 				.setUserId(userId)
-				.setBranch(branchPath)
-				.build()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(bus)
 				.getSync()
 				.getResultAs(String.class);
@@ -253,11 +253,10 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		SnomedRequests
 			.prepareCommit()
 			.setUserId(userId)
-			.setBranch(branchPath)
 			.setCommitComment(commitComment)
 			.setBody(commitReq)
 			.setPreparationTime(watch.elapsed(TimeUnit.MILLISECONDS))
-			.build()
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.execute(bus)
 			.getSync();
 		LOGGER.info("Committed changes for concept {}", newVersionConcept.getFsn());
@@ -411,7 +410,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.setComponentIds(destinationConceptIds)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(bus)
 				.getSync();
 	}
@@ -450,7 +449,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 						.setComponentId(conceptId)
 						.setExpand("ancestors(form:\"inferred\",direct:true)")
 						.setLocales(locales)
-						.build(branchPath.getPath())
+						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 						.execute(bus)
 						.getSync().getAncestors();
 			}
@@ -485,7 +484,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 						.filterByActive(true)
 						.filterByParent(stated ? null : conceptId)
 						.filterByStatedParent(stated ? conceptId : null)
-						.build(branch)
+						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 						.execute(bus)
 						.getSync();
 				
@@ -522,7 +521,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.filterByDestination(conceptId)
 				.filterByType(Concepts.IS_A)
 				.setLimit(0)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(bus)
 				.getSync().getTotal() > 0;
 	}
@@ -543,7 +542,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			.setOffset(offset)
 			.setLimit(limit)
 			.filterByTerm(query)
-			.build(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(bus)
 			.getSync()
 			.getItems();
@@ -635,7 +634,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				// Check if the corresponding concept exists
 				SnomedRequests.prepareGetConcept()
 						.setComponentId(conceptId)
-						.build(branch)
+						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 						.execute(bus)
 						.getSync();
 				

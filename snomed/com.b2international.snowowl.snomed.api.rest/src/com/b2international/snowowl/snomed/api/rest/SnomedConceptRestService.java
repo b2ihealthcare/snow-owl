@@ -137,7 +137,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByActive(activeFilter)
 					.setExpand(expand)
 					.filterByExtendedLocales(extendedLocales)
-					.build(branch)
+					.build(repositoryId, branch)
 					.execute(bus));
 	}
 
@@ -189,7 +189,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.setComponentId(conceptId)
 					.setExpand(expand)
 					.setLocales(extendedLocales)
-					.build(branchPath)
+					.build(repositoryId, branchPath)
 					.execute(bus));
 	}
 
@@ -223,7 +223,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		
 		final String createdConceptId = change
 			.toRequestBuilder()
-			.build(userId, branchPath, commitComment)
+			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -282,7 +282,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.setDefinitionStatus(update.getDefinitionStatus())
 			.setInactivationIndicator(update.getInactivationIndicator())
 			.setSubclassDefinitionStatus(update.getSubclassDefinitionStatus())
-			.build(userId, branchPath, commitComment)
+			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
@@ -320,7 +320,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			.prepareDeleteConcept()
 			.setComponentId(conceptId)
 			.force(force)
-			.build(principal.getName(), branchPath, String.format("Deleted Concept '%s' from store.", conceptId))
+			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Concept '%s' from store.", conceptId))
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}

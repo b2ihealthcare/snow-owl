@@ -108,7 +108,7 @@ public class SnomedExportService implements ISnomedExportService {
 					.all()
 					.filterByActive(true)
 					.filterByAncestor(Concepts.MODULE_ROOT)
-					.build(exportBranch.getPath())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, exportBranch.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(new Function<SnomedConcepts, Collection<String>>() {
 						@Override

@@ -145,7 +145,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 					.setLimit(limit)
 					.setOffset(offset)
 					.setExpand(expand)
-					.build(branch)
+					.build(repositoryId, branch)
 					.execute(bus));
 	}
 
@@ -177,7 +177,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final String createdDescriptionId = body
 			.getChange()
 			.toRequestBuilder()
-			.build(principal.getName(), branchPath, commitComment)
+			.build(repositoryId, branchPath, principal.getName(), commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 			.getResultAs(String.class);
@@ -211,7 +211,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 					.prepareGetDescription()
 					.setComponentId(descriptionId)
 					.setExpand(expand)
-					.build(branchPath)
+					.build(repositoryId, branchPath)
 					.execute(bus));
 	}
 
@@ -255,7 +255,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.setInactivationIndicator(update.getInactivationIndicator())
 			.setCaseSignificance(update.getCaseSignificance())
 			.setAcceptability(update.getAcceptability())
-			.build(userId, branchPath, commitComment)
+			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 		
@@ -292,7 +292,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.prepareDeleteDescription()
 			.setComponentId(descriptionId)
 			.force(force)
-			.build(principal.getName(), branchPath, String.format("Deleted Description '%s' from store.", descriptionId))
+			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Description '%s' from store.", descriptionId))
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}

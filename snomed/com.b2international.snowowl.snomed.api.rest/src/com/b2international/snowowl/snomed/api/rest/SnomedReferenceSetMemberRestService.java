@@ -160,7 +160,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			req.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent).build());
 		}
 		
-		return DeferredResults.wrap(req.build(branchPath).execute(bus));
+		return DeferredResults.wrap(req.build(repositoryId, branchPath).execute(bus));
 	}
 	
 	@ApiOperation(
@@ -206,7 +206,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setComponentId(memberId)
 				.setExpand(expand)
 				.setLocales(extendedLocales)
-				.build(branchPath)
+				.build(repositoryId, branchPath)
 				.execute(bus));
 	}
 	
@@ -239,7 +239,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setReferencedComponentId(change.getReferencedComponentId())
 				.setReferenceSetId(change.getReferenceSetId())
 				.setProperties(change.getProperties())
-				.build(principal.getName(), branchPath, body.getCommitComment())
+				.build(repositoryId, branchPath, principal.getName(), body.getCommitComment())
 				.execute(bus)
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)
 				.getResultAs(String.class);
@@ -277,7 +277,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.prepareDeleteMember()
 			.setComponentId(memberId)
 			.force(force)
-			.build(principal.getName(), branchPath, String.format("Deleted reference set member '%s' from store.", memberId))
+			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted reference set member '%s' from store.", memberId))
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
@@ -321,7 +321,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			.setMemberId(memberId)
 			.setSource(update.getSource())
 			.force(force)
-			.build(userId, branchPath, body.getCommitComment())
+			.build(repositoryId, branchPath, userId, body.getCommitComment())
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
 	}
@@ -359,10 +359,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		return SnomedRequests
 				.prepareCommit()
 				.setUserId(principal.getName())
-				.setBranch(branchPath)
 				.setBody(body.getChange().resolve(resolver))
 				.setCommitComment(body.getCommitComment())
-				.build()
+				.build(repositoryId, branchPath)
 				.execute(bus)
 				.getSync();
 	}
