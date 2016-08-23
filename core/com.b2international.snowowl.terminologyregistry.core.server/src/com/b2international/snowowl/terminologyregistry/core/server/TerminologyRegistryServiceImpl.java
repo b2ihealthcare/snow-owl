@@ -63,8 +63,8 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	@Override
 	public Collection<ICodeSystem> getCodeSystems(final IBranchPathMap branchPathMap) {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
-		for (CodeSystemRequests req : getServices()) {
-			getAllCodeSystems.add(req.prepareSearchCodeSystem().all().build(BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(new Function<List<Object>, Collection<ICodeSystem>>() {
@@ -83,8 +83,9 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	@Override
 	public Collection<ICodeSystemVersion> getCodeSystemVersions(final IBranchPathMap branchPathMap, final String codeSystemShortName) {
 		final List<Promise<CodeSystemVersions>> getAllCodeSystemVersions = newArrayList();
-		for (CodeSystemRequests req : getServices()) {
-			getAllCodeSystemVersions.add(req.prepareSearchCodeSystemVersion().all().build(BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystemVersions.add(CodeSystemRequests.prepareSearchCodeSystemVersion().all()
+					.build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystemVersions)
 				.then(new Function<List<Object>, Collection<ICodeSystemVersion>>() {
@@ -103,9 +104,9 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	@Override
 	public ICodeSystem getCodeSystemByShortName(final IBranchPathMap branchPathMap, final String codeSystemShortName) {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
-		for (CodeSystemRequests req : getServices()) {
-			getAllCodeSystems.add(req.prepareSearchCodeSystem().all().filterByShortName(codeSystemShortName)
-					.build(BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().filterByShortName(codeSystemShortName)
+					.build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(new Function<List<Object>, ICodeSystem>() {
@@ -125,9 +126,9 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	@Override
 	public ICodeSystem getCodeSystemByOid(final IBranchPathMap branchPathMap, final String codeSystemOid) {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
-		for (CodeSystemRequests req : getServices()) {
-			getAllCodeSystems.add(req.prepareSearchCodeSystem().all().filterByOid(codeSystemOid)
-					.build(BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().filterByOid(codeSystemOid)
+					.build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(new Function<List<Object>, ICodeSystem>() {
@@ -172,9 +173,9 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	@Override
 	public Map<String, List<ICodeSystemVersion>> getAllVersion() {
 		final List<Promise<CodeSystemVersions>> getAllVersions = newArrayList();
-		final List<CodeSystemRequests> requests = getServices();
-		for (CodeSystemRequests req : requests) {
-			getAllVersions.add(req.prepareSearchCodeSystemVersion().all().build(BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+		final List<String> repositoryIds = getRepositoryIds();
+		for (String repositoryId : repositoryIds) {
+			getAllVersions.add(CodeSystemRequests.prepareSearchCodeSystemVersion().all().build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
 		}
 		
 		return Promise.all(getAllVersions)
@@ -182,14 +183,13 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 					@Override
 					public Map<String, List<ICodeSystemVersion>> apply(List<Object> input) {
 						final Map<String, List<ICodeSystemVersion>> versionMap = newHashMap();
-						for (int i = 0; i < requests.size(); i++) {
-							final CodeSystemRequests req = requests.get(i);
-							final String repositoryUuid = req.getRepositoryId();
+						for (int i = 0; i < repositoryIds.size(); i++) {
+							final String repositoryId = repositoryIds.get(i);
 							final List<CodeSystemVersionEntry> versions = ((CodeSystemVersions) input.get(i)).getItems();
-							final List<ICodeSystemVersion> existingVersions = Lists.<ICodeSystemVersion>newArrayList(getServiceForClass(CodeSystemService.class).decorateWithPatchedFlag(repositoryUuid, versions));
+							final List<ICodeSystemVersion> existingVersions = Lists.<ICodeSystemVersion>newArrayList(getServiceForClass(CodeSystemService.class).decorateWithPatchedFlag(repositoryId, versions));
 							sort(existingVersions, reverseOrder(ICodeSystemVersion.VERSION_IMPORT_DATE_COMPARATOR));
-							existingVersions.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryUuid));
-							versionMap.put(repositoryUuid, existingVersions);
+							existingVersions.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(repositoryId));
+							versionMap.put(repositoryId, existingVersions);
 						}
 						return versionMap;
 					}
@@ -197,12 +197,12 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 				.getSync();
 	}
 	
-	private List<CodeSystemRequests> getServices() {
-		final List<CodeSystemRequests> requests = newArrayList();
+	private List<String> getRepositoryIds() {
+		final List<String> repositories = newArrayList();
 		for (Repository repository : ApplicationContext.getServiceForClass(RepositoryManager.class).repositories()) {
-			requests.add(new CodeSystemRequests(repository.id()));
+			repositories.add(repository.id());
 		}
-		return requests;
+		return repositories;
 	}
 	
 }

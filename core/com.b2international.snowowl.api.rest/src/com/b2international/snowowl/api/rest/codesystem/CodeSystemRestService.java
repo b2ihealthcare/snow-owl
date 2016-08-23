@@ -111,7 +111,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final String userId = principal.getName();
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
-		final String shortName = new CodeSystemRequests(codeSystem.getRepositoryUuid())
+		final String shortName = CodeSystemRequests
 				.prepareNewCodeSystem()
 				.setBranchPath(codeSystem.getBranchPath())
 				.setCitation(codeSystem.getCitation())
@@ -124,7 +124,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setExtensionOf(codeSystem.getExtensionOf())
-				.build(userId, IBranchPath.MAIN_BRANCH, commitComment)
+				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, userId, commitComment)
 				.execute(bus)
 				.getSync().getResultAs(String.class);
 		
@@ -159,7 +159,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryUuid());
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
 		
-		new CodeSystemRequests(codeSystem.getRepositoryUuid())
+		CodeSystemRequests
 				.prepareUpdateCodeSystem(shortNameOrOId)
 				.setName(codeSystem.getName())
 				.setBranchPath(codeSystem.getBranchPath())
@@ -167,7 +167,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setIconPath(codeSystem.getIconPath())
 				.setLanguage(codeSystem.getPrimaryLanguage())
 				.setLink(codeSystem.getOrganizationLink())
-				.build(principal.getName(), IBranchPath.MAIN_BRANCH, commitComment)
+				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, principal.getName(), commitComment)
 				.execute(bus)
 				.getSync();
 	}

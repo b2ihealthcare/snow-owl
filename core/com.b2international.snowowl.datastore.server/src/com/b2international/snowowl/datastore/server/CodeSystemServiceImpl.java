@@ -167,14 +167,14 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 		return (Collection<T>) versions;
 	}
 
-	private Collection<ICodeSystemVersion> getAllTags(final String repositoryUuid, final boolean decorateWithPatched) {
-		final CodeSystemVersions versions = new CodeSystemRequests(repositoryUuid).prepareSearchCodeSystemVersion()
+	private Collection<ICodeSystemVersion> getAllTags(final String repositoryId, final boolean decorateWithPatched) {
+		final CodeSystemVersions versions = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
-			.build(createMainPath().getPath())
+			.build(repositoryId, createMainPath().getPath())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		
-		return Collections.<ICodeSystemVersion>unmodifiableCollection(newHashSet(decorateWithPatched ? decorateWithPatchedFlag(repositoryUuid, versions.getItems()) : versions));
+		return Collections.<ICodeSystemVersion>unmodifiableCollection(newHashSet(decorateWithPatched ? decorateWithPatchedFlag(repositoryId, versions.getItems()) : versions));
 	}
 
 	private List<ICodeSystemVersion> getAllTagsWithHead(final String repositoryUuid, final boolean decorateWithPatched) {

@@ -141,10 +141,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	private void collectExistingVersions() {
 		CodeSystemEntry releaseEntry = getCodeSystemEntry(importContext.getCodeSystemShortName(), importContext.getCodeSystemOID());
-		existingVersions = FluentIterable.from(new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+		existingVersions = FluentIterable.from(CodeSystemRequests
 			.prepareSearchCodeSystemVersion()
 			.filterByCodeSystemShortName(releaseEntry.getShortName())
-			.build(IBranchPath.MAIN_BRANCH)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
 			.execute(getEventBus())
 			.getSync()
 			.getItems()).transform(new Function<ICodeSystemVersion, String>() {
@@ -157,18 +157,18 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private CodeSystemEntry getCodeSystemEntry(String shortName, String oid) {
 		CodeSystemEntry entry;
 		try {
-			entry = new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+			entry = CodeSystemRequests
 				.prepareGetCodeSystem()
 				.setUniqueId(oid)
-				.build(IBranchPath.MAIN_BRANCH)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
 				.execute(getEventBus())
 				.getSync();
 		} catch (CodeSystemNotFoundException e) {
 			try {
-				entry = new CodeSystemRequests(SnomedDatastoreActivator.REPOSITORY_UUID)
+				entry = CodeSystemRequests
 					.prepareGetCodeSystem()
 					.setUniqueId(shortName)
-					.build(IBranchPath.MAIN_BRANCH)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
 					.execute(getEventBus())
 					.getSync();
 			} catch (CodeSystemNotFoundException e2) {

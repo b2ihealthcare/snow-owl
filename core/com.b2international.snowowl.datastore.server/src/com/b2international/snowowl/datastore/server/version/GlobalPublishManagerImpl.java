@@ -315,17 +315,16 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 		
 		for (final String toolingId : configuration.getToolingIds()) {
 			final String shortName = ConfigurationThreadLocal.getConfiguration().getCodeSystemShortName();
-			final String repositoryUuid = CodeSystemUtils.getRepositoryUuid(toolingId);
+			final String repositoryId = CodeSystemUtils.getRepositoryUuid(toolingId);
 			
-			final CodeSystemVersionSearchRequestBuilder requestBuilder = new CodeSystemRequests(repositoryUuid)
-					.prepareSearchCodeSystemVersion();
+			final CodeSystemVersionSearchRequestBuilder requestBuilder = CodeSystemRequests.prepareSearchCodeSystemVersion();
 			
 			if (toolingId.equals(configuration.getPrimaryToolingId())) {
 				requestBuilder.filterByCodeSystemShortName(shortName);
 			}
 			
 			final Set<ICodeSystemVersion> versions = newHashSet();
-			versions.addAll(requestBuilder.build(IBranchPath.MAIN_BRANCH).execute(getEventBus()).getSync().getItems());
+			versions.addAll(requestBuilder.build(repositoryId, IBranchPath.MAIN_BRANCH).execute(getEventBus()).getSync().getItems());
 			
 			existingVersions.put(toolingId, versions);
 		}

@@ -115,11 +115,11 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			throw new CodeSystemNotFoundException(shortName);
 		}
 		
-		final CodeSystemVersions versions = new CodeSystemRequests(codeSystem.getRepositoryUuid())
+		final CodeSystemVersions versions = CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.filterByCodeSystemShortName(shortName)
 				.filterByVersionId(versionId)
-				.build(IBranchPath.MAIN_BRANCH)
+				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
 				.execute(getEventBus())
 				.getSync();
 		
@@ -188,8 +188,9 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		
 		try {
 			RepositoryRequests
-				.branching(repositoryId)
+				.branching()
 				.prepareGet(versionBranch)
+				.build(repositoryId)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", versionBranch);
@@ -200,10 +201,10 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 
 	private Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> getCodeSystemVersions(final String shortName, final String repositoryId) {
 		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> result = newHashSet();
-		result.addAll(new CodeSystemRequests(repositoryId)
+		result.addAll(CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.filterByCodeSystemShortName(shortName)
-				.build(IBranchPath.MAIN_BRANCH)
+				.build(repositoryId, IBranchPath.MAIN_BRANCH)
 				.execute(getEventBus())
 				.getSync()
 				.getItems());
