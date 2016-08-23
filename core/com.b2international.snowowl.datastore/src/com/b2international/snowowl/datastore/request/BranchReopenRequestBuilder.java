@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,25 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.SearchBranchRequest;
+import com.b2international.snowowl.datastore.events.ReopenBranchRequest;
 
 /**
- * TODO filter them by date, deleted flag, path match etc.
- * @since 4.5
+ * @since 5.0
  */
-public final class BranchSearchRequestBuilder extends BaseRepositoryRequestBuilder<BranchSearchRequestBuilder, Branches> {
+public final class BranchReopenRequestBuilder extends BaseRepositoryRequestBuilder<BranchReopenRequestBuilder, Branch> {
 
-	BranchSearchRequestBuilder() {
-		super();
-	}
+	private final String path;
 
-	@Override
-	protected Request<RepositoryContext, Branches> doBuild() {
-		return new SearchBranchRequest();
+	BranchReopenRequestBuilder(String path) {
+		this.path = path;
 	}
 	
+	@Override
+	protected Request<RepositoryContext, Branch> doBuild() {
+		return new ReopenBranchRequest(path);
+	}
+
 }

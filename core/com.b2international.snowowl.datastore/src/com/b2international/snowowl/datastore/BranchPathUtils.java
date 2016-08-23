@@ -250,7 +250,11 @@ public abstract class BranchPathUtils {
 	 */
 	public static boolean exists(String repositoryUUID, String branchPath) {
 		try {
-			RepositoryRequests.branching(repositoryUUID).prepareGet(branchPath).execute(ApplicationContext.getInstance().getService(IEventBus.class)).getSync(1000, TimeUnit.MILLISECONDS);
+			RepositoryRequests.branching()
+				.prepareGet(branchPath)
+				.build(repositoryUUID)
+				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
+				.getSync(1000, TimeUnit.MILLISECONDS);
 		} catch (NotFoundException e) {
 			return false;
 		}
@@ -263,7 +267,11 @@ public abstract class BranchPathUtils {
 	 * @return
 	 */
 	public static Branch getMainBranchForRepository(String repositoryUUID) {
-		return RepositoryRequests.branching(repositoryUUID).prepareGet(IBranchPath.MAIN_BRANCH).execute(ApplicationContext.getInstance().getService(IEventBus.class)).getSync(1000, TimeUnit.MILLISECONDS);
+		return RepositoryRequests.branching()
+				.prepareGet(IBranchPath.MAIN_BRANCH)
+				.build(repositoryUUID)
+				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
+				.getSync(1000, TimeUnit.MILLISECONDS);
 	}
 	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {

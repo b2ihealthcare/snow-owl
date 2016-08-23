@@ -31,9 +31,7 @@ public final class BranchCreateRequestBuilder extends BaseRepositoryRequestBuild
 	private String name;
 	private Metadata metadata = new MetadataImpl();
 	
-	BranchCreateRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	BranchCreateRequestBuilder() {}
 	
 	public BranchCreateRequestBuilder setMetadata(Metadata metadata) {
 		this.metadata = metadata;

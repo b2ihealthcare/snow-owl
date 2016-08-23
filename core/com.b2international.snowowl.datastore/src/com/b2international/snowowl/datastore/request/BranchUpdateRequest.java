@@ -40,7 +40,7 @@ public final class BranchUpdateRequest extends BranchRequest<Boolean> {
 	@Override
 	public Boolean execute(RepositoryContext context) {
 		if (metadata != null) {
-			final Branch branch = RepositoryRequests.branching(context.id()).prepareGet(getBranchPath()).execute(context);
+			final Branch branch = RepositoryRequests.branching().prepareGet(getBranchPath()).build().execute(context);
 			branch.update(metadata);
 		}
 		return Boolean.TRUE;

@@ -15,51 +15,38 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branches;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.DeleteBranchRequest;
-import com.b2international.snowowl.datastore.events.ReadBranchChildrenRequest;
-import com.b2international.snowowl.datastore.events.ReadBranchRequest;
-import com.b2international.snowowl.datastore.events.ReopenBranchRequest;
-
 /**
  * @since 4.5
  */
-public class Branching {
+public final class Branching {
 
-	private String repositoryId;
-
-	Branching(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
+	Branching() {}
 	
 	public BranchCreateRequestBuilder prepareCreate() {
-		return new BranchCreateRequestBuilder(repositoryId);
+		return new BranchCreateRequestBuilder();
 	}
 	
 	public BranchSearchRequestBuilder prepareSearch() {
-		return new BranchSearchRequestBuilder(repositoryId);
+		return new BranchSearchRequestBuilder();
 	}
 	
-	public Request<ServiceProvider, Branch> prepareGet(String path) {
-		return RepositoryRequests.wrap(repositoryId, new ReadBranchRequest(path));
+	public BranchGetRequestBuilder prepareGet(String path) {
+		return new BranchGetRequestBuilder(path);
 	}
 	
-	public Request<ServiceProvider, Branches> prepareGetChildren(String path) {
-		return RepositoryRequests.wrap(repositoryId, new ReadBranchChildrenRequest(path));
+	public BranchGetChildrenRequestBuilder prepareGetChildren(String path) {
+		return new BranchGetChildrenRequestBuilder(path);
 	}
 	
-	public Request<ServiceProvider, Branch> prepareDelete(String branchPath) {
-		return RepositoryRequests.wrap(repositoryId, new DeleteBranchRequest(branchPath));
+	public BranchDeleteRequestBuilder prepareDelete(String branchPath) {
+		return new BranchDeleteRequestBuilder(branchPath);
 	}
 
-	public Request<ServiceProvider, Branch> prepareReopen(String branchPath) {
-		return RepositoryRequests.wrap(repositoryId, new ReopenBranchRequest(branchPath));
+	public BranchReopenRequestBuilder prepareReopen(String branchPath) {
+		return new BranchReopenRequestBuilder(branchPath);
 	}
 
 	public BranchUpdateRequestBuilder prepareUpdate(String branchPath) {
-		return new BranchUpdateRequestBuilder(repositoryId, branchPath);
+		return new BranchUpdateRequestBuilder(branchPath);
 	}
 }

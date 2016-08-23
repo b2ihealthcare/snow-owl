@@ -17,12 +17,12 @@ package com.b2international.snowowl.datastore.events;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.events.BaseRepositoryEvent;
+import com.b2international.snowowl.core.events.RepositoryEvent;
 
 /**
  * @since 4.3
  */
-public final class BranchChangedEvent extends BaseRepositoryEvent {
+public final class BranchChangedEvent extends RepositoryEvent {
 	
 	private final String branch;
 	

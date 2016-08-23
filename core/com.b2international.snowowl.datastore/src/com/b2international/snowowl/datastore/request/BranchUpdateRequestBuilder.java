@@ -27,8 +27,7 @@ public final class BranchUpdateRequestBuilder extends BaseRepositoryRequestBuild
 	private final String branchPath;
 	private Metadata metadata;
 
-	BranchUpdateRequestBuilder(String repositoryId, String branchPath) {
-		super(repositoryId);
+	BranchUpdateRequestBuilder(String branchPath) {
 		this.branchPath = branchPath;
 	}
 	
