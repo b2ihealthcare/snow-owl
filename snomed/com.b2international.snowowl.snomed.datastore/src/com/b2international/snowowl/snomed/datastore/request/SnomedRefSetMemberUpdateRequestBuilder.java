@@ -19,19 +19,18 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseTransactionalRequestBuilder<SnomedRefSetMemberUpdateRequestBuilder, Void> {
+public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetMemberUpdateRequestBuilder, Void> {
 
 	private String memberId;
 	private Map<String, Object> source;
 	private Boolean force = Boolean.FALSE;
 	
-	SnomedRefSetMemberUpdateRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRefSetMemberUpdateRequestBuilder() {
+		super();
 	}
 	
 	public SnomedRefSetMemberUpdateRequestBuilder setMemberId(String memberId) {

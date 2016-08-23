@@ -16,7 +16,9 @@
 package com.b2international.snowowl.snomed.api.japi.branches;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Set;
@@ -25,7 +27,6 @@ import java.util.UUID;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -62,8 +63,8 @@ public class SnomedBranchRequestTest {
 		
 		// try to create two branches at the same time
 		final String branchName = UUID.randomUUID().toString();
-		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).buildFor().execute(bus);
-		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).buildFor().execute(bus);
+		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(SnomedDatastoreActivator.REPOSITORY_UUID).execute(bus);
+		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(SnomedDatastoreActivator.REPOSITORY_UUID).execute(bus);
 		final String error = Promise.all(first, second)
 			.then(new Function<List<Object>, String>() {
 				@Override
@@ -91,8 +92,8 @@ public class SnomedBranchRequestTest {
 		// try to create two branches at the same time
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
-		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchA).buildFor().execute(bus);
-		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchB).buildFor().execute(bus);
+		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchA).build(SnomedDatastoreActivator.REPOSITORY_UUID).execute(bus);
+		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchB).build(SnomedDatastoreActivator.REPOSITORY_UUID).execute(bus);
 		final Boolean success = Promise.all(first, second)
 			.then(new Function<List<Object>, Boolean>() {
 				@Override

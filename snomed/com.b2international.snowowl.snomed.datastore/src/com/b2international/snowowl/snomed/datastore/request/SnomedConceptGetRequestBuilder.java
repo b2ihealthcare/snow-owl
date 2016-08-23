@@ -24,8 +24,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
  */
 public final class SnomedConceptGetRequestBuilder extends RevisionGetRequestBuilder<SnomedConceptGetRequestBuilder, ISnomedConcept> {
 
-	SnomedConceptGetRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedConceptGetRequestBuilder() {
+		super();
 	}
 
 	@Override

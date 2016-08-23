@@ -23,10 +23,10 @@ import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuil
 /**
  * @since 4.5
  */
-public class SnomedRepositoryCommitRequestBuilder extends RepositoryCommitRequestBuilder {
+public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommitRequestBuilder {
 
-	SnomedRepositoryCommitRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRepositoryCommitRequestBuilder() {
+		super();
 	}
 	
 	@Override

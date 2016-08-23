@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationInd
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
@@ -91,7 +92,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 					final String branchPath = getLatestReleaseBranch(context);
 					final ISnomedConcept releasedConcept = SnomedRequests.prepareGetConcept()
 							.setComponentId(getComponentId())
-							.build(branchPath)
+							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(context.service(IEventBus.class))
 							.getSync();
 					if (!isDifferentToPreviousRelease(concept, releasedConcept)) {

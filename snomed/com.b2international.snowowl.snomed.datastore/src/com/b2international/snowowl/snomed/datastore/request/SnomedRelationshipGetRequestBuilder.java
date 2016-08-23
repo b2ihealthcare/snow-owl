@@ -24,8 +24,8 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
  */
 public final class SnomedRelationshipGetRequestBuilder extends RevisionGetRequestBuilder<SnomedRelationshipGetRequestBuilder, ISnomedRelationship> {
 
-	SnomedRelationshipGetRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRelationshipGetRequestBuilder() {
+		super();
 	}
 	
 	@Override

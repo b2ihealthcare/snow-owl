@@ -29,8 +29,8 @@ public final class QueryRefSetUpdateRequestBuilder extends BaseTransactionalRequ
 	private String referenceSetId;
 	private String moduleId;
 	
-	QueryRefSetUpdateRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	QueryRefSetUpdateRequestBuilder() {
+		super(new SnomedRepositoryCommitRequestBuilder());
 	}
 	
 	public QueryRefSetUpdateRequestBuilder setModuleId(String moduleId) {

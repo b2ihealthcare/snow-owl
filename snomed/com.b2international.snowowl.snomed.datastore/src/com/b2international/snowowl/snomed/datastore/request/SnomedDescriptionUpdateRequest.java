@@ -32,6 +32,7 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
@@ -90,7 +91,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 					final ISnomedDescription releasedDescription = SnomedRequests
 						.prepareGetDescription()
 						.setComponentId(getComponentId())
-						.build(branchPath)
+						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 						.execute(bus)
 						.getSync();
 	

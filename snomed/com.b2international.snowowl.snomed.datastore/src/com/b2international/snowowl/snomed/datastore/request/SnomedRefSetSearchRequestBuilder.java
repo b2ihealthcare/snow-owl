@@ -29,9 +29,7 @@ import com.google.common.base.Strings;
  */
 public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRefSetSearchRequestBuilder, SnomedReferenceSets> {
 
-	SnomedRefSetSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	SnomedRefSetSearchRequestBuilder() {}
 
 	@Override
 	protected RevisionSearchRequest<SnomedReferenceSets> createSearch() {

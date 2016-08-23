@@ -33,8 +33,8 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 	private CaseSignificance caseSignificance;
 	private DescriptionInactivationIndicator inactivationIndicator;
 
-	SnomedDescriptionUpdateRequestBuilder(String repositoryId, String componentId) {
-		super(repositoryId, componentId);
+	SnomedDescriptionUpdateRequestBuilder(String componentId) {
+		super(componentId);
 	}
 
 	public SnomedDescriptionUpdateRequestBuilder setAcceptability(Map<String, Acceptability> acceptability) {

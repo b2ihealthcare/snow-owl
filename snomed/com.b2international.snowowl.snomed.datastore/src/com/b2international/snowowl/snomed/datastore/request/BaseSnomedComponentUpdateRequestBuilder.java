@@ -30,8 +30,8 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 	private String moduleId;
 	private Boolean active;
 
-	protected BaseSnomedComponentUpdateRequestBuilder(String repositoryId, String componentId) {
-		super(repositoryId);
+	protected BaseSnomedComponentUpdateRequestBuilder(String componentId) {
+		super();
 		this.componentId = componentId;
 	}
 	

@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers> {
 
-	SnomedRefSetMemberSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	SnomedRefSetMemberSearchRequestBuilder() {
+		super();
 	}
 	
 	@Override

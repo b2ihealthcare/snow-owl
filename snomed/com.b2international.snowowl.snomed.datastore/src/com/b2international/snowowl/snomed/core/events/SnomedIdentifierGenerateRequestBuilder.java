@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.BaseBranchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 4.5
@@ -28,11 +27,6 @@ public final class SnomedIdentifierGenerateRequestBuilder extends BaseBranchRequ
 
 	private ComponentCategory category;
 	private String namespace;
-	
-	// TODO remove hard coded repository Id
-	public SnomedIdentifierGenerateRequestBuilder() {
-		super(SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
 	
 	public SnomedIdentifierGenerateRequestBuilder setCategory(ComponentCategory category) {
 		this.category = category;

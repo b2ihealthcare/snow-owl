@@ -26,9 +26,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
  */
 public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
 
-	SnomedConceptSearchRequestBuilder(String repositoryId) {
-		super(repositoryId);
-	}
+	SnomedConceptSearchRequestBuilder() {}
 
 	public final SnomedConceptSearchRequestBuilder withDoi() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
