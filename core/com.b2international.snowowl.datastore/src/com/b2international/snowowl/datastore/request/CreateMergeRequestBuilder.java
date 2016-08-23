@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -26,18 +24,14 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 /**
  * @since 4.5
  */
-public final class CreateMergeRequestBuilder {
+public final class CreateMergeRequestBuilder extends BaseRepositoryRequestBuilder<CreateMergeRequestBuilder, Merge> {
 	
 	private String source;
 	private String target;
 	private String commitComment;
 	private String reviewId;
 	
-	private String repositoryId;
-	
-	CreateMergeRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
+	CreateMergeRequestBuilder() {}
 	
 	public CreateMergeRequestBuilder setSource(String source) {
 		this.source = source;
@@ -58,18 +52,18 @@ public final class CreateMergeRequestBuilder {
 		this.reviewId = reviewId;
 		return this;
 	}
-	
-	public Request<ServiceProvider, Merge> build() {
+
+	@Override
+	protected Request<RepositoryContext, Merge> doBuild() {
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
 		final IBranchPath targetPath = BranchPathUtils.createPath(target);
-		final BaseRequest<RepositoryContext, Merge> next;
-		
 		if (targetPath.getParent().equals(sourcePath)) {
-			next = new BranchRebaseRequest(source, target, commitComment, reviewId);
+			return new BranchRebaseRequest(source, target, commitComment, reviewId);
 		} else {
-			next = new BranchMergeRequest(source, target, commitComment, reviewId);
+			return new BranchMergeRequest(source, target, commitComment, reviewId);
 		}
-		
-		return RepositoryRequests.wrap(repositoryId, next);
 	}
+
+	
+	
 }

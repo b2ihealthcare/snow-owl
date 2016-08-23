@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.events.CreateReviewRequest;
 import com.b2international.snowowl.datastore.review.Review;
@@ -23,16 +23,12 @@ import com.b2international.snowowl.datastore.review.Review;
 /**
  * @since 4.5
  */
-public final class ReviewCreateRequestBuilder {
+public final class ReviewCreateRequestBuilder extends BaseRepositoryRequestBuilder<ReviewCreateRequestBuilder, Review> {
 	
 	private String sourceBranch;
 	private String targetBranch;
-	
-	private final String repositoryId;
 
-	ReviewCreateRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
+	ReviewCreateRequestBuilder() {}
 	
 	public ReviewCreateRequestBuilder setSource(String source) {
 		this.sourceBranch = source;
@@ -43,9 +39,10 @@ public final class ReviewCreateRequestBuilder {
 		this.targetBranch = target;
 		return this;
 	}
-	
-	public Request<ServiceProvider, Review> build() {
-		return RepositoryRequests.wrap(repositoryId, new CreateReviewRequest(sourceBranch, targetBranch));
+
+	@Override
+	protected Request<RepositoryContext, Review> doBuild() {
+		return new CreateReviewRequest(sourceBranch, targetBranch);
 	}
 
 }

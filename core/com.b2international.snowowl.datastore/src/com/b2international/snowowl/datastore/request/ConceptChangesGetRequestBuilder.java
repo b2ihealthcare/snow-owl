@@ -15,31 +15,25 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
-
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.events.ReadConceptChangesRequest;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
 
 /**
- * @since 4.6
+ * @since 5.0
  */
-public final class GetMergeRequest extends BaseRequest<RepositoryContext, Merge> {
+public final class ConceptChangesGetRequestBuilder extends BaseRepositoryRequestBuilder<ConceptChangesGetRequestBuilder, ConceptChanges> {
 
-	private final UUID id;
+	private final String reviewId;
 
-	GetMergeRequest(UUID id) {
-		this.id = id;
+	ConceptChangesGetRequestBuilder(String reviewId) {
+		this.reviewId = reviewId;
 	}
-
+	
 	@Override
-	public Merge execute(RepositoryContext context) {
-		return context.service(MergeService.class).getMerge(id);
+	protected Request<RepositoryContext, ConceptChanges> doBuild() {
+		return new ReadConceptChangesRequest(reviewId);	
 	}
 
-	@Override
-	protected Class<Merge> getReturnType() {
-		return Merge.class;
-	}
 }

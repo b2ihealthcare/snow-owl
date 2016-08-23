@@ -24,22 +24,22 @@ import com.b2international.snowowl.core.merge.MergeService;
 /**
  * @since 4.6
  */
-public class DeleteMergeRequest extends BaseRequest<RepositoryContext, Void> {
+public final class DeleteMergeRequest extends BaseRequest<RepositoryContext, Boolean> {
 
-	private UUID id;
+	private final UUID id;
 
-	public DeleteMergeRequest(UUID id) {
+	DeleteMergeRequest(UUID id) {
 		this.id = id;
 	}
 
 	@Override
-	public Void execute(RepositoryContext context) {
+	public Boolean execute(RepositoryContext context) {
 		context.service(MergeService.class).deleteMerge(id);
-		return null;
+		return Boolean.TRUE;
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 }

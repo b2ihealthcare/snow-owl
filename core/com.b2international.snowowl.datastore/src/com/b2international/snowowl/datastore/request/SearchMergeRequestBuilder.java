@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
@@ -25,14 +25,11 @@ import com.b2international.snowowl.core.merge.MergeCollection;
 /**
  * @since 4.6
  */
-public class SearchMergeRequestBuilder {
+public class SearchMergeRequestBuilder extends BaseRepositoryRequestBuilder<SearchMergeRequestBuilder, MergeCollection> {
 
-	private final String repositoryId;
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
-	public SearchMergeRequestBuilder(String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
+	SearchMergeRequestBuilder() {}
 
 	public SearchMergeRequestBuilder withSource(String source) {
 		if (!CompareUtils.isEmpty(source)) {
@@ -55,7 +52,9 @@ public class SearchMergeRequestBuilder {
 		return this;
 	}
 
-	public Request<ServiceProvider, MergeCollection> build() {
-		return RepositoryRequests.wrap(repositoryId, new SearchMergeRequest(optionsBuilder.build()));
+	@Override
+	protected Request<RepositoryContext, MergeCollection> doBuild() {
+		return new SearchMergeRequest(optionsBuilder.build());
 	}
+	
 }

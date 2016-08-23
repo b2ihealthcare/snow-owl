@@ -15,31 +15,25 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
-
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.merge.Merge;
-import com.b2international.snowowl.core.merge.MergeService;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.events.DeleteReviewRequest;
+import com.b2international.snowowl.datastore.review.Review;
 
 /**
- * @since 4.6
+ * @since 5.0
  */
-public final class GetMergeRequest extends BaseRequest<RepositoryContext, Merge> {
+public final class ReviewDeleteRequestBuilder extends BaseRepositoryRequestBuilder<ReviewDeleteRequestBuilder, Review> {
 
-	private final UUID id;
+	private final String reviewId;
 
-	GetMergeRequest(UUID id) {
-		this.id = id;
+	ReviewDeleteRequestBuilder(String reviewId) {
+		this.reviewId = reviewId;
 	}
-
+	
 	@Override
-	public Merge execute(RepositoryContext context) {
-		return context.service(MergeService.class).getMerge(id);
+	protected Request<RepositoryContext, Review> doBuild() {
+		return new DeleteReviewRequest(reviewId);
 	}
 
-	@Override
-	protected Class<Merge> getReturnType() {
-		return Merge.class;
-	}
 }
