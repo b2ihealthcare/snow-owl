@@ -25,6 +25,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IConcreteDomainService;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.DataTypeUtils;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -67,7 +68,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 				.filterByActive(true)
 				.filterByReferencedComponent(ids)
 				.filterByRefSetType(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE))
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedRefSetMemberIndexEntry>>() {
 					@Override

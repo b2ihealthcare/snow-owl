@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.quicksearch.SnomedRefSetQuickSearchProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
@@ -107,7 +108,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			final Map<String, Object> configuration, final IBranchPath branchPath) {
 		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration,
 				getComponentIdsFromConfiguration(configuration), getRefSetTypes(configuration));
-		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
+		final SnomedReferenceSets matchingRefSets = refSetRequest.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 
 		if (matchingRefSets.getTotal() <= 0) {
 			return new QuickSearchContentResult();
@@ -122,7 +123,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 				}).toList();
 
 		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest("", limit, conceptIds);
-		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
+		final SnomedConcepts matchingConcepts = conceptRequest.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 
 		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
 		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
@@ -133,7 +134,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			final Map<String, Object> configuration, final IBranchPath branchPath) {
 		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest(queryExpression, limit,
 				getComponentIdsFromConfiguration(configuration));
-		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
+		final SnomedConcepts matchingConcepts = conceptRequest.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 
 		if (matchingConcepts.getTotal() <= 0) {
 			return new QuickSearchContentResult();
@@ -143,7 +144,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 
 		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration, matchingConceptsById.keySet(),
 				getRefSetTypes(configuration));
-		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).execute(getEventBus()).getSync();
+		final SnomedReferenceSets matchingRefSets = refSetRequest.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 
 		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
 				new RefSetToQuickSearchElementConverter(queryExpression, matchingConceptsById)));

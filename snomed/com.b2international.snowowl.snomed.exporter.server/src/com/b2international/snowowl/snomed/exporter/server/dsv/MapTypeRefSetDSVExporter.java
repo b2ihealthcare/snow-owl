@@ -103,7 +103,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				.setComponentId(exportSetting.getRefSetId())
 				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(pt()))))")
 				.setLocales(languageSetting.getLanguagePreference())
-				.build(branchPath.getPath()).execute(bus).getSync();
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus).getSync();
 		
 		
 		final int activeMemberCount = refSet.getMembers().getTotal();
@@ -149,7 +149,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							Concepts.REFSET_ATTRIBUTE))
 					.setExpand("pt(),descendants(limit:100,form:\"inferred\",direct:false,expand(pt(),parentIds(),ancestorIds()))")
 					.setLocales(languageSetting.getLanguagePreference())
-					.build(branchPath.getPath())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(bus)
 							.then(new Function<SnomedConcepts, Collection<ISnomedConcept>>() {
 								@Override

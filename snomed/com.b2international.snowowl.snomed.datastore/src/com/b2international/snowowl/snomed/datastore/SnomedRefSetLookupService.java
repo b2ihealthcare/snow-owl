@@ -111,7 +111,7 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 			final SnomedReferenceSet refSet = SnomedRequests
 					.prepareGetReferenceSet()
 					.setComponentId(id)
-					.build(branchPath.getPath())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(bus)
 					.getSync();
 			

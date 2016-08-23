@@ -32,6 +32,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -58,7 +59,7 @@ public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentVal
 			.filterByActive(true)
 			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 			.filterByConceptId(concept.getId())
-			.build(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 		

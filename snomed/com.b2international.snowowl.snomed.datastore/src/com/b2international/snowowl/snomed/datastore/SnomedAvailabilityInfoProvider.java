@@ -35,7 +35,7 @@ public class SnomedAvailabilityInfoProvider implements ContentAvailabilityInfoPr
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(Concepts.ROOT_CONCEPT))
-				.build(Branch.MAIN_PATH)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 	}

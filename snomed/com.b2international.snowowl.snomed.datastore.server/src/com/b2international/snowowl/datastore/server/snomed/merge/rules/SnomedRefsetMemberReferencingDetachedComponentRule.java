@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.FluentIterable;
@@ -73,7 +74,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 					.prepareSearchMember()
 					.filterByReferencedComponent(idToComponentTypeMap.keySet())
 					.all()
-					.build(BranchPathUtils.createPath(transaction).getPath())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createPath(transaction).getPath())
 					.execute(getEventBus())
 					.getSync();
 			
@@ -109,7 +110,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 					.from(SnomedRequests.prepareSearchConcept()
 							.setComponentIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
-							.build(branchPath)
+							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(getEventBus())
 							.getSync()).transform(IComponent.ID_FUNCTION).toSet());
 
@@ -117,7 +118,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 					.from(SnomedRequests.prepareSearchDescription()
 							.setComponentIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
-							.build(branchPath)
+							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(getEventBus())
 							.getSync()).transform(IComponent.ID_FUNCTION).toSet());
 
@@ -125,7 +126,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 					.from(SnomedRequests.prepareSearchRelationship()
 							.setComponentIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
-							.build(branchPath)
+							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(getEventBus())
 							.getSync()).transform(IComponent.ID_FUNCTION).toSet());
 

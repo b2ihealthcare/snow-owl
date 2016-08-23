@@ -548,7 +548,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		final ISnomedRelationship relationshipMini = Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
 				.setLimit(1)
 				.setComponentIds(Collections.singleton(relationshipId))
-				.build(getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync(), null);
 		
@@ -824,7 +824,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 						.add(getReferringMembersByProps(id, types, Fields.UNIT_ID))
 						.add(getReferringMembersByProps(id, types, Fields.VALUE_ID))
 						)
-				.build(getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<BulkResponse, SnomedReferenceSetMembers>() {
 					@Override

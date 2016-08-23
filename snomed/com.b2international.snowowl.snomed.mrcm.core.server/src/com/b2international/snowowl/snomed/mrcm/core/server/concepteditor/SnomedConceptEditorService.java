@@ -32,6 +32,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.core.concepteditor.ISnomedConceptEditorService;
@@ -78,7 +79,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 
 		// Retrieve synonym and descendant type IDs
 		final Set<String> synonymAndDescendants = SnomedRequests.prepareGetSynonyms()
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
@@ -100,7 +101,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 				.setComponentId(conceptIdString)
 				.setExpand("pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -112,7 +113,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 	private Set<String> getAncestors(String branch, String conceptId) {
 		return SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(ISnomedConcept.GET_ANCESTORS)
 				.getSync();

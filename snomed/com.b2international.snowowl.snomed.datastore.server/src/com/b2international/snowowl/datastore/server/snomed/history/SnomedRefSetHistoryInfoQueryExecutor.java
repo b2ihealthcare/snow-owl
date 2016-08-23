@@ -36,6 +36,7 @@ import com.b2international.snowowl.datastore.server.history.PreparedStatementKey
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -94,7 +95,7 @@ public class SnomedRefSetHistoryInfoQueryExecutor extends HistoryInfoQueryExecut
 	private SnomedReferenceSet getRefSet(final InternalHistoryInfoConfiguration configuration) {
 		final IBranchPath branchPath = configuration.getBranchPath();
 		final String refSetId = configuration.getComponentId();
-		return SnomedRequests.prepareGetReferenceSet().setComponentId(refSetId).build(branchPath.getPath())
+		return SnomedRequests.prepareGetReferenceSet().setComponentId(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync();
 	}
 

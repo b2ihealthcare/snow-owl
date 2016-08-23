@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Iterables;
 
@@ -69,7 +70,7 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 				.setComponentIds(relationshipConceptIds)
 				.filterByActive(false)
 				.all()
-				.build(BranchPathUtils.createPath(transaction).getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createPath(transaction).getPath())
 				.execute(getEventBus())
 				.getSync();
 

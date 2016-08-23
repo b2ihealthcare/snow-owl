@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -91,7 +92,7 @@ public class UniqueFSNGlobalConstraint implements IGlobalConstraint {
 				.filterByExtendedLocales(locales)
 				.filterByConceptId(activeConceptIds)
 				.all()
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(bus)
 				.getSync();
 		
@@ -137,7 +138,7 @@ public class UniqueFSNGlobalConstraint implements IGlobalConstraint {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByActive(true)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override

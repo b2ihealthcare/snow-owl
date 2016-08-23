@@ -509,7 +509,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.setLimit(0)
 				.filterByAncestor(QUALIFIER_VALUE_TOPLEVEL_CONCEPT)
 				.setComponentIds(Collections.singleton(destinationConceptid))
-				.build(getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 		if (isSubTypeOfQualifierValue) {
@@ -577,7 +577,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			final String branch = BranchPathUtils.createPath(transaction).getPath();
 			new SnomedIdentifierBulkReleaseRequestBuilder()
 				.setComponentIds(newComponentIds)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(bus)
 				.getSync();
 			
@@ -1032,7 +1032,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.all()
 				.filterByActive(true)
 				.filterByReferencedComponent(concept.getId())
-				.build(getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 			
@@ -1225,7 +1225,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByDestination(conceptId)
-				.build(getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 	}
@@ -1234,7 +1234,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return SnomedRequests.prepareSearchDescription()
 				.all()
 				.filterByConceptId(conceptId)
-				.build(getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedDescriptions, Iterable<SnomedDescriptionIndexEntry>>() {
 					@Override
@@ -1622,7 +1622,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		final String generatedId = new SnomedIdentifierGenerateRequestBuilder()
 				.setCategory(componentNature)
 				.setNamespace(namespace)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(bus)
 				.getSync();
 		newComponentIds.add(generatedId);

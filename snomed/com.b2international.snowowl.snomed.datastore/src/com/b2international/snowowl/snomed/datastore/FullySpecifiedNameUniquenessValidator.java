@@ -67,7 +67,7 @@ public class FullySpecifiedNameUniquenessValidator implements IValidator {
 				.filterByActive(true)
 				.filterByTerm(fsn)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getEventBus())
 				.getSync();
 		

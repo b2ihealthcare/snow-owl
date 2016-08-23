@@ -49,6 +49,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedCachingSuperTypeIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
@@ -113,7 +114,7 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 			pts.putAll(new DescriptionRequestHelper() {
 				@Override
 				protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
-					return req.build(branch.getPath()).execute(bus).getSync();
+					return req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath()).execute(bus).getSync();
 				}
 			}.getPreferredTerms(componentIds, locales));
 		}

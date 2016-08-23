@@ -34,6 +34,7 @@ import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -80,7 +81,7 @@ public class ConceptDefinitionNormalizer {
 					.filterByActive(true)
 					.filterByType(Concepts.IS_A)
 					.filterBySource(focusConcept.getId())
-					.build(branchPath)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {

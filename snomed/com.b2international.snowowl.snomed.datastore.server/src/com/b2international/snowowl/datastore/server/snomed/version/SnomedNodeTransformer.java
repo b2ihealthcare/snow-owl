@@ -16,9 +16,6 @@
 package com.b2international.snowowl.datastore.server.snomed.version;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.commons.collections.Collections3.compare;
-import static com.b2international.commons.collections.Collections3.toSet;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
@@ -28,18 +25,15 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_NUMBER;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collections.SetDifference;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -61,6 +55,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -212,7 +207,7 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 		return SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByRefSet(refSetId)
-				.build(refSetId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, refSetId)
 				.execute(getBus())
 				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedRefSetMemberIndexEntry>>() {
 					@Override
@@ -259,7 +254,7 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
 				.setLocales(getLocales())
 				.setComponentId(refSetId)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -298,7 +293,7 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 				.filterByRefSet(refSetId)
 				.setLocales(getLocales())
 				.setExpand(expansion)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 	}

@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
@@ -97,7 +98,7 @@ public class FocusConceptNormalizer {
 		Collection<SnomedConceptDocument> focusConcepts = SnomedRequests.prepareSearchConcept()
 				.setComponentIds(focusConceptIds)
 				.setLimit(focusConceptIds.size())
-				.build(branchPath)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcepts, Collection<SnomedConceptDocument>>() {
 					@Override
@@ -155,7 +156,7 @@ public class FocusConceptNormalizer {
 				.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 				.filterBySource(focusConcept.getId())
 				.setExpand("destination()")
-				.build(branchPath)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		//for (int i = 0; i < outgoingRelationships.length; i++) {

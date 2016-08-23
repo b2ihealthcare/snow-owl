@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.utils.UnrestrictedStringSet;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -139,7 +140,7 @@ public class RelationshipWidgetModel extends AllowedTypesWidgetModel implements 
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByEscg(expression)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override

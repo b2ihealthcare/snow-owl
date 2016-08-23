@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.FullySpecifiedNameUniquenessValidator;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DescriptionWidgetBean;
@@ -75,7 +76,7 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(conceptId))
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 	}

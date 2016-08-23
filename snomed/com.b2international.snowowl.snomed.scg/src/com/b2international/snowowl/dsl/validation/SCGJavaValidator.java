@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -211,7 +212,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 				.setComponentId(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(branch.get())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.get())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -252,7 +253,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 	}
 
 	private ISnomedConcept getConcept(String id) {
-		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(id)).build(branch.get()).execute(bus.get()).getSync(), null);
+		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(id)).build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.get()).execute(bus.get()).getSync(), null);
 	}
 
 }

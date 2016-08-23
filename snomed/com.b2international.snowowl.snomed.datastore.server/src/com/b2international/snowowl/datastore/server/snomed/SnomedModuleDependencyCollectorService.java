@@ -62,6 +62,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -301,7 +302,7 @@ public enum SnomedModuleDependencyCollectorService {
 		return SnomedRequests.prepareSearchConcept()
 				.filterByActive(true)
 				.filterByAncestor(Concepts.MODULE_ROOT)
-				.build(getBranchPath().getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath())
 				.execute(getBus())
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
@@ -347,7 +348,7 @@ public enum SnomedModuleDependencyCollectorService {
 				.all()
 				.filterByActive(true)
 				.filterByRefSet(REFSET_MODULE_DEPENDENCY_TYPE)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 	}
@@ -363,7 +364,7 @@ public enum SnomedModuleDependencyCollectorService {
 	private LongKeyLongMap getConceptModuleMapping(final IBranchPath branchPath) {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.then(new Function<SnomedConcepts, LongKeyLongMap>() {
 					@Override

@@ -22,6 +22,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -47,7 +48,7 @@ public class SnomedConceptNameProvider implements ISnomedConceptNameProvider {
 		final ISnomedDescription pt = new DescriptionRequestHelper() {
 			@Override
 			protected SnomedDescriptions execute(final SnomedDescriptionSearchRequestBuilder req) {
-				return req.build(branchPath.getPath()).execute(bus.get()).getSync(NAME_PROVIDER_TIMEOUT, TimeUnit.MILLISECONDS);
+				return req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus.get()).getSync(NAME_PROVIDER_TIMEOUT, TimeUnit.MILLISECONDS);
 			}
 		}.getPreferredTerm(componentId, languageSetting.get().getLanguagePreference());
 		

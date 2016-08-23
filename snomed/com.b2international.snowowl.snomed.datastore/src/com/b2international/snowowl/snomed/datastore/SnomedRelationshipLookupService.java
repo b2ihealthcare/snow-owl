@@ -84,7 +84,7 @@ public class SnomedRelationshipLookupService extends AbstractLookupService<Strin
 		try {
 			return SnomedRequests.prepareGetRelationship()
 					.setComponentId(id)
-					.build(branchPath.getPath())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(new Function<ISnomedRelationship, SnomedRelationshipIndexEntry>() {
 						@Override

@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
@@ -159,7 +160,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 				.setComponentIds(ImmutableSet.copyOf(componentIds))
 				.setLocales(getLocales())
 				.setExpand("pt(),parentIds(),ancestorIds()")
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)
 				.getSync();
@@ -170,7 +171,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 				.setComponentId(Concepts.ROOT_CONCEPT)
 				.setExpand(String.format("pt(),descendants(form:\"%s\",direct:true,expand(pt()))", getForm()))
 				.setLocales(getLocales())
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.getSync();
 	

@@ -35,6 +35,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.Sets;
@@ -55,7 +56,7 @@ public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSe
 			.filterByTerm(queryExpression)
 			.setComponentIds(Sets.newHashSet(getComponentIds(configuration)))
 			.setLimit(limit)
-			.build(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.then(new Function<SnomedDescriptions, QuickSearchContentResult>() {
 				@Override

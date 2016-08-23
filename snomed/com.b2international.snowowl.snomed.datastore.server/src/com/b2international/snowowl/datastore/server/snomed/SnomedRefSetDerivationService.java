@@ -45,6 +45,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.derivation.SnomedRefSetDerivationModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -175,7 +176,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 			.all()
 			.filterByActive(true)
 			.filterByConceptId(componentIds)
-			.build(context.getBranch())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, context.getBranch())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		
@@ -216,7 +217,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 				.filterByActive(true)
 				.filterBySource(componentIds)
 				.filterByDestination(componentIds)
-				.build(branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 	}
@@ -228,7 +229,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		return SnomedRequests.prepareGetReferenceSet()
 			.setComponentId(refSetId)
 			.setExpand("members(limit:"+Integer.MAX_VALUE+",active:true)")
-			.build(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.then(new Function<SnomedReferenceSet, Collection<String>>() {
 				@Override
@@ -250,7 +251,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByAncestors(conceptIds)
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override

@@ -31,6 +31,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IQueryEvaluatorService;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Iterables;
@@ -70,11 +71,11 @@ public class IndexQueryEvaluatorService implements IQueryEvaluatorService<Snomed
 		
 		if (ids.length == 0) {
 			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).
-					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).execute(eventBus).getSync();
+					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(eventBus).getSync();
 			return SnomedConceptDocument.fromConcepts(snomedConcepts);
 		} else {
 			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept().filterByTerm(queryExpression).setComponentIds(Sets.newHashSet(ids)).
-					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(branchPath.getPath()).execute(eventBus).getSync();
+					setLimit(10000).setExpand("pt()").setLocales(languagePreference).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(eventBus).getSync();
 			return SnomedConceptDocument.fromConcepts(snomedConcepts);
 		}
 		

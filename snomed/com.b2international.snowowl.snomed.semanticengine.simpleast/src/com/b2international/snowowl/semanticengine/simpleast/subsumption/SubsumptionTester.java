@@ -28,6 +28,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -209,7 +210,7 @@ public class SubsumptionTester {
 	}
 	
 	private ISnomedConcept getConcept(String conceptId) {
-		return SnomedRequests.prepareGetConcept().setComponentId(conceptId).build(branch).execute(getBus()).getSync();
+		return SnomedRequests.prepareGetConcept().setComponentId(conceptId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branch).execute(getBus()).getSync();
 	}
 
 	/**
@@ -254,7 +255,7 @@ public class SubsumptionTester {
 					.all()
 					.filterByActive(true)
 					.filterBySource(candidate.getId())
-					.build(branch)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 					.execute(getBus())
 					.getSync();
 
@@ -281,7 +282,7 @@ public class SubsumptionTester {
 			.setLimit(0)
 			.filterByAncestor(predicate.getId())
 			.setComponentIds(Collections.singleton(candidateId))
-			.build(branch)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 			.execute(getBus())
 			.getSync().getTotal() > 0;
 	}

@@ -50,6 +50,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -75,7 +76,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	public SnomedSimpleTypeRefSetExcelExporter(final String userId, final IBranchPath branchPath, final String refSetId) {
 		super(userId, branchPath);
 		
-		this.refSet = SnomedRequests.prepareGetReferenceSet().setComponentId(refSetId).build(branchPath.getPath()).execute(getBus()).getSync();
+		this.refSet = SnomedRequests.prepareGetReferenceSet().setComponentId(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getBus()).getSync();
 		this.context = new SnomedEditingContext(branchPath);
 		this.workbook = new XSSFWorkbook();
 		
@@ -199,7 +200,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 				.filterByRefSet(refSet.getId())
 				.setExpand(getExpand(refSet))
 				.setLocales(getLocales())
-				.build(context.getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, context.getBranch())
 				.execute(getBus())
 				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedCoreComponent>>() {
 					@Override

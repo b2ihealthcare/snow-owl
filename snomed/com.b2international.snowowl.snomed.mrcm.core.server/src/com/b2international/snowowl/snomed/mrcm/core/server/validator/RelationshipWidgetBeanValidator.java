@@ -25,6 +25,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
@@ -102,7 +103,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 								.filterByAncestor(snomedConceptId)
 								.setComponentIds(Lists.newArrayList(destinationId))
 								.setLocales(context.getService(LanguageSetting.class).getLanguagePreference())
-								.build(branch.getPath())
+								.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
 								.execute(context.getService(IEventBus.class))
 								.getSync()
 								.getItems();
@@ -127,7 +128,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 				.setLocales(getLocales())
 				.setComponentId(id)
 				.setExpand("pt()")
-				.build(branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getEventBus())
 				.getSync().getPt().getTerm();
 	}

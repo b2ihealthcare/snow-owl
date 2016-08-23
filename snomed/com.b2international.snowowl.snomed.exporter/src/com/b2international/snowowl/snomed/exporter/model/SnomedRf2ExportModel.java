@@ -34,6 +34,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
@@ -90,7 +91,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		
 		final SnomedReferenceSets referenceSets = SnomedRequests.prepareSearchRefSet()
 			.all()
-			.build(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		for (SnomedReferenceSet refSet : referenceSets) {
