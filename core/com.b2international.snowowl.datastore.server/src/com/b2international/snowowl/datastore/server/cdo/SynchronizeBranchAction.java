@@ -82,8 +82,9 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final Branch branch = RepositoryRequests.branching(repositoryId)
+		final Branch branch = RepositoryRequests.branching()
 				.prepareGet(taskBranchPath.getPath())
+				.build(repositoryId)
 				.execute(eventBus)
 				.getSync();
 		
@@ -113,8 +114,9 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 		}
 		
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final Branch reopenedBranch = RepositoryRequests.branching(repositoryId)
+		final Branch reopenedBranch = RepositoryRequests.branching()
 				.prepareReopen(taskBranchPath.getPath())
+				.build(repositoryId)
 				.execute(eventBus)
 				.getSync();
 

@@ -72,8 +72,9 @@ public class StorageRef implements InternalStorageRef {
 	public Branch getBranch() {
 		if (branch == null) {
 			branch = RepositoryRequests
-						.branching(getRepositoryId())
+						.branching()
 						.prepareGet(branchPath)
+						.build(getRepositoryId())
 						.execute(getEventBus())
 						.getSync(DEFAULT_ASYNC_TIMEOUT_DELAY, TimeUnit.MILLISECONDS);
 		}
