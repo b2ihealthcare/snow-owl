@@ -29,8 +29,8 @@ public final class DeleteRequestBuilder extends BaseTransactionalRequestBuilder<
 	private Class<? extends EObject> type;
 	private Boolean force = Boolean.FALSE;
 
-	DeleteRequestBuilder(String repositoryId) {
-		super(repositoryId);
+	public DeleteRequestBuilder(RepositoryCommitRequestBuilder commitRequestBuilder) {
+		super(commitRequestBuilder);
 	}
 
 	public DeleteRequestBuilder setComponentId(String componentId) {
