@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
@@ -46,6 +46,12 @@ public class MainBranchTest {
 		mainWithTimestamp.setBranchManager(manager);
 	}
 
+	@Test
+	public void updateMetadataShouldReturnNewInstanceWithProperType() throws Exception {
+		final InternalBranch newMain = main.withMetadata(new MetadataImpl());
+		assertTrue(newMain instanceof MainBranchImpl);
+	}
+	
 	@Test
 	public void pathShouldBeMain() {
 		assertEquals("Main branch path should be 'MAIN'.", "MAIN", main.path());

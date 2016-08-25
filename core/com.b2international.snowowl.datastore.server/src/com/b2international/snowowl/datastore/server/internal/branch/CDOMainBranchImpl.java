@@ -41,6 +41,11 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 	}
 	
 	@Override
+	protected BranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, Metadata metadata) {
+		return new CDOMainBranchImpl(baseTimestamp, headTimestamp, metadata, segmentId, segments);
+	}
+	
+	@Override
 	public int segmentId() {
 		return segmentId;
 	}
@@ -58,13 +63,6 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 	@Override
 	public int cdoBranchId() {
 		return cdoBranchId;
-	}
-	
-	@Override
-	public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
-		final MainBranchImpl main = new CDOMainBranchImpl(baseTimestamp(), newHeadTimestamp, metadata(), segmentId, segments);
-		main.setBranchManager(branchManager);
-		return main;
 	}
 	
 	@Override
