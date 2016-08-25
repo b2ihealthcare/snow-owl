@@ -16,7 +16,17 @@
 package com.b2international.snowowl.snomed.api.rest.branches;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchChildrenContainsName;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCreationConflicts;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchNotCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchNotExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchReportedAsDeleted;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchUpdated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchesContainsName;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPathAndMetadata;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenDeletingBranchWithPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
@@ -24,6 +34,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.google.common.collect.ImmutableMap;
 
@@ -42,6 +54,13 @@ public class SnomedBranchingApiTest extends AbstractSnomedApiTest {
 		assertBranchNotCreated(createPath(testBranchPath, "a"));
 	}
 
+	@Test
+	public void updateMainMetadata() throws Exception {
+		assertBranchUpdated(Branch.MAIN_PATH, ImmutableMap.of("test", "metadataUpdate"));
+		assertBranchExists(BranchPathUtils.createMainPath())
+			.and().body("metadata.test", equalTo("metadataUpdate"));
+	}
+	
 	@Test
 	public void createBranch() {
 		givenBranchWithPath(testBranchPath);
