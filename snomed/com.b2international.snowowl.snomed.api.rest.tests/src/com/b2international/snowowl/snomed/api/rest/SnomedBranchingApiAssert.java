@@ -160,6 +160,20 @@ public abstract class SnomedBranchingApiAssert {
 	public static ValidatableResponse assertBranchExists(final IBranchPath branchPath) {
 		return assertBranchReadWithStatus(branchPath, 200);
 	}
+	
+	/**
+	 * Updates a branch and asserts that the returned status code is 204.
+	 * @param branchPath
+	 * @param metadata
+	 * @return
+	 */
+	public static ValidatableResponse assertBranchUpdated(final String branchPath, final Map<String, ? extends Object> metadata) {
+		return givenAuthenticatedRequest(SCT_API)
+			.and().contentType(ContentType.JSON)
+			.body(ImmutableMap.of("metadata", metadata))
+			.put("/branches/{path}", branchPath)
+			.then().assertThat().statusCode(204);
+	}
 
 	/**
 	 * Asserts that the specified branch does not exist.
