@@ -68,6 +68,10 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 		this.conceptId = conceptId;
 		this.active = active;
 	}
+	
+	public IBranchPath getBranchPath() {
+		return branchPath;
+	}
 
 	@Override
 	public ConceptWidgetModel getModel() {
