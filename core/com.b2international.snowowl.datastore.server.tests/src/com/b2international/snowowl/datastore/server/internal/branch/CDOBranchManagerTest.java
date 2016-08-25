@@ -17,8 +17,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
@@ -118,6 +117,12 @@ public class CDOBranchManagerTest {
 	@After
 	public void after() {
 		store.admin().delete();
+	}
+	
+	@Test
+	public void updateMetadataShouldReturnNewInstanceWithProperType() throws Exception {
+		final InternalBranch newMain = main.withMetadata(new MetadataImpl());
+		assertTrue(newMain instanceof CDOMainBranchImpl);
 	}
 	
 	@Test
