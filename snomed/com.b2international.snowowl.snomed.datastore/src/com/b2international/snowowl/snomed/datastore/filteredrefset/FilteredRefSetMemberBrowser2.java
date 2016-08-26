@@ -91,31 +91,6 @@ public class FilteredRefSetMemberBrowser2
 	}
 	
 	@Override
-	public Collection<IRefSetMemberNode> getSuperTypesById(final IRefSetMemberNode node) {
-		return super.getSuperTypes(node);
-	}
-	
-	@Override
-	public Collection<IRefSetMemberNode> getSubTypesById(final IRefSetMemberNode node) {
-		return super.getSubTypes(node);
-	}
-	
-	@Override
-	public List<IRefSetMemberNode> getSubTypesAsList(final IRefSetMemberNode node) {
-		return getSubTypes(node);
-	}
-	
-	@Override
-	public List<IRefSetMemberNode> getSuperTypes(final IRefSetMemberNode node) {
-		return getHierarchicalNodes(superTypeMap, node);
-	}
-	
-	@Override
-	public List<IRefSetMemberNode> getSubTypes(final IRefSetMemberNode node) {
-		return getHierarchicalNodes(subTypeMap, node);
-	}
-	
-	@Override
 	public Collection<IRefSetMemberNode> getRootConcepts() {
 		if(FilterTerminologyBrowserType.FLAT.equals(type)) {
 			return Lists.newArrayList(nodeSet.getElements());

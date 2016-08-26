@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.api;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +29,6 @@ import com.b2international.snowowl.core.api.browser.IFilterClientTerminologyBrow
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements IFilterClientTerminologyBrowser<C, K>, Serializable {
@@ -84,26 +82,8 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 		}).toSet();
 	}
 
-	@Override
-	public Collection<C> getSuperTypes(final C concept) {
-		if (FilterTerminologyBrowserType.FLAT.equals(type)) {
-			return Collections.emptyList();
-		} else {
-			return (Collection<C>) getComponents(superTypeMap.get(concept.getId()));
-		}
-	}
-	
 	public boolean containsAncestors() {
 		return !superTypeMap.isEmpty();
-	}
-
-	@Override
-	public Collection<C> getSubTypes(final C concept) {
-		if (FilterTerminologyBrowserType.FLAT.equals(type)) {
-			return Collections.emptyList();
-		} else {
-			return (Collection<C>) getComponents(subTypeMap.get(concept.getId()));
-		}
 	}
 
 	@Override
@@ -133,48 +113,20 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	
 	@Override
 	public Collection<C> getSuperTypesById(final K id) {
-		return getSuperTypes(getConcept(id));
+		if (FilterTerminologyBrowserType.FLAT.equals(type)) {
+			return Collections.emptyList();
+		} else {
+			return (Collection<C>) getComponents(superTypeMap.get(id));
+		}
 	}
 
 	@Override
 	public Collection<C> getSubTypesById(final K id) {
-		return getSubTypes(getConcept(id));
-	}
-
-	@Override
-	public List<C> getSubTypesAsList(final C concept) {
-		return Lists.newArrayList(getSubTypes(concept));
-	}
-
-	@Override
-	public Collection<C> getAllSubTypes(final C concept) {
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override
-	public Collection<C> getAllSuperTypes(final C concept) {
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override
-	public int getAllSubTypeCount(final C concept) {
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override
-	public int getSubTypeCount(final C concept) {
-		final Collection<K> subtypes = subTypeMap.get(concept.getId());
-		return null == subtypes ? 0 : subtypes.size();
-	}
-
-	@Override
-	public int getAllSuperTypeCount(final C concept) {
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override
-	public int getSuperTypeCount(final C concept) {
-		throw new UnsupportedOperationException("Not implemented.");
+		if (FilterTerminologyBrowserType.FLAT.equals(type)) {
+			return Collections.emptyList();
+		} else {
+			return (Collection<C>) getComponents(subTypeMap.get(id));
+		}
 	}
 
 	@Override
@@ -208,18 +160,8 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	}
 
 	@Override
-	public C getTopLevelConcept(final C concept) {
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override
 	public boolean isTerminologyAvailable() {
 		return true;
-	}
-
-	@Override
-	public boolean isSuperTypeOf(final C superType, final C subType) {
-		throw new UnsupportedOperationException("Not implemented.");
 	}
 
 	@Override
