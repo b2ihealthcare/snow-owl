@@ -174,7 +174,7 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	}
 
 	@Override
-	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final C concept) {
+	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final K componentId) {
 		return Collections.emptyList();
 	}
 

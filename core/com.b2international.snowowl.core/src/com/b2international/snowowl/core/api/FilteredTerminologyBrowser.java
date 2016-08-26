@@ -238,7 +238,7 @@ public class FilteredTerminologyBrowser<C extends IComponent<K>, K> implements I
 	}
 
 	@Override
-	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(C concept) {
+	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(K conceptId) {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 

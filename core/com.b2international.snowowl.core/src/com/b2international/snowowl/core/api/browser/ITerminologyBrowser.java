@@ -223,7 +223,7 @@ public interface ITerminologyBrowser<C, K> extends ExtendedComponentProvider, Su
 	 */
 	IFilterClientTerminologyBrowser<C, K> filterTerminologyBrowser(final IBranchPath branchPath, @Nullable final String expression, @Nullable final IProgressMonitor monitor);
 
-	Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final IBranchPath branchPath, final C concept);
+	Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(final IBranchPath branchPath, final K conceptId);
 
 	/**
 	 * Checks whether a component identified by its terminology specific unique ID exits on the given branch.
