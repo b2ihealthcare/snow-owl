@@ -205,10 +205,10 @@ public interface IClientTerminologyBrowser<C, K> {
 	/**
 	 * Returns the direct children of the specified concept, with an additional flag to indicate whether the returned concepts have children or not.
 	 * 
-	 * @param concept the concept
+	 * @param conceptId the concept ID
 	 * @return the direct children of the specified concept, with an additional flag
 	 */
-	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(C concept);
+	public Collection<IComponentWithChildFlag<K>> getSubTypesWithChildFlag(K conceptId);
 	
 	/**
 	 * Checks whether a component identified by its terminology specific unique ID exits on the currently active branch.
