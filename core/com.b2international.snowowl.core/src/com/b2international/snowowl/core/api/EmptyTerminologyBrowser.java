@@ -62,24 +62,6 @@ public final class EmptyTerminologyBrowser extends FilteredTerminologyBrowser<IC
 	
 	/*
 	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.FilteredTerminologyBrowser#getSuperTypes(com.b2international.snowowl.core.api.IComponent)
-	 */
-	@Override
-	public Collection<IComponent<Object>> getSuperTypes(final IComponent<Object> concept) {
-		return Collections.emptyList();
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.FilteredTerminologyBrowser#getSubTypes(com.b2international.snowowl.core.api.IComponent)
-	 */
-	@Override
-	public Collection<IComponent<Object>> getSubTypes(final IComponent<Object> concept) {
-		return Collections.emptyList();
-	}
-	
-	/*
-	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.FilteredTerminologyBrowser#getRootConcepts()
 	 */
 	@Override

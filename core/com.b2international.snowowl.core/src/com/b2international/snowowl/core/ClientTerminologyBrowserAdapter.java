@@ -17,7 +17,6 @@ package com.b2international.snowowl.core;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -56,22 +55,7 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	}
 
 	@Override
-	public Collection<C> getSuperTypes(final C concept) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Collection<C> getSubTypes(final C concept) {
-		return Collections.emptyList();
-	}
-
-	@Override
 	public Collection<K> getSuperTypeIds(final K conceptId) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<C> getSubTypesAsList(final C concept) {
 		return Collections.emptyList();
 	}
 
@@ -86,43 +70,13 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	}
 
 	@Override
-	public Collection<C> getAllSuperTypes(final C concept) {
-		return Collections.emptyList();
-	}
-
-	@Override
 	public Collection<C> getAllSuperTypesById(final K id) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Collection<C> getAllSubTypes(final C concept) {
 		return Collections.emptyList();
 	}
 
 	@Override
 	public Collection<C> getAllSubTypesById(final K id) {
 		return Collections.emptyList();
-	}
-
-	@Override
-	public int getAllSubTypeCount(final C concept) {
-		return 0;
-	}
-
-	@Override
-	public int getSubTypeCount(final C concept) {
-		return 0;
-	}
-
-	@Override
-	public int getAllSuperTypeCount(final C concept) {
-		return 0;
-	}
-
-	@Override
-	public int getSuperTypeCount(final C concept) {
-		return 0;
 	}
 
 	@Override
@@ -146,19 +100,8 @@ public class ClientTerminologyBrowserAdapter<C, K> implements IClientTerminology
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public C getTopLevelConcept(final C concept) {
-		return (C) NullComponent.<C>getNullImplementation();
-	}
-
-	@Override
 	public boolean isTerminologyAvailable() {
 		return true;
-	}
-
-	@Override
-	public boolean isSuperTypeOf(final C superType, final C subType) {
-		return false;
 	}
 
 	@Override
