@@ -68,7 +68,7 @@ abstract public class DataTypeUtils {
 		
 		return StringUtils.isEmpty(dataTypeName) 
 				? StringUtils.EMPTY_STRING
-				: StringUtils.capitalizeFirstLetter(StringUtils.splitCamelCase(dataTypeName.replaceFirst("canBeTaggedWith|isa|is|does|has", "")).toLowerCase());
+				: StringUtils.capitalizeFirstLetter(StringUtils.splitCamelCase(dataTypeName.replaceFirst("canBeTaggedWith|isa|is|does|has", "")).toLowerCase()).replaceAll("  ", " ");
 	}
 	
 	private DataTypeUtils() {} 
