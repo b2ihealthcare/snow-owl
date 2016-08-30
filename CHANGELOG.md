@@ -53,6 +53,7 @@ With this change and limited capabilities, Snow Owl will no longer support the c
  * `com.b2international.index.api.tests` - Generic test cases to verify implementation modules of the Index API module
  * `com.b2international.index.api.tests.tools` - Useful utility classes when writing Index API based test cases
  * `com.b2international.collections.jackson` - Jackson ser/deser module for `com.b2international.collections.api` module
+
 ### Changed
 - Improved change processing performance by loading only the relevant revisions from the index
 - Log entry format of requests has changed to the following
@@ -62,6 +63,7 @@ With this change and limited capabilities, Snow Owl will no longer support the c
  * All values are measured in milliseconds
  * Read operations measure their execution time (`responseTime`)
  * Commit operations measure their execution time (`responseTime`) and commit subtask execution times (`preCommit`, `preRequest`, `traceability`, `indexing`, `commit`)
+
 ### Removed
 - Deprecated public SNOMED CT APIs that have been replaced by the new Request based APIs
  * `SnomedTerminologyBrowser`

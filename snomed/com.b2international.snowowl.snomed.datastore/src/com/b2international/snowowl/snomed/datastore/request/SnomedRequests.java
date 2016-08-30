@@ -20,9 +20,11 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.request.Branching;
@@ -233,11 +235,22 @@ public abstract class SnomedRequests {
 			.then(new Function<Set<String>, Collection<SnomedConstraintDocument>>() {
 				@Override
 				public Collection<SnomedConstraintDocument> apply(Set<String> descendantDomainIds) {
+					final BulkRequestBuilder<BranchContext> constraintBulkRequestBuilder = BulkRequest.<BranchContext>create();
+
+					if (!CompareUtils.isEmpty(selfIds)) {
+						constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterBySelfIds(selfIds));
+					}
+					
+					if (!CompareUtils.isEmpty(descendantDomainIds)) {
+						constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByDescendantIds(descendantDomainIds));
+					}
+					
+					if (!CompareUtils.isEmpty(refSetIds)) {
+						constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByRefSetIds(refSetIds));
+					}
+					
 					return SnomedRequests.prepareBulkRead()
-						.setBody(BulkRequest.<BranchContext>create()
-								.add(SnomedRequests.prepareSearchConstraint().filterBySelfIds(selfIds))
-								.add(SnomedRequests.prepareSearchConstraint().filterByDescendantIds(descendantDomainIds))
-								.add(SnomedRequests.prepareSearchConstraint().filterByRefSetIds(refSetIds)))
+						.setBody(constraintBulkRequestBuilder)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 						.execute(bus)
 						.then(new Function<BulkResponse, Collection<SnomedConstraintDocument>>() {
