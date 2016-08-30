@@ -61,19 +61,19 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 	}
 	
 	@Override
-	public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
-		final MainBranchImpl main = new CDOMainBranchImpl(baseTimestamp(), newHeadTimestamp, metadata(), segmentId, segments);
-		main.setBranchManager(branchManager);
-		return main;
+	protected BranchImpl doCreateBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, Metadata metadata) {
+		return new CDOMainBranchImpl(baseTimestamp, headTimestamp, metadata, segmentId, segments);
 	}
 	
 	@Override
-	public InternalCDOBasedBranch withSegmentId(int segmentId) {
+	public InternalCDOBasedBranch withSegmentId(int newSegmentId) {
 		final Builder<Integer> builder = ImmutableSet.builder();
-		builder.add(segmentId);
+		builder.add(newSegmentId);
 		// MAIN branch uses all his previous segments because he never gets reopened
 		builder.addAll(segments());
-		return new CDOMainBranchImpl(baseTimestamp(), headTimestamp(), metadata(), segmentId, builder.build());
+		
+		final CDOMainBranchImpl main = new CDOMainBranchImpl(baseTimestamp(), headTimestamp(), metadata(), newSegmentId, builder.build());
+		main.setBranchManager(getBranchManager());
+		return main;
 	}
-
 }
