@@ -18,12 +18,15 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchData;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -39,7 +42,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		@Override public void run() { return; }
 	};
 
-    protected BranchManagerImpl branchManager;
+    protected transient BranchManagerImpl branchManager;
     
     private final String name;
     private final String parentPath;
@@ -66,6 +69,14 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		this.headTimestamp = headTimestamp;
 		this.deleted = deleted;
 	}
+    
+    protected final void readObject(ObjectInputStream stream) throws InvalidObjectException {
+    	throw new InvalidObjectException("Proxy required");
+    }
+    
+    protected final Object writeReplace() {
+    	return new BranchData(name(), parentPath(), baseTimestamp(), headTimestamp(), state(), isDeleted(), metadata());
+    }
 	
     @Override
 	public void setBranchManager(BranchManagerImpl branchManager) {

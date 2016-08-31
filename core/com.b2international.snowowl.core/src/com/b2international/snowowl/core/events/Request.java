@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.events;
 
+import java.io.Serializable;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -39,7 +41,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
  * @param <R>
  *            - the type of the resource aka the response
  */
-public interface Request<C extends ServiceProvider, R> {
+public interface Request<C extends ServiceProvider, R> extends Serializable {
 
 	/**
 	 * Executes this action on the given {@link ExecutionContext} directly without dispatching it.
