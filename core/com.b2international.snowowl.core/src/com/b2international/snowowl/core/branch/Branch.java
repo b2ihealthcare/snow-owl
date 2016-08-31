@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
@@ -31,7 +32,7 @@ import com.google.common.base.Strings;
  * 
  * @since 4.1
  */
-public interface Branch extends Deletable, MetadataHolder {
+public interface Branch extends Deletable, MetadataHolder, Serializable {
 
 	/**
 	 * Allowed set of characters for a branch name.
