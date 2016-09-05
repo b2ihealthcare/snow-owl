@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -107,8 +108,12 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 			Branch existingBranch = getBranch(cdoBranchId);
 			
 			if (existingBranch == null) {
-				// get existing branch by name, this can be null, if this is the first replication of the branch
-				existingBranch = getBranch(branch.getPathName());
+				try {
+					// get existing branch by name, this can be null, if this is the first replication of the branch
+					existingBranch = getBranch(branch.getPathName());
+				} catch (NotFoundException e) {
+					// ignore not found branches
+				}
 				final int parentCdoBranchId = branch.getBase().getBranch().getID();
 				final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(parentCdoBranchId);
 				if (parent == null) {
