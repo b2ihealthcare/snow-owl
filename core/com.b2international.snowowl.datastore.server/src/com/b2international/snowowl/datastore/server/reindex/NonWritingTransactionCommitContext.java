@@ -74,7 +74,12 @@ class NonWritingTransactionCommitContext extends TransactionCommitContext {
 		//roll back the clock -1
 		return new long[] { commitInfo.getTimeStamp()-1 , commitInfo.getPreviousTimeStamp() };
 	}
-
+	
+	@Override
+	public long getTimeStamp() {
+		return commitInfo.getTimeStamp();
+	}
+	
 	public void preWrite() {
 		
 		// Allocate a store writer
