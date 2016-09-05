@@ -12,6 +12,9 @@
  */
 package org.eclipse.emf.cdo.spi.server;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
@@ -21,42 +24,25 @@ import org.eclipse.emf.cdo.common.id.CDOIDTemp;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
-import org.eclipse.emf.cdo.common.revision.CDOList;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.CDORevisionHandler;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
-import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.cdo.common.util.CDOCommonUtil;
 import org.eclipse.emf.cdo.internal.common.commit.CDOCommitDataImpl;
+import org.eclipse.emf.cdo.internal.common.revision.CDOIDAndVersionImpl;
 import org.eclipse.emf.cdo.internal.server.bundle.OM;
 import org.eclipse.emf.cdo.server.ISession;
 import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.ITransaction;
 import org.eclipse.emf.cdo.spi.common.model.InternalCDOPackageRegistry;
 import org.eclipse.emf.cdo.spi.common.model.InternalCDOPackageUnit;
-import org.eclipse.emf.cdo.spi.common.revision.CDOFeatureDeltaVisitorImpl;
 import org.eclipse.emf.cdo.spi.common.revision.DetachedCDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
-
 import org.eclipse.net4j.util.lifecycle.Lifecycle;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.trace.ContextTracer;
-
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.EStructuralFeature;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Eike Stepper
@@ -287,7 +273,7 @@ public abstract class StoreAccessorBase extends Lifecycle implements IStoreAcces
 
     private List<CDORevisionKey> changedObjects = new ArrayList<CDORevisionKey>();
 
-    private DetachCounter detachCounter = new DetachCounter();
+    private List<CDOIDAndVersion> detachedObjects = new ArrayList<CDOIDAndVersion>();
 
     public CommitDataRevisionHandler(IStoreAccessor storeAccessor, long timeStamp)
     {
@@ -311,9 +297,7 @@ public abstract class StoreAccessorBase extends Lifecycle implements IStoreAcces
 
     public CDOCommitData getCommitData()
     {
-      storeAccessor.handleRevisions(null, null, timeStamp, true, new CDORevisionHandler.Filtered.Undetached(this));
-
-      List<CDOIDAndVersion> detachedObjects = detachCounter.getDetachedObjects();
+      storeAccessor.handleRevisions(null, null, timeStamp, true, this);
       return new CDOCommitDataImpl(newPackageUnits, newObjects, changedObjects, detachedObjects);
     }
 
@@ -322,46 +306,44 @@ public abstract class StoreAccessorBase extends Lifecycle implements IStoreAcces
      */
     public boolean handleRevision(CDORevision rev)
     {
+      if (rev instanceof DetachedCDORevision)
+      {
+        CDOIDAndVersion copy = new CDOIDAndVersionImpl(rev.getID(), rev.getVersion());
+        detachedObjects.add(copy);
+        return true;
+      }
+    	
       if (rev.getTimeStamp() != timeStamp)
       {
         throw new IllegalArgumentException("Invalid revision time stamp: "
             + CDOCommonUtil.formatTimeStamp(rev.getTimeStamp()));
       }
 
-      if (rev instanceof DetachedCDORevision)
+      InternalCDORevision revision = (InternalCDORevision)rev;
+      CDOID id = revision.getID();
+      CDOBranch branch = revision.getBranch();
+      int version = revision.getVersion();
+      if (version > CDOBranchVersion.FIRST_VERSION)
       {
-        // Do nothing. Detached objects are handled by detachCounter.
+        CDOBranchVersion oldVersion = branch.getVersion(version - 1);
+        InternalCDORevision oldRevision = revisionManager.getRevisionByVersion(id, oldVersion, CDORevision.UNCHUNKED,
+            true);
+        InternalCDORevisionDelta delta = revision.compare(oldRevision);
+        changedObjects.add(delta);
       }
       else
       {
-        InternalCDORevision revision = (InternalCDORevision)rev;
-        CDOID id = revision.getID();
-        CDOBranch branch = revision.getBranch();
-        int version = revision.getVersion();
-        if (version > CDOBranchVersion.FIRST_VERSION)
+        InternalCDORevision oldRevision = getRevisionFromBase(id, branch);
+        if (oldRevision != null)
         {
-          CDOBranchVersion oldVersion = branch.getVersion(version - 1);
-          InternalCDORevision oldRevision = revisionManager.getRevisionByVersion(id, oldVersion, CDORevision.UNCHUNKED,
-              true);
           InternalCDORevisionDelta delta = revision.compare(oldRevision);
           changedObjects.add(delta);
-
-          detachCounter.update(oldRevision, delta);
         }
         else
         {
-          InternalCDORevision oldRevision = getRevisionFromBase(id, branch);
-          if (oldRevision != null)
-          {
-            InternalCDORevisionDelta delta = revision.compare(oldRevision);
-            changedObjects.add(delta);
-          }
-          else
-          {
-            InternalCDORevision newRevision = revision.copy();
-            newRevision.setRevised(CDOBranchPoint.UNSPECIFIED_DATE);
-            newObjects.add(newRevision);
-          }
+          InternalCDORevision newRevision = revision.copy();
+          newRevision.setRevised(CDOBranchPoint.UNSPECIFIED_DATE);
+          newObjects.add(newRevision);
         }
       }
 
@@ -384,125 +366,6 @@ public abstract class StoreAccessorBase extends Lifecycle implements IStoreAcces
       }
 
       return revision;
-    }
-
-    /**
-     * @author Eike Stepper
-     */
-    private static final class DetachCounter extends CDOFeatureDeltaVisitorImpl
-    {
-      private Map<CDOID, AtomicInteger> counters = new HashMap<CDOID, AtomicInteger>();
-
-      private InternalCDORevision oldRevision;
-
-      public DetachCounter()
-      {
-      }
-
-      public void update(InternalCDORevision oldRevision, InternalCDORevisionDelta delta)
-      {
-        try
-        {
-          this.oldRevision = oldRevision;
-          delta.accept(this);
-        }
-        finally
-        {
-          this.oldRevision = null;
-        }
-      }
-
-      public List<CDOIDAndVersion> getDetachedObjects()
-      {
-        List<CDOIDAndVersion> result = new ArrayList<CDOIDAndVersion>();
-        for (Entry<CDOID, AtomicInteger> entry : counters.entrySet())
-        {
-          int value = entry.getValue().get();
-          if (value == -1)
-          {
-            CDOID id = entry.getKey();
-            result.add(CDOIDUtil.createIDAndVersion(id, CDOBranchVersion.UNSPECIFIED_VERSION));
-          }
-        }
-
-        return result;
-      }
-
-      @Override
-      public void visit(CDOAddFeatureDelta delta)
-      {
-        if (isContainment(delta.getFeature()))
-        {
-          handleContainment(delta.getValue(), 1);
-        }
-      }
-
-      @Override
-      public void visit(CDORemoveFeatureDelta delta)
-      {
-        if (isContainment(delta.getFeature()))
-        {
-          handleContainment(delta.getValue(), -1);
-        }
-      }
-
-      @Override
-      public void visit(CDOSetFeatureDelta delta)
-      {
-        if (isContainment(delta.getFeature()))
-        {
-          handleContainment(delta.getValue(), 1);
-        }
-      }
-
-      @Override
-      public void visit(CDOUnsetFeatureDelta delta)
-      {
-        EStructuralFeature feature = delta.getFeature();
-        if (isContainment(feature))
-        {
-          Object value = oldRevision.getValue(feature);
-          handleContainment(value, -1);
-        }
-      }
-
-      @Override
-      public void visit(CDOClearFeatureDelta delta)
-      {
-        EStructuralFeature feature = delta.getFeature();
-        if (isContainment(feature))
-        {
-          CDOList list = oldRevision.getList(feature);
-          for (Object value : list)
-          {
-            handleContainment(value, -1);
-          }
-        }
-      }
-
-      private void handleContainment(Object value, int delta)
-      {
-        CDOID id = (CDOID)value;
-        AtomicInteger counter = counters.get(id);
-        if (counter == null)
-        {
-          counter = new AtomicInteger();
-          counters.put(id, counter);
-        }
-
-        counter.addAndGet(delta);
-      }
-
-      private static boolean isContainment(EStructuralFeature feature)
-      {
-        if (feature instanceof EReference)
-        {
-          EReference reference = (EReference)feature;
-          return reference.isContainment();
-        }
-
-        return false;
-      }
     }
   }
 }
