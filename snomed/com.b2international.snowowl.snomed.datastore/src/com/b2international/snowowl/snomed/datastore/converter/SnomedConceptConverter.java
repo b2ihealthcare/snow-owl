@@ -42,6 +42,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -71,7 +72,7 @@ import com.google.common.collect.TreeMultimap;
 /**
  * @since 4.5
  */
-final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedConceptDocument, ISnomedConcept, SnomedConcepts> {
+final class SnomedConceptConverter extends BaseResourceConverter<SnomedConceptDocument, ISnomedConcept, SnomedConcepts> {
 
 	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);

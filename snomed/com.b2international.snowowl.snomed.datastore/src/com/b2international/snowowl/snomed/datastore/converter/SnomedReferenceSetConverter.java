@@ -22,6 +22,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -32,7 +33,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 /**
  * @since 4.5
  */
-final class SnomedReferenceSetConverter extends BaseSnomedComponentConverter<SnomedConceptDocument, SnomedReferenceSet, SnomedReferenceSets> {
+final class SnomedReferenceSetConverter extends BaseResourceConverter<SnomedConceptDocument, SnomedReferenceSet, SnomedReferenceSets> {
 	
 	protected SnomedReferenceSetConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
