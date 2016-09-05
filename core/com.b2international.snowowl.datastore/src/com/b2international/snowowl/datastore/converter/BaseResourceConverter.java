@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.converter;
+package com.b2international.snowowl.datastore.converter;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -28,8 +28,8 @@ import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -39,14 +39,14 @@ import com.google.common.collect.FluentIterable;
  * @param <R>
  * @param <CR>
  */
-abstract class BaseSnomedComponentConverter<T extends SnomedDocument, R extends SnomedComponent, CR extends CollectionResource<R>>
+public abstract class BaseResourceConverter<T extends RevisionDocument, R extends IComponent, CR extends CollectionResource<R>>
 		implements ResourceConverter<T, R, CR> {
 
 	private final BranchContext context;
 	private final Options expand;
 	private final List<ExtendedLocale> locales;
 
-	protected BaseSnomedComponentConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	protected BaseResourceConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		this.context = checkNotNull(context, "context");
 		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
