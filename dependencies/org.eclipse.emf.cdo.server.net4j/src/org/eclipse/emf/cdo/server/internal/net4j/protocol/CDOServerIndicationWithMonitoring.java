@@ -108,7 +108,6 @@ public abstract class CDOServerIndicationWithMonitoring extends IndicationWithMo
     {
       indicating(new CDODataInputImpl(in)
       {
-        @Override
         public CDOPackageRegistry getPackageRegistry()
         {
           return CDOServerIndicationWithMonitoring.this.getPackageRegistry();

@@ -122,7 +122,6 @@ public abstract class CDOClientRequestWithMonitoring<RESULT> extends RequestWith
         return getProtocol().getPackageURICompressor();
       }
 
-      @Override
       public CDOPackageRegistry getPackageRegistry()
       {
         return getSession().getPackageRegistry();
