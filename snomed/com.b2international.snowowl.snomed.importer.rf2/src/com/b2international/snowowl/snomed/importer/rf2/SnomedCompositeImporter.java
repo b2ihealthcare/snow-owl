@@ -383,10 +383,12 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				}
 			}
 			
-			new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), aggregator)
-					.sendCommitNotification(false)
-					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-					.commit();
+			if (transaction.isDirty()) {
+				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), aggregator)
+				.sendCommitNotification(false)
+				.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+				.commit();
+			}
 			
 			if (!existingVersionFound && shouldCreateVersionAndTag) {
 				final IBranchPath snomedBranchPath = BranchPathUtils.createPath(transaction);

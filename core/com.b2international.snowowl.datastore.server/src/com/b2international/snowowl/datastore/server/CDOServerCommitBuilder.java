@@ -51,7 +51,6 @@ import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo;
 import org.eclipse.emf.cdo.internal.server.Repository;
-import org.eclipse.emf.internal.cdo.view.InternalCDOTransactionWrapper;
 import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.IView;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
@@ -74,6 +73,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.cdo.view.CDOViewTargetChangedEvent;
 import org.eclipse.emf.internal.cdo.object.CDOObjectReferenceImpl;
 import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
+import org.eclipse.emf.internal.cdo.view.InternalCDOTransactionWrapper;
 import org.eclipse.emf.spi.cdo.CDOSessionProtocol.CommitTransactionResult;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
@@ -101,6 +101,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils.CDOObjectToCDOIDAdjust
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
@@ -926,7 +927,7 @@ public class CDOServerCommitBuilder {
 		this.transactionAggregator = transactionAggregator;
 		this.userId = userId;
 		final String truncatedMessage = StringUtils.truncate(comment, 255 - UUID_LENGTH);
-		if (!truncatedMessage.equals(comment)) {
+		if (!Objects.equal(truncatedMessage, comment)) {
 			LOGGER.warn("Truncated commit message (original message: {})", comment);
 		}
 		this.comment = truncatedMessage;
