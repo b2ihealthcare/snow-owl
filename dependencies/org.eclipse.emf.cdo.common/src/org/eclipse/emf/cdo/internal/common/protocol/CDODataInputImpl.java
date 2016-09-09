@@ -42,7 +42,6 @@ import org.eclipse.emf.cdo.common.lock.IDurableLockingManager.LockGrade;
 import org.eclipse.emf.cdo.common.model.CDOClassifierRef;
 import org.eclipse.emf.cdo.common.model.CDOModelUtil;
 import org.eclipse.emf.cdo.common.model.CDOPackageInfo;
-import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit;
 import org.eclipse.emf.cdo.common.model.CDOType;
 import org.eclipse.emf.cdo.common.protocol.CDODataInput;
@@ -552,8 +551,6 @@ public abstract class CDODataInputImpl extends ExtendedDataInput.Delegating impl
   {
     return StringIO.DIRECT;
   }
-
-  protected abstract CDOPackageRegistry getPackageRegistry();
 
   protected abstract CDOBranchManager getBranchManager();
 

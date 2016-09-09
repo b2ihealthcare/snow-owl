@@ -79,15 +79,6 @@ public class HorizontalNonAuditClassMapping extends AbstractHorizontalClassMappi
 
   private String sqlUpdateContainerPart;
 
-  private ThreadLocal<FeatureDeltaWriter> deltaWriter = new ThreadLocal<FeatureDeltaWriter>()
-  {
-    @Override
-    protected FeatureDeltaWriter initialValue()
-    {
-      return new FeatureDeltaWriter();
-    }
-  };
-
   public HorizontalNonAuditClassMapping(AbstractHorizontalMappingStrategy mappingStrategy, EClass eClass)
   {
     super(mappingStrategy, eClass);
@@ -476,8 +467,8 @@ public class HorizontalNonAuditClassMapping extends AbstractHorizontalClassMappi
       try
       {
         async = monitor.forkAsync();
-        FeatureDeltaWriter writer = deltaWriter.get();
-        writer.process(accessor, delta, created);
+        FeatureDeltaWriter writer = new FeatureDeltaWriter(accessor, delta, created);
+        writer.process();
       }
       finally
       {
@@ -498,19 +489,26 @@ public class HorizontalNonAuditClassMapping extends AbstractHorizontalClassMappi
    */
   private class FeatureDeltaWriter implements CDOFeatureDeltaVisitor
   {
-    private CDOID id;
 
-    private int oldVersion;
+    private final IDBStoreAccessor accessor;
 
-    private long created;
+    private final CDORevisionDelta delta;
 
-    private IDBStoreAccessor accessor;
+    private final long created;
+
+    private final CDOID id;
+
+    private final int branchId;
+
+    private final int oldVersion;
+
+    private final int newVersion;
+
+    private final List<Pair<ITypeMapping, Object>> attributeChanges;
+
+    private final List<Pair<EStructuralFeature, Integer>> listSizeChanges;
 
     private boolean updateContainer;
-
-    private List<Pair<ITypeMapping, Object>> attributeChanges;
-
-    private List<Pair<EStructuralFeature, Integer>> listSizeChanges;
 
     private int newContainingFeatureID;
 
@@ -518,47 +516,32 @@ public class HorizontalNonAuditClassMapping extends AbstractHorizontalClassMappi
 
     private CDOID newResourceID;
 
-    private int branchId;
-
-    private int newVersion;
-
     /*
      * this is a temporary copy of the revision to track list size changes...
      */
     private InternalCDORevision tempRevision;
 
-    public FeatureDeltaWriter()
+    public FeatureDeltaWriter(IDBStoreAccessor accessor, CDORevisionDelta delta, long created) 
     {
-      attributeChanges = new ArrayList<Pair<ITypeMapping, Object>>();
+      this.accessor = accessor;
+      this.delta = delta;
+      this.created = created;
+      id = delta.getID();
+      branchId = delta.getBranch().getID();
+      oldVersion = delta.getVersion();
+      newVersion = oldVersion + 1; 
+	  attributeChanges = new ArrayList<Pair<ITypeMapping, Object>>();
       listSizeChanges = new ArrayList<Pair<EStructuralFeature, Integer>>();
     }
 
-    protected void reset()
+    public void process()
     {
-      attributeChanges.clear();
-      listSizeChanges.clear();
-      updateContainer = false;
-    }
-
-    public void process(IDBStoreAccessor a, CDORevisionDelta d, long c)
-    {
-      // set context
-      id = d.getID();
-
-      branchId = d.getBranch().getID();
-      oldVersion = d.getVersion();
-      newVersion = oldVersion + 1;
-      created = c;
-      accessor = a;
-
       tempRevision = (InternalCDORevision)accessor.getTransaction().getRevision(id).copy();
 
       // process revision delta tree
-      d.accept(this);
+      delta.accept(this);
 
       updateAttributes();
-      // clean up
-      reset();
     }
 
     public void visit(CDOMoveFeatureDelta delta)

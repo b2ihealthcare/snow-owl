@@ -27,6 +27,7 @@ import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDeltaVisitor;
 import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOMoveFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.cdo.eresource.EresourcePackage;
@@ -80,15 +81,6 @@ public class HorizontalAuditClassMapping extends AbstractHorizontalClassMapping 
   private String sqlReviseAttributes;
 
   private String sqlRawDeleteAttributes;
-
-  private ThreadLocal<FeatureDeltaWriter> deltaWriter = new ThreadLocal<FeatureDeltaWriter>()
-  {
-    @Override
-    protected FeatureDeltaWriter initialValue()
-    {
-      return new FeatureDeltaWriter();
-    }
-  };
 
   public HorizontalAuditClassMapping(AbstractHorizontalMappingStrategy mappingStrategy, EClass eClass)
   {
@@ -636,8 +628,8 @@ public class HorizontalAuditClassMapping extends AbstractHorizontalClassMapping 
       try
       {
         async = monitor.forkAsync();
-        FeatureDeltaWriter writer = deltaWriter.get();
-        writer.process(accessor, delta, created);
+        FeatureDeltaWriter writer = new FeatureDeltaWriter(accessor, delta, created);
+        writer.process();
       }
       finally
       {
@@ -690,26 +682,32 @@ public class HorizontalAuditClassMapping extends AbstractHorizontalClassMapping 
    */
   private class FeatureDeltaWriter implements CDOFeatureDeltaVisitor
   {
-    private IDBStoreAccessor accessor;
+    private final IDBStoreAccessor accessor;
 
-    private long created;
+    private final CDORevisionDelta delta;
 
-    private CDOID id;
+    private final long created;
 
-    private int oldVersion;
+    private final CDOID id;
+
+    private final int branchId;
+
+    private final int oldVersion;
 
     private InternalCDORevision newRevision;
 
-    private int branchId;
-
-    public void process(IDBStoreAccessor accessor, InternalCDORevisionDelta delta, long created)
+    public FeatureDeltaWriter(IDBStoreAccessor accessor, CDORevisionDelta delta, long created)
     {
       this.accessor = accessor;
+      this.delta = delta;
       this.created = created;
       id = delta.getID();
       branchId = delta.getBranch().getID();
       oldVersion = delta.getVersion();
+    }
 
+    public void process()
+    {
       if (TRACER.isEnabled())
       {
         TRACER.format("FeatureDeltaWriter: old version: {0}, new version: {1}", oldVersion, oldVersion + 1); //$NON-NLS-1$

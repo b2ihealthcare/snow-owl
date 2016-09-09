@@ -123,14 +123,7 @@ public class CDONet4jSessionImpl extends CDOSessionImpl implements org.eclipse.e
   @Override
   protected void doActivate() throws Exception
   {
-    OpenSessionResult result = openSession();
-    if (result == null)
-    {
-      throw new NotAuthenticatedException();
-    }
-
-    super.doActivate();
-
+    // Package registry must be available when CDOPackageUnits are received in the open session response!
     InternalCDOPackageRegistry packageRegistry = getPackageRegistry();
     if (packageRegistry == null)
     {
@@ -141,6 +134,14 @@ public class CDONet4jSessionImpl extends CDOSessionImpl implements org.eclipse.e
     packageRegistry.setPackageProcessor(this);
     packageRegistry.setPackageLoader(this);
     packageRegistry.activate();
+    
+    OpenSessionResult result = openSession();
+    if (result == null)
+    {
+    	throw new NotAuthenticatedException();
+    }
+    
+    super.doActivate();
 
     InternalCDORevisionManager revisionManager = getRevisionManager();
     if (revisionManager == null)

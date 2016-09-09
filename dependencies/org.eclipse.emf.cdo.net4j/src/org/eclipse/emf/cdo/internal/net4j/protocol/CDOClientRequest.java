@@ -89,8 +89,7 @@ public abstract class CDOClientRequest<RESULT> extends RequestWithConfirmation<R
   {
     return confirming(new CDODataInputImpl(in)
     {
-      @Override
-      protected CDOPackageRegistry getPackageRegistry()
+      public CDOPackageRegistry getPackageRegistry()
       {
         return getSession().getPackageRegistry();
       }

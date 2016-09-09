@@ -67,8 +67,7 @@ public abstract class CDOClientIndication extends Indication
         return CDOListWithElementProxiesImpl.FACTORY;
       }
 
-      @Override
-      protected CDOPackageRegistry getPackageRegistry()
+      public CDOPackageRegistry getPackageRegistry()
       {
         return getSession().getPackageRegistry();
       }

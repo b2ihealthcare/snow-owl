@@ -38,6 +38,11 @@ public interface InternalCDOPackageRegistry extends CDOPackageRegistry, ILifecyc
 
   public Object basicPut(String nsURI, Object value);
 
+  /**
+   * @since 4.2
+   */
+  public void registerPackageInfo(EPackage ePackage, InternalCDOPackageInfo packageInfo);
+  
   public void putPackageUnit(InternalCDOPackageUnit packageUnit);
 
   /**
