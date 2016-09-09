@@ -241,9 +241,9 @@ public class CDOPackageUnitImpl implements InternalCDOPackageUnit
       {
         String packageURI = ePackage.getNsURI();
         InternalCDOPackageInfo packageInfo = getPackageInfo(packageURI);
+        packageRegistry.registerPackageInfo(ePackage, packageInfo);
         if (resolve)
         {
-          packageRegistry.registerPackageInfo(ePackage, packageInfo);
           synchronized (ePackage)
           {
             EcoreUtil.resolveAll(ePackage);
