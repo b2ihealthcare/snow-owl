@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.events.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +93,25 @@ public class PromiseTest {
 		});
 		p.reject(rejection);
 		latch.await(100, TimeUnit.MILLISECONDS);
+	}
+	
+	@Test
+	public void resolveWith() throws Exception {
+		final Long finalValue = Promise.immediate(1L)
+			.thenWith(new Function<Long, Promise<Long>>() {
+				@Override
+				public Promise<Long> apply(Long input) {
+					return Promise.immediate(input * 2);
+				}
+			})
+			.then(new Function<Long, Long>() {
+				@Override
+				public Long apply(Long input) {
+					return input + 2;
+				}
+			})
+			.getSync();
+		assertEquals(Long.valueOf(4L), finalValue);
 	}
 	
 }
