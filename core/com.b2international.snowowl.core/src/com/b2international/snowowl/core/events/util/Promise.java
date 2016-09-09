@@ -136,6 +136,26 @@ public final class Promise<T> extends AbstractFuture<T> {
 		});
 		return transformed;
 	}
+	
+	public final <U> Promise<U> thenWith(final Function<T, Promise<U>> func) {
+		final Promise<U> transformed = new Promise<>();
+		Futures.addCallback(this, new FutureCallback<T>() {
+			@Override
+			public void onSuccess(T result) {
+				try {
+					transformed.resolveWith(func.apply(result));
+				} catch (Throwable t) {
+					onFailure(t);
+				}
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				transformed.reject(t);
+			}
+		});
+		return transformed;
+	}
 
 	/**
 	 * Resolves the promise by sending the given result object to all then listeners.
@@ -145,6 +165,23 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 */
 	public final void resolve(T t) {
 		set(t);
+	}
+	
+	final void resolveWith(Promise<T> t) {
+		t.then(new Function<T, Void>() {
+			@Override
+			public Void apply(T input) {
+				resolve(input);
+				return null;
+			}
+		})
+		.fail(new Function<Throwable, Void>() {
+			@Override
+			public Void apply(Throwable input) {
+				reject(input);
+				return null;
+			}
+		});
 	}
 
 	/**
