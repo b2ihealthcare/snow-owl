@@ -74,8 +74,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			ReviewStatus.FAILED.toString(), 
 			ReviewStatus.STALE.toString());
 
-	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(5L);
-	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(3000L);
+	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
+	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
 	
 	private static final String DISEASE = "64572001";
 	private static final String TEMPORAL_CONTEXT = "410510008";
