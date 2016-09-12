@@ -38,7 +38,7 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 		final StringBuilder sb = new StringBuilder();
 		sb.append(doc.getId());
 		sb.append(HT);
-		sb.append(doc.getEffectiveTimeAsString());
+		sb.append(formatEffectiveTime(doc.getEffectiveTime()));
 		sb.append(HT);
 		sb.append(doc.isActive() ? "1" : "0");
 		sb.append(HT);
