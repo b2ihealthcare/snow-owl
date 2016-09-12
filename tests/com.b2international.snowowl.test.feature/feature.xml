@@ -6,11 +6,13 @@
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
-Snow Owl Terminology Server test feature.
+      Snow Owl Terminology Server test feature.
 Visit us at http://b2i.sg
    </description>
 
-   <copyright>Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg</copyright>
+   <copyright>
+      Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+   </copyright>
 
    <plugin
          id="com.b2international.snowowl.test.commons"
@@ -30,5 +32,12 @@ Visit us at http://b2i.sg
          download-size="0"
          install-size="0"
          version="0.0.0"/>
+
+   <plugin
+         id="com.b2international.index.api.tests.tools"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>
