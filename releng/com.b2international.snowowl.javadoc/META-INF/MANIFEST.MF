@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Javadoc documentation for Snow Owl
 Bundle-SymbolicName: com.b2international.snowowl.javadoc;singleton:=true
-Bundle-Version: 5.0.2
+Bundle-Version: 5.0.3
 Bundle-Vendor: B2i Healthcare
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.commons,
