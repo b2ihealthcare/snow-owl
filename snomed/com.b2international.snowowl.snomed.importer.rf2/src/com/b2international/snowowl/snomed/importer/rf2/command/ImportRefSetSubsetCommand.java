@@ -71,7 +71,7 @@ public class ImportRefSetSubsetCommand extends AbstractRf2ImporterCommand {
 		
 		try {
 			File refsetFile = new File(filePath);
-			SnomedSubsetImportConfiguration importConfiguration = new SnomedSubsetImportConfiguration();
+			SnomedSubsetImportConfiguration importConfiguration = new SnomedSubsetImportConfiguration(IBranchPath.MAIN_BRANCH);
 			SubsetEntry entry = importConfiguration.addSubsetEntry(refsetFile.toURI().toURL());
 			
 			if (!refsetFile.canRead()) {

@@ -26,9 +26,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedSubsetImportConfiguration.SubsetEntry;
 
-/**
- * 
- */
 public class SnomedImportClientProtocol extends SignalProtocol<ICDOConnection> {
 
 	public SnomedImportClientProtocol() {
@@ -36,25 +33,10 @@ public class SnomedImportClientProtocol extends SignalProtocol<ICDOConnection> {
 		setStreamWrapper(new GZIPStreamWrapper());
 	}
 	
-	/**
-	 * 
-	 * @param userId
-	 * @param importConfiguration
-	 * @param monitor
-	 * @return
-	 */
 	public SnomedImportResult sendRf2ImportRequest(final String userId, final ImportConfiguration importConfiguration, final OMMonitor monitor) {
 		return send(new SnomedImportRequest(this, userId, importConfiguration), monitor);
 	}
 	
-	/**
-	 * 
-	 * @param branchPath
-	 * @param entry
-	 * @param importFile
-	 * @param monitor
-	 * @return
-	 */
 	public SnomedUnimportedRefSets sendSubsetImportRequest(final String branchPath, final SubsetEntry entry, final File importFile, final OMMonitor monitor) {
 		return send(new SnomedSubsetImportRequest(branchPath, entry, this, importFile), monitor);
 	}
