@@ -26,6 +26,8 @@ import java.util.Set;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.platform.Extensions;
@@ -97,7 +99,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, RepositoryContextProvider {
+public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, RepositoryContextProvider, CDOCommitInfoHandler {
 
 	private static final String REINDEX_KEY = "snowowl.reindex";
 	
@@ -112,7 +114,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
 		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
-
+		getCdoRepository().getRepository().addCommitInfoHandler(this);
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		mapper.registerModule(new PrimitiveCollectionModule());
 		initIndex(mapper);
@@ -315,6 +317,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 
 	@Override
 	public void close() throws IOException {
+		getCdoRepository().getRepository().removeCommitInfoHandler(this);
 		getIndex().admin().close();
 	}
 	
@@ -354,6 +357,16 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	@Override
 	protected Environment getDelegate() {
 		return (Environment) super.getDelegate();
+	}
+	
+	@Override
+	@SuppressWarnings("restriction")
+	public void handleCommitInfo(CDOCommitInfo commitInfo) {
+		if (!(commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo)) {
+			final CDOBranch branch = commitInfo.getBranch();
+			final long commitTimestamp = commitInfo.getTimeStamp();
+			((CDOBranchManagerImpl) service(BranchManager.class)).handleCommit(branch.getID(), commitTimestamp);
+        }
 	}
 	
 }
