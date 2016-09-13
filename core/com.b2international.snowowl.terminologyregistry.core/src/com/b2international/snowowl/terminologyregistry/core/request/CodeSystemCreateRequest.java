@@ -25,6 +25,7 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.7
@@ -111,7 +112,7 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 			throw new AlreadyExistsException("Code system", shortName);
 		}
 		
-		if (extensionOf != null && getCodeSystem(extensionOf, context) == null) {
+		if (!Strings.isNullOrEmpty(extensionOf) && getCodeSystem(extensionOf, context) == null) {
 			throw new BadRequestException("Couldn't find base Code System with unique ID %s.", extensionOf);
 		}
 		
@@ -150,7 +151,7 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 				.withRepositoryUuid(repositoryUuid)
 				.withShortName(shortName)
 				.withTerminologyComponentId(terminologyId)
-				.withExtensionOf(extensionOf == null ? null : context.lookup(extensionOf, CodeSystem.class))
+				.withExtensionOf(Strings.isNullOrEmpty(extensionOf) ? null : context.lookup(extensionOf, CodeSystem.class))
 				.build();
 	}
 

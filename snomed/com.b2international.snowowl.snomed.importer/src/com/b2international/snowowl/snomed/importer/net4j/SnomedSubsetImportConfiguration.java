@@ -39,7 +39,7 @@ import com.google.common.collect.Sets;
  * 
  * 
  */
-public class SnomedSubsetImportConfiguration {
+public final class SnomedSubsetImportConfiguration {
 
 	private static final String NAMESPACE = "([0-9]){7}";
 	private static final String EFFECTIVE_TIME_FULL = "([1-9]){1}([0-9]){3}((0{1}[1-9]{1})|(1{1}[0-2]{1})){1}(0[1-9]|[12][0-9]|3[01]){1}";
@@ -47,7 +47,16 @@ public class SnomedSubsetImportConfiguration {
 
 	private Set<SubsetEntry> entries = Sets.newHashSet();
 	private final List<SnomedUnimportedRefSets> unimportedRefSets = Lists.newArrayList();
+	private final String branchPath;
 
+	public SnomedSubsetImportConfiguration(String branchPath) {
+		this.branchPath = branchPath;
+	}
+	
+	public String getBranchPath() {
+		return branchPath;
+	}
+	
 	/**
 	 * Gets the name of the subset from the {@code refSetURL} and creates a
 	 * {@link SubsetEntry}.
