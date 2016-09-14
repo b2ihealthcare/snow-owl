@@ -127,7 +127,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			if (refSet != null) {
 				doc.refSet(refSet);
 			}
-			indexRevision(concept.cdoID(), doc.build());
+			indexNewRevision(concept.cdoID(), doc.build());
 		}
 		
 		// collect dirty concepts for reindex
@@ -158,9 +158,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					doc.refSet(refSet);
 				}
 				if (concept != null) {
-					indexRevision(concept.cdoID(), doc.build());				
+					indexChangedRevision(concept.cdoID(), doc.build());				
 				} else {
-					indexRevision(currentDoc.getStorageKey(), doc.build());
+					indexChangedRevision(currentDoc.getStorageKey(), doc.build());
 				}
 			}
 		}

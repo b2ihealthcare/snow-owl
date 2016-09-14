@@ -61,7 +61,14 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		// delete detached descriptions
 		deleteRevisions(SnomedDescriptionIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION));
 		// (re)index new and dirty descriptions
-		final Map<String, Description> changedDescriptionsById = FluentIterable.from(Iterables.concat(commitChangeSet.getNewComponents(Description.class), commitChangeSet.getDirtyComponents(Description.class)))
+		final Map<String, Description> newDescriptionsById = FluentIterable.from(commitChangeSet.getNewComponents(Description.class))
+				.uniqueIndex(new Function<Description, String>() {
+					@Override
+					public String apply(Description input) {
+						return input.getId();
+					}
+				});
+		final Map<String, Description> changedDescriptionsById = FluentIterable.from(commitChangeSet.getDirtyComponents(Description.class))
 				.uniqueIndex(new Function<Description, String>() {
 					@Override
 					public String apply(Description input) {
@@ -69,26 +76,35 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 					}
 				});
 		
+		final Set<Description> newAndChangedDescriptions = newHashSet(Iterables.concat(newDescriptionsById.values(), changedDescriptionsById.values()));
+		
 		// load the known descriptions 
-		final Iterable<Long> storageKeys = CDOIDUtils.createCdoIdToLong(CDOIDUtils.getIds(changedDescriptionsById.values()));
+		final Iterable<Long> storageKeys = CDOIDUtils.createCdoIdToLong(CDOIDUtils.getIds(newAndChangedDescriptions));
 		final Map<String, SnomedDescriptionIndexEntry> currentRevisionsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedDescriptionIndexEntry.class, storageKeys), ComponentUtils.<String>getIdFunction()));
 		
 		// load missing descriptions with only changed acceptability values
 		final Set<String> descriptionsToBeLoaded = newHashSet();
 		for (String descriptionWithAccepatibilityChange : acceptabilityChangesByDescription.keySet()) {
-			if (!changedDescriptionsById.containsKey(descriptionWithAccepatibilityChange)) {
+			if (!newDescriptionsById.containsKey(descriptionWithAccepatibilityChange) 
+					&& !changedDescriptionsById.containsKey(descriptionWithAccepatibilityChange)) {
 				descriptionsToBeLoaded.add(descriptionWithAccepatibilityChange);
 			}
 		}
 		
 		// process changes
-		for (final Description description : changedDescriptionsById.values()) {
+		for (final Description description : newAndChangedDescriptions) {
 			final String descriptionId = description.getId();
 			final long storageKey = CDOIDUtil.getLong(description.cdoID());
 			final Builder doc = SnomedDescriptionIndexEntry.builder(description);
 			final SnomedDescriptionIndexEntry currentDoc = currentRevisionsById.get(descriptionId);
 			processChanges(doc, currentDoc, acceptabilityChangesByDescription.get(descriptionId));
-			indexRevision(storageKey, doc.build());
+			if (newDescriptionsById.containsKey(descriptionId)) {
+				indexNewRevision(storageKey, doc.build());
+			} else if (changedDescriptionsById.containsKey(descriptionId)) {
+				indexChangedRevision(storageKey, doc.build());
+			} else {
+				throw new IllegalStateException("Description " + descriptionId + " is missing from new and dirty maps");
+			}
 		}
 		
 		// process cascading acceptability changes in unchanged docs
@@ -97,7 +113,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 			for (SnomedDescriptionIndexEntry unchangedDescription : searcher.search(descriptionsToBeLoadedQuery)) {
 				final Builder doc = SnomedDescriptionIndexEntry.builder(unchangedDescription);
 				processChanges(doc, unchangedDescription, acceptabilityChangesByDescription.get(unchangedDescription.getId()));
-				indexRevision(unchangedDescription.getStorageKey(), doc.build());
+				indexChangedRevision(unchangedDescription.getStorageKey(), doc.build());
 			}
 		}
 	}

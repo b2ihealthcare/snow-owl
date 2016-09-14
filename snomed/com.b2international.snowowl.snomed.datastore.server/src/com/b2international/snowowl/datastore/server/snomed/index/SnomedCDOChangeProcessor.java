@@ -19,7 +19,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -44,6 +43,7 @@ import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.BaseCDOChangeProcessor;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
+import com.b2international.snowowl.datastore.index.IndexCommitChangeSet;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
@@ -195,8 +195,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 	}
 	
 	@Override
-	protected void postUpdateDocuments(Map<Long, Revision> mappings, Multimap<Class<? extends Revision>, Long> deletions) {
-		final Collection<String> releasableComponentIds = getReleasableComponentIds(deletions);
+	protected void postUpdateDocuments(IndexCommitChangeSet commitChangeSet) {
+		final Collection<String> releasableComponentIds = getReleasableComponentIds(commitChangeSet.getRevisionDeletions());
 		if (!releasableComponentIds.isEmpty()) {
 			identifierService.release(releasableComponentIds);
 		}

@@ -15,16 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
-import static com.google.common.collect.Sets.newHashSet;
-
-import java.util.Collection;
-
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.core.mrcm.ConceptModelUtils;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
@@ -41,21 +38,20 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) {
-		final Collection<AttributeConstraint> newAndDirtyConstraints = newHashSet();
 
-		for (ConceptModelPredicate predicate : Iterables.concat(commitChangeSet.getNewComponents(ConceptModelPredicate.class),
-				commitChangeSet.getDirtyComponents(ConceptModelPredicate.class))) {
-			newAndDirtyConstraints.add(ConceptModelUtils.getContainerConstraint(predicate));
+		for (ConceptModelComponent component : Iterables.concat(
+				commitChangeSet.getNewComponents(ConceptModelPredicate.class),
+				commitChangeSet.getNewComponents(ConceptSetDefinition.class)
+				)) {
+			final AttributeConstraint constraint = ConceptModelUtils.getContainerConstraint(component);
+			indexNewRevision(constraint.cdoID(), SnomedConstraintDocument.builder(constraint).build());
 		}
 
-		for (ConceptSetDefinition definition : Iterables.concat(commitChangeSet.getNewComponents(ConceptSetDefinition.class),
+		for (ConceptModelComponent component : Iterables.concat(
+				commitChangeSet.getDirtyComponents(ConceptModelPredicate.class),
 				commitChangeSet.getDirtyComponents(ConceptSetDefinition.class))) {
-			newAndDirtyConstraints.add(ConceptModelUtils.getContainerConstraint(definition));
-		}
-
-		// (re)index new/changed constraints
-		for (AttributeConstraint constraint : newAndDirtyConstraints) {
-			indexRevision(constraint.cdoID(), SnomedConstraintDocument.builder(constraint).build());
+			final AttributeConstraint constraint = ConceptModelUtils.getContainerConstraint(component);
+			indexChangedRevision(constraint.cdoID(), SnomedConstraintDocument.builder(constraint).build());
 		}
 
 		deleteRevisions(SnomedConstraintDocument.class, commitChangeSet.getDetachedComponents(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT));
