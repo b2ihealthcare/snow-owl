@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 
@@ -62,6 +63,16 @@ public abstract class ConceptModelUtils {
 			return predicate;
 		}
 		
+	}
+	
+	@Nullable static public AttributeConstraint getContainerConstraint(final ConceptModelComponent definition) {
+		if (definition instanceof ConceptSetDefinition) {
+			return getContainerConstraint((ConceptSetDefinition) definition);
+		} else if (definition instanceof ConceptModelPredicate) {
+			return getContainerConstraint((ConceptModelPredicate) definition);
+		} else {
+			throw new UnsupportedOperationException();
+		}
 	}
 	
 	/**Returns with the container attribute constraint for the concept set definition.*/

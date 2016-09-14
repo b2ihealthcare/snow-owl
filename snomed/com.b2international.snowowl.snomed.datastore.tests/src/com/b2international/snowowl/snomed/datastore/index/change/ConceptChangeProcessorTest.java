@@ -83,8 +83,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -107,8 +108,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -138,8 +140,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -152,7 +155,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final ConceptChangeProcessor processor = process();
 		
-		assertEquals(0, processor.getMappings().size());
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(1, processor.getDeletions().size());
 	}
 	
@@ -196,10 +200,13 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		assertEquals(1, processor.getDeletions().size());
 		
 		// and the child concept needs to be reindexed as child of the invisible ROOT ID
-		assertEquals(1, processor.getMappings().size());
-		final Revision newChildRevision = Iterables.getOnlyElement(processor.getMappings().values());
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision newChildRevision = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		final SnomedConceptDocument expectedChildRevision = doc(childConcept).build();
 		assertDocEquals(expectedChildRevision, newChildRevision);
+		
+		// no new mappings were registered
+		assertEquals(0, processor.getNewMappings().size());
 	}
 	
 	@Test
@@ -229,13 +236,14 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		// the child document should be reindexed with new parent information 
-		assertEquals(1, processor.getMappings().size());
+		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expectedDoc = doc(childConcept)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
 				.build();
-		final Revision changedDoc = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision changedDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expectedDoc, changedDoc);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -250,9 +258,10 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(identifierConcept).refSet(refSet).build();
-		assertEquals(1, processor.getMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		assertEquals(1, processor.getNewMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -269,7 +278,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final ConceptChangeProcessor processor = process();
 		
-		assertEquals(0, processor.getMappings().size());
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -293,9 +303,10 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedConceptDocument expected = doc(concept)
 				.referringRefSets(ImmutableSet.of(referringReferenceSetId))
 				.build();
-		assertEquals(1, processor.getMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -319,9 +330,10 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedConceptDocument expected = doc(concept)
 				.referringMappingRefSets(ImmutableSet.of(referringMappingReferenceSetId))
 				.build();
-		assertEquals(1, processor.getMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -347,9 +359,10 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		// the concept needs to be reindexed with the referring member value
 		final SnomedConceptDocument expected = doc(concept).build();
-		assertEquals(1, processor.getMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -375,9 +388,10 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		// the concept needs to be reindexed with the referring member value
 		final SnomedConceptDocument expected = doc(concept).build();
-		assertEquals(1, processor.getMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -405,10 +419,11 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		// expected index changes, concept should be inactive now
-		assertEquals(1, processor.getMappings().size());
+		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = doc(concept).active(false).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -445,15 +460,16 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final ConceptChangeProcessor processor = process();
 		
-		assertEquals(1, processor.getMappings().size());
+		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = doc(childConcept)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
 				.parents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
 				.ancestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	

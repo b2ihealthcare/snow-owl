@@ -41,6 +41,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.index.DelegatingIndexCommitChangeSet;
+import com.b2international.snowowl.datastore.index.ImmutableIndexCommitChangeSet;
+import com.b2international.snowowl.datastore.index.IndexCommitChangeSet;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.DeltaReasonerTaxonomyBuilder;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
@@ -222,71 +225,34 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	@Override
-	public void commit() throws SnowowlServiceException {
+	public IndexCommitChangeSet commit() throws SnowowlServiceException {
 		if (!changes.isEmpty()) {
 			final SnomedOntologyService ontologyService = ApplicationContext.getInstance().getService(SnomedOntologyService.class);
 			ontologyService.applyChanges(ontology, changes);
 		}
+		return new DelegatingIndexCommitChangeSet(ImmutableIndexCommitChangeSet.builder().build()) {
+			@Override
+			public String getDescription() {
+				return "Successfully processed " + changes.size() + " changes of the OWL representation.";
+			}
+		};
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#afterCommit()
-	 */
 	@Override
 	public void afterCommit() {
 		// No-op
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#getChangeDescription()
-	 */
-	@Override
-	public String getChangeDescription() {
-		return "Successfully processed " + changes.size() + " changes of the OWL representation.";
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#hadChangesToProcess()
-	 */
 	@Override
 	public boolean hadChangesToProcess() {
 		return !changes.isEmpty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#getUserId()
-	 */
-	@Override
-	public String getUserId() {
-		return "Reasoner";
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#getBranchPath()
-	 */
-	@Override
-	public IBranchPath getBranchPath() {
-		return branchPath;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#rollback()
-	 */
 	@Override
 	public void rollback() throws SnowowlServiceException {
 		changes.clear();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#getName()
-	 */
 	@Override
 	public String getName() {
 		return "SNOMED CT OWL Ontology";

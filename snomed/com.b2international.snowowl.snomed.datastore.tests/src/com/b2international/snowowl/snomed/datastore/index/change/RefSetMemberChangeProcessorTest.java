@@ -41,8 +41,9 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -54,8 +55,9 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -65,7 +67,8 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		process(processor);
 		
-		assertEquals(0, processor.getMappings().size());
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(1, processor.getDeletions().size());
 	}
 	
@@ -76,7 +79,8 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		process(processor);
 		
-		assertEquals(0, processor.getMappings().size());
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(2, processor.getDeletions().size());
 	}
 

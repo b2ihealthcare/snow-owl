@@ -24,7 +24,6 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Builder;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 4.3
@@ -39,11 +38,14 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		deleteRevisions(SnomedRelationshipIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP));
 		
-		final Iterable<Relationship> relationshipsToIndex = Iterables.concat(commitChangeSet.getNewComponents(Relationship.class), commitChangeSet.getDirtyComponents(Relationship.class));
-		
-		for (Relationship relationship : relationshipsToIndex) {
+		for (Relationship relationship : commitChangeSet.getNewComponents(Relationship.class)) {
 			final Builder doc = SnomedRelationshipIndexEntry.builder(relationship);
-			indexRevision(relationship.cdoID(), doc.build());
+			indexNewRevision(relationship.cdoID(), doc.build());
+		}
+		
+		for (Relationship relationship : commitChangeSet.getDirtyComponents(Relationship.class)) {
+			final Builder doc = SnomedRelationshipIndexEntry.builder(relationship);
+			indexChangedRevision(relationship.cdoID(), doc.build());
 		}
 	}
 	

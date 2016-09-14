@@ -24,7 +24,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 4.3
@@ -39,11 +38,14 @@ public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		deleteRevisions(SnomedRefSetMemberIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER));
 		
-		final Iterable<SnomedRefSetMember> membersToIndex = Iterables.concat(commitChangeSet.getNewComponents(SnomedRefSetMember.class), commitChangeSet.getDirtyComponents(SnomedRefSetMember.class));
-		
-		for (SnomedRefSetMember member : membersToIndex) {
+		for (SnomedRefSetMember member : commitChangeSet.getNewComponents(SnomedRefSetMember.class)) {
 			final Builder doc = SnomedRefSetMemberIndexEntry.builder(member);
-			indexRevision(member.cdoID(), doc.build());
+			indexNewRevision(member.cdoID(), doc.build());
+		}
+		
+		for (SnomedRefSetMember member : commitChangeSet.getDirtyComponents(SnomedRefSetMember.class)) {
+			final Builder doc = SnomedRefSetMemberIndexEntry.builder(member);
+			indexChangedRevision(member.cdoID(), doc.build());
 		}
 	}
 	
