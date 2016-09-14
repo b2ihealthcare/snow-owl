@@ -17,15 +17,11 @@ package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -52,10 +48,8 @@ import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 
 /**
  * Base class for updating indexes based on the new, dirty and detached components when a commit is in progress in the primary storage.
@@ -73,10 +67,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	private final Set<CodeSystemVersion> dirtyCodeSystemVersions = newHashSet();
 
 	private ICDOCommitChangeSet commitChangeSet;
-	private final Map<String, Object> rawMappings = newHashMap();
-	private final Map<Long, Revision> revisionMappings = newHashMap();
-
-	private final Multimap<Class<? extends Revision>, Long> deletions = HashMultimap.create();
+	private IndexCommitChangeSet indexChangeSet;
 
 	public BaseCDOChangeProcessor(IBranchPath branchPath, RevisionIndex index) {
 		this.branchPath = branchPath;
@@ -84,14 +75,8 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		this.log = LoggerFactory.getLogger("repository");
 	}
 
-	@Override
-	public final IBranchPath getBranchPath() {
+	protected final IBranchPath getBranchPath() {
 		return branchPath;
-	}
-
-	@Override
-	public final String getUserId() {
-		return commitChangeSet.getUserId();
 	}
 
 	protected final Logger log() {
@@ -134,7 +119,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 	}
 
-	private void processDirtyCodeSystemsAndVersions(ICDOCommitChangeSet commitChangeSet2) {
+	private void processDirtyCodeSystemsAndVersions(ICDOCommitChangeSet commitChangeSet) {
 		for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
 			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(dirtyObject.eClass())) {
 				dirtyCodeSystems.add((CodeSystem) dirtyObject);
@@ -146,25 +131,26 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 
 	private final void updateDocuments(ICDOCommitChangeSet commitChangeSet, RevisionSearcher index) throws IOException {
 		log.info("Processing changes...");
-
+		final ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet = ImmutableIndexCommitChangeSet.builder();
+		
 		for (final CodeSystem newCodeSystem : newCodeSystems) {
 			final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
-			rawMappings.put(Long.toString(entry.getStorageKey()), entry);
+			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
 		}
 
 		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
 			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
-			rawMappings.put(Long.toString(entry.getStorageKey()), entry);
+			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
 		}
 
 		for (final CodeSystem dirtyCodeSystem : dirtyCodeSystems) {
 			final CodeSystemEntry entry = CodeSystemEntry.builder(dirtyCodeSystem).build();
-			rawMappings.put(Long.toString(entry.getStorageKey()), entry);
+			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
 		}
 
 		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
 			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(dirtyCodeSystemVersion).build();
-			rawMappings.put(Long.toString(entry.getStorageKey()), entry);
+			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
 		}
 
 		preUpdateDocuments(commitChangeSet, index);
@@ -173,12 +159,26 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 			log.info("Collecting {}...", processor.description());
 			processor.process(commitChangeSet, index);
 			// register additions, deletions from the sub processor
-			revisionMappings.putAll(processor.getMappings());
-			deletions.putAll(processor.getDeletions());
-
+			indexCommitChangeSet.putRevisionMappings(processor.getNewMappings());
+			for (RevisionDocument revision : Iterables.filter(processor.getNewMappings().values(), RevisionDocument.class)) {
+				indexCommitChangeSet.putNewComponents(revision.getId());
+			}
+			indexCommitChangeSet.putRevisionMappings(processor.getChangedMappings());
+			for (RevisionDocument revision : Iterables.filter(processor.getChangedMappings().values(), RevisionDocument.class)) {
+				indexCommitChangeSet.putChangedComponents(revision.getId());
+			}
+			
+			final Multimap<Class<? extends Revision>, Long> deletions = processor.getDeletions();
+			indexCommitChangeSet.putRevisionDeletions(deletions);
+			for (Class<? extends Revision> type : deletions.keySet()) {
+				for (RevisionDocument revision : Iterables.filter(index.get(type, deletions.get(type)), RevisionDocument.class)) {
+					indexCommitChangeSet.putDeletedComponents(revision.getId());
+				}
+			}
 		}
 
-		postUpdateDocuments(Collections.unmodifiableMap(revisionMappings), Multimaps.unmodifiableMultimap(deletions));
+		indexChangeSet = indexCommitChangeSet.build();
+		postUpdateDocuments(indexChangeSet);
 		log.info("Processing changes successfully finished.");
 	}
 
@@ -202,51 +202,33 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	/**
 	 * Subclasses may override this method to execute additional logic after the processing of the changeset, but before committing it.
 	 * 
-	 * @param mappings
-	 *            - the new and updated revisions
-	 * @param deletions
-	 *            - deleted revisions
+	 * @param commitChangeSet - the commit change set about to be committed by this processor
 	 */
-	protected void postUpdateDocuments(Map<Long, Revision> mappings, Multimap<Class<? extends Revision>, Long> deletions) {
+	protected void postUpdateDocuments(IndexCommitChangeSet commitChangeSet) {
 	}
 
 	@Override
-	public final void commit() throws SnowowlServiceException {
+	public final IndexCommitChangeSet commit() throws SnowowlServiceException {
 		final Timer indexTimer = MetricsThreadLocal.get().timer("indexing");
 		try {
 			indexTimer.start();
 			checkState(commitChangeSet.getTimestamp() > 0, "Commit timestamp should be greater than zero");
-			index.write(branchPath.getPath(), commitChangeSet.getTimestamp(), new RevisionIndexWrite<Void>() {
+			return index.write(branchPath.getPath(), commitChangeSet.getTimestamp(), new RevisionIndexWrite<IndexCommitChangeSet>() {
 				@Override
-				public Void execute(RevisionWriter writer) throws IOException {
+				public IndexCommitChangeSet execute(RevisionWriter writer) throws IOException {
 					log.info("Persisting changes...");
-					commitChanges(writer);
-					log.info("Changes have been successfully persisted.");
-					return null;
+					try {
+						indexChangeSet.apply(writer);
+						writer.commit();
+						return indexChangeSet;
+					} finally {
+						log.info("Changes have been successfully persisted.");
+					}
 				}
 			});
 		} finally {
 			indexTimer.stop();
 		}
-	}
-
-	private void commitChanges(final RevisionWriter writer) throws IOException {
-		for (Entry<String, Object> doc : rawMappings.entrySet()) {
-			writer.writer().put(doc.getKey(), doc.getValue());
-		}
-
-		final Multimap<Class<? extends Revision>, Long> copiedRevision = ImmutableMultimap.copyOf(deletions);
-		for (Class<? extends Revision> type : copiedRevision.keySet()) {
-			writer.remove(type, copiedRevision.get(type));
-		}
-
-		for (Entry<Long, Revision> doc : revisionMappings.entrySet()) {
-			if (!deletions.containsValue(doc.getKey())) {
-				writer.put(doc.getKey(), doc.getValue());
-			}
-		}
-
-		writer.commit();
 	}
 
 	/**
@@ -278,11 +260,6 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	@Override
 	public final boolean hadChangesToProcess() {
 		return !commitChangeSet.isEmpty();
-	}
-
-	@Override
-	public final String getChangeDescription() {
-		return String.format("Updated documents %d, deleted documents %d.", revisionMappings.size() + rawMappings.size(), deletions.values().size());
 	}
 
 	@SuppressWarnings("restriction")
