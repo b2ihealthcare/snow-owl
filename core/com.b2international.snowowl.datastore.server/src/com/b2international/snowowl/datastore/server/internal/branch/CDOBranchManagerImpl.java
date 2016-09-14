@@ -276,6 +276,6 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     
     @Override
     void sendChangeEvent(final String branch) {
-    	new BranchChangedEvent(repository.id(), branch).publish(repository.events());
+    	repository.sendNotification(new BranchChangedEvent(repository.id(), branch));
     }
 }

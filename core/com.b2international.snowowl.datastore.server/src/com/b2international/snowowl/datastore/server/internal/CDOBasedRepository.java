@@ -52,6 +52,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
@@ -65,6 +66,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
+import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
@@ -93,6 +95,7 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;
 import com.google.inject.Provider;
 
@@ -106,6 +109,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	private final String toolingId;
 	private final String repositoryId;
 	private final IEventBus handlers;
+	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	
 	CDOBasedRepository(String repositoryId, String toolingId, int numberOfWorkers, int mergeMaxResults, Environment env) {
 		super(env);
@@ -133,6 +137,17 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	@Override
 	public IEventBus events() {
 		return getDelegate().service(IEventBus.class);
+	}
+	
+	@Override
+	public void sendNotification(RepositoryEvent event) {
+		if (event instanceof RepositoryCommitNotification) {
+			final RepositoryCommitNotification notification = (RepositoryCommitNotification) event;
+			// enqueue and wait until the actual CDO commit notification arrives
+			commitNotifications.put(notification.getCommitTimestamp(), notification);
+		} else {
+			event.publish(events());
+		}
 	}
 	
 	@Override
@@ -226,7 +241,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
 		bind(ReviewManager.class, reviewManager);
 
-		events().registerHandler(address("/branches/changes") , reviewManager.getStaleHandler());
+		events().registerHandler(String.format(RepositoryEvent.ADDRESS_TEMPLATE, repositoryId), reviewManager.getStaleHandler());
 		
 		final MergeServiceImpl mergeService = new MergeServiceImpl(this, mergeMaxResults);
 		bind(MergeService.class, mergeService);
@@ -366,6 +381,11 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 			final CDOBranch branch = commitInfo.getBranch();
 			final long commitTimestamp = commitInfo.getTimeStamp();
 			((CDOBranchManagerImpl) service(BranchManager.class)).handleCommit(branch.getID(), commitTimestamp);
+			// send out the currently enqueued commit notification, if there is any (import might skip sending commit notifications until a certain point)
+			final RepositoryCommitNotification notification = commitNotifications.get(commitTimestamp);
+			if (notification != null) {
+				notification.publish(events());
+			}
         }
 	}
 	

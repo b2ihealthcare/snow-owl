@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import java.io.Closeable;
 
+import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 
@@ -45,5 +46,12 @@ public interface Repository extends ServiceProvider, Closeable {
 	 * @return
 	 */
 	IEventBus events();
+
+	/**
+	 * Send a {@link RepositoryEvent notification} to each and every listener of this repository.
+	 * 
+	 * @param event
+	 */
+	void sendNotification(RepositoryEvent event);
 
 }

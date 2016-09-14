@@ -50,6 +50,7 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
@@ -117,34 +118,36 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final class StaleHandler implements IHandler<IMessage> {
 		@Override
 		public void handle(final IMessage message) {
-			final BranchChangedEvent changeEvent = message.body(BranchChangedEvent.class);
-			final String path = changeEvent.getBranch();
-
-			store.write(new IndexWrite<Void>() {
-				@Override
-				public Void execute(Writer index) throws IOException {
-					final Hits<ReviewImpl> affectedReviews = index.searcher().search(
-							Query.select(ReviewImpl.class)
+			final RepositoryEvent changeEvent = message.body(RepositoryEvent.class);
+			if (changeEvent instanceof BranchChangedEvent) {
+				final String path = ((BranchChangedEvent) changeEvent).getBranch();
+				
+				store.write(new IndexWrite<Void>() {
+					@Override
+					public Void execute(Writer index) throws IOException {
+						final Hits<ReviewImpl> affectedReviews = index.searcher().search(
+								Query.select(ReviewImpl.class)
 								.where(Expressions.builder()
-									.must(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
-									.must(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
-									.build()
-								)
+										.must(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
+										.must(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
+										.build()
+										)
 								.limit(Integer.MAX_VALUE)
 								.build());
-					
-					if (affectedReviews.getTotal() > 0) {
-						for (final ReviewImpl affectedReview : affectedReviews) {
-							ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
-							if (newReview != null) {
-								index.put(newReview.id(), newReview);
+						
+						if (affectedReviews.getTotal() > 0) {
+							for (final ReviewImpl affectedReview : affectedReviews) {
+								ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
+								if (newReview != null) {
+									index.put(newReview.id(), newReview);
+								}
 							}
+							index.commit();
 						}
-						index.commit();
+						return null;
 					}
-					return null;
-				}
-			});
+				});
+			}
 		}
 	}
 
