@@ -424,10 +424,6 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	@Override
-	public void prepareCommit() throws SnowowlServiceException {
-	}
-
-	@Override
 	public void rollback() throws SnowowlServiceException {
 		this.entry = null;
 		this.commitChangeSet = null;

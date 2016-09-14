@@ -48,12 +48,6 @@ public interface ICDOChangeProcessor {
 	void commit() throws SnowowlServiceException;
 	
 	/**
-	 * Prepares the changes to be persisted.
-	 * @throws SnowowlServiceException
-	 */
-	void prepareCommit() throws SnowowlServiceException;
-	
-	/**
 	 * Rolls back.
 	 * @throws SnowowlServiceException
 	 */
@@ -101,9 +95,6 @@ public interface ICDOChangeProcessor {
 		}
 		
 		@Override public void process(final ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
-		}
-		
-		@Override public void prepareCommit() throws SnowowlServiceException {
 		}
 		
 		@Override public boolean hadChangesToProcess() {

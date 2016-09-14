@@ -68,7 +68,7 @@ import com.google.common.collect.MapMaker;
 @SuppressWarnings("restriction")
 public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CDOServerChangeManager.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("repository");
 	private static final String COMMIT_CONTEXT_INFO_TEMPLATE = "[User ID: {0}, Repository: {1}, Branch: {2}]";
 
 	private final ConcurrentMap<TransactionCommitContext, DelegateCDOServerChangeManager> activeChangeManagers;
