@@ -480,8 +480,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			throw new ImportException("Cannot create tag for SNOMED CT " + lastUnitEffectiveTimeKey, e);
 		} finally {
 			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
-			final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
-			CDOServerUtils.sendCommitNotification(commitInfo);
+			if (!importContext.isCommitNotificationEnabled()) {
+				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
+				CDOServerUtils.sendCommitNotification(commitInfo);
+			}
 		}
 	}
 
