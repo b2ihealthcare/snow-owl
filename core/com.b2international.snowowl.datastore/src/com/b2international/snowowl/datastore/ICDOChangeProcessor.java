@@ -20,8 +20,9 @@ import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.index.ImmutableIndexCommitChangeSet;
+import com.b2international.snowowl.datastore.index.IndexCommitChangeSet;
 
 /**
  * Processes new, detached and changed {@link CDOObject CDOObjects} to update a lightweight secondary store.
@@ -42,10 +43,10 @@ public interface ICDOChangeProcessor {
 	void process(final ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException;
 	
 	/**
-	 * Persists the processed changes.
+	 * Persists the processed changes and returns a change set
 	 * @throws SnowowlServiceException
 	 */
-	void commit() throws SnowowlServiceException;
+	IndexCommitChangeSet commit() throws SnowowlServiceException;
 	
 	/**
 	 * Rolls back.
@@ -59,25 +60,6 @@ public interface ICDOChangeProcessor {
 	 */
 	String getName();
 
-	/**
-	 * Returns the user id of the user responsible for the changes
-	 * processed by this change processor.
-	 * @return the user id as a string
-	 */
-	String getUserId();
-	
-	/**
-	 * Returns the branch path this change processor is operating on.
-	 * @return the branch path of the change processor
-	 */
-	IBranchPath getBranchPath();
-	
-	/**
-	 * Returns the human-readable description of the change performed.
-	 * @return
-	 */
-	String getChangeDescription();
-	
 	/**
 	 * Returns true if this processor had any changes to process.
 	 * @return
@@ -101,24 +83,13 @@ public interface ICDOChangeProcessor {
 			return false;
 		}
 		
-		@Override public String getUserId() {
-			return null;
-		}
-		
 		@Override public String getName() {
 			return null;
 		}
 		
-		@Override public String getChangeDescription() {
-			return null;
-		}
-		
-		@Override public IBranchPath getBranchPath() {
-			return null;
-		}
-		
 		@Override
-		public void commit() throws SnowowlServiceException {
+		public IndexCommitChangeSet commit() throws SnowowlServiceException {
+			return ImmutableIndexCommitChangeSet.builder().build();
 		}
 		
 		@Override

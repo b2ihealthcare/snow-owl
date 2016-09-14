@@ -34,7 +34,8 @@ import com.google.common.collect.Multimap;
 public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 
 	private final String description;
-	private final Map<Long, Revision> mappings = newHashMap();
+	private final Map<Long, Revision> newMappings = newHashMap();
+	private final Map<Long, Revision> changedMappings = newHashMap();
 	private final Multimap<Class<? extends Revision>, Long> deletions = HashMultimap.create();
 
 	protected ChangeSetProcessorBase(String description) {
@@ -46,12 +47,20 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 		return description;
 	}
 	
-	protected final void indexRevision(CDOID storageKey, Revision revision) {
-		indexRevision(CDOIDUtil.getLong(storageKey), revision);
+	protected final void indexNewRevision(CDOID storageKey, Revision revision) {
+		indexNewRevision(CDOIDUtil.getLong(storageKey), revision);
 	}
 	
-	protected final void indexRevision(long storageKey, Revision revision) {
-		mappings.put(storageKey, revision);
+	protected final void indexNewRevision(long storageKey, Revision revision) {
+		newMappings.put(storageKey, revision);
+	}
+	
+	protected final void indexChangedRevision(CDOID storageKey, Revision revision) {
+		indexChangedRevision(CDOIDUtil.getLong(storageKey), revision);
+	}
+	
+	protected final void indexChangedRevision(long storageKey, Revision revision) {
+		changedMappings.put(storageKey, revision);
 	}
 	
 	protected final void deleteRevisions(Class<? extends Revision> type, Collection<CDOID> storageKeys) {
@@ -59,12 +68,17 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 	}
 	
 	@Override
-	public Map<Long, Revision> getMappings() {
-		return mappings;
+	public final Map<Long, Revision> getNewMappings() {
+		return newMappings;
 	}
 	
 	@Override
-	public Multimap<Class<? extends Revision>, Long> getDeletions() {
+	public final Map<Long, Revision> getChangedMappings() {
+		return changedMappings;
+	}
+	
+	@Override
+	public final Multimap<Class<? extends Revision>, Long> getDeletions() {
 		return deletions;
 	}
 	
