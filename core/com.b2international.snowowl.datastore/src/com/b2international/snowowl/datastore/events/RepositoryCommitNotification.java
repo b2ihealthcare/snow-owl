@@ -30,6 +30,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private final String branchPath;
 	private final long commitTimestamp;
 	private final String userId;
+	private final String comment;
 	private final Collection<String> newComponents;
 	private final Collection<String> changedComponents;
 	private final Collection<String> deletedComponents;
@@ -38,6 +39,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 			final String branchPath,
 			final long commitTimestamp,
 			final String userId,
+			final String comment,
 			final Collection<String> newComponents, 
 			final Collection<String> changedComponents, 
 			final Collection<String> deletedComponents) {
@@ -45,6 +47,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 		this.branchPath = branchPath;
 		this.commitTimestamp = commitTimestamp;
 		this.userId = userId;
+		this.comment = comment;
 		this.newComponents = Collections3.toImmutableSet(newComponents);
 		this.changedComponents = Collections3.toImmutableSet(changedComponents);
 		this.deletedComponents = Collections3.toImmutableList(deletedComponents);
@@ -60,6 +63,10 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	
 	public String getUserId() {
 		return userId;
+	}
+	
+	public String getComment() {
+		return comment;
 	}
 	
 	public Collection<String> getNewComponents() {
