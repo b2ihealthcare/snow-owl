@@ -28,7 +28,7 @@ import com.b2international.snowowl.datastore.server.oplock.IOperationLockTargetL
  */
 public class Slf4jOperationLockTargetListener implements IOperationLockTargetListener<DatastoreLockContext> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(Slf4jOperationLockTargetListener.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("lock");
 	
 	@Override
 	public void targetAcquired(final IOperationLockTarget target, final DatastoreLockContext context) {

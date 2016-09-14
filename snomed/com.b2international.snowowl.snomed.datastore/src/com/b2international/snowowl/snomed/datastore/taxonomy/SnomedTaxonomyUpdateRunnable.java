@@ -49,7 +49,7 @@ import com.google.common.collect.Maps;
  */
 public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedTaxonomyUpdateRunnable.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("repository");
 
 	private static final Function<CDOObject, EClass> GET_ECLASS_FUNCTION = new Function<CDOObject, EClass>() {
 		@Override public EClass apply(CDOObject input) {
