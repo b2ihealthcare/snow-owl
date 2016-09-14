@@ -221,19 +221,6 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 		return concreteDomainDefinitions;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#prepareCommit()
-	 */
-	@Override
-	public void prepareCommit() throws SnowowlServiceException {
-		// TODO implement two-phase commit semantics
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOChangeProcessor#commit()
-	 */
 	@Override
 	public void commit() throws SnowowlServiceException {
 		if (!changes.isEmpty()) {
