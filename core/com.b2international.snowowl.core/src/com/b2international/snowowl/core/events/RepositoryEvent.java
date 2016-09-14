@@ -22,6 +22,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class RepositoryEvent extends BaseEvent {
 
+	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * Notification address where subclasses of this {@link RepositoryEvent} will be sent. Use the unique repository identifier to complete this
+	 * template.
+	 */
+	public static final String ADDRESS_TEMPLATE = "/%s/notifications";
 	private final String repositoryId;
 
 	protected RepositoryEvent(final String repositoryId) {
@@ -34,14 +41,7 @@ public abstract class RepositoryEvent extends BaseEvent {
 
 	@Override
 	protected final String getAddress() {
-		return String.format("/%s%s", repositoryId, getPath());
+		return String.format(ADDRESS_TEMPLATE, repositoryId);
 	}
-
-	/**
-	 * Returns the path where this event should be sent within the repository.
-	 *
-	 * @return
-	 */
-	protected abstract String getPath();
 
 }

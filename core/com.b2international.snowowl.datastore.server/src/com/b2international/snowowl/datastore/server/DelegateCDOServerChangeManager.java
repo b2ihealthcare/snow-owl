@@ -18,9 +18,9 @@ package com.b2international.snowowl.datastore.server;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 
@@ -38,6 +38,7 @@ import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -48,7 +49,10 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
+import com.b2international.snowowl.datastore.index.ImmutableIndexCommitChangeSet;
+import com.b2international.snowowl.datastore.index.IndexCommitChangeSet;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -58,6 +62,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockE
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -104,33 +109,34 @@ public class DelegateCDOServerChangeManager {
 			final InternalSession session = StoreThreadLocal.getSession();
 			final Metrics metrics = MetricsThreadLocal.get();
 			
-			for (final ICDOChangeProcessor processor : changeProcessors) {
-				
-				changeProcessingJobs.add(new Job("Processing commit information with " + processor.getName()) {
-					@Override 
-					public IStatus run(final IProgressMonitor monitor) {
-						
-						try {
-							StoreThreadLocal.setSession(session);
-							MetricsThreadLocal.set(metrics);
+			if (changeProcessors.size() == 1) {
+				final ICDOChangeProcessor processor = Iterables.getOnlyElement(changeProcessors);
+				processor.process(commitChangeSet);
+			} else {
+				for (final ICDOChangeProcessor processor : changeProcessors) {
+					changeProcessingJobs.add(new Job("Processing commit information with " + processor.getName()) {
+						@Override 
+						public IStatus run(final IProgressMonitor monitor) {
 							
-							processor.process(commitChangeSet);
-							return Statuses.ok();
-						} catch (final Exception e) {
-							return Statuses.error(DatastoreServerActivator.PLUGIN_ID, "Error while processing changes with " + processor.getName() + " for branch: " + branchPath, e);
-						} finally {
-							//release session for all threads
-							StoreThreadLocal.release();
-							MetricsThreadLocal.release();
+							try {
+								StoreThreadLocal.setSession(session);
+								MetricsThreadLocal.set(metrics);
+								
+								processor.process(commitChangeSet);
+								return Statuses.ok();
+							} catch (final Exception e) {
+								return Statuses.error(DatastoreServerActivator.PLUGIN_ID, "Error while processing changes with " + processor.getName() + " for branch: " + branchPath, e);
+							} finally {
+								//release session for all threads
+								StoreThreadLocal.release();
+								MetricsThreadLocal.release();
+							}
 						}
-					}
-				});
+					});
+				}
 			}
-
 			ForkJoinUtils.runJobsInParallelWithErrorHandling(changeProcessingJobs, null);
-			
 		} catch (final Exception e) {
-			
 			try {
 				/* 
 				 * XXX (apeteri): we don't know if we got here via applyChanges or a CDO commit, so handleTransactionRollback() may be called 
@@ -183,6 +189,7 @@ public class DelegateCDOServerChangeManager {
 		
 		RuntimeException caughtException = null;
 		final Collection<ICDOChangeProcessor> committedChangeProcessors = newConcurrentHashSet();
+		final Collection<IndexCommitChangeSet> indexCommitChangeSets = newConcurrentHashSet();
 		
 		try {
 			final Metrics metrics = MetricsThreadLocal.get();
@@ -195,22 +202,16 @@ public class DelegateCDOServerChangeManager {
 					@Override protected IStatus run(final IProgressMonitor monitor) {
 						try {
 							MetricsThreadLocal.set(metrics);
-							
-							//log if anything had changed
+							// commit if anything had changed
 							if (processor.hadChangesToProcess()) {
+								final IndexCommitChangeSet indexCommitChangeSet = processor.commit();
 
-								//XXX if the change set does not contain any changes to the specific terminology
-								//there is no need to initialize tracking index writer at IndexServerService
-								//and also *NO* need to reopen reader triggered by #commit on change processor.
-								//according to profile results getting tracking index writer reference also triggers
-								//directory cache loader initialization and snapshotting the current state of the index directory
-								processor.commit();
-
-								//log changes
-								logUserActivity(processor);
+								// log changes
+								logUserActivity(commitChangeSet, indexCommitChangeSet);
 								
 								// Add to set of change processors that committed changes successfully
 								committedChangeProcessors.add(processor);
+								indexCommitChangeSets.add(indexCommitChangeSet);
 							}
 							
 							return Status.OK_STATUS;
@@ -229,12 +230,39 @@ public class DelegateCDOServerChangeManager {
 			}
 			
 			ForkJoinUtils.runJobsInParallelWithErrorHandling(commitJobs, null);
-			
+			// queue commit notification
+			final IndexCommitChangeSet mergedChangeSet = merge(indexCommitChangeSets);
+			getContext().getService(RepositoryManager.class)
+				.get(repositoryUuid)
+				.sendNotification(toCommitNotification(mergedChangeSet));
 		} catch (final Exception e) {
 			caughtException = new SnowowlRuntimeException("Error when committing change processors on branch: " + branchPath, e);
 		} finally {
 			cleanupAfterCommit(caughtException, committedChangeProcessors);
 		}
+	}
+
+	private RepositoryCommitNotification toCommitNotification(IndexCommitChangeSet mergedChangeSet) {
+		return new RepositoryCommitNotification(repositoryUuid,
+				branchPath.getPath(),
+				commitChangeSet.getTimestamp(),
+				commitChangeSet.getUserId(),
+				mergedChangeSet.getNewComponents(),
+				mergedChangeSet.getChangedComponents(),
+				mergedChangeSet.getDeletedComponents()
+				);
+	}
+
+	private IndexCommitChangeSet merge(Collection<IndexCommitChangeSet> indexCommitChangeSets) {
+		final Iterator<IndexCommitChangeSet> it = indexCommitChangeSets.iterator();
+		if (it.hasNext()) {
+			IndexCommitChangeSet current = null;
+			do {
+				current = current == null ? it.next() : current.merge(it.next());
+			} while (it.hasNext());
+			return current;
+		}
+		return ImmutableIndexCommitChangeSet.builder().build();
 	}
 
 	private void cleanupAfterCommit(RuntimeException caughtException, Collection<ICDOChangeProcessor> committedChangeProcessors) {
@@ -244,17 +272,7 @@ public class DelegateCDOServerChangeManager {
 			final Collection<Job> cleanupJobs = Sets.newHashSetWithExpectedSize(committedChangeProcessors.size());
 			
 			for (final ICDOChangeProcessor processor : committedChangeProcessors) {
-				cleanupJobs.add(new Job("Cleaning up " + processor.getName()) {
-					@Override 
-					protected IStatus run(final IProgressMonitor monitor) {
-						try {
-							processor.afterCommit();
-							return Status.OK_STATUS;
-						} catch (final RuntimeException e) {
-							return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, "Error while cleaning up change processor with " + processor.getName() + " for branch: " + branchPath, e);
-						}
-					}
-				});
+				processor.afterCommit();
 			}
 			
 			ForkJoinUtils.runJobsInParallelWithErrorHandling(cleanupJobs, null);
@@ -274,8 +292,8 @@ public class DelegateCDOServerChangeManager {
 	 * Logs the change processor activity for audit purposes.
 	 * @param processor
 	 */
-	protected void logUserActivity(final ICDOChangeProcessor processor) {
-		LogUtils.logUserEvent(LOGGER, processor.getUserId(), processor.getBranchPath(), processor.getChangeDescription());
+	protected void logUserActivity(final ICDOCommitChangeSet cdoCommitChangeSet, IndexCommitChangeSet indexCommitChangeSet) {
+		LogUtils.logUserEvent(LOGGER, cdoCommitChangeSet.getUserId(), branchPath, indexCommitChangeSet.getDescription());
 	}
 
 	/*performs a rollback in the lightweight stores held by the CDO change processor instances.*/
@@ -392,10 +410,10 @@ public class DelegateCDOServerChangeManager {
 	}
 
 	private IDatastoreOperationLockManager getLockManager() {
-		return getApplicationContext().getServiceChecked(IDatastoreOperationLockManager.class);
+		return getContext().getServiceChecked(IDatastoreOperationLockManager.class);
 	}
 	
-	private ApplicationContext getApplicationContext() {
+	private ApplicationContext getContext() {
 		return ApplicationContext.getInstance();
 	}
 }
