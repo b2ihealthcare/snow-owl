@@ -93,12 +93,12 @@ public abstract class UnsupportedRf2RefSetMember extends FakeEObjectImpl impleme
 	}
 
 	@Override
-	public void setMapGroup(byte value) {
+	public void setMapGroup(int value) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setMapPriority(byte value) {
+	public void setMapPriority(int value) {
 		throw new UnsupportedOperationException();		
 	}
 

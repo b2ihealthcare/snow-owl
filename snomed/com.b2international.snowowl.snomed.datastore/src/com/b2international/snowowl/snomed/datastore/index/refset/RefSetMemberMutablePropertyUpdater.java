@@ -35,7 +35,7 @@ import com.google.common.base.Strings;
  */
 public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<SnomedDocumentBuilder> {
 
-	private SnomedRefSetMember member;
+	private final SnomedRefSetMember member;
 
 	public RefSetMemberMutablePropertyUpdater(SnomedRefSetMember member) {
 		super(member.getUuid());
@@ -77,8 +77,8 @@ public class RefSetMemberMutablePropertyUpdater extends DocumentUpdaterBase<Snom
 		case COMPLEX_MAP:
 			//cast member to complex map and set complex map properties to the document
 			final SnomedComplexMapRefSetMember complexMember = (SnomedComplexMapRefSetMember) member;
-			doc.memberMapGroup(Integer.valueOf(complexMember.getMapGroup()));
-			doc.memberMapPriority(Integer.valueOf(complexMember.getMapPriority()));
+			doc.memberMapGroup(complexMember.getMapGroup());
+			doc.memberMapPriority(complexMember.getMapPriority());
 			if (null != complexMember.getMapRule()) {
 				doc.memberMapRule(complexMember.getMapRule());
 			}

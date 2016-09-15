@@ -94,8 +94,8 @@ public class SnomedRefSetCloner {
 				SnomedRefSetMemberIndexEntry complexMapRefSetMemberIndexEntry = (SnomedRefSetMemberIndexEntry) originalMemberIndexEntry;
 				newComplexMapRefSetMember.setCorrelationId(complexMapRefSetMemberIndexEntry.getCorrelationId());
 				newComplexMapRefSetMember.setMapAdvice(complexMapRefSetMemberIndexEntry.getMapAdvice());
-				newComplexMapRefSetMember.setMapGroup((byte) complexMapRefSetMemberIndexEntry.getMapGroup());
-				newComplexMapRefSetMember.setMapPriority((byte) complexMapRefSetMemberIndexEntry.getMapPriority());
+				newComplexMapRefSetMember.setMapGroup(complexMapRefSetMemberIndexEntry.getMapGroup());
+				newComplexMapRefSetMember.setMapPriority(complexMapRefSetMemberIndexEntry.getMapPriority());
 				newComplexMapRefSetMember.setMapRule(complexMapRefSetMemberIndexEntry.getMapRule());
 				newRefSetMember = newComplexMapRefSetMember;
 				break;
