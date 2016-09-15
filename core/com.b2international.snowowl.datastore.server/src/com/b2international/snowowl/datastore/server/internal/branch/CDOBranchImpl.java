@@ -71,12 +71,15 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	}
 	
 	@Override
-	public InternalCDOBasedBranch withSegmentId(int segmentId) {
+	public InternalCDOBasedBranch withSegmentId(int newSegmentId) {
 		final Builder<Integer> builder = ImmutableSet.builder();
-		builder.add(segmentId);
+		builder.add(newSegmentId);
 		// use previous segments here, the branch got a new segment because a new child branch got opened
 		builder.addAll(segments());
-		return new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), metadata(), cdoBranchId(), segmentId, builder.build(), parentSegments);
+		
+		CDOBranchImpl branch = new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), metadata(), cdoBranchId(), newSegmentId, builder.build(), parentSegments());
+		branch.setBranchManager(getBranchManager());
+		return branch;
 	}
 	
 	@Override
