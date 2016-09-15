@@ -33,8 +33,8 @@ public class AutoMapEntry {
 	private MappingMode mappingMode = MappingMode.EMPTY;
 	private MappingState mappingState = MappingState.NOT_ACCEPTED;
 	private String autoMappedId;
-	private byte mapGroup;
-	private byte mapPriority;
+	private int mapGroup;
+	private int mapPriority;
 	private String mapRule;
 	private String mapAdvice;
 	private String correlationId;
@@ -107,7 +107,7 @@ public class AutoMapEntry {
 	 * Returns with the map group.
 	 * @return map group.
 	 */
-	public byte getMapGroup() {
+	public int getMapGroup() {
 		return mapGroup;
 	}
 
@@ -115,7 +115,7 @@ public class AutoMapEntry {
 	 * Sets the map group to a specified value.
 	 * @param mapGroup the new map group value. 
 	 */
-	public void setMapGroup(final byte mapGroup) {
+	public void setMapGroup(final int mapGroup) {
 		this.mapGroup = mapGroup;
 	}
 
@@ -123,7 +123,7 @@ public class AutoMapEntry {
 	 * Returns with the map priority value.
 	 * @return the map priority.
 	 */
-	public byte getMapPriority() {
+	public int getMapPriority() {
 		return mapPriority;
 	}
 
@@ -131,7 +131,7 @@ public class AutoMapEntry {
 	 * Sets the map priority to a specified value.
 	 * @param mapPriority the new map priority value.
 	 */
-	public void setMapPriority(final byte mapPriority) {
+	public void setMapPriority(final int mapPriority) {
 		this.mapPriority = mapPriority;
 	}
 

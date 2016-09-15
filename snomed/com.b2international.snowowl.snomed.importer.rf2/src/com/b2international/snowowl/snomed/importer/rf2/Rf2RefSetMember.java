@@ -154,13 +154,13 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 	}
 
 	@Override
-	public byte getMapGroup() {
-		return Byte.parseByte(record.get(6));
+	public int getMapGroup() {
+		return Integer.parseInt(record.get(6));
 	}
 
 	@Override
-	public byte getMapPriority() {
-		return Byte.parseByte(record.get(7));
+	public int getMapPriority() {
+		return Integer.parseInt(record.get(7));
 	}
 
 	@Override
