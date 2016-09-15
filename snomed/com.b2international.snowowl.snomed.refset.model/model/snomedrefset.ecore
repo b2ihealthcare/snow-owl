@@ -61,9 +61,9 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SnomedComplexMapRefSetMember" eSuperTypes="#//SnomedSimpleMapRefSetMember">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="mapGroup" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EByte"/>
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="mapPriority" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EByte"/>
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="mapRule" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
       <eAnnotations source="http://www.eclipse.org/CDO/DBStore">

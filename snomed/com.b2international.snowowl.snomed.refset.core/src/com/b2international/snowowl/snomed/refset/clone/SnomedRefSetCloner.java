@@ -38,7 +38,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.collect.Lists;
-import com.google.common.primitives.SignedBytes;
 
 /**
  * Clones the members of a given {@link SnomedRefSet reference set}.
@@ -100,8 +99,8 @@ public class SnomedRefSetCloner {
 				SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(identifierPair, mapTargetId, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
 				newComplexMapRefSetMember.setCorrelationId((String) originalMember.getProperties().get(Fields.CORRELATION_ID));
 				newComplexMapRefSetMember.setMapAdvice((String) originalMember.getProperties().get(Fields.MAP_ADVICE));
-				newComplexMapRefSetMember.setMapGroup(SignedBytes.checkedCast(((Integer) originalMember.getProperties().get(Fields.MAP_GROUP))));
-				newComplexMapRefSetMember.setMapPriority(SignedBytes.checkedCast(((Integer)originalMember.getProperties().get(Fields.MAP_PRIORITY))));
+				newComplexMapRefSetMember.setMapGroup((Integer) originalMember.getProperties().get(Fields.MAP_GROUP));
+				newComplexMapRefSetMember.setMapPriority((Integer) originalMember.getProperties().get(Fields.MAP_PRIORITY));
 				newComplexMapRefSetMember.setMapRule((String) originalMember.getProperties().get(Fields.MAP_RULE));
 				newRefSetMember = newComplexMapRefSetMember;
 				break;
