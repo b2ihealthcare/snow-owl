@@ -41,6 +41,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -361,7 +362,7 @@ final class SnomedConceptConverter extends BaseResourceConverter<SnomedConceptDo
 				final long[] parentIds = stated ? concept.getStatedParentIds() : concept.getParentIds();
 				if (parentIds != null) {
 					for (long parent : parentIds) {
-						if (SnomedConceptDocument.ROOT_ID != parent) {
+						if (IComponent.ROOT_IDL != parent) {
 							ancestorsByDescendant.put(concept.getId(), toString.apply(parent));
 						}
 					}
@@ -370,7 +371,7 @@ final class SnomedConceptConverter extends BaseResourceConverter<SnomedConceptDo
 					final long[] ancestorIds = stated ? concept.getStatedAncestorIds() : concept.getAncestorIds();
 					if (ancestorIds != null) {
 						for (long ancestor : ancestorIds) {
-							if (SnomedConceptDocument.ROOT_ID != ancestor) {
+							if (IComponent.ROOT_IDL != ancestor) {
 								ancestorsByDescendant.put(concept.getId(), toString.apply(ancestor));
 							}
 						}

@@ -61,7 +61,6 @@ import com.google.common.collect.FluentIterable;
 @JsonDeserialize(builder=SnomedConceptDocument.Builder.class)
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
-	public static final Long ROOT_ID = -1L;
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
 

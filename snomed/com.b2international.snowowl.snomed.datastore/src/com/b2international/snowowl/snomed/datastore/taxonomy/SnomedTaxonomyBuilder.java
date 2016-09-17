@@ -23,7 +23,7 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.commons.arrays.Arrays2;
 import com.b2international.commons.arrays.LongBidiMapWithInternalId;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Preconditions;
 
@@ -66,7 +66,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 		nodes = new LongBidiMapWithInternalId(conceptIds.size());
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /**/) {
 			final long id = itr.next();
-			if (id != SnomedConceptDocument.ROOT_ID) {
+			if (id != IComponent.ROOT_IDL) {
 				nodes.put(id, id);
 			}
 		}
