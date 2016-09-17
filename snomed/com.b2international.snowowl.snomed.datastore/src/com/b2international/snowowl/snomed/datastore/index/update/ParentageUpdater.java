@@ -19,6 +19,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 
@@ -41,9 +42,9 @@ public class ParentageUpdater {
 		
 		// index/add ROOT_ID if parentIds are empty
 		if (parents.isEmpty()) {
-			parents.add(SnomedConceptDocument.ROOT_ID);
+			parents.add(IComponent.ROOT_IDL);
 		} else {
-			ancestors.add(SnomedConceptDocument.ROOT_ID);
+			ancestors.add(IComponent.ROOT_IDL);
 		}
 
 		if (stated) {

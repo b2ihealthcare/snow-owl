@@ -26,6 +26,16 @@ import com.google.common.base.Function;
 public interface IComponent extends Serializable {
 
 	/**
+	 * Unique terminology independent node identifier to make actual root elements searchable.
+	 */
+	String ROOT_ID = "-1";
+	
+	/**
+	 * Unique terminology independent node identifier to make actual root elements searchable (a {@link Long} value).
+	 */
+	long ROOT_IDL = 1L;
+
+	/**
 	 * Function to extract the ID from an {@link IComponent} instance.
 	 * 
 	 * @since 4.6
@@ -50,9 +60,10 @@ public interface IComponent extends Serializable {
 	 * @return {@code true} if the component has already been released as part of a version, {@code false} otherwise
 	 */
 	Boolean isReleased();
-	
+
 	/**
-	 * @deprecated - figure out how to remove storage key from domain representation classes, currently required for CDO object lookups on server/client side
+	 * @deprecated - figure out how to remove storage key from domain representation classes, currently required for CDO object lookups on
+	 *             server/client side
 	 */
 	@JsonIgnore
 	long getStorageKey();

@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IHierarchicalService;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
@@ -68,7 +69,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public List<SnomedConceptDocument> getRootConcepts() {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
-				.filterByParent(toString(SnomedConceptDocument.ROOT_ID))
+				.filterByParent(IComponent.ROOT_ID)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)

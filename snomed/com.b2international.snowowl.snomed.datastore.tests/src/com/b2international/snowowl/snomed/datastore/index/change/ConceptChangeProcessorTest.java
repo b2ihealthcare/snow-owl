@@ -33,6 +33,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
@@ -106,7 +107,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
@@ -136,9 +137,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.parents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
@@ -178,7 +179,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(childConcept.cdoID()), doc(childConcept)
 				// child concept has stated parent and ROOT ancestor
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build());
 		
 		// index a single relationship between the two IDs to indicate parent-child relations in the index
@@ -239,7 +240,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expectedDoc = doc(childConcept)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision changedDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expectedDoc, changedDoc);
@@ -444,7 +445,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(parentConcept.cdoID()), doc(parentConcept).build());
 		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(childConcept.cdoID()), doc(childConcept)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build());
 		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(statedIsa.cdoID()), SnomedRelationshipIndexEntry.builder(statedIsa).build());
 		
@@ -463,9 +464,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = doc(childConcept)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.parents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
@@ -483,9 +484,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.moduleId(concept.getModule().getId())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(concept.getEffectiveTime()))
 				.primitive(Concepts.PRIMITIVE.equals(concept.getDefinitionStatus().getId()))
-				.parents(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.ancestors(PrimitiveSets.newLongOpenHashSet())
-				.statedParents(PrimitiveSets.newLongOpenHashSet(SnomedConceptDocument.ROOT_ID))
+				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
 				.referringRefSets(Collections.<String>emptySet())
 				.referringMappingRefSets(Collections.<String>emptySet());
