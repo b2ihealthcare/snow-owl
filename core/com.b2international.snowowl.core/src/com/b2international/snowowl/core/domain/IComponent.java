@@ -33,7 +33,7 @@ public interface IComponent extends Serializable {
 	/**
 	 * Unique terminology independent node identifier to make actual root elements searchable (a {@link Long} value).
 	 */
-	long ROOT_IDL = 1L;
+	long ROOT_IDL = Long.parseLong(ROOT_ID);
 
 	/**
 	 * Function to extract the ID from an {@link IComponent} instance.
