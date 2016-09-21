@@ -73,6 +73,10 @@ public abstract class SnomedRefSetUtil {
 		SIMPLE,
 		EXTENDED_MAP
 	};
+	
+	private static final ImmutableSet<String> CUSTOM_REFSET_ROOT_IDS = ImmutableSet.<String>builder()
+			.add("999001671000000105") // UK complex map extended with map block type reference sets 
+			.build();
 
 	/***
 	 * Mapping between the association indication reference set IDs and the human readable names instead of
@@ -427,6 +431,7 @@ public abstract class SnomedRefSetUtil {
 		for (SnomedRefSetType type : getTypesForUI()) {
 			ids.add(getConceptId(type));
 		}
+		ids.addAll(CUSTOM_REFSET_ROOT_IDS);
 		return ids.build();
 	}
 	
