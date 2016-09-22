@@ -28,7 +28,7 @@
 						<configuration>
 							<target>
 								<echo message="Unzipping Virgo archive..." />
-								<unzip src="assembly/virgo-tomcat-server-3.6.2.RELEASE.zip"
+								<unzip src="assembly/virgo-tomcat-server-3.7.0.M03.zip"
 									dest="target/" />
 							</target>
 						</configuration>

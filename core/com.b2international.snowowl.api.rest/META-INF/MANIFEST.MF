@@ -32,7 +32,7 @@ Import-Package: com.b2international.commons,
  org.hibernate.validator.constraints.br,
  org.osgi.framework;version="1.7.0",
  org.slf4j;version="1.7.2"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Web-ContextPath: /snowowl/admin
 Require-Bundle: com.google.guava;bundle-version="[15.0.0,16.0.0)",

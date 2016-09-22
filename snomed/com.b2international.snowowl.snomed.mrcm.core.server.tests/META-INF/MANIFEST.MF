@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.mrcm.core.server.tests
 Bundle-Version: 5.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.snomed.mrcm.core.server;bundle-version="4.4.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit;bundle-version="4.11.0",
  com.b2international.snowowl.test.commons;bundle-version="4.4.0"
 Import-Package: com.b2international.snowowl.snomed.datastore

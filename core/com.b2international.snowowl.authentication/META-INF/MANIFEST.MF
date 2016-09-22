@@ -8,7 +8,7 @@ Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.security,
  com.b2international.snowowl.core
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.authentication,com.b2inter
  national.snowowl.authentication.login

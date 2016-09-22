@@ -232,7 +232,7 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * 
 	 * @return a {@link Collection} of child {@link Branch} instances or an empty collection, never <code>null</code>.
 	 */
-	Collection<? extends Branch> children();
+	Collection<Branch> children();
 
 	/**
 	 * Reopens the branch with the same name and parent, on the parent head.

@@ -2,7 +2,7 @@
 	<!-- Virgo archive base content -->
 	<fileSets>
 		<fileSet>
-			<directory>${project.basedir}/target/virgo-tomcat-server-3.6.2.RELEASE
+			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.0.M03
 			</directory>
 			<outputDirectory></outputDirectory>
 			<useDefaultExcludes>true</useDefaultExcludes>
@@ -14,14 +14,14 @@
 				<!-- Exclude all *.sh file, as we will add 755 permission later during 
 					copy -->
 				<exclude>**/*.sh</exclude>
-				<exclude>**/java6-server.profile</exclude>
+				<exclude>**/java-server.profile</exclude>
 				<exclude>**/org.eclipse.virgo.kernel.userregion.properties</exclude>
 				<exclude>**/org.eclipse.virgo.kernel.users.properties</exclude>
 				<exclude>**/serviceability.xml</exclude>
 				<exclude>**/org.eclipse.virgo.web.properties</exclude>
 				<exclude>**/tomcat-server.xml</exclude>
 				<!-- Remove splash app -->
-				<exclude>**/org.eclipse.virgo.apps.splash_3.6.2.RELEASE.jar
+				<exclude>**/org.eclipse.virgo.apps.splash_3.7.0.M03.jar
 				</exclude>
 				<exclude>repository/ext/osgi.console.properties</exclude>
 			</excludes>
@@ -39,7 +39,7 @@
 		</fileSet>
 		<!-- Copy *.sh files from Virgo default folder, except dmk.sh and startup.sh -->
 		<fileSet>
-			<directory>${project.basedir}/target/virgo-tomcat-server-3.6.2.RELEASE
+			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.0.M03
 			</directory>
 			<outputDirectory></outputDirectory>
 			<useDefaultExcludes>true</useDefaultExcludes>
@@ -73,7 +73,8 @@
 			<excludes>
 				<exclude>**/*osgi.enterprise*.jar</exclude>
 				<exclude>**/*system.bundle.package.exporter*.jar</exclude>
-				<exclude>*slf4j*.jar</exclude>
+				<exclude>org.slf4j.api*.jar</exclude>
+				<exclude>org.slf4j.logback*.jar</exclude>
 				<exclude>*logback*.jar</exclude>
 				<exclude>javax.el*.jar</exclude>
 				<exclude>org.apache.el*.jar</exclude>

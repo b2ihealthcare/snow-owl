@@ -21,7 +21,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.b2international.snowowl.datastore.server,
  com.b2international.commons.groovy,
  org.eclipse.jdt.debug;bundle-version="3.7.101"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/commandprovider.xml
 Export-Package: com.b2international.snowowl.scripting.core
