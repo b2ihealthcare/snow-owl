@@ -131,7 +131,7 @@ public final class BranchData implements Branch {
 	}
 
 	@Override
-	public Collection<? extends Branch> children() {
+	public Collection<Branch> children() {
 		throw new UnsupportedOperationException();
 	}
 
