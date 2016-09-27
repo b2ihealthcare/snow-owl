@@ -10,7 +10,7 @@ Import-Package: com.b2international.snowowl.terminologyregistry.core.request,
  org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.eclipse.core.jobs;bundle-version="[3.5.200,3.6.0)",
+ org.eclipse.core.jobs;bundle-version="3.5.0",
  com.b2international.snowowl.api,
  com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.server,
