@@ -560,7 +560,7 @@
 			<repositories>
 				<repository>
 					<id>emf</id>
-					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.10.x/core/S201501230452/</url>
+					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.11/core/R201506010402/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
