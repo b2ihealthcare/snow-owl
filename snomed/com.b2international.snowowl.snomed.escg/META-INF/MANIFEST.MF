@@ -5,12 +5,12 @@ Bundle-Vendor: B2i Healthcare
 Bundle-Version: 5.0.5
 Bundle-SymbolicName: com.b2international.snowowl.snomed.escg;singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.xtext.generator;bundle-version="[2.8.0,2.9.0)";resolution:=optional,
  org.eclipse.emf.mwe2.launch;bundle-version="[2.8.0,2.9.0)";resolution:=optional,
  com.b2international.snowowl.snomed.dsl,
  com.b2international.snowowl.snomed.datastore
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.b2international.snowowl.dsl,
  com.b2international.snowowl.dsl.escg,
  com.b2international.snowowl.dsl.escg.impl,

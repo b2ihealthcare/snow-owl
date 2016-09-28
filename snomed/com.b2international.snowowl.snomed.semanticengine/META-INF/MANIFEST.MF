@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.semanticengine
 Bundle-Version: 5.0.5
 Bundle-Activator: com.b2international.snowowl.semanticengine.SemanticEnginePlugin
 Bundle-Vendor: B2i Healthcare
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.google.guava;bundle-version="11.0.1",
  com.b2international.snowowl.snomed.dsl,
  com.b2international.snowowl.datastore,
@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.b2international.snowowl.snomed.scg,
  com.b2international.commons,
  com.b2international.snowowl.snomed.datastore
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.semanticengine.normalform,
  com.b2international.snowowl.semanticengine.subsumption,com.b2internat

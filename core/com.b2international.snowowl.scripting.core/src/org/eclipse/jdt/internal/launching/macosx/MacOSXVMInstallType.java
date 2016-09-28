@@ -21,12 +21,12 @@ import java.text.MessageFormat;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.launching.LaunchingPlugin;
 import org.eclipse.jdt.internal.launching.LibraryInfo;
 import org.eclipse.jdt.internal.launching.MacInstalledJREs;
-import org.eclipse.jdt.internal.launching.MacInstalledJREs.JREDescriptor;
 import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
@@ -88,11 +88,11 @@ public class MacOSXVMInstallType extends StandardVMType {
 		try {
 			// find all installed VMs
 			File defaultLocation= null;
-			JREDescriptor[] jres= new MacInstalledJREs().getInstalledJREs();
+			VMStandin[] jres= MacInstalledJREs.getInstalledJREs(new NullProgressMonitor());
 			for (int i= 0; i < jres.length; i++) {
-				JREDescriptor descripor = jres[i];
+				VMStandin descripor = jres[i];
 				String name = jres[i].getName();
-				File home= descripor.getHome();
+				File home= descripor.getInstallLocation();
 				IPath path= new Path(home.getAbsolutePath());
 				String id= path.segment(path.segmentCount() - 2); // ID is the second last segment in the install path (e.g. 1.5.0)
 				if (home.exists()) {

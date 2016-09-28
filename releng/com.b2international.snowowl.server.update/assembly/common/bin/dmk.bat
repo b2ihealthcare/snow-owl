@@ -171,7 +171,6 @@ rem ------------------------------
 
 	set JAVA_OPTS=%JAVA_OPTS% -Xms5g 
 	set JAVA_OPTS=%JAVA_OPTS% -Xmx10g 
-	set JAVA_OPTS=%JAVA_OPTS% -XX:MaxPermSize=512m 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
@@ -190,7 +189,7 @@ rem ------------------------------
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.authentication.file="%CONFIG_DIR%\org.eclipse.virgo.kernel.users.properties" 
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Djava.io.tmpdir="%TMP_DIR%" 
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.home="%KERNEL_HOME%" 
-	  set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.java.profile="file:%CONFIG_DIR%\java6-server.profile"
+	  set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.java.profile="file:%CONFIG_DIR%\java-server.profile"
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dssh.server.keystore="%CONFIG_DIR%/hostkey.ser"
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dorg.eclipse.virgo.kernel.config="%CONFIG_DIR%"
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.sharedConfiguration.area="%CONFIG_DIR%"

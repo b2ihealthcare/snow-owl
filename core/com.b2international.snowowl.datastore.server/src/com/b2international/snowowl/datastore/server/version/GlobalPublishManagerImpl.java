@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.version;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator.create;
 import static com.b2international.snowowl.datastore.oplock.IOperationLockManager.IMMEDIATE;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CREATE_VERSION;
 import static com.b2international.snowowl.datastore.version.TagConfigurationBuilder.createForToolingId;
@@ -55,6 +54,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
@@ -106,7 +106,7 @@ public class GlobalPublishManagerImpl implements GlobalPublishManager {
 				
 				acquireLocks(lockContext, lockTargets);
 				
-				try ( final ICDOTransactionAggregator aggregator = create(Lists.<CDOTransaction>newArrayList()); ) {
+				try ( final ICDOTransactionAggregator aggregator = CDOTransactionAggregator.create(Lists.<CDOTransaction>newArrayList()); ) {
 					final IProgressMonitor subMonitor = convert(monitor, TASK_WORK_STEP * size(configuration) + 1);
 					
 					final Map<String, Collection<ICodeSystemVersion>> existingVersions = getExistingVersions();

@@ -60,6 +60,7 @@
 								<versionRange>[1.0.7,1.0.8)</versionRange>
 							</restrictTo>
 						</filter>
+						<!--
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>org.eclipse.swt.cocoa.macosx.x86_64</id>
@@ -81,6 +82,7 @@
 								<versionRange>[3.8.0,3.9.0)</versionRange>
 							</restrictTo>
 						</filter>
+						-->
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>org.apache.commons.collections</id>

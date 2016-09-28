@@ -147,7 +147,7 @@ then
     AUTH_LOGIN=$CONFIG_DIR/org.eclipse.virgo.kernel.authentication.config
     AUTH_FILE=$CONFIG_DIR/org.eclipse.virgo.kernel.users.properties
     CONFIG_AREA=$KERNEL_HOME/work
-    JAVA_PROFILE=$KERNEL_HOME/configuration/java6-server.profile
+    JAVA_PROFILE=$KERNEL_HOME/configuration/java-server.profile
 
     if $cygwin; then
         ACCESS_PROPERTIES=$(cygpath -wp $ACCESS_PROPERTIES)
@@ -160,7 +160,7 @@ then
     fi
 	
 	# Set the required permissions on the JMX configuration files
-	chmod 600 $ACCESS_PROPERTIES
+	chmod 600 "$ACCESS_PROPERTIES"
 
 	JMX_OPTS=" \
 		$JMX_OPTS \
@@ -192,7 +192,6 @@ then
         JAVA_OPTS="$JAVA_OPTS \
         			-Xms5g \
                     -Xmx10g \
-                    -XX:MaxPermSize=512m \
                     -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl \
                     -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl \
                     -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl \

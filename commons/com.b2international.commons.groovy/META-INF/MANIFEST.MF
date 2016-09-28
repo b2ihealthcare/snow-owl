@@ -4,7 +4,7 @@ Bundle-Name: B2i Groovy Commons
 Bundle-SymbolicName: com.b2international.commons.groovy;singleton:=true
 Bundle-Version: 5.0.5
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.b2international.commons.groovy.classloader,com.b2i
  nternational.commons.groovy.transform
 Bundle-ClassPath: .

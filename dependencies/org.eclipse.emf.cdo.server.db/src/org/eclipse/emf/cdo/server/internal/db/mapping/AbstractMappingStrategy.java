@@ -478,12 +478,11 @@ public abstract class AbstractMappingStrategy extends Lifecycle implements IMapp
 
   public void createMapping(Connection connection, InternalCDOPackageUnit[] packageUnits, OMMonitor monitor)
   {
-    Async async = null;
     monitor.begin();
 
     try
     {
-      async = monitor.forkAsync();
+      Async async = monitor.forkAsync();
 
       try
       {
@@ -491,10 +490,7 @@ public abstract class AbstractMappingStrategy extends Lifecycle implements IMapp
       }
       finally
       {
-        if (async != null)
-        {
-          async.stop();
-        }
+        async.stop();
       }
     }
     finally

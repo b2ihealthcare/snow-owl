@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.events;
 
 import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -35,7 +36,11 @@ public final class CreateBranchRequest extends BranchRequest<Branch> {
 		super(path(parent, name));
 		this.parent = parent;
 		this.name = name;
-		this.metadata = metadata;
+		this.metadata = nullToEmpty(metadata);
+	}
+
+	private static Metadata nullToEmpty(Metadata metadata) {
+		return metadata == null ? new MetadataImpl() : metadata;
 	}
 
 	private static String path(final String parent, final String name) {

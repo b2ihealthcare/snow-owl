@@ -23,7 +23,7 @@ Visit us at http://b2i.sg
          version="0.0.0"/>
 
    <requires>
-      <import feature="com.b2international.snowowl.snomed.core.feature" version="3.9.0.qualifier"/>
+      <import feature="com.b2international.snowowl.snomed.core.feature"/>
    </requires>
 
    <plugin

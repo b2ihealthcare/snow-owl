@@ -4,7 +4,7 @@ Bundle-Name: Hibernate Validator Wrapper
 Bundle-SymbolicName: com.b2international.snowowl.hibernate.validator
 Bundle-Version: 5.1.2.Final-b2i
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
  lib/classmate_1.0.0.jar,
  lib/javax.validation.api_1.1.0.Final.jar,

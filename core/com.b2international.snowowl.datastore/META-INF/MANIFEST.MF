@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.datastore;singleton:=true
 Bundle-Version: 5.0.5
 Bundle-Activator: com.b2international.snowowl.datastore.DatastoreActivator
 Bundle-Vendor: B2i Healthcare
-Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.emf.cdo.net4j;bundle-version="[4.1.4,4.2.0)";visibility:=reexport,
  org.eclipse.emf.cdo.server;bundle-version="[4.1.4,4.2.0)";visibility:=reexport,
  org.eclipse.emf.cdo.server.net4j;bundle-version="[4.1.4,4.2.0)";visibility:=reexport,
@@ -23,7 +23,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
  com.b2international.index.api;visibility:=reexport,
  com.b2international.snowowl.index.diff,
  com.b2international.snowowl.terminologyregistry.model
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.advancedsearch,
  com.b2international.snowowl.datastore.cdo,

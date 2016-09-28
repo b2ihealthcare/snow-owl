@@ -114,7 +114,7 @@
 							<type>eclipse-plugin</type>
 							<id>com.ibm.icu</id>
 							<restrictTo>
-								<versionRange>[4.4.2,4.4.3)</versionRange>
+								<versionRange>[50.0.0,51.0.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
@@ -335,11 +335,11 @@
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
 						<excludeResources>
 							<excludeResource>**/*.groovy</excludeResource>
 							<excludeResource>**/*.xtend</excludeResource>
-							<excludeResource>**/*.feature</excludeResource>
-							<excludeResource>**/*.spec</excludeResource>
 						</excludeResources>
 					</configuration>
 				</plugin>
@@ -349,8 +349,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.1</version>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -560,7 +560,7 @@
 			<repositories>
 				<repository>
 					<id>emf</id>
-					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.10.x/core/S201501230452/</url>
+					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.11/core/R201506010402/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
@@ -579,8 +579,8 @@
 					<layout>p2</layout>
 				</repository>
 				<repository>
-					<id>3.8</id>
-					<url>http://download.eclipse.org/eclipse/updates/3.8</url>
+					<id>eclipse-4.3</id>
+					<url>http://download.eclipse.org/eclipse/updates/4.3/R-4.3.2-201402211700/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
@@ -600,7 +600,7 @@
 				</repository>
 				<repository>
 					<id>jetty</id>
-					<url>http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.3.v20120522</url>
+					<url>http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.14.v20131031/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
@@ -610,7 +610,7 @@
 				</repository>
 				<repository>
 					<id>groovy</id>
-					<url>https://b2ihealthcare.github.io/snow-owl/updates/groovy_2.8.0</url>
+					<url>http://dist.springsource.org/release/GRECLIPSE/e4.3-j8/</url>
 					<layout>p2</layout>
 				</repository>
 			</repositories>
@@ -618,7 +618,7 @@
 		<profile>
 			<id>tp_dependencies</id>
 			<properties>
-				<target.platform.version>5.0.0-SNAPSHOT</target.platform.version>
+				<target.platform.version>5.1.0-SNAPSHOT</target.platform.version>
 				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
 			</properties>
 			<repositories>

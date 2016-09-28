@@ -4,7 +4,7 @@ Bundle-Name: B2i Commons
 Bundle-SymbolicName: com.b2international.commons
 Bundle-Version: 5.0.5
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.b2international.commons,
  com.b2international.commons.arrays,
  com.b2international.commons.async,
@@ -39,10 +39,10 @@ Export-Package: com.b2international.commons,
  javax.annotation,
  javax.annotation.concurrent,
  javax.annotation.meta
-Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.net;bundle-version="1.2.200",
- org.eclipse.core.databinding;bundle-version="[1.4.0,1.5.0)";visibility:=reexport,
- org.eclipse.emf.ecore;bundle-version="[2.10.0,2.11.0)";visibility:=reexport,
+ org.eclipse.core.databinding;bundle-version="1.4.0";visibility:=reexport,
+ org.eclipse.emf.ecore;bundle-version="2.10.0";visibility:=reexport,
  org.emfjson.core;bundle-version="[0.10.0,0.11.0)";visibility:=reexport,
  org.emfjson.jackson;bundle-version="[0.10.0,0.11.0)";visibility:=reexport,
  com.google.inject;bundle-version="3.0.0";visibility:=reexport,

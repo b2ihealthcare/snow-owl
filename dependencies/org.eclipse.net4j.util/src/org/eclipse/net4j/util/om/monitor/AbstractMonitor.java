@@ -172,7 +172,7 @@ public abstract class AbstractMonitor implements OMMonitor
     {
       try
       {
-        if (!canceled)
+        if (!canceled && monitor != null)
         {
           double work = 1 - monitor.getWork();
           monitor.worked(work / TEN);
@@ -188,7 +188,11 @@ public abstract class AbstractMonitor implements OMMonitor
     {
       try
       {
-        monitor.done();
+    	if (monitor != null)
+    	{
+          monitor.done();
+    	}
+    	
         cancel();
       }
       catch (Exception ex)
@@ -201,6 +205,7 @@ public abstract class AbstractMonitor implements OMMonitor
     public boolean cancel()
     {
       canceled = true;
+      monitor = null;
       return super.cancel();
     }
   }

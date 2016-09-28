@@ -116,7 +116,7 @@ public class SerializableCDOCommitInfo extends org.eclipse.emf.cdo.internal.comm
 			}
 			
 			@Override
-			protected CDOPackageRegistry getPackageRegistry() {
+			public CDOPackageRegistry getPackageRegistry() {
 				return session.getPackageRegistry();
 			}
 			

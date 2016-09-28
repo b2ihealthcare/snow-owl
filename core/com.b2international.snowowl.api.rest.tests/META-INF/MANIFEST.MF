@@ -4,7 +4,7 @@ Bundle-Name: Snow Owl Administrative RESTful API Tests
 Bundle-SymbolicName: com.b2international.snowowl.api.rest.tests
 Bundle-Version: 5.0.5
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit;bundle-version="4.11.0",
  com.b2international.snowowl.test.commons,
  com.b2international.snowowl.api.rest

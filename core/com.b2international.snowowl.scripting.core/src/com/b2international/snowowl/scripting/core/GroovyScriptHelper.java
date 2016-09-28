@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.scripting.core;
 
-import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.commons.collections.Collections3.forEach;
 import static com.b2international.commons.exceptions.Exceptions.extractCause;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -23,16 +22,13 @@ import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.unmodifiableList;
 import static org.slf4j.LoggerFactory.getLogger;
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
 
 import java.io.File;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -42,16 +38,19 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 import org.slf4j.Logger;
 
-import com.b2international.commons.FileUtils;
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.groovy.classloader.ScriptIncludingGroovyClassLoader;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
 
 /**
  * Groovy scripting related helper methods
@@ -162,6 +161,7 @@ public abstract class GroovyScriptHelper {
 		checkNotNull(groovyLoader, "groovyLoader");
 		forEach(ADDITIONAL_LIBS_URL_SUPPLIER.get(), new Procedure<URL>() {
 			protected void doApply(final URL url) {
+				System.out.println("Injecting classpath: " + url);
 				groovyLoader.addURL(url);
 			}
 		});
@@ -174,26 +174,9 @@ public abstract class GroovyScriptHelper {
 			if (bundle.getSymbolicName().contains(ORG_CODEHAUS_GROOVY)) {
 				final Version version = bundle.getVersion();
 				if (is207Version(version)) {
-					if (isAbstractBundle(bundle)) {
-						try {
-							@SuppressWarnings("restriction")
-							final
-							String[] classPath = getData(bundle).getClassPath();
-							if (!isEmpty(classPath)) {
-								for (final String o : classPath) {
-									final URL url = new URL("platform:/plugin/" + bundle.getSymbolicName() + "/" + o);
-									final File tempFile = FileUtils.copyContentToTempFile(url);
-									if (null != tempFile) {
-										urls.add(tempFile.toURI().toURL());
-									}
-								}
-							}
-						} catch (final BundleException e) {
-							LOGGER.error("Invalid manifest header for bundle: " + bundle, e);
-						} catch (final MalformedURLException e) {
-							LOGGER.error("Error while resolving URL for additional scripting libraries.");
-						}
-					}
+					final Enumeration<URL> findEntries = bundle.findEntries("", "*.jar", true);
+					urls.addAll(Collections.list(findEntries));
+					break;
 				}
 			}
 		}
@@ -201,16 +184,6 @@ public abstract class GroovyScriptHelper {
 		return unmodifiableList(urls);
 	}
 	
-	@SuppressWarnings("restriction")
-	private static boolean isAbstractBundle(final Bundle bundle) {
-		return bundle instanceof org.eclipse.osgi.framework.internal.core.AbstractBundle;
-	}
-
-	@SuppressWarnings("restriction")
-	private static org.eclipse.osgi.framework.adaptor.BundleData getData(final Bundle bundle) {
-		return ((org.eclipse.osgi.framework.internal.core.AbstractBundle) bundle).getBundleData();
-	}
-
 	private static boolean is207Version(final Version version) {
 		return null != version 
 			&& version.getMajor() == 2 

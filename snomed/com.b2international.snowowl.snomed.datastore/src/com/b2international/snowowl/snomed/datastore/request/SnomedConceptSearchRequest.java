@@ -270,6 +270,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 				.where(queryExpression)
 				.offset(offset())
 				.limit(limit())
+				.sortBy(sortBy)
 				.withScores(SortBy.SCORE == sortBy)
 				.build());
 		if (limit() < 1 || hits.getTotal() < 1) {
