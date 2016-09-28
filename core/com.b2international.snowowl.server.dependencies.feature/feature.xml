@@ -155,7 +155,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.equinox.preferences"
          download-size="0"
          install-size="0"
-         version="3.5.2.b2i"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
