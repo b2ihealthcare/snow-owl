@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-
-##############################################################################################
-#																							 #
-#  Name:		Snow Owl terminology server install script									 #
-#  Description:	See usage or execute the script with the -h flag to get further information	 #
-#				about it.																	 #
-#  Version:		1.0																			 #
-#																							 #
-##############################################################################################
+#
+# Snow Owl terminology server install script
+# See usage or execute the script with the -h flag to get further information about it.
+#
+# Version: 1.0
+#
 
 # The following variables must be filled in before executing the script at the first time:
 
@@ -44,7 +41,8 @@ LDAP_PASSWORD="secret"
 HOT_BACKUP_SCRIPT_LOCATION=""
 
 # Set maximum java heap size. If not specified the default (10g) will be used. Can be set by the
-# -x parameter as well.
+# -x parameter as well. Setting this value will always overwrite the value specified through the
+# -x parameter.
 MAX_JAVA_HEAP_SIZE=0
 
 # The name of the folder where extra server files (documentation, scripts, config files) will be
@@ -83,8 +81,8 @@ LOAD_DATASET=false
 # Flag for indicating the will that the provided server should be started upon finish.
 START_SERVER=false
 
-# Flag for ignoring interactive prompt during dataset reload process.
-FORCE_DATASET_RELOAD=false
+# Flag for ignoring interactive prompts.
+IGNORE_PROMPTS=false
 
 # Flag for indicating the will to open up useful terminals after the server was started.
 # (two terminals will open, one for the Virgo startup process and one for the server log)
@@ -111,7 +109,7 @@ SERVER_PATH=""
 # Variable to store the path of the newly installed dataset.
 DATASET_PATH=""
 
-# The working folder of the script. Might be changed to the containing folder of the 
+# The working folder of the script. It could change to the containing folder of the 
 # currently running Snow Owl server.
 WORKING_DIR="$PWD"
 
@@ -161,9 +159,6 @@ IMPORTANT:
 	a Snow Owl server on a clean machine. It is advised to use when at least one
 	successful Snow Owl server setup was performed before.
 
-	If there is a running Snow Owl server at execution time, the script will shut it down
-	without any further notice.
-
 	The working folder of the script is determined by the following:
 		- if there is no running Snow Owl server upon execution time, then the
 		  containing folder of the script.
@@ -172,6 +167,13 @@ IMPORTANT:
 
 USAGE: $0 [OPTIONS] [SERVER_ARCHIVE|DATASET_ARCHIVE|SERVER_AND_DATASET_ARCHIVE] [DATASET_ARCHIVE]
 
+	[SERVER_ARCIVE]					an archive that contains only a Snow Owl terminology server
+
+	[DATASET_ARCHIVE]				an archive that contains only a dataset for the server
+
+	[SERVER_AND_DATASET_ARCHIVE]	an archive that contains both server and dataset files in 
+									separate folders
+
 OPTIONS:
 
 	-b		(backup): if set a dataset backup will be performed for the currently running 
@@ -179,15 +181,14 @@ OPTIONS:
 			the server archive must contain one.
 
 	-l		(load): if set the script will try to (re)load the dataset. If no dataset was
-			provided through	the parameters, then an empty MySQL database structure will
+			provided through the parameters, then an empty MySQL database structure will
 			be created
 
 	-s		(start): if set the script will either start the new server (if it was provided)
 			or will restart the	previously running server instance (if it was running upon 
 			execution time)
 
-	-f		(force): if set interactive prompts will be ignored, should be used if the -l 
-			parameter is set and the previous database can safely be deleted
+	-f		(force): if set interactive prompts will be ignored
 
 	-t		(terminal): if set two terminals will open upon server start, one for the Virgo
 			startup	process	and one for the server log. This can help monitor if the server
@@ -229,9 +230,10 @@ EXAMPLES:
 
 		$0 -bls <server_archive_without_dataset>.zip
 
-	If a dataset upgrade must be performed, a backup must be created, the current server must
-	be kept, indexes must be moved to the server folder and the server should restart at the
-	end:
+	If a dataset upgrade must be performed, a backup must be created (make sure that in this
+	case the backup script's location must be specified in this script), the current server
+	must be kept, indexes must be moved to the server folder and the server should restart at
+	the end:
 
 		Make sure there is a running server in the background and then execute:
 
@@ -284,6 +286,27 @@ swap_value() {
 
 }
 
+check_if_exists() {
+
+	if [ -z "$1" ]; then
+		echo_exit "$2"	
+	fi
+
+}
+
+check_variables() {
+
+	check_if_exists "$MYSQL_USERNAME" "MySQL username must be specified"
+	check_if_exists "$MYSQL_PASSWORD" "MySQL password must be specified"
+	check_if_exists "$SNOWOWL_MYSQL_USER" "Snow Owl's MySQL user must be specified"
+	check_if_exists "$SNOWOWL_MYSQL_PASSWORD" "Snow Owl's MySQL password must be specified"
+	check_if_exists "$SNOWOWL_USERNAME" "A Snow Owl user must be specified"
+	check_if_exists "$SNOWOWL_PASSWORD" "A Snow Owl user's password must be specified"
+	check_if_exists "$LDAP_URL" "The LDAP server's URL must be specified"
+	check_if_exists "$LDAP_PASSWORD" "The LDAP password must be specified"
+
+}
+
 scan_archives() {
 	
 	echo_step "Inspecting archives"
@@ -297,7 +320,7 @@ scan_archives() {
 		if [ -z "$CONFIG_LOCATION" ]; then
 			echo_exit "Unable to locate Snow Owl server within '"$FIRST_ARCHIVE"'"
 		else
-			SERVER_ARCHIVE_PATH="$(dirname "$CONFIG_LOCATION")"
+			SERVER_ARCHIVE_PATH=$(dirname "$CONFIG_LOCATION")
 			if [ "$SERVER_ARCHIVE_PATH" = "." ]; then
 				echo_date "Found Snow Owl server in the root of '"$FIRST_ARCHIVE"'"
 			else
@@ -310,7 +333,7 @@ scan_archives() {
 		if [ -z "$SNOMED_STORE_LOCATION" ]; then
 			echo_exit "Unable to locate dataset within '"$SECOND_ARCHIVE"'."
 		else
-			DATASET_ARCHIVE_PATH="$(dirname "$SNOMED_STORE_LOCATION")"
+			DATASET_ARCHIVE_PATH=$(dirname "$SNOMED_STORE_LOCATION")
 			if [ "$DATASET_ARCHIVE_PATH" = "." ]; then
 				echo_date "Found dataset in the root of '"$SECOND_ARCHIVE"'"
 			else
@@ -325,7 +348,7 @@ scan_archives() {
 		CONFIG_LOCATION=$(unzip -l $FIRST_ARCHIVE | grep $SERVER_ANCHOR_FILE | sed 's/ /\n/g' | tail -n1 | sed 's/ //g')
 		
 		if [ ! -z "$CONFIG_LOCATION" ]; then
-			SERVER_ARCHIVE_PATH="$(dirname "$CONFIG_LOCATION")"
+			SERVER_ARCHIVE_PATH=$(dirname "$CONFIG_LOCATION")
 			if [ "$SERVER_ARCHIVE_PATH" = "." ]; then
 				echo_date "Found Snow Owl server in the root of '"$FIRST_ARCHIVE"'"
 			else
@@ -336,7 +359,7 @@ scan_archives() {
 		SNOMED_STORE_LOCATION=$(unzip -l $FIRST_ARCHIVE | grep $DATASET_ANCHOR_FILE | sed 's/ /\n/g' | tail -n1 | sed 's/ //g')
 		
 		if [ ! -z "$SNOMED_STORE_LOCATION" ]; then
-			DATASET_ARCHIVE_PATH="$(dirname "$SNOMED_STORE_LOCATION")"
+			DATASET_ARCHIVE_PATH=$(dirname "$SNOMED_STORE_LOCATION")
 			if [ "$DATASET_ARCHIVE_PATH" = "." ]; then
 				echo_date "Found dataset in the root of '"$FIRST_ARCHIVE"'"
 			else
@@ -356,7 +379,7 @@ find_running_snowowl_servers() {
 	
 	if [ ! -z "$RUNNING_SERVER_PATH" ]; then
 		echo_date "Found running Snow Owl server instance @ '"$RUNNING_SERVER_PATH"'"
-		WORKING_DIR="$(dirname "$RUNNING_SERVER_PATH")"
+		WORKING_DIR=$(dirname "$RUNNING_SERVER_PATH")
 	else
 		echo_date "No running Snow Owl server found."
 	fi
@@ -365,7 +388,7 @@ find_running_snowowl_servers() {
 
 unzip_server() {
 	
-	if [ ! -z $SERVER_ARCHIVE_PATH ]; then
+	if [ ! -z "$SERVER_ARCHIVE_PATH" ]; then
 
 		TMP_SERVER_DIR=$(mktemp -d --tmpdir=$WORKING_DIR)
 	
@@ -374,10 +397,10 @@ unzip_server() {
 		FOLDER_NAME=""
 
 		if [ "$SERVER_ARCHIVE_PATH" = "." ]; then
-			FILENAME="$(basename $FIRST_ARCHIVE)"
-			FOLDER_NAME="$(echo ${FILENAME%.*})"
+			FILENAME=$(basename $FIRST_ARCHIVE)
+			FOLDER_NAME=$(echo ${FILENAME%.*})
 		else
-			FOLDER_NAME="$(basename $SERVER_ARCHIVE_PATH)"
+			FOLDER_NAME=$(basename $SERVER_ARCHIVE_PATH)
 		fi
 
 		if [ ! -d "$WORKING_DIR/$FOLDER_NAME" ]; then
@@ -385,7 +408,7 @@ unzip_server() {
 			SERVER_PATH="$WORKING_DIR/$FOLDER_NAME"
 		else
 			echo_date "Suffixing server dir name as '"$WORKING_DIR/$FOLDER_NAME"' already exists."
-			CURRENT_DATE=`date +%Y%m%d_%H%M%S`
+			CURRENT_DATE=$(date +%Y%m%d_%H%M%S)
 			mkdir "$WORKING_DIR/"$FOLDER_NAME"_$CURRENT_DATE"
 			SERVER_PATH="$WORKING_DIR/"$FOLDER_NAME"_$CURRENT_DATE"
 		fi	
@@ -452,10 +475,10 @@ unzip_dataset() {
 				FOLDER_NAME=""
 
 				if [ "$DATASET_ARCHIVE_PATH" = "." ]; then
-					FILENAME="$(basename $FIRST_ARCHIVE)"
-					FOLDER_NAME="$(echo ${FILENAME%.*})"
+					FILENAME=$(basename $FIRST_ARCHIVE)
+					FOLDER_NAME=$(echo ${FILENAME%.*})
 				else
-					FOLDER_NAME="$(basename $DATASET_ARCHIVE_PATH)"
+					FOLDER_NAME=$(basename $DATASET_ARCHIVE_PATH)
 				fi
 
 				if [ ! -d "$WORKING_DIR/$FOLDER_NAME" ]; then
@@ -463,7 +486,7 @@ unzip_dataset() {
 					DATASET_PATH="$WORKING_DIR/$FOLDER_NAME"
 				else
 					echo_date "Suffixing dataset dir name as '"$WORKING_DIR/$FOLDER_NAME"' already exists."
-					CURRENT_DATE=`date +%Y%m%d_%H%M%S`
+					CURRENT_DATE=$(date +%Y%m%d_%H%M%S)
 					mkdir "$WORKING_DIR/"$FOLDER_NAME"_$CURRENT_DATE"
 					DATASET_PATH="$WORKING_DIR/"$FOLDER_NAME"_$CURRENT_DATE"
 				fi	
@@ -565,14 +588,28 @@ backup_and_shutdown() {
 
 		echo_step "Shutdown"
 
-		echo_date "Shutting down server @ '$RUNNING_SERVER_PATH'"
+		if [ "$IGNORE_PROMPTS" = false ]; then
+			
+			read -p "[`date +\"%Y-%m-%d %H:%M:%S\"`] The currently running Snow Owl server must be shut down. Are you sure you want to continue? (y or n) " -n 1 -r
+			echo
+			if [[ $REPLY =~ ^[Yy]$ ]]; then
+				echo_date "Shutting down server @ '$RUNNING_SERVER_PATH'"
+			else
+				echo_exit "Server shutdown was interrupted by the user."
+			fi
+
+		else
+			echo_date "Shutting down server @ '$RUNNING_SERVER_PATH'"
+		fi
 
 		"$RUNNING_SERVER_PATH/bin/shutdown.sh" > /dev/null
 	
 		SERVER_IS_DOWN=false
 
 		for i in $(seq 1 "$RETRIES"); do
+			
 			SERVER_TO_SHUTDOWN=$(ps aux | grep virgo | sed 's/-D/\n/g' | grep osgi.install.area | sed 's/=/\n/g' | tail -n1 | sed 's/ //g')
+
 			if [ ! -z "$SERVER_TO_SHUTDOWN" ]; then
 				sleep "$RETRY_WAIT_SECONDS"s
 			else
@@ -580,6 +617,7 @@ backup_and_shutdown() {
 				SERVER_IS_DOWN=true
 				break
 			fi
+
 		done
 
 		if [ "$SERVER_IS_DOWN" = false ]; then
@@ -674,10 +712,6 @@ configure_max_java_heap_size() {
 
 		echo_date "Reusing previously configured max heap size '$OLD_VALUE g'"
 
-	else
-		
-		echo_date "Using default max java heap size (10g) as there is no running Snow Owl server (or the -x parameter was not defined)."
-
 	fi
 
 }
@@ -702,77 +736,71 @@ execute_mysql_statement() {
 
 setup_mysql_content() {
 
-	if [ ! -z "$MYSQL_USERNAME" ] && [ ! -z "$MYSQL_PASSWORD" ]; then
-
-		echo_date "Setting up MySQL content..."
+	echo_date "Setting up MySQL content..."
+	
+	if [ "$IGNORE_PROMPTS" = false ] && [ "$CREATE_BACKUP" = false ]; then
 		
-		if [ "$FORCE_DATASET_RELOAD" = false ] && [ "$CREATE_BACKUP" = false ]; then
-			
-			read -p "[`date +\"%Y-%m-%d %H:%M:%S\"`] Dataset backup was not performed, all MySQL content will be gone. Are you sure you want to continue? (y or n) " -n 1 -r
-			echo
-			if [[ $REPLY =~ ^[Yy]$ ]]; then
-				echo_date "Continuing dataset reload procedure."
-			else
-				echo_exit "Dataset reload was interrupted by the user."
-			fi
-
+		read -p "[`date +\"%Y-%m-%d %H:%M:%S\"`] Dataset backup was not performed, all MySQL content will be gone. Are you sure you want to continue? (y or n) " -n 1 -r
+		echo
+		if [[ $REPLY =~ ^[Yy]$ ]]; then
+			echo_date "Continuing dataset reload procedure."
+		else
+			echo_exit "Dataset reload was interrupted by the user."
 		fi
 
-		SNOWOWL_USER_EXISTS=false
+	fi
 
-		while read User; do
-			if [[ "$SNOWOWL_MYSQL_USER" == "$User" ]]; then
-				SNOWOWL_USER_EXISTS=true
-				break
-			fi
-		done < <(${MYSQL} --user=${MYSQL_USERNAME} --password=${MYSQL_PASSWORD} \
-			--batch --skip-column-names --execute='use mysql; SELECT `user` FROM `user`;' > /dev/null 2>&1)
+	SNOWOWL_USER_EXISTS=false
 
-		if [ "$SNOWOWL_USER_EXISTS" = false ]; then
-			execute_mysql_statement "CREATE USER '${SNOWOWL_MYSQL_USER}'@'localhost' identified by '${SNOWOWL_MYSQL_PASSWORD}';" \
-				"Created '${SNOWOWL_MYSQL_USER}' MySQL user with password '${SNOWOWL_MYSQL_PASSWORD}'."
+	while read User; do
+		if [[ "$SNOWOWL_MYSQL_USER" == "$User" ]]; then
+			SNOWOWL_USER_EXISTS=true
+			break
 		fi
+	done < <(${MYSQL} --user=${MYSQL_USERNAME} --password=${MYSQL_PASSWORD} \
+		--batch --skip-column-names --execute='use mysql; SELECT `user` FROM `user`;' > /dev/null 2>&1)
 
-		for i in "${DATABASES[@]}";	do
-			execute_mysql_statement "DROP DATABASE \`${i}\`;" "Dropped database ${i}."
+	if [ "$SNOWOWL_USER_EXISTS" = false ]; then
+		execute_mysql_statement "CREATE USER '${SNOWOWL_MYSQL_USER}'@'localhost' identified by '${SNOWOWL_MYSQL_PASSWORD}';" \
+			"Created '${SNOWOWL_MYSQL_USER}' MySQL user with password '${SNOWOWL_MYSQL_PASSWORD}'."
+	fi
+
+	for i in "${DATABASES[@]}";	do
+		execute_mysql_statement "DROP DATABASE \`${i}\`;" "Dropped database ${i}."
+	done
+
+	if [ -z "$DATASET_PATH" ]; then
+
+		for i in "${DATABASES[@]}"; do
+
+			DATABASE_NAME=${i}
+		
+			execute_mysql_statement "CREATE DATABASE \`${DATABASE_NAME}\` DEFAULT CHARSET 'utf8';" "Created database ${DATABASE_NAME}."
+			execute_mysql_statement "GRANT ALL PRIVILEGES ON \`${DATABASE_NAME}\`.* to '${SNOWOWL_MYSQL_USER}'@'localhost';" \
+				"Granted all privileges on ${DATABASE_NAME} to '${SNOWOWL_MYSQL_USER}@localhost'."
+		
 		done
 
-		if [ -z "$DATASET_PATH" ]; then
-
-			for i in "${DATABASES[@]}"; do
-
-				DATABASE_NAME=${i}
-			
-				execute_mysql_statement "CREATE DATABASE \`${DATABASE_NAME}\` DEFAULT CHARSET 'utf8';" "Created database ${DATABASE_NAME}."
-				execute_mysql_statement "GRANT ALL PRIVILEGES ON \`${DATABASE_NAME}\`.* to '${SNOWOWL_MYSQL_USER}'@'localhost';" \
-					"Granted all privileges on ${DATABASE_NAME} to '${SNOWOWL_MYSQL_USER}@localhost'."
-			
-			done
-
-		else
-
-			for i in $(find "$DATASET_PATH" -type f -name '*.sql'); do
-
-				BASENAME=$(basename ${i})
-				DATABASE_NAME=${BASENAME%.sql}
-			
-				execute_mysql_statement "CREATE DATABASE \`${DATABASE_NAME}\` DEFAULT CHARSET 'utf8';" "Created database ${DATABASE_NAME}."
-				execute_mysql_statement "GRANT ALL PRIVILEGES ON \`${DATABASE_NAME}\`.* to '${SNOWOWL_MYSQL_USER}'@'localhost';" \
-					"Granted all privileges on ${DATABASE_NAME} to '${SNOWOWL_MYSQL_USER}@localhost'."
-			
-				echo_date "Loading ${BASENAME}..."
-				${MYSQL} --user=${MYSQL_USERNAME} --password=${MYSQL_PASSWORD} "${DATABASE_NAME}" < "${i}" > /dev/null 2>&1 && \
-					echo_date "Loading of ${BASENAME} finished."
-
-			done
-
-		fi
-
-		execute_mysql_statement "FLUSH PRIVILEGES;" "Reloaded grant tables."
-
 	else
-		echo_error "Unable to setup MySQL content as credentials were not specified."
+
+		for i in $(find "$DATASET_PATH" -type f -name '*.sql'); do
+
+			BASENAME=$(basename ${i})
+			DATABASE_NAME=${BASENAME%.sql}
+		
+			execute_mysql_statement "CREATE DATABASE \`${DATABASE_NAME}\` DEFAULT CHARSET 'utf8';" "Created database ${DATABASE_NAME}."
+			execute_mysql_statement "GRANT ALL PRIVILEGES ON \`${DATABASE_NAME}\`.* to '${SNOWOWL_MYSQL_USER}'@'localhost';" \
+				"Granted all privileges on ${DATABASE_NAME} to '${SNOWOWL_MYSQL_USER}@localhost'."
+		
+			echo_date "Loading ${BASENAME}..."
+			${MYSQL} --user=${MYSQL_USERNAME} --password=${MYSQL_PASSWORD} "${DATABASE_NAME}" < "${i}" > /dev/null 2>&1 && \
+				echo_date "Loading of ${BASENAME} finished."
+
+		done
+
 	fi
+
+	execute_mysql_statement "FLUSH PRIVILEGES;" "Reloaded grant tables."
 
 }
 
@@ -932,6 +960,8 @@ main() {
 	echo_date "################################"
 	echo_date "Snow Owl install script STARTED."
 	
+	check_variables
+
 	scan_archives
 
 	find_running_snowowl_servers
@@ -948,7 +978,6 @@ main() {
 	
 	echo_date
 	echo_date "Snow Owl install script FINISHED."
-	echo_date "#################################"
 
 	exit 0
 
@@ -972,7 +1001,7 @@ while getopts ":hblsftx:" opt; do
 			START_SERVER=true
 			;;
 		f)
-			FORCE_DATASET_RELOAD=true
+			IGNORE_PROMPTS=true
 			;;
 		t)
 			OPEN_TERMINAL=true
@@ -995,20 +1024,28 @@ done
 shift "$(( OPTIND - 1 ))"
 
 if [ ! -z "$1" ] && [ ! -z "$2" ]; then
+
 	FIRST_ARCHIVE=$1
 	SECOND_ARCHIVE=$2
+
 elif [ ! -z "$1" ] && [ -z "$2" ]; then
+
 	FIRST_ARCHIVE=$1
+
 elif [ -z "$1" ] && [ -z "$2"]; then
+
 	echo_error "At least one parameter must be provided."
 	usage
 	exit 1
+
 fi
 
 if [ ! -z "$3" ]; then
+	
 	echo_error "More than two parameters are not allowed."
 	usage
 	exit 1
+
 fi
 
 main
