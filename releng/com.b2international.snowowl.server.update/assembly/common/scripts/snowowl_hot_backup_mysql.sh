@@ -74,18 +74,18 @@ DESCRIPTION:
 USAGE: $0 [OPTIONS] [PATH_TO_SERVER]
 
 	[PATH_TO_SERVER]	specifing the server's home dir through a parameter will
-						always overwrite the stored values. If the path never
-						changes it is not mandatory to pass it in as a parameter,
-						more useful to store it in the script.
+				always overwrite the stored values. If the path never
+				changes it is not mandatory to pass it in as a parameter,
+				more useful to store it in the script.
 
 OPTIONS:
 
-	-r			do not use container dir inside the resulting archive
+	-r	do not use container dir inside the resulting archive
 
-	-i			no initial wait time will be applied for the users, backup
-				starts immediately
+	-i	no initial wait time will be applied for the users, backup
+		starts immediately
 
-	-h			display help
+	-h	display help
 
 EXAMPLES:
 
