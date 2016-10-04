@@ -111,7 +111,7 @@ DATASET_PATH=""
 
 # The working folder of the script. It could change to the containing folder of the 
 # currently running Snow Owl server.
-WORKING_DIR="$PWD"
+WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Temporary folder to extract the server archive. It is always cleaned up upon exiting
 # the script.
@@ -120,6 +120,9 @@ TMP_SERVER_DIR=""
 # Temporary folder to extract the dataset archive. It is always cleaned up upon exiting
 # the script.
 TMP_DATASET_DIR=""
+
+# Enviromental variable used by Jenkins
+export BUILD_ID=dontKillMe
 
 usage() {
 
@@ -859,7 +862,7 @@ setup_dataset() {
 
 open_terminal_for_startup() {
 	
-	gnome-terminal --working-directory="$1/bin" --title="$1/bin/nohup.out" -x bash -c 'tail -f nohup.out; exec bash;' &
+	gnome-terminal --working-directory="$1/bin" --title="$1/bin" -x bash -c "screen -r $(basename $SERVER_PATH); exec bash;" &
 
 }
 
@@ -891,6 +894,30 @@ open_terminals() {
 
 }
 
+verify_server_startup() {
+
+	SERVER_IS_UP=false
+
+	for i in $(seq 1 "$RETRIES"); do
+		
+		SERVER_TO_START=$(ps aux | grep virgo | sed 's/-D/\n/g' | grep osgi.install.area | sed 's/=/\n/g' | tail -n1 | sed 's/ //g')
+
+		if [ -z "$SERVER_TO_START" ]; then
+			sleep "$RETRY_WAIT_SECONDS"s
+		else
+			echo_date "Server started @ '$SERVER_TO_START'"
+			SERVER_IS_UP=true
+			break
+		fi
+
+	done
+
+	if [ "$SERVER_IS_UP" = false ]; then
+		echo_exit "Unable to start server @ '$1' after $(( $RETRIES * $RETRY_WAIT_SECONDS )) seconds"
+	fi
+
+}
+
 start_server() {
 
 	if [ ! -z "$SERVER_PATH" ] || [ ! -z "$RUNNING_SERVER_PATH" ]; then
@@ -905,29 +932,29 @@ start_server() {
 
 					chmod +x $SERVER_PATH/bin/*.sh
 			
-					nohup "$SERVER_PATH/bin/startup.sh" > "$SERVER_PATH/bin/nohup.out" 2>&1 &
+					screen -d -m -S "$(basename $SERVER_PATH)" -t "$SERVER_PATH" "$SERVER_PATH/bin/startup.sh"
 				
 					open_terminals $SERVER_PATH
 		
-					echo_date "Server started @ '$SERVER_PATH'"
+					verify_server_startup $SERVER_PATH
 
 				elif [ ! -z "$RUNNING_SERVER_PATH" ]; then
 
-					nohup "$RUNNING_SERVER_PATH/bin/startup.sh" > "$RUNNING_SERVER_PATH/bin/nohup.out" 2>&1 &
+					screen -d -m -S "$(basename $RUNNING_SERVER_PATH)" -t "$RUNNING_SERVER_PATH" "$RUNNING_SERVER_PATH/bin/startup.sh"
 
 					open_terminals $RUNNING_SERVER_PATH
 
-					echo_date "Server started @ '$RUNNING_SERVER_PATH'"
+					verify_server_startup $RUNNING_SERVER_PATH
 
 				fi
 
 			elif [ ! -z "$SERVER_PATH" ]; then
 		
-				nohup "$SERVER_PATH/bin/startup.sh" > "$SERVER_PATH/bin/nohup.out" 2>&1 &
+				screen -d -m -S "$(basename $SERVER_PATH)" -t "$SERVER_PATH" "$SERVER_PATH/bin/startup.sh"
 
 				open_terminals $SERVER_PATH
-			
-				echo_date "Server started @ '$SERVER_PATH'"
+
+				verify_server_startup $SERVER_PATH
 
 			fi
 
