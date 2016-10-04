@@ -7,7 +7,7 @@
 
 # The following variables should be set by editing this script before running it:
 
-# The location of the Snow Owl Server installation, eg. /opt/snowowl (no trailing slash)
+# The location of the Snow Owl server installation, eg. /opt/snowowl (no trailing slash)
 SNOW_OWL_SERVER_HOME=""
 
 # The username used for creating hot backups (should be a valid Snow Owl user)
@@ -54,6 +54,59 @@ BASE_URL="http://localhost:8080/snowowl"
 
 # The base URL for administrative services
 ADMIN_BASE_URL="$BASE_URL/admin"
+
+# Use archive structure without container folder
+USE_ROOT_ARCHIVE_STRUCTURE=false
+
+usage() {
+
+cat << EOF
+
+NAME:
+	Snow Owl hot backup script
+
+DESCRIPTION:
+	This sample backup script for the Snow Owl server creates a .zip file in the
+	current directory with the saved contents of the MySQL databases and semantic
+	indexes for each terminology, as well as supporting index content, while the
+	server is kept running.
+
+USAGE: $0 [OPTIONS] [PATH_TO_SERVER]
+
+	[PATH_TO_SERVER]	specifing the server's home dir through a parameter will
+				always overwrite the stored values. If the path never
+				changes it is not mandatory to pass it in as a parameter,
+				more useful to store it in the script.
+
+OPTIONS:
+
+	-r	do not use container dir inside the resulting archive
+
+	-i	no initial wait time will be applied for the users, backup
+		starts immediately
+
+	-h	display help
+
+EXAMPLES:
+
+	If all user credentials are stored in the script but server home was not
+	specified:
+
+		$0 /path/to/server
+
+	If server location and all user credentials are stored in the script but
+	the resulting archive must contain all files in it's root:
+
+		$0 -r
+	
+	If all user credentials are specified, server home dir is provided through
+	a parameter and initial wait time can be ignored:
+	
+		$0 -i /path/to/server
+
+EOF
+
+}
 
 # Prints a message to stdout with the current date and time.
 echo_date() {
@@ -158,7 +211,7 @@ send_message() {
 # Checks input arguments and test whether the script is ready to be executed.
 check_arguments() {
 	if [ "x$SNOW_OWL_SERVER_HOME" = "x" ]; then
-		error_exit "Please set the variable SNOW_OWL_SERVER_HOME before running this script. Exiting with error."
+		error_exit "Please set the variable SNOW_OWL_SERVER_HOME or pass it in as an argument before running this script. Exiting with error."
 	fi
 
 	if [ ! -d "$SNOW_OWL_SERVER_HOME/resources/indexes" ]; then
@@ -184,23 +237,31 @@ check_arguments() {
 
 # Main script starts here.
 main() {
+
 	echo_date "----------------------------"
 	check_arguments
 
 	echo_date "Create backup destination directory '$ABSOLUTE_ARCHIVE_PREFIX'."
 	
 	# Creates both $ABSOLUTE_ARCHIVE_PREFIX and $ABSOLUTE_ARCHIVE_PREFIX/indexes 
-	mkdir -pv "$ABSOLUTE_ARCHIVE_PREFIX/indexes" || error_exit "Couldn't create directory '$ABSOLUTE_ARCHIVE_PREFIX'. Exiting with error."
+	mkdir --parents --verbose "$ABSOLUTE_ARCHIVE_PREFIX/indexes" || error_exit "Couldn't create directory '$ABSOLUTE_ARCHIVE_PREFIX'. Exiting with error."
 	
 	echo_date "Starting backup; sending message to connected users."
-	send_message "Write access to repositories will be disabled while the system creates a backup in $INITIAL_WAIT_MINUTES minutes."
+
+	if [ $INITIAL_WAIT_MINUTES -eq 0 ]; then
+		send_message "Write access to repositories is disabled while the system creates a backup."
+	else
+		send_message "Write access to repositories will be disabled while the system creates a backup in $INITIAL_WAIT_MINUTES minutes."
+	fi
 	
 	if [ "$CURL_HTTP_STATUS" = "000" ]; then
 		error_exit "Couldn't send message to users; the server is not running. Exiting with error."
 	fi
 	
-	echo_date "Waiting $INITIAL_WAIT_MINUTES minutes for users to finish..."
-	sleep "$INITIAL_WAIT_MINUTES"m
+	if [ $INITIAL_WAIT_MINUTES -ne 0 ]; then
+		echo_date "Waiting $INITIAL_WAIT_MINUTES minutes for users to finish..."
+		sleep "$INITIAL_WAIT_MINUTES"m
+	fi
 	
 	for i in $(seq 1 "$RETRIES"); do 
 		lock_all_repositories
@@ -227,20 +288,72 @@ main() {
 	send_message "Write access to repositories restored."	
 
 	echo_date "Creating archive..."
+
+	# Set access permissions for files
+	cd "$ABSOLUTE_ARCHIVE_PREFIX"
+	find . -type f -exec chmod +x '{}' \;
 	
-	# Return to the initial directory
-	cd "$INITIAL_PWD"
-	zip --recurse-paths --move --test "$ARCHIVE_PREFIX.zip" "$ARCHIVE_PREFIX" || error_exit "Archive creation failed; the backup is incomplete. Exiting with error."
+	if [ "$USE_ROOT_ARCHIVE_STRUCTURE" = true ]; then
+		zip --recurse-paths --move --test "$ABSOLUTE_ARCHIVE_PREFIX.zip" * || error_exit "Archive creation failed; the backup is incomplete. Exiting with error."
+		rm --recursive --force "$ABSOLUTE_ARCHIVE_PREFIX"
+	else
+		# Return to the initial directory
+		cd "$INITIAL_PWD"
+		zip --recurse-paths --move --test "$ARCHIVE_PREFIX.zip" "$ARCHIVE_PREFIX" || error_exit "Archive creation failed; the backup is incomplete. Exiting with error."
+	fi
 	
-	echo_date "Finished successfully."
+	echo_date "Hot backup script finished successfully."
 	exit 0
 }
+
+while getopts ":hri" opt; do
+	case "$opt" in
+		h) 
+			usage
+			exit 0
+			;;
+		r)
+			USE_ROOT_ARCHIVE_STRUCTURE=true
+			;;
+		i)
+			INITIAL_WAIT_MINUTES=0
+			;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 1
+			;;
+		:)
+			echo "Option -$OPTARG requires an argument." >&2
+			exit 1
+			;;
+	esac
+done
+
+shift "$((OPTIND - 1))"
+
+if [ ! -z "$1" ]; then
+
+	if [ -d "$1" ]; then
+		SNOW_OWL_SERVER_HOME=$(echo ${1%/})
+	else
+		echo_date "Invalid parameter, using stored values."
+	fi
+
+fi
+
+if [ ! -z "$2" ]; then
+	
+	echo_error "More than one parameter is not allowed."
+	usage
+	exit 1
+
+fi
 
 # Ensures that only a single instance is running at any time
 LOCKFILE="/var/run/snowowl-backup/instance.lock"
 
 (
-        flock -n 200 || error_exit "Another backup script is already running. Exiting with error."
-        trap "rm $LOCKFILE" EXIT
-        main
+	flock -n 200 || error_exit "Another backup script is already running. Exiting with error."
+	trap "rm $LOCKFILE" EXIT
+	main
 ) 200> $LOCKFILE
