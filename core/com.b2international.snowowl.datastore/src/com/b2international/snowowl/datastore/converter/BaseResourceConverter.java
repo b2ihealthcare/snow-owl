@@ -21,17 +21,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.0
@@ -39,14 +37,13 @@ import com.google.common.collect.FluentIterable;
  * @param <R>
  * @param <CR>
  */
-public abstract class BaseResourceConverter<T extends RevisionDocument, R extends IComponent, CR extends CollectionResource<R>>
-		implements ResourceConverter<T, R, CR> {
+public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> implements ResourceConverter<T, R, CR> {
 
-	private final BranchContext context;
+	private final RepositoryContext context;
 	private final Options expand;
 	private final List<ExtendedLocale> locales;
 
-	protected BaseResourceConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	protected BaseResourceConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		this.context = checkNotNull(context, "context");
 		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
@@ -56,7 +53,7 @@ public abstract class BaseResourceConverter<T extends RevisionDocument, R extend
 		return expand;
 	}
 
-	protected final BranchContext context() {
+	protected RepositoryContext context() {
 		return context;
 	}
 	
@@ -66,18 +63,18 @@ public abstract class BaseResourceConverter<T extends RevisionDocument, R extend
 
 	@Override
 	public final R convert(T component) {
-		return convert(Collections.singleton(component), 0, 1, 1).getItems().iterator().next();
+		return Iterables.getOnlyElement(convert(Collections.singleton(component), 0, 1, 1));
 	}
 
 	@Override
 	public final CR convert(Collection<T> components, int offset, int limit, int total) {
-		final List<R> results = FluentIterable.from(components).transform(new Function<T, R>() {
-			@Override
-			public R apply(T input) {
-				return toResource(input);
-			}
-		}).toList();
+		final List<R> results = components
+				.stream()
+				.map(this::toResource)
+				.collect(Collectors.toList());
+		
 		expand(results);
+		
 		return createCollectionResource(results, offset, limit, total);
 	}
 
