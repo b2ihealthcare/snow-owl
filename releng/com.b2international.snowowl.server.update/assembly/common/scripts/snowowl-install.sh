@@ -50,6 +50,9 @@ MAX_JAVA_HEAP_SIZE=0
 # <path_to_snow_owl_server>/<name_of_the_extra_files_folder>
 EXTRA_SERVER_FILES_DIR_NAME="extras"
 
+# Set to either file or ldap. If left empty the default server config will be used.
+AUTH_TYPE=""
+
 ###########################################################
 
 # Changing the following variables is NOT advised.
@@ -202,6 +205,10 @@ OPTIONS:
 			will be used. If there was a running server upon execution then that server's
 			heap settings will be used.
 
+	-a <value>	configure the authentication type through setting the appropriate values in
+			snowowl_config.yml and osgi_server.plan. The value can either be 'file' or 'ldap',
+			no other values are allowed.
+
 	-h		(help): displays this help
 
 EXAMPLES:
@@ -307,6 +314,10 @@ check_variables() {
 	check_if_exists "$SNOWOWL_PASSWORD" "A Snow Owl user's password must be specified"
 	check_if_exists "$LDAP_URL" "The LDAP server's URL must be specified"
 	check_if_exists "$LDAP_PASSWORD" "The LDAP password must be specified"
+
+	if [ ! -z "$AUTH_TYPE" ] && [ "$AUTH_TYPE" != "file" ] && [ "$AUTH_TYPE" != "ldap" ]; then
+		echo_exit "Authentication type must be either 'file' or 'ldap'"
+	fi
 
 }
 
@@ -719,6 +730,60 @@ configure_max_java_heap_size() {
 
 }
 
+configure_authentication_type() {
+
+	SNOWOWL_CONFIG_LOCATION=$(find $SERVER_PATH -type f -name '*config.yml')
+
+	if [ "$AUTH_TYPE" = "file" ]; then
+
+		OLD_VALUE=$(grep -Eo 'type: LDAP' $SNOWOWL_CONFIG_LOCATION)
+
+		if [ ! -z "$OLD_VALUE" ]; then
+
+			NEW_VALUE="type: PROP_FILE"
+
+			sed -i 's,'"$OLD_VALUE"','"$NEW_VALUE"',' $SNOWOWL_CONFIG_LOCATION
+
+			echo_date "Setting authentication type to PROP_FILE in snowowl_config.yml"
+
+		fi
+
+	elif [ "$AUTH_TYPE" = "ldap" ]; then
+
+		OLD_VALUE=$(grep -Eo 'type: PROP_FILE' $SNOWOWL_CONFIG_LOCATION)
+
+		if [ ! -z "$OLD_VALUE" ]; then
+
+			NEW_VALUE="type: LDAP"
+
+			sed -i 's,'"$OLD_VALUE"','"$NEW_VALUE"',' $SNOWOWL_CONFIG_LOCATION
+
+			echo_date "Setting authentication type to LDAP in snowowl_config.yml"
+
+		fi
+
+	fi
+
+	PLAN_LOCATION=$(find "$SERVER_PATH/pickup" -type f -name 'osgi_server.plan')
+
+	for i in $(grep -Eo "authentication.[^\" ]+" $PLAN_LOCATION); do
+
+		if [ "$AUTH_TYPE" = "file" ]; then
+			sed -i 's,'"${i}"','"authentication.file"',' $PLAN_LOCATION
+		elif [ "$AUTH_TYPE" = "ldap" ]; then
+			sed -i 's,'"${i}"','"authentication.ldap"',' $PLAN_LOCATION
+		fi
+
+	done
+
+	if [ "$AUTH_TYPE" = "file" ]; then
+		echo_date "Setting authentication type to file in osgi_server.plan"
+	elif [ "$AUTH_TYPE" = "ldap" ]; then
+		echo_date "Setting authentication type to LDAP osgi_server.plan"
+	fi
+
+}
+
 set_server_variables() {
 
 	if [ ! -z $SERVER_PATH ]; then
@@ -728,6 +793,12 @@ set_server_variables() {
 		configure_ldap_host
 		configure_mysql_user
 		configure_max_java_heap_size
+
+		if [ ! -z "$AUTH_TYPE" ]; then
+		
+			configure_authentication_type
+
+		fi
 
 	fi
 
@@ -1012,7 +1083,7 @@ main() {
 
 trap cleanup EXIT
 
-while getopts ":hblsftx:" opt; do
+while getopts ":hblsftx:a:" opt; do
 	case "$opt" in
 		h) 
 			usage
@@ -1036,7 +1107,9 @@ while getopts ":hblsftx:" opt; do
 		x)
 			MAX_JAVA_HEAP_SIZE=$OPTARG
 			;;
-
+		a)
+			AUTH_TYPE=$OPTARG
+			;;
 		\?)
 			echo "Invalid option: -$OPTARG" >&2
 			exit 1
