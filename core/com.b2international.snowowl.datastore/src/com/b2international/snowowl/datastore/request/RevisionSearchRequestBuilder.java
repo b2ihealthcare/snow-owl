@@ -27,7 +27,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
+public abstract class RevisionSearchRequestBuilder<B extends RevisionSearchRequestBuilder<B, R>, R> extends BaseRevisionResourceRequestBuilder<B, R> {
 
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
@@ -36,7 +36,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	private Collection<String> componentIds = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
-	protected SearchRequestBuilder() {
+	protected RevisionSearchRequestBuilder() {
 		super();
 	}
 	

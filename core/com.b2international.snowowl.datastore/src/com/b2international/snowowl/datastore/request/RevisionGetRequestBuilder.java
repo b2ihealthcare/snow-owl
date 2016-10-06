@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 /**
  * @since 4.5
  */
-public abstract class RevisionGetRequestBuilder<B extends RevisionGetRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
+public abstract class RevisionGetRequestBuilder<B extends RevisionGetRequestBuilder<B, R>, R> extends BaseRevisionResourceRequestBuilder<B, R> {
 
 	private String componentId;
 

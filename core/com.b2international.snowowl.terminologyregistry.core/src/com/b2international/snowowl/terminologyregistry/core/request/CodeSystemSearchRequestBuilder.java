@@ -17,12 +17,12 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
-import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemSearchRequestBuilder extends SearchRequestBuilder<CodeSystemSearchRequestBuilder, CodeSystems> {
+public final class CodeSystemSearchRequestBuilder extends RevisionSearchRequestBuilder<CodeSystemSearchRequestBuilder, CodeSystems> {
 
 	private String shortName;
 	private String oid;
