@@ -54,7 +54,7 @@ public abstract class GetRequest<R, T> extends BaseResourceRequest<RepositoryCon
 	@Override
 	public R execute(final RepositoryContext context) {
 		final Query<T> query = Query.select(getDocType())
-				.where(Expressions.exactMatch("id", docId))
+				.where(Expressions.exactMatch(getIdField(), docId))
 				.limit(1)
 				.build();
 		
@@ -73,6 +73,8 @@ public abstract class GetRequest<R, T> extends BaseResourceRequest<RepositoryCon
 	}
 
 	protected abstract Class<T> getDocType();
+	
+	protected abstract String getIdField();
 	
 	protected abstract R process(RepositoryContext context, T doc, Options expand);
 	

@@ -143,7 +143,7 @@ public abstract class Revision implements WithId {
 	
 	protected ToStringHelper doToString() {
 		return Objects.toStringHelper(this)
-				.add("_id", _id)
+				.add(WithId.Fields.ID, _id)
 				.add(STORAGE_KEY, storageKey)
 				.add(Revision.BRANCH_PATH, branchPath)
 				.add(Revision.COMMIT_TIMESTAMP, commitTimestamp)
