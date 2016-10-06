@@ -45,6 +45,8 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
@@ -219,6 +221,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 					log.info("Persisting changes...");
 					try {
 						indexChangeSet.apply(writer);
+						indexCommitInfo(writer, commitChangeSet);
 						writer.commit();
 						return indexChangeSet;
 					} finally {
@@ -229,6 +232,22 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		} finally {
 			indexTimer.stop();
 		}
+	}
+	
+	private void indexCommitInfo(final RevisionWriter writer, final ICDOCommitChangeSet commitChangeSet) throws IOException {
+		final String commitComment = commitChangeSet.getCommitComment();
+		final String uuid = CDOCommitInfoUtils.getUuid(commitComment);
+		final String comment = CDOCommitInfoUtils.removeUuidPrefix(commitComment);
+		
+		final CommitInfoDocument commitInfo = CommitInfoDocument.builder()
+				.id(uuid)
+				.branch(branchPath.getPath())
+				.comment(comment)
+				.timeStamp(commitChangeSet.getTimestamp())
+				.userId(commitChangeSet.getUserId())
+				.build();
+		
+		writer.writer().put(uuid, commitInfo);
 	}
 
 	/**
