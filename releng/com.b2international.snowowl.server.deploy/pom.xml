@@ -86,6 +86,7 @@
 							<executable>${server.deployment.location}/snowowl-install.sh</executable>
 							<arguments>
 								<argument>-fls</argument>
+								<argument>-a ldap</argument>
 								<argument>${server.deployment.location}/com.b2international.snowowl.server.update-${project.version}-mysql.zip</argument>
 							</arguments>
 						</configuration>
