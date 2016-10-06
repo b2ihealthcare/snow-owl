@@ -19,12 +19,15 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfoConverter;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 
 /**
  * @since 5.2
  */
 public class CommitInfoGetRequest extends GetRequest<CommitInfo, CommitInfoDocument> {
+
+	private static final long serialVersionUID = 1L;
 
 	protected CommitInfoGetRequest() {
 		super("Commit Info");
@@ -42,7 +45,7 @@ public class CommitInfoGetRequest extends GetRequest<CommitInfo, CommitInfoDocum
 
 	@Override
 	protected CommitInfo process(final RepositoryContext context, final CommitInfoDocument doc, final Options expand) {
-		return CommitInfo.builder(doc).build();
+		return new CommitInfoConverter(context, expand(), locales()).convert(doc);
 	}
 
 	@Override

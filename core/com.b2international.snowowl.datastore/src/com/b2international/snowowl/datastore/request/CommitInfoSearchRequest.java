@@ -23,7 +23,6 @@ import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocumen
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
@@ -32,7 +31,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfoConverter;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 import com.google.common.collect.Lists;
@@ -56,7 +55,7 @@ final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
 	CommitInfoSearchRequest() {}
 
 	@Override
-	protected CommitInfos doExecute(RepositoryContext context) throws IOException {
+	protected CommitInfos doExecute(final RepositoryContext context) throws IOException {
 		final Searcher searcher = context.service(Searcher.class);
 		final ExpressionBuilder builder = Expressions.builder();
 		
@@ -77,13 +76,7 @@ final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new CommitInfos(offset(), limit(), hits.getTotal());
 		} else {
-			final List<CommitInfo> commitInfos = hits
-					.getHits()
-					.stream()
-					.map(doc -> CommitInfo.builder(doc).build())
-					.collect(Collectors.toList());
-			
-			return new CommitInfos(commitInfos, offset(), limit(), hits.getTotal());
+			return new CommitInfoConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
 	}
 	
