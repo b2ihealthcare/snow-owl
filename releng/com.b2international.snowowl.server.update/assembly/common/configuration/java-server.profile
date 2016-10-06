@@ -209,7 +209,7 @@ org.osgi.framework.bootdelegation = \
  org.w3c.*,\
  org.xml.*,\
  sun.*,\
- sun.misc.*, \ 
+ sun.misc.*,\
  com.sun.*
 org.osgi.framework.executionenvironment = \
  OSGi/Minimum-1.0,\
