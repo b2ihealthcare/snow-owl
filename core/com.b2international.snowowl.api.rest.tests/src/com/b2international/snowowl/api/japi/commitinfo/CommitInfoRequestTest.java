@@ -1,0 +1,138 @@
+/*
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.api.japi.commitinfo;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.collect.Iterables;
+
+/**
+ * @since 5.2
+ */
+public class CommitInfoRequestTest {
+	
+	private static final String USER_ID = "system";
+	private static final String REPOSITORY_ID = "snomedStore";
+	private static final String BRANCH = IBranchPath.MAIN_BRANCH;
+	
+	private IEventBus bus;
+	
+	@Before
+	public void setup() {
+		this.bus = ApplicationContext.getInstance().getService(IEventBus.class);
+	}
+	
+	@Test
+	public void searchCommitInfo() {
+		final String oid = UUID.randomUUID().toString();
+		final String shortName = UUID.randomUUID().toString();
+		final String comment = "Code system for commit info 1";
+		
+		createCodeSystem(oid, shortName, comment);
+		
+		final CommitInfos commitInfos = RepositoryRequests
+			.commitInfos()
+			.prepareSearchCommitInfo()
+			.filterByComment(comment)
+			.build(REPOSITORY_ID)
+			.execute(bus)
+			.getSync();
+		
+		assertEquals(commitInfos.getTotal(), 1);
+		
+		final CommitInfo commitInfo = Iterables.getOnlyElement(commitInfos);
+		assertEquals(comment, commitInfo.getComment());
+		assertEquals(BRANCH, commitInfo.getBranch());
+		assertEquals(USER_ID, commitInfo.getUserId());
+	}
+	
+	@Test
+	public void getCommitInfo() {
+		final String oid = UUID.randomUUID().toString();
+		final String shortName = UUID.randomUUID().toString();
+		final String comment = "Code system for commit info 2";
+		
+		createCodeSystem(oid, shortName, comment);
+		
+		final CommitInfos commitInfos = RepositoryRequests
+			.commitInfos()
+			.prepareSearchCommitInfo()
+			.filterByComment(comment)
+			.build(REPOSITORY_ID)
+			.execute(bus)
+			.getSync();
+		
+		assertEquals(commitInfos.getTotal(), 1);
+		
+		final String id = Iterables.getOnlyElement(commitInfos).getId();
+		
+		final CommitInfo commitInfo = RepositoryRequests
+				.commitInfos()
+				.prepareGetCommitInfo()
+				.setDocId(id)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
+		
+		assertEquals(id, commitInfo.getId());
+		assertEquals(comment, commitInfo.getComment());
+		assertEquals(BRANCH, commitInfo.getBranch());
+		assertEquals(USER_ID, commitInfo.getUserId());
+	}
+	
+	@Test(expected = NotFoundException.class)
+	public void getNonExistentCommitInfo() {
+		RepositoryRequests
+			.commitInfos()
+			.prepareGetCommitInfo()
+			.setDocId(UUID.randomUUID().toString())
+			.build(REPOSITORY_ID)
+			.execute(bus)
+			.getSync();
+	}
+	
+	public void createCodeSystem(final String shortName, final String oid, final String comment) {
+		CodeSystemRequests.prepareNewCodeSystem()
+			.setShortName(shortName)
+			.setOid(oid)
+			.setName(String.format("%s - %s", shortName, oid))
+			.setLanguage("en")
+			.setBranchPath(IBranchPath.MAIN_BRANCH)
+			.setCitation("citation")
+			.setIconPath("snomed.png")
+			.setRepositoryUuid("snomedStore")
+			.setTerminologyId("concept")
+			.setLink("www.ihtsdo.org")
+			.build("snomedStore", IBranchPath.MAIN_BRANCH, USER_ID, comment)
+			.execute(bus)
+			.getSync();
+	}
+	
+
+}
