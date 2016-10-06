@@ -22,14 +22,14 @@ import com.b2international.commons.ClassUtils;
 /**
  * @since 4.5
  */
-public final class CommitInfo implements Serializable {
+public final class CommitResult implements Serializable {
 
 	private static final long serialVersionUID = -7479022976959306232L;
 	
 	private final long commitTimestamp;
 	private final Object result;
 
-	CommitInfo(long commitTimestamp, Object result) {
+	CommitResult(long commitTimestamp, Object result) {
 		this.commitTimestamp = commitTimestamp;
 		this.result = result;
 	}
