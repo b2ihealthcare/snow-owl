@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.commons.options.Options;
-import com.b2international.index.WithId;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
@@ -37,7 +37,7 @@ public class CommitInfoGetRequest extends GetRequest<CommitInfo, CommitInfoDocum
 	
 	@Override
 	protected String getIdField() {
-		return WithId.Fields.ID;
+		return DocumentMapping._ID;
 	}
 
 	@Override

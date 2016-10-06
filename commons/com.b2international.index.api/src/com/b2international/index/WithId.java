@@ -28,8 +28,4 @@ public interface WithId {
 	@JsonIgnore
 	void set_id(String _id);
 	
-	class Fields {
-		public static final String ID = "_id";
-	}
-	
 }
