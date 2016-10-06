@@ -15,27 +15,18 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * @since 4.7
- * @param <B> - the builder type
- * @param <R> - the response type
+ * @since 5.2
  */
-public abstract class BaseRepositoryRequestBuilder<B extends BaseRepositoryRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, RepositoryContext, R> {
+public abstract class BaseIndexReadRequestBuilder<B extends BaseIndexReadRequestBuilder<B, R>, R>
+		extends BaseRepositoryRequestBuilder<B, R> {
 
-	public final AsyncRequest<R> build(String repositoryId) {
-		return toAsync("/"+repositoryId, new RepositoryRequest<>(repositoryId, extend(build())));
+	@Override
+	protected Request<RepositoryContext, R> extend(final Request<RepositoryContext, R> req) {
+		return new IndexReadRequest<>(super.extend(req));
 	}
-	
-	@OverridingMethodsMustInvokeSuper
-	protected Request<RepositoryContext, R> extend(Request<RepositoryContext, R> req) {
-		return req;
-	}
-	
+
 }
