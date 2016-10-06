@@ -86,7 +86,7 @@ public abstract class RevisionSearchRequestBuilder<B extends RevisionSearchReque
 				throw new BadRequestException("Component ID filter cannot contain empty values");
 			}
 		}
-		req.setComponentIds(componentIds);
+		req.setIds(componentIds);
 		req.setOptions(optionsBuilder.build());
 		return req;
 	}
