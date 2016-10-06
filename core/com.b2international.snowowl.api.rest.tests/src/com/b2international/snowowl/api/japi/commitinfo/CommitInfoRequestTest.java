@@ -16,6 +16,7 @@
 package com.b2international.snowowl.api.japi.commitinfo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
@@ -48,8 +49,19 @@ public class CommitInfoRequestTest {
 		this.bus = ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 	
+	@Test(expected = NotFoundException.class)
+	public void getNonExistentCommitInfo() {
+		RepositoryRequests
+			.commitInfos()
+			.prepareGetCommitInfo()
+			.setDocId(UUID.randomUUID().toString())
+			.build(REPOSITORY_ID)
+			.execute(bus)
+			.getSync();
+	}
+	
 	@Test
-	public void searchCommitInfo() {
+	public void getCommitInfo() {
 		final String oid = UUID.randomUUID().toString();
 		final String shortName = UUID.randomUUID().toString();
 		final String comment = "Code system for commit info 1";
@@ -57,36 +69,12 @@ public class CommitInfoRequestTest {
 		createCodeSystem(oid, shortName, comment);
 		
 		final CommitInfos commitInfos = RepositoryRequests
-			.commitInfos()
-			.prepareSearchCommitInfo()
-			.filterByComment(comment)
-			.build(REPOSITORY_ID)
-			.execute(bus)
-			.getSync();
-		
-		assertEquals(commitInfos.getTotal(), 1);
-		
-		final CommitInfo commitInfo = Iterables.getOnlyElement(commitInfos);
-		assertEquals(comment, commitInfo.getComment());
-		assertEquals(BRANCH, commitInfo.getBranch());
-		assertEquals(USER_ID, commitInfo.getUserId());
-	}
-	
-	@Test
-	public void getCommitInfo() {
-		final String oid = UUID.randomUUID().toString();
-		final String shortName = UUID.randomUUID().toString();
-		final String comment = "Code system for commit info 2";
-		
-		createCodeSystem(oid, shortName, comment);
-		
-		final CommitInfos commitInfos = RepositoryRequests
-			.commitInfos()
-			.prepareSearchCommitInfo()
-			.filterByComment(comment)
-			.build(REPOSITORY_ID)
-			.execute(bus)
-			.getSync();
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByComment(comment)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
 		
 		assertEquals(commitInfos.getTotal(), 1);
 		
@@ -106,18 +94,75 @@ public class CommitInfoRequestTest {
 		assertEquals(USER_ID, commitInfo.getUserId());
 	}
 	
-	@Test(expected = NotFoundException.class)
-	public void getNonExistentCommitInfo() {
-		RepositoryRequests
-			.commitInfos()
-			.prepareGetCommitInfo()
-			.setDocId(UUID.randomUUID().toString())
-			.build(REPOSITORY_ID)
-			.execute(bus)
-			.getSync();
+	@Test
+	public void searchCommitInfoByComment() {
+		final String oid = UUID.randomUUID().toString();
+		final String shortName = UUID.randomUUID().toString();
+		final String comment = "Code system for commit info 2";
+		
+		createCodeSystem(oid, shortName, comment);
+		
+		final CommitInfos commitInfos = RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByComment(comment)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
+		
+		assertEquals(commitInfos.getTotal(), 1);
+		
+		final CommitInfo commitInfo = Iterables.getOnlyElement(commitInfos);
+		assertEquals(comment, commitInfo.getComment());
 	}
 	
-	public void createCodeSystem(final String shortName, final String oid, final String comment) {
+	@Test
+	public void searchCommitInfoByUserId() {
+		final String oid = UUID.randomUUID().toString();
+		final String shortName = UUID.randomUUID().toString();
+		final String comment = "Code system for commit info 3";
+		final String userId = "commitInfo";
+		
+		createCodeSystem(oid, shortName, comment, userId);
+		
+		final CommitInfos commitInfos = RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByUserId(userId)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
+		
+		assertEquals(commitInfos.getTotal(), 1);
+		
+		final CommitInfo commitInfo = Iterables.getOnlyElement(commitInfos);
+		assertEquals(userId, commitInfo.getUserId());
+	}
+	
+	@Test
+	public void searchCommitInfoByBranch() {
+		final String oid = UUID.randomUUID().toString();
+		final String shortName = UUID.randomUUID().toString();
+		final String comment = "Code system for commit info 4";
+		
+		createCodeSystem(oid, shortName, comment);
+		
+		final CommitInfos commitInfos = RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByBranch(IBranchPath.MAIN_BRANCH)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
+		
+		assertTrue(commitInfos.getTotal() >= 1);
+	}
+	
+	private void createCodeSystem(final String shortName, final String oid, final String comment) {
+		createCodeSystem(shortName, oid, comment, USER_ID);
+	}
+	
+	private void createCodeSystem(final String shortName, final String oid, final String comment, final String userId) {
 		CodeSystemRequests.prepareNewCodeSystem()
 			.setShortName(shortName)
 			.setOid(oid)
@@ -129,10 +174,9 @@ public class CommitInfoRequestTest {
 			.setRepositoryUuid("snomedStore")
 			.setTerminologyId("concept")
 			.setLink("www.ihtsdo.org")
-			.build("snomedStore", IBranchPath.MAIN_BRANCH, USER_ID, comment)
+			.build("snomedStore", IBranchPath.MAIN_BRANCH, userId, comment)
 			.execute(bus)
 			.getSync();
 	}
-	
 
 }
