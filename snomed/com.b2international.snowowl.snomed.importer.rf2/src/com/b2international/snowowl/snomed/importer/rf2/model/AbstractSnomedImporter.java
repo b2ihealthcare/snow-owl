@@ -642,7 +642,6 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			
 			new CDOServerCommitBuilder(importContext.getUserId(), message, aggregator)
 					.sendCommitNotification(importContext.isCommitNotificationEnabled())
-					.notifyWriteAccessHandlers(importContext.isCommitNotificationEnabled())
 					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 					.commit();
 			
