@@ -20,7 +20,9 @@ import java.util.Map;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EClass;
 import org.slf4j.Logger;
@@ -194,12 +196,17 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 			if (revisionDelta == null) {
 				continue;
 			}
-			final boolean statusChange = revisionDelta.getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE) != null;
-			if (statusChange) {
-				if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
+			final CDOFeatureDelta changeStatusDelta = revisionDelta.getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE);
+			if (changeStatusDelta instanceof CDOSetFeatureDelta) {
+				CDOSetFeatureDelta delta = (CDOSetFeatureDelta) changeStatusDelta;
+				final Boolean oldValue = (Boolean) delta.getOldValue();
+				final Boolean newValue = (Boolean) delta.getValue();
+				if (Boolean.TRUE == oldValue && Boolean.FALSE == newValue) {
 					//nothing can be dirty and new at the same time
+					//we do not need this concept. either it was deactivated now or sometime earlier.
 					taxonomyBuilder.removeNode(createNode(dirtyConcept.getId(), true));
-				} else { //consider reverting inactivation
+				} else if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
+					//consider reverting inactivation
 					if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
 						taxonomyBuilder.addNode(createNode(dirtyConcept));
 					}

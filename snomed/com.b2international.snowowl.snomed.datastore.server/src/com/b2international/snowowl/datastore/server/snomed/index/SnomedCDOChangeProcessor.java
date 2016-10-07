@@ -156,6 +156,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 			
 			for (SnomedConceptDocument statedSourceConcept : index.search(statedSourceConceptsQuery)) {
 				statedConceptIds.add(Long.parseLong(statedSourceConcept.getId()));
+				statedConceptIds.addAll(statedSourceConcept.getStatedParents());
+				statedConceptIds.addAll(statedSourceConcept.getStatedAncestors());
 			}
 		}
 		
@@ -171,6 +173,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 			
 			for (SnomedConceptDocument inferredSourceConcept : index.search(inferredSourceConceptsQuery)) {
 				inferredConceptIds.add(Long.parseLong(inferredSourceConcept.getId()));
+				inferredConceptIds.addAll(inferredSourceConcept.getParents());
+				inferredConceptIds.addAll(inferredSourceConcept.getAncestors());
 			}
 		}
 		
