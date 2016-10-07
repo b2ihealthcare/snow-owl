@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.commitinfo;
 
 import java.io.Serializable;
 
+import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
+
 /**
  * @since 5.2
  */
@@ -35,6 +37,15 @@ public final class CommitInfo implements Serializable {
 			.userId(doc.getUserId())
 			.comment(doc.getComment())
 			.timeStamp(doc.getTimeStamp());
+	}
+	
+	public static Builder builder(final RepositoryCommitNotification notification) {
+		return builder()
+				.id(notification.getCommitId())
+				.branch(notification.getBranchPath())
+				.userId(notification.getUserId())
+				.comment(notification.getComment())
+				.timeStamp(notification.getCommitTimestamp());
 	}
 	
 	public static class Builder {

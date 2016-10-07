@@ -74,7 +74,7 @@ final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
 		final Hits<CommitInfoDocument> hits = searcher.search(query);
 		
 		if (limit() < 1 || hits.getTotal() < 1) {
-			return new CommitInfos(offset(), limit(), hits.getTotal());
+			return new CommitInfos(context.id(), offset(), limit(), hits.getTotal());
 		} else {
 			return new CommitInfoConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
