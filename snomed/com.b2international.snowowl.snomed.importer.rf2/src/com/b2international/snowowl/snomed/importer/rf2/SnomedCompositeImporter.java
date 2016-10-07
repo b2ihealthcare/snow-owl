@@ -48,6 +48,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
+import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -481,8 +482,20 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		} finally {
 			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
 			if (!importContext.isCommitNotificationEnabled()) {
-				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
-				CDOServerUtils.sendCommitNotification(commitInfo);
+				final RepositoryCommitNotification notification = new RepositoryCommitNotification(SnomedDatastoreActivator.REPOSITORY_UUID,
+						importContext.getCommitId(),
+						importContext.getEditingContext().getBranch(),
+						importContext.getCommitTime(),
+						importContext.getUserId(),
+						importContext.getCommitMessage(),
+						Collections.emptyList(),
+						Collections.emptyList(),
+						Collections.emptyList());
+				
+				notification.publish(ApplicationContext.getInstance().getService(IEventBus.class));
+				
+//				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
+//				CDOServerUtils.sendCommitNotification(commitInfo);
 			}
 		}
 	}

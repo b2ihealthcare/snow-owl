@@ -66,6 +66,7 @@ import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.snomed.index.init.DoiInitializer;
 import com.b2international.snowowl.importer.ImportException;
@@ -424,6 +425,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				public Void execute(RevisionWriter index) throws IOException {
 					try {
 						indexUnit(index, unit);
+						indexCommitInfo(index);
 						index.commit();
 						return null;
 					} finally {
@@ -446,6 +448,18 @@ public class SnomedRf2IndexInitializer extends Job {
 		});
 		
 		LOGGER.info("Post-processing phase successfully finished.");
+	}
+	
+	private void indexCommitInfo(final RevisionWriter index) throws IOException {
+		final CommitInfoDocument commitInfo = CommitInfoDocument.builder()
+				.id(context.getCommitId())
+				.branch(branchPath.getPath())
+				.comment(context.getCommitMessage())
+				.timeStamp(context.getCommitTime())
+				.userId(context.getUserId())
+				.build();
+		
+		index.writer().put(commitInfo._id(), commitInfo);
 	}
 
 	private void postProcess(RevisionWriter writer) throws IOException {

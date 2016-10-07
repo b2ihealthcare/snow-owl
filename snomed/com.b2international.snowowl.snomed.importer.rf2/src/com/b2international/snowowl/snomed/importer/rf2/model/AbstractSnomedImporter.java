@@ -37,6 +37,7 @@ import java.util.UUID;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 import org.supercsv.cellprocessor.Optional;
@@ -70,6 +71,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -640,11 +642,15 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			final String message = getCommitMessage(effectiveTimeKey);
 			importContext.setCommitMessage(message);
 			
-			new CDOServerCommitBuilder(importContext.getUserId(), message, aggregator)
+			final Iterable<CDOCommitInfo> commitInfos = new CDOServerCommitBuilder(importContext.getUserId(), message, aggregator)
 					.sendCommitNotification(importContext.isCommitNotificationEnabled())
 					.notifyWriteAccessHandlers(importContext.isCommitNotificationEnabled())
 					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 					.commit();
+			
+			final String comment = Iterables.getOnlyElement(commitInfos).getComment();
+			final String commitId = CDOCommitInfoUtils.getUuid(comment);
+			importContext.setCommitId(commitId);
 			
 			log(message);
 			
