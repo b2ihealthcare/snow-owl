@@ -51,6 +51,7 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	private RefSetMemberLookup refSetMemberLookup;
 
 	private String userId;
+	private String commitId;
 	private String commitMessage;
 
 	private SnomedEditingContext editingContext;
@@ -152,6 +153,14 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	 */
 	public void setCommitMessage(final String commitMessage) {
 		this.commitMessage = checkNotNull(commitMessage, "Commit message argument may not be null.");
+	}
+	
+	public String getCommitId() {
+		return commitId;
+	}
+	
+	public void setCommitId(final String commitId) {
+		this.commitId = checkNotNull(commitId, "Commit id argument may not be null.");
 	}
 
 	/**

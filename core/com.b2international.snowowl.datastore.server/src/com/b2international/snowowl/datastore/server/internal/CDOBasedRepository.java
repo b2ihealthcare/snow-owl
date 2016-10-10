@@ -64,6 +64,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
@@ -259,6 +260,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		types.add(CodeSystemEntry.class);
 		types.add(CodeSystemVersionEntry.class);
 		types.addAll(getToolingTypes(toolingId));
+		types.add(CommitInfoDocument.class);
 		
 		final Map<String, Object> settings = initIndexSettings();
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);

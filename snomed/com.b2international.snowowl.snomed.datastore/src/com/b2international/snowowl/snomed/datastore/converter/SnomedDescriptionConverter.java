@@ -25,7 +25,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
+import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -46,7 +46,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.0
  */
-final class SnomedDescriptionConverter extends BaseResourceConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
+final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
 
 	SnomedDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);

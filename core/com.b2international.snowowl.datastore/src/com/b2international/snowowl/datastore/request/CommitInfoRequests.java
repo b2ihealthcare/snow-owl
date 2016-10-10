@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,16 @@
 package com.b2international.snowowl.datastore.request;
 
 /**
- * @since 4.5
+ * @since 5.2
  */
-public final class RepositoryRequests {
+public final class CommitInfoRequests {
 
-	private RepositoryRequests() {}
-	
-	public static Branching branching() {
-		return new Branching();
+	public CommitInfoGetRequestBuilder prepareGetCommitInfo() {
+		return new CommitInfoGetRequestBuilder();
 	}
-	
-	public static Merging merging() {
-		return new Merging();
-	}
-	
-	public static Reviews reviews() {
-		return new Reviews();
-	}
-	
-	public static CommitInfoRequests commitInfos() {
-		return new CommitInfoRequests();
+
+	public CommitInfoSearchRequestBuilder prepareSearchCommitInfo() {
+		return new CommitInfoSearchRequestBuilder();
 	}
 
 }

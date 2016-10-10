@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,25 +20,23 @@ import java.util.Collections;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.google.common.base.Strings;
 
 /**
- * @since 5.2
+ * @since 4.5
  */
-public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
-	
+public abstract class RevisionSearchRequestBuilder<B extends RevisionSearchRequestBuilder<B, R>, R> extends BaseRevisionResourceRequestBuilder<B, R> {
+
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
 	private int offset = 0;
 	private int limit = 50;
-	
-	private Collection<String> docIds = Collections.emptyList();
-	
+	private Collection<String> componentIds = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
-	protected SearchRequestBuilder() {
+	protected RevisionSearchRequestBuilder() {
 		super();
 	}
 	
@@ -52,8 +50,8 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return getSelf();
 	}
 	
-	public final B setDocIds(Collection<String> docIds) {
-		this.docIds = docIds;
+	public final B setComponentIds(Collection<String> componentIds) {
+		this.componentIds = componentIds;
 		return getSelf();
 	}
 	
@@ -65,6 +63,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return setOffset(0).setLimit(1);
 	}
 	
+	// XXX: Does not allow empty-ish values
 	protected final B addOption(String key, Object value) {
 		if (!CompareUtils.isEmpty(value)) {
 			optionsBuilder.put(key, value);
@@ -77,23 +76,21 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	}
 	
 	@Override
-	protected BaseResourceRequest<RepositoryContext, R> create() {
-		final SearchRequest<R> req = createSearch();
+	protected final BaseResourceRequest<BranchContext, R> create() {
+		final RevisionSearchRequest<R> req = createSearch();
 		req.setOffset(offset);
-		req.setLimit(Math.min(limit,  MAX_LIMIT - offset));
-		
-		for (final String docId : docIds) {
-			if (Strings.isNullOrEmpty(docId)) {
-				throw new BadRequestException("Doc ID filter cannot contain empty values");
+		req.setLimit(Math.min(limit, MAX_LIMIT - offset));
+		// validate componentIds, do NOT allow null or empty strings
+		for (String componentId : componentIds) {
+			if (Strings.isNullOrEmpty(componentId)) {
+				throw new BadRequestException("Component ID filter cannot contain empty values");
 			}
 		}
-		
-		req.setDocIds(docIds);
+		req.setComponentIds(componentIds);
 		req.setOptions(optionsBuilder.build());
-		
 		return req;
 	}
 	
-	protected abstract SearchRequest<R> createSearch();
+	protected abstract RevisionSearchRequest<R> createSearch();
 
 }

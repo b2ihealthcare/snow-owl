@@ -129,7 +129,7 @@ public class CodeSystemRequestTest {
 			.setRepositoryUuid(REPOSITORY_ID)
 			.setTerminologyId("concept")
 			.setLink("www.ihtsdo.org")
-			.build(REPOSITORY_ID, "system", BRANCH, String.format("New code system %s", shortName))
+			.build(REPOSITORY_ID, BRANCH, "system", String.format("New code system %s", shortName))
 			.execute(bus)
 			.getSync();
 	}
