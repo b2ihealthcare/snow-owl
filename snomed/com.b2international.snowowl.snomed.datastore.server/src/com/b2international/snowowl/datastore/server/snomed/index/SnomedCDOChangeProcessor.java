@@ -190,7 +190,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 	@Override
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors() {
 		return ImmutableList.<ChangeSetProcessor>builder()
-				.add(new ConceptChangeProcessor(SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
+				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new DescriptionChangeProcessor())
 				.add(new RelationshipChangeProcessor())
 				.add(new RefSetMemberChangeProcessor())
