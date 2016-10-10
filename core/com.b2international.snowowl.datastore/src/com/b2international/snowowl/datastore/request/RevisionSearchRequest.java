@@ -15,19 +15,49 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import java.util.Collection;
+
+import javax.validation.constraints.NotNull;
+
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
  */
 public abstract class RevisionSearchRequest<B> extends BaseSearchRequest<BranchContext, B> {
+	
+	@NotNull
+	private Collection<String> componentIds;
+	
+	public void setComponentIds(Collection<String> componentIds) {
+		this.componentIds = componentIds;
+	}
+	
+	@JsonProperty
+	protected final Collection<String> componentIds() {
+		return componentIds;
+	}
+	
+	protected Expression createComponentIdFilter() {
+		return Expressions.matchAny(getIdField(), componentIds);
+	}
 
 	protected void addComponentIdFilter(ExpressionBuilder exp) {
-		if (!ids().isEmpty()) {
-			exp.must(RevisionDocument.Expressions.ids(ids()));
+		if (!componentIds().isEmpty()) {
+			exp.must(RevisionDocument.Expressions.ids(componentIds()));
 		}		
+	}
+	
+	@JsonIgnore
+	protected String getIdField() {
+		return DocumentMapping._ID;
 	}
 
 }

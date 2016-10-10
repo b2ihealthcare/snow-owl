@@ -23,12 +23,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.options.Options;
-import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -45,9 +41,6 @@ public abstract class BaseSearchRequest<C extends ServiceProvider, B> extends Ba
 	@NotNull
 	private Options options;
 
-	@NotNull
-	private Collection<String> ids;
-
 	protected BaseSearchRequest() {}
 	
 	void setLimit(int limit) {
@@ -60,10 +53,6 @@ public abstract class BaseSearchRequest<C extends ServiceProvider, B> extends Ba
 	
 	void setOptions(Options options) {
 		this.options = options;
-	}
-	
-	void setIds(Collection<String> ids) {
-		this.ids = ids;
 	}
 	
 	@JsonProperty
@@ -113,11 +102,6 @@ public abstract class BaseSearchRequest<C extends ServiceProvider, B> extends Ba
 		return options.getOptions(key.name());
 	}
 	
-	@JsonProperty
-	protected final Collection<String> ids() {
-		return ids;
-	}
-	
 	@Override
 	public final B execute(C context) {
 		try {
@@ -128,14 +112,5 @@ public abstract class BaseSearchRequest<C extends ServiceProvider, B> extends Ba
 	}
 	
 	protected abstract B doExecute(C context) throws IOException;
-	
-	protected Expression createIdFilter() {
-		return Expressions.matchAny(getIdField(), ids);
-	}
-	
-	@JsonIgnore
-	protected String getIdField() {
-		return DocumentMapping._ID;
-	}
 	
 }

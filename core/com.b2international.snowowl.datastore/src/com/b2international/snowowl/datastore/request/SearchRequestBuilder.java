@@ -88,7 +88,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 			}
 		}
 		
-		req.setIds(docIds);
+		req.setDocIds(docIds);
 		req.setOptions(optionsBuilder.build());
 		
 		return req;
