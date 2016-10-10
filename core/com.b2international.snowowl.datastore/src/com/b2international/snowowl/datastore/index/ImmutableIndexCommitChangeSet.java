@@ -122,7 +122,9 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		}
 		
 		for (Entry<String, Object> doc : rawMappings.entrySet()) {
-			index.writer().put(doc.getKey(), doc.getValue());
+			if (!rawDeletions.containsValue(doc.getKey())) {
+				index.writer().put(doc.getKey(), doc.getValue());
+			}
 		}
 
 		final Multimap<Class<? extends Revision>, Long> copiedRevision = ImmutableMultimap.copyOf(revisionDeletions);
