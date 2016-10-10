@@ -34,7 +34,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-public final class TransactionalRequest extends BaseRequest<BranchContext, CommitInfo> {
+public final class TransactionalRequest extends BaseRequest<BranchContext, CommitResult> {
 
 	@JsonProperty
 	private final String commitComment;
@@ -55,7 +55,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	}
 	
 	@Override
-	public CommitInfo execute(BranchContext context) {
+	public CommitResult execute(BranchContext context) {
 		final Metrics metrics = context.service(Metrics.class);
 		metrics.setExternalValue("preRequest", preRequestPreparationTime);
 		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context)) {
@@ -68,7 +68,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 		}
 	}
 
-	private CommitInfo commit(final TransactionContext context, final Object body) {
+	private CommitResult commit(final TransactionContext context, final Object body) {
 		final Metrics metrics = context.service(Metrics.class);
 		final Timer commitTimer = metrics.timer("commit");
 		MetricsThreadLocal.set(metrics);
@@ -82,7 +82,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 			 * required an exact ID to be assigned. What to do?
 			 */
 			final long commitTimestamp = context.commit(userId, commitComment);
-			return new CommitInfo(commitTimestamp, body);
+			return new CommitResult(commitTimestamp, body);
 		} finally {
 			commitTimer.stop();
 			MetricsThreadLocal.release();
@@ -100,8 +100,8 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	}
 
 	@Override
-	protected Class<CommitInfo> getReturnType() {
-		return CommitInfo.class;
+	protected Class<CommitResult> getReturnType() {
+		return CommitResult.class;
 	}
 	
 }

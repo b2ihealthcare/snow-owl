@@ -33,5 +33,9 @@ public final class RepositoryRequests {
 	public static Reviews reviews() {
 		return new Reviews();
 	}
+	
+	public static CommitInfoRequests commitInfos() {
+		return new CommitInfoRequests();
+	}
 
 }

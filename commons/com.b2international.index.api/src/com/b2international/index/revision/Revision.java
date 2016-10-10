@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.b2international.index.WithId;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -143,7 +144,7 @@ public abstract class Revision implements WithId {
 	
 	protected ToStringHelper doToString() {
 		return Objects.toStringHelper(this)
-				.add("_id", _id)
+				.add(DocumentMapping._ID, _id)
 				.add(STORAGE_KEY, storageKey)
 				.add(Revision.BRANCH_PATH, branchPath)
 				.add(Revision.COMMIT_TIMESTAMP, commitTimestamp)

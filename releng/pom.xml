@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>5.1.3</version>
+		<version>5.2.0-SNAPSHOT</version>
 	</parent>
 	
 	<properties>
@@ -70,6 +70,13 @@
 			</activation>
 			<modules>
 				<module>distribution</module>
+			</modules>
+		</profile>
+		<profile>
+			<!-- Include modules here that need to be versioned but not part of any build task -->
+			<id>included-for-versioning</id>
+			<modules>
+				<module>com.b2international.snowowl.server.deploy</module>
 			</modules>
 		</profile>
 	</profiles>

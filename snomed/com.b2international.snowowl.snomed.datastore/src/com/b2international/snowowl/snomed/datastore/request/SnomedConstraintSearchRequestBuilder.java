@@ -18,14 +18,14 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
-import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 
 /**
  * @since 4.7
  */
-public final class SnomedConstraintSearchRequestBuilder extends SearchRequestBuilder<SnomedConstraintSearchRequestBuilder, SnomedConstraints> {
+public final class SnomedConstraintSearchRequestBuilder extends RevisionSearchRequestBuilder<SnomedConstraintSearchRequestBuilder, SnomedConstraints> {
 
 	SnomedConstraintSearchRequestBuilder() {
 		super();

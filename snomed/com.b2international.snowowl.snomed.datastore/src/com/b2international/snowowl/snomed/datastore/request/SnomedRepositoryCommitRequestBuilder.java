@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.CommitInfo;
+import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 
 /**
@@ -30,7 +30,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 	}
 	
 	@Override
-	protected Request<BranchContext, CommitInfo> extend(Request<BranchContext, CommitInfo> req) {
+	protected Request<BranchContext, CommitResult> extend(Request<BranchContext, CommitResult> req) {
 		return super.extend(new IdRequest(req)); 
 	}
 

@@ -48,6 +48,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
+import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -402,23 +403,12 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		final Set<String> synonymAndDescendants = LongSets.toStringSet(inferredTaxonomyBuilder.getAllDescendantNodeIds(Concepts.SYNONYM));
 		synonymAndDescendants.add(Concepts.SYNONYM);
-		
-		initializeIndex(importContext, lastUnitEffectiveTimeKey, units);
 	}
 
 	private Rf2BasedSnomedTaxonomyBuilder buildTaxonomy(final String characteristicType) {
 		final LongCollection conceptIds = repositoryState.getConceptIds();
 		final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statements = Concepts.INFERRED_RELATIONSHIP.equals(characteristicType) ? repositoryState.getInferredStatements() : repositoryState.getStatedStatements();
 		return Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
-	}
-
-	private RevisionIndex getIndex() {
-		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-	}
-	
-	private void initializeIndex(final SnomedImportContext context, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(getIndex(), context, lastUnitEffectiveTimeKey, units, inferredTaxonomyBuilder, statedTaxonomyBuilder);
-		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 
 	protected void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
@@ -481,8 +471,20 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		} finally {
 			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
 			if (!importContext.isCommitNotificationEnabled()) {
-				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
-				CDOServerUtils.sendCommitNotification(commitInfo);
+				final RepositoryCommitNotification notification = new RepositoryCommitNotification(SnomedDatastoreActivator.REPOSITORY_UUID,
+						importContext.getCommitId(),
+						importContext.getEditingContext().getBranch(),
+						importContext.getCommitTime(),
+						importContext.getUserId(),
+						importContext.getCommitMessage(),
+						Collections.emptyList(),
+						Collections.emptyList(),
+						Collections.emptyList());
+				
+				notification.publish(ApplicationContext.getInstance().getService(IEventBus.class));
+				
+//				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
+//				CDOServerUtils.sendCommitNotification(commitInfo);
 			}
 		}
 	}

@@ -31,7 +31,7 @@ public abstract class BaseTransactionalRequestBuilder<B extends BaseTransactiona
 		this.commitRequestBuilder = commitRequestBuilder;
 	}
 	
-	public final AsyncRequest<CommitInfo> build(String repositoryId, String branch, String userId, String commitComment) {
+	public final AsyncRequest<CommitResult> build(String repositoryId, String branch, String userId, String commitComment) {
 		return commitRequestBuilder
 				.setUserId(userId)
 				.setCommitComment(commitComment)

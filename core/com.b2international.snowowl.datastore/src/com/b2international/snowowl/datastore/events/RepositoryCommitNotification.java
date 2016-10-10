@@ -27,6 +27,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	
 	private static final long serialVersionUID = 1L;
 	
+	private final String commitId;
 	private final String branchPath;
 	private final long commitTimestamp;
 	private final String userId;
@@ -35,7 +36,9 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private final Collection<String> changedComponents;
 	private final Collection<String> deletedComponents;
 
+
 	public RepositoryCommitNotification(final String repositoryId,
+			final String commitId,
 			final String branchPath,
 			final long commitTimestamp,
 			final String userId,
@@ -44,6 +47,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 			final Collection<String> changedComponents, 
 			final Collection<String> deletedComponents) {
 		super(repositoryId);
+		this.commitId = commitId;
 		this.branchPath = branchPath;
 		this.commitTimestamp = commitTimestamp;
 		this.userId = userId;
@@ -51,6 +55,10 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 		this.newComponents = Collections3.toImmutableSet(newComponents);
 		this.changedComponents = Collections3.toImmutableSet(changedComponents);
 		this.deletedComponents = Collections3.toImmutableList(deletedComponents);
+	}
+	
+	public String getCommitId() {
+		return commitId;
 	}
 
 	public String getBranchPath() {

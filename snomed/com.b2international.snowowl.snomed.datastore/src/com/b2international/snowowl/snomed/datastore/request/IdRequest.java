@@ -19,28 +19,28 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.CommitInfo;
+import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
  * @since 4.5
  */
-final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, CommitInfo> {
+final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, CommitResult> {
 
 	private static final long serialVersionUID = 1L;
 
-	protected IdRequest(final Request<BranchContext, CommitInfo> next) {
+	protected IdRequest(final Request<BranchContext, CommitResult> next) {
 		super(next);
 	}
 
 	@Override
-	public CommitInfo execute(BranchContext context) {
+	public CommitResult execute(BranchContext context) {
 		final ISnomedIdentifierService identifierService = context.service(ISnomedIdentifierService.class);
 		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
 
 		try {
-			final CommitInfo commitInfo = next(DelegatingBranchContext
+			final CommitResult commitInfo = next(DelegatingBranchContext
 					.basedOn(context)
 					.bind(SnomedIdentifiers.class, snomedIdentifiers)
 					.build());

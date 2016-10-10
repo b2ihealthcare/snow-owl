@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.7
@@ -27,7 +30,12 @@ import com.b2international.snowowl.core.events.BaseRequestBuilder;
 public abstract class BaseRepositoryRequestBuilder<B extends BaseRepositoryRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, RepositoryContext, R> {
 
 	public final AsyncRequest<R> build(String repositoryId) {
-		return toAsync("/"+repositoryId, new RepositoryRequest<>(repositoryId, build()));
+		return toAsync("/"+repositoryId, new RepositoryRequest<>(repositoryId, extend(build())));
+	}
+	
+	@OverridingMethodsMustInvokeSuper
+	protected Request<RepositoryContext, R> extend(Request<RepositoryContext, R> req) {
+		return req;
 	}
 	
 }

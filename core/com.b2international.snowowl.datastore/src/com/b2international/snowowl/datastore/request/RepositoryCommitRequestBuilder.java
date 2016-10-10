@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.events.metrics.Metrics;
  * 
  * @since 4.5
  */
-public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<RepositoryCommitRequestBuilder, CommitInfo> {
+public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<RepositoryCommitRequestBuilder, CommitResult> {
 
 	private String userId;
 	private String commitComment = "";
@@ -65,12 +65,12 @@ public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<Rep
 	}
 
 	@Override
-	protected final Request<BranchContext, CommitInfo> doBuild() {
+	protected final Request<BranchContext, CommitResult> doBuild() {
 		return new TransactionalRequest(userId, commitComment, body, preparationTime);
 	}
 	
 	@Override
-	protected Request<BranchContext, CommitInfo> extend(Request<BranchContext, CommitInfo> req) {
+	protected Request<BranchContext, CommitResult> extend(Request<BranchContext, CommitResult> req) {
 		return super.extend(new RevisionIndexReadRequest<>(req));
 	}
 
