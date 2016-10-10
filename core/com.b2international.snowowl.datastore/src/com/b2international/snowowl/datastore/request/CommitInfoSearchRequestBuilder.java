@@ -42,7 +42,7 @@ public final class CommitInfoSearchRequestBuilder extends SearchRequestBuilder<C
 	}
 
 	public CommitInfoSearchRequestBuilder filterByTimeStamp(final long timeStamp) {
-		return addOption(TIME_STAMP, TIME_STAMP);
+		return addOption(TIME_STAMP, timeStamp);
 	}
 
 	@Override
