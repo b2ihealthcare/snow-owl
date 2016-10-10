@@ -403,23 +403,12 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		final Set<String> synonymAndDescendants = LongSets.toStringSet(inferredTaxonomyBuilder.getAllDescendantNodeIds(Concepts.SYNONYM));
 		synonymAndDescendants.add(Concepts.SYNONYM);
-		
-		initializeIndex(importContext, lastUnitEffectiveTimeKey, units);
 	}
 
 	private Rf2BasedSnomedTaxonomyBuilder buildTaxonomy(final String characteristicType) {
 		final LongCollection conceptIds = repositoryState.getConceptIds();
 		final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statements = Concepts.INFERRED_RELATIONSHIP.equals(characteristicType) ? repositoryState.getInferredStatements() : repositoryState.getStatedStatements();
 		return Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
-	}
-
-	private RevisionIndex getIndex() {
-		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-	}
-	
-	private void initializeIndex(final SnomedImportContext context, final String lastUnitEffectiveTimeKey, final List<ComponentImportUnit> units) {
-		final SnomedRf2IndexInitializer snomedRf2IndexInitializer = new SnomedRf2IndexInitializer(getIndex(), context, lastUnitEffectiveTimeKey, units, inferredTaxonomyBuilder, statedTaxonomyBuilder);
-		snomedRf2IndexInitializer.run(new NullProgressMonitor());
 	}
 
 	protected void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
