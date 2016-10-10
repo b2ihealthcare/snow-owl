@@ -122,8 +122,8 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		detachedComponents.put(storageKey, type);
 	}
 	
-	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object newValue) {
-		final CDOSetFeatureDeltaImpl featureDelta = new CDOSetFeatureDeltaImpl(feature, 0, newValue);
+	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object oldValue, Object newValue) {
+		final CDOSetFeatureDeltaImpl featureDelta = new CDOSetFeatureDeltaImpl(feature, 0, oldValue, newValue);
 		getRevisionDelta(object).addFeatureDelta(featureDelta);
 	}
 	

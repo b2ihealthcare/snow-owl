@@ -84,6 +84,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		}
 	};
 	
+	private final DoiData doiData;
 	private final IconIdUpdater iconId;
 	private final ParentageUpdater inferred;
 	private final ParentageUpdater stated;
@@ -92,8 +93,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	
 	private Multimap<String, RefSetMemberChange> referringRefSets;
 
-	public ConceptChangeProcessor(Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
+	public ConceptChangeProcessor(DoiData doiData, Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
 		super("concept changes");
+		this.doiData = doiData;
 		this.iconId = new IconIdUpdater(inferredTaxonomy.getNewTaxonomy(), statedTaxonomy.getNewTaxonomy(), availableImages);
 		this.inferred = new ParentageUpdater(inferredTaxonomy.getNewTaxonomy(), false);
 		this.stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
@@ -186,7 +188,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.effectiveTime(concept != null ? getEffectiveTime(concept) : currentVersion.getEffectiveTime())
 			.moduleId(concept != null ? concept.getModule().getId() : currentVersion.getModuleId())
 			.exhaustive(concept != null ? concept.isExhaustive() : currentVersion.isExhaustive())
-			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive());
+			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive())
+			.doi(doiData.getDoiScore(id));
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(id);

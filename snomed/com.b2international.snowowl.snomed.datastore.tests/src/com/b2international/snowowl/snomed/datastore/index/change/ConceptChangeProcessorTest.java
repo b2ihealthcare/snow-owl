@@ -69,7 +69,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				final ICDOCommitChangeSet commitChangeSet = createChangeSet();
 				final Taxonomy inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredChangedConceptIds, true);
 				final Taxonomy statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedChangedConceptIds, true);
-				final ConceptChangeProcessor processor = new ConceptChangeProcessor(availableImages, statedTaxonomy, inferredTaxonomy);
+				final ConceptChangeProcessor processor = new ConceptChangeProcessor(DoiData.DEFAULT_SCORE, availableImages, statedTaxonomy, inferredTaxonomy);
 				processor.process(commitChangeSet, searcher);
 				return processor;
 			}
@@ -415,7 +415,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		dirtyConcept.setModule(module());
 		dirtyConcept.setExhaustive(false);
 		registerDirty(dirtyConcept);
-		registerSetRevisionDelta(dirtyConcept, SnomedPackage.Literals.COMPONENT__ACTIVE, false);
+		registerSetRevisionDelta(dirtyConcept, SnomedPackage.Literals.COMPONENT__ACTIVE, true, false);
 		
 		final ConceptChangeProcessor processor = process();
 		
