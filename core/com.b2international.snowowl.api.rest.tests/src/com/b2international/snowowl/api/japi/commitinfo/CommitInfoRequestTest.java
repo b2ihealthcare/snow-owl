@@ -101,18 +101,8 @@ public class CommitInfoRequestTest {
 		final String comment = "Code system for commit info 2";
 		
 		createCodeSystem(oid, shortName, comment);
+		final CommitInfo commitInfo = getCommitInfoByComment(comment);
 		
-		final CommitInfos commitInfos = RepositoryRequests
-				.commitInfos()
-				.prepareSearchCommitInfo()
-				.filterByComment(comment)
-				.build(REPOSITORY_ID)
-				.execute(bus)
-				.getSync();
-		
-		assertEquals(commitInfos.getTotal(), 1);
-		
-		final CommitInfo commitInfo = Iterables.getOnlyElement(commitInfos);
 		assertEquals(comment, commitInfo.getComment());
 	}
 	
@@ -158,6 +148,27 @@ public class CommitInfoRequestTest {
 		assertTrue(commitInfos.getTotal() >= 1);
 	}
 	
+	@Test
+	public void searchCommitInfoByTimestamp() {
+		final String oid = UUID.randomUUID().toString();
+		final String shortName = UUID.randomUUID().toString();
+		final String comment = "Code system for commit info 5";
+		
+		createCodeSystem(oid, shortName, comment);
+		final CommitInfo commitInfo = getCommitInfoByComment(comment);
+		
+		final CommitInfos commitInfos = RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByTimeStamp(commitInfo.getTimeStamp())
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
+		
+		assertTrue(commitInfos.getTotal() == 1);
+		assertEquals(commitInfo.getTimeStamp(), Iterables.getOnlyElement(commitInfos.getItems()).getTimeStamp());
+	}
+	
 	private void createCodeSystem(final String shortName, final String oid, final String comment) {
 		createCodeSystem(shortName, oid, comment, USER_ID);
 	}
@@ -177,6 +188,20 @@ public class CommitInfoRequestTest {
 			.build("snomedStore", IBranchPath.MAIN_BRANCH, userId, comment)
 			.execute(bus)
 			.getSync();
+	}
+	
+	private CommitInfo getCommitInfoByComment(final String comment) {
+		final CommitInfos commitInfos = RepositoryRequests
+				.commitInfos()
+				.prepareSearchCommitInfo()
+				.filterByComment(comment)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
+		
+		assertEquals(commitInfos.getTotal(), 1);
+		
+		return Iterables.getOnlyElement(commitInfos);
 	}
 
 }
