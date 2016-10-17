@@ -15,21 +15,25 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -251,15 +255,41 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void deleteRelationshipOnNestedBranch() {
 		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
+		
+		List<String> typeIds = newArrayList();
+		List<String> relationshipIds = newArrayList();
+		Map<?, ?> requestBody;
+		
+		for (int i = 0; i < 10; i++) {
+			requestBody = givenConceptRequestBody(null, Concepts.CONCEPT_MODEL_ATTRIBUTE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+			final String typeId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
+			typeIds.add(typeId);
+		}
+			
+		for (int i = 0; i < 10; i++) {
+			requestBody = givenRelationshipRequestBody(DISEASE, typeIds.get(i), FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on " + testBranchPath.getPath());
+			final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);
+			relationshipIds.add(relationshipId);
+		}
+		
+		// New relationship on nested branch resets the concept's version to 1 again
 		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
-
+		requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on " + nestedBranchPath.getPath());
+		assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);
+		
+		// Deleting a relationship from the middle
+		final String relationshipId = relationshipIds.remove(7);
+		
+		assertRelationshipCanBeDeleted(testBranchPath, relationshipId);
+		assertRelationshipNotExists(testBranchPath, relationshipId);
+		
 		assertRelationshipCanBeDeleted(nestedBranchPath, relationshipId);
 		assertRelationshipNotExists(nestedBranchPath, relationshipId);
-		assertRelationshipNotExists(nestedBranchPath.getParent(), relationshipId);
-		assertRelationshipNotExists(nestedBranchPath.getParent().getParent(), relationshipId);
-		assertRelationshipNotExists(nestedBranchPath.getParent().getParent().getParent(), relationshipId);
+		
+		for (String remainingId : relationshipIds) {
+			assertRelationshipExists(testBranchPath, remainingId);
+			assertRelationshipExists(nestedBranchPath, remainingId);
+		}
 	}
 	
 	@Test

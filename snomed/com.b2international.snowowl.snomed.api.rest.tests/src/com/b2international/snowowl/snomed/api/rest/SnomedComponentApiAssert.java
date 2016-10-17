@@ -147,7 +147,7 @@ public abstract class SnomedComponentApiAssert {
 	 * @param componentId the expected component identifier
 	 * @param expand expansion parameters
 	 */
-	public static ValidatableResponse assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String...expand) {
+	public static ValidatableResponse assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String... expand) {
 		return assertComponentReadWithStatus(branchPath, componentType, componentId, 200, expand);
 	}
 
@@ -158,8 +158,8 @@ public abstract class SnomedComponentApiAssert {
 	 * @param componentType the expected component type
 	 * @param componentId the expected component identifier
 	 */
-	public static void assertComponentNotExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
-		assertComponentReadWithStatus(branchPath, componentType, componentId, 404);
+	public static void assertComponentNotExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String... expand) {
+		assertComponentReadWithStatus(branchPath, componentType, componentId, 404, expand);
 	}
 
 	private static Response whenCreatingComponent(final IBranchPath branchPath, 
