@@ -167,7 +167,19 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			}
 		}
 		
-		// TODO reindex remaining new/changed reference sets
+		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+				.where(SnomedConceptDocument.Expressions.ids(newAndDirtyRefSetsById.keySet()))
+				.limit(newAndDirtyRefSetsById.keySet().size())
+				.build();
+		final Hits<SnomedConceptDocument> newAndDirtyIdentifierConcepts = searcher.search(query);
+		for (final SnomedConceptDocument currentDoc : newAndDirtyIdentifierConcepts) {
+			final Builder doc = SnomedConceptDocument.builder(currentDoc);
+			final SnomedRefSet refSet = newAndDirtyRefSetsById.remove(currentDoc.getId());
+			if (refSet != null) {
+				doc.refSet(refSet);
+				indexChangedRevision(currentDoc.getStorageKey(), doc.build());
+			}
+		}
 		// TODO process deleted reference sets
 	}
 	
