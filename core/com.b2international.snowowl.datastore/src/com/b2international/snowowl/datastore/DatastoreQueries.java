@@ -33,13 +33,15 @@ public enum DatastoreQueries {
 			+ "WHERE COMMIT_TIME = ? "
 			+ "LIMIT 1 "),
 
-	SQL_GET_INDEX_AND_BRANCH_FOR_VALUE("SELECT "
-			+ "r.CDO_IDX, "
-			+ "r.CDO_BRANCH "
+	SQL_GET_INDEX_FOR_VALUE("SELECT "
+			+ "r.CDO_IDX "
 			+ "FROM %s r "
 			+ "WHERE r.CDO_VALUE = :cdoId "
+			+ "AND r.CDO_BRANCH = :containerBranchId "
 			+ "AND r.CDO_SOURCE = :containerId "
-			+ "AND (CDO_VERSION_REMOVED IS NULL OR CDO_VERSION_ADDED <= :versionMaxAdded) ");
+			+ "AND r.CDO_VERSION_ADDED <= :containerVersion "
+			+ "AND (r.CDO_VERSION_REMOVED IS NULL OR r.CDO_VERSION_REMOVED > :containerVersion)"
+			);
 
 	private final String query;
 
