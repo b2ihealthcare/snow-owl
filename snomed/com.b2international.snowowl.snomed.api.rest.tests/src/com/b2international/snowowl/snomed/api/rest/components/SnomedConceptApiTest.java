@@ -37,6 +37,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -355,4 +356,38 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.CONCEPT, dupRequestBody, 409);
 	}
 	
+	@Test
+	public void deleteConcept() {
+		givenBranchWithPath(testBranchPath);
+		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String conceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.CONCEPT, conceptId);
+		assertComponentNotExists(testBranchPath, SnomedComponentType.CONCEPT, conceptId);
+	}
+	
+	@Test
+	public void deleteConceptOnNestedBranch() {
+		givenBranchWithPath(testBranchPath);
+
+		Map<?, ?> requestBody;
+		String parentId = ROOT_CONCEPT;
+		
+		for (int i = 0; i < 10; i++) {
+			requestBody = givenConceptRequestBody(null, parentId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+			parentId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
+		}
+
+		// New component on nested branch resets the container's version to 1 again
+		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "A", "B");
+		requestBody = givenConceptRequestBody(null, parentId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		assertComponentCreated(nestedBranchPath, SnomedComponentType.CONCEPT, requestBody);
+
+		// Deleting the last concept in the chain
+		assertComponentCanBeDeleted(testBranchPath, SnomedComponentType.CONCEPT, parentId);
+		assertComponentNotExists(testBranchPath, SnomedComponentType.CONCEPT, parentId);
+
+		// Should still exist on the nested branch, and be possible to remove
+		assertComponentCanBeDeleted(nestedBranchPath, SnomedComponentType.CONCEPT, parentId);
+		assertComponentNotExists(nestedBranchPath, SnomedComponentType.CONCEPT, parentId);
+	}
 }
