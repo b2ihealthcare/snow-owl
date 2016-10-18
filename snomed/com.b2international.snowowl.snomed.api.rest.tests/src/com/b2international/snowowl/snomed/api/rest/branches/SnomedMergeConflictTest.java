@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.SCT_API;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFailsWithConflict;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
@@ -30,6 +31,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -598,6 +600,106 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 				.build();
 		
 		assertThat(conflicts, hasItem(conflict));
+	}
+
+	@Test
+	public void changedInSourceAndTargetUnsetEffectiveTimeOnTargetShouldRebase() {
+		
+		init();
+	
+		assertRefsetMemberCreated(testBranchPath.getParent(), "M1");
+	
+		assertRefSetMemberExists(testBranchPath.getParent(), "M1");
+		assertRefSetMemberNotExists(testBranchPath, "M1");
+	
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", nullValue()).body("released", equalTo(false));
+		
+		String effectiveTime = EffectiveTimes.format(new Date(), DateFormats.SHORT);
+		
+		updateMemberEffectiveTime(testBranchPath.getParent(), symbolicNameMap.get("M1"), effectiveTime, true);
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", equalTo(effectiveTime)).body("released", equalTo(true));
+		
+		assertBranchCanBeRebased(testBranchPath, "rebase");
+		
+		assertRefSetMemberExists(testBranchPath.getParent(), "M1");
+		assertRefSetMemberExists(testBranchPath, "M1");
+		
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT));
+		calendar.add(Calendar.DATE, 1);
+		String newEffectiveTime = EffectiveTimes.format(calendar.getTime(), DateFormats.SHORT);
+		
+		updateMemberEffectiveTime(testBranchPath.getParent(), symbolicNameMap.get("M1"), newEffectiveTime, true);
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", equalTo(newEffectiveTime)).body("released", equalTo(true));
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", equalTo(effectiveTime)).body("released", equalTo(true));
+		
+		updateMemberEffectiveTime(testBranchPath, symbolicNameMap.get("M1"), "", true);
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", nullValue()).body("released", equalTo(true));
+		
+		assertBranchCanBeRebased(testBranchPath, "rebase");
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", nullValue()).body("released", equalTo(true));
+	
+	}
+
+	@Test
+	public void changedInSourceAndTargetUnsetEffectiveTimeOnSourceShouldRebase() {
+		
+		init();
+	
+		assertRefsetMemberCreated(testBranchPath.getParent(), "M1");
+	
+		assertRefSetMemberExists(testBranchPath.getParent(), "M1");
+		assertRefSetMemberNotExists(testBranchPath, "M1");
+	
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", nullValue()).body("released", equalTo(false));
+		
+		String effectiveTime = EffectiveTimes.format(new Date(), DateFormats.SHORT);
+		
+		updateMemberEffectiveTime(testBranchPath.getParent(), symbolicNameMap.get("M1"), effectiveTime, true);
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", equalTo(effectiveTime)).body("released", equalTo(true));
+		
+		assertBranchCanBeRebased(testBranchPath, "rebase");
+		
+		assertRefSetMemberExists(testBranchPath.getParent(), "M1");
+		assertRefSetMemberExists(testBranchPath, "M1");
+		
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT));
+		calendar.add(Calendar.DATE, 1);
+		String newEffectiveTime = EffectiveTimes.format(calendar.getTime(), DateFormats.SHORT);
+		
+		updateMemberEffectiveTime(testBranchPath, symbolicNameMap.get("M1"), newEffectiveTime, true);
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", equalTo(newEffectiveTime)).body("released", equalTo(true));
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", equalTo(effectiveTime)).body("released", equalTo(true));
+		
+		updateMemberEffectiveTime(testBranchPath.getParent(), symbolicNameMap.get("M1"), "", true);
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", nullValue()).body("released", equalTo(true));
+		
+		assertBranchCanBeRebased(testBranchPath, "rebase");
+		
+		givenAuthenticatedRequest(SCT_API).when().get("{path}/members/{memberId}", testBranchPath.getParent().getPath(), symbolicNameMap.get("M1"))
+		.then().assertThat().body("effectiveTime", nullValue()).body("released", equalTo(true));
+	
 	}
 	
 }
