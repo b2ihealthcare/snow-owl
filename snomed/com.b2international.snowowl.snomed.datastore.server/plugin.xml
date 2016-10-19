@@ -53,29 +53,6 @@
       </changeProcessorFactory>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.quickSearchContentProvider">
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedRefSetQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.SnomedRefSetQuickSearchProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedConceptQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.ui.quicksearch.ImagedSnomedConceptQuickSearchProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedRefSetQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.ui.quicksearch.ImagedSnomedRefSetQuickSearchProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedDescriptionQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.ui.quicksearch.ImagedSnomedDescriptionQuickSearchProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
-      </provider>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.server.eclassProvider">
       <provider
             class="com.b2international.snowowl.datastore.server.snomed.SnomedEClassProvider"
@@ -94,29 +71,6 @@
             class="com.b2international.snowowl.datastore.server.snomed.SnomedRepositoryInitializer"
             repositoryUuid="snomedStore">
       </initializer>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.server.quickSearchContentProvider">
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedConceptQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.SnomedConceptQuickSearchProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedRefSetQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.SnomedRefSetQuickSearchProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.DataTypeLabelQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.DataTypeLabelQuickSearchProvider"
-            terminologyComponentId="UNSPECIFIED">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.quicksearch.MissingSnomedComponentQuickSearchContentProvider"
-            quickSearchProviderId="com.b2international.snowowl.snomed.datastore.quicksearch.MissingComponentQuickSearchProvider"
-            terminologyComponentId="UNSPECIFIED">
-      </provider>      
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.versioningManager">
