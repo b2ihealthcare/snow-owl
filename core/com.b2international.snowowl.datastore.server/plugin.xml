@@ -4,7 +4,6 @@
 
    <extension-point id="historyInfo" name="History Info" schema="schema/historyInfo.exsd"/>
    <extension-point id="protocolFactory" name="Net4j Protocol Factory" schema="schema/protocolFactory.exsd"/>
-   <extension-point id="quickSearchContentProvider" name="quickSearchContentProvider" schema="schema/quickSearchContentProvider.exsd"/>
    <extension-point id="eclassProvider" name="eclassProvider" schema="schema/eclassProvider.exsd"/>
    <extension-point id="conflictProcessor" name="conflictProcessor" schema="schema/conflictProcessor.exsd"/>
    <extension-point id="repositoryInitializer" name="Repository Initializer" schema="schema/repositoryInitializer.exsd"/>
@@ -56,11 +55,6 @@
       <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.version.NodeTransformerServiceConfigJob"
             id="com.b2international.snowowl.datastore.server.version.NodeTransformerServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.quicksearch.QuickSearchServerServiceConfigJob"
-            id="com.b2international.snowowl.datastore.server.quicksearch.QuickSearchServerServiceConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
