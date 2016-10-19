@@ -60,6 +60,10 @@ public class SnomedIdentifierConfiguration {
 	
 	@JsonProperty(required = false)
 	private int maxIdGenerationAttempts = DEFAULT_ID_GENERATION_ATTEMPTS;
+
+	@Min(1)
+	@JsonProperty(value = "cisNumberOfReauthTries", required = false)
+	private int cisNumberOfReauthTries = 2;
 	
 	public IdGenerationStrategy getStrategy() {
 		return strategy;
@@ -149,4 +153,11 @@ public class SnomedIdentifierConfiguration {
 		this.maxIdGenerationAttempts = maxIdGenerationAttempts;
 	}
 
+	public void setCisNumberOfReauthTries(int cisNumberOfReauthTries) {
+		this.cisNumberOfReauthTries = cisNumberOfReauthTries;
+	}
+	
+	public int getCisNumberOfReauthTries() {
+		return cisNumberOfReauthTries;
+	}
 }

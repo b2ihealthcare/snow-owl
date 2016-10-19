@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
@@ -72,12 +74,13 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	private static final int BULK_GET_LIMIT = 3000;
 
 	private final long numberOfPollTries;
+	private final long numberOfReauthTries;
 	private final long timeBetweenPollTries;
 
 	private final String clientKey;
 	private final ObjectMapper mapper;
-	private final CisClient client;
 
+	private CisClient client;
 	private boolean disposed = false;
 
 	public CisSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final ISnomedIdentiferReservationService reservationService,
@@ -86,19 +89,22 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		this.clientKey = conf.getCisClientSoftwareKey();
 		this.numberOfPollTries = conf.getCisNumberOfPollTries();
 		this.timeBetweenPollTries = conf.getCisTimeBetweenPollTries();
+		this.numberOfReauthTries = conf.getCisNumberOfReauthTries();
 		this.mapper = mapper;
 		this.client = new CisClient(conf, mapper);
+
+		// Log in at startup, and keep the token as long as possible
+		login();
 	}
 
 	@Override
 	public String generate(String namespace, ComponentCategory category) {
 		HttpPost request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending %s ID generation request.", category.getDisplayName()));
 
-			request = httpPost(String.format("sct/generate?token=%s", token), createGenerationData(namespace, category));
+			request = httpPost(String.format("sct/generate?token=%s", getToken()), createGenerationData(namespace, category));
 			final String response = execute(request);
 			final String sctid = mapper.readValue(response, SctId.class).getSctid();
 
@@ -107,7 +113,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException("Exception while generating ID.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
@@ -120,30 +125,27 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		}
 
 		HttpPost request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending %s ID registration request.", componentId));
 
-			request = httpPost(String.format("sct/register?token=%s", token), createRegistrationData(componentId));
+			request = httpPost(String.format("sct/register?token=%s", getToken()), createRegistrationData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while registering ID.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
 	@Override
 	public String reserve(final String namespace, final ComponentCategory category) {
 		HttpPost request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending %s ID reservation request.", category.getDisplayName()));
 
-			request = httpPost(String.format("sct/reserve?token=%s", token), createReservationData(namespace, category));
+			request = httpPost(String.format("sct/reserve?token=%s", getToken()), createReservationData(namespace, category));
 			final String response = execute(request);
 			final String sctid = mapper.readValue(response, SctId.class).getSctid();
 
@@ -152,7 +154,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException("Exception while reserving ID.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
@@ -164,18 +165,16 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		}
 		
 		HttpPut request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending component ID %s deprecation request.", componentId));
 
-			request = httpPut(String.format("sct/deprecate?token=%s", token), createDeprecationData(componentId));
+			request = httpPut(String.format("sct/deprecate?token=%s", getToken()), createDeprecationData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while deprecating ID.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
@@ -187,18 +186,16 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		}
 
 		HttpPut request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending component ID %s release request.", componentId));
 
-			request = httpPut(String.format("sct/release?token=%s", token), createReleaseData(componentId));
+			request = httpPut(String.format("sct/release?token=%s", getToken()), createReleaseData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while releasing ID.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
@@ -210,30 +207,27 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		}
 		
 		HttpPut request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending component ID %s publication request.", componentId));
 
-			request = httpPut(String.format("sct/publish?token=%s", token), createPublishData(componentId));
+			request = httpPut(String.format("sct/publish?token=%s", getToken()), createPublishData(componentId));
 			execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while publishing ID.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
 	@Override
 	public SctId getSctId(final String componentId) {
 		HttpGet request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending component ID %s get request.", componentId));
 
-			request = httpGet(String.format("sct/ids/%s?token=%s", componentId, token));
+			request = httpGet(String.format("sct/ids/%s?token=%s", componentId, getToken()));
 			final String response = execute(request);
 
 			return mapper.readValue(response, SctId.class);
@@ -241,7 +235,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException("Exception while getting ID.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
@@ -250,22 +243,21 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		HttpPost bulkRequest = null;
 		HttpGet recordsRequest = null;
 
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending %s ID bulk generation request.", category.getDisplayName()));
 
-			bulkRequest = httpPost(String.format("sct/bulk/generate?token=%s", token),
+			bulkRequest = httpPost(String.format("sct/bulk/generate?token=%s", getToken()),
 					createBulkGenerationData(namespace, category, quantity));
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
-			final JobStatus status = pollJob(jobId, token);
+			final JobStatus status = pollJob(jobId, getToken());
 
 			if (JobStatus.FINISHED != status) {
 				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
-				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
+				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, getToken()));
 				final String recordsResponse = execute(recordsRequest);
 				final JsonNode[] records = mapper.readValue(recordsResponse, JsonNode[].class);
 
@@ -276,7 +268,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		} finally {
 			release(bulkRequest);
 			release(recordsRequest);
-			logout(token);
 		}
 	}
 
@@ -299,8 +290,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		HttpPost bulkRequest = null;
 		HttpGet recordsRequest = null;
 
-		final String token = login();
-
+		
 		String currentNamespace = null;
 		try {
 			for (String namespace : idsByNamespace.keySet()) {
@@ -309,7 +299,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
 					LOGGER.debug(String.format("Sending bulk registration request for namespace %s with size %d.", namespace, ids.size()));
 	
-					bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", token), createBulkRegistrationData(ids));
+					bulkRequest = httpPost(String.format("sct/bulk/register?token=%s", getToken()), createBulkRegistrationData(ids));
 					execute(bulkRequest);
 				}
 			}
@@ -318,7 +308,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		} finally {
 			release(bulkRequest);
 			release(recordsRequest);
-			logout(token);
 		}
 	}
 
@@ -327,22 +316,21 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		HttpPost bulkRequest = null;
 		HttpGet recordsRequest = null;
 
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug(String.format("Sending %s ID bulk reservation request.", category.getDisplayName()));
 
-			bulkRequest = httpPost(String.format("sct/bulk/reserve?token=%s", token),
+			bulkRequest = httpPost(String.format("sct/bulk/reserve?token=%s", getToken()),
 					createBulkReservationData(namespace, category, quantity));
 			final String bulkResponse = execute(bulkRequest);
 			final String jobId = mapper.readValue(bulkResponse, JsonNode.class).get("id").asText();
 
-			final JobStatus status = pollJob(jobId, token);
+			final JobStatus status = pollJob(jobId, getToken());
 
 			if (JobStatus.FINISHED != status) {
 				throw new SnowowlRuntimeException("Couldn't get records from bulk request.");
 			} else {
-				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, token));
+				recordsRequest = httpGet(String.format("bulk/jobs/%s/records?token=%s", jobId, getToken()));
 				final String recordsResponse = execute(recordsRequest);
 				final JsonNode[] records = mapper.readValue(recordsResponse, JsonNode[].class);
 
@@ -353,7 +341,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		} finally {
 			release(bulkRequest);
 			release(recordsRequest);
-			logout(token);
 		}
 	}
 
@@ -373,8 +360,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final Map<String, Set<String>> idsByNamespace = toNamespaceMap(componentIdsToDeprecate);
 		
 		HttpPut request = null;
-		final String token = login();
-
+		
 		String currentNamespace = null;
 		try {
 			for (String namespace : idsByNamespace.keySet()) {
@@ -383,7 +369,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
 					LOGGER.debug(String.format("Sending component ID bulk deprecation request for namespace %s with size %d.", namespace, ids.size()));
 	
-					request = httpPut(String.format("sct/bulk/deprecate?token=%s", token), createBulkDeprecationData(namespace, ids));
+					request = httpPut(String.format("sct/bulk/deprecate?token=%s", getToken()), createBulkDeprecationData(namespace, ids));
 					execute(request);
 				}
 			}
@@ -391,7 +377,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException(String.format("Exception while bulk deprecating IDs for namespace %s.", currentNamespace), e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
@@ -411,8 +396,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final Map<String, Set<String>> idsByNamespace = toNamespaceMap(componentIdsToRelease);
 
 		HttpPut request = null;
-		final String token = login();
-
+		
 		String currentNamespace = null;
 		try {
 			for (String namespace : idsByNamespace.keySet()) {
@@ -421,7 +405,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
 					LOGGER.debug(String.format("Sending component ID bulk release request for namespace %s with size %d.", namespace, ids.size()));
 	
-					request = httpPut(String.format("sct/bulk/release?token=%s", token), createBulkReleaseData(namespace, ids));
+					request = httpPut(String.format("sct/bulk/release?token=%s", getToken()), createBulkReleaseData(namespace, ids));
 					execute(request);
 				}
 			}
@@ -429,7 +413,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException(String.format("Exception while bulk releasing IDs for namespace %s.", currentNamespace), e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
@@ -450,8 +433,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		final Map<String, Set<String>> idsByNamespace = toNamespaceMap(componentIdsToPublish);
 
 		HttpPut request = null;
-		final String token = login();
-
+		
 		String currentNamespace = null;
 		try {
 			for (String namespace : idsByNamespace.keySet()) {
@@ -460,7 +442,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				for (final Collection<String> ids : Lists.partition(Lists.newArrayList(namespaceIds), BULK_LIMIT)) {
 					LOGGER.debug(String.format("Sending component ID bulk publication request for namespace %s with size %d.", namespace, ids.size()));
 					
-					request = httpPut(String.format("sct/bulk/publish?token=%s", token), createBulkPublishData(namespace, ids));
+					request = httpPut(String.format("sct/bulk/publish?token=%s", getToken()), createBulkPublishData(namespace, ids));
 					execute(request);
 				}
 			}
@@ -468,15 +450,13 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException(String.format("Exception while bulk publishing IDs for namespace %s.", currentNamespace), e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
 	@Override
 	public Collection<SctId> getSctIds(final Collection<String> componentIds) {
 		HttpGet request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug("Sending bulk component ID get request.");
 			final Collection<SctId> sctIds = Lists.newArrayList();
@@ -489,7 +469,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					builder.append(componentId);
 				}
 
-				request = httpGet(String.format("sct/bulk/ids/?token=%s&sctids=%s", token, builder.toString()));
+				request = httpGet(String.format("sct/bulk/ids/?token=%s&sctids=%s", getToken(), builder.toString()));
 				final String response = execute(request);
 				sctIds.addAll(Lists.newArrayList(mapper.readValue(response, SctId[].class)));
 			}
@@ -499,19 +479,17 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException("Exception while getting IDs.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 
 	@Override
 	public Collection<SctId> getSctIds() {
 		HttpGet request = null;
-		final String token = login();
-
+		
 		try {
 			LOGGER.debug("Sending component IDs get request.");
 
-			request = httpGet(String.format("sct/ids/?token=%s", token));
+			request = httpGet(String.format("sct/ids/?token=%s", getToken()));
 			final String response = execute(request);
 
 			return Lists.newArrayList(mapper.readValue(response, SctId[].class));
@@ -519,7 +497,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			throw new SnowowlRuntimeException("Exception while getting IDs.", e);
 		} finally {
 			release(request);
-			logout(token);
 		}
 	}
 	
@@ -528,13 +505,8 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		return false;
 	}
 
-	private String login() {
-		return client.login();
-	}
-
-	private void logout(final String token) {
-		if (null != token)
-			client.logout(token);
+	private void login() {
+		client.login();
 	}
 
 	private HttpGet httpGet(final String suffix) {
@@ -550,12 +522,33 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	private String execute(final HttpRequestBase request) {
-		return client.execute(request);
+		CisClientException last = null;
+		
+		for (long attempt = 0; attempt < numberOfReauthTries; attempt++) {
+			
+			try {
+				return client.execute(request);
+			} catch (CisClientException e) {
+				
+				if (e.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
+					last = e;
+					LOGGER.warn("Unauthorized response from CIS, retrying request ({} attempt(s) left).", numberOfReauthTries - attempt);
+					login();
+					// try again if any attempts left
+				} else {
+					throw new BadRequestException(e.getReasonPhrase());
+				}
+			}
+		}
+		
+		// rethrow the last captured exception otherwise
+		throw new BadRequestException(last.getReasonPhrase());
 	}
 
 	private void release(final HttpRequestBase request) {
-		if (null != request)
+		if (null != request) {
 			client.release(request);
+		}
 	}
 
 	private JobStatus pollJob(final String jobId, final String token) {
@@ -686,9 +679,12 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	@Override
 	public void dispose() {
 		if (null != client) {
+			client.logout();
 			client.close();
-			disposed = true;
+			client = null;
 		}
+
+		disposed = true;
 	}
 
 	@Override
@@ -696,4 +692,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		return disposed;
 	}
 
+	public String getToken() {
+		return client.getToken();
+	}
 }
