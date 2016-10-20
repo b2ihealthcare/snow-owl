@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
@@ -345,8 +344,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					preferredIn, 
 					acceptableIn,
 					namespace,
-					Collections3.toImmutableList(referringRefSets),
-					Collections3.toImmutableList(referringMappingRefSets));
+					referringRefSets,
+					referringMappingRefSets);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);

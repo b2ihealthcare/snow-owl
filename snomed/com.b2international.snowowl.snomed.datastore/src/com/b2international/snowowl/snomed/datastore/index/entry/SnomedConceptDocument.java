@@ -31,7 +31,6 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -350,8 +349,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					mapTargetComponentType,
 					refSetStorageKey,
 					structural,
-					Collections3.toImmutableList(referringRefSets),
-					Collections3.toImmutableList(referringMappingRefSets));
+					referringRefSets,
+					referringMappingRefSets);
 			
 			entry.doi = doi;
 			entry.setScore(score);

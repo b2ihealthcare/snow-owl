@@ -24,6 +24,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.collect.Lists;
 
 /**
  * @since 4.7
@@ -57,8 +58,8 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 	protected static abstract class SnomedComponentDocumentBuilder<B extends SnomedComponentDocumentBuilder<B>> extends SnomedDocumentBuilder<B> {
 		
 		protected String namespace;
-		protected List<String> referringRefSets;
-		protected List<String> referringMappingRefSets;
+		protected List<String> referringRefSets = Lists.newArrayList();
+		protected List<String> referringMappingRefSets = Lists.newArrayList();
 
 		@Override
 		public B id(String id) {

@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
@@ -319,8 +318,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					unionGroup, 
 					destinationNegated,
 					namespace,
-					Collections3.toImmutableList(referringRefSets),
-					Collections3.toImmutableList(referringMappingRefSets));
+					referringRefSets,
+					referringMappingRefSets);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
