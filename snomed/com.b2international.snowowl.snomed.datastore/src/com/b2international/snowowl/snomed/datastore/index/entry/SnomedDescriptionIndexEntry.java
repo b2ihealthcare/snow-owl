@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
@@ -50,10 +51,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
-import com.google.common.base.Splitter;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -61,7 +61,7 @@ import com.google.common.collect.Maps;
  */
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
-public final class SnomedDescriptionIndexEntry extends SnomedDocument {
+public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
 
@@ -145,7 +145,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 		}).toList();
 	}
 
-	public final static class Fields extends SnomedDocument.Fields {
+	public final static class Fields extends SnomedComponentDocument.Fields {
 		public static final String CONCEPT_ID = SnomedRf2Headers.FIELD_CONCEPT_ID;
 		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
 		public static final String CASE_SIGNIFICANCE_ID = SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID;
@@ -155,7 +155,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 	}
 	
-	public final static class Expressions extends SnomedDocument.Expressions {
+	public final static class Expressions extends SnomedComponentDocument.Expressions {
 		
 		private Expressions() {
 		}
@@ -243,7 +243,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
 
 		private String term;
 		private String conceptId;
@@ -328,7 +328,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 		public Builder label(String label) {
 			throw new IllegalStateException("Use term() builder method instead to set the label property");
 		}
-
+		
 		public SnomedDescriptionIndexEntry build() {
 			final SnomedDescriptionIndexEntry doc = new SnomedDescriptionIndexEntry(id,
 					term,
@@ -342,13 +342,18 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 					typeId,
 					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
-					preferredIn, acceptableIn);
+					preferredIn, 
+					acceptableIn,
+					namespace,
+					Collections3.toImmutableList(referringRefSets),
+					Collections3.toImmutableList(referringMappingRefSets));
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
 			doc.setReplacedIns(replacedIns);
 			doc.setSegmentId(segmentId);
+			
 			return doc;
 		}
 	}
@@ -377,9 +382,22 @@ public final class SnomedDescriptionIndexEntry extends SnomedDocument {
 			final String typeId,
 			final String typeLabel,
 			final String caseSignificanceId,
-			final Set<String> preferredIn, final Set<String> acceptableIn) {
-
-		super(id, label, typeId /* XXX: iconId is the same as typeId*/, moduleId, released, active, effectiveTime);
+			final Set<String> preferredIn, final Set<String> acceptableIn,
+			final String namespace,
+			final Collection<String> referringRefSets,
+			final Collection<String> referringMappingRefSets) {
+		
+		super(id,
+				label,
+				typeId /* XXX: iconId is the same as typeId*/,
+				moduleId,
+				released,
+				active,
+				effectiveTime,
+				namespace,
+				referringRefSets,
+				referringMappingRefSets);
+		
 		this.conceptId = checkNotNull(conceptId, "Description concept identifier may not be null.");
 		this.languageCode = checkNotNull(languageCode, "Description language code may not be null.");
 		this.term = checkNotNull(term, "Description term may not be null.");

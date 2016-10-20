@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
@@ -49,7 +50,7 @@ import com.google.common.collect.FluentIterable;
  */
 @Doc
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
-public final class SnomedRelationshipIndexEntry extends SnomedDocument implements IStatement<String> {
+public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument implements IStatement<String> {
 
 	private static final long serialVersionUID = -7873086925532169024L;
 
@@ -99,6 +100,24 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 				.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	}
 	
+	public static Builder builder(SnomedRelationshipIndexEntry input) {
+		return builder()
+				.storageKey(CDOIDUtils.asLong(input.cdoID()))
+				.id(input.getId())
+				.active(input.isActive())
+				.sourceId(input.getSourceId())
+				.typeId(input.getTypeId())
+				.destinationId(input.getDestinationId())
+				.characteristicTypeId(input.getCharacteristicType().getConceptId())
+				.group(input.getGroup())
+				.unionGroup(input.getUnionGroup())
+				.released(input.isReleased())
+				.modifierId(input.getModifierId())
+				.destinationNegated(input.isDestinationNegated())
+				.moduleId(input.getModuleId())
+				.effectiveTime(input.getEffectiveTime());
+	}
+	
 	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<ISnomedRelationship> relationships) {
 		return FluentIterable.from(relationships).transform(new Function<ISnomedRelationship, SnomedRelationshipIndexEntry>() {
 			@Override
@@ -108,7 +127,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 		}).toSet();
 	}
 	
-	public static final class Expressions extends SnomedDocument.Expressions {
+	public static final class Expressions extends SnomedComponentDocument.Expressions {
 		
 		private Expressions() {}
 		
@@ -208,7 +227,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 		
 	}
 	
-	public static final class Fields extends SnomedDocument.Fields {
+	public static final class Fields extends SnomedComponentDocument.Fields {
 		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
 		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
 		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
@@ -220,7 +239,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
 
 		private String sourceId;
 		private String typeId;
@@ -282,7 +301,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 			this.destinationNegated = destinationNegated;
 			return getSelf();
 		}
-
+		
 		public SnomedRelationshipIndexEntry build() {
 			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(id,
 					label,
@@ -297,7 +316,10 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 					modifierId, 
 					group, 
 					unionGroup, 
-					destinationNegated);
+					destinationNegated,
+					namespace,
+					Collections3.toImmutableList(referringRefSets),
+					Collections3.toImmutableList(referringMappingRefSets));
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
@@ -316,7 +338,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 	private final int group;
 	private final int unionGroup;
 	private final boolean destinationNegated;
-
+	
 	private SnomedRelationshipIndexEntry(final String id, 
 			final String label,
 			final String moduleId, 
@@ -330,7 +352,10 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 			final String modifierId,
 			final int group,
 			final int unionGroup,
-			final boolean destinationNegated) {
+			final boolean destinationNegated,
+			final String namespace,
+			final Collection<String> referringRefSets,
+			final Collection<String> referringMappingRefSets) {
 
 		super(id, 
 				label,
@@ -338,7 +363,10 @@ public final class SnomedRelationshipIndexEntry extends SnomedDocument implement
 				moduleId, 
 				released, 
 				active, 
-				effectiveTimeLong);
+				effectiveTimeLong,
+				namespace,
+				referringRefSets,
+				referringMappingRefSets);
 
 		checkArgument(group >= 0, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
 		checkArgument(unionGroup >= 0, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
