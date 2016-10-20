@@ -142,14 +142,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return match(Fields.STRUCTURAL, false);
 		}
 		
-		public static Expression referringRefSet(String referringRefSet) {
-			return exactMatch(Fields.REFERRING_REFSETS, referringRefSet);
-		}
-		
-		public static Expression referringMappingRefSet(String referringMappingRefSet) {
-			return exactMatch(Fields.REFERRING_MAPPING_REFSETS, referringMappingRefSet);
-		}
-		
 		public static Expression referringPredicate(String referringPredicate) {
 			return exactMatch(Fields.REFERRING_PREDICATES, referringPredicate);
 		}
@@ -170,8 +162,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String STRUCTURAL = "structural";
-		public static final String REFERRING_REFSETS = "referringRefSets";
-		public static final String REFERRING_MAPPING_REFSETS = "referringMappingRefSets";
 		public static final String DOI = "doi";
 	}
 	
@@ -246,8 +236,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private int referencedComponentType;
 		private int mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
-		private Collection<String> referringRefSets;
-		private Collection<String> referringMappingRefSets;
 		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 		private boolean structural = false;
 
@@ -346,16 +334,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
-		public Builder referringRefSets(Collection<String> referringRefSets) {
-			this.referringRefSets = referringRefSets;
-			return getSelf();
-		}
-		
-		public Builder referringMappingRefSets(Collection<String> referringMappingRefSets) {
-			this.referringMappingRefSets = referringMappingRefSets;
-			return getSelf();
-		}
-		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,
@@ -371,7 +349,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					referencedComponentType,
 					mapTargetComponentType,
 					refSetStorageKey,
-					structural);
+					structural,
+					Collections3.toImmutableList(referringRefSets),
+					Collections3.toImmutableList(referringMappingRefSets));
 			
 			entry.doi = doi;
 			entry.setScore(score);
@@ -397,9 +377,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				entry.statedAncestors = statedAncestors;
 			}
 			
-			entry.referringRefSets = Collections3.toImmutableSet(referringRefSets);
-			entry.referringMappingRefSets = Collections3.toImmutableSet(referringMappingRefSets);
-			
 			return entry;
 		}
 
@@ -418,8 +395,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private LongSet statedParents;
 	private LongSet statedAncestors;
 	private float doi;
-	private Collection<String> referringRefSets;
-	private Collection<String> referringMappingRefSets;
 
 	protected SnomedConceptDocument(final String id,
 			final String label,
@@ -435,9 +410,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final int referencedComponentType,
 			final int mapTargetComponentType,
 			final long refSetStorageKey,
-			final boolean structural) {
+			final boolean structural,
+			final Collection<String> referringRefSets,
+			final Collection<String> referringMappingRefSets) {
 
-		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace);
+		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
@@ -463,14 +440,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	
 	public float getDoi() {
 		return doi;
-	}
-	
-	public Collection<String> getReferringRefSets() {
-		return referringRefSets;
-	}
-	
-	public Collection<String> getReferringMappingRefSets() {
-		return referringMappingRefSets;
 	}
 	
 	/**
@@ -535,9 +504,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.add("ancestors", ancestors)
 				.add("statedParents", statedParents)
 				.add("statedAncestors", statedAncestors)
-				.add("doi", doi)
-				.add("referringRefSets", referringRefSets)
-				.add("referringMappingRefSets", referringMappingRefSets);
+				.add("doi", doi);
 	}
 
 }
