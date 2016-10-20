@@ -303,7 +303,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(member2);
 		
 		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(description.cdoID()),
-				SnomedDescriptionIndexEntry.builder(description).build());
+				SnomedDescriptionIndexEntry.builder(description).referringRefSets(Collections.singleton(referringRefSetId)).build());
 		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
 		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
 		
