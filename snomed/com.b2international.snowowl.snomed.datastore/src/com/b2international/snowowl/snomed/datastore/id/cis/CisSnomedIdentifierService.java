@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -29,6 +31,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -521,7 +524,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		return client.httpPut(suffix, data);
 	}
 
-	private String execute(final HttpRequestBase request) {
+	private String execute(final HttpRequestBase request) throws IOException {
 		CisClientException last = null;
 		
 		for (long attempt = 0; attempt < numberOfReauthTries; attempt++) {
@@ -534,14 +537,29 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					last = e;
 					LOGGER.warn("Unauthorized response from CIS, retrying request ({} attempt(s) left).", numberOfReauthTries - attempt);
 					login();
-					// try again if any attempts left
+					
+					// Update the corresponding query parameter in the request, then retry
+					try {
+
+						URI requestUri = request.getURI();
+						URI updatedUri = new URIBuilder(requestUri)
+								.setParameter("token", getToken())
+								.build();
+						
+						request.setURI(updatedUri);
+						request.reset();
+
+					} catch (URISyntaxException se) {
+						throw new IOException("Couldn't update authentication token.", se);
+					}
+					
 				} else {
 					throw new BadRequestException(e.getReasonPhrase());
 				}
 			}
 		}
 		
-		// rethrow the last captured exception otherwise
+		// Re-throw the last captured exception otherwise
 		throw new BadRequestException(last.getReasonPhrase());
 	}
 
