@@ -411,8 +411,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final int mapTargetComponentType,
 			final long refSetStorageKey,
 			final boolean structural,
-			final Collection<String> referringRefSets,
-			final Collection<String> referringMappingRefSets) {
+			final List<String> referringRefSets,
+			final List<String> referringMappingRefSets) {
 
 		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;

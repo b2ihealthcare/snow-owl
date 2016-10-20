@@ -18,7 +18,9 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.b2international.index.query.Expressions.exactMatch;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.base.Objects.ToStringHelper;
@@ -55,8 +57,8 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 	protected static abstract class SnomedComponentDocumentBuilder<B extends SnomedComponentDocumentBuilder<B>> extends SnomedDocumentBuilder<B> {
 		
 		protected String namespace;
-		protected Collection<String> referringRefSets;
-		protected Collection<String> referringMappingRefSets;
+		protected List<String> referringRefSets;
+		protected List<String> referringMappingRefSets;
 
 		@Override
 		public B id(String id) {
@@ -70,20 +72,20 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 		}
 		
 		public B referringRefSets(Collection<String> referringRefSets) {
-			this.referringRefSets = referringRefSets;
+			this.referringRefSets = Collections3.toImmutableList(referringRefSets);
 			return getSelf();
 		}
 		
 		public B referringMappingRefSets(Collection<String> referringMappingRefSets) {
-			this.referringMappingRefSets = referringMappingRefSets;
+			this.referringMappingRefSets = Collections3.toImmutableList(referringMappingRefSets);
 			return getSelf();
 		}
 		
 	}
 	
 	private final String namespace;
-	private final Collection<String> referringRefSets;
-	private final Collection<String> referringMappingRefSets;
+	private final List<String> referringRefSets;
+	private final List<String> referringMappingRefSets;
 	
 	SnomedComponentDocument(String id, 
 			String label, 
@@ -93,8 +95,8 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			boolean active,
 			long effectiveTime,
 			String namespace,
-			Collection<String> referringRefSets,
-			Collection<String> referringMappingRefSets) {
+			List<String> referringRefSets,
+			List<String> referringMappingRefSets) {
 		super(id, label, iconId, moduleId, released, active, effectiveTime);
 		this.namespace = namespace;
 		this.referringRefSets = referringRefSets;

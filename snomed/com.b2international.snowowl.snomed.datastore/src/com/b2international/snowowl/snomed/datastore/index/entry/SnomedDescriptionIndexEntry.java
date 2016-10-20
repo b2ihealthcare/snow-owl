@@ -384,8 +384,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			final String caseSignificanceId,
 			final Set<String> preferredIn, final Set<String> acceptableIn,
 			final String namespace,
-			final Collection<String> referringRefSets,
-			final Collection<String> referringMappingRefSets) {
+			final List<String> referringRefSets,
+			final List<String> referringMappingRefSets) {
 		
 		super(id,
 				label,

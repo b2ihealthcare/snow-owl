@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import com.b2international.commons.collections.Collections3;
@@ -354,8 +355,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			final int unionGroup,
 			final boolean destinationNegated,
 			final String namespace,
-			final Collection<String> referringRefSets,
-			final Collection<String> referringMappingRefSets) {
+			final List<String> referringRefSets,
+			final List<String> referringMappingRefSets) {
 
 		super(id, 
 				label,
