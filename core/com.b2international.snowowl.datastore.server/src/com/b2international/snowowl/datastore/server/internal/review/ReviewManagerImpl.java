@@ -307,11 +307,16 @@ public class ReviewManagerImpl implements ReviewManager {
 			for (Revision hit : hits) {
 				if (hit instanceof ContainerIdProvider) {
 					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
-					if (idProvider.isRoot() && idProvider.getContainerId() != null) {
-						newConcepts.add(idProvider.getContainerId());
+					final String containerId = idProvider.getContainerId();
+					if (idProvider.isRoot() && containerId != null) {
+						newConcepts.add(containerId);
 					}
 				}
 			}
+		}
+		
+		for (final Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
+			final Hits<? extends Revision> hits = compare.searchNew(Query.select(revisionType).where(Expressions.matchAll()).build());
 			// iterate over again and add non root ids
 			for (Revision hit : hits) {
 				if (hit instanceof ContainerIdProvider) {
@@ -341,17 +346,32 @@ public class ReviewManagerImpl implements ReviewManager {
 			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
 			for (Revision hit : hits) {
 				if (hit instanceof ContainerIdProvider) {
-					final String containerId = ((ContainerIdProvider) hit).getContainerId();
-					if (containerId != null) {
+					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
+					final String containerId = idProvider.getContainerId();
+					if (idProvider.isRoot() && containerId != null) {
 						deletedConcepts.add(containerId);
 					}
 				}
 			}
 		}
 		
+		for (final Class<? extends Revision> revisionType : compare.getDeletedRevisionTypes()) {
+			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
+			// iterate over again and add non root ids
+			for (Revision hit : hits) {
+				if (hit instanceof ContainerIdProvider) {
+					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
+					final String containerId = idProvider.getContainerId();
+					// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
+					if (containerId != null && !idProvider.isRoot() && !deletedConcepts.contains(containerId)) {
+						changedConcepts.add(containerId);
+					}
+				}
+			}
+		}
+		
 		final ConceptChangesImpl convertedChanges = new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
-		
-		
+
 		try {
 			getReview(id);
 			store.write(new IndexWrite<Void>() {
