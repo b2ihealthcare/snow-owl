@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 
+import java.util.Collection;
+
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.base.Objects.ToStringHelper;
@@ -34,15 +36,27 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			return exactMatch(Fields.NAMESPACE, namespace);
 		}
 		
+		public static Expression referringRefSet(String referringRefSet) {
+			return exactMatch(Fields.REFERRING_REFSETS, referringRefSet);
+		}
+		
+		public static Expression referringMappingRefSet(String referringMappingRefSet) {
+			return exactMatch(Fields.REFERRING_MAPPING_REFSETS, referringMappingRefSet);
+		}
+		
 	}
 
 	public static class Fields extends SnomedDocument.Fields {
 		public static final String NAMESPACE = "namespace";
+		public static final String REFERRING_REFSETS = "referringRefSets";
+		public static final String REFERRING_MAPPING_REFSETS = "referringMappingRefSets";
 	}
 	
 	protected static abstract class SnomedComponentDocumentBuilder<B extends SnomedComponentDocumentBuilder<B>> extends SnomedDocumentBuilder<B> {
 		
 		protected String namespace;
+		protected Collection<String> referringRefSets;
+		protected Collection<String> referringMappingRefSets;
 
 		@Override
 		public B id(String id) {
@@ -55,9 +69,21 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			return getSelf();
 		}
 		
+		public B referringRefSets(Collection<String> referringRefSets) {
+			this.referringRefSets = referringRefSets;
+			return getSelf();
+		}
+		
+		public B referringMappingRefSets(Collection<String> referringMappingRefSets) {
+			this.referringMappingRefSets = referringMappingRefSets;
+			return getSelf();
+		}
+		
 	}
 	
 	private final String namespace;
+	private final Collection<String> referringRefSets;
+	private final Collection<String> referringMappingRefSets;
 	
 	SnomedComponentDocument(String id, 
 			String label, 
@@ -66,19 +92,33 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			boolean released, 
 			boolean active,
 			long effectiveTime,
-			String namespace) {
+			String namespace,
+			Collection<String> referringRefSets,
+			Collection<String> referringMappingRefSets) {
 		super(id, label, iconId, moduleId, released, active, effectiveTime);
 		this.namespace = namespace;
+		this.referringRefSets = referringRefSets;
+		this.referringMappingRefSets = referringMappingRefSets;
 	}
 	
 	public final String getNamespace() {
 		return namespace;
 	}
 	
+	public Collection<String> getReferringRefSets() {
+		return referringRefSets;
+	}
+	
+	public Collection<String> getReferringMappingRefSets() {
+		return referringMappingRefSets;
+	}
+	
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("namespace", namespace);
+				.add("namespace", namespace)
+				.add("referringRefSets", referringRefSets)
+				.add("referringMappingRefSets", referringMappingRefSets);
 	}
 
 }
