@@ -15,15 +15,22 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collections;
+
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.Iterables;
 
 /**
@@ -71,6 +78,83 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(1, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void addNewMemberToExistingRelationship() {
+		final Relationship relationship = createRandomRelationship();
+		final String referringRefSetId = generateConceptId();
+		final SnomedRefSetMember member = createSimpleMember(relationship.getId(), referringRefSetId);
+		
+		registerExistingObject(relationship);
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(relationship.cdoID()),
+				SnomedRelationshipIndexEntry.builder(relationship).build());
+		registerNew(member);
+		
+		process(processor);
+		
+		final SnomedRelationshipIndexEntry expectedDoc = SnomedRelationshipIndexEntry
+				.builder(relationship)
+				.referringRefSets(Collections.singleton(referringRefSetId))
+				.build();
+		
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void deleteMemberOfRelationship() {
+		final Relationship relationship = createRandomRelationship();
+		final String referringRefSetId = generateConceptId();
+		final SnomedRefSetMember member = createSimpleMember(relationship.getId(), referringRefSetId);
+		
+		registerExistingObject(relationship);
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(relationship.cdoID()),
+				SnomedRelationshipIndexEntry.builder(relationship).build());
+		registerNew(member);
+		
+		process(processor);
+		
+		final SnomedRelationshipIndexEntry expectedDoc = SnomedRelationshipIndexEntry
+				.builder(relationship)
+				.build();
+		
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void deleteOneMemberFromMultipleMembersOfRelationship() {
+		final Relationship relationship = createRandomRelationship();
+		final String referringRefSetId = generateConceptId();
+		
+		final SnomedRefSetMember member1 = createSimpleMember(relationship.getId(), referringRefSetId);
+		final SnomedRefSetMember member2 = createSimpleMember(relationship.getId(), referringRefSetId);
+		
+		registerExistingObject(relationship);
+		registerNew(member1);
+		registerNew(member2);
+		
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(relationship.cdoID()),
+				SnomedRelationshipIndexEntry.builder(relationship).build());
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		
+		process(processor);
+		
+		final SnomedRelationshipIndexEntry expectedDoc = SnomedRelationshipIndexEntry
+				.builder(relationship)
+				.referringRefSets(Collections.singleton(referringRefSetId))
+				.build();
+		
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
 	}
 
 }

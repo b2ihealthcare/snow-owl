@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdenti
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collections;
 import java.util.Map.Entry;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.Iterables;
 
@@ -216,6 +218,106 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		final Entry<Class<? extends Revision>, Long> deletionEntry = Iterables.getOnlyElement(processor.getDeletions().entries());
 		assertEquals(SnomedDescriptionIndexEntry.class, deletionEntry.getKey());
 		assertEquals(CDOIDUtil.getLong(storageKey), deletionEntry.getValue().longValue());
+	}
+	
+	@Test
+	public void addNewMemberToNewDescription() {
+		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final String referringRefSetId = generateConceptId();
+		final SnomedRefSetMember member = createSimpleMember(description.getId(), referringRefSetId);
+		
+		registerNew(description);
+		registerNew(member);
+		
+		process(processor);
+		
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
+				.builder(description)
+				.referringRefSets(Collections.singleton(referringRefSetId))
+				.build();
+		
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
+		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void addNewMemberToExistingDescription() {
+		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final String referringRefSetId = generateConceptId();
+		final SnomedRefSetMember member = createSimpleMember(description.getId(), referringRefSetId);
+		
+		registerExistingObject(description);
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(description.cdoID()),
+				SnomedDescriptionIndexEntry.builder(description).build());
+		registerNew(member);
+		
+		process(processor);
+		
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
+				.builder(description)
+				.referringRefSets(Collections.singleton(referringRefSetId))
+				.build();
+		
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void deleteMemberOfDescription() {
+		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final String referringRefSetId = generateConceptId();
+		final SnomedRefSetMember member = createSimpleMember(description.getId(), referringRefSetId);
+		
+		registerExistingObject(description);
+		registerExistingObject(member);
+		
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(description.cdoID()),
+				SnomedDescriptionIndexEntry.builder(description).build());
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		
+		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
+				.builder(description)
+				.build();
+		
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void deleteOneMemberFromMultipleMembersOfDescription() {
+		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final String referringRefSetId = generateConceptId();
+		final SnomedRefSetMember member1 = createSimpleMember(description.getId(), referringRefSetId);
+		final SnomedRefSetMember member2 = createSimpleMember(description.getId(), referringRefSetId);
+		
+		registerExistingObject(description);
+		registerExistingObject(member1);
+		registerExistingObject(member2);
+		
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(description.cdoID()),
+				SnomedDescriptionIndexEntry.builder(description).build());
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		
+		registerDetached(member1.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		
+		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
+				.builder(description)
+				.referringRefSets(Collections.singleton(referringRefSetId))
+				.build();
+		
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expectedDoc, currentDoc);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
 	}
 	
 	// Fixture helpers

@@ -368,6 +368,38 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	}
 	
 	@Test
+	public void deleteOneMemberFromMultipleMembersOfConcept() {
+		final String conceptId = generateConceptId();
+		final String referringReferenceSetId = generateConceptId();
+		
+		final Concept concept = createConcept(conceptId);
+		final SnomedRefSetMember member1 = createSimpleMember(conceptId, referringReferenceSetId);
+		final SnomedRefSetMember member2 = createSimpleMember(conceptId, referringReferenceSetId);
+		
+		registerExistingObject(concept);
+		registerExistingObject(member1);
+		registerExistingObject(member2);
+		
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+				.referringRefSets(ImmutableSet.of(referringReferenceSetId))
+				.build());
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
+		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		
+		registerDetached(member1.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		// the concept needs to be reindexed with the referring member value
+		final SnomedConceptDocument expected = doc(concept).referringRefSets(Collections.singleton(referringReferenceSetId)).build();
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
 	public void deleteSimpleMapMemberOfConcept() throws Exception {
 		final String conceptId = generateConceptId();
 		final String referringMappingReferenceSetId = generateConceptId();
