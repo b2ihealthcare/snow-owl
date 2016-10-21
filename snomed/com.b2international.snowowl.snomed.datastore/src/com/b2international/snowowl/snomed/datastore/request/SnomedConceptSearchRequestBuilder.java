@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 /**
  * @since 4.5
  */
-public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
+public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
 
 	SnomedConceptSearchRequestBuilder() {}
 

@@ -60,7 +60,7 @@ import com.google.common.collect.ImmutableMultimap;
 /**
  * @since 4.5
  */
-final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDescriptions> {
+final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<SnomedDescriptions> {
 
 	enum OptionKey {
 		TERM,
@@ -131,6 +131,7 @@ final class SnomedDescriptionSearchRequest extends SnomedSearchRequest<SnomedDes
 		addComponentIdFilter(queryBuilder);
 		addLocaleFilter(context, queryBuilder, languageRefSetId);
 		addLanguageFilter(queryBuilder);
+		addActiveMemberOfClause(queryBuilder);
 		addEscgFilter(context, queryBuilder, OptionKey.CONCEPT_ESCG, new Function<LongSet, Expression>() {
 			@Override
 			public Expression apply(LongSet input) {
