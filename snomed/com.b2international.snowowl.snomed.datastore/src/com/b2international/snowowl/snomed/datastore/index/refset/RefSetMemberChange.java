@@ -89,4 +89,9 @@ public class RefSetMemberChange implements Comparable<RefSetMemberChange> {
 	public int compareTo(final RefSetMemberChange o) {
 		return changeKind.compareTo(o.changeKind);
 	}
+	
+	public boolean isMap() {
+		return type == SnomedRefSetType.SIMPLE_MAP || type == SnomedRefSetType.COMPLEX_MAP || type == SnomedRefSetType.EXTENDED_MAP;
+	}
+	
 }

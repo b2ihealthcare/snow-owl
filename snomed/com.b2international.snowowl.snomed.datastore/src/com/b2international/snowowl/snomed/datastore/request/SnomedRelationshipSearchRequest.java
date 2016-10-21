@@ -36,7 +36,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 /**
  * @since 4.5
  */
-final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRelationships> {
+final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest<SnomedRelationships> {
 
 	enum OptionKey {
 		SOURCE,
@@ -58,6 +58,7 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
+		addActiveMemberOfClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TYPE)) {
 			queryBuilder.must(typeId(getString(OptionKey.TYPE)));

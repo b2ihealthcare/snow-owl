@@ -28,7 +28,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSea
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
+public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
 
 	SnomedDescriptionSearchRequestBuilder() {}
 	

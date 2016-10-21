@@ -29,6 +29,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -49,7 +50,7 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 	@Test
 	public void indexRelationship() throws Exception {
 		final SnomedRelationshipIndexEntry relationship = SnomedRelationshipIndexEntry.builder()
-				.id("1")
+				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())

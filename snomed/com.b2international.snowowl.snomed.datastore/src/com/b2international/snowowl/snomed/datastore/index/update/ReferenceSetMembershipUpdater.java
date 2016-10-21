@@ -18,8 +18,10 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import java.util.Collection;
 
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
@@ -29,57 +31,64 @@ import com.google.common.collect.Multiset;
 public class ReferenceSetMembershipUpdater {
 
 	private final Collection<String> currentReferringRefSets;
-	private final Collection<String> currentReferringMappingRefSets;
 	private final Collection<RefSetMemberChange> memberChanges;
-
-	public ReferenceSetMembershipUpdater(Collection<RefSetMemberChange> memberChanges, Collection<String> currentReferringRefSets, Collection<String> currentReferringMappingRefSets) {
+	private final Collection<String> currentReferringMappingRefSets;
+	
+	public ReferenceSetMembershipUpdater(final Collection<RefSetMemberChange> memberChanges,
+			final Collection<String> currentReferringRefSets, final Collection<String> currentReferringMappingRefSets) {
 		this.memberChanges = memberChanges;
 		this.currentReferringRefSets = currentReferringRefSets;
 		this.currentReferringMappingRefSets = currentReferringMappingRefSets;
 	}
-
+	
 	public void update(SnomedConceptDocument.Builder doc) {
 		// get reference set membership fields
 		final Multiset<String> referencingRefSetIds = HashMultiset.create(currentReferringRefSets);
-		// get reference set mapping membership fields
-		final Multiset<String> mappingReferencingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
-		
-		// merge reference set membership with the changes extracted from the transaction, if any.
-		for (final RefSetMemberChange change : memberChanges) {
-			switch (change.getChangeKind()) {
-				case ADDED:
-					if (SnomedRefSetType.SIMPLE.equals(change.getType()) || SnomedRefSetType.ATTRIBUTE_VALUE.equals(change.getType())) {
-						referencingRefSetIds.add(change.getRefSetId());
-					} else if (SnomedRefSetType.SIMPLE_MAP.equals(change.getType())) {
-						mappingReferencingRefSetIds.add(change.getRefSetId());
-					}
-					break;
-				case REMOVED:
-					break;
-				default:
-					throw new IllegalArgumentException("Unknown reference set member change kind: " + change.getChangeKind());
-			}
-		}
-
-		for (final RefSetMemberChange change : memberChanges) {
-			switch (change.getChangeKind()) {
-				case ADDED:
-					break;
-				case REMOVED:
-					if (SnomedRefSetType.SIMPLE.equals(change.getType()) || SnomedRefSetType.ATTRIBUTE_VALUE.equals(change.getType())) {
-						referencingRefSetIds.remove(change.getRefSetId());
-					} else if (SnomedRefSetType.SIMPLE_MAP.equals(change.getType())) {
-						mappingReferencingRefSetIds.remove(change.getRefSetId());
-					}
-					break;
-				default:
-					throw new IllegalArgumentException("Unknown reference set member change kind: " + change.getChangeKind());
-			}
-		}
-		
+		final Multiset<String> referencingMappingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
+		processReferencingRefSetIds(referencingRefSetIds, referencingMappingRefSetIds);
 		// re-add reference set membership fields
 		doc.referringRefSets(referencingRefSetIds);
-		// re-add mapping reference set membership fields
-		doc.referringMappingRefSets(mappingReferencingRefSetIds);
+		doc.referringMappingRefSets(referencingMappingRefSetIds);
 	}
+	
+	public void update(SnomedDescriptionIndexEntry.Builder doc) {
+		final Multiset<String> referencingRefSetIds = HashMultiset.create(currentReferringRefSets);
+		final Multiset<String> referencingMappingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
+		processReferencingRefSetIds(referencingRefSetIds, referencingMappingRefSetIds);
+		doc.referringRefSets(referencingRefSetIds);
+		doc.referringMappingRefSets(referencingMappingRefSetIds);
+	}
+	
+	public void update(SnomedRelationshipIndexEntry.Builder doc) {
+		final Multiset<String> referencingRefSetIds = HashMultiset.create(currentReferringRefSets);
+		final Multiset<String> referencingMappingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
+		processReferencingRefSetIds(referencingRefSetIds, referencingMappingRefSetIds);
+		doc.referringRefSets(referencingRefSetIds);
+		doc.referringMappingRefSets(referencingMappingRefSetIds);
+	}
+	
+	private void processReferencingRefSetIds(final Multiset<String> referencingRefSetIds, final Multiset<String> referencingMappingRefSetIds) {
+		memberChanges
+			.stream()
+			.filter(c -> c.getChangeKind() == MemberChangeKind.ADDED)
+			.forEach(change -> {
+				if (change.isMap()) {
+					referencingMappingRefSetIds.add(change.getRefSetId());
+				} else {
+					referencingRefSetIds.add(change.getRefSetId());
+				}
+			});
+		
+		memberChanges
+			.stream()
+			.filter(c -> c.getChangeKind() == MemberChangeKind.REMOVED)
+			.forEach(change -> {
+				if (change.isMap()) {
+					referencingMappingRefSetIds.remove(change.getRefSetId());
+				} else {
+					referencingRefSetIds.remove(change.getRefSetId());
+				}
+			});
+	}
+
 }

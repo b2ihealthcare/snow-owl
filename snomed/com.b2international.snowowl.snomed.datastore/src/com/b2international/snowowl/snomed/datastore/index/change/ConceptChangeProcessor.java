@@ -53,6 +53,7 @@ import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -90,9 +91,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	private final ParentageUpdater stated;
 	private final Taxonomy statedTaxonomy;
 	private final Taxonomy inferredTaxonomy;
+	private final ReferringMemberChangeProcessor memberChangeProcessor;
 	
 	private Multimap<String, RefSetMemberChange> referringRefSets;
-
+	
 	public ConceptChangeProcessor(DoiData doiData, Collection<String> availableImages, Taxonomy statedTaxonomy, Taxonomy inferredTaxonomy) {
 		super("concept changes");
 		this.doiData = doiData;
@@ -101,6 +103,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		this.stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
 		this.statedTaxonomy = statedTaxonomy;
 		this.inferredTaxonomy = inferredTaxonomy;
+		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
 	}
 	
 	@Override
@@ -108,7 +111,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// process concept deletions first
 		deleteRevisions(SnomedConceptDocument.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT));
 		// collect member changes
-		this.referringRefSets = HashMultimap.create(new ConceptReferringMemberChangeProcessor().process(commitChangeSet, searcher));
+		this.referringRefSets = HashMultimap.create(memberChangeProcessor.process(commitChangeSet, searcher));
 
 		// collect new and dirty reference sets
 		final Map<String, SnomedRefSet> newAndDirtyRefSetsById = newHashMap(FluentIterable.from(Iterables.concat(commitChangeSet.getNewComponents(), commitChangeSet.getDirtyComponents()))
@@ -218,9 +221,12 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			inferred.update(id, doc);
 		}
 		
-		final Collection<String> currentReferringRefSets = currentVersion == null ? Collections.<String>emptySet() : currentVersion.getReferringRefSets();
-		final Collection<String> currentReferringMappingRefSets = currentVersion == null ? Collections.<String>emptySet() : currentVersion.getReferringMappingRefSets();
-		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets).update(doc);
+		final Collection<String> currentReferringRefSets = currentVersion == null ? Collections.<String> emptySet()
+				: currentVersion.getReferringRefSets();
+		final Collection<String> currentReferringMappingRefSets = currentVersion == null ? Collections.<String> emptySet()
+				: currentVersion.getReferringMappingRefSets();
+		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets)
+				.update(doc);
 	}
 
 	private long getEffectiveTime(Concept concept) {
