@@ -17,11 +17,14 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -50,22 +53,31 @@ final class ReferringMemberChangeProcessor {
 		final Multimap<String, RefSetMemberChange> memberChanges = HashMultimap.create();
 		
 		// process new members
-		process(commitChangeSet.getNewComponents(), memberChanges, (member) -> {
-			if (member.isActive()) {
-				addChange(memberChanges, member, MemberChangeKind.ADDED);
-			}
-			return null;
-		});
+		filterRefSetMembers(commitChangeSet.getNewComponents(), referencedComponentType)
+			.forEach((newMember) -> {
+				if (newMember.isActive()) {
+					addChange(memberChanges, newMember, MemberChangeKind.ADDED);
+				}
+			});
 		
 		// process dirty members
-		process(commitChangeSet.getDirtyComponents(), memberChanges, (member) -> {
-			if (member.isActive()) {
-				addChange(memberChanges, member, MemberChangeKind.ADDED);
-			} else {
-				addChange(memberChanges, member, MemberChangeKind.REMOVED);
-			}
-			return null;
-		});
+		filterRefSetMembers(commitChangeSet.getDirtyComponents(), referencedComponentType)
+			.forEach((dirtyMember) -> {
+				final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(dirtyMember.cdoID());
+				if (revisionDelta != null) {
+					final CDOFeatureDelta changeStatusDelta = revisionDelta.getFeatureDelta(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE);
+					if (changeStatusDelta instanceof CDOSetFeatureDelta) {
+						CDOSetFeatureDelta delta = (CDOSetFeatureDelta) changeStatusDelta;
+						final Boolean oldValue = (Boolean) delta.getOldValue();
+						final Boolean newValue = (Boolean) delta.getValue();
+						if (Boolean.TRUE == oldValue && Boolean.FALSE == newValue) {
+							addChange(memberChanges, dirtyMember, MemberChangeKind.REMOVED);
+						} else if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
+							addChange(memberChanges, dirtyMember, MemberChangeKind.ADDED);
+						}
+					}
+				}
+			});
 		
 		// process detached members
 		final Iterable<CDOID> detachedComponents = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
@@ -85,12 +97,11 @@ final class ReferringMemberChangeProcessor {
 		return memberChanges;
 	}
 	
-	private void process(final Collection<CDOObject> objects, final Multimap<String, RefSetMemberChange> memberChanges, final Function<SnomedRefSetMember, Void> addChange) {
-		objects.stream()
+	private static Stream<SnomedRefSetMember> filterRefSetMembers(final Collection<CDOObject> objects, short referencedComponentType) {
+		return objects.stream()
 			.filter(SnomedRefSetMember.class::isInstance)
 			.map(SnomedRefSetMember.class::cast)
-			.filter(member -> referencedComponentType == member.getReferencedComponentType())
-			.forEach(member -> addChange.apply(member));
+			.filter(member -> referencedComponentType == member.getReferencedComponentType());
 	}
 
 	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMember member, MemberChangeKind changeKind) {
