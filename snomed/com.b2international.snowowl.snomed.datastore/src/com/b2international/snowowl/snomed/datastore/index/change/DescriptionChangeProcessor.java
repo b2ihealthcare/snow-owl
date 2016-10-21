@@ -31,7 +31,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Description;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMem
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -83,10 +81,10 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				.stream(commitChangeSet.getDirtyComponents(Description.class).spliterator(), false)
 				.collect(Collectors.toMap(description -> description.getId(), description -> description));
 		
-		final Set<String> changedDescriptionIds = ImmutableSet.<String> builder()
-				.addAll(referringRefSets.keySet())
-				.addAll(changedDescriptionsById.keySet())
-				.build();
+		final Set<String> changedDescriptionIds = newHashSet(changedDescriptionsById.keySet());
+		final Set<String> referencedDescriptionIds = newHashSet(referringRefSets.keySet());
+		referencedDescriptionIds.removeAll(newDescriptionsById.keySet());
+		changedDescriptionIds.addAll(referencedDescriptionIds);
 		
 		// load the known descriptions 
 		final Query<SnomedDescriptionIndexEntry> query = Query.select(SnomedDescriptionIndexEntry.class)
@@ -122,16 +120,11 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				}
 				
 				final Description description = changedDescriptionsById.get(id);
-				final Builder doc = SnomedDescriptionIndexEntry.builder(currentDoc);
-				
+				final Builder doc;
 				if (description != null) {
-					doc.moduleId(description.getModule().getId())
-						.released(description.isReleased())
-						.active(description.isActive())
-						.caseSignificanceId(description.getCaseSignificance().getId())
-						.languageCode(description.getLanguageCode())
-						.effectiveTime(description.isSetEffectiveTime() 
-								? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+					doc = SnomedDescriptionIndexEntry.builder(description);
+				} else {
+					doc = SnomedDescriptionIndexEntry.builder(currentDoc);
 				}
 				
 				processChanges(id, doc, currentDoc, acceptabilityChangesByDescription.get(id), referringRefSets);

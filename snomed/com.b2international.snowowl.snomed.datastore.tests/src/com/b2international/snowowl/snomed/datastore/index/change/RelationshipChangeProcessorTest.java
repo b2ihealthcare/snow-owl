@@ -25,12 +25,12 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
@@ -58,6 +58,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	public void changedRelationship() throws Exception {
 		final Relationship relationship = createRandomRelationship();
 		registerDirty(relationship);
+		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()), SnomedRelationshipIndexEntry.builder(relationship).build());
 		
 		process(processor);
 		
@@ -87,7 +88,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedRefSetMember member = createSimpleMember(relationship.getId(), referringRefSetId);
 		
 		registerExistingObject(relationship);
-		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(relationship.cdoID()),
+		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
 				SnomedRelationshipIndexEntry.builder(relationship).build());
 		registerNew(member);
 		
@@ -105,15 +106,18 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	}
 	
 	@Test
-	public void deleteMemberOfRelationship() {
+	public void deleteMemberOfExistingRelationship() {
 		final Relationship relationship = createRandomRelationship();
 		final String referringRefSetId = generateConceptId();
 		final SnomedRefSetMember member = createSimpleMember(relationship.getId(), referringRefSetId);
 		
 		registerExistingObject(relationship);
-		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship).build());
-		registerNew(member);
+		registerExistingObject(member);
+		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
+				SnomedRelationshipIndexEntry.builder(relationship).referringRefSets(ImmutableList.of(referringRefSetId)).build());
+		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), 
+				SnomedRefSetMemberIndexEntry.builder(member).build());
+		registerDetached(member.cdoID(), member.eClass());
 		
 		process(processor);
 		
@@ -136,13 +140,15 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedRefSetMember member2 = createSimpleMember(relationship.getId(), referringRefSetId);
 		
 		registerExistingObject(relationship);
-		registerNew(member1);
-		registerNew(member2);
+		registerExistingObject(member1);
+		registerExistingObject(member2);
 		
-		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship).build());
-		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
-		indexRevision(RevisionBranch.MAIN_PATH, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
+				SnomedRelationshipIndexEntry.builder(relationship).referringRefSets(ImmutableList.of(referringRefSetId, referringRefSetId)).build());
+		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
+		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		
+		registerDetached(member1.cdoID(), member1.eClass());
 		
 		process(processor);
 		

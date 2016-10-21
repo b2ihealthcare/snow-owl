@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -26,7 +28,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Relationship;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
@@ -59,6 +59,10 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 		
 		deleteRevisions(SnomedRelationshipIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP));
 		
+		final Map<String, Relationship> newRelationshipsById = StreamSupport
+				.stream(commitChangeSet.getNewComponents(Relationship.class).spliterator(), false)
+				.collect(Collectors.toMap(relationship -> relationship.getId(), relationship -> relationship));
+		
 		for (Relationship relationship : commitChangeSet.getNewComponents(Relationship.class)) {
 			final Builder doc = SnomedRelationshipIndexEntry.builder(relationship);
 			indexNewRevision(relationship.cdoID(), doc.build());
@@ -68,10 +72,10 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 				.stream(commitChangeSet.getDirtyComponents(Relationship.class).spliterator(), false)
 				.collect(Collectors.toMap(relationship -> relationship.getId(), relationship -> relationship));
 		
-		final Set<String> changedRelationshipIds = ImmutableSet.<String> builder()
-				.addAll(referringRefSets.keySet())
-				.addAll(changedRelationshipsById.keySet())
-				.build();
+		final Set<String> changedRelationshipIds = newHashSet(changedRelationshipsById.keySet());
+		final Set<String> referencedRelationshipIds = newHashSet(referringRefSets.keySet());
+		referencedRelationshipIds.removeAll(newRelationshipsById.keySet());
+		changedRelationshipIds.addAll(referencedRelationshipIds);
 		
 		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 				.where(SnomedRelationshipIndexEntry.Expressions.ids(changedRelationshipIds))
@@ -89,13 +93,11 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 			}
 			
 			final Relationship relationship = changedRelationshipsById.get(id);
-			final Builder doc = SnomedRelationshipIndexEntry.builder(currentDoc);
-
+			final Builder doc;
 			if (relationship != null) {
-				doc.active(relationship.isActive())
-					.released(relationship.isReleased())
-					.moduleId(relationship.getModule().getId())
-					.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+				doc = SnomedRelationshipIndexEntry.builder(relationship);
+			} else {
+				doc = SnomedRelationshipIndexEntry.builder(currentDoc);
 			}
 			
 			final Collection<String> currentReferringRefSets = currentDoc.getReferringRefSets();
