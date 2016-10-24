@@ -62,7 +62,7 @@ import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 /**
  * @since 4.5
  */
-final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcepts> {
+final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts> {
 
 	private static final float MIN_DOI_VALUE = 1.05f;
 	private static final float MAX_DOI_VALUE = 10288.383f;
@@ -148,6 +148,7 @@ final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcept
 		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
+		addActiveMemberOfClause(queryBuilder);
 		
 		if (containsKey(OptionKey.NAMESPACE)) {
 			queryBuilder.must(namespace(getString(OptionKey.NAMESPACE)));

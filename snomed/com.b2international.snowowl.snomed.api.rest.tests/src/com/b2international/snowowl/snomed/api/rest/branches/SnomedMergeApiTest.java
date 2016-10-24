@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -911,4 +912,19 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertDescriptionNotExists(childBranch, "D1");
 	}
 	
+	@Test
+	@Ignore("Currently always fails due to merge policy")
+	public void rebaseChangedConceptOnBranchDeletedOnParent() {
+		mergeNewConceptForward();
+
+		final Map<?, ?> changeOnBranch = ImmutableMap.builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status on parent")
+				.build();
+
+		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
+		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
+
+		assertBranchCanBeRebased(testBranchPath, "Rebase concept change over deletion");
+	}
 }

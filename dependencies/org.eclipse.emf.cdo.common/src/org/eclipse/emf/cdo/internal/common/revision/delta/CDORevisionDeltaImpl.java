@@ -41,6 +41,7 @@ import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.cdo.common.util.PartialCollectionLoadingNotSupportedException;
+import org.eclipse.emf.cdo.common.util.UnorderedListDifferenceAnalyzer;
 import org.eclipse.emf.cdo.internal.common.revision.CDOListImpl;
 import org.eclipse.emf.cdo.spi.common.revision.CDOReferenceAdjuster;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDOFeatureDelta;
@@ -319,65 +320,21 @@ public class CDORevisionDeltaImpl implements InternalCDORevisionDelta
         else
         {
           CDOListFeatureDelta listFeatureDelta = new CDOListFeatureDeltaImpl(feature);
-          final List<CDOFeatureDelta> changes = listFeatureDelta.getListChanges();
-
-          ListDifferenceAnalyzer analyzer = new ListDifferenceAnalyzer()
-          {
-            @Override
-            public void analyzeLists(EList<Object> oldList, EList<?> newList, EList<ListChange> listChanges)
-            {
-              checkNoProxies(oldList);
-              checkNoProxies(newList);
-              super.analyzeLists(oldList, newList, listChanges);
-            }
-
-            @Override
-            protected void createAddListChange(EList<Object> oldList, EList<ListChange> listChanges, Object value,
-                int index)
-            {
-              CDOFeatureDelta delta = new CDOAddFeatureDeltaImpl(feature, index, value);
-              changes.add(delta);
-              oldList.add(index, value);
-            }
-
-            @Override
-            protected void createRemoveListChange(EList<?> oldList, EList<ListChange> listChanges, Object value,
-                int index)
-            {
-              CDORemoveFeatureDeltaImpl delta = new CDORemoveFeatureDeltaImpl(feature, index);
-              // fix until ListDifferenceAnalyzer delivers the correct value (bug #308618).
-              delta.setValue(oldList.get(index));
-              changes.add(delta);
-              oldList.remove(index);
-            }
-
-            @Override
-            protected void createMoveListChange(EList<?> oldList, EList<ListChange> listChanges, Object value,
-                int index, int toIndex)
-            {
-              CDOMoveFeatureDeltaImpl delta = new CDOMoveFeatureDeltaImpl(feature, toIndex, index);
-              // fix until ListDifferenceAnalyzer delivers the correct value (same problem as bug #308618).
-              delta.setValue(oldList.get(index));
-              changes.add(delta);
-              oldList.move(toIndex, index);
-            }
-
-            private void checkNoProxies(EList<?> list)
-            {
-              for (Object element : list)
-              {
-                if (element instanceof CDOElementProxy || element == CDOListImpl.UNINITIALIZED)
-                {
-                  throw new PartialCollectionLoadingNotSupportedException("List contains proxy elements");
-                }
-              }
-            }
-          };
-
+          List<CDOFeatureDelta> changes = listFeatureDelta.getListChanges();
           CDOList originList = ((InternalCDORevision)originRevision).getList(feature);
           CDOList dirtyList = ((InternalCDORevision)dirtyRevision).getList(feature);
+          checkNoProxies(originList);
+          checkNoProxies(dirtyList);
 
-          analyzer.analyzeLists(originList, dirtyList, new NOOPList());
+          if (!feature.isOrdered())
+          {
+            compareUnorderedList(feature, originList, dirtyList, changes);
+          }
+          else
+          {
+            compareOrderedList(feature, originList, dirtyList, changes);
+          }
+
           if (!changes.isEmpty())
           {
             featureDeltas.put(feature, listFeatureDelta);
@@ -401,6 +358,84 @@ public class CDORevisionDeltaImpl implements InternalCDORevisionDelta
         }
       }
     }
+  }
+  
+  private void checkNoProxies(EList<?> list)
+  {
+    for (Object element : list)
+    {
+      if (element instanceof CDOElementProxy || element == CDOListImpl.UNINITIALIZED)
+      {
+        throw new PartialCollectionLoadingNotSupportedException("List contains proxy elements");
+      }
+    }
+  }
+
+  private void compareUnorderedList(final EStructuralFeature feature, final CDOList originList, final CDOList dirtyList, final List<CDOFeatureDelta> changes) 
+  {
+    final CDOListImpl oldListClone = new CDOListImpl(originList.size(), 0, false);
+    oldListClone.addAll(originList);
+      
+    final UnorderedListDifferenceAnalyzer analyzer = new UnorderedListDifferenceAnalyzer()
+    {
+      @Override
+      protected void createAddListChange(CDOList oldList, Object newObject, int index) 
+      {
+        CDOFeatureDelta delta = new CDOAddFeatureDeltaImpl(feature, index, newObject);
+        changes.add(delta);
+        super.createAddListChange(oldList, newObject, index);
+      }
+
+      @Override
+      protected void createRemoveListChange(CDOList oldList, Object oldObject, int index) 
+      {
+        CDORemoveFeatureDeltaImpl delta = new CDORemoveFeatureDeltaImpl(feature, index);
+        delta.setValue(oldObject);
+        changes.add(delta);
+        super.createRemoveListChange(oldList, oldObject, index);
+      }
+    };
+      
+    analyzer.createListChanges(oldListClone, dirtyList);
+  }
+
+  private void compareOrderedList(final EStructuralFeature feature, final CDOList originList, final CDOList dirtyList, final List<CDOFeatureDelta> changes) 
+  {
+    ListDifferenceAnalyzer analyzer = new ListDifferenceAnalyzer()
+    {
+      @Override
+      protected void createAddListChange(EList<Object> oldList, EList<ListChange> listChanges, Object value,
+          int index)
+      {
+        CDOFeatureDelta delta = new CDOAddFeatureDeltaImpl(feature, index, value);
+        changes.add(delta);
+        oldList.add(index, value);
+      }
+
+      @Override
+      protected void createRemoveListChange(EList<?> oldList, EList<ListChange> listChanges, Object value,
+          int index)
+      {
+        CDORemoveFeatureDeltaImpl delta = new CDORemoveFeatureDeltaImpl(feature, index);
+        // fix until ListDifferenceAnalyzer delivers the correct value (bug #308618).
+        delta.setValue(oldList.get(index));
+        changes.add(delta);
+        oldList.remove(index);
+      }
+
+      @Override
+      protected void createMoveListChange(EList<?> oldList, EList<ListChange> listChanges, Object value,
+          int index, int toIndex)
+      {
+        CDOMoveFeatureDeltaImpl delta = new CDOMoveFeatureDeltaImpl(feature, toIndex, index);
+        // fix until ListDifferenceAnalyzer delivers the correct value (same problem as bug #308618).
+        delta.setValue(oldList.get(index));
+        changes.add(delta);
+        oldList.move(toIndex, index);
+      }
+    };
+
+    analyzer.analyzeLists(originList, dirtyList, new NOOPList());
   }
 
   private boolean compare(Object originValue, Object dirtyValue)

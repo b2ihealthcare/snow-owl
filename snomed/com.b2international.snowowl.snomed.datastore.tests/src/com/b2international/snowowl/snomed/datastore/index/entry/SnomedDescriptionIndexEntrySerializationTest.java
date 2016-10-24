@@ -28,6 +28,7 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -48,7 +49,7 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 	@Test
 	public void indexDescription() throws Exception {
 		final SnomedDescriptionIndexEntry description = SnomedDescriptionIndexEntry.builder()
-				.id("1")
+				.id(RandomSnomedIdentiferGenerator.generateDescriptionId())
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())

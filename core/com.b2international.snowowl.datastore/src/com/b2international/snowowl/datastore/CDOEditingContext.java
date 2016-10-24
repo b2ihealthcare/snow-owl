@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,9 +37,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.CDORevisionManager;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOPushTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -56,7 +57,6 @@ import org.eclipse.xtext.util.Tuples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -78,6 +78,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 
 /**
  * This class is a thin, generic wrapper around the underlying {@link CDOTransaction}. 
@@ -138,48 +139,47 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			throw new RuntimeException("Argument tableName must not be null.");
 		}
 		
-		// params
 		final long cdoId = CDOIDUtil.getLong(cdoObject.cdoID());
 		final long containerId = CDOIDUtil.getLong(container.cdoID());
-		final int version = container.cdoRevision().getVersion();
+		final String sqlGetIndexFormatted = DatastoreQueries.SQL_GET_INDEX_FOR_VALUE.getQuery(tableName);
+		final CDORevisionManager revisionManager = container.cdoView().getSession().getRevisionManager();
 		
-		// query the resources table, to get the index directly
-		final String sqlGetIndexFormatted = DatastoreQueries.SQL_GET_INDEX_AND_BRANCH_FOR_VALUE.getQuery(tableName);
-		final CDOQuery query = transaction.createQuery("sql", sqlGetIndexFormatted);
-		query.setParameter(CDOQueryUtils.CDO_OBJECT_QUERY, false);
-		query.setParameter("cdoId", cdoId);
-		query.setParameter("containerId", containerId);
-		query.setParameter("versionMaxAdded", version);
-		// exec query
-		final List<Object[]> result = query.getResult(Object[].class);
-		// neither 0 nor more than 1 results are acceptable
-		if (result.size() <= 0) {			
-			throw new RuntimeException("Object not found in database. CDO ID: " + cdoObject.cdoID());
-		}
-		// search for the right row to delete
-		int index = -1;
-		for (final Object[] res : result) {
-			final int object_index = (Integer) res[0];
-			final int branch_id = (Integer) res[1];
+		CDOBranchPoint containerBranchPoint = container.cdoRevision();
+		int containerVersion;
+		
+		while (containerBranchPoint.getBranch() != null) {
+			final CDORevision visibleContainerRevision = revisionManager.getRevision(container.cdoID(), containerBranchPoint, 0, CDORevision.DEPTH_NONE, true);
 			
-			final Iterator<CDOBranch> itr = CDOUtils.bottomToTopIterator(getTransaction().getBranch());
-			Preconditions.checkState(!CompareUtils.isEmpty(itr), "Cannot traverse to ancestor branch.");
-			
-			while(itr.hasNext()) {
-				
-				final CDOBranch branch = itr.next();
-				if (branch.getID() == branch_id) {
-					index = object_index;
-					break;
-				}
-				
+			// If the retrieved revision is from MAIN, but we are currently on MAIN/A/B/C, we will not find any useful list mappings on interim children; skip these.
+			if (!containerBranchPoint.getBranch().equals(visibleContainerRevision.getBranch())) {
+				containerBranchPoint = visibleContainerRevision;	
 			}
 			
+			containerVersion = visibleContainerRevision.getVersion();
+			
+			final CDOQuery query = transaction.createQuery("sql", sqlGetIndexFormatted);
+			query.setParameter(CDOQueryUtils.CDO_OBJECT_QUERY, false);
+			query.setParameter("cdoId", cdoId);
+			query.setParameter("containerId", containerId);
+			query.setParameter("containerVersion", containerVersion);
+			query.setParameter("containerBranchId", containerBranchPoint.getBranch().getID());
+			
+			final List<Integer> result = query.getResult(Integer.class);
+			if (result.isEmpty()) {
+				// Try again on the parent branch base until we reach MAIN
+				containerBranchPoint = containerBranchPoint.getBranch().getBase();
+				continue;
+			} else if (result.size() > 1) {
+				throw new RuntimeException("Non-unique list mappping found for object. CDOID: " + cdoId + ", container CDOID: " + containerId);
+			} else {
+				// Found our list index
+				return Iterables.getOnlyElement(result);
+			}
 		}
-
-		return index;
+		
+		// Couldn't find it anywhere
+		return -1;
 	}
-
 	
 	public EObject lookup(final long storageKey) {
 		return transaction.getObject(CDOIDUtil.createLong(storageKey));
