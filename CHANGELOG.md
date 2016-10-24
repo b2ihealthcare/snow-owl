@@ -1,6 +1,33 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.3.0
+
+### Changed
+- SNOMED CT Concept, Description and Relationship index schema changes
+ * Added `referringRefSets` field to all three main SNOMED CT component documents
+ * Added `referringMappingRefSets` field to all three main SNOMED CT component documents
+ * Non-mapping reference set identifiers that reference a given component will be indexed in the `referringRefSets`
+ * Mapping reference set identifiers that reference a given component will be indexed in the `referringMappingRefSets`
+ * NOTE: to be able to use these fields reindex `snomedStore` repository using the `snowowl reindex snomedStore` command after dropping the index directory of it
+
+### Bugs
+- Fixed review change calculation bug, deleted components will mark their container component changed by default
+- Fixed bug with new/dirty reference set (re)indexing without concept changes
+- Handle unordered list index calculations properly during revision compare
+
+## 5.2.0
+
+### Added
+- New Java API to get/search commit information in a repository. See class `com.b2international.snowowl.datastore.request.CommitInfoRequests`. To make the new API work, you have to reindex your dataset using the `snowowl reindex` console command
+
+### Changed
+- SNOMED CT RF2 importer now uses the same change processing/indexing as regular commits 
+- Support DOI score indexing during change processing (aka when committing changes)
+
+### Bugs
+- Fixed incorrect calculation of stated/inferred parent/ancestor information on SNOMED CT Concept documents in case of status change
+
 ## 5.1.0
 
 ### Java 8 support
