@@ -227,6 +227,17 @@ public abstract class DelegatingRepository implements InternalRepository
   {
     return getDelegate().createBranch(branchID, branchInfo);
   }
+  
+  @Deprecated
+  public void deleteBranch(int branchID)
+  {
+    getDelegate().deleteBranch(branchID);
+  }
+  
+  public void renameBranch(int branchID, String newName)
+  {
+    getDelegate().renameBranch(branchID, newName);
+  }
 
   public BranchInfo loadBranch(int branchID)
   {
