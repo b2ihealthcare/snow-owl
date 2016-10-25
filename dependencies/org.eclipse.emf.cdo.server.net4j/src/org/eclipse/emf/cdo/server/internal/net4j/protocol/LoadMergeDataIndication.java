@@ -20,7 +20,7 @@ import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.spi.common.commit.CDORevisionAvailabilityInfo;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
-
+import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
@@ -49,7 +49,7 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
   /**
    * @since Snow Owl 2.6
    */
-	private String[] nsURIs;
+  private String[] nsURIs;
 
   public LoadMergeDataIndication(CDOServerProtocol protocol)
   {
@@ -65,7 +65,7 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
     nsURIs = new String[nsURISize];
     
     for (int i = 0; i < nsURISize; i++) {
-    	nsURIs[i] = in.readUTF();
+      nsURIs[i] = in.readUTF();
     }
     
     monitor.begin(infos);
@@ -125,60 +125,69 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
     try
     {
       final InternalRepository repository = getRepository();
-      final OMMonitor idsMonitor = monitor.fork();
-      
-      Set<CDOID> ids = runAsync(idsMonitor, new Callable<Set<CDOID>>() {
-		public Set<CDOID> call() throws Exception {
-			return repository.getMergeData(targetInfo, sourceInfo, targetBaseInfo, sourceBaseInfo, nsURIs, idsMonitor);
-		}
+      final Set<CDOID> ids = runAsync(monitor.fork(), new Callable<Set<CDOID>>() 
+      {
+        public Set<CDOID> call() throws Exception 
+        {
+          return repository.getMergeData(targetInfo, sourceInfo, targetBaseInfo, sourceBaseInfo, nsURIs, new Monitor());
+        }
       });
 
-      out.writeInt(ids.size());
-      for (CDOID id : ids)
+      runAsync(monitor.fork(), new Callable<Void>() 
       {
-        out.writeCDOID(id);
-      }
-
-      monitor.worked();
+        public Void call() throws Exception 
+        {
+          out.writeInt(ids.size());
+          for (CDOID id : ids)
+          {
+            out.writeCDOID(id);
+          }
+          return null;
+        }
+      });
 
       final Set<CDORevisionKey> writtenRevisions = new HashSet<CDORevisionKey>();
-      final OMMonitor targetInfoMonitor = monitor.fork();
       
-      runAsync(targetInfoMonitor, new Callable<Void>() {
-		public Void call() throws Exception {
-			writeRevisionAvailabilityInfo(out, targetInfo, writtenRevisions, targetInfoMonitor);
-			return null;
-		}
+      runAsync(monitor.fork(), new Callable<Void>() 
+      {
+        public Void call() throws Exception 
+        {
+          writeRevisionAvailabilityInfo(out, targetInfo, writtenRevisions, new Monitor());
+          return null;
+        }
       });
       
-      final OMMonitor sourceInfoMonitor = monitor.fork();
-      runAsync(sourceInfoMonitor, new Callable<Void>() {
-  		public Void call() throws Exception {
-  			writeRevisionAvailabilityInfo(out, sourceInfo, writtenRevisions, sourceInfoMonitor);
-  			return null;
-  		}
+      runAsync(monitor.fork(), new Callable<Void>() 
+      {
+        public Void call() throws Exception 
+        {
+          writeRevisionAvailabilityInfo(out, sourceInfo, writtenRevisions, new Monitor());
+          return null;
+        }
       });
 
       if (infos > 2)
       {
-    	  final OMMonitor targetBaseInfoMonitor = monitor.fork();
-          runAsync(targetBaseInfoMonitor, new Callable<Void>() {
-      		public Void call() throws Exception {
-      			writeRevisionAvailabilityInfo(out, targetBaseInfo, writtenRevisions, targetBaseInfoMonitor);
-      			return null;
-      		}
-          });
+        runAsync(monitor.fork(), new Callable<Void>() 
+        {
+          public Void call() throws Exception 
+          {
+            writeRevisionAvailabilityInfo(out, targetBaseInfo, writtenRevisions, new Monitor());
+            return null;
+          }
+        });
       }
 
       if (infos > 3)
       {
-    	  final OMMonitor sourceBaseInfoMonitor = monitor.fork();
-          runAsync(sourceBaseInfoMonitor, new Callable<Void>() {
-      		public Void call() throws Exception {
-      			writeRevisionAvailabilityInfo(out, sourceBaseInfo, writtenRevisions, sourceBaseInfoMonitor);
-      			return null;
-      		}
-          });
+        runAsync(monitor.fork(), new Callable<Void>() 
+        {
+          public Void call() throws Exception 
+          {
+            writeRevisionAvailabilityInfo(out, sourceBaseInfo, writtenRevisions, new Monitor());
+            return null;
+          }
+        });
       }
     }
     finally
@@ -188,15 +197,18 @@ public class LoadMergeDataIndication extends CDOServerReadIndicationWithMonitori
   }
   
   private <T> T runAsync(final OMMonitor monitor, final Callable<T> callable) throws Exception {
-	monitor.begin();
-	
-	final Async async = monitor.forkAsync();
-	
-	try {
-	  return callable.call();
-	} finally {
-		async.stop();
-	}
+    monitor.begin();
+  
+    final Async async = monitor.forkAsync();
+  
+    try 
+    {
+      return callable.call();
+    } 
+    finally 
+    {
+      async.stop();
+    }
   }
 
   private void writeRevisionAvailabilityInfo(final CDODataOutput out, CDORevisionAvailabilityInfo info,
