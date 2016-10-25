@@ -45,6 +45,11 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 50;
 
 	/**
+	 * Branch name prefix used for temporary branches during rebase.
+	 */
+	String TEMP_PREFIX = "$";
+	
+	/**
 	 * @since 4.2
 	 */
 	interface BranchNameValidator {
@@ -74,7 +79,7 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 			public BranchNameValidatorImpl(String allowedCharacterSet, int maximumLength) {
 				this.allowedCharacterSet = allowedCharacterSet;
 				this.maximumLength = maximumLength;
-				pattern = Pattern.compile(String.format("[%s]{1,%s}", allowedCharacterSet, maximumLength));
+				pattern = Pattern.compile(String.format("^(%s)?[%s]{1,%s}(_[0-9]{1,19})?$", Pattern.quote(TEMP_PREFIX), allowedCharacterSet, maximumLength));
 			}
 
 			@Override

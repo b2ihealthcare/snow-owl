@@ -16,6 +16,8 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
@@ -28,10 +30,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,7 +49,6 @@ import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
@@ -110,7 +111,6 @@ public class IssueSO2109Test {
 		when(repository.getIndex()).thenReturn(store);
 
 		manager = new CDOBranchManagerImpl(repository);
-
 	}
 
 	@After
@@ -123,9 +123,9 @@ public class IssueSO2109Test {
 
 		final InternalCDOBasedBranch child = (InternalCDOBasedBranch) manager.getMainBranch().createChild("a");
 
-		final long timeStamp = clock.getTimeStamp();
+		final long timestamp = clock.getTimeStamp();
 
-		revisionIndex.write(child.path(), timeStamp, new RevisionIndexWrite<Void>() {
+		revisionIndex.write(child.path(), timestamp, new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(final RevisionWriter write) throws IOException {
 				write.put(STORAGE_KEY, new Data(DATA_VALUE));
@@ -134,14 +134,15 @@ public class IssueSO2109Test {
 			}
 		});
 
-		manager.handleCommit(child, timeStamp);
+		final InternalCDOBasedBranch childWithChanges = (InternalCDOBasedBranch) manager.handleCommit(child, timestamp);
 
-		final Data actual = getData(child, STORAGE_KEY);
+		final Data actual = getData(childWithChanges.path(), STORAGE_KEY);
 
-		Assert.assertEquals(new Data(DATA_VALUE, STORAGE_KEY, child.path(), timeStamp, child.segmentId(), Collections.<Integer> emptyList()), actual);
+		assertEquals(new Data(DATA_VALUE, STORAGE_KEY, childWithChanges.path(), timestamp, childWithChanges.segmentId(),
+				Collections.<Integer> emptyList()), actual);
 
 		try {
-			manager.rebase(child, (InternalBranch) child.parent(), "commit message", new Runnable() {
+			manager.rebase(childWithChanges, (InternalBranch) childWithChanges.parent(), "commit message", new Runnable() {
 				@Override
 				public void run() {
 					throw new RuntimeException(INTERRUPT_MESSAGE);
@@ -153,14 +154,20 @@ public class IssueSO2109Test {
 			}
 		}
 
-		final Data dataAfterRebase = getData(child, STORAGE_KEY);
+		final Data dataAfterRebase = getData(child.path(), STORAGE_KEY);
 
-		Assert.assertNotNull("Data most not be null after failed rebase attempt", dataAfterRebase);
+		assertNotNull("Data most not be null after failed rebase attempt", dataAfterRebase);
+
+		final InternalCDOBasedBranch currentChild = (InternalCDOBasedBranch) manager.getBranch(child.path());
+
+		final CDOBranch currentCDOChild = manager.getCDOBranch(currentChild);
+
+		assertEquals(currentCDOChild.getPathName(), currentChild.path());
 
 	}
 
-	private Data getData(final Branch branch, final long storageKey) {
-		return revisionIndex.read(branch.path(), new RevisionIndexRead<Data>() {
+	private Data getData(final String path, final long storageKey) {
+		return revisionIndex.read(path, new RevisionIndexRead<Data>() {
 			@Override
 			public Data execute(final RevisionSearcher index) throws IOException {
 				return index.get(Data.class, storageKey);

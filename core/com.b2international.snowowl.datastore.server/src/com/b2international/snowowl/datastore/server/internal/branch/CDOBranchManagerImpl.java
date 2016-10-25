@@ -64,7 +64,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchReplicator {
 
-    private static final String CDO_BRANCH_ID = "cdoBranchId";
+	private static final String CDO_BRANCH_ID = "cdoBranchId";
+	private static final String TEMP_BRANCH_NAME_FORMAT = "%s%s_%s";
 
 	private final InternalRepository repository;
 	private final AtomicInteger segmentIds = new AtomicInteger(0);
@@ -144,17 +145,41 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 		CDOTransaction newTransaction = null;
 		
 		try {
-			testTransaction = applyChangeSet(branch, onTopOf, true);
-			final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
-			postReopen.run();
 			
 			if (branch.headTimestamp() > branch.baseTimestamp()) {
-				newTransaction = transferChangeSet(testTransaction, rebasedBranch);
-				 // Implicit notification (reopen & commit)
-				return commitChanges(branch, rebasedBranch, commitMessage, newTransaction);
+				
+				testTransaction = applyChangeSet(branch, onTopOf, true);
+				
+				final InternalCDOBasedBranch tmpBranch = (InternalCDOBasedBranch) reopen(onTopOf,
+						String.format(TEMP_BRANCH_NAME_FORMAT, Branch.TEMP_PREFIX, branch.name(), System.currentTimeMillis()), branch.metadata());
+				
+				postReopen.run();
+				
+				newTransaction = transferChangeSet(testTransaction, tmpBranch);
+				final InternalCDOBasedBranch tmpBranchWithChanges = (InternalCDOBasedBranch) commitChanges(branch, tmpBranch, commitMessage, newTransaction);
+				
+				final CDOBranchImpl rebasedBranch = new CDOBranchImpl(branch.name(), branch.parentPath(), tmpBranchWithChanges.baseTimestamp(), 
+						tmpBranchWithChanges.headTimestamp(), branch.metadata(), tmpBranchWithChanges.cdoBranchId(), 
+						tmpBranchWithChanges.segmentId(), tmpBranchWithChanges.segments(), tmpBranchWithChanges.parentSegments());
+				
+				final IndexWrite<Void> replace = prepareReplace(branch.getClass(), branch.path(), rebasedBranch);
+				
+				final CDOBranch rebasedCDOBranch = getCDOBranch(rebasedBranch);
+				rebasedCDOBranch.rename(branch.name());
+				
+				commit(replace);
+					
+				sendChangeEvent(branch.path()); // Explicit notification (reopen)
+				
+				return rebasedBranch;
+				
 			} else {
+
+				final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
+				postReopen.run();
 				sendChangeEvent(rebasedBranch.path()); // Explicit notification (reopen)
 				return rebasedBranch;
+				
 			}
 			
 		} finally {
@@ -162,6 +187,15 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 			LifecycleUtil.deactivate(newTransaction);
 		}
     }
+
+	private IndexWrite<Void> prepareReplace(Class<? extends InternalBranch> type, final String path, final InternalBranch value) {
+		return update(type, path, new Function<InternalBranch, InternalBranch>() {
+			@Override
+			public InternalBranch apply(InternalBranch input) {
+				return value;
+			}
+		});
+	}
     
     private CDOTransaction transferChangeSet(final CDOTransaction transaction, final InternalBranch rebasedBranch) {
 		final ICDOConnection connection = repository.getConnection();
