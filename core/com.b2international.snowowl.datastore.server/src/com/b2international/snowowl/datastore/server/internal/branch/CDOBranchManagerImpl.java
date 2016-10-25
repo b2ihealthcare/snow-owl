@@ -65,7 +65,6 @@ import com.google.common.collect.ImmutableSet;
 public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchReplicator {
 
 	private static final String CDO_BRANCH_ID = "cdoBranchId";
-	private static final String TEMP_BRANCH_NAME_FORMAT = "%s%s_%s";
 
 	private final InternalRepository repository;
 	private final AtomicInteger segmentIds = new AtomicInteger(0);
@@ -151,14 +150,14 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				testTransaction = applyChangeSet(branch, onTopOf, true);
 				
 				final InternalCDOBasedBranch tmpBranch = (InternalCDOBasedBranch) reopen(onTopOf,
-						String.format(TEMP_BRANCH_NAME_FORMAT, Branch.TEMP_PREFIX, branch.name(), System.currentTimeMillis()), branch.metadata());
+						String.format(Branch.TEMP_BRANCH_NAME_FORMAT, Branch.TEMP_PREFIX, branch.name(), System.currentTimeMillis()), branch.metadata());
 				
 				postReopen.run();
 				
 				newTransaction = transferChangeSet(testTransaction, tmpBranch);
 				final InternalCDOBasedBranch tmpBranchWithChanges = (InternalCDOBasedBranch) commitChanges(branch, tmpBranch, commitMessage, newTransaction);
 				
-				final CDOBranchImpl rebasedBranch = new CDOBranchImpl(branch.name(), branch.parentPath(), tmpBranchWithChanges.baseTimestamp(), 
+				final CDOBranchImpl rebasedBranch = new CDOBranchImpl(branch.name(), onTopOf.path(), tmpBranchWithChanges.baseTimestamp(), 
 						tmpBranchWithChanges.headTimestamp(), branch.metadata(), tmpBranchWithChanges.cdoBranchId(), 
 						tmpBranchWithChanges.segmentId(), tmpBranchWithChanges.segments(), tmpBranchWithChanges.parentSegments());
 				

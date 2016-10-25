@@ -50,6 +50,11 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	String TEMP_PREFIX = "$";
 	
 	/**
+	 * Temporary branch name format. Values are prefix, name, current time. 
+	 */
+	String TEMP_BRANCH_NAME_FORMAT = "%s%s_%s";
+	
+	/**
 	 * @since 4.2
 	 */
 	interface BranchNameValidator {
