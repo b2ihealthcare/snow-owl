@@ -11,6 +11,7 @@ IBM EPL in B2i plugins
 
 EPL
 * SerializableMultiStatus.java
+* RenameCDOBranchTest.java
 
 GNU LGPL
 * StatementMap.java
