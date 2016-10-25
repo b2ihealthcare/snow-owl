@@ -13,7 +13,8 @@ package org.eclipse.emf.cdo.internal.common.branch;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.branch.CDOBranchCreatedEvent;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.branch.CDOBranchHandler;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
@@ -70,13 +71,26 @@ public class CDOBranchManagerImpl extends Container<CDOBranch> implements Intern
     mainBranch = new CDOBranchImpl.Main(this, local, timeStamp);
   }
 
+  @Deprecated
   public void handleBranchCreated(InternalCDOBranch branch)
   {
-    CDOBranchPoint base = branch.getBase();
-    InternalCDOBranch baseBranch = (InternalCDOBranch)base.getBranch();
-    baseBranch.addChild(branch);
+    handleBranchChanged(branch, ChangeKind.CREATED);
+  }
 
-    fireEvent(new BranchCreatedEvent(branch));
+  public void handleBranchChanged(InternalCDOBranch branch, ChangeKind changeKind)
+  {
+    if (changeKind == ChangeKind.CREATED)
+    {
+      CDOBranchPoint base = branch.getBase();
+      InternalCDOBranch baseBranch = (InternalCDOBranch)base.getBranch();
+      baseBranch.addChild(branch);
+
+      fireEvent(new BranchCreatedEvent(branch));
+    }
+    else
+    {
+      fireEvent(new BranchChangedEvent(branch, changeKind));
+    }
   }
 
   public CDOBranch[] getElements()
@@ -213,6 +227,23 @@ public class CDOBranchManagerImpl extends Container<CDOBranch> implements Intern
     return new ReferenceValueMap.Soft<Integer, InternalCDOBranch>();
   }
 
+  public void renameBranch(CDOBranch branch, String newName)
+  {
+    checkActive();
+    if (branch.isMainBranch())
+    {
+      throw new IllegalArgumentException("Renaming of the MAIN branch is not supported");
+    }
+
+    if (!(branchLoader instanceof BranchLoader2))
+    {
+      throw new UnsupportedOperationException("Branch renaming is not supported by " + this);
+    }
+
+    ((BranchLoader2)branchLoader).renameBranch(branch.getID(), newName);
+    ((InternalCDOBranch)branch).setName(newName);
+  }
+
   @Override
   protected void doBeforeActivate() throws Exception
   {
@@ -224,16 +255,19 @@ public class CDOBranchManagerImpl extends Container<CDOBranch> implements Intern
   /**
    * @author Eike Stepper
    */
-  private static final class BranchCreatedEvent extends Event implements CDOBranchCreatedEvent
+  private static class BranchChangedEvent extends Event implements CDOBranchChangedEvent
   {
     private static final long serialVersionUID = 1L;
 
     private CDOBranch branch;
 
-    public BranchCreatedEvent(CDOBranch branch)
+    private ChangeKind changeKind;
+
+    public BranchChangedEvent(CDOBranch branch, ChangeKind changeKind)
     {
       super(branch.getBranchManager());
       this.branch = branch;
+      this.changeKind = changeKind;
     }
 
     @Override
@@ -245,6 +279,26 @@ public class CDOBranchManagerImpl extends Container<CDOBranch> implements Intern
     public CDOBranch getBranch()
     {
       return branch;
+    }
+
+    public ChangeKind getChangeKind()
+    {
+      return changeKind;
+    }
+  }
+
+  /**
+   * @author Eike Stepper
+   */
+  @Deprecated
+  private static final class BranchCreatedEvent extends BranchChangedEvent implements
+      org.eclipse.emf.cdo.common.branch.CDOBranchCreatedEvent
+  {
+    private static final long serialVersionUID = 1L;
+
+    public BranchCreatedEvent(CDOBranch branch)
+    {
+      super(branch, ChangeKind.CREATED);
     }
   }
 }

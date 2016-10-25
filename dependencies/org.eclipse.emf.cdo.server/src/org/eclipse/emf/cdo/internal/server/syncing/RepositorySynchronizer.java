@@ -15,7 +15,8 @@ import org.eclipse.emf.cdo.common.CDOCommonRepository.State;
 import org.eclipse.emf.cdo.common.CDOCommonSession.Options.LockNotificationMode;
 import org.eclipse.emf.cdo.common.CDOCommonSession.Options.PassiveUpdateMode;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.branch.CDOBranchCreatedEvent;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.lock.CDOLockChangeInfo;
@@ -298,10 +299,17 @@ public class RepositorySynchronizer extends QueueRunner implements InternalRepos
         return;
       }
 
-      if (event instanceof CDOBranchCreatedEvent)
+      if (event instanceof CDOBranchChangedEvent)
       {
-        CDOBranchCreatedEvent e = (CDOBranchCreatedEvent)event;
-        addWork(new BranchRunnable(e.getBranch()));
+        CDOBranchChangedEvent e = (CDOBranchChangedEvent)event;
+        if (e.getChangeKind() == ChangeKind.CREATED)
+        {
+          addWork(new BranchRunnable(e.getBranch()));
+        }
+        else
+        {
+          throw new UnsupportedOperationException("Branch renaming not supported: " + RepositorySynchronizer.this);
+        }
       }
       else if (event instanceof CDOSessionInvalidationEvent)
       {

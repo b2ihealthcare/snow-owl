@@ -121,6 +121,9 @@ public class CDODBSchema extends DBSchema
   public static final String SQL_LOAD_BRANCH = "SELECT " + BRANCHES_NAME + ", " + BRANCHES_BASE_BRANCH_ID + ", " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       + BRANCHES_BASE_TIMESTAMP + " FROM " + BRANCHES + " WHERE " + BRANCHES_ID + "=?"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
+  public static final String SQL_RENAME_BRANCH = "UPDATE " + BRANCHES + " SET " + BRANCHES_NAME + "=?" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      + " WHERE " + BRANCHES_ID + "=?"; //$NON-NLS-1$ //$NON-NLS-2$ 
+
   public static final String SQL_LOAD_SUB_BRANCHES = "SELECT " + BRANCHES_ID + ", " + BRANCHES_NAME + ", " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       + BRANCHES_BASE_TIMESTAMP + " FROM " + BRANCHES + " WHERE " + BRANCHES_BASE_BRANCH_ID + "=?"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 

@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchHandler;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
@@ -128,8 +129,17 @@ public class MockInternalCDOBranchManager implements InternalCDOBranchManager {
 		return delegate.createBranch(id, name, baseBranch, baseTimeStamp);
 	}
 
+	@Deprecated
 	public void handleBranchCreated(InternalCDOBranch branch) {
 		delegate.handleBranchCreated(branch);
+	}
+	
+	public void handleBranchChanged(InternalCDOBranch branch, ChangeKind changeKind) {
+		delegate.handleBranchChanged(branch, changeKind);
+	}
+	
+	public void renameBranch(CDOBranch branch, String newName) {
+		delegate.renameBranch(branch, newName);
 	}
 
 	public int getBranches(int startID, int endID, CDOBranchHandler handler) {
