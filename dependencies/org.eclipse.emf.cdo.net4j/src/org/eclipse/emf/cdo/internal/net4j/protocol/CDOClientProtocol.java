@@ -144,6 +144,17 @@ public class CDOClientProtocol extends SignalProtocol<CDOSession> implements CDO
     return send(new LoadBranchesRequest(this, startID, endID, handler));
   }
 
+  @Deprecated
+  public void deleteBranch(int branchID)
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  public void renameBranch(int branchID, String newName)
+  {
+    send(new RenameBranchRequest(this, branchID, newName));
+  }
+
   public void loadCommitInfos(CDOBranch branch, long startTime, long endTime, CDOCommitInfoHandler handler)
   {
     send(new LoadCommitInfosRequest(this, branch, startTime, endTime, handler));

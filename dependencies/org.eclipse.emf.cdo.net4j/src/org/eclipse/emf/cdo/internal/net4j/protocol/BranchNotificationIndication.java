@@ -12,6 +12,7 @@
 package org.eclipse.emf.cdo.internal.net4j.protocol;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.protocol.CDODataInput;
 import org.eclipse.emf.cdo.common.protocol.CDOProtocolConstants;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
@@ -33,8 +34,9 @@ public class BranchNotificationIndication extends CDOClientIndication
   protected void indicating(CDODataInput in) throws IOException
   {
     CDOBranch branch = in.readCDOBranch();
+    ChangeKind changeKind = in.readEnum(ChangeKind.class);
 
     InternalCDOBranchManager branchManager = getSession().getBranchManager();
-    branchManager.handleBranchCreated((InternalCDOBranch)branch);
+    branchManager.handleBranchChanged((InternalCDOBranch)branch, changeKind);
   }
 }

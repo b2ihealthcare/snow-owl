@@ -17,6 +17,7 @@ package org.eclipse.emf.cdo.internal.server;
 import org.eclipse.emf.cdo.common.CDOCommonRepository;
 import org.eclipse.emf.cdo.common.CDOCommonSession;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -390,11 +391,17 @@ public class Session extends Container<IView> implements InternalSession
     }
   }
 
+  @Deprecated
   public void sendBranchNotification(InternalCDOBranch branch) throws Exception
+  {
+    sendBranchNotification(branch, ChangeKind.CREATED);
+  }
+
+  public void sendBranchNotification(InternalCDOBranch branch, ChangeKind changeKind) throws Exception
   {
     if (protocol != null)
     {
-      protocol.sendBranchNotification(branch);
+      protocol.sendBranchNotification(branch, changeKind);
     }
   }
 

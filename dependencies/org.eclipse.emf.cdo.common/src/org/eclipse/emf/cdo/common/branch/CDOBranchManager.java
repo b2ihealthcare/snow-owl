@@ -22,7 +22,7 @@ import org.eclipse.net4j.util.event.INotifier;
  * <p>
  * A branch manager can fire the following events:
  * <ul>
- * <li> {@link CDOBranchCreatedEvent} after a new branch has been created.
+ * <li> {@link CDOBranchChangedEvent} after a new branch has been created, renamed or deleted.
  * </ul>
  * <p>
  * Branch managers are usually associated with the following entities:
@@ -37,7 +37,7 @@ import org.eclipse.net4j.util.event.INotifier;
  * @noimplement This interface is not intended to be implemented by clients.
  * @apiviz.landmark
  * @apiviz.has {@link CDOBranch} oneway - - mainBranch
- * @apiviz.uses {@link CDOBranchCreatedEvent} - - fires
+ * @apiviz.uses {@link CDOBranchChangedEvent} - - fires
  */
 public interface CDOBranchManager extends INotifier
 {

@@ -546,6 +546,29 @@ public class DelegatingSessionProtocol extends Lifecycle implements CDOSessionPr
     }
   }
 
+  @Deprecated
+  public void deleteBranch(int branchID)
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  public void renameBranch(int branchID, String newName)
+  {
+    int attempt = 0;
+    for (;;)
+    {
+      try
+      {
+        delegate.renameBranch(branchID, newName);
+        return;
+      }
+      catch (Exception ex)
+      {
+        handleException(++attempt, ex);
+      }
+    }
+  }
+
   public void loadCommitInfos(CDOBranch branch, long startTime, long endTime, CDOCommitInfoHandler handler)
   {
     int attempt = 0;
