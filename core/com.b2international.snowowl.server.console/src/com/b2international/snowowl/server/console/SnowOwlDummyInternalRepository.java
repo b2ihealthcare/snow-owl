@@ -760,6 +760,17 @@ public class SnowOwlDummyInternalRepository implements InternalSynchronizableRep
 	}
 
 	@Override
+	@Deprecated
+	public void deleteBranch(int branchID) {
+		return;
+	}
+	
+	@Override
+	public void renameBranch(int branchID, String newName) {
+		return;
+	}
+	
+	@Override
 	public BranchInfo loadBranch(int branchID) {
 		return null;
 	}

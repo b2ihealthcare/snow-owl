@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal;
 
 import org.eclipse.emf.cdo.common.CDOCommonRepository.State;
 import org.eclipse.emf.cdo.common.CDOCommonRepository.Type;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.CDOCommonSession;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -84,6 +85,11 @@ public final class ImpersonatingSessionProtocol implements ISessionProtocol {
 
 	@Override
 	public void sendBranchNotification(final InternalCDOBranch branch) throws Exception {
+		throw new UnsupportedOperationException("Not implemented.");
+	}
+	
+	@Override
+	public void sendBranchNotification(InternalCDOBranch branch, ChangeKind changeKind) throws Exception {
 		throw new UnsupportedOperationException("Not implemented.");
 	}
 
