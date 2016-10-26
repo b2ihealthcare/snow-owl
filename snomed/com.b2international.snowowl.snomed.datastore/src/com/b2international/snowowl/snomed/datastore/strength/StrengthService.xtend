@@ -71,9 +71,18 @@ class StrengthService implements IStrengthService {
 		ALLOWED_STRENGTH_SUFFIXES.fold(label, [c,n | c.replace(n, '')])
 	}
 	
+	
+	
+	
 	def private isSimpleType(Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
-		entries.size == 1 && 
-		entries.head.attributeLabel.endsWith(CD_NUMERATOR_VALUE)
+		val result = entries.forall[attributeLabel.endsWith(CD_NUMERATOR_VALUE)]
+		
+		if (entries.size > 1 && result) {
+			println ("found invalid concrete domain:")
+			entries.forEach[entry | println ("characteristicType:" + entry.characteristicTypeId + "; referencedComponent: " + entry.referencedComponentId + " UUID: " + entry.id)]
+		}
+		
+		return result;
 	}
 	
 	def private isSimpleRangeType(Collection<SnomedConcreteDataTypeRefSetMemberIndexEntry> entries) {
