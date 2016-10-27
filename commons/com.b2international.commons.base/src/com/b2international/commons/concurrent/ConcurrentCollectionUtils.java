@@ -31,6 +31,7 @@ import com.b2international.commons.collections.Procedure;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 
@@ -140,6 +141,70 @@ public class ConcurrentCollectionUtils {
 		};
 	}
 	
+	/**
+	 * Applies the specified function concurrently to each item of the source iterator in a non sequential manner. 
+	 * The underlying {@link Iterator} implementation reads ahead in the source iterator and distributes the task of 
+	 * evaluating the predicate to a thread pool, therefore the specified function 
+	 * must be thread safe.
+	 * Non-sequentiality means that original ordering of the elements are not enforced, as different items in the threadpool take different amount of time to complete. 
+	 * This implementation takes the first element from the threadpool that has finished processing, instead of blocking execution until the next-in-line element finishes processing.
+	 * 
+	 * @param <T>
+	 * @param sourceIterator the source iterator to use
+	 * @param function the function to use
+	 * @return the iterator with transformed elements
+	 */
+	public static <F, T> Iterator<T> nonSequentialTransform(final Iterator<F> sourceIterator, final Function<F, T> function) {
+		Preconditions.checkNotNull(sourceIterator, "Source iterator must not be null.");
+		Preconditions.checkNotNull(function, "Function must not be null.");
+		
+		return new AbstractIterator<T>() {
+			private static final int READ_AHEAD_FACTOR = 2;
+			
+			private final int availableProcessors = Runtime.getRuntime().availableProcessors();
+			private final int prefetchBatchSize = availableProcessors * READ_AHEAD_FACTOR;
+			private final Predicate<Future<T>> doneFuturePredicate = new DoneFuturePredicate<T>();
+			
+			private final Queue<Future<T>> futureQueue = new ConcurrentLinkedQueue<Future<T>>();
+			
+			@Override
+			protected T computeNext() {
+				return nextFilteredElement();
+			}
+			
+			private T nextFilteredElement() {
+				try {
+					while(readAhead() || !futureQueue.isEmpty()) {
+						Future<T> future = Iterables.find(futureQueue, doneFuturePredicate, futureQueue.peek());
+						final T futureValue = future.get();
+						futureQueue.remove(future);
+						return futureValue;
+					}
+					return endOfData();
+				} catch (final InterruptedException e) {
+					throw new RuntimeException("Concurrent transformed iterator interrupted.", e);
+				} catch (final ExecutionException e) {
+					throw new RuntimeException("Error in concurrent transformed iterator. Message: " + e.getMessage() + " \n rootCause: " + Throwables.getRootCause(e).getMessage() , e);
+				}
+			}
+			
+			private boolean readAhead() {
+				final int futureQueueSize = futureQueue.size();
+				
+				for (int i=0; i< prefetchBatchSize - futureQueueSize; i++) {
+					if (sourceIterator.hasNext()) {
+						final F sourceElement = sourceIterator.next();
+						final Future<T> future = SHARED_EXECUTOR_SERVICE.submit(new FunctionCallable<F, T>(function, sourceElement));
+						futureQueue.add(future);
+					} else {
+						return false;
+					}
+				}
+				
+				return true;
+			}
+		};
+	}
 	/**
 	 * Applies the specified function concurrently to each item of the source iterator, 
 	 * retaining the original order of the elements. The underlying {@link Iterator} 
