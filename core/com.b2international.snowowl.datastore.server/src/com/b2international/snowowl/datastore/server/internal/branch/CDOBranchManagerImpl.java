@@ -34,6 +34,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.commons.Pair;
+import com.b2international.index.BulkIndexWrite;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Writer;
 import com.b2international.index.query.Expressions;
@@ -143,6 +144,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 		CDOTransaction testTransaction = null;
 		CDOTransaction newTransaction = null;
 		
+		IndexWrite<Void> delete = null;
+		
 		try {
 			
 			if (branch.headTimestamp() > branch.baseTimestamp()) {
@@ -151,6 +154,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				
 				final InternalCDOBasedBranch tmpBranch = (InternalCDOBasedBranch) reopen(onTopOf,
 						String.format(Branch.TEMP_BRANCH_NAME_FORMAT, Branch.TEMP_PREFIX, branch.name(), System.currentTimeMillis()), branch.metadata());
+				
+				delete = prepareDelete(tmpBranch.getClass(), tmpBranch.path());
 				
 				postReopen.run();
 				
@@ -166,8 +171,12 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				final CDOBranch rebasedCDOBranch = getCDOBranch(rebasedBranch);
 				rebasedCDOBranch.rename(branch.name());
 				
-				commit(replace);
-					
+				BulkIndexWrite<Void> bulkWrite = new BulkIndexWrite<>(replace, delete);
+				
+				commit(bulkWrite);
+				
+				delete = null;
+				
 				sendChangeEvent(branch.path()); // Explicit notification (reopen)
 				
 				return rebasedBranch;
@@ -182,6 +191,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 			}
 			
 		} finally {
+			
+			if (delete != null) {
+				commit(delete);
+			}
+			
 			LifecycleUtil.deactivate(testTransaction);
 			LifecycleUtil.deactivate(newTransaction);
 		}
@@ -194,6 +208,16 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				return value;
 			}
 		});
+	}
+	
+	private IndexWrite<Void> prepareDelete(final Class<? extends InternalBranch> type, final String path) {
+		return new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.remove(type, path);
+				return null;
+			}
+		};
 	}
     
     private CDOTransaction transferChangeSet(final CDOTransaction transaction, final InternalBranch rebasedBranch) {

@@ -30,12 +30,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.google.common.collect.Maps.newHashMap;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -44,6 +50,7 @@ import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.core.merge.MergeConflictImpl;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -69,6 +76,13 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		givenBranchWithPath(testBranchPath);
 	}
 	
+	@After
+	public void noTempBranchVisibleAfter() {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API).when().get("/branches/{path}/children", BranchPathUtils.createMainPath().getPath())
+			.then().assertThat().statusCode(200)
+			.and().body("items.name", not(hasItem(startsWith(Branch.TEMP_PREFIX))));
+	}
+
 	@Override
 	protected IBranchPath createRandomBranchPath() {
 		// XXX make sure we nest the merge test cases under MAIN, so MAIN is not affected at all

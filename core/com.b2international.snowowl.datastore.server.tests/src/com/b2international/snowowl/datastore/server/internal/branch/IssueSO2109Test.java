@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
@@ -49,6 +50,7 @@ import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
@@ -163,6 +165,10 @@ public class IssueSO2109Test {
 		final CDOBranch currentCDOChild = manager.getCDOBranch(currentChild);
 
 		assertEquals(currentCDOChild.getPathName(), currentChild.path());
+		
+		for (Branch parentChild : child.parent().children()) {
+			assertFalse(parentChild.name().startsWith(Branch.TEMP_PREFIX));
+		}
 
 	}
 
