@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
+
 import java.io.StringReader;
 
 import org.eclipse.emf.ecore.EObject;
@@ -23,10 +27,13 @@ import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -66,15 +73,35 @@ public class DefaultEclEvaluator implements EclEvaluator {
 	}
 
 	protected Promise<Expression> eval(EObject eObject) {
-		throw new UnsupportedOperationException("Unhandled ECL grammar feature: " + eObject);
+		return throwUnsupported(eObject);
 	}
-	
+
 	protected Promise<Expression> eval(ExpressionConstraint expression) {
 		return evaluate(expression.getExpression());
 	}
 	
-	protected Promise<Expression> eval(com.b2international.snowowl.snomed.ecl.ecl.ConceptReference concept) {
-		return Promise.immediate(RevisionDocument.Expressions.id(concept.getId()));
+	// handlers for FocusConcept subtypes
+	protected Promise<Expression> eval(Any any) {
+		return Promise.immediate(Expressions.matchAll());
+	}
+	
+	protected Promise<Expression> eval(ConceptReference concept) {
+		return Promise.immediate(id(concept.getId()));
+	}
+	
+	protected Promise<Expression> eval(MemberOf memberOf) {
+		if (memberOf.getConcept() instanceof ConceptReference) {
+			final ConceptReference concept = (ConceptReference) memberOf.getConcept();
+			return Promise.immediate(referringRefSet(concept.getId()));
+		} else if (memberOf.getConcept() instanceof Any) {
+			return Promise.immediate(Expressions.exists(REFERRING_REFSETS));
+		} else {
+			return throwUnsupported(memberOf.getConcept());
+		}
+	}
+	
+	private Promise<Expression> throwUnsupported(EObject eObject) {
+		throw new UnsupportedOperationException("Unhandled ECL grammar feature: " + eObject.eClass().getName());
 	}
 	
 }

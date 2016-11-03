@@ -79,6 +79,10 @@ public class Expressions {
 
 	}
 	
+	public static Expression exists(final String field) {
+		return matchRange(field, null, null);
+	}
+	
 	public static Expression nestedMatch(final String path, Expression expression) {
 		final List<String> pathSegments = Lists.reverse(Splitter.on(".").splitToList(path));
 		Expression previous = expression;
@@ -109,7 +113,7 @@ public class Expressions {
 	}
 
 	public static Expression matchAll() {
-		return new MatchAll();
+		return MatchAll.INSTANCE;
 	}
 	
 	public static Expression matchNone() {

@@ -15,6 +15,8 @@
  */
 package com.b2international.index.query;
 
+import java.util.Objects;
+
 /**
  * @since 4.7
  */
@@ -35,6 +37,21 @@ public class StringRangePredicate extends Predicate {
 	
 	public String to() {
 		return to;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getField(), from(), to());
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (super.equals(obj)) {
+			final StringRangePredicate other = (StringRangePredicate) obj;
+			return Objects.equals(from, other.from) && Objects.equals(to, other.to);
+		} else {
+			return false;
+		}
 	}
 	
 	@Override

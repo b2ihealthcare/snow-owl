@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
@@ -69,6 +70,27 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 	public void selfWithTerm() throws Exception {
 		final Expression actual = evaluator.evaluate(String.format("%s|SNOMED CT Root|", ROOT_ID)).getSync();
 		final Expression expected = RevisionDocument.Expressions.id(ROOT_ID);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void any() throws Exception {
+		final Expression actual = evaluator.evaluate("*").getSync();
+		final Expression expected = Expressions.matchAll();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void memberOf() throws Exception {
+		final Expression actual = evaluator.evaluate("^"+Concepts.REFSET_DESCRIPTION_TYPE).getSync();
+		final Expression expected = SnomedConceptDocument.Expressions.referringRefSet(Concepts.REFSET_DESCRIPTION_TYPE);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void memberOfAny() throws Exception {
+		final Expression actual = evaluator.evaluate("^*").getSync();
+		final Expression expected = Expressions.exists(SnomedConceptDocument.Fields.REFERRING_REFSETS);
 		assertEquals(expected, actual);
 	}
 
